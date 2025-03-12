@@ -1,5 +1,28 @@
+#' Generate a comprehensive summary of the variables
+#'
+#' `varlist()` List the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
+#'
+#' @param x A data frame.
+#' @param values Logical. If `FALSE` (the default), includes only min/max values; If `TRUE`, includes all unique values. .
+#' @param tbl Logical. If `FALSE` (the default), opens a viewer; If `TRUE`, returns a tibble.
+#'
+#' @returns A data frame with variable names, labels, values, classes, the number of distinct values (Ndist_val), the number of valid (non-missing) observations (N_valid), and the number of missing values (NAs).
+#' @importFrom tibble as_tibble view
+#' @importFrom stats na.omit
+#' @importFrom utils head tail
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' varlist(x)
+#' vl(x)
+#' varlist(x, values = TRUE, tbl FALSE)
+#' }
+#' varlist(mtcars, tbl = TRUE)
+#'
 
-vl <- function(x, values = FALSE, tbl = FALSE) {
+
+varlist <- function(x, values = FALSE, tbl = FALSE) {
   if (!is.data.frame(x)) stop("vl() only works with data frames.", call. = FALSE)
 
   # Extraction des métadonnées de base
@@ -10,7 +33,7 @@ vl <- function(x, values = FALSE, tbl = FALSE) {
       if (is.null(lbl)) NA_character_ else as.character(lbl)
     }, character(1)),  # Assure toujours une colonne complète de NA si besoin
     Class      = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
-    Ndist_val  = vapply(x, function(col) length(unique(na.omit(col))), integer(1)),
+    Ndist_val  = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
     N_valid    = vapply(x, function(col) sum(!is.na(col)), integer(1)),
     NAs        = vapply(x, function(col) sum(is.na(col)), integer(1))
   )
@@ -38,7 +61,7 @@ vl <- function(x, values = FALSE, tbl = FALSE) {
 
 # Fonction pour afficher un résumé min/max (values = FALSE)
 summarize_values_minmax <- function(col) {
-  na_omit_col <- na.omit(col)
+  na_omit_col <- stats::na.omit(col)
   if (length(na_omit_col) == 0) return("Full NA")
 
   if (is.factor(col)) {
@@ -50,14 +73,14 @@ summarize_values_minmax <- function(col) {
   } else {
     unique_sorted <- sort(unique(na_omit_col))
     return(if (length(unique_sorted) > 2)
-      paste(head(unique_sorted, 1), "...", tail(unique_sorted, 1))
+      paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1))
       else paste(unique_sorted, collapse = ", "))
   }
 }
 
 # Fonction pour afficher toutes les valeurs uniques triées (values = TRUE)
 summarize_values_all <- function(col) {
-  na_omit_col <- na.omit(col)
+  na_omit_col <- stats::na.omit(col)
   if (length(na_omit_col) == 0) return("Full NA")
 
   if (is.factor(col)) {
@@ -72,4 +95,4 @@ summarize_values_all <- function(col) {
 }
 
 # Alias
-varlist <- function(...) vl(...)
+vl <- function(...) varlist(...)
