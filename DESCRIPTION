@@ -1,9 +1,9 @@
 Package: spicy
-Title: What the Package Does (One Line, Title Case)
+Title: List the variables of a data frame
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre"))
+Description: Provides a comprehensive summary of the variables in a data frame. It extracts essential metadata, including variable names, labels, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values (NAs).Useful for quickly assessing the structure and content of a data frame.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
