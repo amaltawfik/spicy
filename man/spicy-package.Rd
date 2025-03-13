@@ -4,9 +4,9 @@
 \name{spicy-package}
 \alias{spicy}
 \alias{spicy-package}
-\title{spicy: List the variables of a data frame}
+\title{spicy: Data Management and Variable Exploration}
 \description{
-Provides a comprehensive summary of the variables in a data frame. It extracts essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values (NAs).Useful for quickly assessing the structure and content of a data frame.
+Provides a comprehensive summary of the variables in a data frame. Extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values. Quickly assess the structure and content of a data frame.
 }
 \seealso{
 Useful links:

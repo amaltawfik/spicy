@@ -9,7 +9,7 @@ copy_clipboard(x, row.names.as.col = FALSE, col.names = TRUE, ...)
 \arguments{
 \item{x}{A data frame, matrix, array (2d) or table}
 
-\item{row.names.as.col}{Logical. If \code{FALSE} (the default), do not add the row names of x as a column. If \code{TRUE}, add a column "rownames". You can supply a name e.g. row.names.as.col = "variable".}
+\item{row.names.as.col}{If \code{FALSE} (the default), do not add the row names of x as a column. If \code{TRUE}, add a column "rownames". You can supply a name e.g. row.names.as.col = "variable".}
 
 \item{col.names}{Logical. If \code{TRUE} (the default), add the column names of x. If \code{FALSE}, do not add the column names of x.}
 

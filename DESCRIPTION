@@ -1,9 +1,9 @@
 Package: spicy
-Title: List the variables of a data frame
+Title: Data Management and Variable Exploration
 Version: 0.0.1
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555"))
-Description: Provides a comprehensive summary of the variables in a data frame. It extracts essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values (NAs).Useful for quickly assessing the structure and content of a data frame.
+Description: Provides a comprehensive summary of the variables in a data frame. Extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values. Quickly assess the structure and content of a data frame.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues
@@ -11,9 +11,11 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
+    collapse,
     stats,
     tibble,
     utils
 Suggests: 
     testthat (>= 3.0.0)
+Depends: R (>= 3.5.0)
 Config/testthat/edition: 3
