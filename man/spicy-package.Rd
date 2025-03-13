@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Amal Tawfik \email{amal.tawfik@hesav.ch} (\href{https://orcid.org/0009-0006-2422-1555}{ORCID})
+\strong{Maintainer}: Amal Tawfik \email{amal.tawfik@hesav.ch} (\href{https://orcid.org/0009-0006-2422-1555}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}
