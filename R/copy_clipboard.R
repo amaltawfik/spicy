@@ -1,6 +1,6 @@
 #' Copy data to the clipboard
 #'
-#' `copy_clipboard()` copy a data frame, table, array or matrix to the clipboard. Paste to a text editor (Notepad++, Sublime Text, etc.), a spreadsheet or word processor software (Excel, LibreOffice Calc, Word, etc.).
+#' `copy_clipboard()` copies a data frame, table, array or matrix to the clipboard. Paste to a text editor (Notepad++, Sublime Text, etc.), a spreadsheet or word processor software (Excel, LibreOffice Calc, Word, etc.).
 #'
 #' @param x A data frame, matrix, array (2d) or table
 #' @param row.names.as.col If `FALSE` (the default), do not add the row names of x as a column. If `TRUE`, add a column "rownames". You can supply a name e.g. row.names.as.col = "variable".

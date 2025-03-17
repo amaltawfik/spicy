@@ -1,6 +1,6 @@
 #' Generate a comprehensive summary of the variables
 #'
-#' `varlist()` List the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
+#' `varlist()` lists the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
 #'
 #' @param x A data frame.
 #' @param values Logical. If `FALSE` (the default), includes only min/max values; If `TRUE`, includes all unique values. .
