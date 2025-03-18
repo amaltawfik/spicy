@@ -1,6 +1,6 @@
 #' Frequency Table
 #'
-#' `varlist()` creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
+#' `freq()` creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
 #'
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
 #' @param x A dataframe variable.
