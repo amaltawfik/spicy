@@ -19,7 +19,7 @@ copy_clipboard(x, row.names.as.col = FALSE, col.names = TRUE, ...)
 A data frame to the clipboard
 }
 \description{
-\code{copy_clipboard()} copy a data frame, table, array or matrix to the clipboard. Paste to a text editor (Notepad++, Sublime Text, etc.), a spreadsheet or word processor software (Excel, LibreOffice Calc, Word, etc.).
+\code{copy_clipboard()} copies a data frame, table, array or matrix to the clipboard. Paste to a text editor (Notepad++, Sublime Text, etc.), a spreadsheet or word processor software (Excel, LibreOffice Calc, Word, etc.).
 }
 \examples{
 \dontrun{

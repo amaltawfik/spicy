@@ -17,7 +17,7 @@ varlist(x, values = FALSE, tbl = FALSE)
 A data frame with variable names, labels, values, classes, the number of distinct values (Ndist_val), the number of valid (non-missing) observations (N_valid), and the number of missing values (NAs).
 }
 \description{
-\code{varlist()} List the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
+\code{varlist()} lists the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
 }
 \examples{
 \dontrun{
