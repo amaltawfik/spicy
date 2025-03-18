@@ -1,8 +1,8 @@
-#' Compute Cramer's V of a two-way frequency table
+#' Compute Cramer's V
 #'
-#' This function computes Cramer's V for a two-way frequency table
+#' `cramer_v` computes Cramer's V for a two-way frequency table, which measures the strength of the association between categorical variables.
 #'
-#' @param tab table on which to compute the statistic
+#' @param tab A table on which to compute the statistic
 #'
 #' @export
 #' @examples
