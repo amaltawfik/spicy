@@ -6,6 +6,7 @@
 #' @param ... Additional arguments
 #'
 #' @returns Invisibly returns `x`, after printing its formatted content.
+#' @importFrom utils capture.output
 #' @export
 #'
 #' @examples
@@ -14,14 +15,20 @@
 #' }
 
 print.spicy <- function(x, ...) {
+  df <- as.data.frame(x)
 
-  table_lines <- capture.output(print(as.data.frame(x), row.names = FALSE))
+  if ("Values" %in% names(df)) {
+    df$Values <- sprintf("%-20s", as.character(df$Values))  # Valeurs alignées à gauche
+    names(df)[names(df) == "Values"] <- sprintf("%-20s", "Values")  # Nom aligné à gauche
+  }
+
+  table_lines <- utils::capture.output(print(df, row.names = FALSE))
+
   line_width <- max(nchar(table_lines), na.rm = TRUE)
   line_sep <- strrep("\u2500", line_width)
 
   cat(attr(x, "title"), "\n", sep = "")
   cat(line_sep, "\n", sep = "")
-
   cat(table_lines[1], "\n", sep = "")
   cat(line_sep, "\n", sep = "")
   for (i in 2:length(table_lines)) {
@@ -35,3 +42,4 @@ print.spicy <- function(x, ...) {
 
   invisible(x)
 }
+
