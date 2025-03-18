@@ -5,20 +5,40 @@
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
 #' @param x A dataframe variable.
 #' @param weights A numeric vector of weights. Must be the same length as `x`.
-#' @param digits Numeric. Number of digits to be displayed for percentages. Default is `1`.
-#' @param cum
-#' @param total
-#' @param exclude
-#' @param sort
-#' @param valid
-#' @param na_val
-#' @param rescale_weights
-#' @param info
+#' @param digits Numeric. Number of digits to be displayed for percentages. Default is `1`. For N, 2 digits are displayed if there is a weight variable with non-integer weights or if rescale_weight = T, otherwise 0.
+#' @param cum Logical. If `FALSE` (the default), do not display cumulative percentages. If `TRUE`, display cumulative percentages.
+#' @param total Logical. If `TRUE` (the default), add a final row of totals. If `FALSE`, remove a final row of totals.
+#' @param exclude Values to exclude (e.g., `NA`, "Other"). Default is `NULL`.
+#' @param sort Sorting method for values:
+#'   - `""` (default): No specific sorting.
+#'   - `"+"`: Sort by increasing frequency.
+#'   - `"-"`: Sort by decreasing frequency.
+#'   - `"name+"`: Sort alphabetically (A-Z).
+#'   - `"name-"`: Sort alphabetically (Z-A).
+#' @param valid Logical. If `TRUE` (the default), display valid percentages (excluding missing values). If `FALSE`, do not display valid percentages.
+#' @param na_val Character or numeric. For factors, character or numeric vectors, values to be treated as `NA`.
+#' @param rescale_weights Logical. If `FALSE` (the default), do not rescale weights. If `TRUE`, the total count will be the same as the unweighted `x`.
+#' @param info Logical. If `TRUE` (the default), print a title and a note (label and class of `x`, variable weight, dataframe name) information about the model (model formula,number of observations, residual standard deviation and more).
 #'
-#' @returns
+#' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
+#'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
+#'   - If `cum = TRUE`, cumulative frequencies (`%_cum`) are included.
+#'   - If `total = TRUE`, a "Total" row is added.
+#' @importFrom dplyr pull
+#' @importFrom rlang enquo
+#' @importFrom rlang eval_tidy
+#' @importFrom rlang quo_is_null
+#' @importFrom stats na.omit
 #' @export
 #'
 #' @examples
+#' data(iris)
+#' data(mtcars)
+#' freq(iris, x = Species)
+#' iris |> freq(Species)
+#' freq(mtcars, cyl, sort = "-", cum = TRUE)
+#' freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
+#'
 freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
                  total = TRUE, exclude = NULL, sort = "", valid = TRUE,
                  na_val = NULL, rescale_weights = FALSE, info = TRUE) {
@@ -161,7 +181,7 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
 
   names(result) <- sub("pourc", "%", names(result))
   names(result) <- sub("valid_pourc", "Valid_%", names(result))
-  names(result) <- sub("pourc_cum", "%_cum", names(result))
+  names(result) <- sub("pourc_cum", "% cum", names(result))
   names(result) <- sub("valid_pourc_cum", "Valid_%_cum", names(result))
 
   rownames(result) <- NULL
@@ -173,7 +193,10 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
 
   class(result) <- c("spicy", class(result))
 
-  result$Values <- format(result$Values, justify = "left")
+
+  result$Values <- format(as.character(result$Values), justify = "left")
+
+  # colnames(result)[colnames(result) == "Values"] <- format("Values", justify = "left")
 
   return(result)
 }

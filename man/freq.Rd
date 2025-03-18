@@ -53,6 +53,11 @@ freq(
 }
 \value{
 A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}) and percentages (\verb{\%}).
+\itemize{
+\item If \code{valid = TRUE}, a percentage of valid values (\verb{Valid_\%}) is added.
+\item If \code{cum = TRUE}, cumulative frequencies (\verb{\%_cum}) are included.
+\item If \code{total = TRUE}, a "Total" row is added.
+}
 }
 \description{
 \code{freq()} creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
