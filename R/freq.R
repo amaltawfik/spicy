@@ -135,16 +135,18 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
   }
 
   valid_rows <- !(is.na(result$Values) | result$Values == "Total")
-  if (sort == "+") {
-    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, "N"], na.last = TRUE), ]
-  } else if (sort == "-") {
-    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, "N"], decreasing = TRUE, na.last = TRUE), ]
-  } else if (sort == "name+") {
-    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, "Values"], na.last = TRUE), ]
-  } else if (sort == "name-") {
-    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, "Values"], decreasing = TRUE, na.last = TRUE), ]
-  } else if (sort != "") {
-    stop("Invalid value for 'sort'. Use '+', '-', 'name+' or 'name-'.")
+
+  if (sort != "") {
+    sort_col <- switch(sort,
+                       "+" = "N",
+                       "-" = "N",
+                       "name+" = "Values",
+                       "name-" = "Values",
+                       stop("Invalid value for 'sort'. Use '+', '-', 'name+' or 'name-'.", call. = FALSE))
+
+    decreasing <- sort %in% c("-", "name-")
+
+    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, sort_col], decreasing = decreasing, na.last = TRUE), ]
   }
 
   if (cum) {
