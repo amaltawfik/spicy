@@ -2,6 +2,7 @@
 #'
 #' `varlist()` lists the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
 #'
+#' @aliases vl
 #' @param x A data frame.
 #' @param values Logical. If `FALSE` (the default), includes only min/max values; If `TRUE`, includes all unique values. .
 #' @param tbl Logical. If `FALSE` (the default), opens a viewer; If `TRUE`, returns a tibble.
@@ -25,7 +26,6 @@
 varlist <- function(x, values = FALSE, tbl = FALSE) {
   if (!is.data.frame(x)) stop("vl() only works with data frames.", call. = FALSE)
 
-  # Extraction des métadonnées de base
   res <- list(
     Variable   = names(x),
     Label      = vapply(x, function(col) {
@@ -38,20 +38,16 @@ varlist <- function(x, values = FALSE, tbl = FALSE) {
     NAs        = vapply(x, function(col) sum(is.na(col)), integer(1))
   )
 
-  # Ajouter la colonne Values selon values = TRUE / FALSE
   if (values) {
     res$Values <- vapply(x, summarize_values_all, character(1))
   } else {
     res$Values <- vapply(x, summarize_values_minmax, character(1))
   }
 
-  # Réorganiser l'ordre des colonnes
   res <- res[c("Variable", "Label", "Values", "Class", "Ndist_val", "N_valid", "NAs")]
 
-  # Convertir en tibble
   res <- tibble::as_tibble(res)
 
-  # Affichage ou retour du tibble
   if (tbl) {
     return(res)
   } else {
@@ -59,7 +55,6 @@ varlist <- function(x, values = FALSE, tbl = FALSE) {
   }
 }
 
-# Fonction pour afficher un résumé min/max (values = FALSE)
 summarize_values_minmax <- function(col) {
   na_omit_col <- stats::na.omit(col)
   if (length(na_omit_col) == 0) return("Full NA")
@@ -78,7 +73,6 @@ summarize_values_minmax <- function(col) {
   }
 }
 
-# Fonction pour afficher toutes les valeurs uniques triées (values = TRUE)
 summarize_values_all <- function(col) {
   na_omit_col <- stats::na.omit(col)
   if (length(na_omit_col) == 0) return("Full NA")
@@ -94,5 +88,5 @@ summarize_values_all <- function(col) {
   }
 }
 
-# Alias
+
 vl <- function(...) varlist(...)

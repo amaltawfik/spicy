@@ -2,6 +2,7 @@
 % Please edit documentation in R/varlist.R
 \name{varlist}
 \alias{varlist}
+\alias{vl}
 \title{Generate a comprehensive summary of the variables}
 \usage{
 varlist(x, values = FALSE, tbl = FALSE)
