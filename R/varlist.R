@@ -31,7 +31,7 @@ varlist <- function(x, values = FALSE, tbl = FALSE) {
     Label      = vapply(x, function(col) {
       lbl <- attr(col, "label")
       if (is.null(lbl)) NA_character_ else as.character(lbl)
-    }, character(1)),  # Assure toujours une colonne complète de NA si besoin
+    }, character(1)),
     Class      = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
     Ndist_val  = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
     N_valid    = vapply(x, function(col) sum(!is.na(col)), integer(1)),
