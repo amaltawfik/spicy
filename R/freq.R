@@ -2,6 +2,7 @@
 #'
 #' `freq()` creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
 #'
+#' @alias fre
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
 #' @param x A dataframe variable.
 #' @param weights A numeric vector of weights. Must be the same length as `x`.
