@@ -8,6 +8,7 @@
 #' @importFrom dplyr pull
 #' @importFrom dplyr select
 #' @importFrom dplyr where
+#' @importFrom haven labelled
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
 #' @importFrom rlang enquo
