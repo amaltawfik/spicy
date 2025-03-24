@@ -5,27 +5,49 @@
 \alias{vl}
 \title{Generate a comprehensive summary of the variables}
 \usage{
-varlist(x, values = FALSE, tbl = FALSE)
+varlist(x, ..., values = FALSE, tbl = FALSE)
+
+vl(...)
 }
 \arguments{
-\item{x}{A data frame.}
+\item{x}{A data frame, or a transformation of one. Must be named and identifiable.}
 
-\item{values}{Logical. If \code{FALSE} (the default), includes only min/max values; If \code{TRUE}, includes all unique values. .}
+\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.)}
 
-\item{tbl}{Logical. If \code{FALSE} (the default), opens a viewer; If \code{TRUE}, returns a tibble.}
+\item{values}{Logical. If \code{FALSE} (the default), only min/max or representative values are displayed. If \code{TRUE}, all unique values are listed.}
+
+\item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer (if interactive). If \code{TRUE}, returns a tibble.}
 }
 \value{
-A data frame with variable names, labels, values, classes, the number of distinct values (Ndist_val), the number of valid (non-missing) observations (N_valid), and the number of missing values (NAs).
+A tibble with variable metadata:
+\itemize{
+\item \code{Variable}: variable names
+\item \code{Label}: variable labels (if available)
+\item \code{Values}: summary of values (min/max or all unique)
+\item \code{Class}: data type(s)
+\item \code{Ndist_val}: number of distinct non-missing values
+\item \code{N_valid}: number of non-missing observations
+\item \code{NAs}: number of missing values
+}
+
+If \code{tbl = FALSE} and used interactively, the summary is displayed in the Viewer pane.
+If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}), an asterisk (\code{*}) is appended to the name in the title (e.g. \verb{VARLIST iris*}).
 }
 \description{
-\code{varlist()} lists the variables of a data frame, extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values
+\code{varlist()} lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.
+}
+\details{
+The function can also apply tidyselect-style variable selectors to filter columns dynamically.
+
+If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \verb{VARLIST iris}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{VARLIST iris*}.
 }
 \examples{
-\dontrun{
-varlist(x)
-vl(x)
-varlist(x, values = TRUE, tbl FALSE)
-}
+varlist(iris)
+iris |> varlist()
+vl(iris)
+iris |> varlist(starts_with("Sepal"), tbl = TRUE)
+varlist(head(mtcars), tbl = TRUE)
 varlist(mtcars, tbl = TRUE)
-
+varlist(iris[ , 1:3], tbl = TRUE)
+varlist(mtcars[1:10, ], tbl = TRUE)
 }
