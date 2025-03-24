@@ -204,5 +204,5 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
   return(result)
 }
 
-
+#' @export
 fre <- function(...) freq(...)

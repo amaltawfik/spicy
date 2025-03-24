@@ -373,5 +373,8 @@ cross_tab <- function(
 }
 
 
+#' @export
 ctab <- function(...) cross_tab(...)
+
+#' @export
 ct <- function(...) cross_tab(...)

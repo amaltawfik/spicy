@@ -89,4 +89,6 @@ summarize_values_all <- function(col) {
 }
 
 
+#' @export
 vl <- function(...) varlist(...)
+
