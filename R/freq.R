@@ -4,6 +4,7 @@
 #'
 #' @aliases fre
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
+#'   Matrices are not supported; please extract a column or convert to a vector or tibble before use.
 #' @param x A dataframe variable.
 #' @param weights A numeric vector of weights. Must be the same length as `x`.
 #' @param digits Numeric. Number of digits to be displayed for percentages. Default is `1`. For N, 2 digits are displayed if there is a weight variable with non-integer weights or if rescale_weight = T, otherwise 0.
@@ -19,13 +20,19 @@
 #' @param valid Logical. If `TRUE` (the default), display valid percentages (excluding missing values). If `FALSE`, do not display valid percentages.
 #' @param na_val Character or numeric. For factors, character or numeric vectors, values to be treated as `NA`.
 #' @param rescale_weights Logical. If `FALSE` (the default), do not rescale weights. If `TRUE`, the total count will be the same as the unweighted `x`.
-#' @param info Logical. If `TRUE` (the default), print a title and a note (label and class of `x`, variable weight, dataframe name) information about the model (model formula,number of observations, residual standard deviation and more).
+#' @param info Logical. If `TRUE` (the default), print a title and a note (label and class of `x`, variable weight, dataframe name) information about the model (model formula, number of observations, residual standard deviation and more).
+#' @param labelled_levels For `haven_labelled` variables, controls how values are displayed:
+#'   - `"prefixed"` (default): Show labels as `[value] label`
+#'   - `"labels"`: Show only the label
+#'   - `"values"`: Show only the underlying value
 #'
 #' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
 #'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
 #'   - If `cum = TRUE`, cumulative frequencies (`%_cum`) are included.
 #'   - If `total = TRUE`, a "Total" row is added.
 #' @importFrom dplyr pull
+#' @importFrom labelled is.labelled
+#' @importFrom labelled to_factor
 #' @importFrom rlang enquo
 #' @importFrom rlang eval_tidy
 #' @importFrom rlang quo_is_null
@@ -40,9 +47,23 @@
 #' freq(mtcars, cyl, sort = "-", cum = TRUE)
 #' freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
 #'
-freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
-                 total = TRUE, exclude = NULL, sort = "", valid = TRUE,
-                 na_val = NULL, rescale_weights = FALSE, info = TRUE) {
+
+freq <- function(
+    data,
+    x = NULL,
+    weights = NULL,
+    digits = 1,
+    cum = FALSE,
+    total = TRUE,
+    exclude = NULL,
+    sort = "",
+    valid = TRUE,
+    na_val = NULL,
+    rescale_weights = FALSE,
+    info = TRUE,
+    labelled_levels = c("prefixed", "labels", "values")
+) {
+  labelled_levels <- match.arg(labelled_levels)
 
   is_df <- is.data.frame(data)
 
@@ -63,10 +84,16 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
 
   if (is_df && !missing(x)) {
     x <- dplyr::pull(data, {{ x }})
-  } else if (!is.vector(data) && !is.factor(data)) {
-    stop("'data' must be a vector, a factor, or a dataframe column.")
   } else {
     x <- data
+  }
+
+  if (!is.null(attr(data, "label"))) {
+    attr(x, "label") <- attr(data, "label")
+  }
+
+  if (is.matrix(x)) {
+    stop("Matrix detected. Use `freq(x[, 1])` or convert to a tibble first.", call. = FALSE)
   }
 
   weight_quo <- rlang::enquo(weights)
@@ -82,6 +109,22 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
     x[x %in% na_val] <- NA
   }
 
+  if (labelled::is.labelled(x)) {
+    lbl <- attr(x, "label")
+    if (!is.null(lbl) && (!is.character(lbl) || length(lbl) != 1)) {
+      attr(x, "label") <- NULL
+    }
+    x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
+  }
+
+  if (!is.atomic(x) && !is.factor(x)) {
+    stop("'x' must be an atomic vector or a factor (including Date, POSIXct, labelled).")
+  }
+
+  if (!is.factor(x)) {
+    x <- factor(x, exclude = exclude)
+  }
+
   note <- paste0(
     if (!is.null(attr(x, "label"))) paste0("Label: ", attr(x, "label"), "\n") else "",
     "Class: ", paste(class(x), collapse = ", "), "\n",
@@ -89,27 +132,14 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
     if (!is.null(weight_name)) paste0("Weight: ", weight_name, "\n") else ""
   )
 
-  if ("haven_labelled" %in% class(x)) {
-    labels <- attr(x, "labels")
-    formatted_values <- sapply(x, function(v) {
-      if (is.na(v)) {
-        return(NA)
-      } else if (v %in% labels) {
-        return(paste0("[", v, "] ", names(labels[labels == v])))
-      } else {
-        return(paste0("[", v, "] ", v))
-      }
-    }, USE.NAMES = FALSE)
-
-    x <- factor(formatted_values, exclude = exclude)
-  } else {
-    x <- factor(x, exclude = exclude)
-  }
-
   has_decimal <- FALSE
   if (!is.null(weights)) {
-    if (!is.numeric(weights)) stop("'weights' must be a numeric vector.")
-    if (length(weights) != length(x)) stop("'weights' must have the same length as 'x'.")
+    if (!is.numeric(weights)) {
+      stop("'weights' must be a numeric vector.")
+    }
+    if (length(weights) != length(x)) {
+      stop("'weights' must have the same length as 'x'.")
+    }
     weights[is.na(weights)] <- 0
     has_decimal <- any(weights %% 1 != 0)
 
@@ -128,6 +158,7 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
   )
 
   result$pourc <- (result$N / sum(result$N)) * 100
+
   if (valid) {
     na_indices <- which(is.na(levels(x)))
     n_na <- sum(result$N[na_indices], na.rm = TRUE)
@@ -138,16 +169,18 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
   valid_rows <- !(is.na(result$Values) | result$Values == "Total")
 
   if (sort != "") {
-    sort_col <- switch(sort,
-                       "+" = "N",
-                       "-" = "N",
-                       "name+" = "Values",
-                       "name-" = "Values",
-                       stop("Invalid value for 'sort'. Use '+', '-', 'name+' or 'name-'.", call. = FALSE))
-
+    sort_col <- switch(
+      sort,
+      "+" = "N",
+      "-" = "N",
+      "name+" = "Values",
+      "name-" = "Values",
+      stop("Invalid value for 'sort'. Use '+', '-', 'name+' or 'name-'.", call. = FALSE)
+    )
     decreasing <- sort %in% c("-", "name-")
-
-    result[valid_rows, ] <- result[valid_rows, ][order(result[valid_rows, sort_col], decreasing = decreasing, na.last = TRUE), ]
+    result[valid_rows, ] <- result[valid_rows, ][
+      order(result[valid_rows, sort_col], decreasing = decreasing, na.last = TRUE),
+    ]
   }
 
   if (cum) {
@@ -180,12 +213,15 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
   result$N <- format(round(result$N, n_digits), nsmall = n_digits)
 
   cols_to_round <- intersect(names(result), c("pourc", "pourc_cum", "valid_pourc", "valid_pourc_cum"))
-  result[cols_to_round] <- lapply(result[cols_to_round], function(col) format(round(col, digits), nsmall = digits))
+  result[cols_to_round] <- lapply(
+    result[cols_to_round],
+    function(col) format(round(col, digits), nsmall = digits)
+  )
 
   names(result) <- sub("pourc", "%", names(result))
-  names(result) <- sub("valid_pourc", "Valid_%", names(result))
-  names(result) <- sub("pourc_cum", "% cum", names(result))
-  names(result) <- sub("valid_pourc_cum", "Valid_%_cum", names(result))
+  names(result) <- sub("valid_%", "Valid_%", names(result))
+  names(result) <- sub("%_cum", "% cum", names(result))
+  names(result) <- sub("Valid_%_cum", "Valid_% cum", names(result))
 
   rownames(result) <- NULL
 
@@ -196,10 +232,7 @@ freq <- function(data, x = NULL, weights = NULL, digits = 1, cum = FALSE,
 
   class(result) <- c("spicy", class(result))
 
-
   result$Values <- format(as.character(result$Values), justify = "left")
-
-  # colnames(result)[colnames(result) == "Values"] <- format("Values", justify = "left")
 
   return(result)
 }

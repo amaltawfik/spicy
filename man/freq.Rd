@@ -17,11 +17,13 @@ freq(
   valid = TRUE,
   na_val = NULL,
   rescale_weights = FALSE,
-  info = TRUE
+  info = TRUE,
+  labelled_levels = c("prefixed", "labels", "values")
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, vector or factor. If a \code{data.frame} is provided, the target variable \code{x} must be specified.}
+\item{data}{A \code{data.frame}, vector or factor. If a \code{data.frame} is provided, the target variable \code{x} must be specified.
+Matrices are not supported; please extract a column or convert to a vector or tibble before use.}
 
 \item{x}{A dataframe variable.}
 
@@ -50,7 +52,14 @@ freq(
 
 \item{rescale_weights}{Logical. If \code{FALSE} (the default), do not rescale weights. If \code{TRUE}, the total count will be the same as the unweighted \code{x}.}
 
-\item{info}{Logical. If \code{TRUE} (the default), print a title and a note (label and class of \code{x}, variable weight, dataframe name) information about the model (model formula,number of observations, residual standard deviation and more).}
+\item{info}{Logical. If \code{TRUE} (the default), print a title and a note (label and class of \code{x}, variable weight, dataframe name) information about the model (model formula, number of observations, residual standard deviation and more).}
+
+\item{labelled_levels}{For \code{haven_labelled} variables, controls how values are displayed:
+\itemize{
+\item \code{"prefixed"} (default): Show labels as \verb{[value] label}
+\item \code{"labels"}: Show only the label
+\item \code{"values"}: Show only the underlying value
+}}
 }
 \value{
 A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}) and percentages (\verb{\%}).
