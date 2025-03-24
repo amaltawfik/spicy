@@ -18,6 +18,7 @@ Imports:
     rlang,
     stats,
     tibble,
+    tidyselect,
     utils
 Suggests: 
     testthat (>= 3.0.0)

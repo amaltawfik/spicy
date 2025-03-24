@@ -19,15 +19,18 @@
 #' }
 
 copy_clipboard <- function(x, row.names.as.col = FALSE, col.names = TRUE, ...) {
-  if (row.names.as.col == T) {
+  if (is.logical(row.names.as.col) && row.names.as.col) {
     x1 <- collapse::qTBL(x, row.names.col = "rownames")
-  }
-  if (row.names.as.col == F) {
+  } else if (is.logical(row.names.as.col) && !row.names.as.col) {
     x1 <- x
-  } else {
+  } else if (is.character(row.names.as.col)) {
     x1 <- collapse::qTBL(x, row.names.col = row.names.as.col[1L])
+  } else {
+    stop("row.names.as.col must be either FALSE, TRUE, or a character string.")
   }
 
-
-  utils::write.table(x1, "clipboard-1000000", sep = "\t", row.names = FALSE, col.names = col.names, ...)
+  utils::write.table(
+    x1, file = "clipboard-1000000",
+    sep = "\t", row.names = FALSE, col.names = col.names, ...
+  )
 }
