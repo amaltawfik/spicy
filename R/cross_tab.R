@@ -1,29 +1,47 @@
-#' Cross-tabulation with Percentages, Weights, and Grouping
+#' Cross-Tabulation with Percentages, Weights, and Grouping
 #'
-#' `cross_tab` produces a cross-tabulation table of `x` by `y`, with optional grouping by a third variable (`by`). Supports weighted frequencies, row or column percentages, row/column totals, effective counts, and chi-squared statistics.
+#' `cross_tab()` produces a cross-tabulation of `x` by `y`, with optional stratification using a grouping variable (`by`).
+#' It supports weighted frequencies, row or column percentages, and association statistics (Chi-squared test, Cramer's V).
 #'
-#' All variables (`x`, `y`, `by`, `weights`) must be columns of the data frame `d`. The function supports grouped output (`by`), and optionally combines all tables into a single tibble if `combine = TRUE`.
+#' The function is flexible:
+#' - Accepts both **standard** (quoted) and **tidy** (unquoted) variable input
+#' - Performs stratified tabulations using a **grouping variable** (`by`)
+#' - Optionally combines group-level tables into a single tibble with `combine = TRUE`
+#' - Pipe-friendly with both base R (`|>`) and magrittr (`%>%`)
 #'
-#' @param d A `data.frame`. Must contain all the variables referenced in `x`, `y`, `by`, and `weights`.
-#' @param x The variable to tabulate (row). Must be a column of `d`.
-#' @param y The variable to tabulate against (column). Must be a column of `d`. If `NULL`, computes a one-way frequency table.
-#' @param by Optional: a grouping variable or interaction of variables (e.g. `interaction(v1, v2)`). Will be coerced to character. Must refer to columns of `d`.
-#' @param weights Optional numeric vector of weights. Must be a column of `d`.
-#' @param rescale_weights Logical. If `TRUE`, rescale weights so that the total weighted count equals the unweighted count.
-#' @param digits Integer. Number of decimal places to display for percentages. Default is `1`.
-#' @param rowprct Logical. If `TRUE`, compute percentages by row. Otherwise, percentages are computed by column (default).
-#' @param row_total Logical. If `TRUE` (default), adds a row total column.
-#' @param column_total Logical. If `TRUE` (default), adds a column total row.
-#' @param n Logical. If `TRUE` (default), includes effective counts (`N`) as a row or column.
-#' @param drop Logical. If `TRUE` (default), drops empty rows and columns from the table.
-#' @param include_stats Logical. If `TRUE` (default), computes Chi-squared test and Cramer's V when applicable.
-#' @param combine Logical. If `TRUE`, combines all group-level tables into a single tibble with a `by` column. Otherwise, returns a list.
-#' @param file Reserved for future use (e.g., exporting).
-#' @param ... Further arguments (currently unused).
+#' All variables (`x`, `y`, `by`, `weights`) must be present in the data frame `d`
+#' (unless vector input is used).
 #'
-#' @return A tibble of class `spicy`, or a list of such tibbles (if `by` is used and `combine = FALSE`).
+#' @param d A `data.frame`, or a vector (when using vector input). Must contain all variables used in `x`, `y`, `by`, and `weights`.
+#' @param x Variable for table rows. Can be unquoted (tidy) or quoted (standard). Must match column name if `d` is a data frame.
+#' @param y Optional variable for table columns. Same rules as `x`. If `NULL`, computes a one-way frequency table.
+#' @param by Optional **grouping variable** (or interaction of variables). Used to produce stratified crosstabs. Must refer to columns in `d`, or be a vector of the same length as `x`.
+#' @param weights Optional numeric vector of weights. Must match length of `x`.
+#' @param rescale_weights Logical. If `TRUE`, rescales weights so that total weighted count matches unweighted count.
+#' @param digits Integer. Number of decimal places shown in percentages. Default is `1`.
+#' @param rowprct Logical. If `TRUE`, computes percentages by row; otherwise by column.
+#' @param row_total Logical. If `TRUE`, adds row totals (default `TRUE`).
+#' @param column_total Logical. If `TRUE`, adds column totals (default `TRUE`).
+#' @param n Logical. If `TRUE`, displays effective counts `N` as an extra row or column (default `TRUE`).
+#' @param drop Logical. If `TRUE`, drops empty rows or columns (default `TRUE`).
+#' @param include_stats Logical. If `TRUE`, includes Chi-squared test and Cramer's V when possible (default `TRUE`).
+#' @param combine Logical. If `TRUE`, combines all stratified tables into one tibble with a `by` column.
 #'
+#' @return A tibble of class `spicy`, or a list of such tibbles if `combine = FALSE` and `by` is used.
+#'
+#' @section Warnings and Errors:
+#' - If `weights` is non-numeric, an error is thrown.
+#' - If `weights` does not match the number of observations, an error is thrown.
+#' - If `rescale_weights = TRUE` but no weights are provided, a warning is issued.
+#' - If all values in `by` are `NA`, an error is thrown.
+#' - If `by` has only one unique level (or all `NA`), a warning is issued.
+#'
+#' @importFrom rlang enquo
+#' @importFrom rlang eval_tidy
+#' @importFrom rlang quo_is_null
 #' @importFrom stats chisq.test
+#' @importFrom stats xtabs
+#' @importFrom tibble rownames_to_column
 #'
 #' @examples
 #' data(mtcars)
@@ -35,60 +53,61 @@
 #' # Basic usage
 #' cross_tab(mtcars, cyl, gear)
 #'
-#' # Row percentages
-#' cross_tab(mtcars, cyl, gear, rowprct = TRUE)
+#' # Pipe-friendly
+#' mtcars |> cross_tab(cyl, gear, by = am)
+#'
+#' # Tidy-style call
+#' cross_tab(mtcars, cyl, gear, by = am, rowprct = TRUE)
 #'
 #' # With weights
 #' cross_tab(mtcars, cyl, gear, weights = mpg)
 #'
-#' # With weight rescaling
+#' # Rescaled weights
 #' cross_tab(mtcars, cyl, gear, weights = mpg, rescale_weights = TRUE)
 #'
-#' # Grouped by a variable
+#' # Stratified by a grouping variable
 #' cross_tab(mtcars, cyl, gear, by = am)
 #'
-#' # Grouped by interaction of variables
+#' # Stratified by interaction of two variables
 #' cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
 #'
 #' # Combined output
 #' cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 #'
-#' # Pipe-friendly
-#' mtcars |> cross_tab(cyl, gear, by = am)
-#'
-#' # Without totals or stats
-#' cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE,
-#' include_stats = FALSE)
-#'
-#' # Univariate usage (x only)
-#' cross_tab(mtcars, x = cyl)
+#' # No totals
+#' cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
 #'
 #' @aliases ctab ct
 #' @export
 
-cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
-                      weights = NULL, rescale_weights = FALSE,
-                      digits = 1, rowprct = FALSE,
-                      row_total = TRUE, column_total = TRUE,
-                      n = TRUE, drop = TRUE, include_stats = TRUE,
-                      combine = FALSE,
-                      file = NULL, ...) {
+cross_tab <- function(
+    d = parent.frame(), x, y = NULL, by = NULL,
+    weights = NULL, rescale_weights = FALSE,
+    digits = 1, rowprct = FALSE,
+    row_total = TRUE, column_total = TRUE,
+    n = TRUE, drop = TRUE, include_stats = TRUE,
+    combine = FALSE
+) {
   is_df <- is.data.frame(d)
+
   x_expr <- substitute(x)
   y_expr <- substitute(y)
   by_expr <- substitute(by)
 
-  gx <- if (missing(y)) deparse(substitute(d)) else deparse(x_expr)
-  gy <- if (missing(y)) deparse(x_expr) else deparse(y_expr)
-  gx <- sub(".*\\$", "", gx)
-  gy <- sub(".*\\$", "", gy)
+  x_label <- if (missing(y)) deparse(substitute(d)) else deparse(x_expr)
+  y_label <- if (missing(y)) deparse(x_expr) else deparse(y_expr)
+  x_label <- sub(".*\\$", "", x_label)
+  y_label <- sub(".*\\$", "", y_label)
 
   if (is_df) {
     x_vals <- eval(x_expr, d)
     y_vals <- if (!missing(y)) eval(y_expr, d) else NULL
     by_vals <- if (!missing(by)) eval(by_expr, d) else NULL
+
     weight_quo <- rlang::enquo(weights)
-    weights_vals <- if (!rlang::quo_is_null(weight_quo)) {
+    no_weights_provided <- rlang::quo_is_null(weight_quo)
+
+    weights_vals <- if (!no_weights_provided) {
       rlang::eval_tidy(weight_quo, d)
     } else {
       rep(1, length(x_vals))
@@ -96,17 +115,28 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
   } else {
     x_vals <- d
     y_vals <- x
-    by_vals <- NULL
+    by_vals <- if (!missing(by)) eval(by_expr, parent.frame()) else NULL
     d <- NULL
     weights_vals <- rep(1, length(x_vals))
+    no_weights_provided <- TRUE
   }
 
-  if (!is.numeric(weights_vals)) stop("`weights` must be numeric.")
-  if (length(weights_vals) != length(x_vals)) stop("`weights` must match length of `x`.")
+  if (!is.numeric(weights_vals)) {
+    stop("`weights` must be numeric.")
+  }
+
+  if (length(weights_vals) != length(x_vals)) {
+    stop("`weights` must match length of `x`.")
+  }
+
   weights_vals[is.na(weights_vals)] <- 0
 
   if (rescale_weights) {
-    weights_vals <- weights_vals * length(weights_vals) / sum(weights_vals, na.rm = TRUE)
+    if (no_weights_provided) {
+      warning("`rescale_weights = TRUE` has no effect since no weights were provided.")
+    } else {
+      weights_vals <- weights_vals * length(weights_vals) / sum(weights_vals, na.rm = TRUE)
+    }
   }
 
   compute_ctab <- function(x_sub, y_sub, w_sub, group_label = NULL, group_var = NULL) {
@@ -118,7 +148,7 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
 
     if (is.null(dim(tab)) || length(dim(tab)) < 2) {
       tab <- as.table(matrix(tab, ncol = 1))
-      colnames(tab) <- gy
+      colnames(tab) <- y_label
       rownames(tab) <- unique(x_sub)
     }
 
@@ -170,11 +200,9 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
         eff_row <- rep(NA, ncol(tab_perc))
         names(eff_row) <- names(tab_perc)
         eff_row[1:length(eff)] <- eff
-
         if (column_total && "Row_Total" %in% names(eff_row)) {
           eff_row["Row_Total"] <- sum(eff, na.rm = TRUE)
         }
-
         tab_perc <- rbind(tab_perc, eff_row)
         rownames(tab_perc)[nrow(tab_perc)] <- "N"
       }
@@ -189,11 +217,15 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
 
     if (rowprct && row_total && column_total) {
       last_row <- nrow(tab_perc)
-      if (rownames(tab_perc)[last_row] == "Column_Total" &&
-          "Row_Total" %in% names(tab_perc)) {
-        row_vals <- suppressWarnings(as.numeric(tab_perc[last_row, names(tab_perc) != "Row_Total"]))
-        total_row_sum <- sum(row_vals, na.rm = TRUE)
-        tab_perc[last_row, "Row_Total"] <- format(round(total_row_sum, digits), nsmall = digits)
+      last_row_name <- rownames(tab_perc)[last_row]
+      if (last_row_name == "Column_Total" && "Row_Total" %in% names(tab_perc)) {
+        data_rows <- rownames(tab)
+        row_total_vals <- rowSums(tab[data_rows, , drop = FALSE], na.rm = TRUE)
+        grand_total <- sum(tab)
+        row_weights <- row_total_vals / grand_total
+        row_props <- sweep(tab[data_rows, , drop = FALSE], 1, row_total_vals, FUN = "/") * 100
+        col_total_prop <- colSums(row_props * row_weights, na.rm = TRUE)
+        tab_perc[last_row, "Row_Total"] <- format(round(sum(col_total_prop), digits), nsmall = digits)
       }
     }
 
@@ -206,21 +238,21 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
       cramer <- sqrt(chi2 / (total_n * min(nrow(tab) - 1, ncol(tab) - 1)))
       note <- paste0(
         "Chi-2 = ", round(chi2, 1), " (df = ", df, "), ",
-        ifelse(pval < 0.001, "p < 0.001", paste("p =", format(pval, digits = 3, nsmall = 3))),
-        "\nCramer's V = ", round(cramer, 2)
+        ifelse(pval < 0.001,
+               "p < 0.001",
+               paste0("p = ", format(pval, digits = 3, nsmall = 3))),
+        ", Cramer's V = ", round(cramer, 2)
       )
     } else if (include_stats) {
       note <- "Chi-squared test not applicable (table too small)."
     }
 
-    title <- paste0(
-      "Crosstable: ", gx, " x ", gy,
-      if (!is.null(group_label)) paste0(" | ", group_label), " (%)"
-    )
+    title <- paste0("Crosstable: ", x_label, " x ", y_label,
+                    if (!is.null(group_label)) paste0(" | ", group_label), " (%)")
 
     res <- tibble::rownames_to_column(tab_perc, var = "Values")
     attr(res, "title") <- title
-    attr(res, "note") <- note
+    if (!is.null(note)) attr(res, "note") <- note
     attr(res, "by_level") <- group_label
     attr(res, "by_var") <- group_var
     class(res) <- c("spicy", class(res))
@@ -295,10 +327,8 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
       all_cols <- c(
         "Values",
         sorted_data_cols,
-        intersect(
-          c("Row_Total", "Column_Total", "N", "by"),
-          unique(unlist(lapply(result_list, names)))
-        )
+        intersect(c("Row_Total", "Column_Total", "N", "by"),
+                  unique(unlist(lapply(result_list, names))))
       )
 
       result_list_aligned <- lapply(result_list, function(df) {
@@ -312,8 +342,22 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
 
       out <- do.call(rbind, result_list_aligned)
       rownames(out) <- NULL
-      attr(out, "title") <- paste0("Crosstable: ", gx, " x ", gy, " by ", group_var)
-      attr(out, "note") <- NULL
+      attr(out, "title") <- paste0("Crosstable: ", x_label, " x ", y_label, " by ", group_var)
+
+      notes <- mapply(function(tab, name) {
+        note <- attr(tab, "note")
+        if (!is.null(note)) paste0(name, ": ", note) else NULL
+      }, result_list, names(result_list), USE.NAMES = FALSE)
+
+      notes <- notes[!is.na(notes)]
+      if (length(notes)) {
+        attr(out, "note") <- paste(notes, collapse = "\n")
+      }
+
+      if (!include_stats) {
+        attr(out, "note") <- NULL
+      }
+
       class(out) <- c("spicy", class(out))
       return(out)
     }
@@ -321,8 +365,13 @@ cross_tab <- function(d = parent.frame(), x, y = NULL, by = NULL,
     return(result_list)
   }
 
+  if (combine && is.null(by_vals)) {
+    warning("`combine = TRUE` is only relevant when a grouping variable is provided via `by`. Proceeding without combining.")
+  }
+
   return(compute_ctab(x_vals, y_vals, weights_vals))
 }
+
 
 ctab <- function(...) cross_tab(...)
 ct <- function(...) cross_tab(...)
