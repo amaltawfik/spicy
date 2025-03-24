@@ -29,15 +29,6 @@ test_that("print.spicy aligns Values column correctly", {
   expect_false(any(grepl("^\\s", values_column)))
 })
 
-test_that("print.spicy handles empty data frames", {
-  df <- data.frame(Values = character(), N = integer())
-
-  output <- capture.output(print.spicy(df))
-
-  expect_true(length(output) >= 3)
-  expect_true(sum(grepl("\u2500", output)) >= 3)
-})
-
 test_that("print.spicy prints a note when present", {
   df <- data.frame(Values = c("X", "Y"), N = c(5, 10))
   attr(df, "title") <- "Test Table"

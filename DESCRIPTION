@@ -17,6 +17,7 @@ Imports:
     labelled,
     rlang,
     stats,
+    stringi,
     tibble,
     tidyselect,
     utils

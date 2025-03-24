@@ -3,10 +3,20 @@
 
 # spicy
 
+spicy <img src="man/figures/logo.png" align="right" height="138" />
+
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of spicy is to …
+`spicy` adds a dash of heat to data analysis, giving insights a whole
+new flavour!
+
+`spicy` is a R package for producing quick and elegant statistical
+summaries. It is especially useful for exploratory data analysis (EDA),
+teaching and reporting workflows.
+
+It includes enhanced versions of frequency tables and crosstabs with
+support for weights, labels, percentages, and stratification.
 
 ## Installation
 
