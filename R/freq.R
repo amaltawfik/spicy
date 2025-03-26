@@ -219,9 +219,9 @@ freq <- function(
   )
 
   names(result) <- sub("pourc", "%", names(result))
-  names(result) <- sub("valid_%", "Valid_%", names(result))
-  names(result) <- sub("%_cum", "% cum", names(result))
-  names(result) <- sub("Valid_%_cum", "Valid_% cum", names(result))
+  names(result) <- sub("valid_%", "Valid%", names(result))
+  names(result) <- sub("%_cum", "%cum", names(result))
+  names(result) <- sub("Valid_%_cum", "Valid%cum", names(result))
 
   rownames(result) <- NULL
 
