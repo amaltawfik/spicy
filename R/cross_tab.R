@@ -358,7 +358,7 @@ cross_tab <- function(
         attr(out, "note") <- NULL
       }
 
-      class(out) <- c("spicy", class(out))
+      class(out) <- unique(c("spicy", class(out)))
       return(out)
     }
 
