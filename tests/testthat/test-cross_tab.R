@@ -43,7 +43,7 @@ test_that("cross_tab works with group 'by' and combine = TRUE", {
   combined <- cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 
   expect_s3_class(combined, "spicy")
-  expect_true("by" %in% colnames(combined))
+  expect_true("am" %in% colnames(combined))
   expect_true(any(grepl("Chi-2", attr(combined, "note"))))
 })
 
@@ -107,5 +107,5 @@ test_that("cross_tab handles interaction in 'by'", {
   out <- cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
 
   expect_s3_class(out, "spicy")
-  expect_true("by" %in% colnames(out))
+  expect_true("interaction(am, vs)" %in% colnames(out))
 })

@@ -248,7 +248,7 @@ cross_tab <- function(
     }
 
     title <- paste0("Crosstable: ", x_label, " x ", y_label,
-                    if (!is.null(group_label)) paste0(" | ", group_label), " (%)")
+                    if (!is.null(group_label)) paste0(" | ", group_var, " = ", group_label), " (%)")
 
     res <- tibble::rownames_to_column(tab_perc, var = "Values")
     attr(res, "title") <- title
@@ -258,7 +258,7 @@ cross_tab <- function(
     class(res) <- c("spicy", class(res))
 
     if (!is.null(group_label) && combine) {
-      res$by <- group_label
+      res[[group_var]] <- group_label
     }
 
     return(res)
@@ -266,6 +266,7 @@ cross_tab <- function(
 
   if (!is.null(by_vals)) {
     group_var <- deparse(by_expr)
+    group_var <- sub(".*\\$", "", group_var)
 
     if (inherits(by_vals, "interaction")) {
       by_vars <- attr(by_vals, "vars")
@@ -341,12 +342,16 @@ cross_tab <- function(
       })
 
       out <- do.call(rbind, result_list_aligned)
+
+      col_order <- c(setdiff(names(out), group_var), group_var)
+      out <- out[, col_order]
+
       rownames(out) <- NULL
       attr(out, "title") <- paste0("Crosstable: ", x_label, " x ", y_label, " by ", group_var)
 
       notes <- mapply(function(tab, name) {
         note <- attr(tab, "note")
-        if (!is.null(note)) paste0(name, ": ", note) else NULL
+        if (!is.null(note)) paste0("[", group_var, " = ", name, "] ", note) else NULL
       }, result_list, names(result_list), USE.NAMES = FALSE)
 
       notes <- notes[!is.na(notes)]
@@ -359,6 +364,11 @@ cross_tab <- function(
       }
 
       class(out) <- unique(c("spicy", class(out)))
+
+      for (i in seq_along(result_list_aligned)) {
+        result_list_aligned[[i]][[group_var]] <- names(result_list_aligned)[i]
+      }
+
       return(out)
     }
 
