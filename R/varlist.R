@@ -18,6 +18,7 @@
 #' - `Variable`: variable names
 #' - `Label`: variable labels (if available)
 #' - `Values`: summary of values (min/max or all unique)
+#'   For `haven_labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
 #' - `Class`: data type(s)
 #' - `Ndist_val`: number of distinct non-missing values
 #' - `N_valid`: number of non-missing observations
@@ -41,11 +42,9 @@
 #' iris |> varlist(starts_with("Sepal"), tbl = TRUE)
 #' varlist(head(mtcars), tbl = TRUE)
 #' varlist(mtcars, tbl = TRUE)
-#' varlist(iris[ , 1:3], tbl = TRUE)
+#' varlist(iris[, 1:3], tbl = TRUE)
 #' varlist(mtcars[1:10, ], tbl = TRUE)
-
 varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
-
   raw_expr <- substitute(x)
 
   if (!is.data.frame(x)) {
@@ -70,7 +69,9 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
       NAs        = integer()
     )
 
-    if (tbl) return(res)
+    if (tbl) {
+      return(res)
+    }
 
     if (interactive()) {
       tryCatch(
@@ -91,22 +92,29 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
   x <- x[selectors]
 
   res <- list(
-    Variable   = names(x),
-    Label      = vapply(x, function(col) {
-      lbl <- attr(col, "label")
-      if (is.null(lbl)) NA_character_ else as.character(lbl)
+    Variable = names(x),
+    Label = vapply(x, function(col) {
+      lbl <- attributes(col)[["label"]]
+
+      if (is.null(lbl)) {
+        return(NA_character_)
+      } else {
+        return(as.character(lbl))
+      }
     }, character(1)),
-    Class      = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
-    Ndist_val  = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
-    N_valid    = vapply(x, function(col) sum(!is.na(col)), integer(1)),
-    NAs        = vapply(x, function(col) sum(is.na(col)), integer(1))
+    Class = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
+    Ndist_val = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
+    N_valid = vapply(x, function(col) sum(!is.na(col)), integer(1)),
+    NAs = vapply(x, function(col) sum(is.na(col)), integer(1))
   )
 
-  res$Values <- if (values) {
-    vapply(x, summarize_values_all, character(1))
-  } else {
-    vapply(x, summarize_values_minmax, character(1))
-  }
+  res$Values <- vapply(x, function(col) {
+    if (values) {
+      summarize_values_all(col)
+    } else {
+      summarize_values_minmax(col)
+    }
+  }, character(1))
 
   res <- tibble::as_tibble(res[c("Variable", "Label", "Values", "Class", "Ndist_val", "N_valid", "NAs")])
 
@@ -130,6 +138,7 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
   invisible(NULL)
 }
 
+
 varlist_title <- function(expr, selectors_used = FALSE) {
   label <- tryCatch(deparse(expr), error = function(e) NULL)
 
@@ -152,7 +161,6 @@ varlist_title <- function(expr, selectors_used = FALSE) {
         first_sym <- as.character(arg)
         break
       } else if (is.call(arg) && is.symbol(arg[[1]])) {
-        # ex: log(iris + 1) → récupère iris
         inner <- as.list(arg)[-1]
         for (sub_arg in inner) {
           if (is.symbol(sub_arg)) {
@@ -171,12 +179,17 @@ varlist_title <- function(expr, selectors_used = FALSE) {
   stop("varlist() requires a named data frame or a transformation of one.", call. = FALSE)
 }
 
-
-
-
 summarize_values_minmax <- function(col) {
   na_omit_col <- stats::na.omit(col)
-  if (length(na_omit_col) == 0) return("Full NA")
+  if (length(na_omit_col) == 0) {
+    return("Full NA")
+  }
+
+  if (inherits(col, "haven_labelled")) {
+    col <- labelled::to_factor(col, levels = "prefixed")
+    unique_vals <- unique(col)
+    return(paste0(unique_vals[1], " ... ", unique_vals[length(unique_vals)]))
+  }
 
   if (is.factor(col)) {
     return(paste(levels(col), collapse = ", "))
@@ -187,16 +200,24 @@ summarize_values_minmax <- function(col) {
   } else {
     unique_sorted <- sort(unique(na_omit_col))
     if (length(unique_sorted) > 2) {
-      paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1))
+      return(paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1)))
     } else {
-      paste(unique_sorted, collapse = ", ")
+      return(paste(unique_sorted, collapse = ", "))
     }
   }
 }
 
 summarize_values_all <- function(col) {
   na_omit_col <- stats::na.omit(col)
-  if (length(na_omit_col) == 0) return("Full NA")
+  if (length(na_omit_col) == 0) {
+    return("Full NA")
+  }
+
+  # Si haven_labelled, on convertit en facteur et concatène les valeurs
+  if (inherits(col, "haven_labelled")) {
+    col <- labelled::to_factor(col, levels = "prefixed")
+    return(paste(unique(col), collapse = ", "))
+  }
 
   if (is.factor(col)) {
     return(paste(sort(levels(col)), collapse = ", "))

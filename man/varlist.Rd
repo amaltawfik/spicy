@@ -24,6 +24,7 @@ A tibble with variable metadata:
 \item \code{Variable}: variable names
 \item \code{Label}: variable labels (if available)
 \item \code{Values}: summary of values (min/max or all unique)
+For \code{haven_labelled} variables, the \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
 \item \code{Class}: data type(s)
 \item \code{Ndist_val}: number of distinct non-missing values
 \item \code{N_valid}: number of non-missing observations
@@ -48,6 +49,6 @@ vl(iris)
 iris |> varlist(starts_with("Sepal"), tbl = TRUE)
 varlist(head(mtcars), tbl = TRUE)
 varlist(mtcars, tbl = TRUE)
-varlist(iris[ , 1:3], tbl = TRUE)
+varlist(iris[, 1:3], tbl = TRUE)
 varlist(mtcars[1:10, ], tbl = TRUE)
 }
