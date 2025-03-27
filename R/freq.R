@@ -25,7 +25,7 @@
 #'   - `"prefixed"` (default): Show labels as `[value] label`
 #'   - `"labels"`: Show only the label
 #'   - `"values"`: Show only the underlying value
-#'
+#' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
 #' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
 #'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
 #'   - If `cum = TRUE`, cumulative frequencies (`%_cum`) are included.
@@ -61,7 +61,8 @@ freq <- function(
     na_val = NULL,
     rescale_weights = FALSE,
     info = TRUE,
-    labelled_levels = c("prefixed", "labels", "values")
+    labelled_levels = c("prefixed", "labels", "values"),
+    ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
 

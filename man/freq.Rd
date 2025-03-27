@@ -18,7 +18,8 @@ freq(
   na_val = NULL,
   rescale_weights = FALSE,
   info = TRUE,
-  labelled_levels = c("prefixed", "labels", "values")
+  labelled_levels = c("prefixed", "labels", "values"),
+  ...
 )
 }
 \arguments{
@@ -60,6 +61,8 @@ Matrices are not supported; please extract a column or convert to a vector or ti
 \item \code{"labels"}: Show only the label
 \item \code{"values"}: Show only the underlying value
 }}
+
+\item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
 }
 \value{
 A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}) and percentages (\verb{\%}).
