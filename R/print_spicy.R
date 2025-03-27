@@ -20,50 +20,44 @@
 
 print.spicy <- function(x, ...) {
   df <- as.data.frame(x)
-
-  # Convertir toutes les colonnes en caractère
   df[] <- lapply(df, as.character)
 
-  # Déterminer la largeur maximale de chaque colonne (y compris l'en-tête)
-  col_widths <- sapply(df, function(col) max(nchar(c(col, names(df))), na.rm = TRUE))
+  col_widths <- sapply(df, function(col) max(nchar(c(col, names(df)), type = "width"), na.rm = TRUE))
 
-  # Appliquer l'alignement aux valeurs
-  df[] <- Map(function(col, idx) {
-    col_chr <- as.character(col)  # Conversion explicite en texte
-    width <- col_widths[idx]  # Largeur max pour cette colonne
-
-    # 1ère colonne à gauche, les autres à droite
-    if (idx == 1) {
-      str_pad(col_chr, width, side = "right")  # Gauche
-    } else {
-      str_pad(col_chr, width, side = "left")   # Droite
-    }
-  }, df, seq_along(df))
-
-  # Appliquer l'alignement aux noms de colonnes aussi !
-  colnames(df) <- Map(function(name, idx) {
+  df[] <- lapply(seq_along(df), function(idx) {
+    col_chr <- df[[idx]]
     width <- col_widths[idx]
     if (idx == 1) {
-      str_pad(name, width, side = "right")  # Gauche
+      stringr::str_pad(col_chr, width, side = "right")
     } else {
-      str_pad(name, width, side = "left")   # Droite
+      stringr::str_pad(col_chr, width, side = "left")
     }
-  }, colnames(df), seq_along(df))
+  })
 
-  # Capturer l'affichage formaté
+  colnames(df) <- sapply(seq_along(df), function(idx) {
+    width <- col_widths[idx]
+    if (idx == 1) {
+      stringr::str_pad(colnames(df)[idx], width, side = "right")
+    } else {
+      stringr::str_pad(colnames(df)[idx], width, side = "left")
+    }
+  })
+
   table_lines <- utils::capture.output(print(df, row.names = FALSE))
-  line_width <- max(nchar(table_lines), na.rm = TRUE)
+  line_width <- max(nchar(table_lines, type = "width"), na.rm = TRUE)
   line_sep <- strrep("\u2500", line_width)
 
-  # Affichage final
-  writeLines(c(attr(x, "title"), line_sep, table_lines[1], line_sep))
+  title <- attr(x, "title")
+  note <- attr(x, "note")
+
+  if (!is.null(title)) writeLines(title)
+  writeLines(line_sep)
+  writeLines(table_lines[1])
+  writeLines(line_sep)
   writeLines(table_lines[-1])
   writeLines(line_sep)
 
-  # Afficher la note si elle existe
-  if (!is.null(attr(x, "note"))) {
-    writeLines(attr(x, "note"))
-  }
+  if (!is.null(note)) writeLines(note)
 
   invisible(x)
 }
