@@ -26,7 +26,8 @@
 #' @param drop Logical. If `TRUE`, drops empty rows or columns (default `TRUE`).
 #' @param include_stats Logical. If `TRUE`, includes Chi-squared test and Cramer's V when possible (default `TRUE`).
 #' @param combine Logical. If `TRUE`, combines all stratified tables into one tibble with a `by` column.
-#'
+#' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
+
 #' @return A tibble of class `spicy`, or a list of such tibbles if `combine = FALSE` and `by` is used.
 #'
 #' @section Warnings and Errors:
@@ -86,7 +87,8 @@ cross_tab <- function(
     digits = 1, rowprct = FALSE,
     row_total = TRUE, column_total = TRUE,
     n = TRUE, drop = TRUE, include_stats = TRUE,
-    combine = FALSE
+    combine = FALSE,
+    ...
 ) {
   is_df <- is.data.frame(d)
 

@@ -20,7 +20,8 @@ cross_tab(
   n = TRUE,
   drop = TRUE,
   include_stats = TRUE,
-  combine = FALSE
+  combine = FALSE,
+  ...
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ cross_tab(
 \item{include_stats}{Logical. If \code{TRUE}, includes Chi-squared test and Cramer's V when possible (default \code{TRUE}).}
 
 \item{combine}{Logical. If \code{TRUE}, combines all stratified tables into one tibble with a \code{by} column.}
+
+\item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
 }
 \value{
 A tibble of class \code{spicy}, or a list of such tibbles if \code{combine = FALSE} and \code{by} is used.
