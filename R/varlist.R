@@ -18,7 +18,7 @@
 #' - `Variable`: variable names
 #' - `Label`: variable labels (if available)
 #' - `Values`: summary of values (min/max or all unique)
-#'   For `haven_labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
+#'   For `labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
 #' - `Class`: data type(s)
 #' - `Ndist_val`: number of distinct non-missing values
 #' - `N_valid`: number of non-missing observations
@@ -27,6 +27,8 @@
 #' If `tbl = FALSE` and used interactively, the summary is displayed in the Viewer pane.
 #' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `VARLIST iris*`).
 #'
+#' @importFrom labelled is.labelled
+#' @importFrom labelled to_factor
 #' @importFrom tibble as_tibble view
 #' @importFrom tidyselect eval_select everything
 #' @importFrom rlang expr
@@ -185,7 +187,7 @@ summarize_values_minmax <- function(col) {
     return("Full NA")
   }
 
-  if (inherits(col, "haven_labelled")) {
+  if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
     unique_vals <- unique(col)
     return(paste0(unique_vals[1], " ... ", unique_vals[length(unique_vals)]))
@@ -213,8 +215,7 @@ summarize_values_all <- function(col) {
     return("Full NA")
   }
 
-  # Si haven_labelled, on convertit en facteur et concatène les valeurs
-  if (inherits(col, "haven_labelled")) {
+  if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
     return(paste(unique(col), collapse = ", "))
   }
