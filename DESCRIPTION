@@ -18,6 +18,7 @@ Imports:
     rlang,
     stats,
     stringi,
+    stringr,
     tibble,
     tidyselect,
     utils

@@ -18,6 +18,7 @@
 #' @importFrom stats na.omit
 #' @importFrom stats xtabs
 #' @importFrom stringi stri_width
+#' @importFrom stringr str_pad
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column
 #' @importFrom tibble view

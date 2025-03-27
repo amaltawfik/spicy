@@ -1,13 +1,16 @@
-#' Three-Line Table
+#' Print a Formatted Data Frame with Aligned Columns
 #'
-#' `print.spicy()` prints any data frame as a three-line table with horizontal separators. Used in other functions of `spicy`
+#' `print.spicy()` prints a data frame with properly aligned columns, following a structured three-line table format.
+#' The first column is left-aligned, while all other columns are right-aligned. Column widths are dynamically adjusted
+#' based on the longest value in each column.
 #'
-#' @param x A data frame, matrix, array (2d) or table
-#' @param ... Additional arguments
+#' @param x A data frame, matrix, array (2D), or table.
+#' @param ... Additional arguments (not used).
 #'
-#' @returns Invisibly returns `x`, after printing its formatted content.
+#' @returns Invisibly returns `x` after displaying its formatted content.
+#'
 #' @importFrom utils capture.output
-#' @importFrom stringi stri_width
+#' @importFrom stringr str_pad
 #' @export
 #'
 #' @examples
@@ -18,43 +21,48 @@
 print.spicy <- function(x, ...) {
   df <- as.data.frame(x)
 
-  if ("Values" %in% names(df)) {
-    values_chr <- as.character(df$Values)
+  # Convertir toutes les colonnes en caractère
+  df[] <- lapply(df, as.character)
 
-    # Largeur réelle d'affichage
-    display_width <- stringi::stri_width(values_chr)
-    max_width <- max(display_width, na.rm = TRUE)
+  # Déterminer la largeur maximale de chaque colonne (y compris l'en-tête)
+  col_widths <- sapply(df, function(col) max(nchar(c(col, names(df))), na.rm = TRUE))
 
-    # Aligner à gauche selon largeur réelle
-    pad_right <- function(s, width) {
-      padding <- width - stringi::stri_width(s)
-      paste0(s, strrep(" ", padding))
+  # Appliquer l'alignement aux valeurs
+  df[] <- Map(function(col, idx) {
+    col_chr <- as.character(col)  # Conversion explicite en texte
+    width <- col_widths[idx]  # Largeur max pour cette colonne
+
+    # 1ère colonne à gauche, les autres à droite
+    if (idx == 1) {
+      str_pad(col_chr, width, side = "right")  # Gauche
+    } else {
+      str_pad(col_chr, width, side = "left")   # Droite
     }
+  }, df, seq_along(df))
 
-    df$Values <- vapply(
-      values_chr,
-      pad_right,
-      character(1),
-      width = max_width
-    )
-  }
+  # Appliquer l'alignement aux noms de colonnes aussi !
+  colnames(df) <- Map(function(name, idx) {
+    width <- col_widths[idx]
+    if (idx == 1) {
+      str_pad(name, width, side = "right")  # Gauche
+    } else {
+      str_pad(name, width, side = "left")   # Droite
+    }
+  }, colnames(df), seq_along(df))
 
+  # Capturer l'affichage formaté
   table_lines <- utils::capture.output(print(df, row.names = FALSE))
-
   line_width <- max(nchar(table_lines), na.rm = TRUE)
   line_sep <- strrep("\u2500", line_width)
 
-  cat(attr(x, "title"), "\n")
-  cat(line_sep, "\n")
-  cat(table_lines[1], "\n")
-  cat(line_sep, "\n")
-  for (i in 2:length(table_lines)) {
-    cat(table_lines[i], "\n")
-  }
-  cat(line_sep, "\n")
+  # Affichage final
+  writeLines(c(attr(x, "title"), line_sep, table_lines[1], line_sep))
+  writeLines(table_lines[-1])
+  writeLines(line_sep)
 
+  # Afficher la note si elle existe
   if (!is.null(attr(x, "note"))) {
-    cat(attr(x, "note"), "\n")
+    writeLines(attr(x, "note"))
   }
 
   invisible(x)

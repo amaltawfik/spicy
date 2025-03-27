@@ -2,20 +2,22 @@
 % Please edit documentation in R/print_spicy.R
 \name{print.spicy}
 \alias{print.spicy}
-\title{Three-Line Table}
+\title{Print a Formatted Data Frame with Aligned Columns}
 \usage{
 \method{print}{spicy}(x, ...)
 }
 \arguments{
-\item{x}{A data frame, matrix, array (2d) or table}
+\item{x}{A data frame, matrix, array (2D), or table.}
 
-\item{...}{Additional arguments}
+\item{...}{Additional arguments (not used).}
 }
 \value{
-Invisibly returns \code{x}, after printing its formatted content.
+Invisibly returns \code{x} after displaying its formatted content.
 }
 \description{
-\code{print.spicy()} prints any data frame as a three-line table with horizontal separators. Used in other functions of \code{spicy}
+\code{print.spicy()} prints a data frame with properly aligned columns, following a structured three-line table format.
+The first column is left-aligned, while all other columns are right-aligned. Column widths are dynamically adjusted
+based on the longest value in each column.
 }
 \examples{
 \dontrun{
