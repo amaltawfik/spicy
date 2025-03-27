@@ -17,7 +17,7 @@ Invisibly returns \code{x} after displaying its formatted content.
 \description{
 \code{print.spicy()} prints a data frame with properly aligned columns, following a structured three-line table format.
 The first column is left-aligned, while all other columns are right-aligned. Column widths are dynamically adjusted
-based on the longest value in each column.
+based on the longest value in each column, including column names.
 }
 \examples{
 \dontrun{
