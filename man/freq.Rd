@@ -19,6 +19,7 @@ freq(
   rescale_weights = FALSE,
   info = TRUE,
   labelled_levels = c("prefixed", "labels", "values"),
+  styled = TRUE,
   ...
 )
 }
@@ -61,6 +62,10 @@ Matrices are not supported; please extract a column or convert to a vector or ti
 \item \code{"labels"} or \code{"l"}: Show only the label
 \item \code{"values"} or \code{"v"}: Show only the underlying value
 }}
+
+\item{styled}{Logical. If \code{TRUE} (default), formats the output using \code{print.spicy()},
+which aligns columns dynamically in a structured three-line table. If \code{FALSE}, returns a standard \code{data.frame}
+without formatting.}
 
 \item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
 }

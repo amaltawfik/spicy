@@ -25,6 +25,9 @@
 #'   - `"prefixed"` or `"p"` (default): Show labels as `[value] label`
 #'   - `"labels"` or `"l"`: Show only the label
 #'   - `"values"` or `"v"`: Show only the underlying value
+#' @param styled Logical. If `TRUE` (default), formats the output using `print.spicy()`,
+#'   which aligns columns dynamically in a structured three-line table. If `FALSE`, returns a standard `data.frame`
+#'   without formatting.
 #' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
 #' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
 #'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
@@ -75,6 +78,7 @@ freq <- function(
     rescale_weights = FALSE,
     info = TRUE,
     labelled_levels = c("prefixed", "labels", "values"),
+    styled = TRUE,
     ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
@@ -247,7 +251,9 @@ freq <- function(
     attr(result, "note") <- note
   }
 
-  class(result) <- c("spicy", class(result))
+  if (styled) {
+    class(result) <- c("spicy", class(result))
+  }
 
   result$Values <- format(as.character(result$Values), justify = "left")
 
