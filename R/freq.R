@@ -21,10 +21,10 @@
 #' @param na_val Character or numeric. For factors, character or numeric vectors, values to be treated as `NA`.
 #' @param rescale_weights Logical. If `FALSE` (the default), do not rescale weights. If `TRUE`, the total count will be the same as the unweighted `x`.
 #' @param info Logical. If `TRUE` (the default), print a title and a note (label and class of `x`, variable weight, dataframe name) information about the model (model formula, number of observations, residual standard deviation and more).
-#' @param labelled_levels For `haven_labelled` variables, controls how values are displayed:
-#'   - `"prefixed"` (default): Show labels as `[value] label`
-#'   - `"labels"`: Show only the label
-#'   - `"values"`: Show only the underlying value
+#' @param labelled_levels For `labelled` variables, controls how values are displayed using `labelled::to_factor(levels = "prefixed")`:
+#'   - `"prefixed"` or `"p"` (default): Show labels as `[value] label`
+#'   - `"labels"` or `"l"`: Show only the label
+#'   - `"values"` or `"v"`: Show only the underlying value
 #' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
 #' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
 #'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
@@ -89,8 +89,8 @@ freq <- function(
     x <- data
   }
 
-  if (!is.null(attr(data, "label"))) {
-    attr(x, "label") <- attr(data, "label")
+  if (!is.null(attributes(data)[["label"]] )) {
+    attributes(x)[["label"]]  <- attributes(data)[["label"]]
   }
 
   if (is.matrix(x)) {
@@ -106,14 +106,24 @@ freq <- function(
     warning("No weighting variable specified. 'rescale_weights' will have no effect.")
   }
 
+  note <- paste0(
+    if (!is.null(attributes(x)[["label"]] )) paste0("Label: ", attributes(x)[["label"]] , "\n") else "",
+    "Class: ", paste(class(x), collapse = ", "), "\n",
+    "Data: ", data_name, "\n",
+    if (!is.null(weight_name)) paste0("Weight: ", weight_name, "\n") else ""
+  )
+
   if (!is.null(na_val)) {
     x[x %in% na_val] <- NA
   }
 
+  default_labelled_levels <- if (labelled::is.labelled(x)) "prefixed" else NULL
+  labelled_levels <- match.arg(labelled_levels)
+
   if (labelled::is.labelled(x)) {
-    lbl <- attr(x, "label")
+    lbl <- attributes(x)[["label"]]
     if (!is.null(lbl) && (!is.character(lbl) || length(lbl) != 1)) {
-      attr(x, "label") <- NULL
+      attributes(x)[["label"]]  <- NULL
     }
     x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   }
@@ -125,13 +135,6 @@ freq <- function(
   if (!is.factor(x)) {
     x <- factor(x, exclude = exclude)
   }
-
-  note <- paste0(
-    if (!is.null(attr(x, "label"))) paste0("Label: ", attr(x, "label"), "\n") else "",
-    "Class: ", paste(class(x), collapse = ", "), "\n",
-    "Data: ", data_name, "\n",
-    if (!is.null(weight_name)) paste0("Weight: ", weight_name, "\n") else ""
-  )
 
   has_decimal <- FALSE
   if (!is.null(weights)) {

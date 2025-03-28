@@ -55,11 +55,11 @@ Matrices are not supported; please extract a column or convert to a vector or ti
 
 \item{info}{Logical. If \code{TRUE} (the default), print a title and a note (label and class of \code{x}, variable weight, dataframe name) information about the model (model formula, number of observations, residual standard deviation and more).}
 
-\item{labelled_levels}{For \code{haven_labelled} variables, controls how values are displayed:
+\item{labelled_levels}{For \code{labelled} variables, controls how values are displayed using \code{labelled::to_factor(levels = "prefixed")}:
 \itemize{
-\item \code{"prefixed"} (default): Show labels as \verb{[value] label}
-\item \code{"labels"}: Show only the label
-\item \code{"values"}: Show only the underlying value
+\item \code{"prefixed"} or \code{"p"} (default): Show labels as \verb{[value] label}
+\item \code{"labels"} or \code{"l"}: Show only the label
+\item \code{"values"} or \code{"v"}: Show only the underlying value
 }}
 
 \item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
