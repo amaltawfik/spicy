@@ -20,6 +20,7 @@ freq(
   info = TRUE,
   labelled_levels = c("prefixed", "labels", "values"),
   styled = TRUE,
+  show_empty_levels = FALSE,
   ...
 )
 }
@@ -66,6 +67,8 @@ Matrices are not supported; please extract a column or convert to a vector or ti
 \item{styled}{Logical. If \code{TRUE} (default), formats the output using \code{print.spicy()},
 which aligns columns dynamically in a structured three-line table. If \code{FALSE}, returns a standard \code{data.frame}
 without formatting.}
+
+\item{show_empty_levels}{Logical. If \code{FALSE} (default), factor levels with \code{N = 0} are removed from the output. Set to \code{TRUE} to retain all levels, even those with no observations.}
 
 \item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
 }

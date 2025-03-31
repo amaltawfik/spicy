@@ -28,6 +28,7 @@
 #' @param styled Logical. If `TRUE` (default), formats the output using `print.spicy()`,
 #'   which aligns columns dynamically in a structured three-line table. If `FALSE`, returns a standard `data.frame`
 #'   without formatting.
+#' @param show_empty_levels Logical. If `FALSE` (default), factor levels with `N = 0` are removed from the output. Set to `TRUE` to retain all levels, even those with no observations.
 #' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
 #' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
 #'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
@@ -80,6 +81,7 @@ freq <- function(
     info = TRUE,
     labelled_levels = c("prefixed", "labels", "values"),
     styled = TRUE,
+    show_empty_levels = FALSE,
     ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
@@ -229,6 +231,15 @@ freq <- function(
     total_row <- total_row[names(result)]
 
     result <- rbind(result, total_row)
+  }
+
+  if (!show_empty_levels) {
+    n_before <- nrow(result)
+    result <- result[!(result$N == 0 & result$Values != "Total"), ]
+    n_after <- nrow(result)
+    if (n_after < n_before && info) {
+      message(n_before - n_after, " empty level(s) removed (N = 0).")
+    }
   }
 
   n_digits <- if (!is.null(weights) && (rescale_weights || has_decimal)) 2 else 0
