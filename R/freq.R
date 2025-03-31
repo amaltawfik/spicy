@@ -40,6 +40,7 @@
 #' @importFrom rlang eval_tidy
 #' @importFrom rlang quo_is_null
 #' @importFrom stats na.omit
+#' @importFrom stats xtabs
 #' @export
 #'
 #' @examples
@@ -171,7 +172,7 @@ freq <- function(
     weights <- rep(1, length(x))
   }
 
-  tab <- tapply(weights, x, sum, na.rm = TRUE)
+  tab <- stats::xtabs(weights ~ x, addNA = TRUE)
 
   result <- data.frame(
     Values = names(tab),
@@ -181,7 +182,7 @@ freq <- function(
   result$pourc <- (result$N / sum(result$N)) * 100
 
   if (valid) {
-    na_indices <- which(is.na(levels(x)))
+    na_indices <- which(result$Values %in% c(NA, "<NA>"))
     n_na <- sum(result$N[na_indices], na.rm = TRUE)
     result$valid_pourc <- (result$N / (sum(result$N) - n_na)) * 100
     result$valid_pourc[na_indices] <- NA
