@@ -62,42 +62,59 @@ This function is inspired by \code{datawizard::row_count()}, but provides additi
 \item \strong{Detection of special values} such as \code{NA}, \code{NaN}, \code{Inf}, and \code{-Inf} through the \code{special} argument — a feature not available in \code{row_count()}.
 \item \strong{Tidyverse-native behavior}: can be used inside \code{mutate()} without explicitly passing a \code{data} argument.
 }
-\subsection{Value coercion behavior:}{
+\subsection{Value coercion behavior}{
 
 R automatically coerces mixed-type vectors passed to \code{count} into a common type.
-For example, \code{count = c(2, "2")} is interpreted as \code{c("2", "2")} because R converts numeric and character values to a unified type.
+For example, \code{count = c(2, "2")} becomes \code{c("2", "2")}, because R converts numeric and character values to a unified type.
 This means that mixed-type checks are not possible at runtime once \code{count} is passed to the function.
 To ensure accurate type-sensitive matching, users should avoid mixing types in \code{count} explicitly.
 }
 
-\subsection{Strict type-safe mode (\code{allow_coercion = FALSE}):}{
+\subsection{Strict matching mode (\code{allow_coercion = FALSE})}{
 
-When \code{allow_coercion = FALSE}, each value in \code{count} must match the type of the data column exactly.
-For factor variables, the \code{count} argument must also be a factor (not a character string).
+When strict matching is enabled, each value in \code{count} must match the type of the target column exactly.
 
-Important: Even if a manually created factor appears to match a column value (e.g., \code{factor("b")}),
-it may fail strict comparison if its levels differ from those in the data.
-This is because \code{identical()} considers both the value \emph{and} the levels.
+For factor columns, this means that \code{count} must also be a factor. Supplying \code{count = "b"} (a character string) will not match a factor value, even if the label appears identical.
 
-Best practice: reuse an existing factor value from your dataset (e.g., \code{df$x[2]}) to ensure a perfect match.
-\subsection{Example: type-safe factor matching across columns}{
+A common and intuitive approach is to use \code{count = factor("b")}, which works in many cases. However, \code{identical()} — used internally for strict comparisons — also checks the internal structure of the factor, including the order and content of its levels.
+As a result, comparisons may still fail if the levels differ, even when the label is the same.
+
+To ensure a perfect match (label \strong{and} levels), you can reuse a value taken directly from the data (e.g., \code{df$x[2]}). This guarantees that both the class and the factor levels align. However, this approach only works reliably if all selected columns have the same factor structure.
+}
+
+\subsection{Case-insensitive matching (\code{ignore_case = TRUE})}{
+
+When \code{ignore_case = TRUE}, all values involved in the comparison are converted to lowercase using \code{tolower()} before matching.
+This behavior applies to both character and factor columns. Factors are first converted to character internally.
+
+Importantly, this case-insensitive mode takes precedence over strict type comparison: values are no longer compared using \code{identical()}, but rather using lowercase string equality. This enables more flexible matching — for example, \code{"b"} and \code{"B"} will match even when \code{allow_coercion = FALSE}.
+\subsection{Example: strict vs. case-insensitive matching with factors}{
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{df <- tibble::tibble(
   x = factor(c("a", "b", "c")),
-  y = factor(c("b", "b", "a"))
+  y = factor(c("b", "B", "a"))
 )
 
-# Default (coercion allowed): character matches factor
-count_n(df, count = "b")
+# Strict match fails with character input
+count_n(df, count = "b", allow_coercion = FALSE)
+#> [1] 0 0 0
 
-# Strict mode: factor required
-count_n(df, count = factor("b"), allow_coercion = FALSE)  # May fail if levels differ
+# Match works only where factor levels match exactly
+count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
+#> [1] 0 1 0
 
-# Best practice: reuse an exact value from data
-count_n(df, count = df$x[2], allow_coercion = FALSE)       # Guaranteed to match
+# Case-insensitive match succeeds for both "b" and "B"
+count_n(df, count = "b", ignore_case = TRUE)
+#> [1] 1 2 0
+
+Like `row_count()`, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
+
+
+[2]: R:2
+[1]: R:1
+[1]: R:1
+[1]: R:1
 }\if{html}{\out{</div>}}
-
-Like \code{row_count()}, it also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
 }
 
 }
@@ -116,8 +133,6 @@ df <- tibble(
 count_n(df, count = 2)
 count_n(df, count = 2, allow_coercion = FALSE)
 count_n(df, count = "2", ignore_case = TRUE)
-
-# Use inside a pipe
 df |> mutate(num_twos = count_n(count = 2))
 
 # Mixed types and special values
@@ -158,26 +173,31 @@ count_n(df, select = starts_with("score_"), exclude = "score_lang", count = 2)
 count_n(df, select = everything(), exclude = "name", count = 2)
 count_n(df, select = "^score_", regex = TRUE, count = 2)
 count_n(df, select = "lang", regex = TRUE, count = "2")
-
-# Inside mutate() without explicit `data`
-df |> mutate(nb_deux = count_n(count = 2))
-
-# Select columns before mutate()
-df |> select(score_math, score_science) |> mutate(nb_deux = count_n(count = 2))
-
-# Assign result as a new column
-df$nb_deux <- count_n(df, select = starts_with("score_"), count = 2)
-
-# Apply to a subset of rows
+df |> mutate(nb_two = count_n(count = 2))
+df |> select(score_math, score_science) |> mutate(nb_two = count_n(count = 2))
+df$nb_two <- count_n(df, select = starts_with("score_"), count = 2)
 df[1:3, ] |> count_n(select = starts_with("score_"), count = 2)
 
-# Type-safe factor matching (strict)
+# Strict type-safe matching with factor columns
 df <- tibble(
   x = factor(c("a", "b", "c")),
-  y = factor(c("b", "b", "a"))
+  y = factor(c("b", "B", "a"))
 )
-count_n(df, count = "b")                                    # coercion works
-count_n(df, count = factor("b"), allow_coercion = FALSE)    # may fail if levels mismatch
-count_n(df, count = df$x[2], allow_coercion = FALSE)        # best practice
+
+# Coercion: character "b" matches both x and y
+count_n(df, count = "b")
+
+# Strict match: fails because "b" is character, not factor (returns only 0s)
+count_n(df, count = "b", allow_coercion = FALSE)
+
+# Strict match with factor value: works only where levels match
+count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
+
+# Using a value from the data: guarantees type and levels match for column x
+count_n(df, count = df$x[2], allow_coercion = FALSE)
+
+# Case-insensitive match (factors are converted to character internally)
+count_n(df, count = "b", ignore_case = TRUE)
+count_n(df, count = "B", ignore_case = TRUE)
 
 }
