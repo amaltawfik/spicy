@@ -29,15 +29,17 @@ R automatically coerces all values in \code{count} to a common type (e.g., \code
 so all values are expected to be of the same final type.
 If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}, and the type of \code{count} must match that of the values in the data.}
 
-\item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.}
+\item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.
+\code{"NA"} uses \code{is.na()}, and therefore includes both \code{NA} and \code{NaN} values.
+\code{"NaN"} uses \code{is.nan()} to match only actual NaN values.}
 
-\item{allow_coercion}{Logical. If \code{FALSE}, uses strict matching via \code{identical()}.}
+\item{allow_coercion}{Logical (default \code{TRUE}). If \code{FALSE}, uses strict matching via \code{identical()}.}
 
-\item{ignore_case}{Logical. If \code{TRUE}, performs case-insensitive string comparisons.}
+\item{ignore_case}{Logical (default \code{FALSE}). If \code{TRUE}, performs case-insensitive string comparisons.}
 
-\item{regex}{Logical. If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
+\item{regex}{Logical (default \code{FALSE}). If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
 
-\item{verbose}{Logical. If \code{TRUE}, prints processing messages.}
+\item{verbose}{Logical (default \code{FALSE}). If \code{TRUE}, prints processing messages.}
 }
 \value{
 A numeric vector of row-wise counts (unnamed).
@@ -136,6 +138,7 @@ count_n(df, count = as.Date("2023-01-01"), select = date)
 count_n(df, count = TRUE, select = logic)
 count_n(df, count = 2, select = lab)
 df <- df |> mutate(lab_chr = as_factor(lab))
+count_n(df, count = "Yes", select = lab_chr, allow_coercion = TRUE)
 count_n(df, count = "Yes", select = lab_chr, allow_coercion = FALSE)
 
 # Count special values

@@ -17,10 +17,12 @@
 #'   so all values are expected to be of the same final type.
 #'   If `allow_coercion = FALSE`, matching is type-safe using `identical()`, and the type of `count` must match that of the values in the data.
 #' @param special Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`, `"-Inf"`, or `"all"`.
-#' @param allow_coercion Logical. If `FALSE`, uses strict matching via `identical()`.
-#' @param ignore_case Logical. If `TRUE`, performs case-insensitive string comparisons.
-#' @param regex Logical. If `TRUE`, interprets `select` as a regular expression pattern.
-#' @param verbose Logical. If `TRUE`, prints processing messages.
+#' `"NA"` uses `is.na()`, and therefore includes both `NA` and `NaN` values.
+#' `"NaN"` uses `is.nan()` to match only actual NaN values.
+#' @param allow_coercion Logical (default `TRUE`). If `FALSE`, uses strict matching via `identical()`.
+#' @param ignore_case Logical (default `FALSE`). If `TRUE`, performs case-insensitive string comparisons.
+#' @param regex Logical (default `FALSE`). If `TRUE`, interprets `select` as a regular expression pattern.
+#' @param verbose Logical (default `FALSE`). If `TRUE`, prints processing messages.
 #'
 #' @return A numeric vector of row-wise counts (unnamed).
 #'
@@ -103,6 +105,7 @@
 #' count_n(df, count = TRUE, select = logic)
 #' count_n(df, count = 2, select = lab)
 #' df <- df |> mutate(lab_chr = as_factor(lab))
+#' count_n(df, count = "Yes", select = lab_chr, allow_coercion = TRUE)
 #' count_n(df, count = "Yes", select = lab_chr, allow_coercion = FALSE)
 #'
 #' # Count special values
@@ -212,8 +215,12 @@ base_count_n <- function(
     checkers <- list(
       "NA"   = is.na,
       "NaN"  = is.nan,
-      "Inf"  = function(x) is.infinite(x) & x > 0,
-      "-Inf" = function(x) is.infinite(x) & x < 0
+      "Inf"  = function(x) {
+        if (is.numeric(x)) is.infinite(x) & x > 0 else rep(FALSE, length(x))
+      },
+      "-Inf" = function(x) {
+        if (is.numeric(x)) is.infinite(x) & x < 0 else rep(FALSE, length(x))
+      }
     )
 
     logical_list <- lapply(special, function(s) {
