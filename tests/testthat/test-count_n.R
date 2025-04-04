@@ -45,16 +45,34 @@ test_that("count_n handles special = NA, NaN, Inf, -Inf", {
   expect_equal(count_n(df, special = "all"), c(2, 1, 2, 2, 2))
 })
 
-test_that("count_n handles factor variables", {
+test_that("count_n handles factor variables including ignore_case", {
   df <- tibble::tibble(
-    x = factor(c("a", "b", "c")),
-    y = factor(c("b", "b", "a"))
+    x = factor(c("a", "b", "c")),        # levels: a, b, c
+    y = factor(c("b", "B", "a"))         # levels: a, b, B
   )
 
-  expect_equal(count_n(df, count = "b"), c(1, 2, 0))
+  # Default coercion: character "b" matches in both x and y
+  expect_equal(count_n(df, count = "b"), c(1, 1, 0))
+
+  # Strict mode: character input fails (character ≠ factor)
   expect_equal(count_n(df, count = "b", allow_coercion = FALSE), c(0, 0, 0))
-  expect_equal(count_n(df, count = df$x[2], allow_coercion = FALSE), c(1, 2, 0))
+
+  # Strict mode: with factor value having matching levels (for x)
+  expect_equal(count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE), c(0, 1, 0))
+
+  # Using a value from the data (ensures type + levels)
+  expect_equal(count_n(df, count = df$x[2], allow_coercion = FALSE), c(0, 1, 0))
+
+  # Case-insensitive match: works for both x and y after conversion to character
+  expect_equal(count_n(df, count = "b", ignore_case = TRUE), c(1, 2, 0))
+  expect_equal(count_n(df, count = "B", ignore_case = TRUE), c(1, 2, 0))
+
+  # Case-insensitive + strict: internally uses character comparison, not identical()
+  expect_equal(count_n(df, count = "b", ignore_case = TRUE, allow_coercion = FALSE), c(1, 2, 0))
+  expect_equal(count_n(df, count = factor("b", levels = levels(df$x)), ignore_case = TRUE, allow_coercion = FALSE), c(1, 2, 0))
 })
+
+
 
 test_that("count_n handles labelled variables from haven", {
   skip_if_not_installed("haven")
