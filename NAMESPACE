@@ -2,6 +2,7 @@
 
 S3method(print,spicy)
 export(copy_clipboard)
+export(count_n)
 export(cramer_v)
 export(cross_tab)
 export(ct)
