@@ -130,6 +130,7 @@ df <- tibble(
   y = c(2, 2, NA, 3, 2),
   z = c("2", "2", "2", "3", "2")
 )
+df
 count_n(df, count = 2)
 count_n(df, count = 2, allow_coercion = FALSE)
 count_n(df, count = "2", ignore_case = TRUE)
@@ -144,6 +145,7 @@ df <- tibble(
   lab   = labelled(c(1, 2, 1, 2, NA), labels = c(No = 1, Yes = 2)),
   logic = c(TRUE, FALSE, NA, TRUE, FALSE)
 )
+df
 count_n(df, count = 2)
 count_n(df, count = 2, allow_coercion = FALSE)
 count_n(df, count = "b", ignore_case = FALSE)
@@ -158,6 +160,8 @@ count_n(df, count = "Yes", select = lab_chr, allow_coercion = FALSE)
 
 # Count special values
 count_n(df, special = "NA")
+count_n(df, special = "NaN")
+count_n(df, special = "-Inf")
 count_n(df, special = c("NA", "NaN"))
 count_n(df, special = "all")
 
@@ -168,6 +172,7 @@ df <- tibble(
   score_lang    = c("2", "2", "2", "3", "2"),
   name          = c("Jean", "Marie", "Ali", "Zoe", "Nina")
 )
+df
 count_n(df, select = c(score_math, score_science), count = 2)
 count_n(df, select = starts_with("score_"), exclude = "score_lang", count = 2)
 count_n(df, select = everything(), exclude = "name", count = 2)
@@ -183,6 +188,7 @@ df <- tibble(
   x = factor(c("a", "b", "c")),
   y = factor(c("b", "B", "a"))
 )
+df
 
 # Coercion: character "b" matches both x and y
 count_n(df, count = "b")
