@@ -235,8 +235,12 @@ summarize_values_all <- function(col) {
 }
 
 
+#' Alias for varlist()
+#'
 #' @rdname varlist
+#' @seealso [varlist()]
 #' @export
-vl <- function(...) {
-  varlist(...)
+vl <- function(x, ..., values = FALSE, tbl = FALSE) {
+  varlist(x = x, ..., values = values, tbl = tbl)
 }
+

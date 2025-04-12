@@ -7,7 +7,7 @@
 \usage{
 varlist(x, ..., values = FALSE, tbl = FALSE)
 
-vl(...)
+vl(x, ..., values = FALSE, tbl = FALSE)
 }
 \arguments{
 \item{x}{A data frame, or a transformation of one. Must be named and identifiable.}
@@ -51,4 +51,7 @@ varlist(head(mtcars), tbl = TRUE)
 varlist(mtcars, tbl = TRUE)
 varlist(iris[, 1:3], tbl = TRUE)
 varlist(mtcars[1:10, ], tbl = TRUE)
+}
+\seealso{
+\code{\link[=varlist]{varlist()}}
 }
