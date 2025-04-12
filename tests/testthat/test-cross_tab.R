@@ -74,7 +74,7 @@ test_that("cross_tab errors with invalid weights or mismatched length", {
   mtcars$cyl <- factor(mtcars$cyl)
   mtcars$gear <- factor(mtcars$gear)
 
-  expect_error(cross_tab(mtcars, cyl, gear, weights = "wrong"), "must be numeric")
+  expect_error(cross_tab(mtcars, cyl, gear, weights = "wrong"), "must be a column name")
   expect_error(cross_tab(mtcars[1:10, ], cyl, gear, weights = rep(1, 5)), "must match length")
 })
 
