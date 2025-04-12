@@ -2,11 +2,28 @@
 % Please edit documentation in R/cross_tab.R
 \name{cross_tab}
 \alias{cross_tab}
-\alias{ctab}
 \alias{ct}
 \title{Cross-Tabulation with Percentages, Weights, and Grouping}
 \usage{
 cross_tab(
+  d = parent.frame(),
+  x,
+  y = NULL,
+  by = NULL,
+  weights = NULL,
+  rescale_weights = FALSE,
+  digits = 1,
+  rowprct = FALSE,
+  row_total = TRUE,
+  column_total = TRUE,
+  n = TRUE,
+  drop = TRUE,
+  include_stats = TRUE,
+  combine = FALSE,
+  ...
+)
+
+ct(
   d = parent.frame(),
   x,
   y = NULL,
@@ -95,28 +112,34 @@ mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
 # Basic usage
 cross_tab(mtcars, cyl, gear)
 
-# Pipe-friendly
+# Using extracted variables
+cross_tab(mtcars$cyl, mtcars$gear)
+
+# Pipe-friendly syntax
 mtcars |> cross_tab(cyl, gear, by = am)
 
-# Tidy-style call
+# With row percentages
 cross_tab(mtcars, cyl, gear, by = am, rowprct = TRUE)
 
-# With weights
+# Using weights
 cross_tab(mtcars, cyl, gear, weights = mpg)
 
-# Rescaled weights
+# With rescaled weights
 cross_tab(mtcars, cyl, gear, weights = mpg, rescale_weights = TRUE)
 
-# Stratified by a grouping variable
+# Grouped by a single variable
 cross_tab(mtcars, cyl, gear, by = am)
 
-# Stratified by interaction of two variables
+# Grouped by interaction of two variables
 cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
 
-# Combined output
+# Combined output for grouped data
 cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 
-# No totals
+# Without totals or sample size
 cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
 
+}
+\seealso{
+\code{\link[=cross_tab]{cross_tab()}}
 }

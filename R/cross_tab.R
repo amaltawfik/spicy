@@ -54,31 +54,34 @@
 #' # Basic usage
 #' cross_tab(mtcars, cyl, gear)
 #'
-#' # Pipe-friendly
+#' # Using extracted variables
+#' cross_tab(mtcars$cyl, mtcars$gear)
+#'
+#' # Pipe-friendly syntax
 #' mtcars |> cross_tab(cyl, gear, by = am)
 #'
-#' # Tidy-style call
+#' # With row percentages
 #' cross_tab(mtcars, cyl, gear, by = am, rowprct = TRUE)
 #'
-#' # With weights
+#' # Using weights
 #' cross_tab(mtcars, cyl, gear, weights = mpg)
 #'
-#' # Rescaled weights
+#' # With rescaled weights
 #' cross_tab(mtcars, cyl, gear, weights = mpg, rescale_weights = TRUE)
 #'
-#' # Stratified by a grouping variable
+#' # Grouped by a single variable
 #' cross_tab(mtcars, cyl, gear, by = am)
 #'
-#' # Stratified by interaction of two variables
+#' # Grouped by interaction of two variables
 #' cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
 #'
-#' # Combined output
+#' # Combined output for grouped data
 #' cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 #'
-#' # No totals
+#' # Without totals or sample size
 #' cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
 #'
-#' @aliases ctab ct
+#' @aliases ct
 #' @export
 
 cross_tab <- function(
@@ -106,21 +109,53 @@ cross_tab <- function(
     y_vals <- if (!missing(y)) eval(y_expr, d) else NULL
     by_vals <- if (!missing(by)) eval(by_expr, d) else NULL
 
-    weight_quo <- rlang::enquo(weights)
-    no_weights_provided <- rlang::quo_is_null(weight_quo)
+    weights_vals <- NULL
 
-    weights_vals <- if (!no_weights_provided) {
-      rlang::eval_tidy(weight_quo, d)
-    } else {
-      rep(1, length(x_vals))
+    if (!missing(weights)) {
+      w_expr <- substitute(weights)
+
+      if (is.symbol(w_expr) || is.call(w_expr)) {
+        weights_vals <- tryCatch(
+          eval(w_expr, envir = d),
+          error = function(e) {
+            stop("Unable to evaluate `weights` in `d`: ", conditionMessage(e))
+          }
+        )
+      } else if (is.numeric(weights)) {
+        weights_vals <- weights
+      } else {
+        stop("`weights` must be a column name in `d`, or a numeric vector.")
+      }
     }
+
+    if (is.null(weights_vals)) {
+      weights_vals <- rep(1, length(x_vals))
+    }
+
+    if (!is.numeric(weights_vals)) {
+      stop("`weights` must be numeric.")
+    }
+    if (length(weights_vals) != length(x_vals)) {
+      stop("`weights` must match length of `x`.")
+    }
+
+    weights_vals[is.na(weights_vals)] <- 0
+
   } else {
     x_vals <- d
     y_vals <- x
     by_vals <- if (!missing(by)) eval(by_expr, parent.frame()) else NULL
     d <- NULL
-    weights_vals <- rep(1, length(x_vals))
-    no_weights_provided <- TRUE
+
+    if (!missing(weights)) {
+      if (is.numeric(weights)) {
+        weights_vals <- weights
+      } else {
+        stop("When passing vector inputs, `weights` must be a numeric vector of same length as `x`.")
+      }
+    } else {
+      weights_vals <- rep(1, length(x_vals))
+    }
   }
 
   if (!is.numeric(weights_vals)) {
@@ -134,12 +169,13 @@ cross_tab <- function(
   weights_vals[is.na(weights_vals)] <- 0
 
   if (rescale_weights) {
-    if (no_weights_provided) {
+    if (all(weights_vals == 1)) {
       warning("`rescale_weights = TRUE` has no effect since no weights were provided.")
     } else {
       weights_vals <- weights_vals * length(weights_vals) / sum(weights_vals, na.rm = TRUE)
     }
   }
+
 
   compute_ctab <- function(x_sub, y_sub, w_sub, group_label = NULL, group_var = NULL) {
     if (is.null(y_sub)) {
@@ -385,8 +421,41 @@ cross_tab <- function(
 }
 
 
+#' Alias for cross_tab()
+#'
+#' @rdname cross_tab
+#' @seealso [cross_tab()]
 #' @export
-ctab <- function(...) cross_tab(...)
+ct <- function(
+    d = parent.frame(), x, y = NULL, by = NULL, weights = NULL,
+    rescale_weights = FALSE, digits = 1, rowprct = FALSE, row_total = TRUE,
+    column_total = TRUE, n = TRUE, drop = TRUE, include_stats = TRUE,
+    combine = FALSE, ...
+) {
+  x <- substitute(x)
+  y <- substitute(y)
+  by <- substitute(by)
 
-#' @export
-ct <- function(...) cross_tab(...)
+  args <- list(
+    d = d,
+    x = x,
+    y = y,
+    by = by,
+    rescale_weights = rescale_weights,
+    digits = digits,
+    rowprct = rowprct,
+    row_total = row_total,
+    column_total = column_total,
+    n = n,
+    drop = drop,
+    include_stats = include_stats,
+    combine = combine,
+    ...
+  )
+
+  if (!missing(weights)) {
+    args$weights <- substitute(weights)
+  }
+
+  do.call(cross_tab, args)
+}
