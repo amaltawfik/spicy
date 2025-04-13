@@ -19,7 +19,7 @@ count_n(
 \arguments{
 \item{data}{A data frame or matrix. Optional inside \code{mutate()}.}
 
-\item{select}{Columns to include. Uses tidyselect helpers like \code{\link[=everything]{everything()}}, \code{\link[=starts_with]{starts_with()}}, etc. If \code{regex = TRUE}, \code{select} is treated as a regex string.}
+\item{select}{Columns to include. Uses tidyselect helpers like \code{\link[tidyselect:everything]{tidyselect::everything()}}, \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc. If \code{regex = TRUE}, \code{select} is treated as a regex string.}
 
 \item{exclude}{Character vector of column names to exclude after selection.}
 
