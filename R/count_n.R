@@ -9,7 +9,7 @@
 #' Internally, `count_n()` wraps the stable and dependency-free base function `base_count_n()`, allowing high flexibility and testability.
 #'
 #' @param data A data frame or matrix. Optional inside `mutate()`.
-#' @param select Columns to include. Uses tidyselect helpers like [everything()], [starts_with()], etc. If `regex = TRUE`, `select` is treated as a regex string.
+#' @param select Columns to include. Uses tidyselect helpers like [tidyselect::everything()], [tidyselect::starts_with()], etc. If `regex = TRUE`, `select` is treated as a regex string.
 #' @param exclude Character vector of column names to exclude after selection.
 #' @param count Value(s) to count. Ignored if `special` is used.
 #'   Multiple values are allowed (e.g., `count = c(1, 2, 3)` or `count = c("yes", "no")`).
@@ -181,7 +181,7 @@ count_n <- function(
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
 
   if (is.null(data)) {
-    data <- dplyr::pick(dplyr::everything())
+    data <- dplyr::pick(tidyselect::everything())
   }
 
   data <- as.data.frame(data)
