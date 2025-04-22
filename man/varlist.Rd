@@ -63,7 +63,6 @@ For full documentation, see \code{\link[=varlist]{varlist()}}.
 \examples{
 varlist(iris)
 iris |> varlist()
-vl(iris)
 iris |> varlist(starts_with("Sepal"), tbl = TRUE)
 varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
 varlist(head(mtcars), tbl = TRUE)
@@ -72,6 +71,7 @@ varlist(iris[, 1:3], tbl = TRUE)
 varlist(mtcars[1:10, ], tbl = TRUE)
 
 vl(iris)
+iris |> vl()
 vl(mtcars, starts_with("d"))
 vl(head(iris), include_na = TRUE)
 vl(iris[, 1:3], values = TRUE, tbl = TRUE)

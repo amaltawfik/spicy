@@ -43,7 +43,6 @@
 #' @examples
 #' varlist(iris)
 #' iris |> varlist()
-#' vl(iris)
 #' iris |> varlist(starts_with("Sepal"), tbl = TRUE)
 #' varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
 #' varlist(head(mtcars), tbl = TRUE)
@@ -292,6 +291,7 @@ summarize_values_all <- function(col, include_na = FALSE) {
 #'
 #' @examples
 #' vl(iris)
+#' iris |> vl()
 #' vl(mtcars, starts_with("d"))
 #' vl(head(iris), include_na = TRUE)
 #' vl(iris[, 1:3], values = TRUE, tbl = TRUE)
