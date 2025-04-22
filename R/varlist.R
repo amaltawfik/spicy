@@ -12,6 +12,9 @@
 #' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.)
 #' @param values Logical. If `FALSE` (the default), only min/max or representative values are displayed. If `TRUE`, all unique values are listed.
 #' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer (if interactive). If `TRUE`, returns a tibble.
+#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included in the
+#'   `Values` column. Default is `FALSE`.
+#' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
 #'
 #' @returns
 #' A tibble with variable metadata:
@@ -42,12 +45,18 @@
 #' iris |> varlist()
 #' vl(iris)
 #' iris |> varlist(starts_with("Sepal"), tbl = TRUE)
+#' varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
 #' varlist(head(mtcars), tbl = TRUE)
 #' varlist(mtcars, tbl = TRUE)
 #' varlist(iris[, 1:3], tbl = TRUE)
 #' varlist(mtcars[1:10, ], tbl = TRUE)
-varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
-  raw_expr <- substitute(x)
+#'
+# .raw_expr is used internally by `vl()` to capture the original expression
+# passed as `x`, so it can be used to generate the display title (e.g. "VARLIST df").
+# It is not intended for user-facing documentation or direct use.
+varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
+                    .raw_expr = substitute(x)) {
+  raw_expr <- .raw_expr
 
   if (!is.data.frame(x)) {
     stop("varlist() only works with named data frames or transformations of them.", call. = FALSE)
@@ -112,11 +121,12 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE) {
 
   res$Values <- vapply(x, function(col) {
     if (values) {
-      summarize_values_all(col)
+      summarize_values_all(col, include_na = include_na)
     } else {
-      summarize_values_minmax(col)
+      summarize_values_minmax(col, include_na = include_na)
     }
   }, character(1))
+
 
   res <- tibble::as_tibble(res[c("Variable", "Label", "Values", "Class", "Ndist_val", "N_valid", "NAs")])
 
@@ -181,66 +191,122 @@ varlist_title <- function(expr, selectors_used = FALSE) {
   stop("varlist() requires a named data frame or a transformation of one.", call. = FALSE)
 }
 
-summarize_values_minmax <- function(col) {
+summarize_values_minmax <- function(col, include_na = FALSE) {
   na_omit_col <- stats::na.omit(col)
-  if (length(na_omit_col) == 0) {
+  has_na <- any(is.na(col))
+
+  if (length(na_omit_col) == 0 && !include_na) {
     return("Full NA")
   }
 
   if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
     unique_vals <- unique(col)
-    return(paste0(unique_vals[1], " ... ", unique_vals[length(unique_vals)]))
-  }
-
-  if (is.factor(col)) {
-    return(paste(levels(col), collapse = ", "))
+    vals <- paste0(unique_vals[1], " ... ", unique_vals[length(unique_vals)])
+  } else if (is.factor(col)) {
+    vals <- paste(levels(col), collapse = ", ")
   } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
-    return(paste(min(na_omit_col), "...", max(na_omit_col)))
+    vals <- paste(min(na_omit_col), "...", max(na_omit_col))
   } else if (is.list(col)) {
-    return(paste0("List(", length(col), ")"))
+    vals <- paste0("List(", length(col), ")")
   } else {
     unique_sorted <- sort(unique(na_omit_col))
     if (length(unique_sorted) > 2) {
-      return(paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1)))
+      vals <- paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1))
     } else {
-      return(paste(unique_sorted, collapse = ", "))
+      vals <- paste(unique_sorted, collapse = ", ")
     }
+  }
+
+  if (include_na && has_na) {
+    return(paste(vals, "NA", sep = ", "))
+  } else {
+    return(vals)
   }
 }
 
-summarize_values_all <- function(col) {
+summarize_values_all <- function(col, include_na = FALSE) {
   na_omit_col <- stats::na.omit(col)
-  if (length(na_omit_col) == 0) {
+  has_na <- any(is.na(col))
+
+  if (length(na_omit_col) == 0 && !include_na) {
     return("Full NA")
+  }
+
+  show_vals <- function(v) {
+    vals <- tryCatch({
+      sort(unique(v))
+    }, error = function(e) {
+      return("Error: invalid values")
+    })
+
+    vals_chr <- as.character(vals)
+
+    if (include_na && has_na) {
+      vals_chr <- c(vals_chr, "NA")
+    }
+
+    paste(vals_chr, collapse = ", ")
   }
 
   if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
-    return(paste(unique(col), collapse = ", "))
+    return(show_vals(col))
   }
 
   if (is.factor(col)) {
-    return(paste(sort(levels(col)), collapse = ", "))
+    return(show_vals(levels(col)))
   } else if (is.logical(col) || is.character(col)) {
-    return(paste(sort(unique(na_omit_col)), collapse = ", "))
+    return(show_vals(na_omit_col))
   } else if (is.list(col)) {
     return(paste0(
       "List(", length(col), "): ",
       paste(sort(sapply(col, typeof)), collapse = ", ")
     ))
   } else {
-    return(paste(sort(unique(na_omit_col)), collapse = ", "))
+    return(show_vals(na_omit_col))
   }
 }
 
 
-#' Alias for varlist()
+
+#' Alias for `varlist()`
 #'
+#' `vl()` is a convenient shorthand for `varlist()` that offers identical functionality with a shorter name.
+#'
+#' For full documentation, see [`varlist()`].
+#'
+#' @aliases vl
 #' @rdname varlist
-#' @seealso [varlist()]
+#'
+#' @param x A data frame or a transformation of one. Must be named and identifiable.
+#' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.).
+#' @param values Logical. If `FALSE` (the default), only min/max or representative values are displayed.
+#'   If `TRUE`, all unique values are listed.
+#' @param tbl Logical. If `FALSE` (the default), the summary is opened in the Viewer (if interactive).
+#'   If `TRUE`, a tibble is returned instead.
+#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included in the `Values` column.
+#'   Default is `FALSE`.
+#'
 #' @export
-vl <- function(x, ..., values = FALSE, tbl = FALSE) {
-  varlist(x = x, ..., values = values, tbl = tbl)
+#'
+#' @examples
+#' vl(iris)
+#' vl(mtcars, starts_with("d"))
+#' vl(head(iris), include_na = TRUE)
+#' vl(iris[, 1:3], values = TRUE, tbl = TRUE)
+vl <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE) {
+  raw_expr <- substitute(x)
+  varlist(
+    x = eval(raw_expr, envir = parent.frame()),
+    ...,
+    values = values,
+    tbl = tbl,
+    include_na = include_na,
+    .raw_expr = raw_expr
+  )
 }
+
+
+
 

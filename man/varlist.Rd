@@ -5,18 +5,32 @@
 \alias{vl}
 \title{Generate a comprehensive summary of the variables}
 \usage{
-varlist(x, ..., values = FALSE, tbl = FALSE)
+varlist(
+  x,
+  ...,
+  values = FALSE,
+  tbl = FALSE,
+  include_na = FALSE,
+  .raw_expr = substitute(x)
+)
 
-vl(x, ..., values = FALSE, tbl = FALSE)
+vl(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE)
 }
 \arguments{
-\item{x}{A data frame, or a transformation of one. Must be named and identifiable.}
+\item{x}{A data frame or a transformation of one. Must be named and identifiable.}
 
-\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.)}
+\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.).}
 
-\item{values}{Logical. If \code{FALSE} (the default), only min/max or representative values are displayed. If \code{TRUE}, all unique values are listed.}
+\item{values}{Logical. If \code{FALSE} (the default), only min/max or representative values are displayed.
+If \code{TRUE}, all unique values are listed.}
 
-\item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer (if interactive). If \code{TRUE}, returns a tibble.}
+\item{tbl}{Logical. If \code{FALSE} (the default), the summary is opened in the Viewer (if interactive).
+If \code{TRUE}, a tibble is returned instead.}
+
+\item{include_na}{Logical. If \code{TRUE}, missing values (\code{NA}) are included in the \code{Values} column.
+Default is \code{FALSE}.}
+
+\item{.raw_expr}{Internal. Do not use. Captures the original expression from \code{vl()} to generate an informative title. Used only for internal purposes.}
 }
 \value{
 A tibble with variable metadata:
@@ -36,22 +50,29 @@ If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}
 }
 \description{
 \code{varlist()} lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.
+
+\code{vl()} is a convenient shorthand for \code{varlist()} that offers identical functionality with a shorter name.
 }
 \details{
 The function can also apply tidyselect-style variable selectors to filter columns dynamically.
 
 If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \verb{VARLIST iris}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{VARLIST iris*}.
+
+For full documentation, see \code{\link[=varlist]{varlist()}}.
 }
 \examples{
 varlist(iris)
 iris |> varlist()
 vl(iris)
 iris |> varlist(starts_with("Sepal"), tbl = TRUE)
+varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
 varlist(head(mtcars), tbl = TRUE)
 varlist(mtcars, tbl = TRUE)
 varlist(iris[, 1:3], tbl = TRUE)
 varlist(mtcars[1:10, ], tbl = TRUE)
-}
-\seealso{
-\code{\link[=varlist]{varlist()}}
+
+vl(iris)
+vl(mtcars, starts_with("d"))
+vl(head(iris), include_na = TRUE)
+vl(iris[, 1:3], values = TRUE, tbl = TRUE)
 }
