@@ -20,20 +20,20 @@
 #'   This applies to all variable types and explicitly appends `"NA"` to the summary when at least one missing value is present.
 #'   If `FALSE` (the default), missing values are omitted from the value summary but still counted in the `NAs` column.
 #' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
-#'
+
 #' @returns
-#' A tibble with variable metadata:
+#' A tibble with variable metadata, including:
 #' - `Variable`: variable names
-#' - `Label`: variable labels (if available)
-#' - `Values`: summary of values (min/max or all unique)
-#'   For `labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
-#' - `Class`: data type(s)
+#' - `Label`: variable labels (if available via the `label` attribute)
+#' - `Values`: a summary of the variable's values, depending on the `values` and `include_na` arguments
+#'   For `labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`
+#' - `Class`: the variable's class(es)
 #' - `Ndist_val`: number of distinct non-missing values
 #' - `N_valid`: number of non-missing observations
 #' - `NAs`: number of missing values
 #'
 #' If `tbl = FALSE` and used interactively, the summary is displayed in the Viewer pane.
-#' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `VARLIST iris*`).
+#' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `VARLIST df*`).
 #'
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
@@ -196,37 +196,33 @@ varlist_title <- function(expr, selectors_used = FALSE) {
 }
 
 summarize_values_minmax <- function(col, include_na = FALSE) {
-  na_omit_col <- stats::na.omit(col)
   has_na <- any(is.na(col))
-
-  if (length(na_omit_col) == 0 && !include_na) {
-    return("")
-  }
-
-  max_display <- 5
+  max_display <- 4
 
   vals <- tryCatch({
+
     if (labelled::is.labelled(col)) {
       col <- labelled::to_factor(col, levels = "prefixed")
-      if (!include_na) {
-        col <- stats::na.omit(col)
-      }
+      if (!include_na) col <- stats::na.omit(col)
       unique_vals <- unique(col)
 
     } else if (is.factor(col)) {
       unique_vals <- levels(col)
 
     } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
-      unique_vals <- sort(unique(na_omit_col))
+      col_no_na <- stats::na.omit(col)
+      unique_vals <- sort(unique(col_no_na))
 
     } else if (is.list(col)) {
       return(paste0("List(", length(col), ")"))
 
     } else {
-      unique_vals <- sort(unique(na_omit_col))
+      col_no_na <- stats::na.omit(col)
+      unique_vals <- sort(unique(col_no_na))
     }
 
     n_vals <- length(unique_vals)
+    unique_vals <- as.character(unique_vals)
 
     if (n_vals == 0) {
       val_str <- ""
