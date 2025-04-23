@@ -10,10 +10,15 @@
 #'
 #' @param x A data frame, or a transformation of one. Must be named and identifiable.
 #' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.)
-#' @param values Logical. If `FALSE` (the default), only min/max or representative values are displayed. If `TRUE`, all unique values are listed.
+#' @param values Logical. If `FALSE` (the default), displays a compact summary of the variable's values.
+#'   For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
+#'   the first three values, followed by an ellipsis (`...`), and the last value.
+#'   Values are sorted when appropriate (e.g., numeric, character, date), but factor levels are shown in their defined order.
+#'   If `TRUE`, all unique non-missing values are displayed.
 #' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer (if interactive). If `TRUE`, returns a tibble.
-#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included in the
-#'   `Values` column. Default is `FALSE`.
+#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included at the end of the `Values` summary.
+#'   This applies to all variable types and explicitly appends `"NA"` to the summary when at least one missing value is present.
+#'   If `FALSE` (the default), missing values are omitted from the value summary but still counted in the `NAs` column.
 #' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
 #'
 #' @returns
@@ -195,42 +200,63 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
   has_na <- any(is.na(col))
 
   if (length(na_omit_col) == 0 && !include_na) {
-    return("Full NA")
+    return("")
   }
 
-  if (labelled::is.labelled(col)) {
-    col <- labelled::to_factor(col, levels = "prefixed")
-    unique_vals <- unique(col)
-    vals <- paste0(unique_vals[1], " ... ", unique_vals[length(unique_vals)])
-  } else if (is.factor(col)) {
-    vals <- paste(levels(col), collapse = ", ")
-  } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
-    vals <- paste(min(na_omit_col), "...", max(na_omit_col))
-  } else if (is.list(col)) {
-    vals <- paste0("List(", length(col), ")")
-  } else {
-    unique_sorted <- sort(unique(na_omit_col))
-    if (length(unique_sorted) > 2) {
-      vals <- paste(utils::head(unique_sorted, 1), "...", utils::tail(unique_sorted, 1))
+  max_display <- 5
+
+  vals <- tryCatch({
+    if (labelled::is.labelled(col)) {
+      col <- labelled::to_factor(col, levels = "prefixed")
+      if (!include_na) {
+        col <- stats::na.omit(col)
+      }
+      unique_vals <- unique(col)
+
+    } else if (is.factor(col)) {
+      unique_vals <- levels(col)
+
+    } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
+      unique_vals <- sort(unique(na_omit_col))
+
+    } else if (is.list(col)) {
+      return(paste0("List(", length(col), ")"))
+
     } else {
-      vals <- paste(unique_sorted, collapse = ", ")
+      unique_vals <- sort(unique(na_omit_col))
     }
-  }
 
-  if (include_na && has_na) {
-    return(paste(vals, "NA", sep = ", "))
-  } else {
-    return(vals)
-  }
+    n_vals <- length(unique_vals)
+
+    if (n_vals == 0) {
+      val_str <- ""
+    } else if (n_vals <= max_display) {
+      val_str <- paste(unique_vals, collapse = ", ")
+    } else {
+      val_str <- paste(c(unique_vals[1:3], "...", unique_vals[n_vals]), collapse = ", ")
+    }
+
+    if (include_na && has_na) {
+      if (nzchar(val_str)) {
+        return(paste(val_str, "NA", sep = ", "))
+      } else {
+        return("NA")
+      }
+    } else {
+      return(val_str)
+    }
+
+  }, error = function(e) {
+    return("Invalid or unsupported format")
+  })
+
+  return(vals)
 }
+
 
 summarize_values_all <- function(col, include_na = FALSE) {
   na_omit_col <- stats::na.omit(col)
   has_na <- any(is.na(col))
-
-  if (length(na_omit_col) == 0 && !include_na) {
-    return("Full NA")
-  }
 
   show_vals <- function(v) {
     vals <- tryCatch({
@@ -242,7 +268,11 @@ summarize_values_all <- function(col, include_na = FALSE) {
     vals_chr <- as.character(vals)
 
     if (include_na && has_na) {
-      vals_chr <- c(vals_chr, "NA")
+      if (length(vals_chr) > 0 && nzchar(paste(vals_chr, collapse = ""))) {
+        vals_chr <- c(vals_chr, "NA")
+      } else {
+        vals_chr <- "NA"
+      }
     }
 
     paste(vals_chr, collapse = ", ")
@@ -255,16 +285,20 @@ summarize_values_all <- function(col, include_na = FALSE) {
 
   if (is.factor(col)) {
     return(show_vals(levels(col)))
-  } else if (is.logical(col) || is.character(col)) {
+  }
+
+  if (is.logical(col) || is.character(col)) {
     return(show_vals(na_omit_col))
-  } else if (is.list(col)) {
+  }
+
+  if (is.list(col)) {
     return(paste0(
       "List(", length(col), "): ",
       paste(sort(sapply(col, typeof)), collapse = ", ")
     ))
-  } else {
-    return(show_vals(na_omit_col))
   }
+
+  return(show_vals(na_omit_col))
 }
 
 
