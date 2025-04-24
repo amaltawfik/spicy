@@ -1,9 +1,9 @@
 Package: spicy
-Title: Data Management and Variable Exploration
-Version: 0.0.1
+Title: Tools for Data Management and Variable Exploration
+Version: 0.1.0
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555"))
-Description: Provides a comprehensive summary of the variables in a data frame. Extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values. Quickly assess the structure and content of a data frame.
+Description: Includes tools to extract variable metadata, summarize distributions, compute descriptive statistics, and identify missing values.Enables efficient descriptive analysis and exploration of the structure and content of data frames.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues
@@ -26,4 +26,5 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Depends: R (>= 4.1.0)
+News: NEWS.md
 Config/testthat/edition: 3
