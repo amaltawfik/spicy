@@ -33,20 +33,23 @@ Default is \code{FALSE}.}
 \item{.raw_expr}{Internal. Do not use. Captures the original expression from \code{vl()} to generate an informative title. Used only for internal purposes.}
 }
 \value{
-A tibble with variable metadata, including:
+A tibble with one row per (selected) variable, containing the following columns:
 \itemize{
 \item \code{Variable}: variable names
 \item \code{Label}: variable labels (if available via the \code{label} attribute)
-\item \code{Values}: a summary of the variable's values, depending on the \code{values} and \code{include_na} arguments
-For \code{labelled} variables, the \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}
-\item \code{Class}: the variable's class(es)
+\item \code{Values}: a summary of the variable's values, depending on the \code{values} and \code{include_na} arguments.
+If \code{values = FALSE}, a compact summary (max 4 values: 3 + ... + last) is shown.
+If \code{values = TRUE}, all unique non-missing values are displayed.
+For labelled variables, \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
+For factors, levels are used as-is.
+Missing values (\code{NA}, \code{NaN}) are optionally appended at the end (controlled via \code{include_na}).
+\item \code{Class}: the class of each variable (possibly multiple, e.g. \verb{"labelled", "numeric"})
 \item \code{Ndist_val}: number of distinct non-missing values
 \item \code{N_valid}: number of non-missing observations
-\item \code{NAs}: number of missing values
-}
-
+\item \code{NAs}: number of missing observations
 If \code{tbl = FALSE} and used interactively, the summary is displayed in the Viewer pane.
 If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}), an asterisk (\code{*}) is appended to the name in the title (e.g. \verb{VARLIST df*}).
+}
 }
 \description{
 \code{varlist()} lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.

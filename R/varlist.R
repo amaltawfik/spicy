@@ -10,28 +10,35 @@
 #'
 #' @param x A data frame, or a transformation of one. Must be named and identifiable.
 #' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.)
+
 #' @param values Logical. If `FALSE` (the default), displays a compact summary of the variable's values.
 #'   For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
 #'   the first three values, followed by an ellipsis (`...`), and the last value.
-#'   Values are sorted when appropriate (e.g., numeric, character, date), but factor levels are shown in their defined order.
+#'   Values are sorted when appropriate (e.g., numeric, character, date)
+#'   For factors, the levels are used directly and are not sorted.
+#'   For labelled variables, prefixed labels are displayed via `labelled::to_factor(levels = "prefixed")`.
 #'   If `TRUE`, all unique non-missing values are displayed.
 #' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer (if interactive). If `TRUE`, returns a tibble.
-#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included at the end of the `Values` summary.
-#'   This applies to all variable types and explicitly appends `"NA"` to the summary when at least one missing value is present.
-#'   If `FALSE` (the default), missing values are omitted from the value summary but still counted in the `NAs` column.
+#' @param include_na Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly appended at the end of the `Values` summary
+#'   when present in the variable. This applies to all variable types.
+#'   If `FALSE` (the default), missing values are omitted from `Values` but still counted in the `NAs` column.
 #' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
 
+
 #' @returns
-#' A tibble with variable metadata, including:
+#' A tibble with one row per (selected) variable, containing the following columns:
 #' - `Variable`: variable names
 #' - `Label`: variable labels (if available via the `label` attribute)
-#' - `Values`: a summary of the variable's values, depending on the `values` and `include_na` arguments
-#'   For `labelled` variables, the **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`
-#' - `Class`: the variable's class(es)
+#' - `Values`: a summary of the variable's values, depending on the `values` and `include_na` arguments.
+#'   If `values = FALSE`, a compact summary (max 4 values: 3 + ... + last) is shown.
+#'   If `values = TRUE`, all unique non-missing values are displayed.
+#'   For labelled variables, **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
+#'   For factors, levels are used as-is.
+#'   Missing values (`NA`, `NaN`) are optionally appended at the end (controlled via `include_na`).
+#' - `Class`: the class of each variable (possibly multiple, e.g. `"labelled", "numeric"`)
 #' - `Ndist_val`: number of distinct non-missing values
 #' - `N_valid`: number of non-missing observations
-#' - `NAs`: number of missing values
-#'
+#' - `NAs`: number of missing observations
 #' If `tbl = FALSE` and used interactively, the summary is displayed in the Viewer pane.
 #' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `VARLIST df*`).
 #'
@@ -197,6 +204,7 @@ varlist_title <- function(expr, selectors_used = FALSE) {
 
 summarize_values_minmax <- function(col, include_na = FALSE) {
   has_na <- any(is.na(col))
+  has_nan <- is.numeric(col) && any(is.nan(col))
   max_display <- 4
 
   vals <- tryCatch({
@@ -224,23 +232,34 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
     n_vals <- length(unique_vals)
     unique_vals <- as.character(unique_vals)
 
-    if (n_vals == 0) {
+    # On filtre les "NA" ou "" déjà encodés
+    already_present <- unique_vals %in% c("NA", "", NA_character_)
+    vals_chr_clean <- unique_vals[!already_present]
+
+    if (length(vals_chr_clean) == 0) {
       val_str <- ""
-    } else if (n_vals <= max_display) {
-      val_str <- paste(unique_vals, collapse = ", ")
+    } else if (length(vals_chr_clean) <= max_display) {
+      val_str <- paste(vals_chr_clean, collapse = ", ")
     } else {
-      val_str <- paste(c(unique_vals[1:3], "...", unique_vals[n_vals]), collapse = ", ")
+      val_str <- paste(c(vals_chr_clean[1:3], "...", utils::tail(vals_chr_clean, 1)), collapse = ", ")
     }
 
-    if (include_na && has_na) {
-      if (nzchar(val_str)) {
-        return(paste(val_str, "NA", sep = ", "))
-      } else {
-        return("NA")
-      }
-    } else {
-      return(val_str)
+    # Ajouter NA ou NaN si demandé et pas déjà inclus
+    extras <- c()
+    if (include_na) {
+      if (has_na && !"NA" %in% unique_vals) extras <- c(extras, "NA")
+      if (has_nan && !"NaN" %in% unique_vals) extras <- c(extras, "NaN")
     }
+
+    if (length(extras)) {
+      if (nzchar(val_str)) {
+        return(paste(val_str, paste(extras, collapse = ", "), sep = ", "))
+      } else {
+        return(paste(extras, collapse = ", "))
+      }
+    }
+
+    return(val_str)
 
   }, error = function(e) {
     return("Invalid or unsupported format")
@@ -253,6 +272,7 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
 summarize_values_all <- function(col, include_na = FALSE) {
   na_omit_col <- stats::na.omit(col)
   has_na <- any(is.na(col))
+  has_nan <- is.numeric(col) && any(is.nan(col))
 
   show_vals <- function(v) {
     vals <- tryCatch({
@@ -263,15 +283,19 @@ summarize_values_all <- function(col, include_na = FALSE) {
 
     vals_chr <- as.character(vals)
 
-    if (include_na && has_na) {
-      if (length(vals_chr) > 0 && nzchar(paste(vals_chr, collapse = ""))) {
-        vals_chr <- c(vals_chr, "NA")
-      } else {
-        vals_chr <- "NA"
-      }
+    # Supprime les valeurs textuelles de NA déjà encodées
+    vals_chr_clean <- vals_chr[!vals_chr %in% c("NA", "", NA_character_)]
+
+    # Construit les valeurs NA/NaN à ajouter si manquantes
+    extras <- c()
+    if (include_na) {
+      if (has_na && !"NA" %in% vals_chr) extras <- c(extras, "NA")
+      if (has_nan && !"NaN" %in% vals_chr) extras <- c(extras, "NaN")
     }
 
-    paste(vals_chr, collapse = ", ")
+    all_vals <- c(vals_chr_clean, extras)
+
+    paste(all_vals, collapse = ", ")
   }
 
   if (labelled::is.labelled(col)) {
