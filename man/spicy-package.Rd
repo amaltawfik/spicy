@@ -12,6 +12,7 @@ Includes tools to extract variable metadata, summarize distributions, compute de
 Useful links:
 \itemize{
   \item \url{https://github.com/amaltawfik/spicy/}
+  \item \url{https://amaltawfik.github.io/spicy/}
   \item Report bugs at \url{https://github.com/amaltawfik/spicy/issues}
 }
 

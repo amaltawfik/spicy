@@ -87,7 +87,7 @@ mean_n(mtcars)
 
 If you use `spicy` in a publication or teaching material, please cite it as:
 
-> Tawfik, A. (2025). *spicy: Tools for Data Summarization and Variable Exploration*. R package version 0.1.0. https://github.com/amaltawfik/spicy
+> Tawfik, A. (2025). *spicy: Tools for Data Management and Variable Exploration*. R package version 0.1.0. https://github.com/amaltawfik/spicy
 
 You can also get the citation in R format by typing:
 
@@ -100,6 +100,6 @@ citation("spicy")
 ## License
 
 This package is licensed under the MIT license. See [`LICENSE`](LICENSE) for details.
-```
+
 
 
