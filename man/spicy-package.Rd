@@ -4,9 +4,9 @@
 \name{spicy-package}
 \alias{spicy}
 \alias{spicy-package}
-\title{spicy: Data Management and Variable Exploration}
+\title{spicy: Tools for Data Management and Variable Exploration}
 \description{
-Provides a comprehensive summary of the variables in a data frame. Extract essential metadata, including variable names, labels, values, classes, the number of distinct values, the number of valid (non-missing) observations, and the number of missing values. Quickly assess the structure and content of a data frame.
+Includes tools to extract variable metadata, summarize distributions, compute descriptive statistics, and identify missing values.Enables efficient descriptive analysis and exploration of the structure and content of data frames.
 }
 \seealso{
 Useful links:

@@ -1,62 +1,99 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# spicy
-
-spicy <img src="man/figures/logo.png" align="right" height="138" />
+# spicy <img src="man/figures/logo.png" align="right" height="138" />
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
+[![License:
+MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <!-- badges: end -->
 
 `spicy` adds a dash of heat to data analysis, giving insights a whole
-new flavour!
+new flavour! 🌶️  
+It is designed to make **variable exploration** and **descriptive
+statistics** fast, expressive, and easy to use.
 
-`spicy` is a R package for producing quick and elegant statistical
-summaries. It is especially useful for exploratory data analysis (EDA),
-teaching and reporting workflows.
+------------------------------------------------------------------------
 
-It includes enhanced versions of frequency tables and crosstabs with
-support for weights, labels, percentages, and stratification.
+## What is `spicy`?
+
+`spicy` is an R package for quick, consistent, and elegant **exploration
+of data frames**. It helps you:
+
+- Summarize all variables at once  
+- Count values, compute means/sums, and tabulate frequencies  
+- Explore relationships between variables via cross-tabulations and
+  association measures  
+- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common
+  types  
+- Quickly copy results for reporting or teaching
+
+All with **intuitive functions** that produce clean, structured outputs.
+
+------------------------------------------------------------------------
 
 ## Installation
 
-You can install the development version of spicy from
-[GitHub](https://github.com/) with:
+You can install the **development version** of `spicy` from GitHub with:
 
 ``` r
 # install.packages("pak")
 pak::pak("amaltawfik/spicy")
 ```
 
-## Example
+------------------------------------------------------------------------
 
-This is a basic example which shows you how to solve a common problem:
+## Example usage
+
+Here are some quick examples using built-in datasets:
 
 ``` r
 library(spicy)
-## basic example code
+
+# Get a summary of all variables
+varlist(iris, tbl = TRUE)
+
+# Tabulate frequencies
+freq(iris$Species)
+
+# Cross-tab with percentages
+cross_tab(mtcars, cyl, gear, percent = "row")
+
+# Descriptive stats with counts
+mean_n(mtcars)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+> All functions can be directly used in pipelines.
+
+------------------------------------------------------------------------
+
+## Why use `spicy`?
+
+- Clean, expressive output  
+- Works well with labelled survey data  
+- Handles weights, percentages, NA counts  
+- Great for exploring data and variables, teaching, or reporting
+
+------------------------------------------------------------------------
+
+## Citation
+
+If you use `spicy` in a publication or teaching material, please cite it
+as:
+
+> Tawfik, A. (2025). *spicy: Tools for Data Summarization and Variable
+> Exploration*. R package version 0.1.0.
+> <https://github.com/amaltawfik/spicy>
+
+You can also get the citation in R format by typing:
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+citation("spicy")
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
+------------------------------------------------------------------------
 
-You can also embed plots, for example:
+## License
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+This package is licensed under the MIT license. See [`LICENSE`](LICENSE)
+for details. \`\`\`
