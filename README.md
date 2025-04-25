@@ -1,5 +1,5 @@
 
-# spicy <img src="man/figures/logo.png" align="right" height="138" />
+# spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="left" height="139" alt="spicy website" /></a>
 
 <!-- badges: start -->
 
@@ -8,17 +8,15 @@
 MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <!-- badges: end -->
 
-`spicy` adds a dash of heat to data analysis, giving insights a whole
-new flavour! 🌶️  
-It is designed to make **variable exploration** and **descriptive
-statistics** fast, expressive, and easy to use.
+spicy adds a dash of heat to data analysis, giving insights a whole new
+flavour! 🌶️  
+It is designed to make variable exploration and descriptive statistics
+fast, expressive, and easy to use.
 
-------------------------------------------------------------------------
+## What is spicy?
 
-## What is `spicy`?
-
-`spicy` is an R package for quick, consistent, and elegant **exploration
-of data frames**. It helps you:
+spicy is an R package for quick, consistent, and elegant exploration of
+data frames. It helps you:
 
 - Summarize all variables at once  
 - Count values, compute means/sums, and tabulate frequencies  
@@ -28,13 +26,13 @@ of data frames**. It helps you:
   types  
 - Quickly copy results for reporting or teaching
 
-All with **intuitive functions** that produce clean, structured outputs.
+All with intuitive functions that produce clean, structured outputs.
 
 ------------------------------------------------------------------------
 
 ## Installation
 
-You can install the **development version** of `spicy` from GitHub with:
+You can install the development version of spicy from GitHub with:
 
 ``` r
 # install.packages("pak")
@@ -81,7 +79,7 @@ mean_n(mtcars)
 If you use `spicy` in a publication or teaching material, please cite it
 as:
 
-> Tawfik, A. (2025). *spicy: Tools for Data Summarization and Variable
+> Tawfik, A. (2025). *spicy: Tools for Data Management and Variable
 > Exploration*. R package version 0.1.0.
 > <https://github.com/amaltawfik/spicy>
 
@@ -96,4 +94,4 @@ citation("spicy")
 ## License
 
 This package is licensed under the MIT license. See [`LICENSE`](LICENSE)
-for details. \`\`\`
+for details.
