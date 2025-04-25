@@ -2,6 +2,8 @@
 #'
 #' `freq()` creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
 #'
+#' @aliases fre
+#'
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
 #'   Matrices are not supported; please extract a column or convert to a vector or tibble before use.
 #' @param x A dataframe variable.
@@ -274,13 +276,13 @@ freq <- function(
 
 #' Alias for `freq()`
 #'
-#' `fre()` is a direct alias for `freq()`, providing the same functionality for generating frequency tables.
-#' This alias is useful for shorter typing.
+#' `fre()` is a convenient shorthand for `freq()` that offers identical functionality with a shorter name.
 #'
-#' See [freq()] for full documentation and examples.
+#' For full documentation and examples, see [`freq()`].
 #'
-#' @inheritParams freq
-#' @seealso [freq()]
+#' @aliases fre
+#' @rdname freq
+#'
 #' @export
 fre <- function(
     data,
