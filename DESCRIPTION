@@ -1,9 +1,9 @@
 Package: spicy
-Title: Tools for Data Management and Variable Exploration
+Title: Descriptive Statistics and Data Management Tools
 Version: 0.1.0
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555"))
-Description: Includes tools to extract variable metadata, summarize distributions, compute descriptive statistics, and identify missing values.Enables efficient descriptive analysis and exploration of the structure and content of data frames.
+Description: Extracts and summarizes metadata from data frames, including variable names, labels, types, and missing values. Computes compact descriptive statistics, frequency tables, and cross-tabulations to assist with efficient data exploration. Facilitates the identification of missing data patterns and structural issues in datasets. Designed to streamline initial data management and exploratory analysis workflows within ‘R’.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues

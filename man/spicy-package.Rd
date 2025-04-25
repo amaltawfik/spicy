@@ -4,11 +4,11 @@
 \name{spicy-package}
 \alias{spicy}
 \alias{spicy-package}
-\title{spicy: Tools for Data Management and Variable Exploration}
+\title{spicy: Descriptive Statistics and Data Management Tools}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Includes tools to extract variable metadata, summarize distributions, compute descriptive statistics, and identify missing values.Enables efficient descriptive analysis and exploration of the structure and content of data frames.
+Extracts and summarizes metadata from data frames, including variable names, labels, types, and missing values. Computes compact descriptive statistics, frequency tables, and cross-tabulations to assist with efficient data exploration. Facilitates the identification of missing data patterns and structural issues in datasets. Designed to streamline initial data management and exploratory analysis workflows within ‘R’.
 }
 \seealso{
 Useful links:
