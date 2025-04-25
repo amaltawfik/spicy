@@ -27,5 +27,4 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Depends: R (>= 4.1.0)
-News: NEWS.md
 Config/testthat/edition: 3
