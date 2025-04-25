@@ -167,9 +167,7 @@ without formatting.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A formatted <code>data.frame</code> containing unique values of <code>x</code>, their frequencies (<code>N</code>) and percentages (<code>%</code>).</p><ul><li><p>If <code>valid = TRUE</code>, a percentage of valid values (<code>Valid_%</code>) is added.</p></li>
-<li><p>If <code>cum = TRUE</code>, cumulative frequencies (<code>%_cum</code>) are included.</p></li>
-<li><p>If <code>total = TRUE</code>, a "Total" row is added.</p></li>
+    <p>A formatted <code>data.frame</code> containing unique values of <code>x</code>, their frequencies (<code>N</code>), percentages (<code>%</code>), percentages of valid values (<code>Valid%</code>), with a "Total" row.</p><ul><li><p>If <code>cum = TRUE</code>, cumulative frequencies (<code>%cum</code> and <code>Valid%cum</code>) are included.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -193,16 +191,16 @@ without formatting.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class: factor</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Data: iris</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="va">iris</span> <span class="op">|&gt;</span> <span class="fu">freq</span><span class="op">(</span><span class="va">Species</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">iris</span> <span class="op">|&gt;</span> <span class="fu">freq</span><span class="op">(</span><span class="va">Species</span>, cum <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Frequency table: Species</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values       N     % Valid%</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  setosa      50  33.3   33.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  versicolor  50  33.3   33.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  virginica   50  33.3   33.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total      150 100.0  100.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values       N     % Valid%  %cum Valid%cum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  setosa      50  33.3   33.3  33.3      33.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  versicolor  50  33.3   33.3  66.7      66.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  virginica   50  33.3   33.3 100.0     100.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total      150 100.0  100.0 100.0     100.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ────────────────────────────────────────────</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class: factor</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Data: iris</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -233,8 +231,9 @@ without formatting.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Data: mtcars</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Weight: mpg</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://larmarange.github.io/labelled/" class="external-link">labelled</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With labelled variable</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://larmarange.github.io/labelled/" class="external-link">labelled</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>var1 <span class="op">=</span> <span class="fu"><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">set_variable_labels</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, label <span class="op">=</span> <span class="st">"Numeric Variable with Label"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>var2 <span class="op">=</span> <span class="fu"><a href="https://haven.tidyverse.org/reference/labelled.html" class="external-link">labelled</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"Medium"</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">"High"</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span></span>
