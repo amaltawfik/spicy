@@ -17,16 +17,21 @@ statistics fast, expressive, and easy to use.
 spicy is an R package for quick, consistent, and elegant exploration of
 data frames. It helps you:
 
-- Extract variable metadata and display compact summaries (`varlist()`).
+- Extract variable metadata and display compact summaries of dataset
+  variables, including names, labels, values, classes, number of
+  distinct non-missing values, number of valid observations, number of
+  missing observations (`varlist()`). Similar to the “Variable View” in
+  SPSS or the “Variables Manager” in Stata.
 - Compute frequency tables (`freq()`), row means (`mean_n()`), row sums
-  (`sum_n()`), and counts values (`count_n()`) with automatic handling
-  of missing data.
+  (`sum_n()`), and row count of specific values (`count_n()`) with
+  automatic handling of missing data.
 - Explore relationships between variables via cross-tabulations
   (`cross_tab()`), and Cramer’s V for categorical associations
   (`cramer_v()`).
 - Copy data or results directly to the clipboard (`copy_clipboard()`)
   for quick export.
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common types
+- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common
+  types.
 
 All with intuitive functions that produce clean, structured outputs.
 
