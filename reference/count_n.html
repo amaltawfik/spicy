@@ -153,31 +153,23 @@ This behavior applies to both character and factor columns. Factors are first co
 <h4 id="example-strict-vs-case-insensitive-matching-with-factors">Example: strict vs. case-insensitive matching with factors<a class="anchor" aria-label="anchor" href="#example-strict-vs-case-insensitive-matching-with-factors"></a></h4>
 
 
-<p></p><div class="sourceCode r"><pre><code>df &lt;- tibble::tibble(
-  x = factor(c("a", "b", "c")),
-  y = factor(c("b", "B", "a"))
-)
-
-# Strict match fails with character input
-count_n(df, count = "b", allow_coercion = FALSE)
-#&gt; [1] 0 0 0
-
-# Match works only where factor levels match exactly
-count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
-#&gt; [1] 0 1 0
-
-# Case-insensitive match succeeds for both "b" and "B"
-count_n(df, count = "b", ignore_case = TRUE)
-#&gt; [1] 1 2 0
-
-Like `row_count()`, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
-
-
-[2]: R:2
-[1]: R:1
-[1]: R:1
-[1]: R:1
-</code></pre><p></p></div>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"B"</span>, <span class="st">"a"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Strict match fails with character input</span></span>
+<span><span class="fu"><a href="../reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0 0 0</span></span>
+<span></span>
+<span><span class="co"># Match works only where factor levels match exactly</span></span>
+<span><span class="fu"><a href="../reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="st">"b"</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0 1 0</span></span>
+<span></span>
+<span><span class="co"># Case-insensitive match succeeds for both "b" and "B"</span></span>
+<span><span class="fu"><a href="../reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1 2 0</span></span></code></pre><p></p></div>
+<p>Like <code>datawizard::row_count()</code>, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.</p>
 </div>
 
 
