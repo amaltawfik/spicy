@@ -6,6 +6,8 @@
 \alias{spicy-package}
 \title{spicy: Tools for Data Management and Variable Exploration}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Includes tools to extract variable metadata, summarize distributions, compute descriptive statistics, and identify missing values.Enables efficient descriptive analysis and exploration of the structure and content of data frames.
 }
 \seealso{

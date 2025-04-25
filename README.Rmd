@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# spicy <img src="man/figures/logo.png" align="right" height="138" />
+# spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="right" height="139" alt="spicy website" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
