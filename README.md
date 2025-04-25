@@ -56,11 +56,17 @@ varlist(iris, tbl = TRUE)
 # Tabulate frequencies
 freq(iris$Species)
 
-# Cross-tab with percentages
+# Cross-tab with row percentages
 cross_tab(mtcars, cyl, gear, percent = "row")
 
-# Descriptive stats with counts
-mean_n(mtcars)
+# Compute row-wise mean/sum (all values must be valid by default)
+df <- data.frame(
+      var1 = c(10, NA, 30, 40, 50),
+      var2 = c(5, NA, 15, NA, 25),
+      var3 = c(NA, 30, 20, 50, 10)
+      )
+mean_n(df)
+sum_n(df)
 ```
 
 > All functions can be directly used in pipelines.
