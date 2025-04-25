@@ -12,21 +12,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-# spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="right" height="139" alt="spicy website" /></a>
+# spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="left" height="139" alt="spicy website" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <!-- badges: end -->
 
-`spicy` adds a dash of heat to data analysis, giving insights a whole new flavour! 🌶️  
-It is designed to make **variable exploration** and **descriptive statistics** fast, expressive, and easy to use.
+spicy adds a dash of heat to data analysis, giving insights a whole new flavour! 🌶️  
+It is designed to make variable exploration and descriptive statistics fast, expressive, and easy to use.
 
----
 
-## What is `spicy`?
 
-`spicy` is an R package for quick, consistent, and elegant **exploration of data frames**. It helps you:
+## What is spicy?
+
+spicy is an R package for quick, consistent, and elegant exploration of data frames. It helps you:
 
 - Summarize all variables at once  
 - Count values, compute means/sums, and tabulate frequencies  
@@ -34,13 +34,13 @@ It is designed to make **variable exploration** and **descriptive statistics** f
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common types  
 - Quickly copy results for reporting or teaching  
 
-All with **intuitive functions** that produce clean, structured outputs.
+All with intuitive functions that produce clean, structured outputs.
 
 ---
 
 ## Installation
 
-You can install the **development version** of `spicy` from GitHub with:
+You can install the development version of spicy from GitHub with:
 
 ```r
 # install.packages("pak")
