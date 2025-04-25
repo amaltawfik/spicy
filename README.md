@@ -9,22 +9,24 @@ MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <!-- badges: end -->
 
 spicy adds a dash of heat to data analysis, giving insights a whole new
-flavour! 🌶️  
-It is designed to make variable exploration and descriptive statistics
-fast, expressive, and easy to use.
+flavour! It is designed to make variable exploration and descriptive
+statistics fast, expressive, and easy to use.
 
 ## What is spicy?
 
 spicy is an R package for quick, consistent, and elegant exploration of
 data frames. It helps you:
 
-- Summarize all variables at once  
-- Count values, compute means/sums, and tabulate frequencies  
-- Explore relationships between variables via cross-tabulations and
-  association measures  
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common
-  types  
-- Quickly copy results for reporting or teaching
+- Extract variable metadata and display compact summaries (`varlist()`).
+- Compute frequency tables (`freq()`), row means (`mean_n()`), row sums
+  (`sum_n()`), and counts values (`count_n()`) with automatic handling
+  of missing data.
+- Explore relationships between variables via cross-tabulations
+  (`cross_tab()`), and Cramer’s V for categorical associations
+  (`cramer_v()`).
+- Copy data or results directly to the clipboard (`copy_clipboard()`)
+  for quick export.
+- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common types
 
 All with intuitive functions that produce clean, structured outputs.
 

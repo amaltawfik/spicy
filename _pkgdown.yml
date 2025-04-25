@@ -1,4 +1,5 @@
 url: https://amaltawfik.github.io/spicy/
 template:
   bootstrap: 5
+  light-switch: true
 
