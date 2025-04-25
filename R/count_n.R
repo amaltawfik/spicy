@@ -74,8 +74,8 @@
 #' # Case-insensitive match succeeds for both "b" and "B"
 #' count_n(df, count = "b", ignore_case = TRUE)
 #' #> [1] 1 2 0
-#'
-#' Like `row_count()`, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
+#' ```
+#' Like `datawizard::row_count()`, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
 #'
 #' @examples
 #' library(dplyr)
