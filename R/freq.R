@@ -31,10 +31,8 @@
 #'   without formatting.
 #' @param show_empty_levels Logical. If `FALSE` (default), factor levels with `N = 0` are removed from the output. Set to `TRUE` to retain all levels, even those with no observations.
 #' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
-#' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`) and percentages (`%`).
-#'   - If `valid = TRUE`, a percentage of valid values (`Valid_%`) is added.
-#'   - If `cum = TRUE`, cumulative frequencies (`%_cum`) are included.
-#'   - If `total = TRUE`, a "Total" row is added.
+#' @returns A formatted `data.frame` containing unique values of `x`, their frequencies (`N`), percentages (`%`), percentages of valid values (`Valid%`), with a "Total" row.
+#'   - If `cum = TRUE`, cumulative frequencies (`%cum` and `Valid%cum`) are included.
 #' @importFrom dplyr pull
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
@@ -49,11 +47,12 @@
 #' data(iris)
 #' data(mtcars)
 #' freq(iris, Species)
-#' iris |> freq(Species)
+#' iris |> freq(Species, cum = TRUE)
 #' freq(mtcars, cyl, sort = "-", cum = TRUE)
 #' freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
-#' library(labelled)
+#'
 #' # With labelled variable
+#' library(labelled)
 #' df <- data.frame(
 #' var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
 #' var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
@@ -278,7 +277,7 @@ freq <- function(
 #'
 #' `fre()` is a convenient shorthand for `freq()` that offers identical functionality with a shorter name.
 #'
-#' For full documentation and examples, see [`freq()`].
+#' For full documentation and examples, see `freq()`.
 #'
 #' @aliases fre
 #' @rdname freq
@@ -302,11 +301,9 @@ fre <- function(
     show_empty_levels = FALSE,
     ...
 ) {
-  # Capture x and weights unevaluated
   x_expr <- substitute(x)
   weights_expr <- substitute(weights)
 
-  # Appel à freq() en injectant les expressions non évaluées
   eval(bquote(freq(
     data = data,
     x = .(x_expr),

@@ -92,11 +92,9 @@ without formatting.}
 \item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
 }
 \value{
-A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}) and percentages (\verb{\%}).
+A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}), percentages (\verb{\%}), percentages of valid values (\verb{Valid\%}), with a "Total" row.
 \itemize{
-\item If \code{valid = TRUE}, a percentage of valid values (\verb{Valid_\%}) is added.
-\item If \code{cum = TRUE}, cumulative frequencies (\verb{\%_cum}) are included.
-\item If \code{total = TRUE}, a "Total" row is added.
+\item If \code{cum = TRUE}, cumulative frequencies (\verb{\%cum} and \verb{Valid\%cum}) are included.
 }
 }
 \description{
@@ -105,17 +103,18 @@ A formatted \code{data.frame} containing unique values of \code{x}, their freque
 \code{fre()} is a convenient shorthand for \code{freq()} that offers identical functionality with a shorter name.
 }
 \details{
-For full documentation and examples, see \code{\link[=freq]{freq()}}.
+For full documentation and examples, see \code{freq()}.
 }
 \examples{
 data(iris)
 data(mtcars)
 freq(iris, Species)
-iris |> freq(Species)
+iris |> freq(Species, cum = TRUE)
 freq(mtcars, cyl, sort = "-", cum = TRUE)
 freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
-library(labelled)
+
 # With labelled variable
+library(labelled)
 df <- data.frame(
 var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
 var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
