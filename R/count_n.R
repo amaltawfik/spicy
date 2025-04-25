@@ -27,7 +27,7 @@
 #' @return A numeric vector of row-wise counts (unnamed).
 #'
 #' @note
-#' This function is inspired by `datawizard::row_count()`, but provides additional flexibility:
+#' This function is inspired by [datawizard::row_count()], but provides additional flexibility:
 #'
 #' * **Element-wise type-safe matching** using `identical()` when `allow_coercion = FALSE`. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.
 #' * **Support for multiple values in `count`**, allowing queries like `count = c(2, 3)` or `count = c("yes", "no")` to count any of several values per row.
@@ -75,7 +75,8 @@
 #' count_n(df, count = "b", ignore_case = TRUE)
 #' #> [1] 1 2 0
 #' ```
-#' Like `datawizard::row_count()`, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
+#'
+#' Like [datawizard::row_count()], this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
 #'
 #' @examples
 #' library(dplyr)

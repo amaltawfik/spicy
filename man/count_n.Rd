@@ -55,7 +55,7 @@ and is designed to work fluently inside \code{dplyr::mutate()} pipelines.
 Internally, \code{count_n()} wraps the stable and dependency-free base function \code{base_count_n()}, allowing high flexibility and testability.
 }
 \note{
-This function is inspired by \code{datawizard::row_count()}, but provides additional flexibility:
+This function is inspired by \code{\link[datawizard:row_count]{datawizard::row_count()}}, but provides additional flexibility:
 \itemize{
 \item \strong{Element-wise type-safe matching} using \code{identical()} when \code{allow_coercion = FALSE}. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.
 \item \strong{Support for multiple values in \code{count}}, allowing queries like \code{count = c(2, 3)} or \code{count = c("yes", "no")} to count any of several values per row.
@@ -108,7 +108,7 @@ count_n(df, count = "b", ignore_case = TRUE)
 #> [1] 1 2 0
 }\if{html}{\out{</div>}}
 
-Like \code{datawizard::row_count()}, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
+Like \code{\link[datawizard:row_count]{datawizard::row_count()}}, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
 }
 
 }
