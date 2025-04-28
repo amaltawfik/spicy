@@ -4,19 +4,33 @@
 \alias{cramer_v}
 \title{Compute Cramer's V}
 \usage{
-cramer_v(tab)
+cramer_v(x)
 }
 \arguments{
-\item{tab}{A table on which to compute the statistic}
+\item{x}{A contingency table (of class \code{table}) for which to compute the statistic.}
+}
+\value{
+A numeric vector of length 1, representing the Cramer's V statistic.
 }
 \description{
-\code{cramer_v} computes Cramer's V for a two-way frequency table, which measures the strength of the association between categorical variables.
+\code{cramer_v()} computes Cramer's V for a two-way frequency table, measuring the strength of association between two categorical variables.
+}
+\details{
+Cramer's V is based on the chi-squared statistic and adjusts for the size of the table.
+It is suitable for nominal (unordered categorical) variables.
 }
 \examples{
-\dontrun{
-library(dplyr)
-data("starwars")
-tab <- table(starwars$hair_color, starwars$gender)
+# Example with mtcars dataset
+data(mtcars)
+
+# Discretize continuous variables
+mtcars$gear <- as.factor(mtcars$gear)
+mtcars$cyl <- as.factor(mtcars$cyl)
+
+# Create contingency table
+tab <- table(mtcars$gear, mtcars$cyl)
+
+# Compute Cramer's V
 cramer_v(tab)
-}
+
 }
