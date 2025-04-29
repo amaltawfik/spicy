@@ -2,28 +2,9 @@
 % Please edit documentation in R/cross_tab.R
 \name{cross_tab}
 \alias{cross_tab}
-\alias{ct}
 \title{Cross-Tabulation with Percentages, Weights, and Grouping}
 \usage{
 cross_tab(
-  d = parent.frame(),
-  x,
-  y = NULL,
-  by = NULL,
-  weights = NULL,
-  rescale_weights = FALSE,
-  digits = 1,
-  rowprct = FALSE,
-  row_total = TRUE,
-  column_total = TRUE,
-  n = TRUE,
-  drop = TRUE,
-  include_stats = TRUE,
-  combine = FALSE,
-  ...
-)
-
-ct(
   d = parent.frame(),
   x,
   y = NULL,
@@ -139,7 +120,4 @@ cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 # Without totals or sample size
 cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
 
-}
-\seealso{
-\code{\link[=cross_tab]{cross_tab()}}
 }

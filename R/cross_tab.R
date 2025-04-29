@@ -81,7 +81,6 @@
 #' # Without totals or sample size
 #' cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
 #'
-#' @aliases ct
 #' @export
 
 cross_tab <- function(
@@ -420,42 +419,3 @@ cross_tab <- function(
   return(compute_ctab(x_vals, y_vals, weights_vals))
 }
 
-
-#' Alias for cross_tab()
-#'
-#' @rdname cross_tab
-#' @seealso [cross_tab()]
-#' @export
-ct <- function(
-    d = parent.frame(), x, y = NULL, by = NULL, weights = NULL,
-    rescale_weights = FALSE, digits = 1, rowprct = FALSE, row_total = TRUE,
-    column_total = TRUE, n = TRUE, drop = TRUE, include_stats = TRUE,
-    combine = FALSE, ...
-) {
-  x <- substitute(x)
-  y <- substitute(y)
-  by <- substitute(by)
-
-  args <- list(
-    d = d,
-    x = x,
-    y = y,
-    by = by,
-    rescale_weights = rescale_weights,
-    digits = digits,
-    rowprct = rowprct,
-    row_total = row_total,
-    column_total = column_total,
-    n = n,
-    drop = drop,
-    include_stats = include_stats,
-    combine = combine,
-    ...
-  )
-
-  if (!missing(weights)) {
-    args$weights <- substitute(weights)
-  }
-
-  do.call(cross_tab, args)
-}
