@@ -2,29 +2,9 @@
 % Please edit documentation in R/freq.R
 \name{freq}
 \alias{freq}
-\alias{fre}
 \title{Frequency Table}
 \usage{
 freq(
-  data,
-  x = NULL,
-  weights = NULL,
-  digits = 1,
-  cum = FALSE,
-  total = TRUE,
-  exclude = NULL,
-  sort = "",
-  valid = TRUE,
-  na_val = NULL,
-  rescale_weights = FALSE,
-  info = TRUE,
-  labelled_levels = c("prefixed", "labels", "values"),
-  styled = TRUE,
-  show_empty_levels = FALSE,
-  ...
-)
-
-fre(
   data,
   x = NULL,
   weights = NULL,
@@ -99,11 +79,6 @@ A formatted \code{data.frame} containing unique values of \code{x}, their freque
 }
 \description{
 \code{freq()} creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
-
-\code{fre()} is a convenient shorthand for \code{freq()} that offers identical functionality with a shorter name.
-}
-\details{
-For full documentation and examples, see \code{freq()}.
 }
 \examples{
 data(iris)

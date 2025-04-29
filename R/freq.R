@@ -2,7 +2,6 @@
 #'
 #' `freq()` creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
 #'
-#' @aliases fre
 #'
 #' @param data A `data.frame`, vector or factor. If a `data.frame` is provided, the target variable `x` must be specified.
 #'   Matrices are not supported; please extract a column or convert to a vector or tibble before use.
@@ -273,53 +272,3 @@ freq <- function(
 }
 
 
-#' Alias for `freq()`
-#'
-#' `fre()` is a convenient shorthand for `freq()` that offers identical functionality with a shorter name.
-#'
-#' For full documentation and examples, see `freq()`.
-#'
-#' @aliases fre
-#' @rdname freq
-#'
-#' @export
-fre <- function(
-    data,
-    x = NULL,
-    weights = NULL,
-    digits = 1,
-    cum = FALSE,
-    total = TRUE,
-    exclude = NULL,
-    sort = "",
-    valid = TRUE,
-    na_val = NULL,
-    rescale_weights = FALSE,
-    info = TRUE,
-    labelled_levels = c("prefixed", "labels", "values"),
-    styled = TRUE,
-    show_empty_levels = FALSE,
-    ...
-) {
-  x_expr <- substitute(x)
-  weights_expr <- substitute(weights)
-
-  eval(bquote(freq(
-    data = data,
-    x = .(x_expr),
-    weights = .(weights_expr),
-    digits = digits,
-    cum = cum,
-    total = total,
-    exclude = exclude,
-    sort = sort,
-    valid = valid,
-    na_val = na_val,
-    rescale_weights = rescale_weights,
-    info = info,
-    labelled_levels = labelled_levels,
-    styled = styled,
-    show_empty_levels = show_empty_levels,
-    ...
-  )))
-}
