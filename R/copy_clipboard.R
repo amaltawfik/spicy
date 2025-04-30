@@ -24,7 +24,6 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' # Data frame
 #' copy_clipboard(mtcars)
 #'
@@ -54,7 +53,6 @@
 #'
 #' # Quiet mode (no messages shown)
 #' copy_clipboard(mtcars, quiet = TRUE)
-#' }
 
 
 copy_clipboard <- function(

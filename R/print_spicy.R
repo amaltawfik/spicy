@@ -14,9 +14,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' print.spicy(mtcars)
-#' }
 
 print.spicy <- function(x, ...) {
   df <- as.data.frame(x)
