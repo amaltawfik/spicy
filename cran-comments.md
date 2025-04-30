@@ -14,3 +14,10 @@ In this version I have:
 * Delete \dontrun{} for @examples (cramer_v.Rd)
 
 * Removes alias fre() and ct()
+
+## Resubmission (last)
+In this version I have:
+
+* Remove \dontrun{} from examples print.spicy.Rd
+
+* Change \dontrun{} to \donttest{} from examples copy_clipboard.Rd 
