@@ -20,7 +20,7 @@ The first column is left-aligned, while all other columns are right-aligned. Col
 based on the longest value in each column, including column names.
 }
 \examples{
-\dontrun{
-print.spicy(mtcars)
-}
+x <- mtcars
+class(x) <- c("spicy", class(x))
+print(x)
 }

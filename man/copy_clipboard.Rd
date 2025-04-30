@@ -44,35 +44,37 @@ For multidimensional arrays (e.g. 3D arrays), the entire array is flattened into
 To preserve a tabular structure, you should extract a 2D slice before copying. For example: \code{copy_clipboard(my_array[, , 1])}.
 }
 \examples{
-\dontrun{
-# Data frame
-copy_clipboard(mtcars)
+\donttest{
+if (clipr::clipr_available()) {
+  # Data frame
+  copy_clipboard(mtcars)
 
-# Data frame with row names as column
-copy_clipboard(mtcars, row.names.as.col = "car")
+  # Data frame with row names as column
+  copy_clipboard(mtcars, row.names.as.col = "car")
 
-# Matrix
-mat <- matrix(1:6, nrow = 2)
-copy_clipboard(mat)
+  # Matrix
+  mat <- matrix(1:6, nrow = 2)
+  copy_clipboard(mat)
 
-# Table
-tbl <- table(iris$Species)
-copy_clipboard(tbl)
+  # Table
+  tbl <- table(iris$Species)
+  copy_clipboard(tbl)
 
-# Array (3D) — flattened to character
-arr <- array(1:8, dim = c(2, 2, 2))
-copy_clipboard(arr)
+  # Array (3D) — flattened to character
+  arr <- array(1:8, dim = c(2, 2, 2))
+  copy_clipboard(arr)
 
-# Recommended: copy 2D slice for tabular layout
-copy_clipboard(arr[, , 1])
+  # Recommended: copy 2D slice for tabular layout
+  copy_clipboard(arr[, , 1])
 
-# Numeric vector
-copy_clipboard(c(3.14, 2.71, 1.618))
+  # Numeric vector
+  copy_clipboard(c(3.14, 2.71, 1.618))
 
-# Character vector
-copy_clipboard(c("apple", "banana", "cherry"))
+  # Character vector
+  copy_clipboard(c("apple", "banana", "cherry"))
 
-# Quiet mode (no messages shown)
-copy_clipboard(mtcars, quiet = TRUE)
+  # Quiet mode (no messages shown)
+  copy_clipboard(mtcars, quiet = TRUE)
+}
 }
 }
