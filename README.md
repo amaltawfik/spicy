@@ -3,9 +3,15 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version-ago/spicy)](https://cloud.r-project.org/web/packages/spicy/)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
+[![GitHub
+release](https://img.shields.io/github/v/release/amaltawfik/spicy?include_prereleases&label=GitHub%20release)](https://github.com/amaltawfik/spicy/releases)
 [![License:
-MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+MIT](https://img.shields.io/github/license/amaltawfik/spicy)](https://github.com/amaltawfik/spicy/blob/main/LICENSE)
+[![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 spicy adds a dash of heat to data analysis, giving insights a whole new
@@ -38,6 +44,12 @@ All with intuitive functions that produce clean, structured outputs.
 ------------------------------------------------------------------------
 
 ## Installation
+
+For the stable version, install from CRAN.
+
+``` r
+install.packages("spicy")
+```
 
 You can install the development version of spicy from GitHub with:
 
