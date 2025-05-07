@@ -9,9 +9,12 @@ status](https://www.r-pkg.org/badges/version-ago/spicy)](https://cloud.r-project
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 [![GitHub
 release](https://img.shields.io/github/v/release/amaltawfik/spicy?include_prereleases&label=GitHub%20release)](https://github.com/amaltawfik/spicy/releases)
-[![License:
-MIT](https://img.shields.io/github/license/amaltawfik/spicy)](https://github.com/amaltawfik/spicy/blob/main/LICENSE)
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
+[![Project Status: Active - The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![MIT
+License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
 spicy adds a dash of heat to data analysis, giving insights a whole new
