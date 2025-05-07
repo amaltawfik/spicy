@@ -27,22 +27,24 @@ spicy is an R package for quick, consistent, and elegant exploration of
 data frames. It helps you:
 
 - Extract variable metadata and display compact summaries of dataset
-  variables, including names, labels, values, classes, number of
-  distinct non-missing values, number of valid observations, number of
-  missing observations (`varlist()`). Similar to the “Variable View” in
-  SPSS or the “Variables Manager” in Stata.
-- Compute frequency tables (`freq()`), row means (`mean_n()`), row sums
-  (`sum_n()`), and row count of specific values (`count_n()`) with
-  automatic handling of missing data.
-- Explore relationships between variables via cross-tabulations
-  (`cross_tab()`), and Cramer’s V for categorical associations
-  (`cramer_v()`).
-- Copy data or results directly to the clipboard (`copy_clipboard()`)
-  for quick export.
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other common
-  types.
+  variables using `varlist()` (with `vl()` as a convenient shortcut),
+  including names, labels, values, classes, number of distinct
+  non-missing values, number of valid observations, number of missing
+  observations. Similar to the “Variable View” in SPSS or the “Variables
+  Manager” in Stata.
+- Compute frequency tables with `freq()`, row-wise means with
+  `mean_n()`, row-wise sums with `sum_n()`, and counts of specific
+  values using `count_n()` — all with automatic handling of missing
+  data.
+- Explore relationships between categorical variables using
+  `cross_tab()` for contingency tables and `cramer_v()` for association
+  strength.
+- Copy data frames or result tables directly to the clipboard using
+  `copy_clipboard()` for fast export to spreadsheets or text editors.
+- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
+  used variable types.
 
-All with intuitive functions that produce clean, structured outputs.
+All with intuitive functions that return clean, structured outputs.
 
 ------------------------------------------------------------------------
 
