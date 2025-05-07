@@ -74,13 +74,13 @@
 </h2>
 <p>spicy is an R package for quick, consistent, and elegant exploration of data frames. It helps you:</p>
 <ul>
-<li>Extract variable metadata and display compact summaries of dataset variables, including names, labels, values, classes, number of distinct non-missing values, number of valid observations, number of missing observations (<code><a href="reference/varlist.html">varlist()</a></code>). Similar to the “Variable View” in SPSS or the “Variables Manager” in Stata.</li>
-<li>Compute frequency tables (<code><a href="reference/freq.html">freq()</a></code>), row means (<code><a href="reference/mean_n.html">mean_n()</a></code>), row sums (<code><a href="reference/sum_n.html">sum_n()</a></code>), and row count of specific values (<code><a href="reference/count_n.html">count_n()</a></code>) with automatic handling of missing data.</li>
-<li>Explore relationships between variables via cross-tabulations (<code><a href="reference/cross_tab.html">cross_tab()</a></code>), and Cramer’s V for categorical associations (<code><a href="reference/cramer_v.html">cramer_v()</a></code>).</li>
-<li>Copy data or results directly to the clipboard (<code><a href="reference/copy_clipboard.html">copy_clipboard()</a></code>) for quick export.</li>
-<li>Handle <code>labelled</code>, <code>factor</code>, <code>Date</code>, <code>POSIXct</code>, and other common types.</li>
+<li>Extract variable metadata and display compact summaries of dataset variables using <code><a href="reference/varlist.html">varlist()</a></code> (with <code><a href="reference/varlist.html">vl()</a></code> as a convenient shortcut), including names, labels, values, classes, number of distinct non-missing values, number of valid observations, number of missing observations. Similar to the “Variable View” in SPSS or the “Variables Manager” in Stata.</li>
+<li>Compute frequency tables with <code><a href="reference/freq.html">freq()</a></code>, row-wise means with <code><a href="reference/mean_n.html">mean_n()</a></code>, row-wise sums with <code><a href="reference/sum_n.html">sum_n()</a></code>, and counts of specific values using <code><a href="reference/count_n.html">count_n()</a></code> — all with automatic handling of missing data.</li>
+<li>Explore relationships between categorical variables using <code><a href="reference/cross_tab.html">cross_tab()</a></code> for contingency tables and <code><a href="reference/cramer_v.html">cramer_v()</a></code> for association strength.</li>
+<li>Copy data frames or result tables directly to the clipboard using <code><a href="reference/copy_clipboard.html">copy_clipboard()</a></code> for fast export to spreadsheets or text editors.</li>
+<li>Handle <code>labelled</code>, <code>factor</code>, <code>Date</code>, <code>POSIXct</code>, and other commonly used variable types.</li>
 </ul>
-<p>All with intuitive functions that produce clean, structured outputs.</p>
+<p>All with intuitive functions that return clean, structured outputs.</p>
 <hr>
 </div>
 <div class="section level2">
