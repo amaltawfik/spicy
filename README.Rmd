@@ -71,7 +71,7 @@ varlist(iris, tbl = TRUE)
 freq(iris$Species)
 
 # Cross-tab with row percentages
-cross_tab(mtcars, cyl, gear)
+cross_tab(mtcars, cyl, gear, rowprct = TRUE)
 
 # Compute row-wise mean/sum (all values must be valid by default)
 df <- data.frame(
