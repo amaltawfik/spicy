@@ -61,19 +61,28 @@ pak::pak("amaltawfik/spicy")
 
 Here are some quick examples using built-in datasets:
 
-```r
+```{r eval = TRUE}
 library(spicy)
 
-# Get a summary of all variables
+# Get a summary of all variables in the Viewer
+varlist(iris)
+
+# Get a summary of all variables as a tibble
 varlist(iris, tbl = TRUE)
 
-# Tabulate frequencies
-freq(iris$Species)
+# Tabulate frequencies with sort alphabetically (Z-A)
+freq(iris, Species, sort = "name-")
+
+# Cross-tab with column percentages
+cross_tab(mtcars, cyl, gear)
 
 # Cross-tab with row percentages
 cross_tab(mtcars, cyl, gear, rowprct = TRUE)
 
-# Compute row-wise mean/sum (all values must be valid by default)
+# Cross-tab with column percentages grouped by a single variable
+cross_tab(mtcars, cyl, gear, by = am)
+
+# Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
       var1 = c(10, NA, 30, 40, 50),
       var2 = c(5, NA, 15, NA, 25),
@@ -81,6 +90,8 @@ df <- data.frame(
       )
 mean_n(df)
 sum_n(df)
+count_n(df, count = 10)
+count_n(df, special = "NA")
 
 ```
 

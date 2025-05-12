@@ -72,23 +72,104 @@ Here are some quick examples using built-in datasets:
 ``` r
 library(spicy)
 
-# Get a summary of all variables
-varlist(iris, tbl = TRUE)
+# Get a summary of all variables in the Viewer
+varlist(iris)
+#> Non-interactive session: use `tbl = TRUE` to return the table.
 
-# Tabulate frequencies
-freq(iris$Species)
+# Get a summary of all variables as a tibble
+varlist(iris, tbl = TRUE)
+#> # A tibble: 5 × 7
+#>   Variable     Label Values                        Class Ndist_val N_valid   NAs
+#>   <chr>        <chr> <chr>                         <chr>     <int>   <int> <int>
+#> 1 Sepal.Length <NA>  4.3, 4.4, 4.5, ..., 7.9       nume…        35     150     0
+#> 2 Sepal.Width  <NA>  2, 2.2, 2.3, ..., 4.4         nume…        23     150     0
+#> 3 Petal.Length <NA>  1, 1.1, 1.2, ..., 6.9         nume…        43     150     0
+#> 4 Petal.Width  <NA>  0.1, 0.2, 0.3, ..., 2.5       nume…        22     150     0
+#> 5 Species      <NA>  setosa, versicolor, virginica fact…         3     150     0
+
+# Tabulate frequencies with sort alphabetically (Z-A)
+freq(iris, Species, sort = "name-")
+#> Frequency table: Species
+#> ────────────────────────────
+#>  Values       N     % Valid%
+#> ────────────────────────────
+#>  virginica   50  33.3   33.3
+#>  versicolor  50  33.3   33.3
+#>  setosa      50  33.3   33.3
+#>  Total      150 100.0  100.0
+#> ────────────────────────────
+#> Class: factor
+#> Data: iris
+
+# Cross-tab with column percentages
+cross_tab(mtcars, cyl, gear)
+#> Crosstable: cyl x gear (%)
+#> ─────────────────────────────────────────
+#>  Values           3     4     5 Row_Total
+#> ─────────────────────────────────────────
+#>  4              6.7  66.7  40.0      34.4
+#>  6             13.3  33.3  20.0      21.9
+#>  8             80.0   0.0  40.0      43.8
+#>  Column_Total 100.0 100.0 100.0     100.0
+#>  N             15.0  12.0   5.0      32.0
+#> ─────────────────────────────────────────
+#> Chi-2 = 18 (df = 4), p = 0.00121, Cramer's V = 0.53
 
 # Cross-tab with row percentages
 cross_tab(mtcars, cyl, gear, rowprct = TRUE)
+#> Crosstable: cyl x gear (%)
+#> ─────────────────────────────────────────
+#>  Values          3    4    5 Row_Total  N
+#> ─────────────────────────────────────────
+#>  4             9.1 72.7 18.2     100.0 11
+#>  6            28.6 57.1 14.3     100.0  7
+#>  8            85.7  0.0 14.3     100.0 14
+#>  Column_Total 46.9 37.5 15.6     100.0 32
+#> ─────────────────────────────────────────
+#> Chi-2 = 18 (df = 4), p = 0.00121, Cramer's V = 0.53
 
-# Compute row-wise mean/sum (all values must be valid by default)
+# Cross-tab with column percentages grouped by a single variable
+cross_tab(mtcars, cyl, gear, by = am)
+#> $`0`
+#> Crosstable: cyl x gear | am = 0 (%)
+#> ───────────────────────────────────
+#>  Values           3     4 Row_Total
+#> ───────────────────────────────────
+#>  4              6.7  50.0      15.8
+#>  6             13.3  50.0      21.1
+#>  8             80.0   0.0      63.2
+#>  Column_Total 100.0 100.0     100.0
+#>  N             15.0   4.0      19.0
+#> ───────────────────────────────────
+#> Chi-2 = 9 (df = 2), p = 0.0113, Cramer's V = 0.69
+#> 
+#> $`1`
+#> Crosstable: cyl x gear | am = 1 (%)
+#> ───────────────────────────────────
+#>  Values           4     5 Row_Total
+#> ───────────────────────────────────
+#>  4             75.0  40.0      61.5
+#>  6             25.0  20.0      23.1
+#>  8              0.0  40.0      15.4
+#>  Column_Total 100.0 100.0     100.0
+#>  N              8.0   5.0      13.0
+#> ───────────────────────────────────
+#> Chi-2 = 3.8 (df = 2), p = 0.146, Cramer's V = 0.54
+
+# Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
       var1 = c(10, NA, 30, 40, 50),
       var2 = c(5, NA, 15, NA, 25),
       var3 = c(NA, 30, 20, 50, 10)
       )
 mean_n(df)
+#> [1]       NA       NA 21.66667       NA 28.33333
 sum_n(df)
+#> [1] NA NA 65 NA 85
+count_n(df, count = 10)
+#> [1] 1 0 0 0 1
+count_n(df, special = "NA")
+#> [1] 1 2 0 1 0
 ```
 
 > All functions can be directly used in pipelines.
