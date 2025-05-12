@@ -146,5 +146,3 @@ citation("spicy")
 
 This package is licensed under the MIT license. See [`LICENSE`](LICENSE) for details.
 
-
-
