@@ -71,37 +71,23 @@ Here are some quick examples using built-in datasets:
 
 ``` r
 library(spicy)
+library(dplyr)
 
 # Get a summary of all variables in the Viewer
 varlist(iris)
 ```
 
-![](man/figures/varlist_1.png)
+<img src="man/figures/varlist_1.png" alt="Summary of all variables shown in the Viewer">
 
 ``` r
-# Get a summary of variables starts with "d" in the Viewer
+# Get a summary of the variables that start with "d" in the Viewer
 # Asterisks (*) in the title indicate that the data frame has been subsetted
 vl(mtcars, starts_with("d"))
 ```
 
-![](man/figures/varlist_2.png)
+<img src="man/figures/varlist_2.png" alt="Summary of the variables that start with d in the Viewer">
 
 ``` r
-# Get a summary of all variables as a tibble
-varlist(iris, tbl = TRUE)
-#> # A tibble: 5 × 7
-#>   Variable     Label Values                        Class Ndist_val N_valid   NAs
-#>   <chr>        <chr> <chr>                         <chr>     <int>   <int> <int>
-#> 1 Sepal.Length <NA>  4.3, 4.4, 4.5, ..., 7.9       nume…        35     150     0
-#> 2 Sepal.Width  <NA>  2, 2.2, 2.3, ..., 4.4         nume…        23     150     0
-#> 3 Petal.Length <NA>  1, 1.1, 1.2, ..., 6.9         nume…        43     150     0
-#> 4 Petal.Width  <NA>  0.1, 0.2, 0.3, ..., 2.5       nume…        22     150     0
-#> 5 Species      <NA>  setosa, versicolor, virginica fact…         3     150     0
-
-# Get a summary of all variables in the Viewer
-varlist(iris)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
-
 # Get a summary of all variables as a tibble
 varlist(iris, tbl = TRUE)
 #> # A tibble: 5 × 7
@@ -188,6 +174,13 @@ df <- data.frame(
       var2 = c(5, NA, 15, NA, 25),
       var3 = c(NA, 30, 20, 50, 10)
       )
+df
+#>   var1 var2 var3
+#> 1   10    5   NA
+#> 2   NA   NA   30
+#> 3   30   15   20
+#> 4   40   NA   50
+#> 5   50   25   10
 mean_n(df)
 #> [1]       NA       NA 21.66667       NA 28.33333
 sum_n(df)
@@ -196,6 +189,13 @@ count_n(df, count = 10)
 #> [1] 1 0 0 0 1
 count_n(df, special = "NA")
 #> [1] 1 2 0 1 0
+df |> mutate(count30 = count_n(count = 30))
+#>   var1 var2 var3 count30
+#> 1   10    5   NA       0
+#> 2   NA   NA   30       1
+#> 3   30   15   20       1
+#> 4   40   NA   50       0
+#> 5   50   25   10       0
 ```
 
 > All functions can be directly used in pipelines.
