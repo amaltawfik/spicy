@@ -15,6 +15,8 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT
 License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
+[![Codecov test
+coverage](https://codecov.io/gh/amaltawfik/spicy/graph/badge.svg)](https://app.codecov.io/gh/amaltawfik/spicy)
 <!-- badges: end -->
 
 spicy adds a dash of heat to data analysis, giving insights a whole new
