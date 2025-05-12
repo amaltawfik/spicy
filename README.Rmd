@@ -60,9 +60,31 @@ pak::pak("amaltawfik/spicy")
 ## Example usage
 
 Here are some quick examples using built-in datasets:
-
-```{r eval = TRUE}
+```{r eval=FALSE}
 library(spicy)
+
+# Get a summary of all variables in the Viewer
+varlist(iris)
+
+```
+![](man/figures/varlist_1.png)
+
+
+```{r eval=FALSE}
+# Get a summary of variables starts with "d" in the Viewer
+# Asterisks (*) in the title indicate that the data frame has been subsetted
+vl(mtcars, starts_with("d"))
+```
+![](man/figures/varlist_2.png)
+
+```{r echo=FALSE}
+library(spicy)
+
+```
+
+```{r eval=TRUE}
+# Get a summary of all variables as a tibble
+varlist(iris, tbl = TRUE)
 
 # Get a summary of all variables in the Viewer
 varlist(iris)
