@@ -6,7 +6,7 @@ bibentry(
   author = person(given = "Amal", family = "Tawfik"),
   year = "2025",
   organization = "R Project",
-  note = "R package version 0.1.0. DOI: 10.5281/zenodo.15351548",
+  note = "R package version 0.1.0. DOI: 10.5281/zenodo.15397865",
   url = "https://github.com/amaltawfik/spicy"
 )
 
