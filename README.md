@@ -218,7 +218,7 @@ If you use `spicy` in a publication or teaching material, please cite it
 as:
 
 > Tawfik, A. (2025). *spicy: Tools for Data Management and Variable
-> Exploration* (Version 0.1.0) \[R package\]. R Project.
+> Exploration* (Version 0.1.0) \[R package\].
 > <https://doi.org/10.5281/zenodo.15397865>
 
 You can also get the citation in R format by typing:
