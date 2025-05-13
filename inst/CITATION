@@ -1,0 +1,12 @@
+citHeader("To cite the spicy package in publications, use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "spicy: Tools for Data Management and Variable Exploration",
+  author = person(given = "Amal", family = "Tawfik"),
+  year = "2025",
+  organization = "R Project",
+  note = "R package version 0.1.0. DOI: 10.5281/zenodo.15351548",
+  url = "https://github.com/amaltawfik/spicy"
+)
+

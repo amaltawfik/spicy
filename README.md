@@ -15,6 +15,7 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT
 License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15351547)
 <!-- badges: end -->
 
 spicy adds a dash of heat to data analysis, giving insights a whole new
@@ -217,14 +218,16 @@ If you use `spicy` in a publication or teaching material, please cite it
 as:
 
 > Tawfik, A. (2025). *spicy: Tools for Data Management and Variable
-> Exploration*. R package version 0.1.0.
-> <https://github.com/amaltawfik/spicy>
+> Exploration* (Version 0.1.0) \[R package\]. R Project.
+> <https://doi.org/10.5281/zenodo.15351548>
 
 You can also get the citation in R format by typing:
 
 ``` r
 citation("spicy")
 ```
+
+Or [download the BibTeX citation](inst/citation.bib) directly.
 
 ------------------------------------------------------------------------
 
