@@ -1,4 +1,4 @@
-#' Derive variable labels from column names "name<sep>label"
+#' Derive variable labels from column names \verb{name<sep>label}
 #'
 #' Splits each column name at the **first** occurrence of `sep`, renames
 #' the column to the part before `sep` (the *name*), and assigns the part
@@ -11,7 +11,7 @@
 #' default separator is `". "`.
 #'
 #' @param df A `data.frame` or tibble with column names of the form
-#'   `"name. label"` (by default from LimeSurvey).
+#'   \verb{"name<sep>label"} (e.g. "name. label"). (by default from LimeSurvey).
 #' @param sep Character string used as separator between name and label.
 #'   Default is `". "` (LimeSurvey's default), but any literal string can be used.
 #'
