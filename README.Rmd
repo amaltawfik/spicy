@@ -15,18 +15,16 @@ knitr::opts_chunk$set(
 # spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="left" height="139" alt="spicy website" /></a>
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version-ago/spicy)](https://cloud.r-project.org/web/packages/spicy/)
+[![CRAN status](https://www.r-pkg.org/badges/version-ago/spicy)](https://CRAN.R-project.org/package=spicy)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 [![GitHub release](https://img.shields.io/github/v/release/amaltawfik/spicy?include_prereleases&label=GitHub%20release)](https://github.com/amaltawfik/spicy/releases)
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-spicy adds a dash of heat to data analysis, giving insights a whole new flavour!
-It is designed to make variable exploration and descriptive statistics fast, expressive, and easy to use.
+spicy is designed to make variable exploration and descriptive statistics fast, expressive, and easy to use.
 
 
 ## What is spicy?
@@ -37,6 +35,7 @@ spicy is an R package for quick, consistent, and elegant exploration of data fra
 - Compute frequency tables with `freq()`, row-wise means with `mean_n()`, row-wise sums with `sum_n()`, and counts of specific values using `count_n()` — all with automatic handling of missing data.
 - Explore relationships between categorical variables using `cross_tab()` for contingency tables and `cramer_v()` for association strength.
 - Copy data frames or result tables directly to the clipboard using `copy_clipboard()` for fast export to spreadsheets or text editors.
+- Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow the `"name. Label"` convention.
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly used variable types.  
 
 All with intuitive functions that return clean, structured outputs.

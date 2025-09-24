@@ -4,7 +4,7 @@
 <!-- badges: start -->
 
 [![CRAN
-status](https://www.r-pkg.org/badges/version-ago/spicy)](https://cloud.r-project.org/web/packages/spicy/)
+status](https://www.r-pkg.org/badges/version-ago/spicy)](https://CRAN.R-project.org/package=spicy)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 [![GitHub
@@ -18,8 +18,7 @@ License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
 <!-- badges: end -->
 
-spicy adds a dash of heat to data analysis, giving insights a whole new
-flavour! It is designed to make variable exploration and descriptive
+spicy is designed to make variable exploration and descriptive
 statistics fast, expressive, and easy to use.
 
 ## What is spicy?
@@ -42,6 +41,9 @@ data frames. It helps you:
   strength.
 - Copy data frames or result tables directly to the clipboard using
   `copy_clipboard()` for fast export to spreadsheets or text editors.
+- Extract and assign variable labels from column headers with
+  `label_from_names()`, especially useful for LimeSurvey CSV exports
+  where headers follow the `"name. Label"` convention.
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
   used variable types.
 
