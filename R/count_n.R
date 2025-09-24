@@ -138,7 +138,9 @@
 #' count_n(df, select = "^score_", regex = TRUE, count = 2)
 #' count_n(df, select = "lang", regex = TRUE, count = "2")
 #' df |> mutate(nb_two = count_n(count = 2))
-#' df |> select(score_math, score_science) |> mutate(nb_two = count_n(count = 2))
+#' df |>
+#'   select(score_math, score_science) |>
+#'   mutate(nb_two = count_n(count = 2))
 #' df$nb_two <- count_n(df, select = starts_with("score_"), count = 2)
 #' df[1:3, ] |> count_n(select = starts_with("score_"), count = 2)
 #'
@@ -175,8 +177,7 @@ count_n <- function(
     allow_coercion = TRUE,
     ignore_case = FALSE,
     regex = FALSE,
-    verbose = FALSE
-) {
+    verbose = FALSE) {
   if (!requireNamespace("rlang", quietly = TRUE)) stop("Package 'rlang' is required.")
   if (!requireNamespace("tidyselect", quietly = TRUE)) stop("Package 'tidyselect' is required.")
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
@@ -216,8 +217,7 @@ base_count_n <- function(
     special = NULL,
     allow_coercion = TRUE,
     ignore_case = FALSE,
-    verbose = FALSE
-) {
+    verbose = FALSE) {
   if (is.null(count) && is.null(special)) {
     stop("You must specify either `count` or `special`.", call. = FALSE)
   }
@@ -231,9 +231,9 @@ base_count_n <- function(
     if (!all(special %in% allowed)) stop("Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.")
 
     checkers <- list(
-      "NA"   = is.na,
-      "NaN"  = is.nan,
-      "Inf"  = function(x) {
+      "NA" = is.na,
+      "NaN" = is.nan,
+      "Inf" = function(x) {
         if (is.numeric(x)) is.infinite(x) & x > 0 else rep(FALSE, length(x))
       },
       "-Inf" = function(x) {
@@ -270,9 +270,12 @@ base_count_n <- function(
   }
 
   results <- lapply(data, function(col) {
-    tryCatch({
-      compare_fun(col, count)
-    }, error = function(e) NULL)
+    tryCatch(
+      {
+        compare_fun(col, count)
+      },
+      error = function(e) NULL
+    )
   })
 
   ignored <- names(data)[vapply(results, is.null, logical(1))]
@@ -282,7 +285,9 @@ base_count_n <- function(
     message("Ignored incompatible columns: ", paste(ignored, collapse = ", "))
   }
 
-  if (length(results) == 0) return(rep(0L, nrow(data)))
+  if (length(results) == 0) {
+    return(rep(0L, nrow(data)))
+  }
 
   result <- rowSums(as.data.frame(results), na.rm = TRUE)
   names(result) <- NULL

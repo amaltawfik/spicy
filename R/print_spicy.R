@@ -17,7 +17,6 @@
 #' x <- mtcars
 #' class(x) <- c("spicy", class(x))
 #' print(x)
-
 print.spicy <- function(x, ...) {
   df <- as.data.frame(x)
   df[] <- lapply(df, as.character)

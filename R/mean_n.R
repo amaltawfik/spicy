@@ -46,7 +46,9 @@
 #' mean_n(df, select = c(var1, var2))
 #'
 #' # Select specific columns using a pipe
-#' df |> select(var1, var2) |> mean_n()
+#' df |>
+#'   select(var1, var2) |>
+#'   mean_n()
 #'
 #' # Exclude a column
 #' mean_n(df, exclude = "var3")
@@ -64,7 +66,9 @@
 #' df |> mutate(mean_score = mean_n(select = c(var1, var2), min_valid = 1))
 #'
 #' # Select columns before mutate
-#' df |> select(var1, var2) |> mutate(mean_score = mean_n(min_valid = 1))
+#' df |>
+#'   select(var1, var2) |>
+#'   mutate(mean_score = mean_n(min_valid = 1))
 #'
 #' # Show verbose processing info
 #' df |> mutate(mean_score = mean_n(min_valid = 2, digits = 1, verbose = TRUE))
@@ -109,7 +113,6 @@ mean_n <- function(data = NULL,
                    digits = NULL,
                    regex = FALSE,
                    verbose = FALSE) {
-
   if (!requireNamespace("rlang", quietly = TRUE)) {
     stop("Package 'rlang' is required for mean_n(). Please install it.")
   }

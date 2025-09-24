@@ -1,3 +1,5 @@
+# spicy 0.2.0
+* New `label_from_names()` to derive and assign variable labels from headers like "name<sep>label" (e.g. "name. Label").
 # spicy 0.1.0
 
 ## Initial release

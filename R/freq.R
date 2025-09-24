@@ -53,18 +53,19 @@
 #' # With labelled variable
 #' library(labelled)
 #' df <- data.frame(
-#' var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
-#' var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
-#' var3 = set_variable_labels(
-#' labelled(1:5, c("Bad" = 1, "Average" = 2, "Good" = 3)),
-#' label = "Labelled Variable with Label"))
+#'   var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
+#'   var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
+#'   var3 = set_variable_labels(
+#'     labelled(1:5, c("Bad" = 1, "Average" = 2, "Good" = 3)),
+#'     label = "Labelled Variable with Label"
+#'   )
+#' )
 #' df |> freq(var2)
-#' df |> freq(var2,labelled_levels = "l")
-#' df |> freq(var2,labelled_levels = "v")
+#' df |> freq(var2, labelled_levels = "l")
+#' df |> freq(var2, labelled_levels = "v")
 #' df |> freq(var3)
-#' df |> freq(var3,labelled_levels = "v")
-#' df |> freq(var3,labelled_levels = "l")
-
+#' df |> freq(var3, labelled_levels = "v")
+#' df |> freq(var3, labelled_levels = "l")
 freq <- function(
     data,
     x = NULL,
@@ -81,8 +82,7 @@ freq <- function(
     labelled_levels = c("prefixed", "labels", "values"),
     styled = TRUE,
     show_empty_levels = FALSE,
-    ...
-) {
+    ...) {
   labelled_levels <- match.arg(labelled_levels)
 
   is_df <- is.data.frame(data)
@@ -108,8 +108,8 @@ freq <- function(
     x <- data
   }
 
-  if (!is.null(attributes(data)[["label"]] )) {
-    attributes(x)[["label"]]  <- attributes(data)[["label"]]
+  if (!is.null(attributes(data)[["label"]])) {
+    attributes(x)[["label"]] <- attributes(data)[["label"]]
   }
 
   if (is.matrix(x)) {
@@ -126,7 +126,7 @@ freq <- function(
   }
 
   note <- paste0(
-    if (!is.null(attributes(x)[["label"]] )) paste0("Label: ", attributes(x)[["label"]] , "\n") else "",
+    if (!is.null(attributes(x)[["label"]])) paste0("Label: ", attributes(x)[["label"]], "\n") else "",
     "Class: ", paste(class(x), collapse = ", "), "\n",
     "Data: ", data_name, "\n",
     if (!is.null(weight_name)) paste0("Weight: ", weight_name, "\n") else ""
@@ -136,13 +136,11 @@ freq <- function(
     x[x %in% na_val] <- NA
   }
 
-  default_labelled_levels <- if (labelled::is.labelled(x)) "prefixed" else NULL
-  labelled_levels <- match.arg(labelled_levels)
 
   if (labelled::is.labelled(x)) {
     lbl <- attributes(x)[["label"]]
     if (!is.null(lbl) && (!is.character(lbl) || length(lbl) != 1)) {
-      attributes(x)[["label"]]  <- NULL
+      attributes(x)[["label"]] <- NULL
     }
     x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   }
@@ -192,8 +190,7 @@ freq <- function(
   valid_rows <- !(is.na(result$Values) | result$Values == "Total")
 
   if (sort != "") {
-    sort_col <- switch(
-      sort,
+    sort_col <- switch(sort,
       "+" = "N",
       "-" = "N",
       "name+" = "Values",
@@ -270,5 +267,3 @@ freq <- function(
 
   return(result)
 }
-
-
