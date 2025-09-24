@@ -67,7 +67,6 @@ library(dplyr)
 
 # Get a summary of all variables in the Viewer
 varlist(iris)
-
 ```
 <img src="man/figures/varlist_1.png" alt="Summary of all variables shown in the Viewer">
 
@@ -81,7 +80,6 @@ vl(mtcars, starts_with("d"))
 ```{r echo=FALSE, message=FALSE}
 library(spicy)
 library(dplyr)
-
 ```
 
 ```{r eval=TRUE}
@@ -102,17 +100,16 @@ cross_tab(mtcars, cyl, gear, by = am)
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
-      var1 = c(10, NA, 30, 40, 50),
-      var2 = c(5, NA, 15, NA, 25),
-      var3 = c(NA, 30, 20, 50, 10)
-      )
+  var1 = c(10, NA, 30, 40, 50),
+  var2 = c(5, NA, 15, NA, 25),
+  var3 = c(NA, 30, 20, 50, 10)
+)
 df
 mean_n(df)
 sum_n(df)
 count_n(df, count = 10)
 count_n(df, special = "NA")
 df |> mutate(count30 = count_n(count = 30))
-
 ```
 
 > All functions can be directly used in pipelines.

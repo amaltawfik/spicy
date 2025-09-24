@@ -27,7 +27,6 @@ test_that("count_n handles multiple values with allow_coercion = FALSE", {
 
   # Same type (numeric)
   expect_equal(count_n(df, count = c(1, 2), allow_coercion = FALSE), c(1, 1, 1))
-
 })
 
 test_that("count_n handles special = NA, NaN, Inf, -Inf", {
@@ -47,8 +46,8 @@ test_that("count_n handles special = NA, NaN, Inf, -Inf", {
 
 test_that("count_n handles factor variables including ignore_case", {
   df <- tibble::tibble(
-    x = factor(c("a", "b", "c")),        # levels: a, b, c
-    y = factor(c("b", "B", "a"))         # levels: a, b, B
+    x = factor(c("a", "b", "c")), # levels: a, b, c
+    y = factor(c("b", "B", "a")) # levels: a, b, B
   )
 
   # Default coercion: character "b" matches in both x and y

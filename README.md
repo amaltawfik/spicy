@@ -171,10 +171,10 @@ cross_tab(mtcars, cyl, gear, by = am)
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
-      var1 = c(10, NA, 30, 40, 50),
-      var2 = c(5, NA, 15, NA, 25),
-      var3 = c(NA, 30, 20, 50, 10)
-      )
+  var1 = c(10, NA, 30, 40, 50),
+  var2 = c(5, NA, 15, NA, 25),
+  var3 = c(NA, 30, 20, 50, 10)
+)
 df
 #>   var1 var2 var3
 #> 1   10    5   NA

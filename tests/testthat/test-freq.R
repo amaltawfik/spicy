@@ -101,13 +101,13 @@ test_that("freq handles haven_labelled with labelled_levels", {
 
 test_that("freq works on data.frame columns with different types", {
   df <- tibble::tibble(
-    factor_col    = factor(c("A", "A", "B", "C", "C", "C")),
-    char_col      = c("a", "a", "b", "c", "c", "c"),
-    num_col       = c(1, 1, 2, 3, 3, 3),
-    logical_col   = c(TRUE, TRUE, FALSE, FALSE, TRUE, NA),
-    date_col      = as.Date(c("2023-01-01", "2023-01-01", "2023-01-02", "2023-01-03", "2023-01-03", "2023-01-03")),
-    posix_col     = as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-01-02 12:00", "2023-01-03 12:00", "2023-01-03 12:00", "2023-01-03 12:00")),
-    labelled_col  = haven::labelled(
+    factor_col = factor(c("A", "A", "B", "C", "C", "C")),
+    char_col = c("a", "a", "b", "c", "c", "c"),
+    num_col = c(1, 1, 2, 3, 3, 3),
+    logical_col = c(TRUE, TRUE, FALSE, FALSE, TRUE, NA),
+    date_col = as.Date(c("2023-01-01", "2023-01-01", "2023-01-02", "2023-01-03", "2023-01-03", "2023-01-03")),
+    posix_col = as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-01-02 12:00", "2023-01-03 12:00", "2023-01-03 12:00", "2023-01-03 12:00")),
+    labelled_col = haven::labelled(
       c(1, 1, 2, 3, 3, 3),
       labels = c("Faible" = 1, "Moyen" = 2, "Élevé" = 3)
     )

@@ -20,7 +20,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Amal Tawfik \email{amal.tawfik@hesav.ch} (\href{https://orcid.org/0009-0006-2422-1555}{ORCID}) (04j47fz63) [copyright holder]
+\strong{Maintainer}: Amal Tawfik \email{amal.tawfik@hesav.ch} (\href{https://orcid.org/0009-0006-2422-1555}{ORCID}) (\href{https://ror.org/04j47fz63}{ROR}) [copyright holder]
 
 }
 \keyword{internal}

@@ -15,8 +15,7 @@ test_that("sum_n works on basic numeric data", {
   expect_equal(sum_n(df, min_valid = 2), c(5, NA, 18))
 
   # With min_valid as proportion
-  expect_equal(sum_n(df, min_valid = 2/3), c(5, NA, 18))
-
+  expect_equal(sum_n(df, min_valid = 2 / 3), c(5, NA, 18))
 })
 
 test_that("sum_n handles column selection and exclusion", {

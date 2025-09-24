@@ -37,6 +37,3 @@ test_that("varlist_title() adds * for transformed object", {
   transformed_expr <- quote(head(iris))
   expect_equal(varlist_title(transformed_expr), "VARLIST iris*")
 })
-
-
-
