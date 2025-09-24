@@ -90,8 +90,7 @@ cross_tab <- function(
     row_total = TRUE, column_total = TRUE,
     n = TRUE, drop = TRUE, include_stats = TRUE,
     combine = FALSE,
-    ...
-) {
+    ...) {
   is_df <- is.data.frame(d)
 
   x_expr <- substitute(x)
@@ -139,7 +138,6 @@ cross_tab <- function(
     }
 
     weights_vals[is.na(weights_vals)] <- 0
-
   } else {
     x_vals <- d
     y_vals <- x
@@ -215,11 +213,11 @@ cross_tab <- function(
       if (rowprct) {
         last_is_total <- rownames(tab_perc)[nrow(tab_perc)] == label_row_total
         n_data_rows <- nrow(tab_perc) - last_is_total
-        row_totals <- rowSums(tab_perc[1:n_data_rows, , drop = FALSE], na.rm = TRUE)
+        row_totals <- rowSums(tab_perc[seq_len(n_data_rows), , drop = FALSE], na.rm = TRUE)
 
         tab_perc <- as.data.frame.matrix(tab_perc)
         new_col <- rep(NA, nrow(tab_perc))
-        new_col[1:n_data_rows] <- row_totals
+        new_col[seq_len(n_data_rows)] <- row_totals
         tab_perc[[label_col_total]] <- new_col
       } else {
         tab_perc <- as.data.frame.matrix(tab_perc)
@@ -236,7 +234,7 @@ cross_tab <- function(
       } else {
         eff_row <- rep(NA, ncol(tab_perc))
         names(eff_row) <- names(tab_perc)
-        eff_row[1:length(eff)] <- eff
+        eff_row[seq_along(eff)] <- eff
         if (column_total && "Row_Total" %in% names(eff_row)) {
           eff_row["Row_Total"] <- sum(eff, na.rm = TRUE)
         }
@@ -276,16 +274,19 @@ cross_tab <- function(
       note <- paste0(
         "Chi-2 = ", round(chi2, 1), " (df = ", df, "), ",
         ifelse(pval < 0.001,
-               "p < 0.001",
-               paste0("p = ", format(pval, digits = 3, nsmall = 3))),
+          "p < 0.001",
+          paste0("p = ", format(pval, digits = 3, nsmall = 3))
+        ),
         ", Cramer's V = ", round(cramer, 2)
       )
     } else if (include_stats) {
       note <- "Chi-squared test not applicable (table too small)."
     }
 
-    title <- paste0("Crosstable: ", x_label, " x ", y_label,
-                    if (!is.null(group_label)) paste0(" | ", group_var, " = ", group_label), " (%)")
+    title <- paste0(
+      "Crosstable: ", x_label, " x ", y_label,
+      if (!is.null(group_label)) paste0(" | ", group_var, " = ", group_label), " (%)"
+    )
 
     res <- tibble::rownames_to_column(tab_perc, var = "Values")
     attr(res, "title") <- title
@@ -365,8 +366,10 @@ cross_tab <- function(
       all_cols <- c(
         "Values",
         sorted_data_cols,
-        intersect(c("Row_Total", "Column_Total", "N", "by"),
-                  unique(unlist(lapply(result_list, names))))
+        intersect(
+          c("Row_Total", "Column_Total", "N", "by"),
+          unique(unlist(lapply(result_list, names)))
+        )
       )
 
       result_list_aligned <- lapply(result_list, function(df) {
@@ -418,4 +421,3 @@ cross_tab <- function(
 
   return(compute_ctab(x_vals, y_vals, weights_vals))
 }
-

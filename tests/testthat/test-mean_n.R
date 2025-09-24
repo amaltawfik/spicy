@@ -15,8 +15,7 @@ test_that("mean_n works on basic numeric data", {
   expect_equal(mean_n(df, min_valid = 2), c(2.5, NA, 6))
 
   # With min_valid as proportion
-  expect_equal(mean_n(df, min_valid = 2/3), c(2.5, NA, 6))
-
+  expect_equal(mean_n(df, min_valid = 2 / 3), c(2.5, NA, 6))
 })
 
 test_that("mean_n handles column selection and exclusion", {

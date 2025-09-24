@@ -207,63 +207,59 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
   has_nan <- is.numeric(col) && any(is.nan(col))
   max_display <- 4
 
-  vals <- tryCatch({
-
-    if (labelled::is.labelled(col)) {
-      col <- labelled::to_factor(col, levels = "prefixed")
-      if (!include_na) col <- stats::na.omit(col)
-      unique_vals <- unique(col)
-
-    } else if (is.factor(col)) {
-      unique_vals <- levels(col)
-
-    } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
-      col_no_na <- stats::na.omit(col)
-      unique_vals <- sort(unique(col_no_na))
-
-    } else if (is.list(col)) {
-      return(paste0("List(", length(col), ")"))
-
-    } else {
-      col_no_na <- stats::na.omit(col)
-      unique_vals <- sort(unique(col_no_na))
-    }
-
-    n_vals <- length(unique_vals)
-    unique_vals <- as.character(unique_vals)
-
-    # On filtre les "NA" ou "" déjà encodés
-    already_present <- unique_vals %in% c("NA", "", NA_character_)
-    vals_chr_clean <- unique_vals[!already_present]
-
-    if (length(vals_chr_clean) == 0) {
-      val_str <- ""
-    } else if (length(vals_chr_clean) <= max_display) {
-      val_str <- paste(vals_chr_clean, collapse = ", ")
-    } else {
-      val_str <- paste(c(vals_chr_clean[1:3], "...", utils::tail(vals_chr_clean, 1)), collapse = ", ")
-    }
-
-    # Ajouter NA ou NaN si demandé et pas déjà inclus
-    extras <- c()
-    if (include_na) {
-      if (has_na && !"NA" %in% unique_vals) extras <- c(extras, "NA")
-      if (has_nan && !"NaN" %in% unique_vals) extras <- c(extras, "NaN")
-    }
-
-    if (length(extras)) {
-      if (nzchar(val_str)) {
-        return(paste(val_str, paste(extras, collapse = ", "), sep = ", "))
+  vals <- tryCatch(
+    {
+      if (labelled::is.labelled(col)) {
+        col <- labelled::to_factor(col, levels = "prefixed")
+        if (!include_na) col <- stats::na.omit(col)
+        unique_vals <- unique(col)
+      } else if (is.factor(col)) {
+        unique_vals <- levels(col)
+      } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
+        col_no_na <- stats::na.omit(col)
+        unique_vals <- sort(unique(col_no_na))
+      } else if (is.list(col)) {
+        return(paste0("List(", length(col), ")"))
       } else {
-        return(paste(extras, collapse = ", "))
+        col_no_na <- stats::na.omit(col)
+        unique_vals <- sort(unique(col_no_na))
       }
+
+      unique_vals <- as.character(unique_vals)
+
+      # On filtre les "NA" ou "" déjà encodés
+      already_present <- unique_vals %in% c("NA", "", NA_character_)
+      vals_chr_clean <- unique_vals[!already_present]
+
+      if (length(vals_chr_clean) == 0) {
+        val_str <- ""
+      } else if (length(vals_chr_clean) <= max_display) {
+        val_str <- paste(vals_chr_clean, collapse = ", ")
+      } else {
+        val_str <- paste(c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)), collapse = ", ")
+      }
+
+      # Ajouter NA ou NaN si demandé et pas déjà inclus
+      extras <- c()
+      if (include_na) {
+        if (has_na && !"NA" %in% unique_vals) extras <- c(extras, "NA")
+        if (has_nan && !"NaN" %in% unique_vals) extras <- c(extras, "NaN")
+      }
+
+      if (length(extras)) {
+        if (nzchar(val_str)) {
+          return(paste(val_str, paste(extras, collapse = ", "), sep = ", "))
+        } else {
+          return(paste(extras, collapse = ", "))
+        }
+      }
+
+      return(val_str)
+    },
+    error = function(e) {
+      return("Invalid or unsupported format")
     }
-
-    return(val_str)
-
-  }, error = function(e) {
-    return("Invalid or unsupported format")
-  })
+  )
 
   return(vals)
 }
@@ -275,11 +271,14 @@ summarize_values_all <- function(col, include_na = FALSE) {
   has_nan <- is.numeric(col) && any(is.nan(col))
 
   show_vals <- function(v) {
-    vals <- tryCatch({
-      sort(unique(v))
-    }, error = function(e) {
-      return("Error: invalid values")
-    })
+    vals <- tryCatch(
+      {
+        sort(unique(v))
+      },
+      error = function(e) {
+        return("Error: invalid values")
+      }
+    )
 
     vals_chr <- as.character(vals)
 
@@ -360,7 +359,3 @@ vl <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE) {
     .raw_expr = raw_expr
   )
 }
-
-
-
-

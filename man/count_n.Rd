@@ -173,7 +173,9 @@ count_n(df, select = everything(), exclude = "name", count = 2)
 count_n(df, select = "^score_", regex = TRUE, count = 2)
 count_n(df, select = "lang", regex = TRUE, count = "2")
 df |> mutate(nb_two = count_n(count = 2))
-df |> select(score_math, score_science) |> mutate(nb_two = count_n(count = 2))
+df |>
+  select(score_math, score_science) |>
+  mutate(nb_two = count_n(count = 2))
 df$nb_two <- count_n(df, select = starts_with("score_"), count = 2)
 df[1:3, ] |> count_n(select = starts_with("score_"), count = 2)
 

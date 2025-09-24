@@ -64,7 +64,9 @@ sum_n(df, digits = 1)
 sum_n(df, select = c(var1, var2))
 
 # Select specific columns using a pipe
-df |> select(var1, var2) |> sum_n()
+df |>
+  select(var1, var2) |>
+  sum_n()
 
 # Exclude a column
 sum_n(df, exclude = "var3")
@@ -82,7 +84,9 @@ df |> mutate(sum_score = sum_n(min_valid = 2))
 df |> mutate(sum_score = sum_n(select = c(var1, var2), min_valid = 1))
 
 # Select columns before mutate
-df |> select(var1, var2) |> mutate(sum_score = sum_n(min_valid = 1))
+df |>
+  select(var1, var2) |>
+  mutate(sum_score = sum_n(min_valid = 1))
 
 # Show verbose message
 df |> mutate(sum_score = sum_n(min_valid = 2, digits = 1, verbose = TRUE))

@@ -57,9 +57,6 @@
 #'   copy_clipboard(mtcars, quiet = TRUE)
 #' }
 #' }
-
-
-
 copy_clipboard <- function(
     x,
     row.names.as.col = FALSE,
@@ -67,8 +64,7 @@ copy_clipboard <- function(
     col.names = TRUE,
     message = TRUE,
     quiet = FALSE,
-    ...
-) {
+    ...) {
   if (!clipr::clipr_available()) {
     stop("Clipboard is not available on this system.")
   }
