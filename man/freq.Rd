@@ -91,15 +91,17 @@ freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
 # With labelled variable
 library(labelled)
 df <- data.frame(
-var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
-var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
-var3 = set_variable_labels(
-labelled(1:5, c("Bad" = 1, "Average" = 2, "Good" = 3)),
-label = "Labelled Variable with Label"))
+  var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
+  var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
+  var3 = set_variable_labels(
+    labelled(1:5, c("Bad" = 1, "Average" = 2, "Good" = 3)),
+    label = "Labelled Variable with Label"
+  )
+)
 df |> freq(var2)
-df |> freq(var2,labelled_levels = "l")
-df |> freq(var2,labelled_levels = "v")
+df |> freq(var2, labelled_levels = "l")
+df |> freq(var2, labelled_levels = "v")
 df |> freq(var3)
-df |> freq(var3,labelled_levels = "v")
-df |> freq(var3,labelled_levels = "l")
+df |> freq(var3, labelled_levels = "v")
+df |> freq(var3, labelled_levels = "l")
 }
