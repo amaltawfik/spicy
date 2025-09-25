@@ -14,7 +14,7 @@ label_from_names(df, sep = ". ")
 Default is \code{". "} (LimeSurvey's default), but any literal string can be used.}
 }
 \value{
-A base \code{data.frame} with column names equal to the \emph{names} (before \code{sep})
+A base \code{tibble} with column names equal to the \emph{names} (before \code{sep})
 and \code{var_label} attributes equal to the \emph{labels} (after \code{sep}).
 }
 \description{
@@ -26,7 +26,7 @@ itself contains the separator.
 \details{
 This function is especially useful for \strong{LimeSurvey CSV exports} when using
 \emph{Export results} → \emph{Export format: CSV} → \emph{Headings: Question code & question text},
-where column names look like \code{"CODE. Question text"}. In this case the
+where column names look like \code{"code. question text"}. In this case the
 default separator is \code{". "}.
 }
 \examples{

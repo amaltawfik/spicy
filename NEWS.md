@@ -1,4 +1,6 @@
-# spicy (development version)
+# spicy 0.2.1
+
+* Bug fix: `label_from_names()` now correctly handles edge cases when the separator appears in the label or is missing.
 
 # spicy 0.2.0
 

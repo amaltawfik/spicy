@@ -7,7 +7,7 @@
 #'
 #' This function is especially useful for **LimeSurvey CSV exports** when using
 #' *Export results* → *Export format: CSV* → *Headings: Question code & question text*,
-#' where column names look like `"CODE. Question text"`. In this case the
+#' where column names look like `"code. question text"`. In this case the
 #' default separator is `". "`.
 #'
 #' @param df A `data.frame` or tibble with column names of the form
@@ -15,7 +15,7 @@
 #' @param sep Character string used as separator between name and label.
 #'   Default is `". "` (LimeSurvey's default), but any literal string can be used.
 #'
-#' @return A base `data.frame` with column names equal to the *names* (before `sep`)
+#' @return A base `tibble` with column names equal to the *names* (before `sep`)
 #'   and `var_label` attributes equal to the *labels* (after `sep`).
 #'
 #' @examples
@@ -42,16 +42,30 @@
 #' @export
 
 label_from_names <- function(df, sep = ". ") {
-  split <- strsplit(names(df), sep, fixed = TRUE)
-  names(df) <- sapply(split, `[`, 1)
-  labels <- sapply(split, function(x) if (length(x) > 1) paste(x[-1], collapse = sep) else NA_character_)
-  Map(function(x, lab) {
-    if (is.na(lab) || lab == "") {
-      labelled::var_label(x) <- NA_character_
-    } else {
-      labelled::var_label(x) <- lab
-    }
-    x
-  }, df, labels) |>
-    as.data.frame()
+  split_pos <- regexpr(sep, names(df), fixed = TRUE)
+
+  new_names <- ifelse(
+    split_pos > 0,
+    substr(names(df), 1, split_pos - 1),
+    names(df)
+  )
+
+  raw_labels <- ifelse(
+    split_pos > 0,
+    substring(names(df), split_pos + nchar(sep)),
+    NA_character_
+  )
+
+  labels <- ifelse(
+    is.na(raw_labels) | trimws(raw_labels) == "",
+    NA_character_,
+    raw_labels
+  )
+
+  df <- Map(function(col, lab) {
+    labelled::var_label(col) <- lab
+    col
+  }, df, labels)
+
+  tibble::as_tibble(setNames(df, new_names))
 }

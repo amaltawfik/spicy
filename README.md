@@ -42,8 +42,9 @@ data frames. It helps you:
 - Copy data frames or result tables directly to the clipboard using
   `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with
-  `label_from_names()`, especially useful for LimeSurvey CSV exports
-  where headers follow the `"name. label"` convention.
+  label_from_names(), especially useful for LimeSurvey CSV exports where
+  headers follow a “name \[separator\] label” pattern — any string can
+  be used as the separator (e.g., “.”, ” - “,”:“, etc.).
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
   used variable types.
 
@@ -199,6 +200,25 @@ df |> mutate(count30 = count_n(count = 30))
 #> 3   30   15   20       1
 #> 4   40   NA   50       0
 #> 5   50   25   10       0
+
+# Extract labels from column names like "varname. label"
+# This format ("name. label") is the default in LimeSurvey CSV exports
+# when using: Export results → Export format: CSV → Headings: Question code & question text.
+# It uses ". " (dot + space) as the default separator between the question code and question text.
+df <- tibble::tibble(
+  "age. Age of respondent" = c(25, 30),
+  "score. Total score. Manually computed." = c(12, 14)
+)
+
+out <- label_from_names(df)
+
+# View assigned labels
+labelled::var_label(out)
+#> $age
+#> [1] "Age of respondent"
+#> 
+#> $score
+#> [1] "Total score. Manually computed."
 ```
 
 > All functions can be directly used in pipelines.
