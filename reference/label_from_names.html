@@ -13,7 +13,7 @@ itself contains the separator."><meta property="og:image" content="https://amalt
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,14 +72,14 @@ Default is <code>". "</code> (LimeSurvey's default), but any literal string can 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A base <code>data.frame</code> with column names equal to the <em>names</em> (before <code>sep</code>)
+    <p>A base <code>tibble</code> with column names equal to the <em>names</em> (before <code>sep</code>)
 and <code>var_label</code> attributes equal to the <em>labels</em> (after <code>sep</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is especially useful for <strong>LimeSurvey CSV exports</strong> when using
 <em>Export results</em> → <em>Export format: CSV</em> → <em>Headings: Question code &amp; question text</em>,
-where column names look like <code>"CODE. Question text"</code>. In this case the
+where column names look like <code>"code. question text"</code>. In this case the
 default separator is <code>". "</code>.</p>
     </div>
 
