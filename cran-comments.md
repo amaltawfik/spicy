@@ -1,23 +1,14 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 0 notes
 
-* This is a new release.
+## Comments
 
-## Resubmission
-In this version I have:
+This is version 0.2.0 of the `spicy` package, an update from 0.1.0.
 
-* Use only undirected quotation marks in the DESCRIPTION text.
+New in this version:
 
-* Add a value to @return (cramer_v.Rd)
-
-* Delete \dontrun{} for @examples (cramer_v.Rd)
-
-* Removes alias fre() and ct()
-
-## Resubmission (last)
-In this version I have:
-
-* Remove \dontrun{} from examples print.spicy.Rd
-
-* Change \dontrun{} to \donttest{} from examples copy_clipboard.Rd 
+* New `label_from_names()` function.
+* Reformatted code with `styler::style_pkg()`.
+* Code quality reviewed with `lintr::lint_package()`.
+* Metadata cleanup: removed `Author:` and `Maintainer:` fields.
