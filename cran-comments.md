@@ -4,11 +4,12 @@
 
 ## Comments
 
-This is version 0.2.0 of the `spicy` package, an update from 0.1.0.
+This is version 0.2.1 of the `spicy` package, a patch release following 0.2.0.
 
-New in this version:
+This release fixes a bug in the newly introduced `label_from_names()` function:
 
-* New `label_from_names()` function.
-* Reformatted code with `styler::style_pkg()`.
-* Code quality reviewed with `lintr::lint_package()`.
-* Metadata cleanup: removed `Author:` and `Maintainer:` fields.
+* Correct handling of column names with missing or malformed separators.
+* Improved robustness for cases where labels are empty or contain the separator itself.
+
+No changes to the public API or package dependencies.
+R CMD check passes cleanly on local (macOS) and win-builder (release, devel, oldrelease).
