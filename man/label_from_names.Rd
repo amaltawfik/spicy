@@ -2,13 +2,13 @@
 % Please edit documentation in R/label_from_names.R
 \name{label_from_names}
 \alias{label_from_names}
-\title{Derive variable labels from column names "name\if{html}{\out{<sep>}}label"}
+\title{Derive variable labels from column names \verb{name<sep>label}}
 \usage{
 label_from_names(df, sep = ". ")
 }
 \arguments{
 \item{df}{A \code{data.frame} or tibble with column names of the form
-\code{"name. label"} (by default from LimeSurvey).}
+\verb{"name<sep>label"} (e.g. "name. label"). (by default from LimeSurvey).}
 
 \item{sep}{Character string used as separator between name and label.
 Default is \code{". "} (LimeSurvey's default), but any literal string can be used.}
