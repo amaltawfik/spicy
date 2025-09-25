@@ -42,9 +42,9 @@ data frames. It helps you:
 - Copy data frames or result tables directly to the clipboard using
   `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with
-  label_from_names(), especially useful for LimeSurvey CSV exports where
-  headers follow a “name \[separator\] label” pattern — any string can
-  be used as the separator (e.g., “.”, ” - “,”:“, etc.).
+  `label_from_names()`, especially useful for LimeSurvey CSV exports
+  where headers follow a “name \[separator\] label” pattern — any string
+  can be used as the separator (e.g., “.”, ” - “,”:“, etc.).
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
   used variable types.
 
