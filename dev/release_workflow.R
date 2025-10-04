@@ -1,7 +1,4 @@
 # CRAN + GitHub Release Workflow — spicy
-# Author: Amal Tawfik
-# Date: `r Sys.Date()`
-
 # Ce script guide et automatise les principales étapes d'une release CRAN :
 # - vérification et soumission au CRAN
 # - tag et publication GitHub
