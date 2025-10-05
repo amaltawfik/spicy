@@ -1,0 +1,35 @@
+[33mtag v0.2.1[m
+Tagger: amaltawfik <amal.tawfik@hesav.ch>
+Date:   Fri Sep 26 00:54:27 2025 +0200
+
+spicy 0.2.1: bugfix for label_from_names()
+
+[33mcommit b79e3998399b0179ec582544903ca6df17475533[m[33m ([m[1;33mtag: [m[1;33mv0.2.1[m[33m)[m
+Author: amaltawfik <amal.tawfik@hesav.ch>
+Date:   Fri Sep 26 00:39:06 2025 +0200
+
+    cran comments for 0.2.1
+
+[1mdiff --git a/cran-comments.md b/cran-comments.md[m
+[1mindex 7cf99fd..5688e4a 100644[m
+[1m--- a/cran-comments.md[m
+[1m+++ b/cran-comments.md[m
+[36m@@ -4,11 +4,12 @@[m
+ [m
+ ## Comments[m
+ [m
+[31m-This is version 0.2.0 of the `spicy` package, an update from 0.1.0.[m
+[32m+[m[32mThis is version 0.2.1 of the `spicy` package, a patch release following 0.2.0.[m
+ [m
+[31m-New in this version:[m
+[32m+[m[32mThis release fixes a bug in the newly introduced `label_from_names()` function:[m
+ [m
+[31m-* New `label_from_names()` function.[m
+[31m-* Reformatted code with `styler::style_pkg()`.[m
+[31m-* Code quality reviewed with `lintr::lint_package()`.[m
+[31m-* Metadata cleanup: removed `Author:` and `Maintainer:` fields.[m
+[32m+[m[32m* Correct handling of column names with missing or malformed separators.[m
+[32m+[m[32m* Improved robustness for cases where labels are empty or contain the separator itself.[m
+[32m+[m
+[32m+[m[32mNo changes to the public API or package dependencies.[m
+[32m+[m[32mR CMD check passes cleanly on local (macOS) and win-builder (release, devel, oldrelease).[m
