@@ -12,10 +12,13 @@ Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
+    cli,
     clipr,
     collapse,
     dplyr,
+    DT,
     haven,
+    htmlwidgets,
     labelled,
     rlang,
     stats,
