@@ -65,23 +65,9 @@ jobs:
             any::tinytex
           needs: check
 
-      # Install Ghostscript (needed for --compact-vignettes=gs+qpdf)
-      - name: Install Ghostscript
-        if: runner.os == 'Linux' || runner.os == 'macOS'
-        run: |
-          sudo apt-get update -y || true
-          sudo apt-get install -y ghostscript || true
-          echo "GS_CMD=$(which gs)" >> $GITHUB_ENV
-
-      - name: Set Ghostscript path on Windows
-        if: runner.os == 'Windows'
-        run: |
-          choco install ghostscript -y
-          echo "GS_CMD=$(Get-Command gswin64c.exe | Select-Object -ExpandProperty Source)" >> $env:GITHUB_ENV
-
-      # Run R CMD check
+      # Run R CMD check (no Ghostscript required)
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: false
           args: --no-manual --as-cran
-          build_args: --no-manual --compact-vignettes=gs+qpdf
+          build_args: --no-manual
