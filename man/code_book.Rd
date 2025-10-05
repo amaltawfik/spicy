@@ -61,3 +61,34 @@ and exportable), and can optionally export the codebook to CSV, Excel, PDF, or W
 \item If LaTeX is not installed, use \code{tinytex::install_tinytex()} for PDF export.
 }
 }
+\examples{
+# Basic example using the built-in mtcars dataset
+df <- head(mtcars)
+
+# Export to CSV (file is saved in a temporary directory)
+tmp_csv <- tempfile(fileext = ".csv")
+code_book(df, export = "csv", file = tmp_csv)
+
+# Export to Excel if writexl is installed
+if (requireNamespace("writexl", quietly = TRUE)) {
+  tmp_xlsx <- tempfile(fileext = ".xlsx")
+  code_book(df, export = "excel", file = tmp_xlsx)
+}
+
+# PDF and Word exports are demonstrated only if rmarkdown and LaTeX are available
+if (requireNamespace("rmarkdown", quietly = TRUE) &&
+  requireNamespace("kableExtra", quietly = TRUE) &&
+  requireNamespace("stringr", quietly = TRUE) &&
+  requireNamespace("tinytex", quietly = TRUE) &&
+  tinytex::is_tinytex()) {
+  tmp_pdf <- tempfile(fileext = ".pdf")
+  code_book(df, export = "pdf", file = tmp_pdf)
+}
+
+# For Word export (requires rmarkdown and kableExtra)
+if (requireNamespace("rmarkdown", quietly = TRUE) &&
+  requireNamespace("kableExtra", quietly = TRUE)) {
+  tmp_docx <- tempfile(fileext = ".docx")
+  code_book(df, export = "word", file = tmp_docx)
+}
+}
