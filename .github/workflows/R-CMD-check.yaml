@@ -69,4 +69,5 @@ jobs:
         with:
           upload-snapshots: false
           args: --no-manual --as-cran
-          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          build_args: --no-manual --compact-vignettes=gs+qpdf
+
