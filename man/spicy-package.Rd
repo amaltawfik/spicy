@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Extracts and summarizes metadata from data frames, including variable names, labels, types, and missing values. Computes compact descriptive statistics, frequency tables, and cross-tabulations to assist with efficient data exploration. Facilitates the identification of missing data patterns and structural issues in datasets. Designed to streamline initial data management and exploratory analysis workflows within 'R'.
+Extracts and summarizes metadata from data frames, including variable names, labels, types, and missing values. Computes compact descriptive statistics, frequency tables, and cross-tabulations to assist with efficient data exploration. Includes an interactive and exportable codebook generator for documenting variable metadata. Facilitates the identification of missing data patterns and structural issues in datasets. Designed to streamline initial data management and exploratory analysis workflows within 'R'.
 }
 \seealso{
 Useful links:
