@@ -18,8 +18,8 @@ License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
 <!-- badges: end -->
 
-spicy is designed to make variable exploration and descriptive
-statistics fast, expressive, and easy to use.
+spicy is designed to make variable exploration, documentation, and
+descriptive statistics fast, expressive, and easy to use.
 
 ## What is spicy?
 
@@ -32,6 +32,10 @@ data frames. It helps you:
   non-missing values, number of valid observations, number of missing
   observations. Similar to the “Variable View” in SPSS or the “Variables
   Manager” in Stata.
+- Generate an exportable codebook using `code_book()`, which extends
+  `varlist()` with support for CSV, Excel, PDF, and Word exports, either
+  interactively (via `DT::datatable`) or programmatically. Ideal for
+  documenting all variables present in a data frame
 - Compute frequency tables with `freq()`, row-wise means with
   `mean_n()`, row-wise sums with `sum_n()`, and counts of specific
   values using `count_n()` — all with automatic handling of missing
