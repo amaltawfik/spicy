@@ -18,20 +18,16 @@ Imports:
     dplyr,
     DT,
     haven,
-    htmlwidgets,
+    htmltools,
     labelled,
     rlang,
-    rmarkdown,
     stats,
     stringi,
     stringr,
     tibble,
     tidyselect,
-    tinytex,
-    utils,
-    writexl
+    utils
 Suggests: 
-    kableExtra,
     testthat (>= 3.0.0)
 Depends: R (>= 4.1.0)
 Config/testthat/edition: 3
