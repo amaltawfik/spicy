@@ -47,10 +47,22 @@ test_that("code_book exports work correctly", {
   skip_if_not_installed("stringr")
   skip_if_not_installed("tinytex")
 
-  # Skip if LaTeX is not available on this system
-  if (!tinytex::is_latex_installed()) {
+  # Check if LaTeX is available (compatible with all tinytex versions)
+  latex_ok <- tryCatch(
+    {
+      if ("is_latex_installed" %in% getNamespaceExports("tinytex")) {
+        tinytex::is_latex_installed()
+      } else {
+        tinytex::latexmk_available()
+      }
+    },
+    error = function(e) FALSE
+  )
+
+  if (!latex_ok) {
     skip("LaTeX not available on this system")
   }
+
 
   tmp_pdf <- tempfile(fileext = ".pdf")
   expect_silent(suppressMessages(code_book(df, export = "pdf", file = tmp_pdf)))

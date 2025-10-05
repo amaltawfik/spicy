@@ -35,7 +35,7 @@ data frames. It helps you:
 - Generate an exportable codebook using `code_book()`, which extends
   `varlist()` with support for CSV, Excel, PDF, and Word exports, either
   interactively (via `DT::datatable`) or programmatically. Ideal for
-  documenting all variables present in a data frame
+  documenting all the variables present in a data frame.
 - Compute frequency tables with `freq()`, row-wise means with
   `mean_n()`, row-wise sums with `sum_n()`, and counts of specific
   values using `count_n()` — all with automatic handling of missing
