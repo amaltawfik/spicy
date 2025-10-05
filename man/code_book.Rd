@@ -2,15 +2,14 @@
 % Please edit documentation in R/code_book.R
 \name{code_book}
 \alias{code_book}
-\title{Generate a comprehensive variable codebook}
+\title{Generate an interactive variable codebook}
 \usage{
 code_book(
   x,
   values = FALSE,
   include_na = FALSE,
-  export = c("none", "csv", "excel", "pdf", "word"),
-  file = NULL,
   title = "Codebook",
+  file_base = "codebook",
   ...
 )
 }
@@ -29,66 +28,53 @@ If \code{TRUE}, all unique non-missing values are displayed.}
 when present in the variable. This applies to all variable types.
 If \code{FALSE} (the default), missing values are omitted from \code{Values} but still counted in the \code{NAs} column.}
 
-\item{export}{Character string indicating export format.
-One of "none" (default), "csv", "excel", "pdf", or "word".
-When "none", no file is saved and only the interactive table is displayed.}
+\item{title}{Optional character string displayed as the table title in the Viewer.
+Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title completely.}
 
-\item{file}{Optional base file name (with or without extension). Defaults to "codebook".
-For explicit exports, you can specify a full path. For the interactive Viewer,
-only the base name (without path and extension) is used.}
-
-\item{title}{Optional character string. Title displayed for PDF and Word exports.
-Defaults to "Codebook". If \code{NULL}, no title is shown.}
+\item{file_base}{Optional short base name used for export filenames (without extension).
+Defaults to \code{"codebook"}. Set to a custom value to change the filename prefix.}
 
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-A \code{DT::datatable} object (if \code{export = "none"}) or a data frame (invisibly)
-if an export format is requested.
+A \code{DT::datatable} object.
 }
 \description{
-\code{code_book()} builds upon \code{\link[=varlist]{varlist()}} to create an interactive and exportable
-codebook summarizing all variables of a data frame.
+\code{code_book()} creates an interactive and exportable codebook summarizing all variables of a data frame.
+It builds upon \code{\link[=varlist]{varlist()}} to provide an overview of variable names, labels,
+classes, and representative values in a sortable, searchable table.
 
-It displays the results as an interactive \code{DT::datatable()} (sortable, searchable,
-and exportable), and can optionally export the codebook to CSV, Excel, PDF, or Word.
+The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane,
+allowing filtering, column reordering, and export (copy, CSV, Excel, PDF, print)
+directly.
 }
 \details{
 \itemize{
-\item CSV and Excel exports are always data-only (no title row).
-\item PDF and Word exports use harmonized margins (1.2 cm) and automatically adjusted column widths.
-\item The interactive datatable version (\code{export = "none"}) includes export buttons (copy, csv, excel, pdf, print).
-\item If LaTeX is not installed, use \code{tinytex::install_tinytex()} for PDF export.
+\item The interactive \code{datatable} supports column sorting, searching, and
+client-side export to various formats.
+\item All exports occur client-side through the Viewer or Tab.
 }
 }
+\section{Dependencies}{
+
+Requires the following packages:
+\itemize{
+\item \strong{DT}
+\item \strong{cli}
+\item \strong{tools}
+}
+}
+
 \examples{
-# Basic example using the built-in mtcars dataset
+\dontrun{
+# Example with a built-in dataset
 df <- head(mtcars)
 
-# Export to CSV (file is saved in a temporary directory)
-tmp_csv <- tempfile(fileext = ".csv")
-code_book(df, export = "csv", file = tmp_csv)
-
-# Export to Excel if writexl is installed
-if (requireNamespace("writexl", quietly = TRUE)) {
-  tmp_xlsx <- tempfile(fileext = ".xlsx")
-  code_book(df, export = "excel", file = tmp_xlsx)
+# Launch the interactive codebook (opens in Viewer)
+code_book(df)
 }
 
-# PDF and Word exports are demonstrated only if rmarkdown and LaTeX are available
-if (requireNamespace("rmarkdown", quietly = TRUE) &&
-  requireNamespace("kableExtra", quietly = TRUE) &&
-  requireNamespace("stringr", quietly = TRUE) &&
-  requireNamespace("tinytex", quietly = TRUE) &&
-  tinytex::is_tinytex()) {
-  tmp_pdf <- tempfile(fileext = ".pdf")
-  code_book(df, export = "pdf", file = tmp_pdf)
 }
-
-# For Word export (requires rmarkdown and kableExtra)
-if (requireNamespace("rmarkdown", quietly = TRUE) &&
-  requireNamespace("kableExtra", quietly = TRUE)) {
-  tmp_docx <- tempfile(fileext = ".docx")
-  code_book(df, export = "word", file = tmp_docx)
-}
+\seealso{
+\code{\link[=varlist]{varlist()}} for generating the underlying variable summaries.
 }
