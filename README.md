@@ -32,9 +32,9 @@ data frames. It helps you:
   non-missing values, number of valid observations, number of missing
   observations. Similar to the “Variable View” in SPSS or the “Variables
   Manager” in Stata.
-- Generate an exportable codebook using `code_book()`, which extends
-  `varlist()` with support for CSV, Excel, PDF, and Word exports, either
-  interactively (via `DT::datatable`) or programmatically. Ideal for
+- Generate an interactive codebook generator `code_book()` that extends
+  `varlist()` with searchable summaries and built-in export options
+  (Copy, CSV, Excel, PDF, Print) via `DT::datatable`. Ideal for
   documenting all the variables present in a data frame.
 - Compute frequency tables with `freq()`, row-wise means with
   `mean_n()`, row-wise sums with `sum_n()`, and counts of specific
