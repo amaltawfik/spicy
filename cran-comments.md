@@ -1,15 +1,22 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors \| 0 warnings \| 0 notes
 
 ## Comments
 
-This is version 0.2.1 of the `spicy` package, a patch release following 0.2.0.
+This is version 0.3.0 of the `spicy` package, a minor feature release following 0.2.1.
 
-This release fixes a bug in the newly introduced `label_from_names()` function:
+This release introduces a new function:
 
-* Correct handling of column names with missing or malformed separators.
-* Improved robustness for cases where labels are empty or contain the separator itself.
+-   `code_book()` generates an interactive and exportable variable codebook for data frames.
+    -   Builds on varlist() to summarize variable names, labels, types, and representative values.
+    -   Displays results as an interactive DT::datatable() with built-in search, sort, and export tools (copy, print, CSV, Excel, PDF).
+    -   Designed for exploratory data inspection and improved dataset documentation workflows.
 
-No changes to the public API or package dependencies.
-R CMD check passes cleanly on local (macOS) and win-builder (release, devel, oldrelease).
+Additional improvements:
+
+-   Minor documentation updates and internal consistency enhancements.
+-   No breaking changes or modifications to existing APIs.
+
+R CMD check passes cleanly on local (macOS) and win-builder (release, devel, oldrelease).\
+No changes to package dependencies.
