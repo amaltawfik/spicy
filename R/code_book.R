@@ -95,14 +95,14 @@ code_book <- function(x,
   )
 
   title_html <- if (!is.null(title)) {
-    sprintf("<h3 style='text-align:center;margin-bottom:10px;'>%s</h3>", esc(title))
+    sprintf("<h3>%s</h3>", title)
   } else {
     ""
   }
 
   DT::datatable(
     res,
-    caption = htmltools::HTML(title_html),
+    caption = if (nzchar(title_html)) htmltools::HTML(title_html) else NULL,
     rownames = FALSE,
     editable = FALSE,
     filter = "none",
