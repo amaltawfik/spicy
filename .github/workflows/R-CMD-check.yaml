@@ -1,8 +1,9 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# This workflow runs R CMD check on multiple OS / R versions
+# and is safe for CRAN submissions (no system dependencies like qpdf or gs)
 
 on:
-  workflow_dispatch:    # ✅ allows manual run from GitHub UI
+  workflow_dispatch:     # ✅ allows manual run from GitHub
   push:
     branches: [main, master]
     paths:
@@ -37,37 +38,33 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      CI: true  # used by skip_on_ci() in tests
+      CI: true   # used by skip_on_ci() in tests
 
     steps:
-      # Checkout repository
+      # 1️⃣ Checkout the repository
       - uses: actions/checkout@v4
 
-      # Set up R
+      # 2️⃣ Set up R
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # ✅ Install qpdf (required for vignette compression)
-      - name: Install qpdf
-        run: Rscript -e 'install.packages("qpdf", repos="https://packagemanager.posit.co/cran/latest")'
-
-      # Install dependencies (from DESCRIPTION + extras)
+      # 3️⃣ Install package dependencies from DESCRIPTION
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
-      # Run R CMD check
+      # 4️⃣ Run R CMD check (without system dependencies like qpdf)
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: false
-          args: "--no-manual --as-cran"
-          build_args: "--no-manual --compact-vignettes=qpdf"
+          args: --no-manual --as-cran
+          build_args: --no-manual
 
-      # Upload artifacts (check logs, test results)
+      # 5️⃣ Upload R CMD check results if a failure occurs
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@v4
