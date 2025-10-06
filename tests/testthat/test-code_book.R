@@ -38,7 +38,8 @@ test_that("code_book() handles NULL titles correctly", {
 
   # Caption should be NULL or empty when title is not provided
   caption <- cb$x$caption
-  expect_true(is.null(caption) || caption == "" || !grepl("h3", as.character(caption)))
+  caption_text <- as.character(caption)
+  expect_true(is.null(caption) || identical(caption, "") || !grepl("<h[1-6]>", caption_text))
 })
 
 
@@ -54,7 +55,27 @@ test_that("code_book() displays caption when title is provided", {
   expect_true(inherits(cb, "htmlwidget"))
 
   caption <- cb$x$caption
-  expect_false(is.null(caption))
-  expect_true(grepl("Custom Codebook", as.character(caption)))
-  expect_true(grepl("<h3>", as.character(caption)))
+  expect_false(is.null(caption) || identical(caption, ""))
+
+  caption_text <- as.character(caption)
+  expect_true(grepl("Custom Codebook", caption_text))
+  expect_true(!grepl("<h[1-6]>", caption_text) || grepl("<h3>Custom Codebook", caption_text))
+})
+
+
+# ---- Buttons configuration test ----------------------------------------------
+test_that("code_book() includes expected Buttons configuration", {
+  skip_if_not_installed("DT")
+  skip_if_not_installed("cli")
+
+  df <- head(mtcars)
+  cb <- suppressMessages(code_book(df))
+
+  btns <- cb$x$options$buttons
+
+  # Ensure presence of basic and grouped download buttons
+  expect_true(any(vapply(btns, function(b) {
+    (is.character(b) && b %in% c("copy", "print")) ||
+      (is.list(b) && identical(b$text, "Download"))
+  }, logical(1))))
 })

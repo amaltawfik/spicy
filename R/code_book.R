@@ -22,8 +22,6 @@
 #'   If `FALSE` (the default), missing values are omitted from `Values` but still counted in the `NAs` column.
 #' @param title Optional character string displayed as the table title in the Viewer.
 #'   Defaults to `"Codebook"`. Set to `NULL` to remove the title completely.
-#' @param file_base Optional short base name used for export filenames (without extension).
-#'   Defaults to `"codebook"`. Set to a custom value to change the filename prefix.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @details
@@ -55,13 +53,10 @@
 #' @export
 #' @importFrom DT datatable
 #' @importFrom cli cli_alert_danger
-#' @importFrom tools file_path_sans_ext
-#' @importFrom htmltools HTML
 code_book <- function(x,
                       values = FALSE,
                       include_na = FALSE,
                       title = "Codebook",
-                      file_base = "codebook",
                       ...) {
   if (!is.data.frame(x)) {
     stop("`x` must be a data frame or tibble.", call. = FALSE)
@@ -76,52 +71,34 @@ code_book <- function(x,
     varlist(x, values = values, include_na = include_na, tbl = TRUE),
     error = function(e) stop("Error when calling varlist(): ", e$message, call. = FALSE)
   )
-
   if (!inherits(res, "data.frame")) {
     stop("`varlist()` did not return a data frame. Check your input.", call. = FALSE)
   }
 
-  file_base <- tools::file_path_sans_ext(basename(file_base))
-  file_base <- gsub("[^A-Za-z0-9_-]", "_", file_base)
-
-  esc <- function(s) gsub("(['\"\\\\])", "\\\\\\1", s)
-
-  dt_buttons <- list(
-    list(extend = "copy", filename = file_base, title = NULL),
-    list(extend = "csv", filename = file_base, title = NULL),
-    list(extend = "excel", filename = file_base, title = NULL),
-    list(extend = "pdf", filename = file_base, title = NULL),
-    list(extend = "print", title = title)
-  )
-
-  title_html <- if (!is.null(title)) {
-    sprintf("<h3>%s</h3>", title)
-  } else {
-    ""
-  }
-
   DT::datatable(
     res,
-    caption = if (nzchar(title_html)) htmltools::HTML(title_html) else NULL,
+    caption = if (is.null(title)) NULL else title,
     rownames = FALSE,
     editable = FALSE,
     filter = "none",
     selection = "none",
-    extensions = list(
-      "Buttons" = NULL,
-      "ColReorder" = NULL,
-      "FixedHeader" = NULL,
-      "KeyTable" = NULL,
-      "Select" = TRUE
-    ),
+    extensions = "Buttons",
     options = list(
-      dom = "Blfrtip",
+      dom = "Bfrtip",
       autoWidth = TRUE,
       pageLength = 10,
       colReorder = TRUE,
       fixedHeader = TRUE,
       searchHighlight = TRUE,
-      buttons = dt_buttons
+      buttons = list(
+        "copy",
+        "print",
+        list(
+          extend = "collection",
+          text = "Download",
+          buttons = c("csv", "excel", "pdf")
+        )
+      )
     )
   )
 }

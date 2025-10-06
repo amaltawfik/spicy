@@ -4,14 +4,7 @@
 \alias{code_book}
 \title{Generate an interactive variable codebook}
 \usage{
-code_book(
-  x,
-  values = FALSE,
-  include_na = FALSE,
-  title = "Codebook",
-  file_base = "codebook",
-  ...
-)
+code_book(x, values = FALSE, include_na = FALSE, title = "Codebook", ...)
 }
 \arguments{
 \item{x}{A data frame or tibble.}
@@ -30,9 +23,6 @@ If \code{FALSE} (the default), missing values are omitted from \code{Values} but
 
 \item{title}{Optional character string displayed as the table title in the Viewer.
 Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title completely.}
-
-\item{file_base}{Optional short base name used for export filenames (without extension).
-Defaults to \code{"codebook"}. Set to a custom value to change the filename prefix.}
 
 \item{...}{Additional arguments (currently unused).}
 }

@@ -18,7 +18,6 @@ Imports:
     dplyr,
     DT,
     haven,
-    htmltools,
     labelled,
     rlang,
     stats,
