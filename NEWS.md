@@ -1,6 +1,6 @@
 # spicy 0.3.0
 
-* Added new function `code_book()`, which generates a comprehensive variable codebook that can be viewed interactively or exported to multiple formats (CSV, Excel, PDF, Word).
+* Added new function `code_book()`, which generates a comprehensive variable codebook that can be viewed interactively and exported to multiple formats (copy, print, CSV, Excel, PDF).
 
 # spicy 0.2.1
 

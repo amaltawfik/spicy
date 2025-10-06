@@ -6,7 +6,7 @@
 #' classes, and representative values in a sortable, searchable table.
 #'
 #' The output is displayed as an interactive `DT::datatable()` in the Viewer pane,
-#' allowing filtering, column reordering, and export (copy, CSV, Excel, PDF, print)
+#' allowing filtering, column reordering, and export (copy, print, CSV, Excel, PDF)
 #' directly.
 #'
 #' @param x A data frame or tibble.

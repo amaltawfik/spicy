@@ -35,7 +35,7 @@ It builds upon \code{\link[=varlist]{varlist()}} to provide an overview of varia
 classes, and representative values in a sortable, searchable table.
 
 The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane,
-allowing filtering, column reordering, and export (copy, CSV, Excel, PDF, print)
+allowing filtering, column reordering, and export (copy, print, CSV, Excel, PDF)
 directly.
 }
 \details{
