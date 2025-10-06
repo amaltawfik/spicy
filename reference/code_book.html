@@ -59,14 +59,7 @@ directly.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">code_book</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
-<span>  values <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  include_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Codebook"</span>,</span>
-<span>  file_base <span class="op">=</span> <span class="st">"codebook"</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">code_book</span><span class="op">(</span><span class="va">x</span>, values <span class="op">=</span> <span class="cn">FALSE</span>, include_na <span class="op">=</span> <span class="cn">FALSE</span>, title <span class="op">=</span> <span class="st">"Codebook"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -96,11 +89,6 @@ If <code>FALSE</code> (the default), missing values are omitted from <code>Value
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>Optional character string displayed as the table title in the Viewer.
 Defaults to <code>"Codebook"</code>. Set to <code>NULL</code> to remove the title completely.</p></dd>
-
-
-<dt id="arg-file-base">file_base<a class="anchor" aria-label="anchor" href="#arg-file-base"></a></dt>
-<dd><p>Optional short base name used for export filenames (without extension).
-Defaults to <code>"codebook"</code>. Set to a custom value to change the filename prefix.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
