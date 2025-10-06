@@ -63,17 +63,24 @@ code_book <- function(x,
   }
 
   if (!exists("varlist", mode = "function")) {
-    cli::cli_alert_danger("Function `varlist()` not found. Please ensure it is available in the package.")
+    cli::cli_alert_danger(
+      "Function `varlist()` not found. Please ensure it is available in the package."
+    )
     stop("Missing dependency: varlist().", call. = FALSE)
   }
 
   res <- tryCatch(
     varlist(x, values = values, include_na = include_na, tbl = TRUE),
-    error = function(e) stop("Error when calling varlist(): ", e$message, call. = FALSE)
+    error = function(e) {
+      stop("Error when calling varlist(): ", e$message, call. = FALSE)
+    }
   )
+
   if (!inherits(res, "data.frame")) {
     stop("`varlist()` did not return a data frame. Check your input.", call. = FALSE)
   }
+
+  filename <- if (is.null(title)) "Codebook" else title
 
   DT::datatable(
     res,
@@ -96,7 +103,23 @@ code_book <- function(x,
         list(
           extend = "collection",
           text = "Download",
-          buttons = c("csv", "excel", "pdf")
+          buttons = list(
+            list(
+              extend = "csv",
+              title = NULL,
+              filename = filename
+            ),
+            list(
+              extend = "excel",
+              title = NULL,
+              filename = filename
+            ),
+            list(
+              extend = "pdf",
+              title = NULL,
+              filename = filename
+            )
+          )
         )
       )
     )
