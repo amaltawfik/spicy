@@ -1,23 +1,33 @@
 # spicy 0.3.0
 
-* Added new function `code_book()`, which generates a comprehensive variable codebook that can be viewed interactively and exported to multiple formats (copy, print, CSV, Excel, PDF).
+* New function `code_book()`, which generates a comprehensive variable
+  codebook that can be viewed interactively and exported to multiple
+  formats (copy, print, CSV, Excel, PDF).
 
 # spicy 0.2.1
 
-* Bug fix: `label_from_names()` now correctly handles edge cases when the separator appears in the label or is missing.
+* `label_from_names()` now correctly handles edge cases when the
+  separator appears in the label or is missing.
 
 # spicy 0.2.0
 
-* New `label_from_names()` to derive and assign variable labels from headers of the form `"name<sep>label"` (e.g. `"name. label"`).
-  Especially useful for LimeSurvey CSV exports (*Export results* → *CSV* → *Headings: Question code & question text*), where the default separator is `". "`.
+* New function `label_from_names()` to derive and assign variable labels
+  from headers of the form `"name<sep>label"` (e.g. `"name. label"`).
+  Especially useful for LimeSurvey CSV exports (*Export results* →
+  *CSV* → *Headings: Question code & question text*), where the default
+  separator is `". "`.
 
 # spicy 0.1.0
 
 ## Initial release
 
-* Introduces a collection of tools for variable inspection, descriptive summaries, and data exploration.
+* Introduces a collection of tools for variable inspection, descriptive
+  summaries, and data exploration.
 * Provides functions to:
   - Extract variable metadata and display compact summaries (`varlist()`).
-  - Compute frequency tables (`freq()`), cross-tabulations (`cross_tab()`), and Cramer's V for categorical associations (`cramer_v()`).
-  - Generate descriptive statistics such as means (`mean_n()`), sums (`sum_n()`), and counts (`count_n()`) with automatic handling of missing data.
+  - Compute frequency tables (`freq()`), cross-tabulations (`cross_tab()`),
+    and Cramer's V for categorical associations (`cramer_v()`).
+  - Generate descriptive statistics such as means (`mean_n()`), sums
+    (`sum_n()`), and counts (`count_n()`) with automatic handling of
+    missing data.
   - Copy data (`copy_clipboard()`) directly to the clipboard for quick export.
