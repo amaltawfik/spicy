@@ -8,14 +8,14 @@ assignees: []
 
 # Release spicy X.Y.Z
 
-## 01 DEVELOPMENT CHECKS -------
+## 01 DEVELOPMENT CHECKS
 - [ ] Pull latest changes from `main`
 - [ ] Run relevant parts of `dev/01_dev_pkg.R`
 - [ ] Confirm all local tests pass (`devtools::test()`)
 - [ ] Confirm `devtools::check()` has no errors or warnings
 - [ ] Verify README and pkgdown site build correctly
 
-## 02 CRAN RELEASE PREPARATION -------
+## 02 CRAN RELEASE PREPARATION
 - [ ] Run relevant sections of `dev/02_release_cran.R`
 - [ ] All WinBuilder checks passed (release, devel, oldrelease)
 - [ ] All R-hub checks passed (Windows, macOS, Ubuntu)
@@ -26,7 +26,7 @@ assignees: []
 - [ ] Submit to CRAN via `devtools::release()` **only when all checks are OK**
 - [ ] Approve CRAN confirmation email
 
-## 03 AFTER CRAN ACCEPTANCE -------
+## 03 AFTER CRAN ACCEPTANCE
 - [ ] Run relevant parts of `dev/03_post_release.R`
 - [ ] GitHub tag and release created
 - [ ] Pkgdown site rebuilt and pushed
