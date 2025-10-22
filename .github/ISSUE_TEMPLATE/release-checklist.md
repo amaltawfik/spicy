@@ -10,6 +10,7 @@ assignees: []
 
 ## 01 DEVELOPMENT CHECKS
 - [ ] Pull latest changes from `main`
+- [ ] Check [current CRAN check results](https://cran.r-project.org/web/checks/check_results_spicy.html)
 - [ ] Run relevant parts of `dev/01_dev_pkg.R`
 - [ ] Confirm all local tests pass (`devtools::test()`)
 - [ ] Confirm `devtools::check()` has no errors or warnings
@@ -21,7 +22,8 @@ assignees: []
 - [ ] All R-hub checks passed (Windows, macOS, Ubuntu)
 - [ ] Reverse dependencies checked with `tools::package_dependencies()` (none detected)
 - [ ] URLs and spelling verified
-- [ ] `NEWS.md` and `cran-comments.md` updated
+- [ ] `NEWS.md` updated [Tidyverse Style Guide — News and Release Notes](https://style.tidyverse.org/news.html#news-release)
+- [ ] `cran-comments.md` updated
 - [ ] Increment version using `usethis::use_version()`
 - [ ] Submit to CRAN via `devtools::release()` **only when all checks are OK**
 - [ ] Approve CRAN confirmation email
