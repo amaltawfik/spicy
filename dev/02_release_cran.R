@@ -5,7 +5,7 @@
 
 library(devtools)
 library(urlchecker)
-library(revdepcheck)
+library(tools)
 library(rhub)
 library(usethis)
 library(sessioninfo)
@@ -22,7 +22,7 @@ devtools::check(remote = TRUE, manual = TRUE) # Comprehensive local check
 # 03 QUALITY ASSURANCE -------
 urlchecker::url_check() # Validate URLs
 devtools::spell_check() # Spell-check documentation
-revdepcheck::revdep_check(num_workers = 4) # Check reverse dependencies
+tools::package_dependencies("spicy", reverse = TRUE) # Check if other CRAN packages depend on spicy
 
 # 04 WINDOWS CHECKS (WINBUILDER) -------
 devtools::check_win_release() # Current stable R

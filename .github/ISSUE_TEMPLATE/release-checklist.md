@@ -19,7 +19,7 @@ assignees: []
 - [ ] Run relevant sections of `dev/02_release_cran.R`
 - [ ] All WinBuilder checks passed (release, devel, oldrelease)
 - [ ] All R-hub checks passed (Windows, macOS, Ubuntu)
-- [ ] Reverse dependency checks clean
+- [ ] Reverse dependencies checked with `tools::package_dependencies()` (none detected)
 - [ ] URLs and spelling verified
 - [ ] `NEWS.md` and `cran-comments.md` updated
 - [ ] Increment version using `usethis::use_version()`
