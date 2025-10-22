@@ -58,13 +58,14 @@
 #' }
 #' }
 copy_clipboard <- function(
-    x,
-    row.names.as.col = FALSE,
-    row.names = TRUE,
-    col.names = TRUE,
-    message = TRUE,
-    quiet = FALSE,
-    ...) {
+  x,
+  row.names.as.col = FALSE,
+  row.names = TRUE,
+  col.names = TRUE,
+  message = TRUE,
+  quiet = FALSE,
+  ...
+) {
   if (!clipr::clipr_available()) {
     stop("Clipboard is not available on this system.")
   }

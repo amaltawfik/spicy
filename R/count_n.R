@@ -169,15 +169,16 @@
 #'
 #' @export
 count_n <- function(
-    data = NULL,
-    select = tidyselect::everything(),
-    exclude = NULL,
-    count = NULL,
-    special = NULL,
-    allow_coercion = TRUE,
-    ignore_case = FALSE,
-    regex = FALSE,
-    verbose = FALSE) {
+  data = NULL,
+  select = tidyselect::everything(),
+  exclude = NULL,
+  count = NULL,
+  special = NULL,
+  allow_coercion = TRUE,
+  ignore_case = FALSE,
+  regex = FALSE,
+  verbose = FALSE
+) {
   if (!requireNamespace("rlang", quietly = TRUE)) stop("Package 'rlang' is required.")
   if (!requireNamespace("tidyselect", quietly = TRUE)) stop("Package 'tidyselect' is required.")
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
@@ -211,13 +212,14 @@ count_n <- function(
 
 #' @keywords internal
 base_count_n <- function(
-    data,
-    select = names(data),
-    count = NULL,
-    special = NULL,
-    allow_coercion = TRUE,
-    ignore_case = FALSE,
-    verbose = FALSE) {
+  data,
+  select = names(data),
+  count = NULL,
+  special = NULL,
+  allow_coercion = TRUE,
+  ignore_case = FALSE,
+  verbose = FALSE
+) {
   if (is.null(count) && is.null(special)) {
     stop("You must specify either `count` or `special`.", call. = FALSE)
   }

@@ -321,7 +321,6 @@ summarize_values_all <- function(col, include_na = FALSE) {
 }
 
 
-
 #' Alias for `varlist()`
 #'
 #' `vl()` is a convenient shorthand for `varlist()` that offers identical functionality with a shorter name.

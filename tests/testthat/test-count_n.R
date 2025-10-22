@@ -72,7 +72,6 @@ test_that("count_n handles factor variables including ignore_case", {
 })
 
 
-
 test_that("count_n handles labelled variables from haven", {
   skip_if_not_installed("haven")
 

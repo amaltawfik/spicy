@@ -84,13 +84,14 @@
 #' @export
 
 cross_tab <- function(
-    d = parent.frame(), x, y = NULL, by = NULL,
-    weights = NULL, rescale_weights = FALSE,
-    digits = 1, rowprct = FALSE,
-    row_total = TRUE, column_total = TRUE,
-    n = TRUE, drop = TRUE, include_stats = TRUE,
-    combine = FALSE,
-    ...) {
+  d = parent.frame(), x, y = NULL, by = NULL,
+  weights = NULL, rescale_weights = FALSE,
+  digits = 1, rowprct = FALSE,
+  row_total = TRUE, column_total = TRUE,
+  n = TRUE, drop = TRUE, include_stats = TRUE,
+  combine = FALSE,
+  ...
+) {
   is_df <- is.data.frame(d)
 
   x_expr <- substitute(x)

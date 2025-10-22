@@ -67,22 +67,23 @@
 #' df |> freq(var3, labelled_levels = "v")
 #' df |> freq(var3, labelled_levels = "l")
 freq <- function(
-    data,
-    x = NULL,
-    weights = NULL,
-    digits = 1,
-    cum = FALSE,
-    total = TRUE,
-    exclude = NULL,
-    sort = "",
-    valid = TRUE,
-    na_val = NULL,
-    rescale_weights = FALSE,
-    info = TRUE,
-    labelled_levels = c("prefixed", "labels", "values"),
-    styled = TRUE,
-    show_empty_levels = FALSE,
-    ...) {
+  data,
+  x = NULL,
+  weights = NULL,
+  digits = 1,
+  cum = FALSE,
+  total = TRUE,
+  exclude = NULL,
+  sort = "",
+  valid = TRUE,
+  na_val = NULL,
+  rescale_weights = FALSE,
+  info = TRUE,
+  labelled_levels = c("prefixed", "labels", "values"),
+  styled = TRUE,
+  show_empty_levels = FALSE,
+  ...
+) {
   labelled_levels <- match.arg(labelled_levels)
 
   is_df <- is.data.frame(data)
