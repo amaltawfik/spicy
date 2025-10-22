@@ -16,6 +16,6 @@ test_that("empty or missing labels are skipped", {
   out <- label_from_names(df)
 
   labs <- labelled::var_label(out)
-  expect_true(is.na(labs[["x"]]))
-  expect_true(labs[["y"]] == "" || is.na(labs[["y"]]))
+  expect_true(is.null(labs[["x"]]))
+  expect_true(is.null(labs[["y"]]))
 })
