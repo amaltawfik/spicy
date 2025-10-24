@@ -4,6 +4,9 @@
   tables inspired by Stata’s layout. The new implementation improves formatting,
   adds optional color support, and provides more consistent handling of totals
   and column spacing.
+  
+* Output from `freq()` and `cross_tab()` now benefits from the enhanced
+  `print.spicy()` formatting, offering clearer, more readable summary tables.
 
 * Documentation and internal tests were updated for clarity and consistency.
 
