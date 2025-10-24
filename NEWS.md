@@ -1,3 +1,5 @@
+# spicy 0.4.0
+
 # spicy 0.3.0
 
 * New function `code_book()`, which generates a comprehensive variable
