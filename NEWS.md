@@ -1,6 +1,11 @@
-# spicy (development version)
+# spicy 0.4.0 (in development)
 
-# spicy 0.4.0
+* `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
+  tables inspired by Stata’s layout. The new implementation improves formatting,
+  adds optional color support, and provides more consistent handling of totals
+  and column spacing.
+
+* Documentation and internal tests were updated for clarity and consistency.
 
 # spicy 0.3.0
 
