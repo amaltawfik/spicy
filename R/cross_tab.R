@@ -294,7 +294,7 @@ cross_tab <- function(
     if (!is.null(note)) attr(res, "note") <- note
     attr(res, "by_level") <- group_label
     attr(res, "by_var") <- group_var
-    class(res) <- c("spicy", class(res))
+    class(res) <- c("spicy_table", class(res))
 
     if (!is.null(group_label) && combine) {
       res[[group_var]] <- group_label
@@ -404,7 +404,7 @@ cross_tab <- function(
         attr(out, "note") <- NULL
       }
 
-      class(out) <- unique(c("spicy", class(out)))
+      class(out) <- unique(c("spicy_table", class(out)))
 
       for (i in seq_along(result_list_aligned)) {
         result_list_aligned[[i]][[group_var]] <- names(result_list_aligned)[i]

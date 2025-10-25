@@ -2,106 +2,162 @@
 % Please edit documentation in R/freq.R
 \name{freq}
 \alias{freq}
-\title{Frequency Table}
+\title{Frequency Table (spicy engine)}
 \usage{
 freq(
   data,
   x = NULL,
   weights = NULL,
   digits = 1,
-  cum = FALSE,
-  total = TRUE,
-  exclude = NULL,
-  sort = "",
   valid = TRUE,
+  cum = FALSE,
+  sort = "",
   na_val = NULL,
-  rescale_weights = FALSE,
-  info = TRUE,
-  labelled_levels = c("prefixed", "labels", "values"),
+  labelled_levels = c("prefixed", "labels", "values", "p", "l", "v"),
+  rescale = TRUE,
   styled = TRUE,
-  show_empty_levels = FALSE,
   ...
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, vector or factor. If a \code{data.frame} is provided, the target variable \code{x} must be specified.
-Matrices are not supported; please extract a column or convert to a vector or tibble before use.}
+\item{data}{A \code{data.frame}, vector, or factor. If a data frame is provided,
+specify the target variable \code{x}.}
 
-\item{x}{A dataframe variable.}
+\item{x}{A variable from \code{data} (unquoted).}
 
-\item{weights}{A numeric vector of weights. Must be the same length as \code{x}.}
+\item{weights}{Optional numeric vector of weights (same length as \code{x}).
+The variable may be referenced as a bare name when it belongs to \code{data}.}
 
-\item{digits}{Numeric. Number of digits to be displayed for percentages. Default is \code{1}. For N, 2 digits are displayed if there is a weight variable with non-integer weights or if rescale_weight = T, otherwise 0.}
+\item{digits}{Number of decimal digits to display for percentages (default: \code{1}).}
 
-\item{cum}{Logical. If \code{FALSE} (the default), do not display cumulative percentages. If \code{TRUE}, display cumulative percentages.}
+\item{valid}{Logical. If \code{TRUE} (default), display valid percentages
+(excluding missing values).}
 
-\item{total}{Logical. If \code{TRUE} (the default), add a final row of totals. If \code{FALSE}, remove a final row of totals.}
-
-\item{exclude}{Values to exclude (e.g., \code{NA}, "Other"). Default is \code{NULL}.}
+\item{cum}{Logical. If \code{TRUE}, add cumulative percentages.}
 
 \item{sort}{Sorting method for values:
 \itemize{
-\item \code{""} (default): No specific sorting.
-\item \code{"+"}: Sort by increasing frequency.
-\item \code{"-"}: Sort by decreasing frequency.
-\item \code{"name+"}: Sort alphabetically (A-Z).
-\item \code{"name-"}: Sort alphabetically (Z-A).
+\item \code{""} — no sorting (default)
+\item \code{"+"} — increasing frequency
+\item \code{"-"} — decreasing frequency
+\item \code{"name+"} — alphabetical A–Z
+\item \code{"name-"} — alphabetical Z–A
 }}
 
-\item{valid}{Logical. If \code{TRUE} (the default), display valid percentages (excluding missing values). If \code{FALSE}, do not display valid percentages.}
+\item{na_val}{Vector of numeric or character values to be treated as missing (\code{NA}).
 
-\item{na_val}{Character or numeric. For factors, character or numeric vectors, values to be treated as \code{NA}.}
+For \emph{labelled} variables (from \strong{haven} or \strong{labelled}), this argument
+must refer to the underlying coded values, not the visible labels.
 
-\item{rescale_weights}{Logical. If \code{FALSE} (the default), do not rescale weights. If \code{TRUE}, the total count will be the same as the unweighted \code{x}.}
+Example:
 
-\item{info}{Logical. If \code{TRUE} (the default), print a title and a note (label and class of \code{x}, variable weight, dataframe name) information about the model (model formula, number of observations, residual standard deviation and more).}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{x <- labelled(c(1, 2, 3, 1, 2, 3), c("Low" = 1, "Medium" = 2, "High" = 3))
+freq(x, na_val = 1) # Treat all "Low" as missing
+}\if{html}{\out{</div>}}}
 
-\item{labelled_levels}{For \code{labelled} variables, controls how values are displayed using \code{labelled::to_factor(levels = "prefixed")}:
+\item{labelled_levels}{For \code{labelled} variables, defines how labels and
+values are displayed:
 \itemize{
-\item \code{"prefixed"} or \code{"p"} (default): Show labels as \verb{[value] label}
-\item \code{"labels"} or \code{"l"}: Show only the label
-\item \code{"values"} or \code{"v"}: Show only the underlying value
+\item \code{"prefixed"} or \code{"p"} — show labels as \verb{[value] label} (default)
+\item \code{"labels"} or \code{"l"} — show only labels
+\item \code{"values"} or \code{"v"} — show only numeric codes
 }}
 
-\item{styled}{Logical. If \code{TRUE} (default), formats the output using \code{print.spicy()},
-which aligns columns dynamically in a structured three-line table. If \code{FALSE}, returns a standard \code{data.frame}
-without formatting.}
+\item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
+total equals the unweighted sample size.}
 
-\item{show_empty_levels}{Logical. If \code{FALSE} (default), factor levels with \code{N = 0} are removed from the output. Set to \code{TRUE} to retain all levels, even those with no observations.}
+\item{styled}{Logical. If \code{TRUE} (default), print the formatted spicy table.
+If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
 
-\item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
+\item{...}{Additional arguments passed to \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.}
 }
 \value{
-A formatted \code{data.frame} containing unique values of \code{x}, their frequencies (\code{N}), percentages (\verb{\%}), percentages of valid values (\verb{Valid\%}), with a "Total" row.
+A \code{data.frame} with columns:
 \itemize{
-\item If \code{cum = TRUE}, cumulative frequencies (\verb{\%cum} and \verb{Valid\%cum}) are included.
+\item \code{value} — unique values or factor levels
+\item \code{n} — frequency count (weighted if applicable)
+\item \code{prop} — proportion of total
+\item \code{valid_prop} — proportion of valid responses (if \code{valid = TRUE})
+\item \code{cum_prop}, \code{cum_valid_prop} — cumulative percentages (if \code{cum = TRUE})
 }
+
+If \code{styled = TRUE}, prints the formatted table to the console and returns it invisibly.
 }
 \description{
-\code{freq()} creates a frequency table for a variable or vector, with options for weighting, sorting, handling missing values, and calculating percentages.
+Creates a frequency table for a vector or variable from a data frame, with
+options for weighting, sorting, handling \emph{labelled} data, defining custom
+missing values, and displaying cumulative percentages.
+
+When \code{styled = TRUE}, the function prints a spicy-formatted ASCII table
+using \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{\link[=spicy_print_table]{spicy_print_table()}}; otherwise, it
+returns a \code{data.frame} containing frequencies and proportions.
+}
+\details{
+This function is designed to mimic common frequency procedures from
+statistical software such as SPSS or Stata, while integrating the
+flexibility of R's data structures.
+
+It automatically detects the type of input (\code{vector}, \code{factor}, or
+\code{labelled}) and applies appropriate transformations, including:
+\itemize{
+\item Handling of labelled variables via \strong{labelled} or \strong{haven}
+\item Optional recoding of specific values as missing (\code{na_val})
+\item Optional weighting with a rescaling mechanism
+\item Support for cumulative percentages (\code{cum = TRUE})
+\item Multiple display modes for labels via \code{labelled_levels}
+}
+
+When weighting is applied (\code{weights}), the frequencies and percentages are
+computed proportionally to the weights. The argument \code{rescale = TRUE}
+normalizes weights so their sum equals the unweighted sample size.
 }
 \examples{
-data(iris)
-data(mtcars)
-freq(iris, Species)
-iris |> freq(Species, cum = TRUE)
-freq(mtcars, cyl, sort = "-", cum = TRUE)
-freq(mtcars, gear, weights = mpg, rescale_weights = TRUE)
-
-# With labelled variable
 library(labelled)
-df <- data.frame(
-  var1 = set_variable_labels(1:5, label = "Numeric Variable with Label"),
-  var2 = labelled(1:5, c("Low" = 1, "Medium" = 2, "High" = 3)),
-  var3 = set_variable_labels(
-    labelled(1:5, c("Bad" = 1, "Average" = 2, "Good" = 3)),
-    label = "Labelled Variable with Label"
-  )
+
+# Simple numeric vector
+x <- c(1, 2, 2, 3, 3, 3, NA)
+freq(x)
+
+# Labelled variable (haven-style)
+x_lbl <- labelled(
+  c(1, 2, 3, 1, 2, 3, 1, 2, NA),
+  labels = c("Low" = 1, "Medium" = 2, "High" = 3)
 )
-df |> freq(var2)
-df |> freq(var2, labelled_levels = "l")
-df |> freq(var2, labelled_levels = "v")
-df |> freq(var3)
-df |> freq(var3, labelled_levels = "v")
-df |> freq(var3, labelled_levels = "l")
+var_label(x_lbl) <- "Satisfaction level"
+
+# Treat value 1 ("Low") as missing
+freq(x_lbl, na_val = 1)
+
+# Display only labels, add cumulative \%
+freq(x_lbl, labelled_levels = "labels", cum = TRUE)
+
+# Display values only, sorted descending
+freq(x_lbl, labelled_levels = "values", sort = "-")
+
+# With weighting
+df <- data.frame(
+  sexe = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
+  poids = c(12, 8, 10, 15, 7, 9)
+)
+
+# Weighted frequencies (normalized)
+freq(df, sexe, weights = poids, rescale = TRUE)
+
+# Weighted frequencies (without rescaling)
+freq(df, sexe, weights = poids, rescale = FALSE)
+
+# Base R style, with weights and cumulative percentages
+freq(df$sexe, weights = df$poids, cum = TRUE)
+
+# Piped version (tidy syntax) and sort alphabetically descending ("name-")
+df |> freq(sexe, sort = "name-")
+
+# Non-styled return (for programmatic use)
+f <- freq(df, sexe, styled = FALSE)
+head(f)
+
+}
+\seealso{
+\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for formatted printing.
+\code{\link[=spicy_print_table]{spicy_print_table()}} for the underlying ASCII rendering engine.
 }

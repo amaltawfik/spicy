@@ -5,7 +5,7 @@ test_that("cross_tab computes simple 2D crosstab correctly", {
 
   tab <- cross_tab(mtcars, cyl, gear)
 
-  expect_s3_class(tab, "spicy")
+  expect_s3_class(tab, "spicy_table")
   expect_true("Values" %in% colnames(tab))
   expect_true(any(grepl("Chi-2", attr(tab, "note"))))
 })
@@ -17,7 +17,7 @@ test_that("cross_tab works with row percentages", {
 
   tab <- cross_tab(mtcars, cyl, gear, rowprct = TRUE)
 
-  expect_s3_class(tab, "spicy")
+  expect_s3_class(tab, "spicy_table")
   expect_true("Row_Total" %in% colnames(tab))
 })
 
@@ -30,8 +30,8 @@ test_that("cross_tab works with weights and rescaling", {
   weighted <- cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
   rescaled <- cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale_weights = TRUE)
 
-  expect_s3_class(weighted, "spicy")
-  expect_s3_class(rescaled, "spicy")
+  expect_s3_class(weighted, "spicy_table")
+  expect_s3_class(rescaled, "spicy_table")
 })
 
 test_that("cross_tab works with group 'by' and combine = TRUE", {
@@ -42,7 +42,7 @@ test_that("cross_tab works with group 'by' and combine = TRUE", {
 
   combined <- cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
 
-  expect_s3_class(combined, "spicy")
+  expect_s3_class(combined, "spicy_table")
   expect_true("am" %in% colnames(combined))
   expect_true(any(grepl("Chi-2", attr(combined, "note"))))
 })
@@ -56,7 +56,7 @@ test_that("cross_tab returns list if combine = FALSE with 'by'", {
   result_list <- cross_tab(mtcars, cyl, gear, by = am, combine = FALSE)
 
   expect_type(result_list, "list")
-  expect_s3_class(result_list[[1]], "spicy")
+  expect_s3_class(result_list[[1]], "spicy_table")
 })
 
 test_that("cross_tab works with 1D (no y) input", {
@@ -65,7 +65,7 @@ test_that("cross_tab works with 1D (no y) input", {
 
   result <- cross_tab(mtcars, cyl)
 
-  expect_s3_class(result, "spicy")
+  expect_s3_class(result, "spicy_table")
   expect_true("Values" %in% colnames(result))
 })
 
@@ -106,6 +106,6 @@ test_that("cross_tab handles interaction in 'by'", {
 
   out <- cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
 
-  expect_s3_class(out, "spicy")
+  expect_s3_class(out, "spicy_table")
   expect_true("interaction(am, vs)" %in% colnames(out))
 })

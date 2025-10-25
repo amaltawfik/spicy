@@ -2,7 +2,7 @@ test_that("freq works with a simple vector", {
   x <- c("A", "B", "A", "C", "A", "B", "B", "C", "C", "C")
   result <- freq(x)
 
-  expect_s3_class(result, "spicy")
+  expect_s3_class(result, "spicy_table")
   expect_true(all(c("Values", "N", "%") %in% colnames(result)))
   expect_equal(nrow(result), 4)
   expect_equal(tail(as.numeric(result$N), 1), length(x))
@@ -12,7 +12,7 @@ test_that("freq works with a data frame and a column", {
   df <- data.frame(cat = c("A", "B", "A", "C", "A", "B", "B", "C", "C", "C"))
   result <- freq(df, cat)
 
-  expect_s3_class(result, "spicy")
+  expect_s3_class(result, "spicy_table")
   expect_equal(nrow(result), 4)
   expect_equal(tail(as.numeric(result$N), 1), nrow(df))
 })
@@ -82,10 +82,10 @@ test_that("freq correctly handles sorting by frequency and name", {
 })
 
 test_that("freq works with logical, date, POSIXct, and character types", {
-  expect_s3_class(freq(c(TRUE, TRUE, FALSE, NA, FALSE)), "spicy")
-  expect_s3_class(freq(as.Date(c("2023-01-01", "2023-01-02", "2023-01-01"))), "spicy")
-  expect_s3_class(freq(as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-02-01 14:00"))), "spicy")
-  expect_s3_class(freq(c("red", "green", "blue", "red")), "spicy")
+  expect_s3_class(freq(c(TRUE, TRUE, FALSE, NA, FALSE)), "spicy_table")
+  expect_s3_class(freq(as.Date(c("2023-01-01", "2023-01-02", "2023-01-01"))), "spicy_table")
+  expect_s3_class(freq(as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-02-01 14:00"))), "spicy_table")
+  expect_s3_class(freq(c("red", "green", "blue", "red")), "spicy_table")
 })
 
 test_that("freq handles haven_labelled with labelled_levels", {
@@ -94,9 +94,9 @@ test_that("freq handles haven_labelled with labelled_levels", {
     labels = c("Low" = 1, "Medium" = 2, "High" = 3)
   )
 
-  expect_s3_class(freq(x, labelled_levels = "labels"), "spicy")
-  expect_s3_class(freq(x, labelled_levels = "values"), "spicy")
-  expect_s3_class(freq(x, labelled_levels = "prefixed"), "spicy")
+  expect_s3_class(freq(x, labelled_levels = "labels"), "spicy_table")
+  expect_s3_class(freq(x, labelled_levels = "values"), "spicy_table")
+  expect_s3_class(freq(x, labelled_levels = "prefixed"), "spicy_table")
 })
 
 test_that("freq works on data.frame columns with different types", {
@@ -113,11 +113,11 @@ test_that("freq works on data.frame columns with different types", {
     )
   )
 
-  expect_s3_class(freq(df, factor_col), "spicy")
-  expect_s3_class(freq(df, char_col), "spicy")
-  expect_s3_class(freq(df, num_col), "spicy")
-  expect_s3_class(freq(df, logical_col), "spicy")
-  expect_s3_class(freq(df, date_col), "spicy")
-  expect_s3_class(freq(df, posix_col), "spicy")
-  expect_s3_class(freq(df, labelled_col, labelled_levels = "labels"), "spicy")
+  expect_s3_class(freq(df, factor_col), "spicy_table")
+  expect_s3_class(freq(df, char_col), "spicy_table")
+  expect_s3_class(freq(df, num_col), "spicy_table")
+  expect_s3_class(freq(df, logical_col), "spicy_table")
+  expect_s3_class(freq(df, date_col), "spicy_table")
+  expect_s3_class(freq(df, posix_col), "spicy_table")
+  expect_s3_class(freq(df, labelled_col, labelled_levels = "labels"), "spicy_table")
 })

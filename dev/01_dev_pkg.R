@@ -10,6 +10,9 @@ library(pkgdown)
 library(urlchecker)
 library(sessioninfo)
 
+# 00 LOAD PACKAGE -------
+devtools::load_all()
+
 # 01 STYLE & LINT -------
 styler::style_pkg() # Reformat all R code to tidy style
 lintr::lint_package() # Static code analysis (linting)
