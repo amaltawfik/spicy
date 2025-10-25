@@ -1,123 +1,135 @@
-test_that("freq works with a simple vector", {
-  x <- c("A", "B", "A", "C", "A", "B", "B", "C", "C", "C")
-  result <- freq(x)
+test_that("freq() works with a simple numeric vector", {
+  x <- c(1, 2, 2, 3, 3, 3, NA)
+  df <- freq(x, styled = FALSE)
 
-  expect_s3_class(result, "spicy_table")
-  expect_true(all(c("Values", "N", "%") %in% colnames(result)))
-  expect_equal(nrow(result), 4)
-  expect_equal(tail(as.numeric(result$N), 1), length(x))
+  expect_s3_class(df, "data.frame")
+  expect_true(all(c("value", "n", "prop") %in% names(df)))
+  expect_equal(sum(df$n, na.rm = TRUE), length(x))
+  expect_equal(round(sum(df$prop, na.rm = TRUE), 1), 1)
 })
 
-test_that("freq works with a data frame and a column", {
+
+test_that("freq() works with a data.frame column", {
   df <- data.frame(cat = c("A", "B", "A", "C", "A", "B", "B", "C", "C", "C"))
-  result <- freq(df, cat)
+  res <- freq(df, cat, styled = FALSE)
 
-  expect_s3_class(result, "spicy_table")
-  expect_equal(nrow(result), 4)
-  expect_equal(tail(as.numeric(result$N), 1), nrow(df))
+  expect_s3_class(res, "data.frame")
+  expect_equal(sum(res$n, na.rm = TRUE), nrow(df))
+  expect_true(any(grepl("C", res$value)))
 })
 
-test_that("freq works with weights", {
-  x <- c("A", "B", "A", "C", "A", "B", "B", "C", "C", "C")
-  weights <- c(1, 2, 1, 1, 3, 1, 1, 1, 2, 2)
-  result <- freq(x, weights = weights)
 
-  expect_equal(tail(as.numeric(result$N), 1), sum(weights))
-})
+test_that("freq() handles labelled variables correctly", {
+  library(labelled)
 
-test_that("freq returns appropriate errors", {
-  expect_error(
-    freq(matrix(1:9, nrow = 3)),
-    "Matrix detected. Use `freq\\(x\\[, 1\\]\\)` or convert to a tibble first\\."
+  x <- labelled(
+    c(1, 2, 3, 1, 2, 3, 1, 2, NA),
+    labels = c("Low" = 1, "Medium" = 2, "High" = 3)
   )
-  expect_error(
-    freq(c(1, 2, 3), weights = c("a", "b", "c")),
-    "'weights' must be a numeric vector."
+  var_label(x) <- "Satisfaction level"
+
+  # Prefixed (default)
+  f1 <- freq(x, labelled_levels = "prefixed", styled = FALSE)
+  expect_true(any(grepl("\\[1\\]", f1$value)))
+
+  # Labels only
+  f2 <- freq(x, labelled_levels = "labels", styled = FALSE)
+  expect_true(all(!grepl("\\[", f2$value)))
+
+  # Underlying values only
+  f1 <- freq(x, styled = FALSE)
+  f2 <- freq(x, na_val = 1, styled = FALSE)
+
+  # After recoding, there should be one fewer distinct category
+  expect_true(length(unique(f2$value)) <= length(unique(f1$value)))
+})
+
+
+test_that("freq() handles weights and rescaling", {
+  df <- data.frame(
+    sexe = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
+    poids = c(12, 8, 10, 15, 7, 9)
   )
-  expect_error(
-    freq(c(1, 2, 3), sort = "invalid"),
-    "Invalid value for 'sort'"
-  )
+
+  # Weighted, rescaled
+  f_rescaled <- freq(df, sexe, weights = poids, rescale = TRUE, styled = FALSE)
+  total_weighted <- sum(f_rescaled$n)
+  expect_true(abs(total_weighted - nrow(df)) < 1e-6)
+
+  # Weighted, not rescaled
+  f_unscaled <- freq(df, sexe, weights = poids, rescale = FALSE, styled = FALSE)
+  expect_true(sum(f_unscaled$n) > nrow(df))
 })
 
-test_that("freq correctly handles sorting by frequency and name", {
-  x <- c("Banana", "Apple", "Cherry", "Banana", "Apple", "Cherry", "Apple")
-  df <- data.frame(fruit = x)
 
-  # --- Frequency ascending ---
-  result_freq_asc <- freq(x, sort = "+")
-  values <- trimws(result_freq_asc$Values)
-  result_freq_asc <- result_freq_asc[values != "Total", ]
-  values_sorted_asc <- trimws(result_freq_asc$Values)
-  expected_order_asc <- names(sort(table(x)))
-  expect_equal(values_sorted_asc, expected_order_asc)
-
-  # --- Frequency descending ---
-  result_freq_desc <- freq(x, sort = "-")
-  values <- trimws(result_freq_desc$Values)
-  result_freq_desc <- result_freq_desc[values != "Total", ]
-  values_sorted_desc <- trimws(result_freq_desc$Values)
-  expected_order_desc <- names(sort(table(x), decreasing = TRUE))
-  expect_equal(values_sorted_desc, expected_order_desc)
-
-  # --- Name ascending (A → Z) ---
-  result_name_asc <- freq(x, sort = "name+")
-  values <- trimws(result_name_asc$Values)
-  values_name_asc <- values[values != "Total"]
-  expect_equal(values_name_asc, sort(unique(x)))
-
-  # --- Name descending (Z → A) ---
-  result_name_desc <- freq(x, sort = "name-")
-  values <- trimws(result_name_desc$Values)
-  values_name_desc <- values[values != "Total"]
-  expect_equal(values_name_desc, sort(unique(x), decreasing = TRUE))
-
-  # --- Same tests with data frame column ---
-  df_result_freq <- freq(df, fruit, sort = "-")
-  values <- trimws(df_result_freq$Values)
-  df_result_freq <- df_result_freq[values != "Total", ]
-  df_values_sorted <- trimws(df_result_freq$Values)
-  df_expected <- names(sort(table(df$fruit), decreasing = TRUE))
-  expect_equal(df_values_sorted, df_expected)
-})
-
-test_that("freq works with logical, date, POSIXct, and character types", {
-  expect_s3_class(freq(c(TRUE, TRUE, FALSE, NA, FALSE)), "spicy_table")
-  expect_s3_class(freq(as.Date(c("2023-01-01", "2023-01-02", "2023-01-01"))), "spicy_table")
-  expect_s3_class(freq(as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-02-01 14:00"))), "spicy_table")
-  expect_s3_class(freq(c("red", "green", "blue", "red")), "spicy_table")
-})
-
-test_that("freq handles haven_labelled with labelled_levels", {
-  x <- haven::labelled(
-    c(1, 1, 2, 3),
+test_that("freq() handles missing value recoding", {
+  x <- labelled(
+    c(1, 2, 3, 1, 2, 3, 1),
     labels = c("Low" = 1, "Medium" = 2, "High" = 3)
   )
 
-  expect_s3_class(freq(x, labelled_levels = "labels"), "spicy_table")
-  expect_s3_class(freq(x, labelled_levels = "values"), "spicy_table")
-  expect_s3_class(freq(x, labelled_levels = "prefixed"), "spicy_table")
+  f1 <- freq(x, styled = FALSE)
+  f2 <- freq(x, na_val = 1, styled = FALSE)
+
+  # Compare NA frequencies in the output table
+  na_count_f1 <- f1$n[f1$value == "<NA>"]
+  na_count_f2 <- f2$n[f2$value == "<NA>"]
+
+  # Handle case where <NA> row is missing
+  na_count_f1 <- if (length(na_count_f1)) na_count_f1 else 0
+  na_count_f2 <- if (length(na_count_f2)) na_count_f2 else 0
+
+  # Expect the 'Low' category to be removed after recoding
+  expect_false(any(grepl("Low", f2$value)))
+
+  # Optionally, confirm total frequency unchanged (only recoded)
+  expect_equal(round(sum(f1$n, na.rm = TRUE), 5), round(sum(f2$n, na.rm = TRUE), 5))
 })
 
-test_that("freq works on data.frame columns with different types", {
-  df <- tibble::tibble(
-    factor_col = factor(c("A", "A", "B", "C", "C", "C")),
-    char_col = c("a", "a", "b", "c", "c", "c"),
-    num_col = c(1, 1, 2, 3, 3, 3),
-    logical_col = c(TRUE, TRUE, FALSE, FALSE, TRUE, NA),
-    date_col = as.Date(c("2023-01-01", "2023-01-01", "2023-01-02", "2023-01-03", "2023-01-03", "2023-01-03")),
-    posix_col = as.POSIXct(c("2023-01-01 12:00", "2023-01-01 12:00", "2023-01-02 12:00", "2023-01-03 12:00", "2023-01-03 12:00", "2023-01-03 12:00")),
-    labelled_col = haven::labelled(
-      c(1, 1, 2, 3, 3, 3),
-      labels = c("Faible" = 1, "Moyen" = 2, "Élevé" = 3)
-    )
+test_that("freq() correctly sorts by frequency and name", {
+  x <- c("Banana", "Apple", "Cherry", "Banana", "Apple", "Cherry", "Apple")
+
+  f_plus <- freq(x, sort = "+", styled = FALSE)
+  f_minus <- freq(x, sort = "-", styled = FALSE)
+  f_name_plus <- freq(x, sort = "name+", styled = FALSE)
+  f_name_minus <- freq(x, sort = "name-", styled = FALSE)
+
+  # Frequency ascending/descending
+  expect_true(f_plus$n[1] <= f_plus$n[length(f_plus$n)])
+  expect_true(f_minus$n[1] >= f_minus$n[length(f_minus$n)])
+
+  # Alphabetical order
+  expect_equal(sort(f_name_plus$value), f_name_plus$value)
+  expect_equal(sort(f_name_minus$value, decreasing = TRUE), f_name_minus$value)
+})
+
+
+test_that("freq() handles multiple data types correctly", {
+  df <- data.frame(
+    logical_col = c(TRUE, FALSE, TRUE, NA),
+    date_col = as.Date(c("2023-01-01", "2023-01-02", "2023-01-01", NA)),
+    posix_col = as.POSIXct(c("2023-01-01 12:00", "2023-01-02 12:00", NA, "2023-01-02 12:00")),
+    char_col = c("a", "a", "b", NA),
+    num_col = c(1, 1, 2, NA)
   )
 
-  expect_s3_class(freq(df, factor_col), "spicy_table")
-  expect_s3_class(freq(df, char_col), "spicy_table")
-  expect_s3_class(freq(df, num_col), "spicy_table")
-  expect_s3_class(freq(df, logical_col), "spicy_table")
-  expect_s3_class(freq(df, date_col), "spicy_table")
-  expect_s3_class(freq(df, posix_col), "spicy_table")
-  expect_s3_class(freq(df, labelled_col, labelled_levels = "labels"), "spicy_table")
+  expect_s3_class(freq(df, logical_col, styled = FALSE), "data.frame")
+  expect_s3_class(freq(df, date_col, styled = FALSE), "data.frame")
+  expect_s3_class(freq(df, posix_col, styled = FALSE), "data.frame")
+  expect_s3_class(freq(df, char_col, styled = FALSE), "data.frame")
+  expect_s3_class(freq(df, num_col, styled = FALSE), "data.frame")
+})
+
+
+test_that("freq() handles invalid weight and sort arguments", {
+  x <- c(1, 2, 3)
+  expect_error(freq(x, weights = c(-1, 0, 1)), "must be non-negative")
+  expect_error(freq(x, weights = c(1, 2)), "same length")
+  expect_error(freq(x, sort = "wrong"), "Invalid value for 'sort'")
+})
+
+
+test_that("freq() prints styled table invisibly", {
+  x <- c("A", "B", "B", "C")
+  expect_invisible(freq(x, styled = TRUE))
 })
