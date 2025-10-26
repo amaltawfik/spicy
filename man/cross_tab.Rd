@@ -32,7 +32,8 @@ cross_tab(
 
 \item{weights}{Optional numeric weights.}
 
-\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N.}
+\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N.
+Equivalent to SPSS option \emph{“Rescale weights to sample size”}.}
 
 \item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
 
@@ -56,12 +57,46 @@ When \code{by} is used, returns a \code{spicy_cross_table_list}.
 }
 \description{
 Computes a cross-tabulation with optional weights, grouping, and percentages.
-SPSS-like structure with intelligent defaults, robust Chi² diagnostics, and modern formatting.
+Produces an SPSS-like table structure with intelligent defaults, robust Chi²
+diagnostics, and modern ASCII formatting.
 }
+\section{Global Options}{
+
+
+The function recognizes the following global options that modify its default behavior:
+\itemize{
+\item \strong{\code{options(spicy.simulate_p = TRUE)}}
+Enables Monte Carlo simulation for all Chi² tests by default.
+Equivalent to setting \code{simulate_p = TRUE} in every call.
+\item \strong{\code{options(spicy.rescale = TRUE)}}
+Automatically rescales weights so that total weighted N equals the raw N,
+mimicking SPSS option \emph{“Rescale weights to sample size”}.
+Equivalent to setting \code{rescale = TRUE} in each call.
+}
+
+These options are convenient for users who wish to enforce consistent behavior
+across multiple calls to \code{cross_tab()} and other spicy table functions.
+They can be disabled by setting them to \code{NULL}:
+\code{options(spicy.simulate_p = NULL, spicy.rescale = NULL)}.
+
+Example:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
+cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
+}\if{html}{\out{</div>}}
+}
+
 \examples{
+# Basic crosstab
 cross_tab(mtcars, cyl, gear)
+
+# Weighted (rescaled)
+cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
+
+# Grouped
 cross_tab(mtcars, cyl, gear, by = am)
+
+# Grouped by an interaction
 cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
-cross_tab(mtcars, cyl, gear, percent = "row", weights = mtcars$wt)
 
 }

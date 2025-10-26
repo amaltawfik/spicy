@@ -2,7 +2,8 @@
 #'
 #' @description
 #' Computes a cross-tabulation with optional weights, grouping, and percentages.
-#' SPSS-like structure with intelligent defaults, robust Chi² diagnostics, and modern formatting.
+#' Produces an SPSS-like table structure with intelligent defaults, robust Chi²
+#' diagnostics, and modern ASCII formatting.
 #'
 #' @param data A data frame.
 #' @param x Row variable (unquoted).
@@ -10,6 +11,7 @@
 #' @param by Optional grouping variable or expression (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
+#'   Equivalent to SPSS option *“Rescale weights to sample size”*.
 #' @param percent One of `"none"`, `"row"`, `"column"`.
 #' @param show_missing Logical; include NA as category (default TRUE).
 #' @param include_stats Logical; compute Chi² and Cramer’s V (default TRUE).
@@ -23,11 +25,41 @@
 #' A `data.frame`, list of data.frames, or `spicy_cross_table` object.
 #' When `by` is used, returns a `spicy_cross_table_list`.
 #'
+#' @section Global Options:
+#'
+#' The function recognizes the following global options that modify its default behavior:
+#'
+#' * **`options(spicy.simulate_p = TRUE)`**
+#'   Enables Monte Carlo simulation for all Chi² tests by default.
+#'   Equivalent to setting `simulate_p = TRUE` in every call.
+#'
+#' * **`options(spicy.rescale = TRUE)`**
+#'   Automatically rescales weights so that total weighted N equals the raw N,
+#'   mimicking SPSS option *“Rescale weights to sample size”*.
+#'   Equivalent to setting `rescale = TRUE` in each call.
+#'
+#' These options are convenient for users who wish to enforce consistent behavior
+#' across multiple calls to `cross_tab()` and other spicy table functions.
+#' They can be disabled by setting them to `NULL`:
+#' `options(spicy.simulate_p = NULL, spicy.rescale = NULL)`.
+#'
+#' Example:
+#' ```r
+#' options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
+#' cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
+#' ```
 #' @examples
+#' # Basic crosstab
 #' cross_tab(mtcars, cyl, gear)
+#'
+#' # Weighted (rescaled)
+#' cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
+#'
+#' # Grouped
 #' cross_tab(mtcars, cyl, gear, by = am)
+#'
+#' # Grouped by an interaction
 #' cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
-#' cross_tab(mtcars, cyl, gear, percent = "row", weights = mtcars$wt)
 #'
 #' @export
 cross_tab <- function(
@@ -46,6 +78,14 @@ cross_tab <- function(
   styled = TRUE,
   show_n = TRUE
 ) {
+  # --- Global defaults ---
+  if (missing(simulate_p)) {
+    simulate_p <- getOption("spicy.simulate_p", FALSE)
+  }
+  if (missing(rescale)) {
+    rescale <- getOption("spicy.rescale", FALSE)
+  }
+
   percent <- match.arg(percent)
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
@@ -78,13 +118,17 @@ cross_tab <- function(
     w <- rep(1, nrow(data))
   }
 
+  # --- Rescale if requested ---
   if (rescale && !all(w == 1)) {
     w <- w * length(w) / sum(w, na.rm = TRUE)
   } else if (rescale && all(w == 1)) {
     warning("`rescale = TRUE` has no effect since no weights provided.")
   }
 
-  # --- Missing ---
+  # Stocker les poids dans les données pour que compute_ctab les retrouve
+  data$`..spicy_w` <- w
+
+  # --- Missing values ---
   if (!show_missing) {
     keep <- !is.na(rlang::eval_tidy(x_expr, data))
     if (!rlang::quo_is_null(y_expr)) {
@@ -94,7 +138,7 @@ cross_tab <- function(
     w <- w[keep]
   }
 
-  # --- Internal computation ---
+  # --- Fonction interne de calcul ---
   compute_ctab <- function(df, group_label = NULL) {
     full_x <- rlang::eval_tidy(x_expr, data)
     full_y <- if (!rlang::quo_is_null(y_expr)) rlang::eval_tidy(y_expr, data) else NULL
@@ -103,7 +147,7 @@ cross_tab <- function(
       dplyr::mutate(
         x_val = rlang::eval_tidy(x_expr, df),
         y_val = if (rlang::quo_is_null(y_expr)) NA else rlang::eval_tidy(y_expr, df),
-        w_val = if (rlang::quo_is_null(w_expr)) 1 else rlang::eval_tidy(w_expr, df)
+        w_val = .data$`..spicy_w`
       )
 
     if (!rlang::quo_is_null(y_expr)) {
@@ -116,7 +160,7 @@ cross_tab <- function(
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
-    # --- Percentages / Counts ---
+    # --- Pourcentages / Comptes ---
     tab_perc <- switch(percent,
       "row"    = prop.table(tab_full, 1) * 100,
       "column" = prop.table(tab_full, 2) * 100,
@@ -127,7 +171,7 @@ cross_tab <- function(
     df_out <- as.data.frame.matrix(round(tab_perc, digits))
     df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
-    # --- Totals ---
+    # --- Totaux ---
     if (styled) {
       if (percent == "column") {
         total_row <- tibble::as_tibble_row(
@@ -151,7 +195,7 @@ cross_tab <- function(
       }
     }
 
-    # --- Association statistics ---
+    # --- Statistiques d'association ---
     note <- NULL
     if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
       if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
@@ -200,7 +244,7 @@ cross_tab <- function(
       }
     }
 
-    # --- Title and attributes ---
+    # --- Titre et attributs ---
     perc_label <- switch(percent,
       "row" = " (Row %)",
       "column" = " (Column %)",
@@ -224,7 +268,7 @@ cross_tab <- function(
     df_out
   }
 
-  # --- handle grouping ---
+  # --- Gestion du grouping ---
   if (!rlang::quo_is_null(by_expr)) {
     by_vals <- rlang::eval_tidy(by_expr, data)
 
