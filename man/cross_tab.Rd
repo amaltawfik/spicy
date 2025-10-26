@@ -28,7 +28,7 @@ cross_tab(
 
 \item{y}{Column variable (unquoted, optional).}
 
-\item{by}{Optional grouping variable.}
+\item{by}{Optional grouping variable or expression (e.g. \code{interaction(vs, am)}).}
 
 \item{weights}{Optional numeric weights.}
 
@@ -52,8 +52,16 @@ cross_tab(
 }
 \value{
 A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.
+When \code{by} is used, returns a \code{spicy_cross_table_list}.
 }
 \description{
 Computes a cross-tabulation with optional weights, grouping, and percentages.
-SPSS-like structure with intelligent defaults and modern formatting.
+SPSS-like structure with intelligent defaults, robust Chi² diagnostics, and modern formatting.
+}
+\examples{
+cross_tab(mtcars, cyl, gear)
+cross_tab(mtcars, cyl, gear, by = am)
+cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+cross_tab(mtcars, cyl, gear, percent = "row", weights = mtcars$wt)
+
 }

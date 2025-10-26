@@ -1,13 +1,13 @@
-#' Cross-tabulation
+#' Cross-tabulation (SPSS-like)
 #'
 #' @description
 #' Computes a cross-tabulation with optional weights, grouping, and percentages.
-#' SPSS-like structure with intelligent defaults and modern formatting.
+#' SPSS-like structure with intelligent defaults, robust Chi² diagnostics, and modern formatting.
 #'
 #' @param data A data frame.
 #' @param x Row variable (unquoted).
 #' @param y Column variable (unquoted, optional).
-#' @param by Optional grouping variable.
+#' @param by Optional grouping variable or expression (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
 #' @param percent One of `"none"`, `"row"`, `"column"`.
@@ -19,7 +19,16 @@
 #' @param styled Logical; if TRUE, returns a "spicy_cross_table" object (for printing).
 #' @param show_n Logical; if TRUE, adds marginal N totals when percent != "none".
 #'
-#' @return A `data.frame`, list of data.frames, or `spicy_cross_table` object.
+#' @return
+#' A `data.frame`, list of data.frames, or `spicy_cross_table` object.
+#' When `by` is used, returns a `spicy_cross_table_list`.
+#'
+#' @examples
+#' cross_tab(mtcars, cyl, gear)
+#' cross_tab(mtcars, cyl, gear, by = am)
+#' cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+#' cross_tab(mtcars, cyl, gear, percent = "row", weights = mtcars$wt)
+#'
 #' @export
 cross_tab <- function(
   data,
@@ -45,8 +54,20 @@ cross_tab <- function(
   y_expr <- rlang::enquo(y)
   by_expr <- rlang::enquo(by)
   w_expr <- rlang::enquo(weights)
+
   x_name <- rlang::as_name(x_expr)
   y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
+
+  # --- Gestion spéciale de by ---
+  if (!rlang::quo_is_null(by_expr)) {
+    if (rlang::is_symbol(rlang::get_expr(by_expr))) {
+      by_name <- rlang::as_name(by_expr)
+    } else {
+      by_name <- rlang::expr_text(by_expr)
+    }
+  } else {
+    by_name <- NULL
+  }
 
   # --- weights ---
   if (!rlang::quo_is_null(w_expr)) {
@@ -73,7 +94,7 @@ cross_tab <- function(
     w <- w[keep]
   }
 
-  # --- internal computation ---
+  # --- Internal computation ---
   compute_ctab <- function(df, group_label = NULL) {
     full_x <- rlang::eval_tidy(x_expr, data)
     full_y <- if (!rlang::quo_is_null(y_expr)) rlang::eval_tidy(y_expr, data) else NULL
@@ -85,7 +106,6 @@ cross_tab <- function(
         w_val = if (rlang::quo_is_null(w_expr)) 1 else rlang::eval_tidy(w_expr, df)
       )
 
-    # Créer toutes les combinaisons possibles
     if (!rlang::quo_is_null(y_expr)) {
       df_sub$x_val <- factor(df_sub$x_val, levels = sort(unique(full_x)))
       df_sub$y_val <- factor(df_sub$y_val, levels = sort(unique(full_y)))
@@ -96,20 +116,18 @@ cross_tab <- function(
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
-    # --- Pourcentages / effectifs ---
+    # --- Percentages / Counts ---
     tab_perc <- switch(percent,
       "row"    = prop.table(tab_full, 1) * 100,
       "column" = prop.table(tab_full, 2) * 100,
       "none"   = tab_full
     )
-
-    # Remplacer NaN par 0
     tab_perc[is.nan(tab_perc)] <- 0
 
     df_out <- as.data.frame.matrix(round(tab_perc, digits))
     df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
-    # --- Totaux et N ---
+    # --- Totals ---
     if (styled) {
       if (percent == "column") {
         total_row <- tibble::as_tibble_row(
@@ -133,7 +151,7 @@ cross_tab <- function(
       }
     }
 
-    # --- Statistiques d'association ---
+    # --- Association statistics ---
     note <- NULL
     if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
       if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
@@ -182,7 +200,7 @@ cross_tab <- function(
       }
     }
 
-    # --- Titre et attributs ---
+    # --- Title and attributes ---
     perc_label <- switch(percent,
       "row" = " (Row %)",
       "column" = " (Column %)",
@@ -194,8 +212,9 @@ cross_tab <- function(
       perc_label
     )
     if (!is.null(group_label)) {
-      title <- paste0(title, " | ", rlang::as_name(by_expr), " = ", group_label)
+      title <- paste0(title, " | ", by_name, " = ", group_label)
     }
+
     attr(df_out, "title") <- title
     attr(df_out, "note") <- note
     attr(df_out, "n_total") <- total_n
@@ -209,27 +228,20 @@ cross_tab <- function(
   if (!rlang::quo_is_null(by_expr)) {
     by_vals <- rlang::eval_tidy(by_expr, data)
 
-    # --- Création d'un facteur ordonné propre ---
     if (is.factor(by_vals)) {
       f <- droplevels(by_vals)
     } else {
-      # Si numérique → tri croissant, sinon tri naturel
       unique_levels <- sort(unique(by_vals), na.last = TRUE)
       f <- factor(by_vals, levels = unique_levels)
     }
 
-    # --- Séparer les sous-groupes en respectant l'ordre des niveaux ---
     split_data <- split(data, f, drop = TRUE)[levels(f)]
     split_data <- split_data[!vapply(split_data, is.null, logical(1))]
 
-    # --- Construire chaque table par niveau ---
     level_names <- names(split_data)
-    tables <- Map(function(df, lvl) {
-      compute_ctab(df, lvl)
-    }, split_data, level_names)
+    tables <- Map(function(df, lvl) compute_ctab(df, lvl), split_data, level_names)
     names(tables) <- level_names
 
-    # --- Ajouter les classes S3 pour affichage stylé ---
     if (styled) {
       tables <- lapply(tables, function(tt) {
         class(tt) <- c("spicy_cross_table", "spicy_table", class(tt))
@@ -237,12 +249,10 @@ cross_tab <- function(
       })
       class(tables) <- c("spicy_cross_table_list", class(tables))
     }
-
     return(tables)
   } else {
     out <- compute_ctab(data)
   }
-
 
   if (styled) {
     class(out) <- c("spicy_cross_table", "spicy_table", class(out))
