@@ -17,10 +17,10 @@
 #' The printed table includes:
 #' * Valid and missing value sections (if applicable)
 #' * Optional cumulative and valid percentages
-#' * A final “Total” row shown in the **Category** column
+#' * A final 'Total' row shown in the **Category** column
 #' * A footer summarizing metadata (variable label, data source, weights)
 #'
-#' @param df A `data.frame` returned by [freq()] with attached attributes:
+#' @param x A `data.frame` returned by [freq()] with attached attributes:
 #'   - `"digits"`: number of decimal digits to display
 #'   - `"data_name"`: name of the source dataset
 #'   - `"var_name"`: name of the variable
@@ -28,8 +28,9 @@
 #'   - `"class_name"`: original class of the variable
 #'   - `"weighted"`, `"rescaled"`, `"weight_var"`: weighting metadata
 #'
-#' @return
-#' Invisibly returns `df` after printing the formatted table to the console.
+#' @param ... Additional arguments (ignored, required for S3 method compatibility)
+#'
+#' @return Invisibly returns `x` after printing the formatted table.
 #'
 #' @section Output structure:
 #' The printed table includes the following columns:
@@ -51,10 +52,9 @@
 #'   labels = c("Low" = 1, "Medium" = 2, "High" = 3)
 #' )
 #' var_label(x) <- "Satisfaction level"
-#'
 #' # Internal use (normally called automatically by freq())
 #' df <- spicy::freq(x, styled = FALSE)
-#' print.spicy_freq_table(df)
+#' print(df)
 #'
 #' @seealso
 #' [freq()] for the main frequency table generator.
@@ -63,30 +63,26 @@
 #' @importFrom stats na.omit
 #'
 #' @export
-print.spicy_freq_table <- function(df) {
-  # --- Récupération des attributs
+print.spicy_freq_table <- function(x, ...) {
+  df <- x
   digits <- attr(df, "digits")
   data_name <- attr(df, "data_name")
   var_name <- attr(df, "var_name")
   var_label <- attr(df, "var_label")
-  class_name <- attr(df, "class_name") # ✅ classe originale (capturée avant transformation)
+  class_name <- attr(df, "class_name")
   weighted <- isTRUE(attr(df, "weighted"))
   rescaled <- isTRUE(attr(df, "rescaled"))
   weight_var <- attr(df, "weight_var")
   has_cum <- "cum_prop" %in% names(df)
 
-  # --- Nettoyer les noms pour éviter df$variable
   var_name_clean <- sub("^.*\\$", "", var_name)
   data_name_clean <- sub("\\$.*$", "", data_name)
 
-  # --- Séparer valeurs valides / manquantes
   valid_block <- df[!is.na(df$value) & df$value != "<NA>", , drop = FALSE]
   missing_block <- df[is.na(df$value) | df$value == "<NA>", , drop = FALSE]
 
-  # --- Déterminer si on affiche "Valid Percent"
   show_valid_col <- nrow(missing_block) > 0
 
-  # --- Helpers de formatage
   fmt_pct <- function(p) {
     ifelse(is.na(p), "NA",
       format(round(100 * p, digits),
@@ -99,7 +95,6 @@ print.spicy_freq_table <- function(df) {
     format(round(v, ifelse(any(v %% 1 != 0), 2, 0)), trim = TRUE)
   }
 
-  # --- Fonction pour construire chaque bloc
   build_rows <- function(block, category, show_valid_col_block) {
     if (!nrow(block)) {
       return(NULL)
@@ -126,11 +121,9 @@ print.spicy_freq_table <- function(df) {
     out
   }
 
-  # --- Construire blocs valides et manquants
   rows_valid <- build_rows(valid_block, "Valid", show_valid_col)
   rows_missing <- build_rows(missing_block, "Missing", FALSE)
 
-  # --- Ligne Total (✅ déplacée dans Category)
   total_row <- data.frame(
     Category = "Total",
     Values = "",
@@ -151,7 +144,6 @@ print.spicy_freq_table <- function(df) {
     }
   }
 
-  # --- Harmoniser les colonnes avant fusion
   all_cols <- unique(c(names(rows_valid), names(rows_missing), names(total_row)))
   fix_cols <- function(df_part) {
     if (is.null(df_part)) {
@@ -164,22 +156,18 @@ print.spicy_freq_table <- function(df) {
 
   disp <- do.call(rbind, lapply(list(rows_valid, rows_missing, total_row), fix_cols))
 
-  # --- Construire la note (footer)
   footer_lines <- c()
 
-  # ✅ Label de variable
   if (!is.null(var_label) && nzchar(var_label)) {
     footer_lines <- c(footer_lines, paste0("Label: ", var_label))
   }
 
-  # ✅ Classe d’origine et nom du jeu de données
   footer_lines <- c(
     footer_lines,
     paste("Class:", class_name),
     paste("Data:", data_name_clean)
   )
 
-  # ✅ Variable de pondération si applicable
   if (weighted) {
     weight_line <- if (!is.null(weight_var) && nzchar(weight_var)) {
       paste("Weight:", weight_var)
@@ -187,7 +175,7 @@ print.spicy_freq_table <- function(df) {
       "Weight: (applied)"
     }
 
-    if (isTRUE(rescaled)) { # ✅ sécurisation
+    if (isTRUE(rescaled)) {
       weight_line <- paste(weight_line, "(rescaled)")
     }
 
@@ -196,7 +184,6 @@ print.spicy_freq_table <- function(df) {
 
   note_text <- paste(footer_lines, collapse = "\n")
 
-  # --- Impression finale
   spicy_print_table(
     disp,
     title = paste("Frequency table:", var_name_clean),

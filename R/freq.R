@@ -37,11 +37,11 @@
 #'   (excluding missing values).
 #' @param cum Logical. If `TRUE`, add cumulative percentages.
 #' @param sort Sorting method for values:
-#'   * `""` — no sorting (default)
-#'   * `"+"` — increasing frequency
-#'   * `"-"` — decreasing frequency
-#'   * `"name+"` — alphabetical A–Z
-#'   * `"name-"` — alphabetical Z–A
+#'   * `""` - no sorting (default)
+#'   * `"+"` - increasing frequency
+#'   * `"-"` - decreasing frequency
+#'   * `"name+"` - alphabetical A-Z
+#'   * `"name-"` - alphabetical Z-A
 #' @param na_val Vector of numeric or character values to be treated as missing (`NA`).
 #'
 #' For *labelled* variables (from **haven** or **labelled**), this argument
@@ -55,9 +55,9 @@
 #'
 #' @param labelled_levels For `labelled` variables, defines how labels and
 #'   values are displayed:
-#'   * `"prefixed"` or `"p"` — show labels as `[value] label` (default)
-#'   * `"labels"` or `"l"` — show only labels
-#'   * `"values"` or `"v"` — show only numeric codes
+#'   * `"prefixed"` or `"p"` - show labels as `[value] label` (default)
+#'   * `"labels"` or `"l"` - show only labels
+#'   * `"values"` or `"v"` - show only numeric codes
 #' @param rescale Logical. If `TRUE` (default), rescale weights so that their
 #'   total equals the unweighted sample size.
 #' @param styled Logical. If `TRUE` (default), print the formatted spicy table.
@@ -67,11 +67,11 @@
 #' @return
 #' A `data.frame` with columns:
 #' \itemize{
-#'   \item \code{value} — unique values or factor levels
-#'   \item \code{n} — frequency count (weighted if applicable)
-#'   \item \code{prop} — proportion of total
-#'   \item \code{valid_prop} — proportion of valid responses (if `valid = TRUE`)
-#'   \item \code{cum_prop}, \code{cum_valid_prop} — cumulative percentages (if `cum = TRUE`)
+#'   \item \code{value} - unique values or factor levels
+#'   \item \code{n} - frequency count (weighted if applicable)
+#'   \item \code{prop} - proportion of total
+#'   \item \code{valid_prop} - proportion of valid responses (if `valid = TRUE`)
+#'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if `cum = TRUE`)
 #' }
 #'
 #' If `styled = TRUE`, prints the formatted table to the console and returns it invisibly.
@@ -144,7 +144,6 @@ freq <- function(data,
                  ...) {
   labelled_levels <- match.arg(labelled_levels)
 
-  # --- Préparation des noms
   is_df <- is.data.frame(data)
   if (is_df && !missing(x)) {
     var_name <- deparse(substitute(x))
@@ -159,29 +158,24 @@ freq <- function(data,
     data_name <- deparse(substitute(data))
   }
 
-  # --- Capturer la variable avant toute transformation
   x_original <- x
 
-  # --- Gestion intelligente de la variable de pondération
   if (!missing(weights) && !is.null(substitute(weights))) {
     weight_expr <- substitute(weights)
     weight_name <- deparse(weight_expr, backtick = FALSE)
-    weight_name <- sub("^.*\\$", "", weight_name) # nettoie "df$poids" → "poids"
+    weight_name <- sub("^.*\\$", "", weight_name)
 
     if (is_df && weight_name %in% names(data)) {
-      # Si le poids est une colonne du data.frame
       weights <- data[[weight_name]]
     } else {
-      # Sinon, on tente d’évaluer dans l’environnement parent
       weights <- tryCatch(eval(weight_expr, envir = parent.frame()), error = function(e) NULL)
     }
 
-    # Si introuvable
     if (is.null(weights)) {
       stop(
         paste0(
-          "La variable de pondération '", weight_name,
-          "' n'a pas été trouvée ni dans le data.frame ni dans l'environnement global."
+          "The weighting variable '", weight_name,
+          "' was not found either in the data frame or in the global environment."
         ),
         call. = FALSE
       )
@@ -190,7 +184,6 @@ freq <- function(data,
     weight_name <- NULL
   }
 
-  # --- Validation et normalisation
   if (!is.null(weights)) {
     if (length(weights) != length(x)) {
       stop("`weights` must have the same length as `x`.", call. = FALSE)
@@ -205,7 +198,6 @@ freq <- function(data,
     }
   }
 
-  # --- Gestion des variables labelled
   if (labelled::is.labelled(x)) {
     if (!is.null(na_val) && !is.numeric(na_val)) {
       warning("For labelled variables, 'na_val' should match the underlying numeric value (e.g., 1), not the label.", call. = FALSE)
@@ -229,23 +221,18 @@ freq <- function(data,
   }
 
   if (is.factor(x)) x <- droplevels(x)
-  # var_label <- attr(x, "label", exact = TRUE)
   if (!is.factor(x)) x <- factor(x)
 
-  # --- Calculs de fréquences (pondérés si applicable)
   n_total <- if (is.null(weights)) length(x) else sum(weights)
   n_missing <- if (is.null(weights)) sum(is.na(x)) else sum(weights[is.na(x)])
   n_valid <- n_total - n_missing
 
   if (is.null(weights)) {
-    # Chemin non pondéré : inclure les NA
     tab <- table(x, useNA = "ifany")
   } else {
-    # Chemin pondéré : forcer un niveau NA avec addNA(), ainsi NA est inclus dans tapply()
     f <- addNA(x, ifany = TRUE)
     tab <- tapply(weights, f, sum)
 
-    # Donne un nom explicite au niveau NA
     if (any(is.na(names(tab)))) {
       names(tab)[is.na(names(tab))] <- "<NA>"
     }
@@ -273,13 +260,11 @@ freq <- function(data,
     df <- df[order(df[[sort_col]], decreasing = decreasing), ]
   }
 
-  # --- Cumulatif
   if (cum) {
     df$cum_prop <- cumsum(df$prop)
     df$cum_valid_prop <- if (valid) cumsum(ifelse(is.na(df$valid_prop), 0, df$valid_prop)) else NA
   }
 
-  # --- Métadonnées enrichies pour impression
   attr(df, "digits") <- digits
   attr(df, "data_name") <- data_name
   attr(df, "var_name") <- var_name

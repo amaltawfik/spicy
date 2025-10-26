@@ -4,10 +4,10 @@
 \alias{print.spicy_freq_table}
 \title{Styled print method for \code{freq()} tables (spicy engine)}
 \usage{
-\method{print}{spicy_freq_table}(df)
+\method{print}{spicy_freq_table}(x, ...)
 }
 \arguments{
-\item{df}{A \code{data.frame} returned by \code{\link[=freq]{freq()}} with attached attributes:
+\item{x}{A \code{data.frame} returned by \code{\link[=freq]{freq()}} with attached attributes:
 \itemize{
 \item \code{"digits"}: number of decimal digits to display
 \item \code{"data_name"}: name of the source dataset
@@ -16,9 +16,11 @@
 \item \code{"class_name"}: original class of the variable
 \item \code{"weighted"}, \code{"rescaled"}, \code{"weight_var"}: weighting metadata
 }}
+
+\item{...}{Additional arguments (ignored, required for S3 method compatibility)}
 }
 \value{
-Invisibly returns \code{df} after printing the formatted table to the console.
+Invisibly returns \code{x} after printing the formatted table.
 }
 \description{
 Internal print method used by \code{\link[=freq]{freq()}} to display a styled, spicy-formatted
@@ -38,7 +40,7 @@ The printed table includes:
 \itemize{
 \item Valid and missing value sections (if applicable)
 \item Optional cumulative and valid percentages
-\item A final “Total” row shown in the \strong{Category} column
+\item A final 'Total' row shown in the \strong{Category} column
 \item A footer summarizing metadata (variable label, data source, weights)
 }
 }
@@ -64,10 +66,9 @@ x <- labelled(
   labels = c("Low" = 1, "Medium" = 2, "High" = 3)
 )
 var_label(x) <- "Satisfaction level"
-
 # Internal use (normally called automatically by freq())
 df <- spicy::freq(x, styled = FALSE)
-print.spicy_freq_table(df)
+print(df)
 
 }
 \seealso{

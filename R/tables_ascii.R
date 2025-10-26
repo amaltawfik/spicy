@@ -275,19 +275,15 @@ spicy_print_table <- function(x,
   stopifnot(is.data.frame(x))
   padding <- match.arg(padding)
 
-  # --- Détection automatique du type de table
   table_type <- if (any(grepl("^Category$", names(x)))) "freq" else "cross"
 
-  # Si l’utilisateur n’a pas spécifié align_left_cols, on applique la logique par défaut
   if (is.null(align_left_cols)) {
     align_left_cols <- if (table_type == "freq") c(1L, 2L) else 1L
   }
 
-  # --- Ajouter les métadonnées pour affichage
   if (!is.null(title)) attr(x, "title") <- title
   if (!is.null(note)) attr(x, "note") <- note
 
-  # --- Construire la table ASCII
   txt <- build_ascii_table(
     x,
     padding = padding,
@@ -300,7 +296,6 @@ spicy_print_table <- function(x,
     ...
   )
 
-  # --- Appliquer style darkgrey au titre et à la note
   style_grey <- if (crayon::has_color()) crayon::make_style("darkgrey") else identity
   if (!is.null(title)) cat(style_grey(title), "\n", sep = "")
   cat(txt, "\n", sep = "")

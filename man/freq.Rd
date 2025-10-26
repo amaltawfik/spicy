@@ -37,11 +37,11 @@ The variable may be referenced as a bare name when it belongs to \code{data}.}
 
 \item{sort}{Sorting method for values:
 \itemize{
-\item \code{""} — no sorting (default)
-\item \code{"+"} — increasing frequency
-\item \code{"-"} — decreasing frequency
-\item \code{"name+"} — alphabetical A–Z
-\item \code{"name-"} — alphabetical Z–A
+\item \code{""} - no sorting (default)
+\item \code{"+"} - increasing frequency
+\item \code{"-"} - decreasing frequency
+\item \code{"name+"} - alphabetical A-Z
+\item \code{"name-"} - alphabetical Z-A
 }}
 
 \item{na_val}{Vector of numeric or character values to be treated as missing (\code{NA}).
@@ -58,9 +58,9 @@ freq(x, na_val = 1) # Treat all "Low" as missing
 \item{labelled_levels}{For \code{labelled} variables, defines how labels and
 values are displayed:
 \itemize{
-\item \code{"prefixed"} or \code{"p"} — show labels as \verb{[value] label} (default)
-\item \code{"labels"} or \code{"l"} — show only labels
-\item \code{"values"} or \code{"v"} — show only numeric codes
+\item \code{"prefixed"} or \code{"p"} - show labels as \verb{[value] label} (default)
+\item \code{"labels"} or \code{"l"} - show only labels
+\item \code{"values"} or \code{"v"} - show only numeric codes
 }}
 
 \item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
@@ -74,11 +74,11 @@ If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
 \value{
 A \code{data.frame} with columns:
 \itemize{
-\item \code{value} — unique values or factor levels
-\item \code{n} — frequency count (weighted if applicable)
-\item \code{prop} — proportion of total
-\item \code{valid_prop} — proportion of valid responses (if \code{valid = TRUE})
-\item \code{cum_prop}, \code{cum_valid_prop} — cumulative percentages (if \code{cum = TRUE})
+\item \code{value} - unique values or factor levels
+\item \code{n} - frequency count (weighted if applicable)
+\item \code{prop} - proportion of total
+\item \code{valid_prop} - proportion of valid responses (if \code{valid = TRUE})
+\item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if \code{cum = TRUE})
 }
 
 If \code{styled = TRUE}, prints the formatted table to the console and returns it invisibly.
