@@ -12,7 +12,6 @@ cross_tab(
   weights = NULL,
   rescale = FALSE,
   percent = c("none", "column", "row"),
-  show_missing = TRUE,
   include_stats = TRUE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -36,8 +35,6 @@ cross_tab(
 Equivalent to SPSS option \emph{“Rescale weights to sample size”}.}
 
 \item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
-
-\item{show_missing}{Logical; include NA as category (default TRUE).}
 
 \item{include_stats}{Logical; compute Chi² and Cramer’s V (default TRUE).}
 

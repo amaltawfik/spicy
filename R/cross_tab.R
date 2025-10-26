@@ -13,7 +13,6 @@
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
 #'   Equivalent to SPSS option *“Rescale weights to sample size”*.
 #' @param percent One of `"none"`, `"row"`, `"column"`.
-#' @param show_missing Logical; include NA as category (default TRUE).
 #' @param include_stats Logical; compute Chi² and Cramer’s V (default TRUE).
 #' @param simulate_p Logical; use Monte Carlo p-value simulation (default FALSE).
 #' @param simulate_B Integer; number of replicates for Monte Carlo (default 2000).
@@ -70,7 +69,6 @@ cross_tab <- function(
   weights = NULL,
   rescale = FALSE,
   percent = c("none", "column", "row"),
-  show_missing = TRUE,
   include_stats = TRUE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -127,16 +125,6 @@ cross_tab <- function(
 
   # Stocker les poids dans les données pour que compute_ctab les retrouve
   data$`..spicy_w` <- w
-
-  # --- Missing values ---
-  if (!show_missing) {
-    keep <- !is.na(rlang::eval_tidy(x_expr, data))
-    if (!rlang::quo_is_null(y_expr)) {
-      keep <- keep & !is.na(rlang::eval_tidy(y_expr, data))
-    }
-    data <- data[keep, , drop = FALSE]
-    w <- w[keep]
-  }
 
   # --- Fonction interne de calcul ---
   compute_ctab <- function(df, group_label = NULL) {
