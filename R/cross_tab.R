@@ -1,424 +1,312 @@
-#' Cross-Tabulation with Percentages, Weights, and Grouping
+#' Cross-tabulation
 #'
-#' `cross_tab()` produces a cross-tabulation of `x` by `y`, with optional stratification using a grouping variable (`by`).
-#' It supports weighted frequencies, row or column percentages, and association statistics (Chi-squared test, Cramer's V).
+#' @description
+#' Computes a cross-tabulation with optional weights, grouping, and percentages.
+#' SPSS-like structure with intelligent defaults and modern formatting.
 #'
-#' The function is flexible:
-#' - Accepts both **standard** (quoted) and **tidy** (unquoted) variable input
-#' - Performs stratified tabulations using a **grouping variable** (`by`)
-#' - Optionally combines group-level tables into a single tibble with `combine = TRUE`
-#' - Pipe-friendly with both base R (`|>`) and magrittr (`%>%`)
+#' @param data A data frame.
+#' @param x Row variable (unquoted).
+#' @param y Column variable (unquoted, optional).
+#' @param by Optional grouping variable.
+#' @param weights Optional numeric weights.
+#' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
+#' @param percent One of `"none"`, `"row"`, `"column"`.
+#' @param show_missing Logical; include NA as category (default TRUE).
+#' @param include_stats Logical; compute Chi² and Cramer’s V (default TRUE).
+#' @param simulate_p Logical; use Monte Carlo p-value simulation (default FALSE).
+#' @param simulate_B Integer; number of replicates for Monte Carlo (default 2000).
+#' @param digits Number of decimals (default 1 for percentages, 0 for counts).
+#' @param styled Logical; if TRUE, returns a "spicy_cross_table" object (for printing).
+#' @param show_n Logical; if TRUE, adds marginal N totals when percent != "none".
 #'
-#' All variables (`x`, `y`, `by`, `weights`) must be present in the data frame `d`
-#' (unless vector input is used).
-#'
-#' @param d A `data.frame`, or a vector (when using vector input). Must contain all variables used in `x`, `y`, `by`, and `weights`.
-#' @param x Variable for table rows. Can be unquoted (tidy) or quoted (standard). Must match column name if `d` is a data frame.
-#' @param y Optional variable for table columns. Same rules as `x`. If `NULL`, computes a one-way frequency table.
-#' @param by Optional **grouping variable** (or interaction of variables). Used to produce stratified crosstabs. Must refer to columns in `d`, or be a vector of the same length as `x`.
-#' @param weights Optional numeric vector of weights. Must match length of `x`.
-#' @param rescale_weights Logical. If `TRUE`, rescales weights so that total weighted count matches unweighted count.
-#' @param digits Integer. Number of decimal places shown in percentages. Default is `1`.
-#' @param rowprct Logical. If `TRUE`, computes percentages by row; otherwise by column.
-#' @param row_total Logical. If `TRUE`, adds row totals (default `TRUE`).
-#' @param column_total Logical. If `TRUE`, adds column totals (default `TRUE`).
-#' @param n Logical. If `TRUE`, displays effective counts `N` as an extra row or column (default `TRUE`).
-#' @param drop Logical. If `TRUE`, drops empty rows or columns (default `TRUE`).
-#' @param include_stats Logical. If `TRUE`, includes Chi-squared test and Cramer's V when possible (default `TRUE`).
-#' @param combine Logical. If `TRUE`, combines all stratified tables into one tibble with a `by` column.
-#' @param ... Additional arguments passed to `print.spicy()`, such as `show_all = TRUE`
-
-#' @return A tibble of class `spicy`, or a list of such tibbles if `combine = FALSE` and `by` is used.
-#'
-#' @section Warnings and Errors:
-#' - If `weights` is non-numeric, an error is thrown.
-#' - If `weights` does not match the number of observations, an error is thrown.
-#' - If `rescale_weights = TRUE` but no weights are provided, a warning is issued.
-#' - If all values in `by` are `NA`, an error is thrown.
-#' - If `by` has only one unique level (or all `NA`), a warning is issued.
-#'
-#' @importFrom rlang enquo
-#' @importFrom rlang eval_tidy
-#' @importFrom rlang quo_is_null
-#' @importFrom stats chisq.test
-#' @importFrom stats xtabs
-#' @importFrom tibble rownames_to_column
-#'
-#' @examples
-#' data(mtcars)
-#' mtcars$gear <- factor(mtcars$gear)
-#' mtcars$cyl <- factor(mtcars$cyl)
-#' mtcars$vs <- factor(mtcars$vs, labels = c("V", "S"))
-#' mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
-#'
-#' # Basic usage
-#' cross_tab(mtcars, cyl, gear)
-#'
-#' # Using extracted variables
-#' cross_tab(mtcars$cyl, mtcars$gear)
-#'
-#' # Pipe-friendly syntax
-#' mtcars |> cross_tab(cyl, gear, by = am)
-#'
-#' # With row percentages
-#' cross_tab(mtcars, cyl, gear, by = am, rowprct = TRUE)
-#'
-#' # Using weights
-#' cross_tab(mtcars, cyl, gear, weights = mpg)
-#'
-#' # With rescaled weights
-#' cross_tab(mtcars, cyl, gear, weights = mpg, rescale_weights = TRUE)
-#'
-#' # Grouped by a single variable
-#' cross_tab(mtcars, cyl, gear, by = am)
-#'
-#' # Grouped by interaction of two variables
-#' cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
-#'
-#' # Combined output for grouped data
-#' cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
-#'
-#' # Without totals or sample size
-#' cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
-#'
+#' @return A `data.frame`, list of data.frames, or `spicy_cross_table` object.
 #' @export
-
 cross_tab <- function(
-  d = parent.frame(), x, y = NULL, by = NULL,
-  weights = NULL, rescale_weights = FALSE,
-  digits = 1, rowprct = FALSE,
-  row_total = TRUE, column_total = TRUE,
-  n = TRUE, drop = TRUE, include_stats = TRUE,
-  combine = FALSE,
-  ...
+  data,
+  x,
+  y = NULL,
+  by = NULL,
+  weights = NULL,
+  rescale = FALSE,
+  percent = c("none", "column", "row"),
+  show_missing = TRUE,
+  include_stats = TRUE,
+  simulate_p = FALSE,
+  simulate_B = 2000,
+  digits = NULL,
+  styled = TRUE,
+  show_n = TRUE
 ) {
-  is_df <- is.data.frame(d)
+  percent <- match.arg(percent)
+  if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
-  x_expr <- substitute(x)
-  y_expr <- substitute(y)
-  by_expr <- substitute(by)
+  # --- tidy eval ---
+  x_expr <- rlang::enquo(x)
+  y_expr <- rlang::enquo(y)
+  by_expr <- rlang::enquo(by)
+  w_expr <- rlang::enquo(weights)
+  x_name <- rlang::as_name(x_expr)
+  y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
 
-  x_label <- if (missing(y)) deparse(substitute(d)) else deparse(x_expr)
-  y_label <- if (missing(y)) deparse(x_expr) else deparse(y_expr)
-  x_label <- sub(".*\\$", "", x_label)
-  y_label <- sub(".*\\$", "", y_label)
-
-  if (is_df) {
-    x_vals <- eval(x_expr, d)
-    y_vals <- if (!missing(y)) eval(y_expr, d) else NULL
-    by_vals <- if (!missing(by)) eval(by_expr, d) else NULL
-
-    weights_vals <- NULL
-
-    if (!missing(weights)) {
-      w_expr <- substitute(weights)
-
-      if (is.symbol(w_expr) || is.call(w_expr)) {
-        weights_vals <- tryCatch(
-          eval(w_expr, envir = d),
-          error = function(e) {
-            stop("Unable to evaluate `weights` in `d`: ", conditionMessage(e))
-          }
-        )
-      } else if (is.numeric(weights)) {
-        weights_vals <- weights
-      } else {
-        stop("`weights` must be a column name in `d`, or a numeric vector.")
-      }
-    }
-
-    if (is.null(weights_vals)) {
-      weights_vals <- rep(1, length(x_vals))
-    }
-
-    if (!is.numeric(weights_vals)) {
-      stop("`weights` must be numeric.")
-    }
-    if (length(weights_vals) != length(x_vals)) {
-      stop("`weights` must match length of `x`.")
-    }
-
-    weights_vals[is.na(weights_vals)] <- 0
+  # --- weights ---
+  if (!rlang::quo_is_null(w_expr)) {
+    w <- rlang::eval_tidy(w_expr, data)
+    if (!is.numeric(w)) stop("`weights` must be numeric.")
+    w[is.na(w)] <- 0
   } else {
-    x_vals <- d
-    y_vals <- x
-    by_vals <- if (!missing(by)) eval(by_expr, parent.frame()) else NULL
-    d <- NULL
-
-    if (!missing(weights)) {
-      if (is.numeric(weights)) {
-        weights_vals <- weights
-      } else {
-        stop("When passing vector inputs, `weights` must be a numeric vector of same length as `x`.")
-      }
-    } else {
-      weights_vals <- rep(1, length(x_vals))
-    }
+    w <- rep(1, nrow(data))
   }
 
-  if (!is.numeric(weights_vals)) {
-    stop("`weights` must be numeric.")
+  if (rescale && !all(w == 1)) {
+    w <- w * length(w) / sum(w, na.rm = TRUE)
+  } else if (rescale && all(w == 1)) {
+    warning("`rescale = TRUE` has no effect since no weights provided.")
   }
 
-  if (length(weights_vals) != length(x_vals)) {
-    stop("`weights` must match length of `x`.")
+  # --- Missing ---
+  if (!show_missing) {
+    keep <- !is.na(rlang::eval_tidy(x_expr, data))
+    if (!rlang::quo_is_null(y_expr)) {
+      keep <- keep & !is.na(rlang::eval_tidy(y_expr, data))
+    }
+    data <- data[keep, , drop = FALSE]
+    w <- w[keep]
   }
 
-  weights_vals[is.na(weights_vals)] <- 0
+  # --- internal computation ---
+  compute_ctab <- function(df, group_label = NULL) {
+    full_x <- rlang::eval_tidy(x_expr, data)
+    full_y <- if (!rlang::quo_is_null(y_expr)) rlang::eval_tidy(y_expr, data) else NULL
 
-  if (rescale_weights) {
-    if (all(weights_vals == 1)) {
-      warning("`rescale_weights = TRUE` has no effect since no weights were provided.")
-    } else {
-      weights_vals <- weights_vals * length(weights_vals) / sum(weights_vals, na.rm = TRUE)
-    }
-  }
-
-
-  compute_ctab <- function(x_sub, y_sub, w_sub, group_label = NULL, group_var = NULL) {
-    if (is.null(y_sub)) {
-      tab <- stats::xtabs(w_sub ~ x_sub)
-    } else {
-      tab <- stats::xtabs(w_sub ~ x_sub + y_sub)
-    }
-
-    if (is.null(dim(tab)) || length(dim(tab)) < 2) {
-      tab <- as.table(matrix(tab, ncol = 1))
-      colnames(tab) <- y_label
-      rownames(tab) <- unique(x_sub)
-    }
-
-    if (drop) {
-      tab <- tab[rowSums(tab) > 0, colSums(tab) > 0, drop = FALSE]
-    }
-
-    total_n <- sum(tab)
-    tab_perc <- if (rowprct) prop.table(tab, 1) * 100 else prop.table(tab, 2) * 100
-
-    label_row_total <- if (rowprct) "Column_Total" else "Row_Total"
-    label_col_total <- if (rowprct) "Row_Total" else "Column_Total"
-
-    if (row_total) {
-      if (rowprct) {
-        freq_col <- colSums(tab) / total_n * 100
-        tab_perc <- rbind(tab_perc, freq_col)
-        rownames(tab_perc)[nrow(tab_perc)] <- label_row_total
-      } else {
-        freq_row <- rowSums(tab) / total_n * 100
-        tab_perc <- as.data.frame.matrix(tab_perc)
-        tab_perc[[label_row_total]] <- freq_row
-      }
-    }
-
-    if (column_total) {
-      if (rowprct) {
-        last_is_total <- rownames(tab_perc)[nrow(tab_perc)] == label_row_total
-        n_data_rows <- nrow(tab_perc) - last_is_total
-        row_totals <- rowSums(tab_perc[seq_len(n_data_rows), , drop = FALSE], na.rm = TRUE)
-
-        tab_perc <- as.data.frame.matrix(tab_perc)
-        new_col <- rep(NA, nrow(tab_perc))
-        new_col[seq_len(n_data_rows)] <- row_totals
-        tab_perc[[label_col_total]] <- new_col
-      } else {
-        tab_perc <- as.data.frame.matrix(tab_perc)
-        col_totals <- colSums(tab_perc, na.rm = TRUE)
-        tab_perc <- rbind(tab_perc, col_totals)
-        rownames(tab_perc)[nrow(tab_perc)] <- label_col_total
-      }
-    }
-
-    if (n) {
-      eff <- if (rowprct) rowSums(tab) else colSums(tab)
-      if (rowprct) {
-        tab_perc[["N"]] <- c(eff, if (row_total) total_n else NA)
-      } else {
-        eff_row <- rep(NA, ncol(tab_perc))
-        names(eff_row) <- names(tab_perc)
-        eff_row[seq_along(eff)] <- eff
-        if (column_total && "Row_Total" %in% names(eff_row)) {
-          eff_row["Row_Total"] <- sum(eff, na.rm = TRUE)
-        }
-        tab_perc <- rbind(tab_perc, eff_row)
-        rownames(tab_perc)[nrow(tab_perc)] <- "N"
-      }
-    }
-
-    tab_perc <- as.data.frame.matrix(tab_perc)
-    for (col in names(tab_perc)) {
-      if (col != "N") {
-        tab_perc[[col]] <- format(round(as.numeric(tab_perc[[col]]), digits), nsmall = digits)
-      }
-    }
-
-    if (rowprct && row_total && column_total) {
-      last_row <- nrow(tab_perc)
-      last_row_name <- rownames(tab_perc)[last_row]
-      if (last_row_name == "Column_Total" && "Row_Total" %in% names(tab_perc)) {
-        data_rows <- rownames(tab)
-        row_total_vals <- rowSums(tab[data_rows, , drop = FALSE], na.rm = TRUE)
-        grand_total <- sum(tab)
-        row_weights <- row_total_vals / grand_total
-        row_props <- sweep(tab[data_rows, , drop = FALSE], 1, row_total_vals, FUN = "/") * 100
-        col_total_prop <- colSums(row_props * row_weights, na.rm = TRUE)
-        tab_perc[last_row, "Row_Total"] <- format(round(sum(col_total_prop), digits), nsmall = digits)
-      }
-    }
-
-    note <- NULL
-    if (include_stats && nrow(tab) > 1 && ncol(tab) > 1) {
-      chi <- suppressWarnings(stats::chisq.test(tab, correct = FALSE))
-      chi2 <- chi$statistic
-      df <- chi$parameter
-      pval <- chi$p.value
-      cramer <- sqrt(chi2 / (total_n * min(nrow(tab) - 1, ncol(tab) - 1)))
-      note <- paste0(
-        "Chi-2 = ", round(chi2, 1), " (df = ", df, "), ",
-        ifelse(pval < 0.001,
-          "p < 0.001",
-          paste0("p = ", format(pval, digits = 3, nsmall = 3))
-        ),
-        ", Cramer's V = ", round(cramer, 2)
+    df_sub <- df %>%
+      dplyr::mutate(
+        x_val = rlang::eval_tidy(x_expr, df),
+        y_val = if (rlang::quo_is_null(y_expr)) NA else rlang::eval_tidy(y_expr, df),
+        w_val = if (rlang::quo_is_null(w_expr)) 1 else rlang::eval_tidy(w_expr, df)
       )
-    } else if (include_stats) {
-      note <- "Chi-squared test not applicable (table too small)."
+
+    # Créer toutes les combinaisons possibles
+    if (!rlang::quo_is_null(y_expr)) {
+      df_sub$x_val <- factor(df_sub$x_val, levels = sort(unique(full_x)))
+      df_sub$y_val <- factor(df_sub$y_val, levels = sort(unique(full_y)))
+      tab_full <- stats::xtabs(w_val ~ x_val + y_val, data = df_sub)
+    } else {
+      tab_full <- stats::xtabs(w_val ~ x_val, data = df_sub)
     }
 
-    title <- paste0(
-      "Crosstable: ", x_label, " x ", y_label,
-      if (!is.null(group_label)) paste0(" | ", group_var, " = ", group_label), " (%)"
+    total_n <- sum(tab_full, na.rm = TRUE)
+
+    # --- Pourcentages / effectifs ---
+    tab_perc <- switch(percent,
+      "row"    = prop.table(tab_full, 1) * 100,
+      "column" = prop.table(tab_full, 2) * 100,
+      "none"   = tab_full
     )
 
-    res <- tibble::rownames_to_column(tab_perc, var = "Values")
-    attr(res, "title") <- title
-    if (!is.null(note)) attr(res, "note") <- note
-    attr(res, "by_level") <- group_label
-    attr(res, "by_var") <- group_var
-    class(res) <- c("spicy_table", class(res))
+    # Remplacer NaN par 0
+    tab_perc[is.nan(tab_perc)] <- 0
 
-    if (!is.null(group_label) && combine) {
-      res[[group_var]] <- group_label
-    }
+    df_out <- as.data.frame.matrix(round(tab_perc, digits))
+    df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
-    return(res)
-  }
-
-  if (!is.null(by_vals)) {
-    group_var <- deparse(by_expr)
-    group_var <- sub(".*\\$", "", group_var)
-
-    if (inherits(by_vals, "interaction")) {
-      by_vars <- attr(by_vals, "vars")
-      var_names <- names(by_vars)
-      level_parts <- strsplit(levels(by_vals), split = "\\.")
-      clean_levels <- vapply(level_parts, function(p) {
-        paste(paste0(var_names, " = ", p), collapse = " & ")
-      }, character(1))
-      levels(by_vals) <- clean_levels
-    }
-
-    levels_by <- tryCatch(
-      {
-        raw_by <- eval(by_expr, envir = d)
-        if (is.factor(raw_by)) {
-          levels(raw_by)
-        } else {
-          sort(unique(raw_by[!is.na(raw_by)]))
-        }
-      },
-      error = function(e) {
-        sort(unique(by_vals[!is.na(by_vals)]))
-      }
-    )
-
-    by_vals <- as.character(by_vals)
-
-    if (all(is.na(by_vals))) stop("All values in `by` are NA. Nothing to group.")
-    if (length(unique(na.omit(by_vals))) == 1) {
-      warning("`by` has only one unique level (or all NA). You may not need it.")
-    }
-
-    result_list <- lapply(levels_by, function(lvl) {
-      idx <- which(by_vals == lvl)
-      compute_ctab(
-        x_sub = x_vals[idx],
-        y_sub = if (!is.null(y_vals)) y_vals[idx] else NULL,
-        w_sub = weights_vals[idx],
-        group_label = lvl,
-        group_var = group_var
-      )
-    })
-
-    names(result_list) <- levels_by
-
-    if (combine) {
-      all_data_cols <- unique(unlist(lapply(result_list, function(df) {
-        setdiff(names(df), c("Values", "Row_Total", "Column_Total", "N", "by"))
-      })))
-
-      sorted_data_cols <- suppressWarnings({
-        if (all(!is.na(as.numeric(all_data_cols)))) {
-          as.character(sort(as.numeric(all_data_cols)))
-        } else {
-          sort(all_data_cols)
-        }
-      })
-
-      all_cols <- c(
-        "Values",
-        sorted_data_cols,
-        intersect(
-          c("Row_Total", "Column_Total", "N", "by"),
-          unique(unlist(lapply(result_list, names)))
+    # --- Totaux et N ---
+    if (styled) {
+      if (percent == "column") {
+        total_row <- tibble::as_tibble_row(
+          c(Values = "Total", as.list(round(colSums(tab_perc, na.rm = TRUE), digits)))
         )
-      )
-
-      result_list_aligned <- lapply(result_list, function(df) {
-        missing <- setdiff(all_cols, names(df))
-        for (col in missing) {
-          df[[col]] <- NA
+        n_row <- if (show_n) {
+          tibble::as_tibble_row(
+            c(Values = "N", as.list(round(colSums(tab_full, na.rm = TRUE), 0)))
+          )
         }
-        df <- df[all_cols]
-        return(df)
-      })
-
-      out <- do.call(rbind, result_list_aligned)
-
-      col_order <- c(setdiff(names(out), group_var), group_var)
-      out <- out[, col_order]
-
-      rownames(out) <- NULL
-      attr(out, "title") <- paste0("Crosstable: ", x_label, " x ", y_label, " by ", group_var)
-
-      notes <- mapply(function(tab, name) {
-        note <- attr(tab, "note")
-        if (!is.null(note)) paste0("[", group_var, " = ", name, "] ", note) else NULL
-      }, result_list, names(result_list), USE.NAMES = FALSE)
-
-      notes <- notes[!is.na(notes)]
-      if (length(notes)) {
-        attr(out, "note") <- paste(notes, collapse = "\n")
+        df_out <- dplyr::bind_rows(df_out, total_row, n_row)
+      } else if (percent == "row") {
+        df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
+        if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+      } else {
+        df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+        grand_total <- tibble::as_tibble_row(
+          c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
+        )
+        df_out <- dplyr::bind_rows(df_out, grand_total)
       }
-
-      if (!include_stats) {
-        attr(out, "note") <- NULL
-      }
-
-      class(out) <- unique(c("spicy_table", class(out)))
-
-      for (i in seq_along(result_list_aligned)) {
-        result_list_aligned[[i]][[group_var]] <- names(result_list_aligned)[i]
-      }
-
-      return(out)
     }
 
-    return(result_list)
+    # --- Statistiques d'association ---
+    note <- NULL
+    if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
+      if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
+        chi <- suppressWarnings(stats::chisq.test(
+          tab_full,
+          correct = FALSE, simulate.p.value = simulate_p, B = simulate_B
+        ))
+        chi2 <- as.numeric(chi$statistic)
+        df_ <- as.numeric(chi$parameter)
+        pval <- as.numeric(chi$p.value)
+        cramer <- sqrt(chi2 / (sum(tab_full) * min(dim(tab_full) - 1)))
+
+        p_str <- if (is.na(pval)) {
+          "= NA"
+        } else if (pval < 0.001) {
+          "< 0.001"
+        } else {
+          paste0("= ", formatC(pval, format = "f", digits = 3))
+        }
+
+        note <- paste0(
+          "Chi²: ", ifelse(is.nan(chi2) | is.na(chi2), "NA", formatC(chi2, format = "f", digits = 1)),
+          " (df = ", df_, "), p ", p_str,
+          if (simulate_p) " (simulated)", "\n",
+          "Cramer's V: ", ifelse(is.nan(cramer) | is.na(cramer), "NA", formatC(cramer, format = "f", digits = 2))
+        )
+
+        expected <- chi$expected
+        small5 <- sum(expected < 5, na.rm = TRUE)
+        small1 <- sum(expected < 1, na.rm = TRUE)
+        prop5 <- small5 / length(expected)
+        if ((prop5 > 0.20 || small1 > 0) && !simulate_p) {
+          min_exp <- round(min(expected, na.rm = TRUE), 2)
+          note <- paste0(
+            note, "\nWarning: ", small5, " expected cell", if (small5 > 1) "s" else "",
+            " < 5 (", round(prop5 * 100, 1), "%).",
+            if (small1 > 0) {
+              paste0(" ", small1, " expected cell", if (small1 > 1) "s" else "", " < 1.")
+            },
+            " Minimum expected = ", min_exp,
+            ". Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`."
+          )
+        }
+      } else {
+        note <- "Chi² and Cramer's V not computed: insufficient data (only one non-empty row/column)."
+      }
+    }
+
+    # --- Titre et attributs ---
+    perc_label <- switch(percent,
+      "row" = " (Row %)",
+      "column" = " (Column %)",
+      "none" = " (N)"
+    )
+    title <- paste0(
+      "Crosstable: ", x_name,
+      if (!is.null(y_name)) paste0(" × ", y_name),
+      perc_label
+    )
+    if (!is.null(group_label)) {
+      title <- paste0(title, " | ", rlang::as_name(by_expr), " = ", group_label)
+    }
+    attr(df_out, "title") <- title
+    attr(df_out, "note") <- note
+    attr(df_out, "n_total") <- total_n
+    attr(df_out, "digits") <- digits
+
+    df_out[is.nan(as.matrix(df_out))] <- NA
+    df_out
   }
 
-  if (combine && is.null(by_vals)) {
-    warning("`combine = TRUE` is only relevant when a grouping variable is provided via `by`. Proceeding without combining.")
+  # --- handle grouping ---
+  if (!rlang::quo_is_null(by_expr)) {
+    by_vals <- rlang::eval_tidy(by_expr, data)
+
+    # --- Création d'un facteur ordonné propre ---
+    if (is.factor(by_vals)) {
+      f <- droplevels(by_vals)
+    } else {
+      # Si numérique → tri croissant, sinon tri naturel
+      unique_levels <- sort(unique(by_vals), na.last = TRUE)
+      f <- factor(by_vals, levels = unique_levels)
+    }
+
+    # --- Séparer les sous-groupes en respectant l'ordre des niveaux ---
+    split_data <- split(data, f, drop = TRUE)[levels(f)]
+    split_data <- split_data[!vapply(split_data, is.null, logical(1))]
+
+    # --- Construire chaque table par niveau ---
+    level_names <- names(split_data)
+    tables <- Map(function(df, lvl) {
+      compute_ctab(df, lvl)
+    }, split_data, level_names)
+    names(tables) <- level_names
+
+    # --- Ajouter les classes S3 pour affichage stylé ---
+    if (styled) {
+      tables <- lapply(tables, function(tt) {
+        class(tt) <- c("spicy_cross_table", "spicy_table", class(tt))
+        tt
+      })
+      class(tables) <- c("spicy_cross_table_list", class(tables))
+    }
+
+    return(tables)
+  } else {
+    out <- compute_ctab(data)
   }
 
-  return(compute_ctab(x_vals, y_vals, weights_vals))
+
+  if (styled) {
+    class(out) <- c("spicy_cross_table", "spicy_table", class(out))
+    return(out)
+  } else {
+    return(as.data.frame(out, stringsAsFactors = FALSE))
+  }
+}
+
+
+#' @export
+print.spicy_cross_table_list <- function(x, ...) {
+  n <- length(x)
+  for (i in seq_len(n)) {
+    print(x[[i]], ...)
+    if (i < n) cat("\n")
+  }
+  invisible(x)
+}
+
+
+#' Print method for spicy_cross_table
+#' @export
+print.spicy_cross_table <- function(x, digits = NULL, ...) {
+  title <- attr(x, "title")
+  note <- attr(x, "note")
+  digits_attr <- attr(x, "digits")
+
+  if (is.null(digits)) {
+    digits <- if (!is.null(digits_attr)) digits_attr else if (grepl("%", title)) 1 else 0
+  }
+
+  df_display <- x
+  if ("Values" %in% names(df_display) && any(df_display$Values == "N")) {
+    n_row <- df_display$Values == "N"
+    df_display[n_row, -1] <- lapply(df_display[n_row, -1], function(col) {
+      ifelse(is.na(col), NA, sprintf("%.0f", as.numeric(col)))
+    })
+  }
+  if ("N" %in% names(df_display) && is.numeric(df_display$N)) {
+    df_display$N <- ifelse(is.na(df_display$N), NA, sprintf("%.0f", df_display$N))
+  }
+  df_display[] <- lapply(df_display, function(col) {
+    if (is.numeric(col)) ifelse(is.na(col), NA, sprintf(paste0("%.", digits, "f"), col)) else col
+  })
+
+  # --- version corrigée ---
+  ns <- asNamespace(utils::packageName())
+  if (exists("spicy_print_table", envir = ns, inherits = FALSE)) {
+    get("spicy_print_table", envir = ns)(
+      df_display,
+      padding = "normal",
+      first_column_line = TRUE,
+      row_total_line = TRUE,
+      column_total_line = TRUE,
+      bottom_line = TRUE,
+      ...
+    )
+  } else {
+    style_grey <- if (crayon::has_color()) crayon::make_style("darkgrey") else identity
+    if (!is.null(title)) cat(style_grey(title), "\n")
+    print.data.frame(df_display, row.names = FALSE)
+    if (!is.null(note)) cat(style_grey(note), "\n")
+  }
+
+  invisible(x)
 }

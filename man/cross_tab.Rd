@@ -2,122 +2,58 @@
 % Please edit documentation in R/cross_tab.R
 \name{cross_tab}
 \alias{cross_tab}
-\title{Cross-Tabulation with Percentages, Weights, and Grouping}
+\title{Cross-tabulation (SPSS-like)}
 \usage{
 cross_tab(
-  d = parent.frame(),
+  data,
   x,
   y = NULL,
   by = NULL,
   weights = NULL,
-  rescale_weights = FALSE,
-  digits = 1,
-  rowprct = FALSE,
-  row_total = TRUE,
-  column_total = TRUE,
-  n = TRUE,
-  drop = TRUE,
+  rescale = FALSE,
+  percent = c("none", "column", "row"),
+  show_missing = TRUE,
   include_stats = TRUE,
-  combine = FALSE,
-  ...
+  simulate_p = FALSE,
+  simulate_B = 2000,
+  digits = NULL,
+  styled = TRUE,
+  show_n = TRUE
 )
 }
 \arguments{
-\item{d}{A \code{data.frame}, or a vector (when using vector input). Must contain all variables used in \code{x}, \code{y}, \code{by}, and \code{weights}.}
+\item{data}{A data frame.}
 
-\item{x}{Variable for table rows. Can be unquoted (tidy) or quoted (standard). Must match column name if \code{d} is a data frame.}
+\item{x}{Row variable (unquoted).}
 
-\item{y}{Optional variable for table columns. Same rules as \code{x}. If \code{NULL}, computes a one-way frequency table.}
+\item{y}{Column variable (unquoted, optional).}
 
-\item{by}{Optional \strong{grouping variable} (or interaction of variables). Used to produce stratified crosstabs. Must refer to columns in \code{d}, or be a vector of the same length as \code{x}.}
+\item{by}{Optional grouping variable.}
 
-\item{weights}{Optional numeric vector of weights. Must match length of \code{x}.}
+\item{weights}{Optional numeric weights.}
 
-\item{rescale_weights}{Logical. If \code{TRUE}, rescales weights so that total weighted count matches unweighted count.}
+\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N.}
 
-\item{digits}{Integer. Number of decimal places shown in percentages. Default is \code{1}.}
+\item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
 
-\item{rowprct}{Logical. If \code{TRUE}, computes percentages by row; otherwise by column.}
+\item{show_missing}{Logical; include NA as category (default TRUE).}
 
-\item{row_total}{Logical. If \code{TRUE}, adds row totals (default \code{TRUE}).}
+\item{include_stats}{Logical; compute Chi² and Cramer’s V (default TRUE).}
 
-\item{column_total}{Logical. If \code{TRUE}, adds column totals (default \code{TRUE}).}
+\item{simulate_p}{Logical; use Monte Carlo p-value simulation (default FALSE).}
 
-\item{n}{Logical. If \code{TRUE}, displays effective counts \code{N} as an extra row or column (default \code{TRUE}).}
+\item{simulate_B}{Integer; number of replicates for Monte Carlo (default 2000).}
 
-\item{drop}{Logical. If \code{TRUE}, drops empty rows or columns (default \code{TRUE}).}
+\item{digits}{Number of decimals (default 1 for percentages, 0 for counts).}
 
-\item{include_stats}{Logical. If \code{TRUE}, includes Chi-squared test and Cramer's V when possible (default \code{TRUE}).}
+\item{styled}{Logical; if TRUE, returns a "spicy_cross_table" object (for printing).}
 
-\item{combine}{Logical. If \code{TRUE}, combines all stratified tables into one tibble with a \code{by} column.}
-
-\item{...}{Additional arguments passed to \code{print.spicy()}, such as \code{show_all = TRUE}}
+\item{show_n}{Logical; if TRUE, adds marginal N totals when percent != "none".}
 }
 \value{
-A tibble of class \code{spicy}, or a list of such tibbles if \code{combine = FALSE} and \code{by} is used.
+A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.
 }
 \description{
-\code{cross_tab()} produces a cross-tabulation of \code{x} by \code{y}, with optional stratification using a grouping variable (\code{by}).
-It supports weighted frequencies, row or column percentages, and association statistics (Chi-squared test, Cramer's V).
-}
-\details{
-The function is flexible:
-\itemize{
-\item Accepts both \strong{standard} (quoted) and \strong{tidy} (unquoted) variable input
-\item Performs stratified tabulations using a \strong{grouping variable} (\code{by})
-\item Optionally combines group-level tables into a single tibble with \code{combine = TRUE}
-\item Pipe-friendly with both base R (\verb{|>}) and magrittr (\verb{\%>\%})
-}
-
-All variables (\code{x}, \code{y}, \code{by}, \code{weights}) must be present in the data frame \code{d}
-(unless vector input is used).
-}
-\section{Warnings and Errors}{
-
-\itemize{
-\item If \code{weights} is non-numeric, an error is thrown.
-\item If \code{weights} does not match the number of observations, an error is thrown.
-\item If \code{rescale_weights = TRUE} but no weights are provided, a warning is issued.
-\item If all values in \code{by} are \code{NA}, an error is thrown.
-\item If \code{by} has only one unique level (or all \code{NA}), a warning is issued.
-}
-}
-
-\examples{
-data(mtcars)
-mtcars$gear <- factor(mtcars$gear)
-mtcars$cyl <- factor(mtcars$cyl)
-mtcars$vs <- factor(mtcars$vs, labels = c("V", "S"))
-mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
-
-# Basic usage
-cross_tab(mtcars, cyl, gear)
-
-# Using extracted variables
-cross_tab(mtcars$cyl, mtcars$gear)
-
-# Pipe-friendly syntax
-mtcars |> cross_tab(cyl, gear, by = am)
-
-# With row percentages
-cross_tab(mtcars, cyl, gear, by = am, rowprct = TRUE)
-
-# Using weights
-cross_tab(mtcars, cyl, gear, weights = mpg)
-
-# With rescaled weights
-cross_tab(mtcars, cyl, gear, weights = mpg, rescale_weights = TRUE)
-
-# Grouped by a single variable
-cross_tab(mtcars, cyl, gear, by = am)
-
-# Grouped by interaction of two variables
-cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
-
-# Combined output for grouped data
-cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
-
-# Without totals or sample size
-cross_tab(mtcars, cyl, gear, row_total = FALSE, column_total = FALSE, n = FALSE)
-
+Computes a cross-tabulation with optional weights, grouping, and percentages.
+SPSS-like structure with intelligent defaults and modern formatting.
 }
