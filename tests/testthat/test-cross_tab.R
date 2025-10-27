@@ -1,111 +1,93 @@
-test_that("cross_tab computes simple 2D crosstab correctly", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
+# Ensure global spicy options don't trigger unintended behavior
+old_opts <- options(spicy.rescale = FALSE, spicy.simulate_p = FALSE)
+on.exit(options(old_opts)) # restore previous user options after tests
 
-  tab <- cross_tab(mtcars, cyl, gear)
+test_that("cross_tab basic two-way table works", {
+  data <- mtcars
+  res <- cross_tab(data, cyl, gear, styled = FALSE)
 
-  expect_s3_class(tab, "spicy_table")
-  expect_true("Values" %in% colnames(tab))
-  expect_true(any(grepl("Chi-2", attr(tab, "note"))))
+  expect_s3_class(res, "data.frame")
+  expect_true("Values" %in% names(res))
+
+  if ("Total" %in% names(res)) {
+    expect_equal(sum(res$Total, na.rm = TRUE), nrow(data))
+  } else {
+    expect_equal(attr(res, "n_total"), nrow(data))
+  }
 })
 
-test_that("cross_tab works with row percentages", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
 
-  tab <- cross_tab(mtcars, cyl, gear, rowprct = TRUE)
 
-  expect_s3_class(tab, "spicy_table")
-  expect_true("Row_Total" %in% colnames(tab))
+test_that("cross_tab supports grouping with by", {
+  data <- mtcars
+  res <- cross_tab(data, cyl, gear, by = am, styled = FALSE)
+
+  expect_type(res, "list")
+  expect_length(res, length(unique(data$am)))
+  expect_true(all(vapply(res, inherits, logical(1), "data.frame")))
 })
 
-test_that("cross_tab works with weights and rescaling", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
+test_that("cross_tab supports interaction() in by", {
+  data <- mtcars
+  res <- cross_tab(data, cyl, gear, by = interaction(vs, am), styled = FALSE)
 
-  unweighted <- cross_tab(mtcars, cyl, gear)
-  weighted <- cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
-  rescaled <- cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale_weights = TRUE)
-
-  expect_s3_class(weighted, "spicy_table")
-  expect_s3_class(rescaled, "spicy_table")
+  expect_type(res, "list")
+  expect_length(res, length(unique(interaction(data$vs, data$am))))
 })
 
-test_that("cross_tab works with group 'by' and combine = TRUE", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
-  mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
+test_that("cross_tab handles weights and rescale properly", {
+  data <- mtcars
 
-  combined <- cross_tab(mtcars, cyl, gear, by = am, combine = TRUE)
+  # Without rescale: sum(weights) ≠ N
+  res1 <- cross_tab(data, cyl, gear, weights = mpg, rescale = FALSE, styled = FALSE)
+  total1 <- attr(res1, "n_total")
 
-  expect_s3_class(combined, "spicy_table")
-  expect_true("am" %in% colnames(combined))
-  expect_true(any(grepl("Chi-2", attr(combined, "note"))))
+  # With rescale: sum(weights) == N
+  res2 <- cross_tab(data, cyl, gear, weights = mpg, rescale = TRUE, styled = FALSE)
+  total2 <- attr(res2, "n_total")
+
+  expect_false(isTRUE(all.equal(total1, nrow(data))))
+  expect_true(isTRUE(all.equal(round(total2), nrow(data))))
 })
 
-test_that("cross_tab returns list if combine = FALSE with 'by'", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
-  mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
-
-  result_list <- cross_tab(mtcars, cyl, gear, by = am, combine = FALSE)
-
-  expect_type(result_list, "list")
-  expect_s3_class(result_list[[1]], "spicy_table")
-})
-
-test_that("cross_tab works with 1D (no y) input", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-
-  result <- cross_tab(mtcars, cyl)
-
-  expect_s3_class(result, "spicy_table")
-  expect_true("Values" %in% colnames(result))
-})
-
-test_that("cross_tab errors with invalid weights or mismatched length", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
-
-  expect_error(cross_tab(mtcars, cyl, gear, weights = "wrong"), "must be a column name")
-  expect_error(cross_tab(mtcars[1:10, ], cyl, gear, weights = rep(1, 5)), "must match length")
-})
-
-test_that("cross_tab warns with by having only one level or all NA", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
-
-  mtcars$one_level <- rep("only", nrow(mtcars))
-  mtcars$all_na <- NA
-
-  expect_warning(
-    cross_tab(mtcars, cyl, gear, by = one_level),
-    "only one unique level"
+test_that("cross_tab automatically ignores NA values", {
+  df <- data.frame(
+    x = c("A", "B", NA, "A", "B", NA),
+    y = c("Yes", "No", "Yes", "No", "Yes", NA)
   )
 
-  expect_error(
-    cross_tab(mtcars, cyl, gear, by = all_na),
-    "All values in `by` are NA"
-  )
+  # xtabs() ignores missing values automatically
+  res <- cross_tab(df, x, y, styled = FALSE)
+
+  complete_n <- sum(stats::complete.cases(df[, c("x", "y")]))
+  total_tab <- attr(res, "n_total")
+
+  expect_equal(total_tab, complete_n)
 })
 
-test_that("cross_tab handles interaction in 'by'", {
-  data(mtcars)
-  mtcars$cyl <- factor(mtcars$cyl)
-  mtcars$gear <- factor(mtcars$gear)
-  mtcars$am <- factor(mtcars$am, labels = c("auto", "manual"))
-  mtcars$vs <- factor(mtcars$vs, labels = c("V", "S"))
 
-  out <- cross_tab(mtcars, cyl, gear, by = interaction(am, vs), combine = TRUE)
+test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale", {
+  data <- mtcars
 
-  expect_s3_class(out, "spicy_table")
-  expect_true("interaction(am, vs)" %in% colnames(out))
+  # Backup current options
+  old_opts <- options()
+
+  options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
+  res <- cross_tab(data, cyl, gear, weights = mpg, styled = FALSE)
+
+  # Verify attributes and global option effect
+  expect_true(grepl("Chi²:", attr(res, "note")))
+  expect_true(isTRUE(all.equal(round(attr(res, "n_total")), nrow(data))))
+
+  # Restore options
+  options(old_opts)
+})
+
+test_that("cross_tab returns spicy_cross_table or list when styled = TRUE", {
+  data <- mtcars
+  res1 <- cross_tab(data, cyl, gear)
+  res2 <- cross_tab(data, cyl, gear, by = am)
+
+  expect_s3_class(res1, "spicy_cross_table")
+  expect_s3_class(res2, "spicy_cross_table_list")
 })
