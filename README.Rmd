@@ -91,14 +91,20 @@ varlist(iris, tbl = TRUE)
 # Tabulate frequencies with sort alphabetically (Z-A)
 freq(iris, Species, sort = "name-")
 
-# Cross-tab with column percentages
+# Cross-tab with frequencies
 cross_tab(mtcars, cyl, gear)
 
-# Cross-tab with row percentages
-cross_tab(mtcars, cyl, gear, rowprct = TRUE)
+# Cross-tab with column percentages
+cross_tab(mtcars, cyl, gear, percent = "column")
 
-# Cross-tab with column percentages grouped by a single variable
+# Cross-tab with row percentages
+cross_tab(mtcars, cyl, gear, percent = "row")
+
+# Cross-tab with grouped by a single variable
 cross_tab(mtcars, cyl, gear, by = am)
+
+# Cross-tab with grouped by two variables
+cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
