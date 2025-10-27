@@ -1,3 +1,5 @@
+# spicy 0.4.1
+
 # spicy 0.4.0 (in development)
 
 * `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
