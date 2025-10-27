@@ -31,12 +31,11 @@ cross_tab(
 
 \item{weights}{Optional numeric weights.}
 
-\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N.
-Equivalent to SPSS option \emph{“Rescale weights to sample size”}.}
+\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).}
 
 \item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
 
-\item{include_stats}{Logical; compute Chi² and Cramer’s V (default TRUE).}
+\item{include_stats}{Logical; compute Chi-squared and Cramer's V (default TRUE).}
 
 \item{simulate_p}{Logical; use Monte Carlo p-value simulation (default FALSE).}
 
@@ -54,7 +53,6 @@ When \code{by} is used, returns a \code{spicy_cross_table_list}.
 }
 \description{
 Computes a cross-tabulation with optional weights, grouping, and percentages.
-Produces an SPSS-like table structure with intelligent defaults, robust Chi²
 diagnostics, and modern ASCII formatting.
 Note: \code{cross_tab()} requires both \code{x} and \code{y} variables.
 For one-way frequency tables, use \code{\link[=freq]{freq()}} instead.
@@ -65,11 +63,10 @@ For one-way frequency tables, use \code{\link[=freq]{freq()}} instead.
 The function recognizes the following global options that modify its default behavior:
 \itemize{
 \item \strong{\code{options(spicy.simulate_p = TRUE)}}
-Enables Monte Carlo simulation for all Chi² tests by default.
+Enables Monte Carlo simulation for all Chi-squared tests by default.
 Equivalent to setting \code{simulate_p = TRUE} in every call.
 \item \strong{\code{options(spicy.rescale = TRUE)}}
 Automatically rescales weights so that total weighted N equals the raw N,
-mimicking SPSS option \emph{“Rescale weights to sample size”}.
 Equivalent to setting \code{rescale = TRUE} in each call.
 }
 

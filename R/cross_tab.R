@@ -2,7 +2,6 @@
 #'
 #' @description
 #' Computes a cross-tabulation with optional weights, grouping, and percentages.
-#' Produces an SPSS-like table structure with intelligent defaults, robust Chi²
 #' diagnostics, and modern ASCII formatting.
 #' Note: `cross_tab()` requires both `x` and `y` variables.
 #' For one-way frequency tables, use [freq()] instead.
@@ -12,10 +11,9 @@
 #' @param y Column variable (unquoted). Mandatory; for one-way tables, use [freq()].
 #' @param by Optional grouping variable or expression (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
-#' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
-#'   Equivalent to SPSS option *“Rescale weights to sample size”*.
+#' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).
 #' @param percent One of `"none"`, `"row"`, `"column"`.
-#' @param include_stats Logical; compute Chi² and Cramer’s V (default TRUE).
+#' @param include_stats Logical; compute Chi-squared and Cramer's V (default TRUE).
 #' @param simulate_p Logical; use Monte Carlo p-value simulation (default FALSE).
 #' @param simulate_B Integer; number of replicates for Monte Carlo (default 2000).
 #' @param digits Number of decimals (default 1 for percentages, 0 for counts).
@@ -31,12 +29,11 @@
 #' The function recognizes the following global options that modify its default behavior:
 #'
 #' * **`options(spicy.simulate_p = TRUE)`**
-#'   Enables Monte Carlo simulation for all Chi² tests by default.
+#'   Enables Monte Carlo simulation for all Chi-squared tests by default.
 #'   Equivalent to setting `simulate_p = TRUE` in every call.
 #'
 #' * **`options(spicy.rescale = TRUE)`**
 #'   Automatically rescales weights so that total weighted N equals the raw N,
-#'   mimicking SPSS option *“Rescale weights to sample size”*.
 #'   Equivalent to setting `rescale = TRUE` in each call.
 #'
 #' These options are convenient for users who wish to enforce consistent behavior
@@ -78,7 +75,6 @@ cross_tab <- function(
   styled = TRUE,
   show_n = TRUE
 ) {
-  # --- Global defaults ---
   if (missing(simulate_p)) {
     simulate_p <- getOption("spicy.simulate_p", FALSE)
   }
@@ -89,7 +85,6 @@ cross_tab <- function(
   percent <- match.arg(percent)
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
-  # --- tidy eval ---
   x_expr <- rlang::enquo(x)
   y_expr <- rlang::enquo(y)
   by_expr <- rlang::enquo(by)
@@ -102,7 +97,6 @@ cross_tab <- function(
     stop("For one-way tables, use `freq()` instead of `cross_tab()`.", call. = FALSE)
   }
 
-  # --- Gestion spéciale de by ---
   if (!rlang::quo_is_null(by_expr)) {
     if (rlang::is_symbol(rlang::get_expr(by_expr))) {
       by_name <- rlang::as_name(by_expr)
@@ -113,7 +107,6 @@ cross_tab <- function(
     by_name <- NULL
   }
 
-  # --- weights ---
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
     if (!is.numeric(w)) stop("`weights` must be numeric.")
@@ -122,22 +115,19 @@ cross_tab <- function(
     w <- rep(1, nrow(data))
   }
 
-  # --- Rescale if requested ---
   if (rescale && !all(w == 1)) {
     w <- w * length(w) / sum(w, na.rm = TRUE)
   } else if (rescale && all(w == 1)) {
     warning("`rescale = TRUE` has no effect since no weights provided.")
   }
 
-  # Stocker les poids dans les données pour que compute_ctab les retrouve
   data$`..spicy_w` <- w
 
-  # --- Fonction interne de calcul ---
   compute_ctab <- function(df, group_label = NULL) {
     full_x <- rlang::eval_tidy(x_expr, data)
     full_y <- if (!rlang::quo_is_null(y_expr)) rlang::eval_tidy(y_expr, data) else NULL
 
-    df_sub <- df %>%
+    df_sub <- df |>
       dplyr::mutate(
         x_val = rlang::eval_tidy(x_expr, df),
         y_val = if (rlang::quo_is_null(y_expr)) NA else rlang::eval_tidy(y_expr, df),
@@ -154,7 +144,6 @@ cross_tab <- function(
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
-    # --- Pourcentages / Comptes ---
     tab_perc <- switch(percent,
       "row"    = prop.table(tab_full, 1) * 100,
       "column" = prop.table(tab_full, 2) * 100,
@@ -165,7 +154,6 @@ cross_tab <- function(
     df_out <- as.data.frame.matrix(round(tab_perc, digits))
     df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
-    # --- Totaux ---
     if (styled) {
       if (percent == "column") {
         total_row <- tibble::as_tibble_row(
@@ -189,7 +177,6 @@ cross_tab <- function(
       }
     }
 
-    # --- Statistiques d'association ---
     note <- NULL
     if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
       if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
@@ -211,7 +198,7 @@ cross_tab <- function(
         }
 
         note <- paste0(
-          "Chi²: ", ifelse(is.nan(chi2) | is.na(chi2), "NA", formatC(chi2, format = "f", digits = 1)),
+          "Chi-2: ", ifelse(is.nan(chi2) | is.na(chi2), "NA", formatC(chi2, format = "f", digits = 1)),
           " (df = ", df_, "), p ", p_str,
           if (simulate_p) " (simulated)", "\n",
           "Cramer's V: ", ifelse(is.nan(cramer) | is.na(cramer), "NA", formatC(cramer, format = "f", digits = 2))
@@ -234,11 +221,10 @@ cross_tab <- function(
           )
         }
       } else {
-        note <- "Chi² and Cramer's V not computed: insufficient data (only one non-empty row/column)."
+        note <- "Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column)."
       }
     }
 
-    # --- Titre et attributs ---
     perc_label <- switch(percent,
       "row" = " (Row %)",
       "column" = " (Column %)",
@@ -246,7 +232,7 @@ cross_tab <- function(
     )
     title <- paste0(
       "Crosstable: ", x_name,
-      if (!is.null(y_name)) paste0(" × ", y_name),
+      if (!is.null(y_name)) paste0(" x ", y_name),
       perc_label
     )
     if (!is.null(group_label)) {
@@ -262,7 +248,6 @@ cross_tab <- function(
     df_out
   }
 
-  # --- Gestion du grouping ---
   if (!rlang::quo_is_null(by_expr)) {
     by_vals <- rlang::eval_tidy(by_expr, data)
 
@@ -312,7 +297,15 @@ print.spicy_cross_table_list <- function(x, ...) {
 }
 
 
-#' Print method for spicy_cross_table
+#' @title Print method for spicy_cross_table objects
+#' @description
+#' Prints a formatted SPSS-like crosstable created by [cross_tab()].
+#'
+#' @param x A `spicy_cross_table` object.
+#' @param digits Optional integer; number of decimal places to display.
+#'   Defaults to the value stored in the object.
+#' @param ... Additional arguments passed to internal formatting functions.
+#'
 #' @export
 print.spicy_cross_table <- function(x, digits = NULL, ...) {
   title <- attr(x, "title")
@@ -337,7 +330,6 @@ print.spicy_cross_table <- function(x, digits = NULL, ...) {
     if (is.numeric(col)) ifelse(is.na(col), NA, sprintf(paste0("%.", digits, "f"), col)) else col
   })
 
-  # --- version corrigée ---
   ns <- asNamespace(utils::packageName())
   if (exists("spicy_print_table", envir = ns, inherits = FALSE)) {
     get("spicy_print_table", envir = ns)(
