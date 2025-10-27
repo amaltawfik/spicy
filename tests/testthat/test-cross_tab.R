@@ -76,7 +76,7 @@ test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale"
   res <- cross_tab(data, cyl, gear, weights = mpg, styled = FALSE)
 
   # Verify attributes and global option effect
-  expect_true(grepl("Chi²:", attr(res, "note")))
+  expect_true(grepl("Chi-2:", attr(res, "note")))
   expect_true(isTRUE(all.equal(round(attr(res, "n_total")), nrow(data))))
 
   # Restore options
