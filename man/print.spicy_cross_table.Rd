@@ -2,10 +2,18 @@
 % Please edit documentation in R/cross_tab.R
 \name{print.spicy_cross_table}
 \alias{print.spicy_cross_table}
-\title{Print method for spicy_cross_table}
+\title{Print method for spicy_cross_table objects}
 \usage{
 \method{print}{spicy_cross_table}(x, digits = NULL, ...)
 }
+\arguments{
+\item{x}{A \code{spicy_cross_table} object.}
+
+\item{digits}{Optional integer; number of decimal places to display.
+Defaults to the value stored in the object.}
+
+\item{...}{Additional arguments passed to internal formatting functions.}
+}
 \description{
-Print method for spicy_cross_table
+Prints a formatted SPSS-like crosstable created by \code{\link[=cross_tab]{cross_tab()}}.
 }
