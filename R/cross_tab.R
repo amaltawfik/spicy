@@ -4,10 +4,12 @@
 #' Computes a cross-tabulation with optional weights, grouping, and percentages.
 #' Produces an SPSS-like table structure with intelligent defaults, robust Chi²
 #' diagnostics, and modern ASCII formatting.
+#' Note: `cross_tab()` requires both `x` and `y` variables.
+#' For one-way frequency tables, use [freq()] instead.
 #'
 #' @param data A data frame.
 #' @param x Row variable (unquoted).
-#' @param y Column variable (unquoted, optional).
+#' @param y Column variable (unquoted). Mandatory; for one-way tables, use [freq()].
 #' @param by Optional grouping variable or expression (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N.
@@ -95,6 +97,10 @@ cross_tab <- function(
 
   x_name <- rlang::as_name(x_expr)
   y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
+
+  if (rlang::quo_is_null(y_expr)) {
+    stop("For one-way tables, use `freq()` instead of `cross_tab()`.", call. = FALSE)
+  }
 
   # --- Gestion spéciale de by ---
   if (!rlang::quo_is_null(by_expr)) {

@@ -25,7 +25,7 @@ cross_tab(
 
 \item{x}{Row variable (unquoted).}
 
-\item{y}{Column variable (unquoted, optional).}
+\item{y}{Column variable (unquoted). Mandatory; for one-way tables, use \code{\link[=freq]{freq()}}.}
 
 \item{by}{Optional grouping variable or expression (e.g. \code{interaction(vs, am)}).}
 
@@ -56,6 +56,8 @@ When \code{by} is used, returns a \code{spicy_cross_table_list}.
 Computes a cross-tabulation with optional weights, grouping, and percentages.
 Produces an SPSS-like table structure with intelligent defaults, robust Chi²
 diagnostics, and modern ASCII formatting.
+Note: \code{cross_tab()} requires both \code{x} and \code{y} variables.
+For one-way frequency tables, use \code{\link[=freq]{freq()}} instead.
 }
 \section{Global Options}{
 
