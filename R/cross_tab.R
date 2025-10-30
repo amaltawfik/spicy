@@ -93,6 +93,44 @@ cross_tab <- function(
   styled = TRUE,
   show_n = TRUE
 ) {
+  # --- Validation des arguments ---
+  if (missing(data)) {
+    stop("You must provide a dataset or a vector for `data`.", call. = FALSE)
+  }
+
+  # Cas data.frame ou tibble
+  if (is.data.frame(data)) {
+    if (missing(x)) {
+      stop("You must specify at least one variable name for `x` (e.g., cross_tab(data, x, y)).", call. = FALSE)
+    }
+    if (missing(y)) {
+      # Détection du style pipe (data |> cross_tab(x))
+      stop(
+        if (deparse(substitute(data)) == ".") {
+          "You must specify a `y` variable (e.g., data |> cross_tab(x, y))."
+        } else {
+          "You must specify a `y` variable (e.g., cross_tab(data, x, y))."
+        },
+        call. = FALSE
+      )
+    }
+  }
+
+  # Cas vecteurs
+  if (is.vector(data) || is.factor(data)) {
+    if (missing(x)) {
+      stop(
+        "When using vector input, you must provide both x and y vectors of the same length (e.g., cross_tab(data$x, data$y)).",
+        call. = FALSE
+      )
+    }
+    if (length(data) != length(x)) {
+      stop("Vectors `x` and `y` must have the same length.", call. = FALSE)
+    }
+  }
+
+
+  # --- Gestion des options globales ---
   if (missing(simulate_p)) {
     simulate_p <- getOption("spicy.simulate_p", FALSE)
   }
@@ -103,35 +141,113 @@ cross_tab <- function(
     percent <- getOption("spicy.percent", "none")
   }
 
-
   percent <- match.arg(percent)
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
-  x_expr <- rlang::enquo(x)
-  y_expr <- rlang::enquo(y)
-  by_expr <- rlang::enquo(by)
-  w_expr <- rlang::enquo(weights)
+  # Capturer les expressions originales pour récupérer les noms de variables
+  call_x <- substitute(x)
+  call_data <- substitute(data)
+  call_by <- substitute(by)
+  call_weights <- substitute(weights)
 
-  x_name <- rlang::as_name(x_expr)
-  y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
 
-  if (rlang::quo_is_null(y_expr)) {
-    stop("For one-way tables, use `freq()` instead of `cross_tab()`.", call. = FALSE)
-  }
+  # --- Nouvelle section : détection du mode d'appel ---
+  is_vector_mode <- is.vector(data) || is.factor(data)
 
-  if (!rlang::quo_is_null(by_expr)) {
-    if (rlang::is_symbol(rlang::get_expr(by_expr))) {
-      by_name <- rlang::as_name(by_expr)
+  if (is_vector_mode) {
+    # Mode vectoriel : cross_tab(mtcars$cyl, mtcars$gear, ...)
+    x_vals <- data
+    y_vals <- x # 2e argument devient y
+
+    # Gestion des poids
+    if (!is.null(weights)) {
+      if (!is.numeric(weights)) {
+        stop("When using vector input, `weights` must be a numeric vector.")
+      }
+      w_vals <- weights
     } else {
-      by_name <- rlang::expr_text(by_expr)
-      by_name <- gsub("^~", "", by_name)
-      by_name <- gsub("interaction\\((.*)\\)", "\\1", by_name)
-      by_name <- gsub(",", " x", by_name)
-      by_name <- trimws(by_name)
+      w_vals <- rep(1, length(x_vals))
     }
+
+    # Gestion du by
+    if (!is.null(by)) {
+      by_vals <- by
+      if (length(by_vals) != length(x_vals)) {
+        stop("`by` must be the same length as `x` when using vector input.")
+      }
+    } else {
+      by_vals <- rep(NA, length(x_vals))
+    }
+
+    # Construire un data.frame complet
+    data <- data.frame(
+      x_tmp = x_vals,
+      y_tmp = y_vals,
+      by_tmp = by_vals,
+      w_tmp = w_vals,
+      stringsAsFactors = FALSE
+    )
+
+    # Créer des quosures pour le reste du code
+    x_expr <- rlang::new_quosure(rlang::sym("x_tmp"))
+    y_expr <- rlang::new_quosure(rlang::sym("y_tmp"))
+    by_expr <- if (all(is.na(by_vals))) rlang::quo(NULL) else rlang::new_quosure(rlang::sym("by_tmp"))
+    w_expr <- rlang::new_quosure(rlang::sym("w_tmp"))
+
+    x_name <- deparse(call_data)
+    y_name <- deparse(call_x)
+
+    if (!missing(by)) {
+      expr_txt <- deparse(call_by)
+      expr_txt <- gsub("^~", "", expr_txt)
+      expr_txt <- gsub("\\s+", "", expr_txt)
+
+      if (grepl("^interaction\\(", expr_txt)) {
+        inside <- gsub("^interaction\\(|\\)$", "", expr_txt)
+        parts <- unlist(strsplit(inside, ","))
+        parts <- trimws(gsub(".*\\$", "", parts))
+        by_name <- paste(parts, collapse = " x ")
+      } else {
+        by_name <- trimws(gsub(".*\\$", "", expr_txt))
+      }
+    } else {
+      by_name <- NULL
+    }
+
+    x_name <- sub(".*\\$", "", x_name)
+    y_name <- sub(".*\\$", "", y_name)
+
+
+    x_name <- sub(".*\\$", "", x_name)
+    y_name <- sub(".*\\$", "", y_name)
+    if (!is.null(by_name)) by_name <- sub(".*\\$", "", by_name)
   } else {
-    by_name <- NULL
+    x_expr <- rlang::enquo(x)
+    y_expr <- rlang::enquo(y)
+    by_expr <- rlang::enquo(by)
+    w_expr <- rlang::enquo(weights)
+
+    x_name <- rlang::as_name(x_expr)
+    y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
+
+    if (!rlang::quo_is_null(by_expr)) {
+      expr_txt <- rlang::expr_text(by_expr)
+      expr_txt <- gsub("^~", "", expr_txt)
+      expr_txt <- gsub("\\s+", "", expr_txt)
+
+      if (grepl("^interaction\\(", expr_txt)) {
+        inside <- gsub("^interaction\\(|\\)$", "", expr_txt)
+        parts <- unlist(strsplit(inside, ","))
+        parts <- trimws(gsub(".*\\$", "", parts))
+        by_name <- paste(parts, collapse = " x ")
+      } else {
+        by_name <- trimws(gsub(".*\\$", "", expr_txt))
+      }
+    } else {
+      by_name <- NULL
+    }
   }
+
 
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
@@ -290,6 +406,23 @@ cross_tab <- function(
     )
     if (!is.null(group_label)) {
       title <- paste0(title, " | ", by_name, " = ", group_label)
+    }
+
+    # Ajout d'une mention de poids dans la note, si applicable
+    if (!rlang::quo_is_null(w_expr) && !all(w == 1)) {
+      w_name <- deparse(call_weights)
+      w_name <- sub(".*\\$", "", w_name) # ne garder que le nom après $
+      w_text <- paste0("Weight: ", w_name)
+      if (isTRUE(rescale)) {
+        w_text <- paste0(w_text, " (rescaled)")
+      }
+
+      # Ajouter à la note existante ou créer une nouvelle note
+      if (is.null(note) || note == "") {
+        note <- w_text
+      } else {
+        note <- paste0(note, "\n", w_text)
+      }
     }
 
     attr(df_out, "title") <- title
