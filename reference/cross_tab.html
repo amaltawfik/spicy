@@ -220,7 +220,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by an interaction</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">vs</span>, <span class="va">am</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | ~interaction(vs, am) = 0.0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 0.0</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>       3       4       5 <span style="color: #9E9E9E;">│</span>      Total </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼─────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>       0       0       0 <span style="color: #9E9E9E;">│</span>          0 </span>
@@ -231,7 +231,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┴─────────────────────────┴────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | ~interaction(vs, am) = 1.0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 1.0</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      3       4       5 <span style="color: #9E9E9E;">│</span>      Total </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>      1       2       0 <span style="color: #9E9E9E;">│</span>          3 </span>
@@ -244,7 +244,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 9 expected cells &lt; 5 (100%). 5 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | ~interaction(vs, am) = 0.1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 0.1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      3       4       5 <span style="color: #9E9E9E;">│</span>      Total </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>      0       0       1 <span style="color: #9E9E9E;">│</span>          1 </span>
@@ -257,7 +257,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 9 expected cells &lt; 5 (100%). 6 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | ~interaction(vs, am) = 1.1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 1.1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      3       4       5 <span style="color: #9E9E9E;">│</span>      Total </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>      0       6       1 <span style="color: #9E9E9E;">│</span>          7 </span>
