@@ -136,16 +136,23 @@ When <code>by</code> is used, returns a <code>spicy_cross_table_list</code>.</p>
 
 
 
-<p>The function recognizes the following global options that modify its default behavior:</p><ul><li><p><strong><code>options(spicy.simulate_p = TRUE)</code></strong>
+<p>The function recognizes the following global options that modify its default behavior:</p>
+
+
+<p>The function recognizes the following global options that modify its default behavior:</p><ul><li><p><strong><code>options(spicy.percent = "column")</code></strong>
+Sets the default percentage mode for all calls to <code>cross_tab()</code>.
+Valid values are <code>"none"</code>, <code>"row"</code>, and <code>"column"</code>.
+Equivalent to setting <code>percent = "column"</code> (or another choice) in each call.</p></li>
+<li><p><strong><code>options(spicy.simulate_p = TRUE)</code></strong>
 Enables Monte Carlo simulation for all Chi-squared tests by default.
 Equivalent to setting <code>simulate_p = TRUE</code> in every call.</p></li>
 <li><p><strong><code>options(spicy.rescale = TRUE)</code></strong>
-Automatically rescales weights so that total weighted N equals the raw N,
+Automatically rescales weights so that total weighted N equals the raw N.
 Equivalent to setting <code>rescale = TRUE</code> in each call.</p></li>
 </ul><p>These options are convenient for users who wish to enforce consistent behavior
 across multiple calls to <code>cross_tab()</code> and other spicy table functions.
-They can be disabled by setting them to <code>NULL</code>:
-<code>options(spicy.simulate_p = NULL, spicy.rescale = NULL)</code>.</p>
+They can be disabled or reset by setting them to <code>NULL</code>:
+<code>options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)</code>.</p>
 <p>Example:</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.simulate_p <span class="op">=</span> <span class="cn">TRUE</span>, spicy.rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, weights <span class="op">=</span> <span class="va">mtcars</span><span class="op">$</span><span class="va">mpg</span><span class="op">)</span></span></code></pre><p></p></div>
@@ -260,6 +267,28 @@ They can be disabled by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      0       6       1 <span style="color: #9E9E9E;">│</span>          7 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┴────────────────────────┴────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Set default percent mode globally</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Now this will display column percentages by default</span></span></span>
+<span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (Column %)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>          3           4           5 <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>        6.7        66.7        40.0 <span style="color: #9E9E9E;">│</span>       34.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6           <span style="color: #9E9E9E;">│</span>       13.3        33.3        20.0 <span style="color: #9E9E9E;">│</span>       21.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8           <span style="color: #9E9E9E;">│</span>       80.0         0.0        40.0 <span style="color: #9E9E9E;">│</span>       43.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      100.0       100.0       100.0 <span style="color: #9E9E9E;">│</span>      100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>         15          12           5 <span style="color: #9E9E9E;">│</span>         32 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┴────────────────────────────────────┴────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 18.0 (df = 4), p = 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.53</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Reset to default behavior</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.percent <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
