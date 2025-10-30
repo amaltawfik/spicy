@@ -124,6 +124,10 @@ cross_tab <- function(
       by_name <- rlang::as_name(by_expr)
     } else {
       by_name <- rlang::expr_text(by_expr)
+      by_name <- gsub("^~", "", by_name)
+      by_name <- gsub("interaction\\((.*)\\)", "\\1", by_name)
+      by_name <- gsub(",", " x", by_name)
+      by_name <- trimws(by_name)
     }
   } else {
     by_name <- NULL
