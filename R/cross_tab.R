@@ -155,27 +155,54 @@ cross_tab <- function(
     df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
     if (styled) {
-      if (percent == "column") {
-        total_row <- tibble::as_tibble_row(
-          c(Values = "Total", as.list(round(colSums(tab_perc, na.rm = TRUE), digits)))
-        )
-        n_row <- if (show_n) {
-          tibble::as_tibble_row(
-            c(Values = "N", as.list(round(colSums(tab_full, na.rm = TRUE), 0)))
+      if (styled) {
+        if (percent == "column") {
+          total_values <- colSums(tab_perc, na.rm = TRUE)
+          n_values <- colSums(tab_full, na.rm = TRUE)
+
+          df_out$Total <- round(rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100, digits)
+
+          total_row <- tibble::as_tibble_row(
+            c(Values = "Total", as.list(round(total_values, digits)), Total = 100)
           )
+          n_row <- if (show_n) {
+            tibble::as_tibble_row(
+              c(Values = "N", as.list(round(n_values, 0)), Total = sum(tab_full))
+            )
+          } else {
+            NULL
+          }
+
+          df_out <- dplyr::bind_rows(df_out, total_row, n_row)
+        } else if (percent == "row") {
+          df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
+          if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+
+          col_tot <- colSums(tab_full, na.rm = TRUE)
+          col_perc <- round(col_tot / sum(col_tot) * 100, digits)
+
+          total_row <- as.list(rep(NA, ncol(df_out)))
+          names(total_row) <- names(df_out)
+
+          for (nm in intersect(names(df_out), names(col_perc))) {
+            total_row[[nm]] <- col_perc[[nm]]
+          }
+
+          total_row[["Values"]] <- "Total"
+          total_row[["Total"]] <- 100
+          if (show_n) total_row[["N"]] <- sum(tab_full)
+
+          df_out <- dplyr::bind_rows(df_out, total_row)
+        } else {
+          df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+          grand_total <- tibble::as_tibble_row(
+            c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
+          )
+          df_out <- dplyr::bind_rows(df_out, grand_total)
         }
-        df_out <- dplyr::bind_rows(df_out, total_row, n_row)
-      } else if (percent == "row") {
-        df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
-        if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
-      } else {
-        df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
-        grand_total <- tibble::as_tibble_row(
-          c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
-        )
-        df_out <- dplyr::bind_rows(df_out, grand_total)
       }
     }
+
 
     note <- NULL
     if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
@@ -317,20 +344,38 @@ print.spicy_cross_table <- function(x, digits = NULL, ...) {
   }
 
   df_display <- x
-  if ("Values" %in% names(df_display) && any(df_display$Values == "N")) {
-    n_row <- df_display$Values == "N"
-    df_display[n_row, -1] <- lapply(df_display[n_row, -1], function(col) {
-      ifelse(is.na(col), NA, sprintf("%.0f", as.numeric(col)))
-    })
-  }
-  if ("N" %in% names(df_display) && is.numeric(df_display$N)) {
-    df_display$N <- ifelse(is.na(df_display$N), NA, sprintf("%.0f", df_display$N))
-  }
-  df_display[] <- lapply(df_display, function(col) {
-    if (is.numeric(col)) ifelse(is.na(col), NA, sprintf(paste0("%.", digits, "f"), col)) else col
-  })
 
-  ns <- asNamespace(utils::packageName())
+  n_row <- if ("Values" %in% names(df_display)) df_display$Values == "N" else rep(FALSE, nrow(df_display))
+  n_col <- "N" %in% names(df_display)
+
+  df_display[] <- Map(function(col, name) {
+    if (is.numeric(col)) {
+      formatted <- if (n_col && name == "N") {
+        # Colonne N : entiers
+        sprintf("%.0f", col)
+      } else if (any(n_row)) {
+        # Ligne N : entiers
+        ifelse(
+          n_row,
+          sprintf("%.0f", col),
+          sprintf(paste0("%.", digits, "f"), col)
+        )
+      } else {
+        sprintf(paste0("%.", digits, "f"), col)
+      }
+      ifelse(is.na(col), NA, formatted)
+    } else {
+      col
+    }
+  }, df_display, names(df_display))
+
+  pkg_name <- tryCatch(utils::packageName(), error = function(e) NULL)
+  if (!is.null(pkg_name) && pkg_name %in% loadedNamespaces()) {
+    ns <- asNamespace(pkg_name)
+  } else {
+    ns <- parent.env(environment())
+  }
+
   if (exists("spicy_print_table", envir = ns, inherits = FALSE)) {
     get("spicy_print_table", envir = ns)(
       df_display,
