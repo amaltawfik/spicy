@@ -28,18 +28,27 @@
 #'
 #' The function recognizes the following global options that modify its default behavior:
 #'
+#' @section Global Options:
+#'
+#' The function recognizes the following global options that modify its default behavior:
+#'
+#' * **`options(spicy.percent = "column")`**
+#'   Sets the default percentage mode for all calls to `cross_tab()`.
+#'   Valid values are `"none"`, `"row"`, and `"column"`.
+#'   Equivalent to setting `percent = "column"` (or another choice) in each call.
+#'
 #' * **`options(spicy.simulate_p = TRUE)`**
 #'   Enables Monte Carlo simulation for all Chi-squared tests by default.
 #'   Equivalent to setting `simulate_p = TRUE` in every call.
 #'
 #' * **`options(spicy.rescale = TRUE)`**
-#'   Automatically rescales weights so that total weighted N equals the raw N,
+#'   Automatically rescales weights so that total weighted N equals the raw N.
 #'   Equivalent to setting `rescale = TRUE` in each call.
 #'
 #' These options are convenient for users who wish to enforce consistent behavior
 #' across multiple calls to `cross_tab()` and other spicy table functions.
-#' They can be disabled by setting them to `NULL`:
-#' `options(spicy.simulate_p = NULL, spicy.rescale = NULL)`.
+#' They can be disabled or reset by setting them to `NULL`:
+#' `options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)`.
 #'
 #' Example:
 #' ```r
@@ -58,6 +67,15 @@
 #'
 #' # Grouped by an interaction
 #' cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+#'
+#' # Set default percent mode globally
+#' options(spicy.percent = "column")
+#'
+#' # Now this will display column percentages by default
+#' cross_tab(mtcars, cyl, gear)
+#'
+#' # Reset to default behavior
+#' options(spicy.percent = NULL)
 #'
 #' @export
 cross_tab <- function(
@@ -81,6 +99,10 @@ cross_tab <- function(
   if (missing(rescale)) {
     rescale <- getOption("spicy.rescale", FALSE)
   }
+  if (missing(percent)) {
+    percent <- getOption("spicy.percent", "none")
+  }
+
 
   percent <- match.arg(percent)
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1

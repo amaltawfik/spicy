@@ -61,19 +61,27 @@ For one-way frequency tables, use \code{\link[=freq]{freq()}} instead.
 
 
 The function recognizes the following global options that modify its default behavior:
+
+
+
+The function recognizes the following global options that modify its default behavior:
 \itemize{
+\item \strong{\code{options(spicy.percent = "column")}}
+Sets the default percentage mode for all calls to \code{cross_tab()}.
+Valid values are \code{"none"}, \code{"row"}, and \code{"column"}.
+Equivalent to setting \code{percent = "column"} (or another choice) in each call.
 \item \strong{\code{options(spicy.simulate_p = TRUE)}}
 Enables Monte Carlo simulation for all Chi-squared tests by default.
 Equivalent to setting \code{simulate_p = TRUE} in every call.
 \item \strong{\code{options(spicy.rescale = TRUE)}}
-Automatically rescales weights so that total weighted N equals the raw N,
+Automatically rescales weights so that total weighted N equals the raw N.
 Equivalent to setting \code{rescale = TRUE} in each call.
 }
 
 These options are convenient for users who wish to enforce consistent behavior
 across multiple calls to \code{cross_tab()} and other spicy table functions.
-They can be disabled by setting them to \code{NULL}:
-\code{options(spicy.simulate_p = NULL, spicy.rescale = NULL)}.
+They can be disabled or reset by setting them to \code{NULL}:
+\code{options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)}.
 
 Example:
 
@@ -94,5 +102,14 @@ cross_tab(mtcars, cyl, gear, by = am)
 
 # Grouped by an interaction
 cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+
+# Set default percent mode globally
+options(spicy.percent = "column")
+
+# Now this will display column percentages by default
+cross_tab(mtcars, cyl, gear)
+
+# Reset to default behavior
+options(spicy.percent = NULL)
 
 }
