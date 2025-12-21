@@ -1,10 +1,15 @@
-# Cross-tabulation (SPSS-like)
+# Cross-tabulation
 
-Computes a cross-tabulation with optional weights, grouping, and
-percentages. diagnostics, and modern ASCII formatting. Note:
-`cross_tab()` requires both `x` and `y` variables. For one-way frequency
-tables, use
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+Computes a two-way cross-tabulation with optional weights, grouping
+(including combinations of multiple variables), percentage displays, and
+inferential statistics.
+
+`cross_tab()` produces weighted or unweighted contingency tables with
+row or column percentages, optional grouping via `by`, and associated
+Chi-squared tests with Cramer's V and diagnostic information.
+
+Both `x` and `y` variables are required. For one-way frequency tables,
+use [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
 instead.
 
 ## Usage
@@ -19,6 +24,7 @@ cross_tab(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
+  correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
@@ -31,7 +37,8 @@ cross_tab(
 
 - data:
 
-  A data frame.
+  A data frame. Alternatively, a vector when using the vector-based
+  interface.
 
 - x:
 
@@ -44,7 +51,8 @@ cross_tab(
 
 - by:
 
-  Optional grouping variable or expression (e.g. `interaction(vs, am)`).
+  Optional grouping variable or expression. Can be a single variable or
+  a combination of multiple variables (e.g. `interaction(vs, am)`).
 
 - weights:
 
@@ -62,6 +70,11 @@ cross_tab(
 - include_stats:
 
   Logical; compute Chi-squared and Cramer's V (default TRUE).
+
+- correct:
+
+  Logical; apply Yates continuity correction to the Chi-squared test.
+  Only applicable to 2x2 tables. Default is FALSE.
 
 - simulate_p:
 
@@ -252,4 +265,18 @@ cross_tab(mtcars, cyl, gear)
 
 # Reset to default behavior
 options(spicy.percent = NULL)
+
+# 2x2 table with Yates correction
+cross_tab(mtcars, vs, am, correct = TRUE)
+#> Crosstable: vs x am (N)
+#>  Values      │       0        1 │      Total 
+#> ─────────────┼──────────────────┼────────────
+#>  0           │      12        6 │         18 
+#>  1           │       7        7 │         14 
+#> ─────────────┼──────────────────┼────────────
+#>  Total       │      19       13 │         32 
+#> ─────────────┴──────────────────┴────────────
+#> Chi-2: 0.3 (df = 1), p = 0.556
+#> Cramer's V: 0.10
+#> Yates continuity correction applied.
 ```

@@ -15,7 +15,7 @@
   : Compute Cramer's V
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  : Cross-tabulation (SPSS-like)
+  : Cross-tabulation
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table (spicy engine)
