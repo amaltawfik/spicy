@@ -21,7 +21,6 @@ test_that("spicy_print_table prints and returns invisibly", {
 })
 
 
-
 test_that("spicy_print_table aligns Category and Values left", {
   df <- data.frame(Category = c("Valid", "Total"), Values = c("A", "B"), Freq. = c(1, 2))
   output <- capture.output(spicy_print_table(df))

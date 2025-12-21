@@ -17,7 +17,6 @@ test_that("cross_tab basic two-way table works", {
 })
 
 
-
 test_that("cross_tab supports grouping with by", {
   data <- mtcars
   res <- cross_tab(data, cyl, gear, by = am, styled = FALSE)

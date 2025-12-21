@@ -11,7 +11,7 @@ test_that("varlist()$Variable returns a character vector", {
 test_that("varlist() returns correct column names", {
   expect_named(
     varlist(mtcars, tbl = TRUE),
-    c("Variable", "Label", "Values", "Class", "Ndist_val", "N_valid", "NAs")
+    c("Variable", "Label", "Values", "Class", "N_distinct", "N_valid", "NAs")
   )
 })
 
@@ -28,12 +28,12 @@ test_that("varlist() throws error for non-data.frame input", {
   expect_error(varlist(1:10), "only works with named data frames")
 })
 
-test_that("varlist_title() returns VARLIST name for simple object", {
+test_that("varlist_title() returns vl: name for simple object", {
   dummy_expr <- quote(iris)
-  expect_equal(varlist_title(dummy_expr), "VARLIST iris")
+  expect_equal(varlist_title(dummy_expr), "vl: iris")
 })
 
 test_that("varlist_title() adds * for transformed object", {
   transformed_expr <- quote(head(iris))
-  expect_equal(varlist_title(transformed_expr), "VARLIST iris*")
+  expect_equal(varlist_title(transformed_expr), "vl: iris*")
 })

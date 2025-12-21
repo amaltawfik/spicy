@@ -44,11 +44,11 @@ For labelled variables, \strong{prefixed labels} are displayed using \code{label
 For factors, levels are used as-is.
 Missing values (\code{NA}, \code{NaN}) are optionally appended at the end (controlled via \code{include_na}).
 \item \code{Class}: the class of each variable (possibly multiple, e.g. \verb{"labelled", "numeric"})
-\item \code{Ndist_val}: number of distinct non-missing values
+\item \code{N_distinct}: number of distinct non-missing values
 \item \code{N_valid}: number of non-missing observations
 \item \code{NAs}: number of missing observations
 If \code{tbl = FALSE} and used interactively, the summary is displayed in the Viewer pane.
-If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}), an asterisk (\code{*}) is appended to the name in the title (e.g. \verb{VARLIST df*}).
+If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}), an asterisk (\code{*}) is appended to the name in the title (e.g. \verb{vl: df*}).
 }
 }
 \description{
@@ -59,7 +59,7 @@ If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}
 \details{
 The function can also apply tidyselect-style variable selectors to filter columns dynamically.
 
-If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \verb{VARLIST iris}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{VARLIST iris*}.
+If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \code{vl: iris}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{vl: iris*}.
 
 For full documentation, see \code{\link[=varlist]{varlist()}}.
 }

@@ -100,13 +100,13 @@ vl(mtcars, starts_with("d"))
 # Get a summary of all variables as a tibble
 varlist(iris, tbl = TRUE)
 #> # A tibble: 5 × 7
-#>   Variable     Label Values                        Class Ndist_val N_valid   NAs
-#>   <chr>        <chr> <chr>                         <chr>     <int>   <int> <int>
-#> 1 Sepal.Length <NA>  4.3, 4.4, 4.5, ..., 7.9       nume…        35     150     0
-#> 2 Sepal.Width  <NA>  2, 2.2, 2.3, ..., 4.4         nume…        23     150     0
-#> 3 Petal.Length <NA>  1, 1.1, 1.2, ..., 6.9         nume…        43     150     0
-#> 4 Petal.Width  <NA>  0.1, 0.2, 0.3, ..., 2.5       nume…        22     150     0
-#> 5 Species      <NA>  setosa, versicolor, virginica fact…         3     150     0
+#>   Variable     Label Values                       Class N_distinct N_valid   NAs
+#>   <chr>        <chr> <chr>                        <chr>      <int>   <int> <int>
+#> 1 Sepal.Length <NA>  4.3, 4.4, 4.5, ..., 7.9      nume…         35     150     0
+#> 2 Sepal.Width  <NA>  2, 2.2, 2.3, ..., 4.4        nume…         23     150     0
+#> 3 Petal.Length <NA>  1, 1.1, 1.2, ..., 6.9        nume…         43     150     0
+#> 4 Petal.Width  <NA>  0.1, 0.2, 0.3, ..., 2.5      nume…         22     150     0
+#> 5 Species      <NA>  setosa, versicolor, virgini… fact…          3     150     0
 
 # Tabulate frequencies with sort alphabetically (Z-A)
 freq(iris, Species, sort = "name-")

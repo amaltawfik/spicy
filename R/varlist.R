@@ -4,7 +4,7 @@
 #'
 #' The function can also apply tidyselect-style variable selectors to filter columns dynamically.
 #'
-#' If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like `VARLIST iris`. If the data frame has been transformed or subsetted, the title will display an asterisk (`*`), e.g. `VARLIST iris*`.
+#' If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like `vl: iris`. If the data frame has been transformed or subsetted, the title will display an asterisk (`*`), e.g. `vl: iris*`.
 #'
 #' @aliases vl
 #'
@@ -36,11 +36,11 @@
 #'   For factors, levels are used as-is.
 #'   Missing values (`NA`, `NaN`) are optionally appended at the end (controlled via `include_na`).
 #' - `Class`: the class of each variable (possibly multiple, e.g. `"labelled", "numeric"`)
-#' - `Ndist_val`: number of distinct non-missing values
+#' - `N_distinct`: number of distinct non-missing values
 #' - `N_valid`: number of non-missing observations
 #' - `NAs`: number of missing observations
 #' If `tbl = FALSE` and used interactively, the summary is displayed in the Viewer pane.
-#' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `VARLIST df*`).
+#' If the data frame is a transformation (e.g. `head(df)` or `df[ , 1:3]`), an asterisk (`*`) is appended to the name in the title (e.g. `vl: df*`).
 #'
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
@@ -63,7 +63,7 @@
 #' varlist(mtcars[1:10, ], tbl = TRUE)
 #'
 # .raw_expr is used internally by `vl()` to capture the original expression
-# passed as `x`, so it can be used to generate the display title (e.g. "VARLIST df").
+# passed as `x`, so it can be used to generate the display title (e.g. "vl: df").
 # It is not intended for user-facing documentation or direct use.
 varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
                     .raw_expr = substitute(x)) {
@@ -82,13 +82,13 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
   if (length(selectors) == 0) {
     warning("No columns selected.")
     res <- tibble::tibble(
-      Variable   = character(),
-      Label      = character(),
-      Values     = character(),
-      Class      = character(),
-      Ndist_val  = integer(),
-      N_valid    = integer(),
-      NAs        = integer()
+      Variable = character(),
+      Label = character(),
+      Values = character(),
+      Class = character(),
+      N_distinct = integer(),
+      N_valid = integer(),
+      NAs = integer()
     )
 
     if (tbl) {
@@ -97,7 +97,7 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
 
     if (interactive()) {
       tryCatch(
-        tibble::view(res, title = "VARLIST (no columns selected)"),
+        tibble::view(res, title = "vl: (no columns selected)"),
         error = function(e) {
           message("tibble::view() failed: ", e$message)
           message("Displaying result in console instead:")
@@ -125,7 +125,7 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
       }
     }, character(1)),
     Class = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
-    Ndist_val = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
+    N_distinct = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
     N_valid = vapply(x, function(col) sum(!is.na(col)), integer(1)),
     NAs = vapply(x, function(col) sum(is.na(col)), integer(1))
   )
@@ -139,7 +139,7 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
   }, character(1))
 
 
-  res <- tibble::as_tibble(res[c("Variable", "Label", "Values", "Class", "Ndist_val", "N_valid", "NAs")])
+  res <- tibble::as_tibble(res[c("Variable", "Label", "Values", "Class", "N_distinct", "N_valid", "NAs")])
 
   if (tbl) {
     return(res)
@@ -173,7 +173,7 @@ varlist_title <- function(expr, selectors_used = FALSE) {
 
   if (is.symbol(expr)) {
     name <- as.character(expr)
-    return(paste("VARLIST", if (selectors_used) paste0(name, "*") else name))
+    return(paste("vl:", if (selectors_used) paste0(name, "*") else name))
   }
 
   if (is.call(expr)) {
@@ -195,7 +195,7 @@ varlist_title <- function(expr, selectors_used = FALSE) {
     }
 
     if (!is.null(first_sym)) {
-      return(paste("VARLIST", paste0(first_sym, "*")))
+      return(paste("vl:", paste0(first_sym, "*")))
     }
   }
 
