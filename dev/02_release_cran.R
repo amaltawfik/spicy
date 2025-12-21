@@ -30,6 +30,11 @@ devtools::check_win_devel() # Development version of R
 devtools::check_win_oldrelease() # Optional, backward compatibility
 
 # 05 CROSS-PLATFORM TESTS (R-HUB) -------
+rhub::rc_submit(
+  platforms = c("windows", "macos", "linux"),
+  confirm = FALSE
+)
+
 rhub::rhub_check(
   platforms = c("windows", "macos", "ubuntu-release")
 )
