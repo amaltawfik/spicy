@@ -1,4 +1,4 @@
-# spicy 0.4.0 (in development)
+# spicy 0.4.0
 
 * `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
   tables inspired by Stata’s layout. The new implementation improves formatting,
@@ -22,7 +22,7 @@
   to `N_distinct` for improved readability and consistency.
   
 * Minor cosmetic improvement: ASCII table output no longer includes a closing
-  bottom rule by default, resulting in a cleaner console display.
+  bottom rule by default.
 
 
 # spicy 0.3.0
