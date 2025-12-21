@@ -10,7 +10,7 @@ build_ascii_table(
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
-  bottom_line = TRUE,
+  bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
   ...
@@ -33,8 +33,8 @@ is drawn after the first column (useful for separating categories from data).}
 \item{row_total_line, column_total_line}{Logical. Control horizontal rules
 before total rows or columns (default: \code{TRUE}).}
 
-\item{bottom_line}{Logical. If \code{TRUE} (default), draws a closing line at the
-bottom of the table.}
+\item{bottom_line}{Logical. If \code{TRUE}, draws a closing line at the
+bottom of the table (default: \code{FALSE}).}
 
 \item{lines_color}{Character. Color used for table separators (default: \code{"darkgrey"}).
 The color is applied only when ANSI color support is available
