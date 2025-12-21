@@ -1,5 +1,3 @@
-# spicy 0.4.1
-
 # spicy 0.4.0 (in development)
 
 * `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
@@ -11,6 +9,21 @@
   `print.spicy()` formatting, offering clearer, more readable summary tables.
 
 * Documentation and internal tests were updated for clarity and consistency.
+
+* `cross_tab()` gains an explicit `correct` argument to control the use of
+  Yates’ continuity correction for Chi-squared tests in 2x2 tables. The default
+  behavior remains unchanged.
+
+* The documentation of `cross_tab()` was refined and harmonized, with a clearer
+  high-level description, improved parameter wording, and expanded examples.
+
+* Minor cosmetic improvements were made to `varlist()` output: the title prefix
+  now uses `vl:` instead of `VARLIST`, and the column name `Ndist_val` was renamed
+  to `N_distinct` for improved readability and consistency.
+  
+* Minor cosmetic improvement: ASCII table output no longer includes a closing
+  bottom rule by default, resulting in a cleaner console display.
+
 
 # spicy 0.3.0
 
