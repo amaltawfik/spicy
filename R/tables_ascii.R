@@ -29,8 +29,8 @@
 #'   is drawn after the first column (useful for separating categories from data).
 #' @param row_total_line,column_total_line Logical. Control horizontal rules
 #'   before total rows or columns (default: `TRUE`).
-#' @param bottom_line Logical. If `TRUE` (default), draws a closing line at the
-#'   bottom of the table.
+#' @param bottom_line Logical. If `TRUE`, draws a closing line at the
+#'   bottom of the table (default: `FALSE`).
 #' @param lines_color Character. Color used for table separators (default: `"darkgrey"`).
 #'   The color is applied only when ANSI color support is available
 #'   (see [crayon::has_color()]).
@@ -67,7 +67,7 @@ build_ascii_table <- function(x,
                               first_column_line = TRUE,
                               row_total_line = TRUE,
                               column_total_line = TRUE,
-                              bottom_line = TRUE,
+                              bottom_line = FALSE,
                               lines_color = "darkgrey",
                               align_left_cols = c(1L, 2L),
                               ...) {
@@ -77,16 +77,16 @@ build_ascii_table <- function(x,
   df <- as.data.frame(x, check.names = FALSE)
   df[] <- lapply(df, as.character)
 
-  # --- Compute visible column widths
+  # Compute visible column widths
   w <- vapply(seq_along(df), function(i) {
     max(crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"), na.rm = TRUE)
   }, integer(1))
 
-  # --- Adjust padding
+  # Adjust padding
   if (padding == "normal") w <- w + 5L
   if (padding == "wide") w <- w + 9L
 
-  # --- Helper for cell alignment
+  # Helper for cell alignment
   pad_cell <- function(txt, width, left = FALSE) {
     if (left) {
       stringr::str_pad(txt, width, side = "right")
@@ -95,7 +95,7 @@ build_ascii_table <- function(x,
     }
   }
 
-  # --- Define where to place vertical bars
+  # Define where to place vertical bars
   sep_after <- integer(0)
   if (isTRUE(first_column_line) && ncol(df) > 1) sep_after <- c(sep_after, 1L)
   if (isTRUE(row_total_line) && any(c("Row_Total", "Total") %in% names(df))) {
@@ -104,7 +104,7 @@ build_ascii_table <- function(x,
   }
   sep_after <- sort(unique(sep_after[sep_after >= 1 & sep_after <= ncol(df)]))
 
-  # --- Build line for header or data row
+  # Build line for header or data row
   build_line <- function(values, widths) {
     stopifnot(length(values) == length(widths))
     pieces <- character(0)
@@ -139,7 +139,7 @@ build_ascii_table <- function(x,
   header_txt <- normalize(header_line$text)
   rows_txt <- vapply(data_lines, function(z) normalize(z$text), character(1))
 
-  # --- Determine bar positions for horizontal rules
+  # Determine bar positions for horizontal rules
   bar_positions <- sort(unique(c(header_line$bars, unlist(lapply(data_lines, `[[`, "bars")))))
   bar_positions <- bar_positions[bar_positions >= 1 & bar_positions <= full_width]
 

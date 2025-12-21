@@ -189,6 +189,6 @@ print.spicy_freq_table <- function(x, ...) {
     title = paste("Frequency table:", var_name_clean),
     note = note_text,
     align_left_cols = c(1L, 2L),
-    bottom_line = TRUE
+    bottom_line = FALSE
   )
 }

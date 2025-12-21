@@ -568,7 +568,7 @@ print.spicy_cross_table <- function(x, digits = NULL, ...) {
       first_column_line = TRUE,
       row_total_line = TRUE,
       column_total_line = TRUE,
-      bottom_line = TRUE,
+      bottom_line = FALSE,
       ...
     )
   } else {
