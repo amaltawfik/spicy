@@ -12,7 +12,7 @@ spicy_print_table(
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
-  bottom_line = TRUE,
+  bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
   ...
@@ -39,7 +39,9 @@ after the first column.}
 
 \item{row_total_line, column_total_line, bottom_line}{Logical flags controlling
 the presence of horizontal lines before total rows/columns or at the bottom
-of the table (default: \code{TRUE} for all).}
+of the table.
+Defaults are \code{TRUE} for \code{row_total_line} and \code{column_total_line}, and \code{FALSE}
+for \code{bottom_line}.}
 
 \item{lines_color}{Character; color for table separators (default: \code{"darkgrey"}).
 Only applied if the output supports ANSI colors (see \code{\link[crayon:has_color]{crayon::has_color()}}).}

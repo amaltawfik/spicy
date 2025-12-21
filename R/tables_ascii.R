@@ -227,7 +227,9 @@ build_ascii_table <- function(x,
 #'   after the first column.
 #' @param row_total_line,column_total_line,bottom_line Logical flags controlling
 #'   the presence of horizontal lines before total rows/columns or at the bottom
-#'   of the table (default: `TRUE` for all).
+#'   of the table.
+#'   Defaults are `TRUE` for `row_total_line` and `column_total_line`, and `FALSE`
+#'   for `bottom_line`.
 #' @param lines_color Character; color for table separators (default: `"darkgrey"`).
 #'   Only applied if the output supports ANSI colors (see [crayon::has_color()]).
 #' @param align_left_cols Integer vector of column indices to left-align.
@@ -268,7 +270,7 @@ spicy_print_table <- function(x,
                               first_column_line = TRUE,
                               row_total_line = TRUE,
                               column_total_line = TRUE,
-                              bottom_line = TRUE,
+                              bottom_line = FALSE,
                               lines_color = "darkgrey",
                               align_left_cols = NULL,
                               ...) {
