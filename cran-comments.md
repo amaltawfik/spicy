@@ -1,37 +1,30 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* NOTE: Possibly misspelled word "codebook" in DESCRIPTION.  
-  "Codebook" is an intended technical term referring to variable metadata and
-  survey documentation.
+0 errors | 0 warnings | 0 notes
 
 ## Comments
 
-This is version 0.3.0 of the **spicy** package — a minor feature release
-following version 0.2.1.
+This is version 0.4.0 of the **spicy** package, a minor feature and refinement
+release extending the descriptive statistics and table rendering capabilities
+introduced in previous versions.
 
-### New functionality
+### Main changes
 
-* Added `code_book()`, which generates an interactive and exportable variable
-  codebook for data frames.
-  - Builds on `varlist()` to summarize variable names, labels, types, and
-    representative values.
-  - Displays results as an interactive `DT::datatable()` with built-in search,
-    sorting, and export options (copy, print, CSV, Excel, PDF).
-  - Designed to support exploratory data inspection and improved dataset
-    documentation workflows.
+* Enhanced printing of frequency tables and cross-tabulations with a redesigned
+  ASCII rendering engine, providing cleaner alignment, clearer totals, and more
+  consistent spacing across outputs.
+* `cross_tab()` gained improved handling of percentages, grouping, and statistical
+  diagnostics, along with clearer documentation and examples.
+* Minor cosmetic and consistency improvements across table-related outputs
+  (including titles, notes, and column naming).
+* Documentation was refined and harmonized for clarity and consistency.
 
-### Other improvements
-
-* Minor documentation updates and internal consistency enhancements.
-* No breaking changes or modifications to existing APIs.
-* No changes to package dependencies.
+There are no breaking changes to the public API.
 
 ### Testing environments
 
-R CMD check passes cleanly on:
+R CMD check results were verified on:
 
-- Local macOS (R 4.4.1)
+- Local macOS (R 4.4.x)
 - Win-builder (devel, release, oldrelease)
-- rhub (Windows, macOS, Ubuntu release)
+- R-hub (Windows, macOS, Linux)
