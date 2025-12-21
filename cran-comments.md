@@ -27,4 +27,6 @@ R CMD check results were verified on:
 
 - Local macOS (R 4.4.x)
 - Win-builder (devel, release, oldrelease)
-- R-hub (Windows, macOS, Linux)
+- R-hub (Windows, Linux). R-hub checks on macOS (R-devel) were cancelled due to
+  temporary capacity constraints on the R-hub infrastructure.
+
