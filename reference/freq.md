@@ -178,7 +178,6 @@ freq(x)
 #>  Missing  │ NA          1     14.3                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             7    100.0          100.0 
-#> ──────────┴───────────────────────────────────────
 #> Class: numeric
 #> Data: x
 
@@ -199,7 +198,6 @@ freq(x_lbl, na_val = 1)
 #>  Missing  │ NA              4     44.4                
 #> ──────────┼───────────────────────────────────────────
 #>  Total    │                 9    100.0          100.0 
-#> ──────────┴───────────────────────────────────────────
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -215,7 +213,6 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 #>  Missing  │ NA          1     11.1                        100.0                     
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Total    │             9    100.0          100.0         100.0               100.0 
-#> ──────────┴─────────────────────────────────────────────────────────────────────────
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -231,7 +228,6 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 #>  Missing  │ NA          1     11.1                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             9    100.0          100.0 
-#> ──────────┴───────────────────────────────────────
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -252,7 +248,6 @@ freq(df, sexe, weights = poids, rescale = TRUE)
 #>  Missing  │ NA       0.69     11.5                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             6    100.0          100.0 
-#> ──────────┴───────────────────────────────────────
 #> Class: factor
 #> Data: df
 #> Weight: poids (rescaled)
@@ -267,7 +262,6 @@ freq(df, sexe, weights = poids, rescale = FALSE)
 #>  Missing  │ NA          7     11.5                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │            61    100.0          100.0 
-#> ──────────┴───────────────────────────────────────
 #> Class: factor
 #> Data: df
 #> Weight: poids
@@ -282,7 +276,6 @@ freq(df$sexe, weights = df$poids, cum = TRUE)
 #>  Missing  │ NA       0.69     11.5                        100.0                     
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Total    │             6    100.0          100.0         100.0               100.0 
-#> ──────────┴─────────────────────────────────────────────────────────────────────────
 #> Class: factor
 #> Data: df
 #> Weight: poids (rescaled)
@@ -297,7 +290,6 @@ df |> freq(sexe, sort = "name-")
 #>  Missing  │ NA          1     16.7                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             6    100.0          100.0 
-#> ──────────┴───────────────────────────────────────
 #> Class: factor
 #> Data: df
 

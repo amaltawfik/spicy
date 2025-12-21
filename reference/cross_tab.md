@@ -145,7 +145,6 @@ cross_tab(mtcars, cyl, gear)
 #>  8           │      12        0       2 │         14 
 #> ─────────────┼──────────────────────────┼────────────
 #>  Total       │      15       12       5 │         32 
-#> ─────────────┴──────────────────────────┴────────────
 #> Chi-2: 18.0 (df = 4), p = 0.001
 #> Cramer's V: 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -160,7 +159,6 @@ cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
 #>  8           │       9        0       2 │         11 
 #> ─────────────┼──────────────────────────┼────────────
 #>  Total       │      12       15       6 │         32 
-#> ─────────────┴──────────────────────────┴────────────
 #> Chi-2: 17.7 (df = 4), p = 0.001
 #> Cramer's V: 0.53
 #> Warning: 7 expected cells < 5 (77.8%). Minimum expected = 1.14. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -176,7 +174,6 @@ cross_tab(mtcars, cyl, gear, by = am)
 #>  8           │      12       0       0 │         12 
 #> ─────────────┼─────────────────────────┼────────────
 #>  Total       │      15       4       0 │         19 
-#> ─────────────┴─────────────────────────┴────────────
 #> Chi-2: NA (df = 4), p = NA
 #> Cramer's V: NA
 #> Warning: 8 expected cells < 5 (88.9%). 5 expected cells < 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -189,7 +186,6 @@ cross_tab(mtcars, cyl, gear, by = am)
 #>  8           │      0       0       2 │          2 
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       8       5 │         13 
-#> ─────────────┴────────────────────────┴────────────
 #> Chi-2: NA (df = 4), p = NA
 #> Cramer's V: NA
 #> Warning: 9 expected cells < 5 (100%). 4 expected cells < 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -204,7 +200,6 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #>  8           │      12       0       0 │         12 
 #> ─────────────┼─────────────────────────┼────────────
 #>  Total       │      12       0       0 │         12 
-#> ─────────────┴─────────────────────────┴────────────
 #> Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).
 #> 
 #> Crosstable: cyl x gear (N) | vs x am = 1.0
@@ -215,7 +210,6 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #>  8           │      0       0       0 │          0 
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      3       4       0 │          7 
-#> ─────────────┴────────────────────────┴────────────
 #> Chi-2: NA (df = 4), p = NA
 #> Cramer's V: NA
 #> Warning: 9 expected cells < 5 (100%). 5 expected cells < 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -228,7 +222,6 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #>  8           │      0       0       2 │          2 
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       2       4 │          6 
-#> ─────────────┴────────────────────────┴────────────
 #> Chi-2: NA (df = 4), p = NA
 #> Cramer's V: NA
 #> Warning: 9 expected cells < 5 (100%). 6 expected cells < 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -241,7 +234,6 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #>  8           │      0       0       0 │          0 
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       6       1 │          7 
-#> ─────────────┴────────────────────────┴────────────
 #> Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).
 
 # Set default percent mode globally
@@ -258,7 +250,6 @@ cross_tab(mtcars, cyl, gear)
 #> ─────────────┼────────────────────────────────────┼────────────
 #>  Total       │      100.0       100.0       100.0 │      100.0 
 #>  N           │         15          12           5 │         32 
-#> ─────────────┴────────────────────────────────────┴────────────
 #> Chi-2: 18.0 (df = 4), p = 0.001
 #> Cramer's V: 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
@@ -275,7 +266,6 @@ cross_tab(mtcars, vs, am, correct = TRUE)
 #>  1           │       7        7 │         14 
 #> ─────────────┼──────────────────┼────────────
 #>  Total       │      19       13 │         32 
-#> ─────────────┴──────────────────┴────────────
 #> Chi-2: 0.3 (df = 1), p = 0.556
 #> Cramer's V: 0.10
 #> Yates continuity correction applied.
