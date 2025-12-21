@@ -30,3 +30,4 @@ R CMD check results were verified on:
 - R-hub (Windows, Linux). R-hub checks on macOS (R-devel) were cancelled due to
   temporary capacity constraints on the R-hub infrastructure.
 
+- Fixed CRAN incoming check notes
