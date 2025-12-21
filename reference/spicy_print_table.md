@@ -131,6 +131,7 @@ spicy_print_table(df,
   note = "Class: data.frame\nData: demo"
 )
 #> Frequency table: Example
+#> 
 #>  Category │ Values  Freq.  Percent 
 #> ──────────┼────────────────────────
 #>  Valid    │ Yes        12     57.1 
@@ -139,6 +140,7 @@ spicy_print_table(df,
 #> ──────────┼────────────────────────
 #>  Total    │            21      100 
 #> ──────────┴────────────────────────
+#> 
 #> Class: data.frame
 #> Data: demo
 ```

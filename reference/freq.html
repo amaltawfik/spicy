@@ -184,6 +184,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="cn">NA</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: x</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> 1           1     14.3           16.7 </span>
@@ -192,6 +193,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          1     14.3                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             7    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: numeric</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x</span></span>
 <span class="r-in"><span></span></span>
@@ -205,6 +207,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Treat value 1 ("Low") as missing</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">x_lbl</span>, na_val <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: x_lbl</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values      Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> [2] Medium      3     33.3           60.0 </span>
@@ -212,6 +215,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA              4     44.4                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                 9    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Satisfaction level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: haven_labelled, vctrs_vctr, double</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x_lbl</span></span>
@@ -219,6 +223,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Display only labels, add cumulative %</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">x_lbl</span>, labelled_levels <span class="op">=</span> <span class="st">"labels"</span>, cum <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: x_lbl</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Low         3     33.3           37.5          33.3                37.5 </span>
@@ -227,6 +232,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          1     11.1                        100.0                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             9    100.0          100.0         100.0               100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Satisfaction level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: haven_labelled, vctrs_vctr, double</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x_lbl</span></span>
@@ -234,6 +240,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Display values only, sorted descending</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">x_lbl</span>, labelled_levels <span class="op">=</span> <span class="st">"values"</span>, sort <span class="op">=</span> <span class="st">"-"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: x_lbl</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> 1           3     33.3           37.5 </span>
@@ -242,6 +249,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          1     11.1                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             9    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Satisfaction level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: haven_labelled, vctrs_vctr, double</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x_lbl</span></span>
@@ -255,6 +263,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Weighted frequencies (normalized)</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">df</span>, <span class="va">sexe</span>, weights <span class="op">=</span> <span class="va">poids</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: sexe</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Female   2.66     44.3           50.0 </span>
@@ -262,6 +271,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA       0.69     11.5                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             6    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: factor</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: df</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: poids (rescaled)</span></span>
@@ -269,6 +279,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Weighted frequencies (without rescaling)</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">df</span>, <span class="va">sexe</span>, weights <span class="op">=</span> <span class="va">poids</span>, rescale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: sexe</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Female     27     44.3           50.0 </span>
@@ -276,6 +287,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          7     11.5                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>            61    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: factor</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: df</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: poids</span></span>
@@ -283,6 +295,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Base R style, with weights and cumulative percentages</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sexe</span>, weights <span class="op">=</span> <span class="va">df</span><span class="op">$</span><span class="va">poids</span>, cum <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: sexe</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Female   2.66     44.3           50.0          44.3                50.0 </span>
@@ -290,6 +303,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA       0.69     11.5                        100.0                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             6    100.0          100.0         100.0               100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: factor</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: df</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: poids (rescaled)</span></span>
@@ -297,6 +311,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-in"><span><span class="co"># Piped version (tidy syntax) and sort alphabetically descending ("name-")</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">|&gt;</span> <span class="fu">freq</span><span class="op">(</span><span class="va">sexe</span>, sort <span class="op">=</span> <span class="st">"name-"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: sexe</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Male        2     33.3           40.0 </span>
@@ -304,6 +319,7 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          1     16.7                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             6    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: factor</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: df</span></span>
 <span class="r-in"><span></span></span>

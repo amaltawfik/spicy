@@ -170,6 +170,7 @@ library(labelled)
 x <- c(1, 2, 2, 3, 3, 3, NA)
 freq(x)
 #> Frequency table: x
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
 #>  Valid    │ 1           1     14.3           16.7 
@@ -178,6 +179,7 @@ freq(x)
 #>  Missing  │ NA          1     14.3                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             7    100.0          100.0 
+#> 
 #> Class: numeric
 #> Data: x
 
@@ -191,6 +193,7 @@ var_label(x_lbl) <- "Satisfaction level"
 # Treat value 1 ("Low") as missing
 freq(x_lbl, na_val = 1)
 #> Frequency table: x_lbl
+#> 
 #>  Category │ Values      Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────────
 #>  Valid    │ [2] Medium      3     33.3           60.0 
@@ -198,6 +201,7 @@ freq(x_lbl, na_val = 1)
 #>  Missing  │ NA              4     44.4                
 #> ──────────┼───────────────────────────────────────────
 #>  Total    │                 9    100.0          100.0 
+#> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -205,6 +209,7 @@ freq(x_lbl, na_val = 1)
 # Display only labels, add cumulative %
 freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 #> Frequency table: x_lbl
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent 
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Valid    │ Low         3     33.3           37.5          33.3                37.5 
@@ -213,6 +218,7 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 #>  Missing  │ NA          1     11.1                        100.0                     
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Total    │             9    100.0          100.0         100.0               100.0 
+#> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -220,6 +226,7 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 # Display values only, sorted descending
 freq(x_lbl, labelled_levels = "values", sort = "-")
 #> Frequency table: x_lbl
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
 #>  Valid    │ 1           3     33.3           37.5 
@@ -228,6 +235,7 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 #>  Missing  │ NA          1     11.1                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             9    100.0          100.0 
+#> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
@@ -241,6 +249,7 @@ df <- data.frame(
 # Weighted frequencies (normalized)
 freq(df, sexe, weights = poids, rescale = TRUE)
 #> Frequency table: sexe
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
 #>  Valid    │ Female   2.66     44.3           50.0 
@@ -248,6 +257,7 @@ freq(df, sexe, weights = poids, rescale = TRUE)
 #>  Missing  │ NA       0.69     11.5                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             6    100.0          100.0 
+#> 
 #> Class: factor
 #> Data: df
 #> Weight: poids (rescaled)
@@ -255,6 +265,7 @@ freq(df, sexe, weights = poids, rescale = TRUE)
 # Weighted frequencies (without rescaling)
 freq(df, sexe, weights = poids, rescale = FALSE)
 #> Frequency table: sexe
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
 #>  Valid    │ Female     27     44.3           50.0 
@@ -262,6 +273,7 @@ freq(df, sexe, weights = poids, rescale = FALSE)
 #>  Missing  │ NA          7     11.5                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │            61    100.0          100.0 
+#> 
 #> Class: factor
 #> Data: df
 #> Weight: poids
@@ -269,6 +281,7 @@ freq(df, sexe, weights = poids, rescale = FALSE)
 # Base R style, with weights and cumulative percentages
 freq(df$sexe, weights = df$poids, cum = TRUE)
 #> Frequency table: sexe
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent 
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Valid    │ Female   2.66     44.3           50.0          44.3                50.0 
@@ -276,6 +289,7 @@ freq(df$sexe, weights = df$poids, cum = TRUE)
 #>  Missing  │ NA       0.69     11.5                        100.0                     
 #> ──────────┼─────────────────────────────────────────────────────────────────────────
 #>  Total    │             6    100.0          100.0         100.0               100.0 
+#> 
 #> Class: factor
 #> Data: df
 #> Weight: poids (rescaled)
@@ -283,6 +297,7 @@ freq(df$sexe, weights = df$poids, cum = TRUE)
 # Piped version (tidy syntax) and sort alphabetically descending ("name-")
 df |> freq(sexe, sort = "name-")
 #> Frequency table: sexe
+#> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
 #>  Valid    │ Male        2     33.3           40.0 
@@ -290,6 +305,7 @@ df |> freq(sexe, sort = "name-")
 #>  Missing  │ NA          1     16.7                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             6    100.0          100.0 
+#> 
 #> Class: factor
 #> Data: df
 
