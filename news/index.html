@@ -38,13 +38,14 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.1" id="spicy-041">spicy 0.4.1<a class="anchor" aria-label="anchor" href="#spicy-041"></a></h2>
-</div>
-    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="spicy-040-in-development">spicy 0.4.0 (in development)<a class="anchor" aria-label="anchor" href="#spicy-040-in-development"></a></h2>
 <ul><li><p><code>print.spicy()</code> has been fully redesigned to produce clean, aligned ASCII tables inspired by Stata’s layout. The new implementation improves formatting, adds optional color support, and provides more consistent handling of totals and column spacing.</p></li>
 <li><p>Output from <code><a href="../reference/freq.html">freq()</a></code> and <code><a href="../reference/cross_tab.html">cross_tab()</a></code> now benefits from the enhanced <code>print.spicy()</code> formatting, offering clearer, more readable summary tables.</p></li>
 <li><p>Documentation and internal tests were updated for clarity and consistency.</p></li>
+<li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> gains an explicit <code>correct</code> argument to control the use of Yates’ continuity correction for Chi-squared tests in 2x2 tables. The default behavior remains unchanged.</p></li>
+<li><p>The documentation of <code><a href="../reference/cross_tab.html">cross_tab()</a></code> was refined and harmonized, with a clearer high-level description, improved parameter wording, and expanded examples.</p></li>
+<li><p>Minor cosmetic improvements were made to <code><a href="../reference/varlist.html">varlist()</a></code> output: the title prefix now uses <code>vl:</code> instead of <code>VARLIST</code>, and the column name <code>Ndist_val</code> was renamed to <code>N_distinct</code> for improved readability and consistency.</p></li>
+<li><p>Minor cosmetic improvement: ASCII table output no longer includes a closing bottom rule by default, resulting in a cleaner console display.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="spicy-030">spicy 0.3.0<a class="anchor" aria-label="anchor" href="#spicy-030"></a></h2><p class="text-muted">CRAN release: 2025-10-22</p>
