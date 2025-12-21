@@ -1,5 +1,10 @@
 # Changelog
 
+## spicy 0.4.1
+
+- Fixed CRAN incoming check notes by removing non-standard top-level
+  files.
+
 ## spicy 0.4.0
 
 - `print.spicy()` has been fully redesigned to produce clean, aligned
