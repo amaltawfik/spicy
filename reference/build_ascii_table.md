@@ -18,7 +18,7 @@ build_ascii_table(
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
-  bottom_line = TRUE,
+  bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
   ...
@@ -55,8 +55,8 @@ build_ascii_table(
 
 - bottom_line:
 
-  Logical. If `TRUE` (default), draws a closing line at the bottom of
-  the table.
+  Logical. If `TRUE`, draws a closing line at the bottom of the table
+  (default: `FALSE`).
 
 - lines_color:
 

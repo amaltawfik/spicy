@@ -129,6 +129,7 @@
 <span><span class="co"># Tabulate frequencies with sort alphabetically (Z-A)</span></span>
 <span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">iris</span>, <span class="va">Species</span>, sort <span class="op">=</span> <span class="st">"name-"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Frequency table: Species</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Category │ Values      Freq.  Percent </span></span>
 <span><span class="co">#&gt; ──────────┼────────────────────────────</span></span>
 <span><span class="co">#&gt;  Valid    │ virginica      50     33.3 </span></span>
@@ -136,13 +137,14 @@
 <span><span class="co">#&gt;           │ setosa         50     33.3 </span></span>
 <span><span class="co">#&gt; ──────────┼────────────────────────────</span></span>
 <span><span class="co">#&gt;  Total    │               150    100.0 </span></span>
-<span><span class="co">#&gt; ──────────┴────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class: factor</span></span>
 <span><span class="co">#&gt; Data: iris</span></span>
 <span></span>
 <span><span class="co"># Cross-tab with frequencies</span></span>
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N)</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │       3        4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼──────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │       1        8       2 │         11 </span></span>
@@ -150,7 +152,7 @@
 <span><span class="co">#&gt;  8           │      12        0       2 │         14 </span></span>
 <span><span class="co">#&gt; ─────────────┼──────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      15       12       5 │         32 </span></span>
-<span><span class="co">#&gt; ─────────────┴──────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
 <span><span class="co">#&gt; Cramer's V: 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
@@ -158,6 +160,7 @@
 <span><span class="co"># Cross-tab with column percentages</span></span>
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (Column %)</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │          3           4           5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │        6.7        66.7        40.0 │       34.4 </span></span>
@@ -166,7 +169,7 @@
 <span><span class="co">#&gt; ─────────────┼────────────────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      100.0       100.0       100.0 │      100.0 </span></span>
 <span><span class="co">#&gt;  N           │         15          12           5 │         32 </span></span>
-<span><span class="co">#&gt; ─────────────┴────────────────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
 <span><span class="co">#&gt; Cramer's V: 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
@@ -174,6 +177,7 @@
 <span><span class="co"># Cross-tab with row percentages</span></span>
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, percent <span class="op">=</span> <span class="st">"row"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (Row %)</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │         3          4          5 │      Total        N </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────────────┼─────────────────────</span></span>
 <span><span class="co">#&gt;  4           │       9.1       72.7       18.2 │      100.0       11 </span></span>
@@ -181,7 +185,7 @@
 <span><span class="co">#&gt;  8           │      85.7        0.0       14.3 │      100.0       14 </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────────────┼─────────────────────</span></span>
 <span><span class="co">#&gt;  Total       │      46.9       37.5       15.6 │      100.0       32 </span></span>
-<span><span class="co">#&gt; ─────────────┴─────────────────────────────────┴─────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
 <span><span class="co">#&gt; Cramer's V: 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
@@ -189,6 +193,7 @@
 <span><span class="co"># Cross-tab with grouped by a single variable</span></span>
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, by <span class="op">=</span> <span class="va">am</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | am = 0</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │       3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │       1       2       0 │          3 </span></span>
@@ -196,12 +201,13 @@
 <span><span class="co">#&gt;  8           │      12       0       0 │         12 </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      15       4       0 │         19 </span></span>
-<span><span class="co">#&gt; ─────────────┴─────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: NA (df = 4), p = NA</span></span>
 <span><span class="co">#&gt; Cramer's V: NA</span></span>
 <span><span class="co">#&gt; Warning: 8 expected cells &lt; 5 (88.9%). 5 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | am = 1</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │      3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │      0       6       2 │          8 </span></span>
@@ -209,7 +215,7 @@
 <span><span class="co">#&gt;  8           │      0       0       2 │          2 </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      0       8       5 │         13 </span></span>
-<span><span class="co">#&gt; ─────────────┴────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: NA (df = 4), p = NA</span></span>
 <span><span class="co">#&gt; Cramer's V: NA</span></span>
 <span><span class="co">#&gt; Warning: 9 expected cells &lt; 5 (100%). 4 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
@@ -217,6 +223,7 @@
 <span><span class="co"># Cross-tab with grouped by two variables</span></span>
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">vs</span>, <span class="va">am</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 0.0</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │       3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │       0       0       0 │          0 </span></span>
@@ -224,10 +231,11 @@
 <span><span class="co">#&gt;  8           │      12       0       0 │         12 </span></span>
 <span><span class="co">#&gt; ─────────────┼─────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      12       0       0 │         12 </span></span>
-<span><span class="co">#&gt; ─────────────┴─────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 1.0</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │      3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │      1       2       0 │          3 </span></span>
@@ -235,12 +243,13 @@
 <span><span class="co">#&gt;  8           │      0       0       0 │          0 </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      3       4       0 │          7 </span></span>
-<span><span class="co">#&gt; ─────────────┴────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: NA (df = 4), p = NA</span></span>
 <span><span class="co">#&gt; Cramer's V: NA</span></span>
 <span><span class="co">#&gt; Warning: 9 expected cells &lt; 5 (100%). 5 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 0.1</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │      3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │      0       0       1 │          1 </span></span>
@@ -248,12 +257,13 @@
 <span><span class="co">#&gt;  8           │      0       0       2 │          2 </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      0       2       4 │          6 </span></span>
-<span><span class="co">#&gt; ─────────────┴────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2: NA (df = 4), p = NA</span></span>
 <span><span class="co">#&gt; Cramer's V: NA</span></span>
 <span><span class="co">#&gt; Warning: 9 expected cells &lt; 5 (100%). 6 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 1.1</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │      3       4       5 │      Total </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  4           │      0       6       1 │          7 </span></span>
@@ -261,7 +271,7 @@
 <span><span class="co">#&gt;  8           │      0       0       0 │          0 </span></span>
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      0       6       1 │          7 </span></span>
-<span><span class="co">#&gt; ─────────────┴────────────────────────┴────────────</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
 <span></span>
 <span><span class="co"># Compute row-wise mean/sum (all values must be valid by default) or specific value</span></span>
