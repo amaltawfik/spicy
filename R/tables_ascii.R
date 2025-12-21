@@ -297,9 +297,9 @@ spicy_print_table <- function(x,
   )
 
   style_grey <- if (crayon::has_color()) crayon::make_style("darkgrey") else identity
-  if (!is.null(title)) cat(style_grey(title), "\n", sep = "")
+  if (!is.null(title)) cat(style_grey(title), "\n\n", sep = "")
   cat(txt, "\n", sep = "")
-  if (!is.null(note)) cat(style_grey(note), "\n", sep = "")
+  if (!is.null(note)) cat("\n", style_grey(note), "\n", sep = "")
 
   invisible(x)
 }
