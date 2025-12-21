@@ -2,7 +2,7 @@ pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles: {}
-last_built: 2025-12-21T15:51Z
+last_built: 2025-12-21T16:01Z
 urls:
   reference: https://amaltawfik.github.io/spicy/reference
   article: https://amaltawfik.github.io/spicy/articles
