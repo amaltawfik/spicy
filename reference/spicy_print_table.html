@@ -70,7 +70,7 @@ of table.</p>
 <span>  first_column_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  row_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  column_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  bottom_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  bottom_line <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lines_color <span class="op">=</span> <span class="st">"darkgrey"</span>,</span>
 <span>  align_left_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -110,7 +110,9 @@ after the first column.</p></dd>
 <dt id="arg-row-total-line-column-total-line-bottom-line">row_total_line, column_total_line, bottom_line<a class="anchor" aria-label="anchor" href="#arg-row-total-line-column-total-line-bottom-line"></a></dt>
 <dd><p>Logical flags controlling
 the presence of horizontal lines before total rows/columns or at the bottom
-of the table (default: <code>TRUE</code> for all).</p></dd>
+of the table.
+Defaults are <code>TRUE</code> for <code>row_total_line</code> and <code>column_total_line</code>, and <code>FALSE</code>
+for <code>bottom_line</code>.</p></dd>
 
 
 <dt id="arg-lines-color">lines_color<a class="anchor" aria-label="anchor" href="#arg-lines-color"></a></dt>
@@ -173,7 +175,6 @@ color is not supported.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          1      4.8 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>            21      100 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┴────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: data.frame</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: demo</span></span>

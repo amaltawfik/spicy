@@ -22,7 +22,7 @@ spicy_print_table(
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
-  bottom_line = TRUE,
+  bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
   ...
@@ -63,8 +63,9 @@ spicy_print_table(
 - row_total_line, column_total_line, bottom_line:
 
   Logical flags controlling the presence of horizontal lines before
-  total rows/columns or at the bottom of the table (default: `TRUE` for
-  all).
+  total rows/columns or at the bottom of the table. Defaults are `TRUE`
+  for `row_total_line` and `column_total_line`, and `FALSE` for
+  `bottom_line`.
 
 - lines_color:
 
@@ -139,7 +140,6 @@ spicy_print_table(df,
 #>  Missing  │ NA          1      4.8 
 #> ──────────┼────────────────────────
 #>  Total    │            21      100 
-#> ──────────┴────────────────────────
 #> 
 #> Class: data.frame
 #> Data: demo
