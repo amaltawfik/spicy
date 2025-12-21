@@ -1,19 +1,29 @@
-#' Cross-tabulation (SPSS-like)
+#' Cross-tabulation
 #'
 #' @description
-#' Computes a cross-tabulation with optional weights, grouping, and percentages.
-#' diagnostics, and modern ASCII formatting.
-#' Note: `cross_tab()` requires both `x` and `y` variables.
-#' For one-way frequency tables, use [freq()] instead.
+#' Computes a two-way cross-tabulation with optional weights, grouping
+#' (including combinations of multiple variables), percentage displays,
+#' and inferential statistics.
 #'
-#' @param data A data frame.
+#' `cross_tab()` produces weighted or unweighted contingency tables with
+#' row or column percentages, optional grouping via `by`, and associated
+#' Chi-squared tests with Cramer's V and diagnostic information.
+#'
+#' Both `x` and `y` variables are required. For one-way frequency tables,
+#' use [freq()] instead.
+#'
+#' @param data A data frame. Alternatively, a vector when using the
+#'   vector-based interface.
 #' @param x Row variable (unquoted).
 #' @param y Column variable (unquoted). Mandatory; for one-way tables, use [freq()].
-#' @param by Optional grouping variable or expression (e.g. `interaction(vs, am)`).
+#' @param by Optional grouping variable or expression. Can be a single variable
+#'   or a combination of multiple variables (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).
 #' @param percent One of `"none"`, `"row"`, `"column"`.
 #' @param include_stats Logical; compute Chi-squared and Cramer's V (default TRUE).
+#' @param correct Logical; apply Yates continuity correction to the Chi-squared
+#'   test. Only applicable to 2x2 tables. Default is FALSE.
 #' @param simulate_p Logical; use Monte Carlo p-value simulation (default FALSE).
 #' @param simulate_B Integer; number of replicates for Monte Carlo (default 2000).
 #' @param digits Number of decimals (default 1 for percentages, 0 for counts).
@@ -77,6 +87,9 @@
 #' # Reset to default behavior
 #' options(spicy.percent = NULL)
 #'
+#' # 2x2 table with Yates correction
+#' cross_tab(mtcars, vs, am, correct = TRUE)
+#'
 #' @export
 cross_tab <- function(
   data,
@@ -87,24 +100,23 @@ cross_tab <- function(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
+  correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
   styled = TRUE,
   show_n = TRUE
 ) {
-  # --- Validation des arguments ---
   if (missing(data)) {
     stop("You must provide a dataset or a vector for `data`.", call. = FALSE)
   }
 
-  # Cas data.frame ou tibble
   if (is.data.frame(data)) {
     if (missing(x)) {
       stop("You must specify at least one variable name for `x` (e.g., cross_tab(data, x, y)).", call. = FALSE)
     }
     if (missing(y)) {
-      # Détection du style pipe (data |> cross_tab(x))
+      # Detect style pipe (data |> cross_tab(x))
       stop(
         if (deparse(substitute(data)) == ".") {
           "You must specify a `y` variable (e.g., data |> cross_tab(x, y))."
@@ -116,7 +128,6 @@ cross_tab <- function(
     }
   }
 
-  # Cas vecteurs
   if (is.vector(data) || is.factor(data)) {
     if (missing(x)) {
       stop(
@@ -129,8 +140,7 @@ cross_tab <- function(
     }
   }
 
-
-  # --- Gestion des options globales ---
+  # Global options
   if (missing(simulate_p)) {
     simulate_p <- getOption("spicy.simulate_p", FALSE)
   }
@@ -144,22 +154,22 @@ cross_tab <- function(
   percent <- match.arg(percent)
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
-  # Capturer les expressions originales pour récupérer les noms de variables
+  # Capture original expressions to retrieve variable names
   call_x <- substitute(x)
   call_data <- substitute(data)
   call_by <- substitute(by)
   call_weights <- substitute(weights)
 
 
-  # --- Nouvelle section : détection du mode d'appel ---
+  # Call mode detection
   is_vector_mode <- is.vector(data) || is.factor(data)
 
   if (is_vector_mode) {
-    # Mode vectoriel : cross_tab(mtcars$cyl, mtcars$gear, ...)
+    # Vector mode : cross_tab(mtcars$cyl, mtcars$gear, ...)
     x_vals <- data
-    y_vals <- x # 2e argument devient y
+    y_vals <- x # 2nd argument becomes y
 
-    # Gestion des poids
+    # Weight
     if (!is.null(weights)) {
       if (!is.numeric(weights)) {
         stop("When using vector input, `weights` must be a numeric vector.")
@@ -169,7 +179,7 @@ cross_tab <- function(
       w_vals <- rep(1, length(x_vals))
     }
 
-    # Gestion du by
+    # Management of by
     if (!is.null(by)) {
       by_vals <- by
       if (length(by_vals) != length(x_vals)) {
@@ -179,7 +189,7 @@ cross_tab <- function(
       by_vals <- rep(NA, length(x_vals))
     }
 
-    # Construire un data.frame complet
+    # Building a complete data.frame
     data <- data.frame(
       x_tmp = x_vals,
       y_tmp = y_vals,
@@ -188,7 +198,7 @@ cross_tab <- function(
       stringsAsFactors = FALSE
     )
 
-    # Créer des quosures pour le reste du code
+    # Create quosures for the rest of the code
     x_expr <- rlang::new_quosure(rlang::sym("x_tmp"))
     y_expr <- rlang::new_quosure(rlang::sym("y_tmp"))
     by_expr <- if (all(is.na(by_vals))) rlang::quo(NULL) else rlang::new_quosure(rlang::sym("by_tmp"))
@@ -349,10 +359,17 @@ cross_tab <- function(
     note <- NULL
     if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
       if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
+        # Yates correction only meaningful for 2x2 tables
+        if (correct && !all(dim(tab_full) == c(2, 2))) {
+          correct <- FALSE
+        }
         chi <- suppressWarnings(stats::chisq.test(
           tab_full,
-          correct = FALSE, simulate.p.value = simulate_p, B = simulate_B
+          correct = correct,
+          simulate.p.value = simulate_p,
+          B = simulate_B
         ))
+
         chi2 <- as.numeric(chi$statistic)
         df_ <- as.numeric(chi$parameter)
         pval <- as.numeric(chi$p.value)
@@ -372,6 +389,15 @@ cross_tab <- function(
           if (simulate_p) " (simulated)", "\n",
           "Cramer's V: ", ifelse(is.nan(cramer) | is.na(cramer), "NA", formatC(cramer, format = "f", digits = 2))
         )
+
+        if (isTRUE(correct)) {
+          note <- if (is.null(note) || note == "") {
+            "Yates continuity correction applied."
+          } else {
+            paste0(note, "\nYates continuity correction applied.")
+          }
+        }
+
 
         expected <- chi$expected
         small5 <- sum(expected < 5, na.rm = TRUE)

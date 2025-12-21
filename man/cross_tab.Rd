@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_tab.R
 \name{cross_tab}
 \alias{cross_tab}
-\title{Cross-tabulation (SPSS-like)}
+\title{Cross-tabulation}
 \usage{
 cross_tab(
   data,
@@ -13,6 +13,7 @@ cross_tab(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
+  correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
@@ -21,13 +22,15 @@ cross_tab(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame. Alternatively, a vector when using the
+vector-based interface.}
 
 \item{x}{Row variable (unquoted).}
 
 \item{y}{Column variable (unquoted). Mandatory; for one-way tables, use \code{\link[=freq]{freq()}}.}
 
-\item{by}{Optional grouping variable or expression (e.g. \code{interaction(vs, am)}).}
+\item{by}{Optional grouping variable or expression. Can be a single variable
+or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
 
 \item{weights}{Optional numeric weights.}
 
@@ -36,6 +39,9 @@ cross_tab(
 \item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
 
 \item{include_stats}{Logical; compute Chi-squared and Cramer's V (default TRUE).}
+
+\item{correct}{Logical; apply Yates continuity correction to the Chi-squared
+test. Only applicable to 2x2 tables. Default is FALSE.}
 
 \item{simulate_p}{Logical; use Monte Carlo p-value simulation (default FALSE).}
 
@@ -52,10 +58,16 @@ A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.
 When \code{by} is used, returns a \code{spicy_cross_table_list}.
 }
 \description{
-Computes a cross-tabulation with optional weights, grouping, and percentages.
-diagnostics, and modern ASCII formatting.
-Note: \code{cross_tab()} requires both \code{x} and \code{y} variables.
-For one-way frequency tables, use \code{\link[=freq]{freq()}} instead.
+Computes a two-way cross-tabulation with optional weights, grouping
+(including combinations of multiple variables), percentage displays,
+and inferential statistics.
+
+\code{cross_tab()} produces weighted or unweighted contingency tables with
+row or column percentages, optional grouping via \code{by}, and associated
+Chi-squared tests with Cramer's V and diagnostic information.
+
+Both \code{x} and \code{y} variables are required. For one-way frequency tables,
+use \code{\link[=freq]{freq()}} instead.
 }
 \section{Global Options}{
 
@@ -111,5 +123,8 @@ cross_tab(mtcars, cyl, gear)
 
 # Reset to default behavior
 options(spicy.percent = NULL)
+
+# 2x2 table with Yates correction
+cross_tab(mtcars, vs, am, correct = TRUE)
 
 }
