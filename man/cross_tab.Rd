@@ -36,7 +36,8 @@ or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
 
 \item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).}
 
-\item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.}
+\item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.
+Unique abbreviations are accepted (e.g. \code{"n"}, \code{"r"}, \code{"c"}).}
 
 \item{include_stats}{Logical; compute Chi-squared and Cramer's V (default TRUE).}
 
@@ -70,10 +71,6 @@ Both \code{x} and \code{y} variables are required. For one-way frequency tables,
 use \code{\link[=freq]{freq()}} instead.
 }
 \section{Global Options}{
-
-
-The function recognizes the following global options that modify its default behavior:
-
 
 
 The function recognizes the following global options that modify its default behavior:
@@ -114,6 +111,9 @@ cross_tab(mtcars, cyl, gear, by = am)
 
 # Grouped by an interaction
 cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+
+# Vector interface
+cross_tab(mtcars$cyl, mtcars$gear, percent = "c")
 
 # Set default percent mode globally
 options(spicy.percent = "column")

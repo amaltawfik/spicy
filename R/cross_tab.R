@@ -21,6 +21,7 @@
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).
 #' @param percent One of `"none"`, `"row"`, `"column"`.
+#'   Unique abbreviations are accepted (e.g. `"n"`, `"r"`, `"c"`).
 #' @param include_stats Logical; compute Chi-squared and Cramer's V (default TRUE).
 #' @param correct Logical; apply Yates continuity correction to the Chi-squared
 #'   test. Only applicable to 2x2 tables. Default is FALSE.
@@ -33,10 +34,6 @@
 #' @return
 #' A `data.frame`, list of data.frames, or `spicy_cross_table` object.
 #' When `by` is used, returns a `spicy_cross_table_list`.
-#'
-#' @section Global Options:
-#'
-#' The function recognizes the following global options that modify its default behavior:
 #'
 #' @section Global Options:
 #'
@@ -78,6 +75,9 @@
 #' # Grouped by an interaction
 #' cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #'
+#' # Vector interface
+#' cross_tab(mtcars$cyl, mtcars$gear, percent = "c")
+#'
 #' # Set default percent mode globally
 #' options(spicy.percent = "column")
 #'
@@ -111,11 +111,19 @@ cross_tab <- function(
     stop("You must provide a dataset or a vector for `data`.", call. = FALSE)
   }
 
+  call_x <- substitute(x)
+  call_y <- substitute(y)
+  call_data <- substitute(data)
+  call_by <- substitute(by)
+  call_weights <- substitute(weights)
+
+  is_vector_input <- !is.data.frame(data) && is.null(dim(data)) && (is.atomic(data) || is.factor(data))
+
   if (is.data.frame(data)) {
     if (missing(x)) {
       stop("You must specify at least one variable name for `x` (e.g., cross_tab(data, x, y)).", call. = FALSE)
     }
-    if (missing(y)) {
+    if (missing(y) || identical(call_y, quote(NULL))) {
       # Detect style pipe (data |> cross_tab(x))
       stop(
         if (deparse(substitute(data)) == ".") {
@@ -128,8 +136,8 @@ cross_tab <- function(
     }
   }
 
-  if (is.vector(data) || is.factor(data)) {
-    if (missing(x)) {
+  if (is_vector_input) {
+    if (missing(x) || identical(call_x, quote(NULL))) {
       stop(
         "When using vector input, you must provide both x and y vectors of the same length (e.g., cross_tab(data$x, data$y)).",
         call. = FALSE
@@ -155,14 +163,45 @@ cross_tab <- function(
   if (is.null(digits)) digits <- if (percent == "none") 0 else 1
 
   # Capture original expressions to retrieve variable names
-  call_x <- substitute(x)
-  call_data <- substitute(data)
-  call_by <- substitute(by)
-  call_weights <- substitute(weights)
+  get_var_name <- function(expr) {
+    if (is.symbol(expr)) {
+      return(as.character(expr))
+    }
+
+    if (is.call(expr)) {
+      fn <- expr[[1]]
+
+      if (identical(fn, as.name("$")) && length(expr) >= 3) {
+        return(as.character(expr[[3]]))
+      }
+
+      if (identical(fn, as.name("[[")) && length(expr) >= 3) {
+        idx <- expr[[3]]
+        if (is.character(idx)) return(idx)
+        if (is.symbol(idx)) return(as.character(idx))
+      }
+
+      args <- as.list(expr)[-1]
+      if (length(args) > 0) {
+        for (arg in rev(args)) {
+          nm <- get_var_name(arg)
+          if (!is.null(nm) && nzchar(nm)) return(nm)
+        }
+      }
+    }
+
+    rlang::as_label(expr)
+  }
+
+  make_levels <- function(v) {
+    vals <- unique(v[!is.na(v)])
+    if (length(vals) == 0) return(vals)
+    tryCatch(sort(vals), error = function(e) vals)
+  }
 
 
   # Call mode detection
-  is_vector_mode <- is.vector(data) || is.factor(data)
+  is_vector_mode <- is_vector_input
 
   if (is_vector_mode) {
     # Vector mode : cross_tab(mtcars$cyl, mtcars$gear, ...)
@@ -173,6 +212,9 @@ cross_tab <- function(
     if (!is.null(weights)) {
       if (!is.numeric(weights)) {
         stop("When using vector input, `weights` must be a numeric vector.")
+      }
+      if (length(weights) != length(x_vals)) {
+        stop("`weights` must have the same length as `x` and `y` in vector mode.", call. = FALSE)
       }
       w_vals <- weights
     } else {
@@ -204,10 +246,10 @@ cross_tab <- function(
     by_expr <- if (all(is.na(by_vals))) rlang::quo(NULL) else rlang::new_quosure(rlang::sym("by_tmp"))
     w_expr <- rlang::new_quosure(rlang::sym("w_tmp"))
 
-    x_name <- deparse(call_data)
-    y_name <- deparse(call_x)
+    x_name <- get_var_name(call_data)
+    y_name <- get_var_name(call_x)
 
-    if (!missing(by)) {
+    if (!missing(by) && !identical(call_by, quote(NULL))) {
       expr_txt <- deparse(call_by)
       expr_txt <- gsub("^~", "", expr_txt)
       expr_txt <- gsub("\\s+", "", expr_txt)
@@ -218,27 +260,23 @@ cross_tab <- function(
         parts <- trimws(gsub(".*\\$", "", parts))
         by_name <- paste(parts, collapse = " x ")
       } else {
-        by_name <- trimws(gsub(".*\\$", "", expr_txt))
+        by_name <- get_var_name(call_by)
       }
     } else {
       by_name <- NULL
     }
-
-    x_name <- sub(".*\\$", "", x_name)
-    y_name <- sub(".*\\$", "", y_name)
-
-
-    x_name <- sub(".*\\$", "", x_name)
-    y_name <- sub(".*\\$", "", y_name)
-    if (!is.null(by_name)) by_name <- sub(".*\\$", "", by_name)
   } else {
     x_expr <- rlang::enquo(x)
     y_expr <- rlang::enquo(y)
     by_expr <- rlang::enquo(by)
     w_expr <- rlang::enquo(weights)
 
-    x_name <- rlang::as_name(x_expr)
-    y_name <- if (!rlang::quo_is_null(y_expr)) rlang::as_name(y_expr) else NULL
+    x_name <- tryCatch(rlang::as_name(x_expr), error = function(e) get_var_name(rlang::get_expr(x_expr)))
+    y_name <- if (!rlang::quo_is_null(y_expr)) {
+      tryCatch(rlang::as_name(y_expr), error = function(e) get_var_name(rlang::get_expr(y_expr)))
+    } else {
+      NULL
+    }
 
     if (!rlang::quo_is_null(by_expr)) {
       expr_txt <- rlang::expr_text(by_expr)
@@ -258,41 +296,57 @@ cross_tab <- function(
     }
   }
 
+  if (rlang::quo_is_null(y_expr)) {
+    stop("You must specify a `y` variable (e.g., cross_tab(data, x, y)).", call. = FALSE)
+  }
+
 
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
-    if (!is.numeric(w)) stop("`weights` must be numeric.")
+    if (!is.numeric(w)) stop("`weights` must be numeric.", call. = FALSE)
+    if (length(w) != nrow(data)) {
+      stop("`weights` must have the same length as the number of rows.", call. = FALSE)
+    }
+    if (any(!is.finite(w[!is.na(w)]))) {
+      stop("`weights` must contain only finite numeric values.", call. = FALSE)
+    }
+    if (any(w < 0, na.rm = TRUE)) {
+      stop("`weights` must be non-negative.", call. = FALSE)
+    }
     w[is.na(w)] <- 0
   } else {
     w <- rep(1, nrow(data))
   }
 
-  if (rescale && !all(w == 1)) {
-    w <- w * length(w) / sum(w, na.rm = TRUE)
-  } else if (rescale && all(w == 1)) {
-    warning("`rescale = TRUE` has no effect since no weights provided.")
+  if (rescale) {
+    if (isTRUE(all(w == 1))) {
+      warning("`rescale = TRUE` has no effect since no weights provided.")
+    } else {
+      w_sum <- sum(w, na.rm = TRUE)
+      if (!is.finite(w_sum) || w_sum <= 0) {
+        stop("`rescale = TRUE` requires a strictly positive sum of weights.", call. = FALSE)
+      }
+      w <- w * length(w) / w_sum
+    }
   }
 
   data$`..spicy_w` <- w
+  full_x_levels <- make_levels(rlang::eval_tidy(x_expr, data))
+  full_y_levels <- make_levels(rlang::eval_tidy(y_expr, data))
 
   compute_ctab <- function(df, group_label = NULL) {
-    full_x <- rlang::eval_tidy(x_expr, data)
-    full_y <- if (!rlang::quo_is_null(y_expr)) rlang::eval_tidy(y_expr, data) else NULL
+    x_val <- rlang::eval_tidy(x_expr, df)
+    y_val <- rlang::eval_tidy(y_expr, df)
+    w_val <- df$`..spicy_w`
 
-    df_sub <- df |>
-      dplyr::mutate(
-        x_val = rlang::eval_tidy(x_expr, df),
-        y_val = if (rlang::quo_is_null(y_expr)) NA else rlang::eval_tidy(y_expr, df),
-        w_val = .data$`..spicy_w`
-      )
+    df_sub <- data.frame(
+      x_val = factor(x_val, levels = full_x_levels),
+      y_val = factor(y_val, levels = full_y_levels),
+      w_val = w_val,
+      stringsAsFactors = FALSE
+    )
 
-    if (!rlang::quo_is_null(y_expr)) {
-      df_sub$x_val <- factor(df_sub$x_val, levels = sort(unique(full_x)))
-      df_sub$y_val <- factor(df_sub$y_val, levels = sort(unique(full_y)))
-      tab_full <- stats::xtabs(w_val ~ x_val + y_val, data = df_sub)
-    } else {
-      tab_full <- stats::xtabs(w_val ~ x_val, data = df_sub)
-    }
+    tab_full <- stats::xtabs(w_val ~ x_val + y_val, data = df_sub)
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
@@ -307,65 +361,72 @@ cross_tab <- function(
     df_out <- tibble::rownames_to_column(df_out, var = "Values")
 
     if (styled) {
-      if (styled) {
-        if (percent == "column") {
-          total_values <- colSums(tab_perc, na.rm = TRUE)
-          n_values <- colSums(tab_full, na.rm = TRUE)
+      if (percent == "column") {
+        total_values <- colSums(tab_perc, na.rm = TRUE)
+        n_values <- colSums(tab_full, na.rm = TRUE)
 
-          df_out$Total <- round(rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100, digits)
-
-          total_row <- tibble::as_tibble_row(
-            c(Values = "Total", as.list(round(total_values, digits)), Total = 100)
-          )
-          n_row <- if (show_n) {
-            tibble::as_tibble_row(
-              c(Values = "N", as.list(round(n_values, 0)), Total = sum(tab_full))
-            )
-          } else {
-            NULL
-          }
-
-          df_out <- dplyr::bind_rows(df_out, total_row, n_row)
-        } else if (percent == "row") {
-          df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
-          if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
-
-          col_tot <- colSums(tab_full, na.rm = TRUE)
-          col_perc <- round(col_tot / sum(col_tot) * 100, digits)
-
-          total_row <- as.list(rep(NA, ncol(df_out)))
-          names(total_row) <- names(df_out)
-
-          for (nm in intersect(names(df_out), names(col_perc))) {
-            total_row[[nm]] <- col_perc[[nm]]
-          }
-
-          total_row[["Values"]] <- "Total"
-          total_row[["Total"]] <- 100
-          if (show_n) total_row[["N"]] <- sum(tab_full)
-
-          df_out <- dplyr::bind_rows(df_out, total_row)
+        df_out$Total <- if (sum(tab_full) > 0) {
+          round(rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100, digits)
         } else {
-          df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
-          grand_total <- tibble::as_tibble_row(
-            c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
-          )
-          df_out <- dplyr::bind_rows(df_out, grand_total)
+          rep(0, nrow(df_out))
         }
+
+        total_row <- tibble::as_tibble_row(
+          c(Values = "Total", as.list(round(total_values, digits)), Total = 100)
+        )
+        n_row <- if (show_n) {
+          tibble::as_tibble_row(
+            c(Values = "N", as.list(round(n_values, 0)), Total = sum(tab_full))
+          )
+        } else {
+          NULL
+        }
+
+        df_out <- dplyr::bind_rows(df_out, total_row, n_row)
+      } else if (percent == "row") {
+        df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
+        if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+
+        col_tot <- colSums(tab_full, na.rm = TRUE)
+        col_perc <- if (sum(col_tot) > 0) {
+          round(col_tot / sum(col_tot) * 100, digits)
+        } else {
+          rep(0, length(col_tot))
+        }
+        names(col_perc) <- names(col_tot)
+
+        total_row <- as.list(rep(NA, ncol(df_out)))
+        names(total_row) <- names(df_out)
+
+        for (nm in intersect(names(df_out), names(col_perc))) {
+          total_row[[nm]] <- col_perc[[nm]]
+        }
+
+        total_row[["Values"]] <- "Total"
+        total_row[["Total"]] <- 100
+        if (show_n) total_row[["N"]] <- sum(tab_full)
+
+        df_out <- dplyr::bind_rows(df_out, total_row)
+      } else {
+        df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+        grand_total <- tibble::as_tibble_row(
+          c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
+        )
+        df_out <- dplyr::bind_rows(df_out, grand_total)
       }
     }
 
 
     note <- NULL
-    if (include_stats && !rlang::quo_is_null(y_expr) && all(dim(tab_full) > 1)) {
-      if (sum(rowSums(tab_full) > 0) > 1 && sum(colSums(tab_full) > 0) > 1) {
+    tab_stats <- tab_full
+    tab_stats <- tab_stats[rowSums(tab_stats) > 0, colSums(tab_stats) > 0, drop = FALSE]
+    if (include_stats && all(dim(tab_stats) > 1)) {
+      if (sum(rowSums(tab_stats) > 0) > 1 && sum(colSums(tab_stats) > 0) > 1) {
         # Yates correction only meaningful for 2x2 tables
-        if (correct && !all(dim(tab_full) == c(2, 2))) {
-          correct <- FALSE
-        }
+        correct_used <- isTRUE(correct) && all(dim(tab_stats) == c(2, 2))
         chi <- suppressWarnings(stats::chisq.test(
-          tab_full,
-          correct = correct,
+          tab_stats,
+          correct = correct_used,
           simulate.p.value = simulate_p,
           B = simulate_B
         ))
@@ -373,7 +434,7 @@ cross_tab <- function(
         chi2 <- as.numeric(chi$statistic)
         df_ <- as.numeric(chi$parameter)
         pval <- as.numeric(chi$p.value)
-        cramer <- sqrt(chi2 / (sum(tab_full) * min(dim(tab_full) - 1)))
+        cramer <- sqrt(chi2 / (sum(tab_stats) * min(dim(tab_stats) - 1)))
 
         p_str <- if (is.na(pval)) {
           "= NA"
@@ -390,7 +451,7 @@ cross_tab <- function(
           "Cramer's V: ", ifelse(is.nan(cramer) | is.na(cramer), "NA", formatC(cramer, format = "f", digits = 2))
         )
 
-        if (isTRUE(correct)) {
+        if (isTRUE(correct_used)) {
           note <- if (is.null(note) || note == "") {
             "Yates continuity correction applied."
           } else {
@@ -434,16 +495,16 @@ cross_tab <- function(
       title <- paste0(title, " | ", by_name, " = ", group_label)
     }
 
-    # Ajout d'une mention de poids dans la note, si applicable
-    if (!rlang::quo_is_null(w_expr) && !all(w == 1)) {
+    # Add weighting information to the note when applicable
+    if (!rlang::quo_is_null(w_expr) && !isTRUE(all(w == 1))) {
       w_name <- deparse(call_weights)
-      w_name <- sub(".*\\$", "", w_name) # ne garder que le nom après $
+      w_name <- sub(".*\\$", "", w_name) # keep only the variable name after $
       w_text <- paste0("Weight: ", w_name)
       if (isTRUE(rescale)) {
         w_text <- paste0(w_text, " (rescaled)")
       }
 
-      # Ajouter à la note existante ou créer une nouvelle note
+      # Append to the existing note or create a new one
       if (is.null(note) || note == "") {
         note <- w_text
       } else {
@@ -456,7 +517,13 @@ cross_tab <- function(
     attr(df_out, "n_total") <- total_n
     attr(df_out, "digits") <- digits
 
-    df_out[is.nan(as.matrix(df_out))] <- NA
+    num_cols <- vapply(df_out, is.numeric, logical(1))
+    if (any(num_cols)) {
+      df_out[num_cols] <- lapply(df_out[num_cols], function(col) {
+        col[is.nan(col)] <- NA_real_
+        col
+      })
+    }
     df_out
   }
 

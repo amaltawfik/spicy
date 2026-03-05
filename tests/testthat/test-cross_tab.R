@@ -90,3 +90,83 @@ test_that("cross_tab returns spicy_cross_table or list when styled = TRUE", {
   expect_s3_class(res1, "spicy_cross_table")
   expect_s3_class(res2, "spicy_cross_table_list")
 })
+
+test_that("cross_tab accepts labelled vectors in vector mode", {
+  x <- haven::labelled(
+    c(1, 2, 1, 2, 1, 2),
+    labels = c(Non = 1, Oui = 2)
+  )
+  y <- factor(c("BFH", "BFH", "HESAV", "HESAV", "ZHAW", "ZHAW"))
+
+  res <- cross_tab(x, y, percent = "c", styled = FALSE)
+
+  expect_s3_class(res, "data.frame")
+  expect_true("Values" %in% names(res))
+  expect_match(attr(res, "title"), "x x y")
+})
+
+test_that("cross_tab keeps column names with $ vector calls", {
+  d <- data.frame(
+    pasemploiraison_1 = c("Non", "Oui", "Non", "Oui"),
+    hes = c("BFH", "BFH", "HESAV", "HESAV")
+  )
+
+  res <- cross_tab(d$pasemploiraison_1, d$hes, percent = "c", styled = FALSE)
+
+  expect_match(attr(res, "title"), "pasemploiraison_1 x hes", fixed = TRUE)
+})
+
+test_that("cross_tab validates weights length in data.frame and vector modes", {
+  df <- data.frame(
+    x = c("A", "B", "A", "B"),
+    y = c("Yes", "No", "Yes", "No")
+  )
+
+  expect_error(
+    cross_tab(df, x, y, weights = c(1, 2), styled = FALSE),
+    "`weights` must have the same length as the number of rows.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    cross_tab(df$x, df$y, weights = c(1, 2), styled = FALSE),
+    "`weights` must have the same length as `x` and `y` in vector mode.",
+    fixed = TRUE
+  )
+})
+
+test_that("cross_tab rejects rescale when weight sum is zero", {
+  df <- data.frame(
+    x = c("A", "B"),
+    y = c("Yes", "No"),
+    w = c(0, 0)
+  )
+
+  expect_error(
+    cross_tab(df, x, y, weights = w, rescale = TRUE, styled = FALSE),
+    "`rescale = TRUE` requires a strictly positive sum of weights.",
+    fixed = TRUE
+  )
+})
+
+test_that("cross_tab fails early when y is explicitly NULL", {
+  expect_error(
+    cross_tab(mtcars, cyl, y = NULL, styled = FALSE),
+    "You must specify a `y` variable",
+    fixed = TRUE
+  )
+})
+
+test_that("cross_tab computes by-group stats on non-empty margins", {
+  df <- data.frame(
+    g = c(rep("A", 6), rep("B", 8)),
+    x = c("a", "a", "b", "b", "c", "c", "u", "u", "u", "u", "v", "v", "v", "v"),
+    y = c("k", "l", "k", "l", "k", "l", "k", "k", "l", "l", "k", "k", "l", "l")
+  )
+
+  out <- cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE)
+  note_b <- attr(out[["B"]], "note")
+
+  expect_true(grepl("Yates continuity correction applied.", note_b, fixed = TRUE))
+  expect_false(grepl("p = NA", note_b, fixed = TRUE))
+})
