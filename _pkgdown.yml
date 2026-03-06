@@ -10,4 +10,47 @@ template:
     link-color: "#2e2e2e"
     link-decoration: underline dotted
 
+navbar:
+  structure:
+    left: [intro, reference, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Home
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fa-github
+      aria-label: GitHub repository
+      href: https://github.com/amaltawfik/spicy
 
+reference:
+  - title: Variable Metadata
+    contents:
+      - varlist
+      - vl
+      - label_from_names
+      - code_book
+  - title: Descriptive Statistics
+    contents:
+      - freq
+      - cross_tab
+      - cramer_v
+      - mean_n
+      - sum_n
+      - count_n
+  - title: Export
+    contents:
+      - copy_clipboard
+  - title: Printing
+    contents:
+      - spicy_print_table
+      - build_ascii_table
+      - print.spicy_cross_table
+      - print.spicy_freq_table
+      - spicy_tables

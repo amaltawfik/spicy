@@ -1,4 +1,3 @@
-
 ---
 output: github_document
 ---
@@ -27,18 +26,17 @@ knitr::opts_chunk$set(
 
 spicy is designed to make variable exploration, documentation, and descriptive statistics fast, expressive, and easy to use.
 
-
 ## What is spicy?
 
 spicy is an R package for quick, consistent, and elegant exploration of data frames. It helps you:
 
-- Extract variable metadata and display compact summaries of dataset variables using `varlist()` (with `vl()` as a convenient shortcut), including names, labels, values, classes, number of distinct non-missing values,  number of valid observations, number of missing observations. Similar to the "Variable View" in SPSS or the "Variables Manager" in Stata.
-- Generate an interactive codebook generator `code_book()` that extends `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`. Ideal for documenting all the variables present in a data frame.
-- Compute frequency tables with `freq()`, row-wise means with `mean_n()`, row-wise sums with `sum_n()`, and counts of specific values using `count_n()` — all with automatic handling of missing data.
+- Extract variable metadata and display compact summaries of dataset variables using `varlist()` (with `vl()` as a convenient shortcut), including names, labels, values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the "Variable View" in SPSS or the "Variables Manager" in Stata.
+- Generate an interactive codebook generator `code_book()` that extends `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`. Ideal for documenting all variables present in a data frame.
+- Compute frequency tables with `freq()`, row-wise means with `mean_n()`, row-wise sums with `sum_n()`, and counts of specific values using `count_n()` -- all with automatic handling of missing data.
 - Explore relationships between categorical variables using `cross_tab()` for contingency tables and `cramer_v()` for association strength.
 - Copy data frames or result tables directly to the clipboard using `copy_clipboard()` for fast export to spreadsheets or text editors.
-- Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow a "name [separator] label" pattern — any string can be used as the separator (e.g., ". ", " - ", ":", etc.).
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly used variable types.  
+- Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow a "name [separator] label" pattern -- any string can be used as the separator (e.g., ". ", " - ", ":", etc.).
+- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly used variable types.
 
 All with intuitive functions that return clean, structured outputs.
 
@@ -47,6 +45,7 @@ All with intuitive functions that return clean, structured outputs.
 ## Installation
 
 For the stable version, install from CRAN.
+
 ```r
 install.packages("spicy")
 ```
@@ -63,6 +62,7 @@ pak::pak("amaltawfik/spicy")
 ## Example usage
 
 Here are some quick examples using built-in datasets:
+
 ```{r eval=FALSE}
 library(spicy)
 library(dplyr)
@@ -70,6 +70,7 @@ library(dplyr)
 # Get a summary of all variables in the Viewer
 varlist(iris)
 ```
+
 <img src="man/figures/varlist_1.png" alt="Summary of all variables shown in the Viewer">
 
 ```{r eval=FALSE}
@@ -77,6 +78,7 @@ varlist(iris)
 # Asterisks (*) in the title indicate that the data frame has been subsetted
 vl(mtcars, starts_with("d"))
 ```
+
 <img src="man/figures/varlist_2.png" alt="Summary of the variables that start with d in the Viewer">
 
 ```{r echo=FALSE, message=FALSE}
@@ -100,10 +102,10 @@ cross_tab(mtcars, cyl, gear, percent = "column")
 # Cross-tab with row percentages
 cross_tab(mtcars, cyl, gear, percent = "row")
 
-# Cross-tab with grouped by a single variable
+# Cross-tab grouped by a single variable
 cross_tab(mtcars, cyl, gear, by = am)
 
-# Cross-tab with grouped by two variables
+# Cross-tab grouped by two variables
 cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
@@ -121,7 +123,7 @@ df |> mutate(count30 = count_n(count = 30))
 
 # Extract labels from column names like "varname. label"
 # This format ("name. label") is the default in LimeSurvey CSV exports
-# when using: Export results → Export format: CSV → Headings: Question code & question text.
+# when using: Export results -> Export format: CSV -> Headings: Question code & question text.
 # It uses ". " (dot + space) as the default separator between the question code and question text.
 df <- tibble::tibble(
   "age. Age of respondent" = c(25, 30),
@@ -140,30 +142,26 @@ labelled::var_label(out)
 
 ## Why use `spicy`?
 
-- Clean, expressive output  
-- Works well with labelled survey data  
-- Handles weights, percentages, NA counts  
-- Great for exploring data and variables, teaching, or reporting 
+- Clean, expressive output
+- Works well with labelled survey data
+- Handles weights, percentages, NA counts
+- Great for exploring data and variables, teaching, or reporting
 
 ---
 
 ## Citation
 
-If you use `spicy` in a publication or teaching material, please cite it as:
+If you use `spicy` in a publication or teaching material:
 
-> Tawfik, A. (2025). *spicy: Tools for Data Management and Variable Exploration* (Version 0.1.0) [R package]. https://doi.org/10.5281/zenodo.15397865
+- Use `citation("spicy")` for the exact BibTeX entry of your installed version.
+- CRAN does not assign package DOI values.
+- The archival DOI for `spicy` is: <https://doi.org/10.5281/zenodo.15397865>.
 
-You can also get the citation in R format by typing:
-
-```r
-citation("spicy")
-```
-
-Or [download the BibTeX citation](inst/citation.bib) directly.
+You can also view the source citation file:
+<https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
 ---
 
 ## License
 
 This package is licensed under the MIT license. See [`LICENSE`](LICENSE) for details.
-
