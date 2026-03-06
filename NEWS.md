@@ -1,4 +1,4 @@
-# spicy 0.4.2
+﻿# spicy 0.4.2
 
 * `cross_tab()` hardening: improved vector-mode detection (including labelled vectors), stricter weight validation, safer rescaling, and clearer early errors (e.g., explicit `y = NULL`).
 * `cross_tab()` statistics are now computed on non-empty margins in grouped tables, avoiding spurious `NA` results; internal core path refactored to remove `dplyr`/`tibble` from computation while preserving API.
@@ -18,7 +18,7 @@
 # spicy 0.4.0
 
 * `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
-  tables inspired by Stata’s layout. The new implementation improves formatting,
+  tables inspired by Stata's layout. The new implementation improves formatting,
   adds optional color support, and provides more consistent handling of totals
   and column spacing.
 
@@ -28,7 +28,7 @@
 * Documentation and internal tests were updated for clarity and consistency.
 
 * `cross_tab()` gains an explicit `correct` argument to control the use of
-  Yates’ continuity correction for Chi-squared tests in 2x2 tables. The default
+  Yates' continuity correction for Chi-squared tests in 2x2 tables. The default
   behavior remains unchanged.
 
 * The documentation of `cross_tab()` was refined and harmonized, with a clearer
@@ -57,8 +57,8 @@
 
 * New function `label_from_names()` to derive and assign variable labels
   from headers of the form `"name<sep>label"` (e.g. `"name. label"`).
-  Especially useful for LimeSurvey CSV exports (*Export results* →
-  *CSV* → *Headings: Question code & question text*), where the default
+  Especially useful for LimeSurvey CSV exports (*Export results* ->
+  *CSV* -> *Headings: Question code & question text*), where the default
   separator is `". "`.
 
 # spicy 0.1.0
