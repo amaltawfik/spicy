@@ -177,15 +177,21 @@ cross_tab <- function(
 
       if (identical(fn, as.name("[[")) && length(expr) >= 3) {
         idx <- expr[[3]]
-        if (is.character(idx)) return(idx)
-        if (is.symbol(idx)) return(as.character(idx))
+        if (is.character(idx)) {
+          return(idx)
+        }
+        if (is.symbol(idx)) {
+          return(as.character(idx))
+        }
       }
 
       args <- as.list(expr)[-1]
       if (length(args) > 0) {
         for (arg in rev(args)) {
           nm <- get_var_name(arg)
-          if (!is.null(nm) && nzchar(nm)) return(nm)
+          if (!is.null(nm) && nzchar(nm)) {
+            return(nm)
+          }
         }
       }
     }
@@ -195,7 +201,9 @@ cross_tab <- function(
 
   make_levels <- function(v) {
     vals <- unique(v[!is.na(v)])
-    if (length(vals) == 0) return(vals)
+    if (length(vals) == 0) {
+      return(vals)
+    }
     tryCatch(sort(vals), error = function(e) vals)
   }
 
@@ -334,6 +342,38 @@ cross_tab <- function(
   full_x_levels <- make_levels(rlang::eval_tidy(x_expr, data))
   full_y_levels <- make_levels(rlang::eval_tidy(y_expr, data))
 
+  make_named_row <- function(template_df, values) {
+    row <- as.list(rep(NA, ncol(template_df)))
+    names(row) <- names(template_df)
+
+    nm <- names(values)
+    if (!is.null(nm)) {
+      for (i in seq_along(values)) {
+        key <- nm[[i]]
+        if (!is.na(key) && nzchar(key) && key %in% names(row)) {
+          row[[key]] <- values[[i]]
+        }
+      }
+    }
+
+    out <- as.data.frame(row, stringsAsFactors = FALSE, check.names = FALSE)
+    rownames(out) <- NULL
+    out
+  }
+
+  append_rows <- function(df, rows) {
+    if (is.null(rows)) return(df)
+    if (inherits(rows, "data.frame")) rows <- list(rows)
+
+    for (r in rows) {
+      if (is.null(r)) next
+      df <- rbind(df, r)
+    }
+
+    rownames(df) <- NULL
+    df
+  }
+
   compute_ctab <- function(df, group_label = NULL) {
     x_val <- rlang::eval_tidy(x_expr, df)
     y_val <- rlang::eval_tidy(y_expr, df)
@@ -357,8 +397,14 @@ cross_tab <- function(
     )
     tab_perc[is.nan(tab_perc)] <- 0
 
-    df_out <- as.data.frame.matrix(round(tab_perc, digits))
-    df_out <- tibble::rownames_to_column(df_out, var = "Values")
+    df_out <- as.data.frame.matrix(round(tab_perc, digits), stringsAsFactors = FALSE)
+    df_out <- data.frame(
+      Values = rownames(df_out),
+      df_out,
+      row.names = NULL,
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
 
     if (styled) {
       if (percent == "column") {
@@ -371,18 +417,20 @@ cross_tab <- function(
           rep(0, nrow(df_out))
         }
 
-        total_row <- tibble::as_tibble_row(
-          c(Values = "Total", as.list(round(total_values, digits)), Total = 100)
+        total_row <- make_named_row(
+          df_out,
+          c(list(Values = "Total"), as.list(round(total_values, digits)), list(Total = 100))
         )
         n_row <- if (show_n) {
-          tibble::as_tibble_row(
-            c(Values = "N", as.list(round(n_values, 0)), Total = sum(tab_full))
+          make_named_row(
+            df_out,
+            c(list(Values = "N"), as.list(round(n_values, 0)), list(Total = sum(tab_full)))
           )
         } else {
           NULL
         }
 
-        df_out <- dplyr::bind_rows(df_out, total_row, n_row)
+        df_out <- append_rows(df_out, list(total_row, n_row))
       } else if (percent == "row") {
         df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
         if (show_n) df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
@@ -395,24 +443,18 @@ cross_tab <- function(
         }
         names(col_perc) <- names(col_tot)
 
-        total_row <- as.list(rep(NA, ncol(df_out)))
-        names(total_row) <- names(df_out)
+        total_values <- c(list(Values = "Total"), as.list(col_perc), list(Total = 100))
+        if (show_n) total_values <- c(total_values, list(N = sum(tab_full)))
+        total_row <- make_named_row(df_out, total_values)
 
-        for (nm in intersect(names(df_out), names(col_perc))) {
-          total_row[[nm]] <- col_perc[[nm]]
-        }
-
-        total_row[["Values"]] <- "Total"
-        total_row[["Total"]] <- 100
-        if (show_n) total_row[["N"]] <- sum(tab_full)
-
-        df_out <- dplyr::bind_rows(df_out, total_row)
+        df_out <- append_rows(df_out, total_row)
       } else {
         df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
-        grand_total <- tibble::as_tibble_row(
-          c(Values = "Total", as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
+        grand_total <- make_named_row(
+          df_out,
+          c(list(Values = "Total"), as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE)))
         )
-        df_out <- dplyr::bind_rows(df_out, grand_total)
+        df_out <- append_rows(df_out, grand_total)
       }
     }
 
