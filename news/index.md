@@ -1,6 +1,40 @@
 # Changelog
 
+## spicy 0.4.2
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  hardening: improved vector-mode detection (including labelled
+  vectors), stricter weight validation, safer rescaling, and clearer
+  early errors (e.g., explicit `y = NULL`).
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  statistics are now computed on non-empty margins in grouped tables,
+  avoiding spurious `NA` results; internal core path refactored to
+  remove `dplyr`/`tibble` from computation while preserving API.
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  errors clearly when `x` is missing for data.frame input and validates
+  rescaling when weight sums are zero/non-finite.
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  regex mode is hardened (`regex = TRUE` now validates/defaults `select`
+  safely).
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  now return `NA` (with warning) when no numeric columns are selected.
+- [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  now validates input type (`data.frame`/tibble required).
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  now returns `NA` with warning for degenerate tables.
+- Dependency optimization: `DT` and `clipr` moved to `Suggests`;
+  optional runtime checks added in
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  and
+  [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md).
+- Tests expanded with regression coverage for all the above edge cases.
+
 ## spicy 0.4.1
+
+CRAN release: 2025-12-21
 
 - Fixed CRAN incoming check notes by removing non-standard top-level
   files.
@@ -66,8 +100,9 @@ CRAN release: 2025-09-25
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
   to derive and assign variable labels from headers of the form
   `"name<sep>label"` (e.g. `"name. label"`). Especially useful for
-  LimeSurvey CSV exports (*Export results* → *CSV* → *Headings: Question
-  code & question text*), where the default separator is `". "`.
+  LimeSurvey CSV exports (*Export results* -\> *CSV* -\> *Headings:
+  Question code & question text*), where the default separator is
+  `". "`.
 
 ## spicy 0.1.0
 

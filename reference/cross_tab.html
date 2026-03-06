@@ -21,7 +21,7 @@ use freq() instead."><meta property="og:image" content="https://amaltawfik.githu
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,7 +114,8 @@ or a combination of multiple variables (e.g. <code>interaction(vs, am)</code>).<
 
 
 <dt id="arg-percent">percent<a class="anchor" aria-label="anchor" href="#arg-percent"></a></dt>
-<dd><p>One of <code>"none"</code>, <code>"row"</code>, <code>"column"</code>.</p></dd>
+<dd><p>One of <code>"none"</code>, <code>"row"</code>, <code>"column"</code>.
+Unique abbreviations are accepted (e.g. <code>"n"</code>, <code>"r"</code>, <code>"c"</code>).</p></dd>
 
 
 <dt id="arg-include-stats">include_stats<a class="anchor" aria-label="anchor" href="#arg-include-stats"></a></dt>
@@ -154,9 +155,6 @@ When <code>by</code> is used, returns a <code>spicy_cross_table_list</code>.</p>
     <div class="section level2">
     <h2 id="global-options">Global Options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>
 
-
-
-<p>The function recognizes the following global options that modify its default behavior:</p>
 
 
 <p>The function recognizes the following global options that modify its default behavior:</p><ul><li><p><strong><code>options(spicy.percent = "column")</code></strong>
@@ -225,9 +223,9 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼─────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      15       4       0 <span style="color: #9E9E9E;">│</span>         19 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: NA (df = 4), p = NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 8 expected cells &lt; 5 (88.9%). 5 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 9.0 (df = 2), p = 0.011</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.69</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 5 expected cells &lt; 5 (83.3%). 2 expected cells &lt; 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | am = 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -239,9 +237,9 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      0       8       5 <span style="color: #9E9E9E;">│</span>         13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: NA (df = 4), p = NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 9 expected cells &lt; 5 (100%). 4 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 3.8 (df = 2), p = 0.146</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.54</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 6 expected cells &lt; 5 (100%). 1 expected cell &lt; 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by an interaction</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="va">gear</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">vs</span>, <span class="va">am</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -255,8 +253,6 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼─────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      12       0       0 <span style="color: #9E9E9E;">│</span>         12 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 1.0</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      3       4       5 <span style="color: #9E9E9E;">│</span>      Total </span>
@@ -267,9 +263,9 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      3       4       0 <span style="color: #9E9E9E;">│</span>          7 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: NA (df = 4), p = NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 9 expected cells &lt; 5 (100%). 5 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 0.2 (df = 1), p = 0.659</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 4 expected cells &lt; 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 0.1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -281,9 +277,9 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      0       2       4 <span style="color: #9E9E9E;">│</span>          6 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: NA (df = 4), p = NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 9 expected cells &lt; 5 (100%). 6 expected cells &lt; 1. Minimum expected = 0. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 3.0 (df = 2), p = 0.223</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.71</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 6 expected cells &lt; 5 (100%). 3 expected cells &lt; 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (N) | vs x am = 1.1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -294,8 +290,23 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  8           <span style="color: #9E9E9E;">│</span>      0       0       0 <span style="color: #9E9E9E;">│</span>          0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      0       6       1 <span style="color: #9E9E9E;">│</span>          7 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Vector interface</span></span></span>
+<span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">cyl</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">gear</span>, percent <span class="op">=</span> <span class="st">"c"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: cyl x gear (Column %)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>          3           4           5 <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4           <span style="color: #9E9E9E;">│</span>        6.7        66.7        40.0 <span style="color: #9E9E9E;">│</span>       34.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6           <span style="color: #9E9E9E;">│</span>       13.3        33.3        20.0 <span style="color: #9E9E9E;">│</span>       21.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8           <span style="color: #9E9E9E;">│</span>       80.0         0.0        40.0 <span style="color: #9E9E9E;">│</span>       43.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      100.0       100.0       100.0 <span style="color: #9E9E9E;">│</span>      100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>         15          12           5 <span style="color: #9E9E9E;">│</span>         32 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2: 18.0 (df = 4), p = 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V: 0.53</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Set default percent mode globally</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span></span>
