@@ -1,3 +1,5 @@
+# spicy 0.4.2
+
 # spicy 0.4.1
 
 * Fixed CRAN incoming check notes by removing non-standard top-level files.
