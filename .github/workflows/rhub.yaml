@@ -1,8 +1,8 @@
-# R-hub's generic GitHub Actions workflow file.
-# Canonical location:
+# R-hub GitHub Actions workflow file.
+# Canonical template:
 # https://github.com/r-hub/actions/blob/v1/workflows/rhub.yaml
 #
-# Updated to disable macOS on GitHub Actions due to macos-13 deprecation.
+# Keep default platforms to linux,windows to avoid deprecated macOS configs.
 
 name: R-hub
 run-name: "${{ github.event.inputs.id }}: ${{ github.event.inputs.name || format('Manually run by {0}', github.triggering_actor) }}"
@@ -34,7 +34,8 @@ jobs:
       # NO NEED TO CHECKOUT HERE
       - uses: r-hub/actions/setup@v1
         with:
-          config: ${{ github.event.inputs.config }}
+          # Defensive fallback if workflow_dispatch input is empty.
+          config: ${{ github.event.inputs.config || 'linux,windows' }}
         id: rhub-setup
 
   linux-containers:
