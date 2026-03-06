@@ -42,6 +42,10 @@
 #' @export
 
 label_from_names <- function(df, sep = ". ") {
+  if (!is.data.frame(df)) {
+    stop("`df` must be a data.frame or tibble.", call. = FALSE)
+  }
+
   split_pos <- regexpr(sep, names(df), fixed = TRUE)
 
   new_names <- ifelse(

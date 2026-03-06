@@ -35,3 +35,11 @@ test_that("empty or missing labels are skipped", {
       identical(labs[["y"]], "NA")
   )
 })
+
+test_that("label_from_names errors on non-data.frame input", {
+  expect_error(
+    label_from_names(1:3),
+    "`df` must be a data.frame or tibble.",
+    fixed = TRUE
+  )
+})

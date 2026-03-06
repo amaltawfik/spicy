@@ -68,5 +68,15 @@ test_that("sum_n handles all NA rows correctly", {
     b = c(NA, NA)
   )
 
-  expect_equal(sum_n(df), c(0, 0))
+  expect_warning(
+    res <- sum_n(df),
+    "No numeric columns selected",
+    fixed = TRUE
+  )
+  expect_true(all(is.na(res)))
+})
+
+test_that("sum_n regex mode supports default select", {
+  df <- tibble::tibble(var1 = c(1, 2), var2 = c(3, 4))
+  expect_equal(sum_n(df, regex = TRUE), c(4, 6))
 })

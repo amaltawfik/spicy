@@ -145,6 +145,10 @@ freq <- function(data,
   labelled_levels <- match.arg(labelled_levels)
 
   is_df <- is.data.frame(data)
+  if (is_df && missing(x)) {
+    stop("When `data` is a data frame, you must supply `x` (e.g., freq(data, x)).", call. = FALSE)
+  }
+
   if (is_df && !missing(x)) {
     var_name <- deparse(substitute(x))
     data_name <- deparse(substitute(data))
@@ -191,10 +195,17 @@ freq <- function(data,
     if (any(weights < 0, na.rm = TRUE)) {
       stop("`weights` must be non-negative.", call. = FALSE)
     }
+    if (any(!is.finite(weights[!is.na(weights)]))) {
+      stop("`weights` must contain only finite numeric values.", call. = FALSE)
+    }
     weights[is.na(weights)] <- 0
 
     if (rescale) {
-      weights <- weights * length(weights) / sum(weights, na.rm = TRUE)
+      w_sum <- sum(weights, na.rm = TRUE)
+      if (!is.finite(w_sum) || w_sum <= 0) {
+        stop("`rescale = TRUE` requires a strictly positive sum of weights.", call. = FALSE)
+      }
+      weights <- weights * length(weights) / w_sum
     }
   }
 

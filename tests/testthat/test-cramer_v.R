@@ -25,3 +25,14 @@ test_that("cramer_v fails gracefully with non-table input", {
     "`x` must be a contingency table \\(class `table`\\)\\."
   )
 })
+
+test_that("cramer_v returns NA for degenerate tables", {
+  tab <- table(factor(c("A", "A")), factor(c("X", "Y")))
+
+  expect_warning(
+    out <- cramer_v(tab),
+    "undefined for empty or 1-dimensional tables",
+    fixed = TRUE
+  )
+  expect_true(is.na(out))
+})

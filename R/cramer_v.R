@@ -30,7 +30,11 @@ cramer_v <- function(x) {
     stop("`x` must be a contingency table (class `table`).")
   }
   n <- sum(x)
-  chi_squared <- stats::chisq.test(x, correct = FALSE)$statistic
   k <- min(nrow(x), ncol(x)) - 1
+  if (n <= 0 || k <= 0) {
+    warning("Cramer's V is undefined for empty or 1-dimensional tables; returning NA.", call. = FALSE)
+    return(NA_real_)
+  }
+  chi_squared <- stats::chisq.test(x, correct = FALSE)$statistic
   sqrt(as.numeric(chi_squared) / (n * k))
 }

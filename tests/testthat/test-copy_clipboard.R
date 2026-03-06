@@ -1,4 +1,5 @@
 test_that("copy_clipboard() works silently for different structures", {
+  skip_if_not_installed("clipr")
   skip_if_not(clipr::clipr_available())
 
   df <- data.frame(
@@ -43,6 +44,7 @@ test_that("copy_clipboard() works silently for different structures", {
 })
 
 test_that("copy_clipboard() copies expected content", {
+  skip_if_not_installed("clipr")
   skip_if_not(clipr::clipr_available())
 
   # Data frame

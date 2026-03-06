@@ -98,6 +98,17 @@ test_that("count_n works with regex selection", {
   expect_equal(count_n(df, count = "b", select = "^a_", regex = TRUE), 1)
 })
 
+test_that("count_n regex mode supports default select and validates pattern", {
+  df <- tibble::tibble(a = 1:2, b = c(1, 3))
+
+  expect_equal(count_n(df, count = 1, regex = TRUE), c(2, 0))
+  expect_error(
+    count_n(df, count = 1, regex = TRUE, select = c("^a", "^b")),
+    "single character pattern",
+    fixed = TRUE
+  )
+})
+
 test_that("count_n returns unnamed numeric vector", {
   df <- tibble::tibble(x = c("a", "b", "b"))
   result <- count_n(df, count = "b")

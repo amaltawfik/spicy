@@ -12,12 +12,9 @@ Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
-    cli,
-    clipr,
     collapse,
     crayon,
     dplyr,
-    DT,
     haven,
     labelled,
     rlang,
@@ -28,6 +25,8 @@ Imports:
     tidyselect,
     utils
 Suggests: 
+    clipr,
+    DT,
     testthat (>= 3.0.0)
 Depends: R (>= 4.1.0)
 Config/testthat/edition: 3

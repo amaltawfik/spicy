@@ -190,6 +190,12 @@ count_n <- function(
   data <- as.data.frame(data)
 
   col_names <- if (regex) {
+    if (missing(select)) {
+      select <- ".*"
+    }
+    if (!is.character(select) || length(select) != 1L || is.na(select)) {
+      stop("When `regex = TRUE`, `select` must be a single character pattern.", call. = FALSE)
+    }
     grep(select, names(data), value = TRUE)
   } else {
     names(tidyselect::eval_select(rlang::enquo(select), data))

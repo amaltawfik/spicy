@@ -126,6 +126,12 @@ mean_n <- function(data = NULL,
   }
 
   if (regex) {
+    if (missing(select)) {
+      select <- ".*"
+    }
+    if (!is.character(select) || length(select) != 1L || is.na(select)) {
+      stop("When `regex = TRUE`, `select` must be a single character pattern.", call. = FALSE)
+    }
     col_names <- names(data)
     matched <- grep(select, col_names, value = TRUE)
     data <- data[, matched, drop = FALSE]
@@ -145,6 +151,11 @@ mean_n <- function(data = NULL,
     rlang::inform(
       message = paste0("mean_n(): Ignored non-numeric columns: ", paste(ignored, collapse = ", "))
     )
+  }
+
+  if (length(numeric_cols) == 0) {
+    warning("mean_n(): No numeric columns selected; returning NA for all rows.", call. = FALSE)
+    return(rep(NA_real_, nrow(data)))
   }
 
   data_mat <- as.matrix(data)

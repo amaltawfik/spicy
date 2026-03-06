@@ -2,8 +2,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom clipr clipr_available
-#' @importFrom clipr write_clip
 #' @importFrom collapse qTBL
 #' @importFrom dplyr everything
 #' @importFrom dplyr pick

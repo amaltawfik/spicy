@@ -51,8 +51,6 @@
 #' [varlist()] for generating the underlying variable summaries.
 #'
 #' @export
-#' @importFrom DT datatable
-#' @importFrom cli cli_alert_danger
 code_book <- function(x,
                       values = FALSE,
                       include_na = FALSE,
@@ -61,11 +59,11 @@ code_book <- function(x,
   if (!is.data.frame(x)) {
     stop("`x` must be a data frame or tibble.", call. = FALSE)
   }
+  if (!requireNamespace("DT", quietly = TRUE)) {
+    stop("Package 'DT' is required for code_book(). Please install it.", call. = FALSE)
+  }
 
   if (!exists("varlist", mode = "function")) {
-    cli::cli_alert_danger(
-      "Function `varlist()` not found. Please ensure it is available in the package."
-    )
     stop("Missing dependency: varlist().", call. = FALSE)
   }
 

@@ -19,7 +19,6 @@
 #'
 #' @returns Invisibly returns the object `x`. The main purpose is the side effect of copying data to the clipboard.
 #'
-#' @importFrom clipr clipr_available write_clip
 #' @importFrom tibble rownames_to_column
 #' @export
 #'
@@ -66,6 +65,10 @@ copy_clipboard <- function(
   quiet = FALSE,
   ...
 ) {
+  if (!requireNamespace("clipr", quietly = TRUE)) {
+    stop("Package 'clipr' is required for copy_clipboard(). Please install it.", call. = FALSE)
+  }
+
   if (!clipr::clipr_available()) {
     stop("Clipboard is not available on this system.")
   }

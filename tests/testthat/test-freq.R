@@ -18,6 +18,14 @@ test_that("freq() works with a data.frame column", {
   expect_true(any(grepl("C", res$value)))
 })
 
+test_that("freq() requires x when data is a data.frame", {
+  expect_error(
+    freq(mtcars, styled = FALSE),
+    "must supply `x`",
+    fixed = TRUE
+  )
+})
+
 
 test_that("freq() handles labelled variables correctly", {
   library(labelled)
@@ -59,6 +67,15 @@ test_that("freq() handles weights and rescaling", {
   # Weighted, not rescaled
   f_unscaled <- freq(df, sexe, weights = poids, rescale = FALSE, styled = FALSE)
   expect_true(sum(f_unscaled$n) > nrow(df))
+})
+
+test_that("freq() rejects rescale when sum of weights is zero", {
+  df <- data.frame(x = c("A", "B"), w = c(0, 0))
+  expect_error(
+    freq(df, x, weights = w, rescale = TRUE, styled = FALSE),
+    "strictly positive sum of weights",
+    fixed = TRUE
+  )
 })
 
 
