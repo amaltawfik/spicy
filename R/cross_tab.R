@@ -362,7 +362,9 @@ cross_tab <- function(
   }
 
   append_rows <- function(df, rows) {
-    if (is.null(rows)) return(df)
+    if (is.null(rows)) {
+      return(df)
+    }
     if (inherits(rows, "data.frame")) rows <- list(rows)
 
     for (r in rows) {
