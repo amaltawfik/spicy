@@ -15,17 +15,12 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/amaltawfik/spicy/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch"><li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
-  </ul></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/amaltawfik/spicy" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -37,7 +32,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="variable-metadata">Variable Metadata<a class="anchor" aria-label="anchor" href="#variable-metadata"></a></h2>
 
 
 
@@ -48,45 +43,10 @@
 
       <dl><dt>
 
-          <code><a href="code_book.html">code_book()</a></code>
+          <code><a href="varlist.html">varlist()</a></code> <code><a href="varlist.html">vl()</a></code>
 
         </dt>
-        <dd>Generate an interactive variable codebook</dd>
-
-        <dt>
-
-          <code><a href="copy_clipboard.html">copy_clipboard()</a></code>
-
-        </dt>
-        <dd>Copy data to the clipboard</dd>
-
-        <dt>
-
-          <code><a href="count_n.html">count_n()</a></code>
-
-        </dt>
-        <dd>Row-wise Count of Specific or Special Values</dd>
-
-        <dt>
-
-          <code><a href="cramer_v.html">cramer_v()</a></code>
-
-        </dt>
-        <dd>Compute Cramer's V</dd>
-
-        <dt>
-
-          <code><a href="cross_tab.html">cross_tab()</a></code>
-
-        </dt>
-        <dd>Cross-tabulation</dd>
-
-        <dt>
-
-          <code><a href="freq.html">freq()</a></code>
-
-        </dt>
-        <dd>Frequency Table (spicy engine)</dd>
+        <dd>Generate a comprehensive summary of the variables</dd>
 
         <dt>
 
@@ -97,10 +57,100 @@
 
         <dt>
 
+          <code><a href="code_book.html">code_book()</a></code>
+
+        </dt>
+        <dd>Generate an interactive variable codebook</dd>
+      </dl></div><div class="section level2">
+      <h2 id="descriptive-statistics">Descriptive Statistics<a class="anchor" aria-label="anchor" href="#descriptive-statistics"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="freq.html">freq()</a></code>
+
+        </dt>
+        <dd>Frequency Table (spicy engine)</dd>
+
+        <dt>
+
+          <code><a href="cross_tab.html">cross_tab()</a></code>
+
+        </dt>
+        <dd>Cross-tabulation</dd>
+
+        <dt>
+
+          <code><a href="cramer_v.html">cramer_v()</a></code>
+
+        </dt>
+        <dd>Compute Cramer's V</dd>
+
+        <dt>
+
           <code><a href="mean_n.html">mean_n()</a></code>
 
         </dt>
         <dd>Row Means with Optional Minimum Valid Values</dd>
+
+        <dt>
+
+          <code><a href="sum_n.html">sum_n()</a></code>
+
+        </dt>
+        <dd>Row Sums with Optional Minimum Valid Values</dd>
+
+        <dt>
+
+          <code><a href="count_n.html">count_n()</a></code>
+
+        </dt>
+        <dd>Row-wise Count of Specific or Special Values</dd>
+      </dl></div><div class="section level2">
+      <h2 id="export">Export<a class="anchor" aria-label="anchor" href="#export"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="copy_clipboard.html">copy_clipboard()</a></code>
+
+        </dt>
+        <dd>Copy data to the clipboard</dd>
+      </dl></div><div class="section level2">
+      <h2 id="printing">Printing<a class="anchor" aria-label="anchor" href="#printing"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
+
+        </dt>
+        <dd>Print a spicy-formatted ASCII table</dd>
+
+        <dt>
+
+          <code><a href="build_ascii_table.html">build_ascii_table()</a></code>
+
+        </dt>
+        <dd>Build a formatted ASCII table (internal spicy engine)</dd>
 
         <dt>
 
@@ -118,33 +168,13 @@
 
         <dt>
 
-          <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
-
-        </dt>
-        <dd>Print a spicy-formatted ASCII table</dd>
-
-        <dt>
-
           <code><a href="spicy_tables.html">spicy_tables</a></code>
 
         </dt>
         <dd>Spicy Table Engine: Frequency and Cross-tabulation Rendering</dd>
-
-        <dt>
-
-          <code><a href="sum_n.html">sum_n()</a></code>
-
-        </dt>
-        <dd>Row Sums with Optional Minimum Valid Values</dd>
-
-        <dt>
-
-          <code><a href="varlist.html">varlist()</a></code> <code><a href="varlist.html">vl()</a></code>
-
-        </dt>
-        <dd>Generate a comprehensive summary of the variables</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
