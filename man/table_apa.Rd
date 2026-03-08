@@ -125,10 +125,18 @@ Optional output engines require suggested packages:
 }
 }
 \examples{
-\dontrun{
-# Raw long output
+# Build a minimal reproducible dataset
+d_ex <- transform(
+  mtcars,
+  hes = factor(gear, labels = c("BFH", "HEdS-Geneve", "HESAV")),
+  emploi_sf = ifelse(vs == 1, "Oui", "Non"),
+  role_prof_recherche = ifelse(am == 1, "Oui", "Non"),
+  w = mpg
+)
+
+# Raw long output (machine-friendly)
 table_apa(
-  data = d,
+  data = d_ex,
   row_vars = c("emploi_sf", "role_prof_recherche"),
   group_var = "hes",
   labels = c("Emploi SF", "Role recherche"),
@@ -136,24 +144,51 @@ table_apa(
   style = "raw"
 )
 
-# Publication-ready tinytable
-tt <- table_apa(
-  data = d,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
-  output = "tinytable"
-)
-tt
-
-# Excel export
+# Raw wide output
 table_apa(
-  data = d,
+  data = d_ex,
   row_vars = c("emploi_sf", "role_prof_recherche"),
   group_var = "hes",
   labels = c("Emploi SF", "Role recherche"),
-  output = "excel",
-  excel_path = "apa_table.xlsx"
+  output = "wide",
+  style = "raw"
 )
+
+# Weighted example
+table_apa(
+  data = d_ex,
+  row_vars = c("emploi_sf", "role_prof_recherche"),
+  group_var = "hes",
+  labels = c("Emploi SF", "Role recherche"),
+  weights = "w",
+  rescale = TRUE,
+  simulate_p = FALSE,
+  output = "long",
+  style = "raw"
+)
+
+\donttest{
+# Optional output: tinytable
+if (requireNamespace("tinytable", quietly = TRUE)) {
+  table_apa(
+    data = d_ex,
+    row_vars = c("emploi_sf", "role_prof_recherche"),
+    group_var = "hes",
+    labels = c("Emploi SF", "Role recherche"),
+    output = "tinytable"
+  )
+}
+
+# Optional output: Excel
+if (requireNamespace("openxlsx", quietly = TRUE)) {
+  table_apa(
+    data = d_ex,
+    row_vars = c("emploi_sf", "role_prof_recherche"),
+    group_var = "hes",
+    labels = c("Emploi SF", "Role recherche"),
+    output = "excel",
+    excel_path = tempfile(fileext = ".xlsx")
+  )
+}
 }
 }
