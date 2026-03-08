@@ -19,44 +19,41 @@ License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
 <!-- badges: end -->
 
-spicy is designed to make variable exploration, documentation, and
-descriptive statistics fast, expressive, and easy to use.
+spicy brings polished, console-first data exploration to R for everyday
+analysis workflows.
 
 ## What is spicy?
 
-spicy is an R package for quick, consistent, and elegant exploration of
-data frames. It helps you:
+spicy is an R package for the first phase of data analysis: inspecting
+variables, checking distributions, exploring associations, and moving
+quickly toward usable outputs. It helps you:
 
-- Extract variable metadata and display compact summaries of dataset
-  variables using `varlist()` (with `vl()` as a convenient shortcut),
-  including names, labels, values, classes, number of distinct
-  non-missing values, number of valid observations, and number of
-  missing observations. Similar to the “Variable View” in SPSS or the
+- Inspect variables quickly with `varlist()` (and its shortcut `vl()`),
+  including names, labels, representative values, classes, number of
+  distinct non-missing values, number of valid observations, and number
+  of missing observations. Similar to the “Variable View” in SPSS or the
   “Variables Manager” in Stata.
-- Generate an interactive codebook generator `code_book()` that extends
-  `varlist()` with searchable summaries and built-in export options
-  (Copy, CSV, Excel, PDF, Print) via `DT::datatable`. Ideal for
-  documenting all variables present in a data frame.
-- Compute frequency tables with `freq()`, row-wise means with
-  `mean_n()`, row-wise sums with `sum_n()`, and counts of specific
-  values using `count_n()` – all with automatic handling of missing
-  data.
-- Explore relationships between categorical variables using
-  `cross_tab()` for contingency tables and `cramer_v()` for association
-  strength.
+- Explore distributions with `freq()`, and inspect associations with
+  `cross_tab()` and `cramer_v()`, all with readable console output.
+- Compute row-wise summaries with `mean_n()`, `sum_n()`, and `count_n()`
+  with automatic handling of missing data.
 - Build publication-ready APA cross-tab reports with `table_apa()` and
   export to multiple formats (`wide`, `long`, `tinytable`, `flextable`,
   `excel`, `clipboard`, `word`).
-- Copy data frames or result tables directly to the clipboard using
+- Generate an interactive codebook with `code_book()`, extending
+  `varlist()` with searchable summaries and built-in export options
+  (Copy, CSV, Excel, PDF, Print) via `DT::datatable`.
+- Copy data frames or result tables directly to the clipboard with
   `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with
   `label_from_names()`, especially useful for LimeSurvey CSV exports
   where headers follow a “name \[separator\] label” pattern – any string
   can be used as the separator (e.g., “.”, ” - “,”:“, etc.).
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
-  used variable types.
+- Work comfortably with `labelled`, `factor`, `Date`, `POSIXct`, and
+  other commonly used variable types.
 
-All with intuitive functions that return clean, structured outputs.
+The goal is simple: make early data exploration faster, clearer, and
+more pleasant in everyday analysis and data science workflows.
 
 ------------------------------------------------------------------------
 
