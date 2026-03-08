@@ -6,9 +6,13 @@
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   helper to build APA-ready cross-tab reports with multiple output
   formats (`wide`, `long`, `tinytable`, `flextable`, `excel`,
-  `clipboard`, `word`) and advanced
+  `clipboard`, `word`).
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  exposes key
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  controls (`weights`, `rescale`, `correct`, `simulate_B`).
+  controls for weighting and inference (`weights`, `rescale`, `correct`,
+  `simulate_p`, `simulate_B`) and now handles missing values explicitly
+  when `drop_na = FALSE`.
 
 ## spicy 0.4.2
 
