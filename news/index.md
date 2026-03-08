@@ -1,5 +1,15 @@
 # Changelog
 
+## spicy 0.5.0
+
+- New
+  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  helper to build APA-ready cross-tab reports with multiple output
+  formats (`wide`, `long`, `tinytable`, `flextable`, `excel`,
+  `clipboard`, `word`) and advanced
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  controls (`weights`, `rescale`, `correct`, `simulate_B`).
+
 ## spicy 0.4.2
 
 CRAN release: 2026-03-06

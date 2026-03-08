@@ -29,6 +29,11 @@
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
 
+## APA Tables
+
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  : Build APA-Style Cross-Tabulation Tables From Multiple Row Variables
+
 ## Export
 
 - [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
