@@ -1,4 +1,9 @@
-﻿# spicy 0.4.2
+# spicy 0.5.0
+
+* New `table_apa()` helper to build APA-ready cross-tab reports with multiple output formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`) and advanced `cross_tab()` controls (`weights`, `rescale`, `correct`, `simulate_B`).
+
+
+# spicy 0.4.2
 
 * `cross_tab()` hardening: improved vector-mode detection (including labelled vectors), stricter weight validation, safer rescaling, and clearer early errors (e.g., explicit `y = NULL`).
 * `cross_tab()` statistics are now computed on non-empty margins in grouped tables, avoiding spurious `NA` results; internal core path refactored to remove `dplyr`/`tibble` from computation while preserving API.
