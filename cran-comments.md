@@ -4,23 +4,15 @@
 
 ## Comments
 
-This is version 0.4.2 of the **spicy** package.
+This is version 0.5.0 of the **spicy** package.
 
 ### Main changes
 
-* `cross_tab()` hardening: improved vector-mode detection (including labelled vectors), stricter weight validation, safer rescaling, and clearer early errors.
-* `cross_tab()` statistics are now computed on non-empty margins in grouped tables, avoiding spurious `NA` results.
-* Internal refactor of `cross_tab()` core path to remove `dplyr`/`tibble` from the computation path while preserving API and behavior.
-* Robustness improvements in `freq()`, `count_n()`, `mean_n()`, `sum_n()`, `label_from_names()`, and `cramer_v()` for edge cases and clearer diagnostics.
-* Dependency optimization: `DT` and `clipr` moved to `Suggests`, with optional runtime checks added where needed.
-* Regression tests expanded for the above cases.
+* Added new `table_apa()` helper to build APA-ready cross-tab reports.
+* `table_apa()` supports multiple output formats: `wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, and `word`.
+* Added advanced `cross_tab()` controls to `table_apa()`: `weights`, `rescale`, `correct`, and `simulate_B`.
+* Added documentation, examples, and tests for the new functionality.
 
-There are no breaking changes to the public API.
+There are no breaking changes for users.
 
 ### Testing environments
-
-Checks were run on:
-
-* Local Windows (R 4.5.2)
-* GitHub Actions (R-CMD-check)
-* R-hub (linux, windows)
