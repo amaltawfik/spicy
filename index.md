@@ -1,49 +1,47 @@
 # spicy
 
-spicy is designed to make variable exploration, documentation, and
-descriptive statistics fast, expressive, and easy to use.
+spicy brings polished, console-first data exploration to R for everyday
+analysis workflows.
 
 ## What is spicy?
 
-spicy is an R package for quick, consistent, and elegant exploration of
-data frames. It helps you:
+spicy is an R package for the first phase of data analysis: inspecting
+variables, checking distributions, exploring associations, and moving
+quickly toward usable outputs. It helps you:
 
-- Extract variable metadata and display compact summaries of dataset
-  variables using
+- Inspect variables quickly with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  (with
-  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) as a
-  convenient shortcut), including names, labels, values, classes, number
-  of distinct non-missing values, number of valid observations, and
-  number of missing observations. Similar to the “Variable View” in SPSS
-  or the “Variables Manager” in Stata.
-- Generate an interactive codebook generator
-  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  that extends
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  with searchable summaries and built-in export options (Copy, CSV,
-  Excel, PDF, Print) via
-  [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html). Ideal
-  for documenting all variables present in a data frame.
-- Compute frequency tables with
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
-  row-wise means with
-  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
-  row-wise sums with
-  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
-  and counts of specific values using
-  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-  – all with automatic handling of missing data.
-- Explore relationships between categorical variables using
+  (and its shortcut
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)),
+  including names, labels, representative values, classes, number of
+  distinct non-missing values, number of valid observations, and number
+  of missing observations. Similar to the “Variable View” in SPSS or the
+  “Variables Manager” in Stata.
+- Explore distributions with
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
+  inspect associations with
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  for contingency tables and
-  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  for association strength.
+  and
+  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
+  all with readable console output.
+- Compute row-wise summaries with
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  with automatic handling of missing data.
 - Build publication-ready APA cross-tab reports with
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   and export to multiple formats (`wide`, `long`, `tinytable`,
   `flextable`, `excel`, `clipboard`, `word`).
-- Copy data frames or result tables directly to the clipboard using
+- Generate an interactive codebook with
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+  extending
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  with searchable summaries and built-in export options (Copy, CSV,
+  Excel, PDF, Print) via
+  [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html).
+- Copy data frames or result tables directly to the clipboard with
   [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
   for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with
@@ -51,10 +49,11 @@ data frames. It helps you:
   especially useful for LimeSurvey CSV exports where headers follow a
   “name \[separator\] label” pattern – any string can be used as the
   separator (e.g., “.”, ” - “,”:“, etc.).
-- Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly
-  used variable types.
+- Work comfortably with `labelled`, `factor`, `Date`, `POSIXct`, and
+  other commonly used variable types.
 
-All with intuitive functions that return clean, structured outputs.
+The goal is simple: make early data exploration faster, clearer, and
+more pleasant in everyday analysis and data science workflows.
 
 ------------------------------------------------------------------------
 
