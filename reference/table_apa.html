@@ -214,37 +214,769 @@ headers, p-values, and Cramer's V.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Raw long output</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Build a minimal reproducible dataset</span></span></span>
+<span class="r-in"><span><span class="va">d_ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">mtcars</span>,</span></span>
+<span class="r-in"><span>  hes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">gear</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BFH"</span>, <span class="st">"HEdS-Geneve"</span>, <span class="st">"HESAV"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  emploi_sf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">vs</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Oui"</span>, <span class="st">"Non"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  role_prof_recherche <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">am</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Oui"</span>, <span class="st">"Non"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  w <span class="op">=</span> <span class="va">mpg</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Raw long output (machine-friendly)</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
 <span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
 <span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable level       group  n   pct     p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH 12  80.0 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4  80.0 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 18  56.2 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3  20.0 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  1  20.0 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 14  43.8 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Role recherche   Non         BFH 15 100.0 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Role recherche   Non HEdS-Geneve  4  33.3 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Role recherche   Non       HESAV  0   0.0 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Role recherche   Non       Total 19  59.4 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Role recherche   Oui         BFH  0   0.0 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Role recherche   Oui HEdS-Geneve  8  66.7 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Role recherche   Oui       HESAV  5 100.0 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Role recherche   Oui       Total 13  40.6 0.001       0.81</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Publication-ready tinytable</span></span></span>
-<span class="r-in"><span><span class="va">tt</span> <span class="op">&lt;-</span> <span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tt</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Excel export</span></span></span>
+<span class="r-in"><span><span class="co"># Raw wide output</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
 <span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
 <span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
-<span class="r-in"><span>  excel_path <span class="op">=</span> <span class="st">"apa_table.xlsx"</span></span></span>
+<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span></span>
+<span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Variable Level BFH n BFH % HEdS-Geneve n HEdS-Geneve % HESAV n HESAV %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      Emploi SF   Non    12    80             2          16.7       4      80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      Emploi SF   Oui     3    20            10          83.3       1      20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Role recherche   Non    15   100             4          33.3       0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Role recherche   Oui     0     0             8          66.7       5     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total n Total %     p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      18    56.2 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      14    43.8 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      19    59.4 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      13    40.6 0.001       0.81</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Weighted example</span></span></span>
+<span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"w"</span>,</span></span>
+<span class="r-in"><span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
+<span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable level       group        n   pct     p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH  9.00000  74.8 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2.00000  14.3 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4.00000  71.6 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 14.88754  46.5 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3.00000  25.2 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 13.00000  85.7 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  2.00000  28.4 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 17.11246  53.5 0.003       0.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Role recherche   Non         BFH 12.00000 100.0 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Role recherche   Non HEdS-Geneve  4.00000  28.6 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Role recherche   Non       HESAV  0.00000   0.0 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Role recherche   Non       Total 16.21652  50.7 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Role recherche   Oui         BFH  0.00000   0.0 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Role recherche   Oui HEdS-Geneve 10.00000  71.4 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Role recherche   Oui       HESAV  5.00000 100.0 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Role recherche   Oui       Total 15.78348  49.3 0.001       0.79</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Optional output: tinytable</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_apa</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!-- preamble start --&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!DOCTYPE html&gt; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;html lang="en"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;head&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;meta charset="UTF-8"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;title&gt;tinytable_kyw40u2q3g69uhqt5hsf&lt;/title&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/head&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;body&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!-- preamble end --&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;script&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // TinyTable JavaScript Framework</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // Function factory for creating table-specific operations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> window.TinyTable = {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // Helper to create Tabulator instance with Luxon dependency</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   createTabulator: function(elementId, config) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const { DateTime } = window.luxon || {};</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     return new Tabulator(elementId, {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       dependencies: { DateTime },</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ...config</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     });</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   },</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   createTableFunctions: function (tableId) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const spans = []; // {top, left, rowspan, colspan}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     function resolveToAnchor(i, j) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // find if (i,j) is inside any span; return that span's anchor if so</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (const s of spans) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           i &gt;= s.top &amp;&amp; i &lt; s.top + s.rowspan &amp;&amp;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           j &gt;= s.left &amp;&amp; j &lt; s.left + s.colspan</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           return { i: s.top, j: s.left };</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       return { i, j };</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     return {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       styleCell: function (i, j, css_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // normalize possible string indices</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         i = +i; j = +j;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const table = document.getElementById(tableId);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const { i: ai, j: aj } = resolveToAnchor(i, j);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const cell = table.querySelector(`[data-row="${ai}"][data-col="${aj}"]`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!cell) return; // silently skip if not found (e.g., removed)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cell.classList.add(css_id);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       },</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       spanCell: function (i, j, rowspan, colspan) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         i = +i; j = +j;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const table = document.getElementById(tableId);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const targetCell = table.querySelector(`[data-row="${i}"][data-col="${j}"]`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (!targetCell) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           console.warn(`Cell at (${i}, ${j}) not found.`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           return;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // record span so future styleCell calls map to the anchor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         spans.push({ top: i, left: j, rowspan, colspan });</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // remove covered cells (except anchor)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         const cellsToRemove = [];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         for (let r = 0; r &lt; rowspan; r++) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           for (let c = 0; c &lt; colspan; c++) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             if (r === 0 &amp;&amp; c === 0) continue;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             const cell = table.querySelector(`[data-row="${i + r}"][data-col="${j + c}"]`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             if (cell) cellsToRemove.push(cell);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cellsToRemove.forEach(cell =&gt; cell.remove());</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // set HTML attributes for clarity/serialization</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         targetCell.setAttribute('rowspan', rowspan);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         targetCell.setAttribute('colspan', colspan);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     };</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> };</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // =============================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // TABULATOR CUSTOM FORMATTERS (revised)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // =============================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // SVG sparkline</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function tinytable_sparkline(cell, p = {}) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   let values = cell.getValue() ?? [];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (!Array.isArray(values)) values = [values];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // coerce to finite numbers &amp; strip NaNs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   values = values.map(Number).filter(Number.isFinite);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const n = values.length;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n === 0) return "";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const w = p.width ?? 120, h = p.height ?? 30, pad = p.pad ?? 2;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const color = p.color ?? "currentColor", sw = p.strokeWidth ?? 1.5;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const fill = p.fillArea ?? false;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const showDots = p.showDots ?? false;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const dotR = p.dotRadius ?? 1.75;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const ariaLabel = p.ariaLabel ?? `sparkline with ${n} points`;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // single pass for min/max</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   let min = Infinity, max = -Infinity;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (let v of values) { if (v &lt; min) min = v; if (v &gt; max) max = v; }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const span = (max - min) || 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const x = i =&gt; pad + (i * (w - 2 * pad)) / Math.max(n - 1, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const y = v =&gt; h - pad - ((v - min) * (h - 2 * pad)) / span;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   let d = `M ${x(0)},${y(values[0])}`;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (let i = 1; i &lt; n; i++) d += ` L ${x(i)},${y(values[i])}`;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const NS = "http://www.w3.org/2000/svg";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const svg = document.createElementNS(NS, "svg");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.setAttribute("width", w);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.setAttribute("height", h);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.setAttribute("role", "img");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.setAttribute("aria-label", ariaLabel);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const path = document.createElementNS(NS, "path");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   path.setAttribute("stroke", color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   path.setAttribute("stroke-width", sw);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   path.setAttribute("vector-effect", "non-scaling-stroke");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (fill) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const area = document.createElementNS(NS, "path");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     area.setAttribute("d", d + ` L ${x(n - 1)},${h - pad} L ${x(0)},${h - pad} Z`);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     area.setAttribute("fill", color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     area.setAttribute("fill-opacity", p.fillOpacity ?? 0.25);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     svg.appendChild(area);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     path.setAttribute("d", d);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     path.setAttribute("fill", "none");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     path.setAttribute("d", d);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     path.setAttribute("fill", "none");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   svg.appendChild(path);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (showDots) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const dot = (i) =&gt; {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       const c = document.createElementNS(NS, "circle");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       c.setAttribute("cx", x(i));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       c.setAttribute("cy", y(values[i]));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       c.setAttribute("r", dotR);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       c.setAttribute("fill", color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       return c;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     };</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (p.dots === "end") svg.appendChild(dot(n - 1));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     else if (p.dots === "minmax") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       const iMin = values.indexOf(min), iMax = values.indexOf(max);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       svg.appendChild(dot(iMin)); svg.appendChild(dot(iMax));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else if (p.dots === true) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (let i = 0; i &lt; n; i++) svg.appendChild(dot(i));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (p.title) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const title = document.createElementNS(NS, "title");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     title.textContent = p.title;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     svg.appendChild(title);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return svg;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // Canvas histogram</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function tinytable_histogram(cell, p = {}) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   let data = cell.getValue() ?? [];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (!Array.isArray(data)) data = [data];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   data = data.map(Number).filter(Number.isFinite);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const n = data.length;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n === 0) return "";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const cssWidth = p.width ?? 120;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const cssHeight = p.height ?? 30;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const color = p.color ?? "currentColor";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const gap = p.gap ?? 1;         // px gap between bars</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const pad = p.pad ?? 0;         // inner padding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const ariaLabel = p.ariaLabel ?? `histogram with ${n} observations`;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // robust bins: Sturges as default; allow override</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const k = Math.max(1, Math.min(64, p.bins ?? Math.ceil(Math.log2(n) + 1)));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // stats</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   let min = Infinity, max = -Infinity;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (let v of data) { if (v &lt; min) min = v; if (v &gt; max) max = v; }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // zero-range safeguard -&gt; single centered bar</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const range = max - min;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const binWidth = range &gt; 0 ? range / k : 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const bins = new Array(k).fill(0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (range === 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // put all mass in the middle bin</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     bins[Math.floor(k / 2)] = n;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (let v of data) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       let idx = Math.floor((v - min) / binWidth);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (idx &gt;= k) idx = k - 1; // clamp max edge</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       bins[idx]++;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const maxCount = Math.max(...bins, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // HiDPI / Retina crispness</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const dpr = window.devicePixelRatio || 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const canvas = document.createElement("canvas");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.width = Math.round(cssWidth * dpr);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.height = Math.round(cssHeight * dpr);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.style.width = cssWidth + "px";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.style.height = cssHeight + "px";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.setAttribute("role", "img");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   canvas.setAttribute("aria-label", ariaLabel);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const ctx = canvas.getContext("2d");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ctx.scale(dpr, dpr);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ctx.clearRect(0, 0, cssWidth, cssHeight);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ctx.fillStyle = color;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const innerW = cssWidth - pad * 2;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const innerH = cssHeight - pad * 2;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const barW = innerW / k;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (let i = 0; i &lt; k; i++) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const h = (bins[i] / maxCount) * innerH;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const x = pad + i * barW;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     const y = cssHeight - pad - h;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // 0.5 translate helps crisp vertical edges on some displays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ctx.fillRect(Math.round(x) + 0.5, Math.floor(y), Math.max(0, barW - gap), Math.ceil(h));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (p.title) canvas.title = p.title;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return canvas;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // Unified sorter that uses hidden rank field</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function tinytable_rank_sorter(a, b, aRow, bRow, column, dir, sorterParams) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const rankField = sorterParams.rankField;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const aVal = aRow.getData()[rankField] || 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   const bVal = bRow.getData()[rankField] || 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return aVal - bVal;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/script&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;script&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // Create table-specific functions using external factory</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       const tableFns_kyw40u2q3g69uhqt5hsf = TinyTable.createTableFunctions("tinytable_kyw40u2q3g69uhqt5hsf");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // tinytable span after</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       window.addEventListener('load', function () {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           var cellsToStyle = [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             // tinytable style arrays after</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_xd9nhufjb3jz27aorm22',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 } ], css_id: 'tinytable_css_ety3ak3wvwd0o3p1p52k',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '0', j: 2 }, { i: '6', j: 2 }, { i: '0', j: 3 }, { i: '6', j: 3 }, { i: '0', j: 4 }, { i: '6', j: 4 }, { i: '0', j: 5 }, { i: '6', j: 5 }, { i: '0', j: 6 }, { i: '6', j: 6 }, { i: '0', j: 7 }, { i: '6', j: 7 }, { i: '0', j: 8 }, { i: '6', j: 8 }, { i: '0', j: 9 }, { i: '6', j: 9 }, { i: '0', j: 10 }, { i: '6', j: 10 }, { i: '0', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_vqjqpq0ieovugm0pmqpq',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_v35347v2fidbt6yle68y',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_0ms2ifte3jsb7afua9zu',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_xmhz6pra61uv1026nzio',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_y27323ceq2rb3p5lgyvr',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_6fk2i9xqdo8uilh5ubdl',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_57bsgkyz8gy5kc5d3ws2',}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           ];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           // Loop over the arrays to style the cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           cellsToStyle.forEach(function (group) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               group.positions.forEach(function (cell) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   tableFns_kyw40u2q3g69uhqt5hsf.styleCell(cell.i, cell.j, group.css_id);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               });</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           });</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       });</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/script&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;style&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * tinytable CSS - Core styling for HTML table output</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * CSS Custom Properties (Theme Variables)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Colors */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-text-color: inherit;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-line-color: black;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-border-color: var(--tt-line-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-striped-bg: rgba(0, 0, 0, .05);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-hover-bg: rgba(0, 0, 0, .075);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-background-color: transparent;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-footnote-bg: var(--tt-background-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Spacing */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-cell-padding: .5rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-cell-padding-sm: calc(var(--tt-cell-padding) / 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-table-margin: .5rem 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-caption-padding: .5rem 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-footnote-padding: .2rem .5rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-footnote-first-padding-top: .5rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-footnote-gap: .1rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-container-padding: 10px;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Typography */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-font-size-footnote: 0.875rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-font-size-caption: 1rem;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-font-size-sup: 0.75em;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-line-height-footnote: 1.25;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-line-height-footnote-tight: 1.2;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-font-weight-header: normal;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Alignment */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-cell-valign: top;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-header-align: left;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-header-valign: bottom;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-caption-align: var(--tt-header-align);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-caption-side: top;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Layout */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-table-width: 100%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Border widths */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-border-width: 1px;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --tt-border-width-tbody: 2px;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Base Table Styles</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     width: var(--tt-table-width);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     margin: var(--tt-table-margin);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-collapse: collapse;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     background-color: var(--tt-background-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     color: var(--tt-text-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-family: inherit;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     -webkit-font-smoothing: antialiased;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     -moz-osx-font-smoothing: grayscale;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable * {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-family: inherit;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Cell Styles</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable th,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     position: relative;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding: var(--tt-cell-padding);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vertical-align: var(--tt-cell-valign);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable thead th {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     text-align: var(--tt-header-align);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vertical-align: var(--tt-header-valign);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-weight: var(--tt-font-weight-header);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-bottom: none;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable thead th[align="center"] {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     text-align: center;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tbody + tbody {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-top: var(--tt-border-width-tbody) solid var(--tt-border-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Table Variants</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Small padding variant */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-sm th,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-sm td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding: var(--tt-cell-padding-sm);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Bordered variant */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-bordered {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border: var(--tt-border-width) solid var(--tt-border-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-bordered th,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-bordered td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border: var(--tt-border-width) solid var(--tt-border-color);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Striped rows variant */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-striped tbody tr:nth-of-type(odd) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     background-color: var(--tt-striped-bg);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Hover effect variant */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-hover tbody tr:hover {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     background-color: var(--tt-hover-bg);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Responsive wrapper */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-responsive {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     width: var(--tt-table-width);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     overflow-x: auto;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     -webkit-overflow-scrolling: touch;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Custom Border System (Pseudo-elements)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable :is(td, th)[class*="tinytable_css_"] {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     position: relative;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Border control variables */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --border-top: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --border-right: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --border-bottom: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --border-left: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Border color variables */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-color-top: currentColor;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-color-right: currentColor;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-color-bottom: currentColor;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-color-left: currentColor;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Border width variables */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-width-top: 0.1em;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-width-right: 0.1em;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-width-bottom: 0.1em;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --line-width-left: 0.1em;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* Border trim variables */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-top-left: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-top-right: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-right-top: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-right-bottom: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-bottom-left: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-bottom-right: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-left-top: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --trim-left-bottom: 0%;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Top, left, and right borders using ::before */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable :is(td, th)[class*="tinytable_css_"]::before {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     content: "";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     position: absolute;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     top: var(--trim-top-left, var(--trim-top-right, 0));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     left: var(--trim-left-top, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     right: var(--trim-right-top, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     bottom: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pointer-events: none;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     z-index: 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-top: calc(var(--border-top) * var(--line-width-top)) solid var(--line-color-top);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-right: calc(var(--border-right) * var(--line-width-right)) solid var(--line-color-right);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     border-left: calc(var(--border-left) * var(--line-width-left)) solid var(--line-color-left);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Bottom border using ::after */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable :is(td, th)[class*="tinytable_css_"]::after {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     content: "";</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     position: absolute;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     left: var(--trim-bottom-left, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     right: var(--trim-bottom-right, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     bottom: var(--trim-left-bottom, var(--trim-right-bottom, 0));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     height: calc(var(--border-bottom) * var(--line-width-bottom));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     background: var(--line-color-bottom);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pointer-events: none;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     z-index: 2;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Container and Layout Components</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable-container {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding: var(--tt-container-padding);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     overflow-x: auto;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     overflow-y: auto;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     width: auto;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     height: auto;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Caption Styling</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable caption {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding: var(--tt-caption-padding);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     caption-side: var(--tt-caption-side);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-size: var(--tt-font-size-caption);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     text-align: var(--tt-caption-align);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * Footnotes and Table Footer</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  * ======================================================================== */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tfoot tr:first-child td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding-top: var(--tt-footnote-first-padding-top);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tfoot td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding: var(--tt-footnote-padding);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-size: var(--tt-font-size-footnote);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     line-height: var(--tt-line-height-footnote);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     background-color: var(--tt-footnote-bg);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Remove extra gap between footnote rows */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tfoot tr + tr td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     padding-top: var(--tt-footnote-gap);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Make superscripts not inflate line boxes */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tfoot sup {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     font-size: var(--tt-font-size-sup);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     line-height: 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vertical-align: text-top;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> /* Slightly tighter for wrapped footnote text */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> .tinytable tfoot tr:nth-child(n+2) td {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     line-height: var(--tt-line-height-footnote-tight);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/style&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;style&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     /* tinytable css entries after */</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_xd9nhufjb3jz27aorm22, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_xd9nhufjb3jz27aorm22 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_ety3ak3wvwd0o3p1p52k, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_ety3ak3wvwd0o3p1p52k { text-align: right }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_vqjqpq0ieovugm0pmqpq, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_vqjqpq0ieovugm0pmqpq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_v35347v2fidbt6yle68y, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_v35347v2fidbt6yle68y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_0ms2ifte3jsb7afua9zu, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_0ms2ifte3jsb7afua9zu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_xmhz6pra61uv1026nzio, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_xmhz6pra61uv1026nzio { text-align: left; padding-left: 1em; padding-left: 0.8em; }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_y27323ceq2rb3p5lgyvr, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_y27323ceq2rb3p5lgyvr { text-align: left }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_6fk2i9xqdo8uilh5ubdl, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_6fk2i9xqdo8uilh5ubdl {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     #tinytable_kyw40u2q3g69uhqt5hsf td.tinytable_css_57bsgkyz8gy5kc5d3ws2, #tinytable_kyw40u2q3g69uhqt5hsf th.tinytable_css_57bsgkyz8gy5kc5d3ws2 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/style&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;div class="container"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       &lt;table class="tinytable" id="tinytable_kyw40u2q3g69uhqt5hsf" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing='true'&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=1 data-row="-1" data-col="1"&gt;Variable&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=2 data-row="-1" data-col="2"&gt;BFH&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=2 data-row="-1" data-col="4"&gt;HEdS-Geneve&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=2 data-row="-1" data-col="6"&gt;HESAV&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=2 data-row="-1" data-col="8"&gt;Total&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=1 data-row="-1" data-col="10"&gt;p&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;th scope="col" align="center" colspan=1 data-row="-1" data-col="11"&gt;Cramer's V&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="1"&gt;&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="2"&gt;n&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="3"&gt;%&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="4"&gt;n&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="5"&gt;%&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="6"&gt;n&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="7"&gt;%&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="8"&gt;n&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="9"&gt;%&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="10"&gt;&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th scope="col" data-row="0" data-col="11"&gt;&lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;/thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="1"&gt;Emploi SF&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="2"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="3"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="4"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="5"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="6"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="7"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="8"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="9"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="10"&gt;.001&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="1" data-col="11"&gt;.62&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="1"&gt;      Non&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="2"&gt;12&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="3"&gt;80.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="4"&gt;2&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="5"&gt;16.7&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="6"&gt;4&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="7"&gt;80.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="8"&gt;18&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="9"&gt;56.2&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="10"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="2" data-col="11"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="1"&gt;      Oui&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="2"&gt;3&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="3"&gt;20.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="4"&gt;10&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="5"&gt;83.3&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="6"&gt;1&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="7"&gt;20.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="8"&gt;14&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="9"&gt;43.8&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="10"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="3" data-col="11"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="1"&gt;Role recherche&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="2"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="3"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="4"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="5"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="6"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="7"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="8"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="9"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="10"&gt;&lt; .001&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="4" data-col="11"&gt;.81&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="1"&gt;      Non&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="2"&gt;15&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="3"&gt;100.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="4"&gt;4&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="5"&gt;33.3&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="6"&gt;0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="7"&gt;0.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="8"&gt;19&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="9"&gt;59.4&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="10"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="5" data-col="11"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="1"&gt;      Oui&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="2"&gt;0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="3"&gt;0.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="4"&gt;8&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="5"&gt;66.7&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="6"&gt;5&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="7"&gt;100.0&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="8"&gt;13&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="9"&gt;40.6&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="10"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   &lt;td data-row="6" data-col="11"&gt;&lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;/tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       &lt;/table&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/div&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;!-- postamble start --&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/body&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/html&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!-- postamble end --&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!-- hack to avoid NA insertion in last line --&gt; </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_apa</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
+<span class="r-in"><span>    excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
