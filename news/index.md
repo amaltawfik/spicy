@@ -2,6 +2,8 @@
 
 ## spicy 0.4.2
 
+CRAN release: 2026-03-06
+
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   hardening: improved vector-mode detection (including labelled
   vectors), stricter weight validation, safer rescaling, and clearer
