@@ -44,6 +44,9 @@ data frames. It helps you:
 - Explore relationships between categorical variables using
   `cross_tab()` for contingency tables and `cramer_v()` for association
   strength.
+- Build publication-ready APA cross-tab reports with `table_apa()` and
+  export to multiple formats (`wide`, `long`, `tinytable`, `flextable`,
+  `excel`, `clipboard`, `word`).
 - Copy data frames or result tables directly to the clipboard using
   `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with
@@ -299,6 +302,34 @@ labelled::var_label(out)
 #> 
 #> $score
 #> [1] "Total score. Manually computed."
+```
+
+Additional exported helpers:
+
+``` r
+# Association strength from a contingency table
+cramer_v(table(mtcars$cyl, mtcars$gear))
+
+# Interactive codebook (requires DT)
+code_book(iris)
+
+# APA-ready table builder
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "long",
+  style = "raw"
+)
+
+# Low-level ASCII builders used by print methods
+tab <- cross_tab(mtcars, cyl, gear)
+spicy_print_table(tab)
+build_ascii_table(tab, title = attr(tab, "title"), note = attr(tab, "note"))
+
+# Clipboard export helper (interactive session)
+copy_clipboard(head(mtcars))
 ```
 
 > All functions can be directly used in pipelines.

@@ -34,6 +34,7 @@ spicy is an R package for quick, consistent, and elegant exploration of data fra
 - Generate an interactive codebook generator `code_book()` that extends `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`. Ideal for documenting all variables present in a data frame.
 - Compute frequency tables with `freq()`, row-wise means with `mean_n()`, row-wise sums with `sum_n()`, and counts of specific values using `count_n()` -- all with automatic handling of missing data.
 - Explore relationships between categorical variables using `cross_tab()` for contingency tables and `cramer_v()` for association strength.
+- Build publication-ready APA cross-tab reports with `table_apa()` and export to multiple formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
 - Copy data frames or result tables directly to the clipboard using `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow a "name [separator] label" pattern -- any string can be used as the separator (e.g., ". ", " - ", ":", etc.).
 - Handle `labelled`, `factor`, `Date`, `POSIXct`, and other commonly used variable types.
@@ -134,6 +135,34 @@ out <- label_from_names(df)
 
 # View assigned labels
 labelled::var_label(out)
+```
+
+Additional exported helpers:
+
+```{r eval=FALSE}
+# Association strength from a contingency table
+cramer_v(table(mtcars$cyl, mtcars$gear))
+
+# Interactive codebook (requires DT)
+code_book(iris)
+
+# APA-ready table builder
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "long",
+  style = "raw"
+)
+
+# Low-level ASCII builders used by print methods
+tab <- cross_tab(mtcars, cyl, gear)
+spicy_print_table(tab)
+build_ascii_table(tab, title = attr(tab, "title"), note = attr(tab, "note"))
+
+# Clipboard export helper (interactive session)
+copy_clipboard(head(mtcars))
 ```
 
 > All functions can be directly used in pipelines.
