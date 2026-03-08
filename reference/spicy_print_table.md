@@ -3,8 +3,9 @@
 User-facing helper that prints a visually aligned, spicy-styled ASCII
 table created by functions such as
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) or
-cross_table(). It automatically adjusts column alignment, spacing, and
-separators for improved readability in console outputs.
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+It automatically adjusts column alignment, spacing, and separators for
+improved readability in console outputs.
 
 This function wraps the internal renderer
 [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md),
@@ -49,11 +50,11 @@ spicy_print_table(
 
   Character string controlling horizontal spacing between columns:
 
-  - `"compact"` — minimal spacing
+  - `"compact"` - minimal spacing
 
-  - `"normal"` — moderate spacing (default)
+  - `"normal"` - moderate spacing (default)
 
-  - `"wide"` — extra spacing (for wide displays)
+  - `"wide"` - extra spacing (for wide displays)
 
 - first_column_line:
 
@@ -78,9 +79,9 @@ spicy_print_table(
   Integer vector of column indices to left-align. If `NULL` (default),
   alignment is auto-detected based on `x`:
 
-  - For `freq` tables → `c(1, 2)`
+  - For `freq` tables -\> `c(1, 2)`
 
-  - For `cross` tables → `1`
+  - For `cross` tables -\> `1`
 
 - ...:
 
