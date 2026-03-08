@@ -48,7 +48,8 @@ modalities. If \code{NULL}, all observed levels are kept.}
 \item{include_total}{Logical; include \code{Total} group if available.}
 
 \item{drop_na}{Logical; if \code{TRUE}, remove rows with NA in row/group variable
-before each cross-tabulation.}
+before each cross-tabulation. If \code{FALSE}, missing values are displayed as a
+dedicated \code{"(Missing)"} level.}
 
 \item{weights}{Optional weights. Either \code{NULL}, a numeric vector of length
 \code{nrow(data)}, or a single column name in \code{data}.}
@@ -170,7 +171,7 @@ table_apa(
 \donttest{
 # Optional output: tinytable
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_apa(
+  tt_ex <- table_apa(
     data = d_ex,
     row_vars = c("emploi_sf", "role_prof_recherche"),
     group_var = "hes",

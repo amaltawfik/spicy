@@ -29,9 +29,9 @@ attribute of \code{x} if present.}
 
 \item{padding}{Character string controlling horizontal spacing between columns:
 \itemize{
-\item \code{"compact"} — minimal spacing
-\item \code{"normal"} — moderate spacing (default)
-\item \code{"wide"} — extra spacing (for wide displays)
+\item \code{"compact"} - minimal spacing
+\item \code{"normal"} - moderate spacing (default)
+\item \code{"wide"} - extra spacing (for wide displays)
 }}
 
 \item{first_column_line}{Logical; if \code{TRUE} (default), adds a vertical separator
@@ -49,8 +49,8 @@ Only applied if the output supports ANSI colors (see \code{\link[crayon:has_colo
 \item{align_left_cols}{Integer vector of column indices to left-align.
 If \code{NULL} (default), alignment is auto-detected based on \code{x}:
 \itemize{
-\item For \code{freq} tables → \code{c(1, 2)}
-\item For \code{cross} tables → \code{1}
+\item For \code{freq} tables -> \code{c(1, 2)}
+\item For \code{cross} tables -> \code{1}
 }}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
@@ -60,7 +60,7 @@ Invisibly returns \code{x}, after printing the formatted ASCII table to the cons
 }
 \description{
 User-facing helper that prints a visually aligned, spicy-styled ASCII table
-created by functions such as \code{\link[=freq]{freq()}} or cross_table().
+created by functions such as \code{\link[=freq]{freq()}} or \code{\link[=cross_tab]{cross_tab()}}.
 It automatically adjusts column alignment, spacing, and separators for
 improved readability in console outputs.
 

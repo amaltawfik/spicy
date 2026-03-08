@@ -194,7 +194,7 @@ build_ascii_table <- function(x,
 #'
 #' @description
 #' User-facing helper that prints a visually aligned, spicy-styled ASCII table
-#' created by functions such as [freq()] or cross_table().
+#' created by functions such as [freq()] or [cross_tab()].
 #' It automatically adjusts column alignment, spacing, and separators for
 #' improved readability in console outputs.
 #'
@@ -220,9 +220,9 @@ build_ascii_table <- function(x,
 #' @param note Optional note displayed below the table. Defaults to the `"note"`
 #'   attribute of `x` if present.
 #' @param padding Character string controlling horizontal spacing between columns:
-#'   * `"compact"` — minimal spacing
-#'   * `"normal"` — moderate spacing (default)
-#'   * `"wide"` — extra spacing (for wide displays)
+#'   * `"compact"` - minimal spacing
+#'   * `"normal"` - moderate spacing (default)
+#'   * `"wide"` - extra spacing (for wide displays)
 #' @param first_column_line Logical; if `TRUE` (default), adds a vertical separator
 #'   after the first column.
 #' @param row_total_line,column_total_line,bottom_line Logical flags controlling
@@ -234,8 +234,8 @@ build_ascii_table <- function(x,
 #'   Only applied if the output supports ANSI colors (see [crayon::has_color()]).
 #' @param align_left_cols Integer vector of column indices to left-align.
 #'   If `NULL` (default), alignment is auto-detected based on `x`:
-#'   * For `freq` tables → `c(1, 2)`
-#'   * For `cross` tables → `1`
+#'   * For `freq` tables -> `c(1, 2)`
+#'   * For `cross` tables -> `1`
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return

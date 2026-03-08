@@ -16,7 +16,8 @@
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical; include `Total` group if available.
 #' @param drop_na Logical; if `TRUE`, remove rows with NA in row/group variable
-#'   before each cross-tabulation.
+#'   before each cross-tabulation. If `FALSE`, missing values are displayed as a
+#'   dedicated `"(Missing)"` level.
 #' @param weights Optional weights. Either `NULL`, a numeric vector of length
 #'   `nrow(data)`, or a single column name in `data`.
 #' @param rescale Logical; passed to `spicy::cross_tab()` to rescale weights.
@@ -104,7 +105,7 @@
 #' \donttest{
 #' # Optional output: tinytable
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
-#'   table_apa(
+#'   tt_ex <- table_apa(
 #'     data = d_ex,
 #'     row_vars = c("emploi_sf", "role_prof_recherche"),
 #'     group_var = "hes",
@@ -193,6 +194,12 @@ table_apa <- function(
   }
   labels <- as.character(labels)
 
+  if (!is.logical(include_total) || length(include_total) != 1 || is.na(include_total)) {
+    stop("`include_total` must be TRUE/FALSE.", call. = FALSE)
+  }
+  if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
+    stop("`drop_na` must be TRUE/FALSE.", call. = FALSE)
+  }
   if (!is.logical(rescale) || length(rescale) != 1 || is.na(rescale)) {
     stop("`rescale` must be TRUE/FALSE.", call. = FALSE)
   }
@@ -211,6 +218,15 @@ table_apa <- function(
     stop("`simulate_B` must be a positive integer.", call. = FALSE)
   }
   simulate_B <- as.integer(simulate_B)
+  if (!is.logical(add_multilevel_header) || length(add_multilevel_header) != 1 || is.na(add_multilevel_header)) {
+    stop("`add_multilevel_header` must be TRUE/FALSE.", call. = FALSE)
+  }
+  if (!is.logical(blank_na_wide) || length(blank_na_wide) != 1 || is.na(blank_na_wide)) {
+    stop("`blank_na_wide` must be TRUE/FALSE.", call. = FALSE)
+  }
+  if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
+    stop("`decimal_mark` must be either '.' or ','.", call. = FALSE)
+  }
 
   weights_vec <- NULL
   if (!is.null(weights)) {
@@ -232,6 +248,23 @@ table_apa <- function(
   if (isTRUE(rescale) && is.null(weights_vec)) {
     warning("`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.")
     rescale <- FALSE
+  }
+
+  all_values <- unique(unlist(
+    lapply(c(row_vars, group_var), function(nm) as.character(data[[nm]])),
+    use.names = FALSE
+  ))
+  missing_label <- "(Missing)"
+  if (missing_label %in% all_values) {
+    idx <- 1L
+    repeat {
+      candidate <- paste0("(Missing_", idx, ")")
+      if (!(candidate %in% all_values)) {
+        missing_label <- candidate
+        break
+      }
+      idx <- idx + 1L
+    }
   }
 
   `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -331,6 +364,9 @@ table_apa <- function(
     unique(as.character(g0[!is.na(g0)]))
   }
   group_levels <- as.character(group_levels)
+  if (!drop_na && any(is.na(g0))) {
+    group_levels <- unique(c(group_levels, missing_label))
+  }
   if (include_total) {
     group_levels <- unique(c(group_levels, "Total"))
   }
@@ -356,6 +392,12 @@ table_apa <- function(
     }
     if (!length(x)) {
       next
+    }
+    if (!drop_na) {
+      x <- as.character(x)
+      g <- as.character(g)
+      x[is.na(x)] <- missing_label
+      g[is.na(g)] <- missing_label
     }
 
     ct_pct <- spicy::cross_tab(

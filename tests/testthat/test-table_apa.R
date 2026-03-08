@@ -89,6 +89,41 @@ test_that("table_apa validates weights and simulate_B", {
   )
 })
 
+test_that("table_apa keeps missing values as explicit levels when drop_na is FALSE", {
+  df <- data.frame(
+    grp = c("A", "A", "B", NA),
+    v1 = c("Oui", NA, "Non", "Oui"),
+    stringsAsFactors = FALSE
+  )
+
+  out_keep <- table_apa(
+    data = df,
+    row_vars = "v1",
+    group_var = "grp",
+    labels = "Var 1",
+    drop_na = FALSE,
+    simulate_p = FALSE,
+    output = "long",
+    style = "raw"
+  )
+
+  out_drop <- table_apa(
+    data = df,
+    row_vars = "v1",
+    group_var = "grp",
+    labels = "Var 1",
+    drop_na = TRUE,
+    simulate_p = FALSE,
+    output = "long",
+    style = "raw"
+  )
+
+  expect_true(any(grepl("^\\(Missing", out_keep$level)))
+  expect_true(any(grepl("^\\(Missing", out_keep$group)))
+  expect_false(any(grepl("^\\(Missing", out_drop$level)))
+  expect_false(any(grepl("^\\(Missing", out_drop$group)))
+})
+
 test_that("table_apa returns tinytable object when requested", {
   skip_if_not_installed("tinytable")
 

@@ -3,7 +3,15 @@ Title: Descriptive Statistics and Data Management Tools
 Version: 0.5.0
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555", ROR = "04j47fz63"))
-Description: Extracts and summarizes metadata from data frames, including variable names, labels, types, and missing values. Computes compact descriptive statistics, frequency tables, and cross-tabulations to assist with efficient data exploration. Includes an interactive and exportable codebook generator for documenting variable metadata. Facilitates the identification of missing data patterns and structural issues in datasets. Designed to streamline initial data management and exploratory analysis workflows within 'R'.
+Description: Extracts and summarizes metadata from data frames, including
+    variable names, labels, types, and missing values. Computes compact
+    descriptive statistics, frequency tables, cross-tabulations, and
+    APA-style reporting tables to support efficient data exploration and
+    reporting workflows. Includes an interactive and exportable codebook
+    generator for documenting variable metadata, as well as clipboard,
+    spreadsheet, and document-oriented export helpers. Designed to
+    streamline initial data management, descriptive analysis, and reporting
+    workflows within 'R'.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues
