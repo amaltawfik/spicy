@@ -21,7 +21,8 @@ CRAN release: 2026-03-06
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   statistics are now computed on non-empty margins in grouped tables,
   avoiding spurious `NA` results; internal core path refactored to
-  remove `dplyr`/`tibble` from computation while preserving API.
+  remove `dplyr`/`tibble` from computation while preserving user-facing
+  behavior.
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
   errors clearly when `x` is missing for data.frame input and validates
   rescaling when weight sums are zero/non-finite.

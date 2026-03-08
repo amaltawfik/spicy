@@ -41,7 +41,7 @@
 <ul><li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> hardening: improved vector-mode detection (including labelled vectors), stricter weight validation, safer rescaling, and clearer early errors (e.g., explicit <code>y = NULL</code>).</li>
 <li>
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code> statistics are now computed on non-empty margins in grouped tables, avoiding spurious <code>NA</code> results; internal core path refactored to remove <code>dplyr</code>/<code>tibble</code> from computation while preserving API.</li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> statistics are now computed on non-empty margins in grouped tables, avoiding spurious <code>NA</code> results; internal core path refactored to remove <code>dplyr</code>/<code>tibble</code> from computation while preserving user-facing behavior.</li>
 <li>
 <code><a href="../reference/freq.html">freq()</a></code> now errors clearly when <code>x</code> is missing for data.frame input and validates rescaling when weight sums are zero/non-finite.</li>
 <li>
