@@ -2,14 +2,13 @@
 
 * New `table_apa()` helper to build APA-ready cross-tab reports with multiple output formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
 * `table_apa()` exposes key `cross_tab()` controls for weighting and inference (`weights`, `rescale`, `correct`, `simulate_p`, `simulate_B`) and now handles missing values explicitly when `drop_na = FALSE`.
-* `copy_clipboard()` now uses `crayon` for colored output instead of raw ANSI escape codes, and the `message` parameter has been renamed to `show_message` for clarity.
-* `count_n()` no longer crashes when `special = "NaN"` is used with non-numeric columns (character, factor). The `count = NA` trap is now caught with an informative error directing users to `special = "NA"`.
-* `cross_tab()` fixes a bug where the rescale warning fired incorrectly for explicitly provided all-ones weights. The Cramer's V formula now matches `cramer_v()`. The `simulate_p` default in `table_apa()` is aligned to `FALSE`.
-* `freq()` now assigns a proper S3 class (`spicy_freq_table`) and dispatches printing correctly.
-* `table_apa()` now protects global options with `on.exit()`, preventing side effects when the function errors.
-* `varlist()` title generation no longer crashes on unrecognizable expressions; a safe fallback is used instead. The NA detection logic in value summaries now uses pre-computed flags for robustness.
-* Removed phantom dependencies `collapse` and `stringi` from `Imports` (they were loaded but never called).
-* Documentation harmonized across all functions: all `@param` entries now mention default values using a consistent style.
+* `copy_clipboard()` parameter `message` renamed to `show_message`.
+* `count_n()` no longer crashes when `special = "NaN"` is used with non-numeric columns. Passing `count = NA` now errors with a message directing to `special = "NA"`.
+* `cross_tab()` fixes a spurious rescale warning for explicit all-ones weights and aligns the Cramer's V formula with `cramer_v()`.
+* `freq()` now dispatches printing correctly via S3.
+* `table_apa()` no longer leaks global options on error. The `simulate_p` default is aligned to `FALSE`.
+* `varlist()` title generation no longer crashes on unrecognizable expressions.
+* Removed unused `collapse` and `stringi` from `Imports`.
 
 
 # spicy 0.4.2
