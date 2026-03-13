@@ -66,10 +66,14 @@ label_from_names <- function(df, sep = ". ") {
     raw_labels
   )
 
-  df <- Map(function(col, lab) {
-    labelled::var_label(col) <- lab
-    col
-  }, df, labels)
+  df <- Map(
+    function(col, lab) {
+      labelled::var_label(col) <- lab
+      col
+    },
+    df,
+    labels
+  )
 
   tibble::as_tibble(setNames(df, new_names))
 }

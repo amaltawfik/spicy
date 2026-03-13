@@ -27,16 +27,16 @@ Typically, this includes columns such as \emph{Category}, \emph{Values}, \emph{F
 \item \code{"wide"} — extra spacing (for large displays or wide content)
 }}
 
-\item{first_column_line}{Logical. If \code{TRUE} (default), a vertical separator
+\item{first_column_line}{Logical. If \code{TRUE} (the default), a vertical separator
 is drawn after the first column (useful for separating categories from data).}
 
 \item{row_total_line, column_total_line}{Logical. Control horizontal rules
-before total rows or columns (default: \code{TRUE}).}
+before total rows or columns. Both default to \code{TRUE}.}
 
-\item{bottom_line}{Logical. If \code{TRUE}, draws a closing line at the
-bottom of the table (default: \code{FALSE}).}
+\item{bottom_line}{Logical. If \code{FALSE} (the default), no closing line is drawn.
+If \code{TRUE}, draws a closing line at the bottom of the table.}
 
-\item{lines_color}{Character. Color used for table separators (default: \code{"darkgrey"}).
+\item{lines_color}{Character. Color used for table separators. Defaults to \code{"darkgrey"}.
 The color is applied only when ANSI color support is available
 (see \code{\link[crayon:has_color]{crayon::has_color()}}).}
 

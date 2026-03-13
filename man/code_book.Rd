@@ -47,11 +47,9 @@ client-side export to various formats.
 }
 \section{Dependencies}{
 
-Requires the following packages:
+Requires the following package:
 \itemize{
 \item \strong{DT}
-\item \strong{cli}
-\item \strong{tools}
 }
 }
 

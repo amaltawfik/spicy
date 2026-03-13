@@ -12,7 +12,12 @@ pkgload::load_all(".", quiet = TRUE)
 new_cross_tab <- get("cross_tab", envir = parent.frame())
 
 tmp_old <- tempfile(fileext = ".R")
-old_src <- system2("git", c("show", "HEAD:R/cross_tab.R"), stdout = TRUE, stderr = FALSE)
+old_src <- system2(
+  "git",
+  c("show", "HEAD:R/cross_tab.R"),
+  stdout = TRUE,
+  stderr = FALSE
+)
 if (length(old_src) == 0) {
   stop("Could not read HEAD version of R/cross_tab.R", call. = FALSE)
 }
@@ -64,18 +69,64 @@ results <- do.call(
   list(
     bench_case(
       "df_no_group_stats",
-      quote(old_cross_tab(df, x, y, percent = "c", include_stats = TRUE, styled = FALSE)),
-      quote(new_cross_tab(df, x, y, percent = "c", include_stats = TRUE, styled = FALSE))
+      quote(old_cross_tab(
+        df,
+        x,
+        y,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      )),
+      quote(new_cross_tab(
+        df,
+        x,
+        y,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      ))
     ),
     bench_case(
       "df_grouped_stats",
-      quote(old_cross_tab(df, x, y, by = g, weights = w, percent = "c", include_stats = TRUE, styled = FALSE)),
-      quote(new_cross_tab(df, x, y, by = g, weights = w, percent = "c", include_stats = TRUE, styled = FALSE))
+      quote(old_cross_tab(
+        df,
+        x,
+        y,
+        by = g,
+        weights = w,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      )),
+      quote(new_cross_tab(
+        df,
+        x,
+        y,
+        by = g,
+        weights = w,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      ))
     ),
     bench_case(
       "vector_mode",
-      quote(old_cross_tab(df$x, df$y, weights = df$w, percent = "c", include_stats = TRUE, styled = FALSE)),
-      quote(new_cross_tab(df$x, df$y, weights = df$w, percent = "c", include_stats = TRUE, styled = FALSE))
+      quote(old_cross_tab(
+        df$x,
+        df$y,
+        weights = df$w,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      )),
+      quote(new_cross_tab(
+        df$x,
+        df$y,
+        weights = df$w,
+        percent = "c",
+        include_stats = TRUE,
+        styled = FALSE
+      ))
     )
   )
 )

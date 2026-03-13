@@ -33,10 +33,8 @@
 #' A `DT::datatable` object.
 #'
 #' @section Dependencies:
-#' Requires the following packages:
+#' Requires the following package:
 #' - **DT**
-#' - **cli**
-#' - **tools**
 #'
 #' @examples
 #' \dontrun{
@@ -51,20 +49,21 @@
 #' [varlist()] for generating the underlying variable summaries.
 #'
 #' @export
-code_book <- function(x,
-                      values = FALSE,
-                      include_na = FALSE,
-                      title = "Codebook",
-                      ...) {
+code_book <- function(
+  x,
+  values = FALSE,
+  include_na = FALSE,
+  title = "Codebook",
+  ...
+) {
   if (!is.data.frame(x)) {
     stop("`x` must be a data frame or tibble.", call. = FALSE)
   }
   if (!requireNamespace("DT", quietly = TRUE)) {
-    stop("Package 'DT' is required for code_book(). Please install it.", call. = FALSE)
-  }
-
-  if (!exists("varlist", mode = "function")) {
-    stop("Missing dependency: varlist().", call. = FALSE)
+    stop(
+      "Package 'DT' is required for code_book(). Please install it.",
+      call. = FALSE
+    )
   }
 
   res <- tryCatch(
@@ -75,7 +74,10 @@ code_book <- function(x,
   )
 
   if (!inherits(res, "data.frame")) {
-    stop("`varlist()` did not return a data frame. Check your input.", call. = FALSE)
+    stop(
+      "`varlist()` did not return a data frame. Check your input.",
+      call. = FALSE
+    )
   }
 
   filename <- if (is.null(title)) "Codebook" else title

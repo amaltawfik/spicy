@@ -38,11 +38,25 @@ test_that("cross_tab handles weights and rescale properly", {
   data <- mtcars
 
   # Without rescale: sum(weights) ≠ N
-  res1 <- cross_tab(data, cyl, gear, weights = mpg, rescale = FALSE, styled = FALSE)
+  res1 <- cross_tab(
+    data,
+    cyl,
+    gear,
+    weights = mpg,
+    rescale = FALSE,
+    styled = FALSE
+  )
   total1 <- attr(res1, "n_total")
 
   # With rescale: sum(weights) == N
-  res2 <- cross_tab(data, cyl, gear, weights = mpg, rescale = TRUE, styled = FALSE)
+  res2 <- cross_tab(
+    data,
+    cyl,
+    gear,
+    weights = mpg,
+    rescale = TRUE,
+    styled = FALSE
+  )
   total2 <- attr(res2, "n_total")
 
   expect_false(isTRUE(all.equal(total1, nrow(data))))
@@ -167,6 +181,10 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
   out <- cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE)
   note_b <- attr(out[["B"]], "note")
 
-  expect_true(grepl("Yates continuity correction applied.", note_b, fixed = TRUE))
+  expect_true(grepl(
+    "Yates continuity correction applied.",
+    note_b,
+    fixed = TRUE
+  ))
   expect_false(grepl("p = NA", note_b, fixed = TRUE))
 })

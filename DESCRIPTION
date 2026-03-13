@@ -18,15 +18,13 @@ Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Imports: 
-    collapse,
+Imports:
     crayon,
     dplyr,
     haven,
     labelled,
     rlang,
     stats,
-    stringi,
     stringr,
     tibble,
     tidyselect,

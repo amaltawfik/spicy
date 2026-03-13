@@ -23,10 +23,7 @@
 
 # spicy 0.4.0
 
-* `print.spicy()` has been fully redesigned to produce clean, aligned ASCII
-  tables inspired by Stata's layout. The new implementation improves formatting,
-  adds optional color support, and provides more consistent handling of totals
-  and column spacing.
+* Print methods have been fully redesigned to produce clean, aligned ASCII tables inspired by Stata's layout. The new implementation improves formatting, adds optional color support, and provides more consistent handling of totals and column spacing.
 
 * Output from `freq()` and `cross_tab()` now benefits from the enhanced
   `print.spicy()` formatting, offering clearer, more readable summary tables.

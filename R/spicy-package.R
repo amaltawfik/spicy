@@ -2,8 +2,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom collapse qTBL
-#' @importFrom dplyr everything
 #' @importFrom dplyr pick
 #' @importFrom dplyr pull
 #' @importFrom dplyr select
@@ -20,7 +18,6 @@
 #' @importFrom stats na.omit
 #' @importFrom stats setNames
 #' @importFrom stats xtabs
-#' @importFrom stringi stri_width
 #' @importFrom stringr str_pad
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column

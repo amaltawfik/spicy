@@ -23,7 +23,10 @@ test_that("count_n handles multiple values with allow_coercion = FALSE", {
   df <- tibble::tibble(x = c(1, 2, 2), y = c("2", 2, 3))
 
   # Same type (character)
-  expect_equal(count_n(df, count = c("2", "3"), allow_coercion = FALSE), c(1, 1, 1))
+  expect_equal(
+    count_n(df, count = c("2", "3"), allow_coercion = FALSE),
+    c(1, 1, 1)
+  )
 
   # Same type (numeric)
   expect_equal(count_n(df, count = c(1, 2), allow_coercion = FALSE), c(1, 1, 1))
@@ -57,7 +60,14 @@ test_that("count_n handles factor variables including ignore_case", {
   expect_equal(count_n(df, count = "b", allow_coercion = FALSE), c(0, 0, 0))
 
   # Strict mode: with factor value having matching levels (for x)
-  expect_equal(count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE), c(0, 1, 0))
+  expect_equal(
+    count_n(
+      df,
+      count = factor("b", levels = levels(df$x)),
+      allow_coercion = FALSE
+    ),
+    c(0, 1, 0)
+  )
 
   # Using a value from the data (ensures type + levels)
   expect_equal(count_n(df, count = df$x[2], allow_coercion = FALSE), c(0, 1, 0))
@@ -67,8 +77,19 @@ test_that("count_n handles factor variables including ignore_case", {
   expect_equal(count_n(df, count = "B", ignore_case = TRUE), c(1, 2, 0))
 
   # Case-insensitive + strict: internally uses character comparison, not identical()
-  expect_equal(count_n(df, count = "b", ignore_case = TRUE, allow_coercion = FALSE), c(1, 2, 0))
-  expect_equal(count_n(df, count = factor("b", levels = levels(df$x)), ignore_case = TRUE, allow_coercion = FALSE), c(1, 2, 0))
+  expect_equal(
+    count_n(df, count = "b", ignore_case = TRUE, allow_coercion = FALSE),
+    c(1, 2, 0)
+  )
+  expect_equal(
+    count_n(
+      df,
+      count = factor("b", levels = levels(df$x)),
+      ignore_case = TRUE,
+      allow_coercion = FALSE
+    ),
+    c(1, 2, 0)
+  )
 })
 
 
@@ -90,7 +111,10 @@ test_that("count_n handles labelled variables from haven", {
 test_that("count_n handles selection and exclusion", {
   df <- tibble::tibble(x1 = "a", x2 = "b", x3 = "b", skip = "b")
   expect_equal(count_n(df, count = "b", select = starts_with("x")), 2)
-  expect_equal(count_n(df, count = "b", select = everything(), exclude = "skip"), 2)
+  expect_equal(
+    count_n(df, count = "b", select = everything(), exclude = "skip"),
+    2
+  )
 })
 
 test_that("count_n works with regex selection", {
@@ -134,7 +158,10 @@ test_that("count_n ignores incompatible columns safely", {
 test_that("count_n returns 0 for empty or incompatible selection", {
   df <- tibble::tibble(x = 1:3, y = letters[1:3])
   expect_equal(count_n(df, count = "z", select = "x"), c(0, 0, 0))
-  expect_equal(count_n(df, count = "z", select = starts_with("not_here")), c(0, 0, 0))
+  expect_equal(
+    count_n(df, count = "z", select = starts_with("not_here")),
+    c(0, 0, 0)
+  )
 })
 
 test_that("count_n throws error if neither count nor special is specified", {

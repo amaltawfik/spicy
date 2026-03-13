@@ -16,7 +16,10 @@ A numeric vector of length 1, representing the Cramer's V statistic.
 \code{cramer_v()} computes Cramer's V for a two-way frequency table, measuring the strength of association between two categorical variables.
 }
 \details{
-Cramer's V is based on the chi-squared statistic and adjusts for the size of the table.
+Cramer's V is computed as \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}},
+where \eqn{\chi^2} is the Pearson chi-squared statistic, \eqn{n} is the
+total number of observations, and \eqn{k = \min(r, c)} with \eqn{r} and
+\eqn{c} the number of rows and columns.
 It is suitable for nominal (unordered categorical) variables.
 }
 \examples{

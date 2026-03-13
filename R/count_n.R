@@ -9,20 +9,28 @@
 #' Internally, `count_n()` wraps the stable and dependency-free base function `base_count_n()`, allowing high flexibility and testability.
 #'
 #' @param data A data frame or matrix. Optional inside `mutate()`.
-#' @param select Columns to include. Uses tidyselect helpers like [tidyselect::everything()], [tidyselect::starts_with()], etc. If `regex = TRUE`, `select` is treated as a regex string.
+#' @param select Columns to include. Defaults to `tidyselect::everything()`.
+#'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.
+#'   If `regex = TRUE`, `select` is treated as a regex string.
 #' @param exclude Character vector of column names to exclude after selection.
-#' @param count Value(s) to count. Ignored if `special` is used.
+#'   Defaults to `NULL` (no exclusion).
+#' @param count Value(s) to count. Defaults to `NULL`. Ignored if `special` is used.
 #'   Multiple values are allowed (e.g., `count = c(1, 2, 3)` or `count = c("yes", "no")`).
 #'   R automatically coerces all values in `count` to a common type (e.g., `c(2, "2")` becomes `c("2", "2")`),
 #'   so all values are expected to be of the same final type.
 #'   If `allow_coercion = FALSE`, matching is type-safe using `identical()`, and the type of `count` must match that of the values in the data.
 #' @param special Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`, `"-Inf"`, or `"all"`.
-#' `"NA"` uses `is.na()`, and therefore includes both `NA` and `NaN` values.
-#' `"NaN"` uses `is.nan()` to match only actual NaN values.
-#' @param allow_coercion Logical (default `TRUE`). If `FALSE`, uses strict matching via `identical()`.
-#' @param ignore_case Logical (default `FALSE`). If `TRUE`, performs case-insensitive string comparisons.
-#' @param regex Logical (default `FALSE`). If `TRUE`, interprets `select` as a regular expression pattern.
-#' @param verbose Logical (default `FALSE`). If `TRUE`, prints processing messages.
+#'   Defaults to `NULL`.
+#'   `"NA"` uses `is.na()`, and therefore includes both `NA` and `NaN` values.
+#'   `"NaN"` uses `is.nan()` to match only actual NaN values.
+#' @param allow_coercion Logical. If `TRUE` (the default), values are compared after coercion.
+#'   If `FALSE`, uses strict matching via `identical()`.
+#' @param ignore_case Logical. If `FALSE` (the default), comparisons are case-sensitive.
+#'   If `TRUE`, performs case-insensitive string comparisons.
+#' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers.
+#'   If `TRUE`, interprets `select` as a regular expression pattern.
+#' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
+#'   If `TRUE`, prints processing messages.
 #'
 #' @return A numeric vector of row-wise counts (unnamed).
 #'
@@ -179,10 +187,6 @@ count_n <- function(
   regex = FALSE,
   verbose = FALSE
 ) {
-  if (!requireNamespace("rlang", quietly = TRUE)) stop("Package 'rlang' is required.")
-  if (!requireNamespace("tidyselect", quietly = TRUE)) stop("Package 'tidyselect' is required.")
-  if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
-
   if (is.null(data)) {
     data <- dplyr::pick(tidyselect::everything())
   }
@@ -194,7 +198,10 @@ count_n <- function(
       select <- ".*"
     }
     if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      stop("When `regex = TRUE`, `select` must be a single character pattern.", call. = FALSE)
+      stop(
+        "When `regex = TRUE`, `select` must be a single character pattern.",
+        call. = FALSE
+      )
     }
     grep(select, names(data), value = TRUE)
   } else {
@@ -235,8 +242,12 @@ base_count_n <- function(
 
   if (!is.null(special)) {
     allowed <- c("NA", "NaN", "Inf", "-Inf")
-    if ("all" %in% special) special <- allowed
-    if (!all(special %in% allowed)) stop("Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.")
+    if ("all" %in% special) {
+      special <- allowed
+    }
+    if (!all(special %in% allowed)) {
+      stop("Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.")
+    }
 
     checkers <- list(
       "NA" = is.na,
@@ -262,8 +273,12 @@ base_count_n <- function(
 
   compare_fun <- function(x, values) {
     if (ignore_case) {
-      if (is.factor(x)) x <- as.character(x)
-      if (is.factor(values)) values <- as.character(values)
+      if (is.factor(x)) {
+        x <- as.character(x)
+      }
+      if (is.factor(values)) {
+        values <- as.character(values)
+      }
       if (is.character(x) && is.character(values)) {
         x <- tolower(x)
         values <- tolower(values)
@@ -271,7 +286,11 @@ base_count_n <- function(
     }
 
     if (!allow_coercion) {
-      vapply(seq_along(x), function(i) any(mapply(identical, x[i], values)), logical(1))
+      vapply(
+        seq_along(x),
+        function(i) any(mapply(identical, x[i], values)),
+        logical(1)
+      )
     } else {
       x %in% values
     }

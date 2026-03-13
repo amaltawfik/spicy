@@ -55,5 +55,6 @@ reference:
       - spicy_print_table
       - build_ascii_table
       - print.spicy_cross_table
+      - print.spicy_cross_table_list
       - print.spicy_freq_table
       - spicy_tables

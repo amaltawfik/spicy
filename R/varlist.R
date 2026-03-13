@@ -24,7 +24,6 @@
 #'   If `FALSE` (the default), missing values are omitted from `Values` but still counted in the `NAs` column.
 #' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
 
-
 #' @returns
 #' A tibble with one row per (selected) variable, containing the following columns:
 #' - `Variable`: variable names
@@ -65,12 +64,21 @@
 # .raw_expr is used internally by `vl()` to capture the original expression
 # passed as `x`, so it can be used to generate the display title (e.g. "vl: df").
 # It is not intended for user-facing documentation or direct use.
-varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
-                    .raw_expr = substitute(x)) {
+varlist <- function(
+  x,
+  ...,
+  values = FALSE,
+  tbl = FALSE,
+  include_na = FALSE,
+  .raw_expr = substitute(x)
+) {
   raw_expr <- .raw_expr
 
   if (!is.data.frame(x)) {
-    stop("varlist() only works with named data frames or transformations of them.", call. = FALSE)
+    stop(
+      "varlist() only works with named data frames or transformations of them.",
+      call. = FALSE
+    )
   }
 
   selectors <- if (missing(...)) {
@@ -115,31 +123,54 @@ varlist <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE,
 
   res <- list(
     Variable = names(x),
-    Label = vapply(x, function(col) {
-      lbl <- attributes(col)[["label"]]
+    Label = vapply(
+      x,
+      function(col) {
+        lbl <- attributes(col)[["label"]]
 
-      if (is.null(lbl)) {
-        return(NA_character_)
-      } else {
-        return(as.character(lbl))
-      }
-    }, character(1)),
-    Class = vapply(x, function(col) paste(class(col), collapse = ", "), character(1)),
-    N_distinct = vapply(x, function(col) length(unique(stats::na.omit(col))), integer(1)),
+        if (is.null(lbl)) {
+          return(NA_character_)
+        } else {
+          return(as.character(lbl))
+        }
+      },
+      character(1)
+    ),
+    Class = vapply(
+      x,
+      function(col) paste(class(col), collapse = ", "),
+      character(1)
+    ),
+    N_distinct = vapply(
+      x,
+      function(col) length(unique(stats::na.omit(col))),
+      integer(1)
+    ),
     N_valid = vapply(x, function(col) sum(!is.na(col)), integer(1)),
     NAs = vapply(x, function(col) sum(is.na(col)), integer(1))
   )
 
-  res$Values <- vapply(x, function(col) {
-    if (values) {
-      summarize_values_all(col, include_na = include_na)
-    } else {
-      summarize_values_minmax(col, include_na = include_na)
-    }
-  }, character(1))
+  res$Values <- vapply(
+    x,
+    function(col) {
+      if (values) {
+        summarize_values_all(col, include_na = include_na)
+      } else {
+        summarize_values_minmax(col, include_na = include_na)
+      }
+    },
+    character(1)
+  )
 
-
-  res <- tibble::as_tibble(res[c("Variable", "Label", "Values", "Class", "N_distinct", "N_valid", "NAs")])
+  res <- tibble::as_tibble(res[c(
+    "Variable",
+    "Label",
+    "Values",
+    "Class",
+    "N_distinct",
+    "N_valid",
+    "NAs"
+  )])
 
   if (tbl) {
     return(res)
@@ -166,7 +197,7 @@ varlist_title <- function(expr, selectors_used = FALSE) {
   label <- tryCatch(deparse(expr), error = function(e) NULL)
 
   if (is.null(label)) {
-    stop("varlist() requires a named data frame or a transformation of one.", call. = FALSE)
+    return("vl: <data>")
   }
 
   label <- gsub("\\s+", "", label)
@@ -199,7 +230,7 @@ varlist_title <- function(expr, selectors_used = FALSE) {
     }
   }
 
-  stop("varlist() requires a named data frame or a transformation of one.", call. = FALSE)
+  "vl: <data>"
 }
 
 summarize_values_minmax <- function(col, include_na = FALSE) {
@@ -211,7 +242,9 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
     {
       if (labelled::is.labelled(col)) {
         col <- labelled::to_factor(col, levels = "prefixed")
-        if (!include_na) col <- stats::na.omit(col)
+        if (!include_na) {
+          col <- stats::na.omit(col)
+        }
         unique_vals <- unique(col)
       } else if (is.factor(col)) {
         unique_vals <- levels(col)
@@ -236,14 +269,17 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
       } else if (length(vals_chr_clean) <= max_display) {
         val_str <- paste(vals_chr_clean, collapse = ", ")
       } else {
-        val_str <- paste(c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)), collapse = ", ")
+        val_str <- paste(
+          c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)),
+          collapse = ", "
+        )
       }
 
-      # Ajouter NA ou NaN si demandé et pas déjà inclus
+      # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
       extras <- c()
       if (include_na) {
-        if (has_na && !"NA" %in% unique_vals) extras <- c(extras, "NA")
-        if (has_nan && !"NaN" %in% unique_vals) extras <- c(extras, "NaN")
+        if (has_na) extras <- c(extras, "NA")
+        if (has_nan) extras <- c(extras, "NaN")
       }
 
       if (length(extras)) {
@@ -285,11 +321,11 @@ summarize_values_all <- function(col, include_na = FALSE) {
     # Supprime les valeurs textuelles de NA déjà encodées
     vals_chr_clean <- vals_chr[!vals_chr %in% c("NA", "", NA_character_)]
 
-    # Construit les valeurs NA/NaN à ajouter si manquantes
+    # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
     extras <- c()
     if (include_na) {
-      if (has_na && !"NA" %in% vals_chr) extras <- c(extras, "NA")
-      if (has_nan && !"NaN" %in% vals_chr) extras <- c(extras, "NaN")
+      if (has_na) extras <- c(extras, "NA")
+      if (has_nan) extras <- c(extras, "NaN")
     }
 
     all_vals <- c(vals_chr_clean, extras)
@@ -312,7 +348,9 @@ summarize_values_all <- function(col, include_na = FALSE) {
 
   if (is.list(col)) {
     return(paste0(
-      "List(", length(col), "): ",
+      "List(",
+      length(col),
+      "): ",
       paste(sort(sapply(col, typeof)), collapse = ", ")
     ))
   }

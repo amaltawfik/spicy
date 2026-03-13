@@ -19,27 +19,35 @@ count_n(
 \arguments{
 \item{data}{A data frame or matrix. Optional inside \code{mutate()}.}
 
-\item{select}{Columns to include. Uses tidyselect helpers like \code{\link[tidyselect:everything]{tidyselect::everything()}}, \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc. If \code{regex = TRUE}, \code{select} is treated as a regex string.}
+\item{select}{Columns to include. Defaults to \code{tidyselect::everything()}.
+Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.
+If \code{regex = TRUE}, \code{select} is treated as a regex string.}
 
-\item{exclude}{Character vector of column names to exclude after selection.}
+\item{exclude}{Character vector of column names to exclude after selection.
+Defaults to \code{NULL} (no exclusion).}
 
-\item{count}{Value(s) to count. Ignored if \code{special} is used.
+\item{count}{Value(s) to count. Defaults to \code{NULL}. Ignored if \code{special} is used.
 Multiple values are allowed (e.g., \code{count = c(1, 2, 3)} or \code{count = c("yes", "no")}).
 R automatically coerces all values in \code{count} to a common type (e.g., \code{c(2, "2")} becomes \code{c("2", "2")}),
 so all values are expected to be of the same final type.
 If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}, and the type of \code{count} must match that of the values in the data.}
 
 \item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.
+Defaults to \code{NULL}.
 \code{"NA"} uses \code{is.na()}, and therefore includes both \code{NA} and \code{NaN} values.
 \code{"NaN"} uses \code{is.nan()} to match only actual NaN values.}
 
-\item{allow_coercion}{Logical (default \code{TRUE}). If \code{FALSE}, uses strict matching via \code{identical()}.}
+\item{allow_coercion}{Logical. If \code{TRUE} (the default), values are compared after coercion.
+If \code{FALSE}, uses strict matching via \code{identical()}.}
 
-\item{ignore_case}{Logical (default \code{FALSE}). If \code{TRUE}, performs case-insensitive string comparisons.}
+\item{ignore_case}{Logical. If \code{FALSE} (the default), comparisons are case-sensitive.
+If \code{TRUE}, performs case-insensitive string comparisons.}
 
-\item{regex}{Logical (default \code{FALSE}). If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
+\item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect helpers.
+If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
 
-\item{verbose}{Logical (default \code{FALSE}). If \code{TRUE}, prints processing messages.}
+\item{verbose}{Logical. If \code{FALSE} (the default), messages are suppressed.
+If \code{TRUE}, prints processing messages.}
 }
 \value{
 A numeric vector of row-wise counts (unnamed).

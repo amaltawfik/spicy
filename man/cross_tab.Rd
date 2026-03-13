@@ -34,25 +34,31 @@ or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
 
 \item{weights}{Optional numeric weights.}
 
-\item{rescale}{Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).}
+\item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
+If \code{TRUE}, rescales weights so total weighted N matches raw N.}
 
-\item{percent}{One of \code{"none"}, \code{"row"}, \code{"column"}.
+\item{percent}{One of \code{"none"} (the default), \code{"row"}, \code{"column"}.
 Unique abbreviations are accepted (e.g. \code{"n"}, \code{"r"}, \code{"c"}).}
 
-\item{include_stats}{Logical; compute Chi-squared and Cramer's V (default TRUE).}
+\item{include_stats}{Logical. If \code{TRUE} (the default), computes Chi-squared
+and Cramer's V.}
 
-\item{correct}{Logical; apply Yates continuity correction to the Chi-squared
-test. Only applicable to 2x2 tables. Default is FALSE.}
+\item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
+applied. If \code{TRUE}, applies Yates correction (only for 2x2 tables).}
 
-\item{simulate_p}{Logical; use Monte Carlo p-value simulation (default FALSE).}
+\item{simulate_p}{Logical. If \code{FALSE} (the default), uses asymptotic p-values.
+If \code{TRUE}, uses Monte Carlo simulation.}
 
-\item{simulate_B}{Integer; number of replicates for Monte Carlo (default 2000).}
+\item{simulate_B}{Integer. Number of replicates for Monte Carlo simulation.
+Defaults to \code{2000}.}
 
-\item{digits}{Number of decimals (default 1 for percentages, 0 for counts).}
+\item{digits}{Number of decimals. Defaults to \code{1} for percentages, \code{0} for counts.}
 
-\item{styled}{Logical; if TRUE, returns a "spicy_cross_table" object (for printing).}
+\item{styled}{Logical. If \code{TRUE} (the default), returns a \code{spicy_cross_table} object
+(for formatted printing). If \code{FALSE}, returns a plain \code{data.frame}.}
 
-\item{show_n}{Logical; if TRUE, adds marginal N totals when percent != "none".}
+\item{show_n}{Logical. If \code{TRUE} (the default), adds marginal N totals when
+\code{percent != "none"}.}
 }
 \value{
 A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.

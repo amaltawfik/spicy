@@ -100,7 +100,10 @@ test_that("freq() handles missing value recoding", {
   expect_false(any(grepl("Low", f2$value)))
 
   # Optionally, confirm total frequency unchanged (only recoded)
-  expect_equal(round(sum(f1$n, na.rm = TRUE), 5), round(sum(f2$n, na.rm = TRUE), 5))
+  expect_equal(
+    round(sum(f1$n, na.rm = TRUE), 5),
+    round(sum(f2$n, na.rm = TRUE), 5)
+  )
 })
 
 test_that("freq() correctly sorts by frequency and name", {
@@ -125,7 +128,12 @@ test_that("freq() handles multiple data types correctly", {
   df <- data.frame(
     logical_col = c(TRUE, FALSE, TRUE, NA),
     date_col = as.Date(c("2023-01-01", "2023-01-02", "2023-01-01", NA)),
-    posix_col = as.POSIXct(c("2023-01-01 12:00", "2023-01-02 12:00", NA, "2023-01-02 12:00")),
+    posix_col = as.POSIXct(c(
+      "2023-01-01 12:00",
+      "2023-01-02 12:00",
+      NA,
+      "2023-01-02 12:00"
+    )),
     char_col = c("a", "a", "b", NA),
     num_col = c(1, 1, 2, NA)
   )

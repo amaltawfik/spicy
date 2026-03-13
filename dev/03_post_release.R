@@ -18,8 +18,8 @@ run_cmd <- function(cmd, args = character()) {
 
 # 01 GITHUB TAG & RELEASE -------
 # Run only after CRAN acceptance
-usethis::use_github_tag()      # Create Git tag (e.g., v0.4.2)
-usethis::use_github_release()  # Publish GitHub release from NEWS.md
+usethis::use_github_tag() # Create Git tag (e.g., v0.4.2)
+usethis::use_github_release() # Publish GitHub release from NEWS.md
 
 # 02 UPDATE README + DOCS + PKGDOWN -------
 devtools::build_readme()
@@ -27,7 +27,10 @@ devtools::document()
 pkgdown::build_site()
 
 run_cmd("git", c("add", "README.md", "man", "NAMESPACE", "docs"))
-run_cmd("git", c("commit", "-m", "docs: refresh README, Rd and pkgdown site for release"))
+run_cmd(
+  "git",
+  c("commit", "-m", "docs: refresh README, Rd and pkgdown site for release")
+)
 run_cmd("git", c("push"))
 
 # 03 BUMP TO DEVELOPMENT VERSION -------

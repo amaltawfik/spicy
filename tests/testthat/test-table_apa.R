@@ -17,7 +17,10 @@ test_that("table_apa returns expected long raw structure", {
   )
 
   expect_s3_class(out, "data.frame")
-  expect_true(all(c("variable", "level", "group", "n", "pct", "p", "Cramer's V") %in% names(out)))
+  expect_true(all(
+    c("variable", "level", "group", "n", "pct", "p", "Cramer's V") %in%
+      names(out)
+  ))
   expect_true(nrow(out) > 0)
 })
 

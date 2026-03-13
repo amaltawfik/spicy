@@ -25,13 +25,13 @@
 #'   * `"compact"` — minimal spacing
 #'   * `"normal"` — moderate spacing (default)
 #'   * `"wide"` — extra spacing (for large displays or wide content)
-#' @param first_column_line Logical. If `TRUE` (default), a vertical separator
+#' @param first_column_line Logical. If `TRUE` (the default), a vertical separator
 #'   is drawn after the first column (useful for separating categories from data).
 #' @param row_total_line,column_total_line Logical. Control horizontal rules
-#'   before total rows or columns (default: `TRUE`).
-#' @param bottom_line Logical. If `TRUE`, draws a closing line at the
-#'   bottom of the table (default: `FALSE`).
-#' @param lines_color Character. Color used for table separators (default: `"darkgrey"`).
+#'   before total rows or columns. Both default to `TRUE`.
+#' @param bottom_line Logical. If `FALSE` (the default), no closing line is drawn.
+#'   If `TRUE`, draws a closing line at the bottom of the table.
+#' @param lines_color Character. Color used for table separators. Defaults to `"darkgrey"`.
 #'   The color is applied only when ANSI color support is available
 #'   (see [crayon::has_color()]).
 #' @param align_left_cols Integer vector of column indices to left-align.
@@ -62,15 +62,17 @@
 #' @keywords internal
 #' @export
 
-build_ascii_table <- function(x,
-                              padding = c("compact", "normal", "wide"),
-                              first_column_line = TRUE,
-                              row_total_line = TRUE,
-                              column_total_line = TRUE,
-                              bottom_line = FALSE,
-                              lines_color = "darkgrey",
-                              align_left_cols = c(1L, 2L),
-                              ...) {
+build_ascii_table <- function(
+  x,
+  padding = c("compact", "normal", "wide"),
+  first_column_line = TRUE,
+  row_total_line = TRUE,
+  column_total_line = TRUE,
+  bottom_line = FALSE,
+  lines_color = "darkgrey",
+  align_left_cols = c(1L, 2L),
+  ...
+) {
   stopifnot(is.data.frame(x))
   padding <- match.arg(padding)
 
@@ -78,13 +80,24 @@ build_ascii_table <- function(x,
   df[] <- lapply(df, as.character)
 
   # Compute visible column widths
-  w <- vapply(seq_along(df), function(i) {
-    max(crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"), na.rm = TRUE)
-  }, integer(1))
+  w <- vapply(
+    seq_along(df),
+    function(i) {
+      max(
+        crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"),
+        na.rm = TRUE
+      )
+    },
+    numeric(1)
+  )
 
   # Adjust padding
-  if (padding == "normal") w <- w + 5L
-  if (padding == "wide") w <- w + 9L
+  if (padding == "normal") {
+    w <- w + 5L
+  }
+  if (padding == "wide") {
+    w <- w + 9L
+  }
 
   # Helper for cell alignment
   pad_cell <- function(txt, width, left = FALSE) {
@@ -97,7 +110,9 @@ build_ascii_table <- function(x,
 
   # Define where to place vertical bars
   sep_after <- integer(0)
-  if (isTRUE(first_column_line) && ncol(df) > 1) sep_after <- c(sep_after, 1L)
+  if (isTRUE(first_column_line) && ncol(df) > 1) {
+    sep_after <- c(sep_after, 1L)
+  }
   if (isTRUE(row_total_line) && any(c("Row_Total", "Total") %in% names(df))) {
     idx <- which(names(df) %in% c("Row_Total", "Total"))[1]
     sep_after <- c(sep_after, idx - 1L)
@@ -134,29 +149,39 @@ build_ascii_table <- function(x,
   header_line <- build_line(colnames(df), w)
   data_lines <- lapply(seq_len(nrow(df)), function(i) build_line(df[i, ], w))
 
-  full_width <- max(c(header_line$width, vapply(data_lines, `[[`, integer(1), "width")))
+  full_width <- max(c(
+    header_line$width,
+    vapply(data_lines, `[[`, integer(1), "width")
+  ))
   normalize <- function(s) stringr::str_pad(s, full_width, side = "right")
   header_txt <- normalize(header_line$text)
   rows_txt <- vapply(data_lines, function(z) normalize(z$text), character(1))
 
   # Determine bar positions for horizontal rules
-  bar_positions <- sort(unique(c(header_line$bars, unlist(lapply(data_lines, `[[`, "bars")))))
-  bar_positions <- bar_positions[bar_positions >= 1 & bar_positions <= full_width]
+  bar_positions <- sort(unique(c(
+    header_line$bars,
+    unlist(lapply(data_lines, `[[`, "bars"))
+  )))
+  bar_positions <- bar_positions[
+    bar_positions >= 1 & bar_positions <= full_width
+  ]
 
   make_rule <- function(width, bars, junction = "\u253c") {
     chars <- rep("\u2500", width)
-    if (length(bars)) chars[bars] <- junction
+    if (length(bars)) {
+      chars[bars] <- junction
+    }
     paste0(chars, collapse = "")
   }
 
-  style <- if (crayon::has_color()) crayon::make_style(lines_color) else identity
+  style <- if (crayon::has_color()) {
+    crayon::make_style(lines_color)
+  } else {
+    identity
+  }
   header_rule <- style(make_rule(full_width, bar_positions, "\u253c"))
   total_rule <- style(make_rule(full_width, bar_positions, "\u253c")) # line before Total
   bottom_rule <- style(make_rule(full_width, bar_positions, "\u2534"))
-
-  # --- Retrieve attributes
-  # title <- attr(x, "title")
-  # note <- attr(x, "note")
 
   # --- Colorize vertical bars if supported
   if (crayon::has_color()) {
@@ -183,8 +208,9 @@ build_ascii_table <- function(x,
   }
 
   # --- Bottom rule
-  if (isTRUE(bottom_line)) out <- c(out, bottom_rule)
-
+  if (isTRUE(bottom_line)) {
+    out <- c(out, bottom_rule)
+  }
 
   paste(out, collapse = "\n")
 }
@@ -223,17 +249,17 @@ build_ascii_table <- function(x,
 #'   * `"compact"` - minimal spacing
 #'   * `"normal"` - moderate spacing (default)
 #'   * `"wide"` - extra spacing (for wide displays)
-#' @param first_column_line Logical; if `TRUE` (default), adds a vertical separator
+#' @param first_column_line Logical. If `TRUE` (the default), adds a vertical separator
 #'   after the first column.
 #' @param row_total_line,column_total_line,bottom_line Logical flags controlling
 #'   the presence of horizontal lines before total rows/columns or at the bottom
 #'   of the table.
-#'   Defaults are `TRUE` for `row_total_line` and `column_total_line`, and `FALSE`
-#'   for `bottom_line`.
-#' @param lines_color Character; color for table separators (default: `"darkgrey"`).
+#'   Both `row_total_line` and `column_total_line` default to `TRUE`;
+#'   `bottom_line` defaults to `FALSE`.
+#' @param lines_color Character. Color for table separators. Defaults to `"darkgrey"`.
 #'   Only applied if the output supports ANSI colors (see [crayon::has_color()]).
 #' @param align_left_cols Integer vector of column indices to left-align.
-#'   If `NULL` (default), alignment is auto-detected based on `x`:
+#'   If `NULL` (the default), alignment is auto-detected based on `x`:
 #'   * For `freq` tables -> `c(1, 2)`
 #'   * For `cross` tables -> `1`
 #' @param ... Additional arguments passed to [build_ascii_table()].
@@ -263,17 +289,19 @@ build_ascii_table <- function(x,
 #'
 #' @export
 
-spicy_print_table <- function(x,
-                              title = attr(x, "title"),
-                              note = attr(x, "note"),
-                              padding = c("compact", "normal", "wide"),
-                              first_column_line = TRUE,
-                              row_total_line = TRUE,
-                              column_total_line = TRUE,
-                              bottom_line = FALSE,
-                              lines_color = "darkgrey",
-                              align_left_cols = NULL,
-                              ...) {
+spicy_print_table <- function(
+  x,
+  title = attr(x, "title"),
+  note = attr(x, "note"),
+  padding = c("compact", "normal", "wide"),
+  first_column_line = TRUE,
+  row_total_line = TRUE,
+  column_total_line = TRUE,
+  bottom_line = FALSE,
+  lines_color = "darkgrey",
+  align_left_cols = NULL,
+  ...
+) {
   stopifnot(is.data.frame(x))
   padding <- match.arg(padding)
 
@@ -283,8 +311,12 @@ spicy_print_table <- function(x,
     align_left_cols <- if (table_type == "freq") c(1L, 2L) else 1L
   }
 
-  if (!is.null(title)) attr(x, "title") <- title
-  if (!is.null(note)) attr(x, "note") <- note
+  if (!is.null(title)) {
+    attr(x, "title") <- title
+  }
+  if (!is.null(note)) {
+    attr(x, "note") <- note
+  }
 
   txt <- build_ascii_table(
     x,
@@ -298,10 +330,18 @@ spicy_print_table <- function(x,
     ...
   )
 
-  style_grey <- if (crayon::has_color()) crayon::make_style("darkgrey") else identity
-  if (!is.null(title)) cat(style_grey(title), "\n\n", sep = "")
+  style_grey <- if (crayon::has_color()) {
+    crayon::make_style("darkgrey")
+  } else {
+    identity
+  }
+  if (!is.null(title)) {
+    cat(style_grey(title), "\n\n", sep = "")
+  }
   cat(txt, "\n", sep = "")
-  if (!is.null(note)) cat("\n", style_grey(note), "\n", sep = "")
+  if (!is.null(note)) {
+    cat("\n", style_grey(note), "\n", sep = "")
+  }
 
   invisible(x)
 }

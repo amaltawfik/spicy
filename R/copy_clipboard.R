@@ -10,11 +10,11 @@
 #' To preserve a tabular structure, you should extract a 2D slice before copying. For example: \code{copy_clipboard(my_array[, , 1])}.
 #'
 #' @param x A data frame, matrix, 2D array, 3D array, table, or atomic vector to be copied.
-#' @param row.names.as.col Logical or character. If `FALSE` (default), row names are not added as a column. If `TRUE`, a column named `"rownames"` is prepended. If a character string is supplied, it is used as the column name for row names.
-#' @param row.names Logical. If `TRUE` (default), includes row names in the clipboard output. If `FALSE`, row names are omitted.
-#' @param col.names Logical. If `TRUE` (default), includes column names in the clipboard output. If `FALSE`, column names are omitted.
-#' @param message Logical. If `TRUE` (default), displays a success message after copying. If `FALSE`, no success message is printed.
-#' @param quiet Logical. If `TRUE`, suppresses all messages, including success, coercion notices, and warnings. If `FALSE` (default), messages are shown.
+#' @param row.names.as.col Logical or character. If `FALSE` (the default), row names are not added as a column. If `TRUE`, a column named `"rownames"` is prepended. If a character string is supplied, it is used as the column name for row names.
+#' @param row.names Logical. If `TRUE` (the default), includes row names in the clipboard output. If `FALSE`, row names are omitted.
+#' @param col.names Logical. If `TRUE` (the default), includes column names in the clipboard output. If `FALSE`, column names are omitted.
+#' @param show_message Logical. If `TRUE` (the default), displays a success message after copying. If `FALSE`, no success message is printed.
+#' @param quiet Logical. If `FALSE` (the default), messages are shown. If `TRUE`, suppresses all messages, including success, coercion notices, and warnings.
 #' @param ... Additional arguments passed to [clipr::write_clip()].
 #'
 #' @returns Invisibly returns the object `x`. The main purpose is the side effect of copying data to the clipboard.
@@ -61,12 +61,15 @@ copy_clipboard <- function(
   row.names.as.col = FALSE,
   row.names = TRUE,
   col.names = TRUE,
-  message = TRUE,
+  show_message = TRUE,
   quiet = FALSE,
   ...
 ) {
   if (!requireNamespace("clipr", quietly = TRUE)) {
-    stop("Package 'clipr' is required for copy_clipboard(). Please install it.", call. = FALSE)
+    stop(
+      "Package 'clipr' is required for copy_clipboard(). Please install it.",
+      call. = FALSE
+    )
   }
 
   if (!clipr::clipr_available()) {
@@ -94,13 +97,18 @@ copy_clipboard <- function(
     if (is_df) {
       x <- tibble::rownames_to_column(x, var = row.names.as.col[1L])
     } else if (is_strict_matrix) {
-      x <- tibble::rownames_to_column(as.data.frame(x), var = row.names.as.col[1L])
+      x <- tibble::rownames_to_column(
+        as.data.frame(x),
+        var = row.names.as.col[1L]
+      )
     } else {
       needs_warning <- TRUE
       warn_msg <- "`row.names.as.col` is ignored because `x` is not a data frame or matrix."
     }
   } else if (!identical(row.names.as.col, FALSE)) {
-    stop("`row.names.as.col` must be either FALSE, TRUE, or a character string.")
+    stop(
+      "`row.names.as.col` must be either FALSE, TRUE, or a character string."
+    )
   }
 
   msg_captured <- NULL
@@ -113,29 +121,37 @@ copy_clipboard <- function(
       ...
     ),
     message = function(m) {
-      if (!quiet) msg_captured <<- conditionMessage(m)
+      if (!quiet) {
+        msg_captured <<- conditionMessage(m)
+      }
       invokeRestart("muffleMessage")
     },
     warning = function(w) {
-      if (!quiet) warn_captured <<- conditionMessage(w)
+      if (!quiet) {
+        warn_captured <<- conditionMessage(w)
+      }
       invokeRestart("muffleWarning")
     }
   )
 
-  if (!quiet && isTRUE(message)) {
-    cat("\033[32mData successfully copied to clipboard!\033[0m\n")
+  use_color <- crayon::has_color()
+  green <- if (use_color) crayon::make_style("green") else identity
+  yellow <- if (use_color) crayon::make_style("yellow") else identity
+
+  if (!quiet && isTRUE(show_message)) {
+    cat(green("Data successfully copied to clipboard!"), "\n")
   }
 
   if (!quiet && !is.null(msg_captured)) {
-    cat("\033[33mMessage: ", msg_captured, "\033[0m\n", sep = "")
+    cat(yellow(paste0("Message: ", msg_captured)), "\n")
   }
 
   if (!quiet && !is.null(warn_captured)) {
-    cat("\033[33mWarning: ", warn_captured, "\033[0m\n", sep = "")
+    cat(yellow(paste0("Warning: ", warn_captured)), "\n")
   }
 
   if (!quiet && needs_warning) {
-    cat("\033[33m", warn_msg, "\033[0m\n", sep = "")
+    cat(yellow(warn_msg), "\n")
   }
 
   invisible(x)

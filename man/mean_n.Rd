@@ -22,13 +22,18 @@ If \code{regex = TRUE}, provide a regular expression pattern (character string).
 
 \item{exclude}{Columns to exclude (default: \code{NULL}).}
 
-\item{min_valid}{Minimum number of valid (non-NA) values required per row. If a proportion, it's applied to the number of selected columns.}
+\item{min_valid}{Minimum number of valid (non-NA) values required per row.
+If a proportion, it's applied to the number of selected columns.
+Defaults to \code{NULL} (all values must be valid).}
 
-\item{digits}{Optional number of decimal places to round the result.}
+\item{digits}{Optional number of decimal places to round the result.
+Defaults to \code{NULL} (no rounding).}
 
-\item{regex}{If \code{TRUE}, the \code{select} argument is treated as a regular expression. If \code{FALSE}, uses tidyselect helpers.}
+\item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect helpers.
+If \code{TRUE}, the \code{select} argument is treated as a regular expression.}
 
-\item{verbose}{If \code{TRUE}, prints a message about processing.}
+\item{verbose}{Logical. If \code{FALSE} (the default), messages are suppressed.
+If \code{TRUE}, prints a message about non-numeric columns excluded.}
 }
 \value{
 A numeric vector of row-wise means.

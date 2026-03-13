@@ -7,7 +7,10 @@
 #' @return A numeric vector of length 1, representing the Cramer's V statistic.
 #'
 #' @details
-#' Cramer's V is based on the chi-squared statistic and adjusts for the size of the table.
+#' Cramer's V is computed as \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}},
+#' where \eqn{\chi^2} is the Pearson chi-squared statistic, \eqn{n} is the
+#' total number of observations, and \eqn{k = \min(r, c)} with \eqn{r} and
+#' \eqn{c} the number of rows and columns.
 #' It is suitable for nominal (unordered categorical) variables.
 #'
 #' @examples
@@ -27,12 +30,15 @@
 #' @export
 cramer_v <- function(x) {
   if (!inherits(x, "table")) {
-    stop("`x` must be a contingency table (class `table`).")
+    stop("`x` must be a contingency table (class `table`).", call. = FALSE)
   }
   n <- sum(x)
   k <- min(nrow(x), ncol(x)) - 1
   if (n <= 0 || k <= 0) {
-    warning("Cramer's V is undefined for empty or 1-dimensional tables; returning NA.", call. = FALSE)
+    warning(
+      "Cramer's V is undefined for empty or 1-dimensional tables; returning NA.",
+      call. = FALSE
+    )
     return(NA_real_)
   }
   chi_squared <- stats::chisq.test(x, correct = FALSE)$statistic

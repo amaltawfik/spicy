@@ -15,7 +15,7 @@ table_apa(
   weights = NULL,
   rescale = FALSE,
   correct = FALSE,
-  simulate_p = TRUE,
+  simulate_p = FALSE,
   simulate_B = 2000,
   percent_digits = 1,
   p_digits = 3,
@@ -45,55 +45,66 @@ table_apa(
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept.}
 
-\item{include_total}{Logical; include \code{Total} group if available.}
+\item{include_total}{Logical. If \code{TRUE} (the default), includes a \code{Total} group
+when available.}
 
-\item{drop_na}{Logical; if \code{TRUE}, remove rows with NA in row/group variable
-before each cross-tabulation. If \code{FALSE}, missing values are displayed as a
-dedicated \code{"(Missing)"} level.}
+\item{drop_na}{Logical. If \code{TRUE} (the default), removes rows with \code{NA} in the
+row/group variable before each cross-tabulation. If \code{FALSE}, missing values
+are displayed as a dedicated \code{"(Missing)"} level.}
 
-\item{weights}{Optional weights. Either \code{NULL}, a numeric vector of length
-\code{nrow(data)}, or a single column name in \code{data}.}
+\item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
+of length \code{nrow(data)}, or a single column name in \code{data}.}
 
-\item{rescale}{Logical; passed to \code{spicy::cross_tab()} to rescale weights.}
+\item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
+If \code{TRUE}, rescales weights so total weighted N matches raw N.
+Passed to \code{spicy::cross_tab()}.}
 
-\item{correct}{Logical; passed to \code{spicy::cross_tab()} (Yates correction in
-2x2 chi-squared contexts).}
+\item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
+applied. If \code{TRUE}, applies Yates correction in 2x2 chi-squared contexts.
+Passed to \code{spicy::cross_tab()}.}
 
-\item{simulate_p}{Logical; passed to \code{spicy::cross_tab()}.}
+\item{simulate_p}{Logical. If \code{FALSE} (the default), uses asymptotic p-values.
+If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}.}
 
-\item{simulate_B}{Integer; Monte Carlo replicates when \code{simulate_p = TRUE}.}
+\item{simulate_B}{Integer. Number of Monte Carlo replicates when
+\code{simulate_p = TRUE}. Defaults to \code{2000}.}
 
-\item{percent_digits}{Number of digits for percentages in report outputs.}
+\item{percent_digits}{Number of digits for percentages in report outputs.
+Defaults to \code{1}.}
 
-\item{p_digits}{Number of digits for p-values (except \verb{< .001}).}
+\item{p_digits}{Number of digits for p-values (except \verb{< .001}).
+Defaults to \code{3}.}
 
-\item{v_digits}{Number of digits for Cramer's V.}
+\item{v_digits}{Number of digits for Cramer's V. Defaults to \code{2}.}
 
-\item{decimal_mark}{Decimal separator (\code{"."} or \code{","}).}
+\item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
-\item{output}{Output format: \code{"wide"}, \code{"long"}, \code{"tinytable"},
+\item{output}{Output format: \code{"wide"} (the default), \code{"long"}, \code{"tinytable"},
 \code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}.}
 
-\item{style}{\code{"raw"} for machine-friendly outputs, \code{"report"} for formatted
-outputs, \code{"auto"} to select by output type.}
+\item{style}{\code{"auto"} (the default) to select by output type, \code{"raw"} for
+machine-friendly outputs, \code{"report"} for formatted outputs.}
 
-\item{indent_text}{Prefix used for modality labels in report table building.}
+\item{indent_text}{Prefix used for modality labels in report table building.
+Defaults to \code{"  "} (two spaces).}
 
 \item{indent_text_excel_clipboard}{Stronger indentation used in Excel and
-clipboard exports.}
+clipboard exports. Defaults to six non-breaking spaces.}
 
-\item{add_multilevel_header}{Logical; merge top headers in Excel export.}
+\item{add_multilevel_header}{Logical. If \code{TRUE} (the default), merges top
+headers in Excel export.}
 
-\item{blank_na_wide}{Logical; replace NA by empty strings in wide raw output.}
+\item{blank_na_wide}{Logical. If \code{FALSE} (the default), \code{NA} values are kept
+as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 
-\item{excel_path}{Path for \code{output = "excel"}.}
+\item{excel_path}{Path for \code{output = "excel"}. Defaults to \code{NULL}.}
 
-\item{excel_sheet}{Sheet name for Excel export.}
+\item{excel_sheet}{Sheet name for Excel export. Defaults to \code{"APA"}.}
 
-\item{clipboard_delim}{Delimiter for clipboard text export.}
+\item{clipboard_delim}{Delimiter for clipboard text export. Defaults to \code{"\\t"}.}
 
 \item{word_path}{Path for \code{output = "word"} or optional save path when
-\code{output = "flextable"}.}
+\code{output = "flextable"}. Defaults to \code{NULL}.}
 }
 \value{
 Depends on \code{output} and \code{style}:

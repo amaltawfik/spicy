@@ -7,8 +7,10 @@ test_that("copy_clipboard() works silently for different structures", {
     col2 = c(1, 2, 3)
   )
 
-  mat <- matrix(1:9,
-    nrow = 3, byrow = TRUE,
+  mat <- matrix(
+    1:9,
+    nrow = 3,
+    byrow = TRUE,
     dimnames = list(
       c("Row1", "Row2", "Row3"),
       c("Col1", "Col2", "Col3")
@@ -62,8 +64,10 @@ test_that("copy_clipboard() copies expected content", {
   expect_true(grepl("Bob\\t15", clip[3]))
 
   # Matrix
-  mat <- matrix(1:4,
-    nrow = 2, byrow = TRUE,
+  mat <- matrix(
+    1:4,
+    nrow = 2,
+    byrow = TRUE,
     dimnames = list(c("r1", "r2"), c("c1", "c2"))
   )
 

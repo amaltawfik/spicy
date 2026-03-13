@@ -33,7 +33,8 @@ The variable may be referenced as a bare name when it belongs to \code{data}.}
 \item{valid}{Logical. If \code{TRUE} (default), display valid percentages
 (excluding missing values).}
 
-\item{cum}{Logical. If \code{TRUE}, add cumulative percentages.}
+\item{cum}{Logical. If \code{FALSE} (the default), cumulative percentages are omitted.
+If \code{TRUE}, adds cumulative percentages.}
 
 \item{sort}{Sorting method for values:
 \itemize{

@@ -3,13 +3,13 @@
 #' @description
 #' `print.spicy()` prints a data frame as a neatly formatted ASCII table with
 #' properly aligned columns and consistent spacing. The first column is
-#' left-aligned, while all other columns are right-aligned.  
+#' left-aligned, while all other columns are right-aligned.
 #'
 #' Line elements can be optionally colored to enhance readability or highlight
-#' the table structure, using either named colors or hexadecimal color codes.  
+#' the table structure, using either named colors or hexadecimal color codes.
 #'
 #' The overall appearance and layout are inspired by Stata's classic ASCII table style.
-#' 
+#'
 #' @param x A `data.frame` or `spicy` object — typically the result of
 #'   [`freq()`] or [`cross_tab()`].
 #' @param padding Character string indicating horizontal spacing between columns:
@@ -87,15 +87,17 @@
 #' @keywords print table ascii formatting
 #' @export
 
-print.spicy <- function(x,
-                        padding = c("compact", "normal", "wide"),
-                        border = TRUE,
-                        rowtotal_bar = TRUE,
-                        coltotal_bar = FALSE,
-                        rule_before_total = TRUE,
-                        close_bottom = TRUE,
-                        line_color = "darkgrey",
-                        ...) {
+print.spicy <- function(
+  x,
+  padding = c("compact", "normal", "wide"),
+  border = TRUE,
+  rowtotal_bar = TRUE,
+  coltotal_bar = FALSE,
+  rule_before_total = TRUE,
+  close_bottom = TRUE,
+  line_color = "darkgrey",
+  ...
+) {
   stopifnot(is.data.frame(x))
   padding <- match.arg(padding)
 
@@ -103,13 +105,24 @@ print.spicy <- function(x,
   df <- as.data.frame(x)
   df[] <- lapply(df, as.character)
 
-  w <- vapply(seq_along(df), function(i) {
-    max(crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"), na.rm = TRUE)
-  }, integer(1))
+  w <- vapply(
+    seq_along(df),
+    function(i) {
+      max(
+        crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"),
+        na.rm = TRUE
+      )
+    },
+    integer(1)
+  )
 
   # Padding façon Stata
-  if (padding == "normal") w <- w + 5L
-  if (padding == "wide") w <- w + 9L
+  if (padding == "normal") {
+    w <- w + 5L
+  }
+  if (padding == "wide") {
+    w <- w + 9L
+  }
 
   # Alignement du contenu (on ne s'appuie PAS sur print.data.frame)
   pad_cell <- function(txt, width, left = FALSE) {
@@ -122,7 +135,9 @@ print.spicy <- function(x,
 
   # Colonnes où placer une barre verticale
   sep_after <- integer(0)
-  if (isTRUE(border) && ncol(df) > 1) sep_after <- c(sep_after, 1L)
+  if (isTRUE(border) && ncol(df) > 1) {
+    sep_after <- c(sep_after, 1L)
+  }
   if (isTRUE(rowtotal_bar) && "Row_Total" %in% names(df)) {
     sep_after <- c(sep_after, which(names(df) == "Row_Total") - 1L)
   }
@@ -160,24 +175,40 @@ print.spicy <- function(x,
 
   # Header et lignes de données (texte pur, pas de capture print)
   header_line <- build_line(colnames(df), w, is_header = TRUE)
-  data_lines <- lapply(seq_len(nrow(df)), function(i) build_line(df[i, ], w, FALSE))
+  data_lines <- lapply(seq_len(nrow(df)), function(i) {
+    build_line(df[i, ], w, FALSE)
+  })
 
   # Largeur totale (toutes lignes normalisées à la même largeur si besoin)
-  full_width <- max(c(header_line$width, vapply(data_lines, `[[`, integer(1), "width")))
+  full_width <- max(c(
+    header_line$width,
+    vapply(data_lines, `[[`, integer(1), "width")
+  ))
   normalize_width <- function(s) {
     stringr::str_pad(s, full_width, side = "right")
   }
   header_txt <- normalize_width(header_line$text)
-  rows_txt <- vapply(data_lines, function(z) normalize_width(z$text), character(1))
+  rows_txt <- vapply(
+    data_lines,
+    function(z) normalize_width(z$text),
+    character(1)
+  )
 
   # Positions des barres : union sur header + data (fiable)
-  bar_positions <- sort(unique(c(header_line$bars, unlist(lapply(data_lines, `[[`, "bars")))))
-  bar_positions <- bar_positions[bar_positions >= 1 & bar_positions <= full_width]
+  bar_positions <- sort(unique(c(
+    header_line$bars,
+    unlist(lapply(data_lines, `[[`, "bars"))
+  )))
+  bar_positions <- bar_positions[
+    bar_positions >= 1 & bar_positions <= full_width
+  ]
 
   # Fabrique une règle horizontale continue avec jonctions aux bonnes positions
   make_rule <- function(width, bars, junction = "\u253c") {
     chars <- rep("\u2500", width) # ─
-    if (length(bars)) chars[bars] <- junction
+    if (length(bars)) {
+      chars[bars] <- junction
+    }
     paste0(chars, collapse = "")
   }
 
@@ -186,12 +217,18 @@ print.spicy <- function(x,
   bottom_rule <- style(make_rule(full_width, bar_positions, "\u2534")) # ┴
 
   # Détection des lignes "total" dans les lignes construites
-  total_idx <- grep("^\\s*(Total|Row_Total|Column_Total)\\b", rows_txt, perl = TRUE)
+  total_idx <- grep(
+    "^\\s*(Total|Row_Total|Column_Total)\\b",
+    rows_txt,
+    perl = TRUE
+  )
 
   # ---- Impression (sans dépendre de print.data.frame) ----
   title <- attr(x, "title")
   note <- attr(x, "note")
-  if (!is.null(title)) cat(title, "\n")
+  if (!is.null(title)) {
+    cat(title, "\n")
+  }
 
   # Coloriser les │ après coup (ne change pas les positions car longueur identique)
   if (crayon::has_color()) {
@@ -210,7 +247,11 @@ print.spicy <- function(x,
     if (length(rows_txt)) cat(paste(rows_txt, collapse = "\n"), "\n")
   }
 
-  if (isTRUE(close_bottom)) cat(bottom_rule, "\n")
-  if (!is.null(note)) cat(note, "\n")
+  if (isTRUE(close_bottom)) {
+    cat(bottom_rule, "\n")
+  }
+  if (!is.null(note)) {
+    cat(note, "\n")
+  }
   invisible(x)
 }

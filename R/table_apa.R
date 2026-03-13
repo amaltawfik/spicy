@@ -14,35 +14,46 @@
 #' @param labels Optional character labels for `row_vars` (same length).
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept.
-#' @param include_total Logical; include `Total` group if available.
-#' @param drop_na Logical; if `TRUE`, remove rows with NA in row/group variable
-#'   before each cross-tabulation. If `FALSE`, missing values are displayed as a
-#'   dedicated `"(Missing)"` level.
-#' @param weights Optional weights. Either `NULL`, a numeric vector of length
-#'   `nrow(data)`, or a single column name in `data`.
-#' @param rescale Logical; passed to `spicy::cross_tab()` to rescale weights.
-#' @param correct Logical; passed to `spicy::cross_tab()` (Yates correction in
-#'   2x2 chi-squared contexts).
-#' @param simulate_p Logical; passed to `spicy::cross_tab()`.
-#' @param simulate_B Integer; Monte Carlo replicates when `simulate_p = TRUE`.
+#' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
+#'   when available.
+#' @param drop_na Logical. If `TRUE` (the default), removes rows with `NA` in the
+#'   row/group variable before each cross-tabulation. If `FALSE`, missing values
+#'   are displayed as a dedicated `"(Missing)"` level.
+#' @param weights Optional weights. Either `NULL` (the default), a numeric vector
+#'   of length `nrow(data)`, or a single column name in `data`.
+#' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
+#'   If `TRUE`, rescales weights so total weighted N matches raw N.
+#'   Passed to `spicy::cross_tab()`.
+#' @param correct Logical. If `FALSE` (the default), no continuity correction is
+#'   applied. If `TRUE`, applies Yates correction in 2x2 chi-squared contexts.
+#'   Passed to `spicy::cross_tab()`.
+#' @param simulate_p Logical. If `FALSE` (the default), uses asymptotic p-values.
+#'   If `TRUE`, uses Monte Carlo simulation. Passed to `spicy::cross_tab()`.
+#' @param simulate_B Integer. Number of Monte Carlo replicates when
+#'   `simulate_p = TRUE`. Defaults to `2000`.
 #' @param percent_digits Number of digits for percentages in report outputs.
+#'   Defaults to `1`.
 #' @param p_digits Number of digits for p-values (except `< .001`).
-#' @param v_digits Number of digits for Cramer's V.
-#' @param decimal_mark Decimal separator (`"."` or `","`).
-#' @param output Output format: `"wide"`, `"long"`, `"tinytable"`,
+#'   Defaults to `3`.
+#' @param v_digits Number of digits for Cramer's V. Defaults to `2`.
+#' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
+#' @param output Output format: `"wide"` (the default), `"long"`, `"tinytable"`,
 #'   `"flextable"`, `"excel"`, `"clipboard"`, `"word"`.
-#' @param style `"raw"` for machine-friendly outputs, `"report"` for formatted
-#'   outputs, `"auto"` to select by output type.
+#' @param style `"auto"` (the default) to select by output type, `"raw"` for
+#'   machine-friendly outputs, `"report"` for formatted outputs.
 #' @param indent_text Prefix used for modality labels in report table building.
+#'   Defaults to `"  "` (two spaces).
 #' @param indent_text_excel_clipboard Stronger indentation used in Excel and
-#'   clipboard exports.
-#' @param add_multilevel_header Logical; merge top headers in Excel export.
-#' @param blank_na_wide Logical; replace NA by empty strings in wide raw output.
-#' @param excel_path Path for `output = "excel"`.
-#' @param excel_sheet Sheet name for Excel export.
-#' @param clipboard_delim Delimiter for clipboard text export.
+#'   clipboard exports. Defaults to six non-breaking spaces.
+#' @param add_multilevel_header Logical. If `TRUE` (the default), merges top
+#'   headers in Excel export.
+#' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
+#'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
+#' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
+#' @param excel_sheet Sheet name for Excel export. Defaults to `"APA"`.
+#' @param clipboard_delim Delimiter for clipboard text export. Defaults to `"\t"`.
 #' @param word_path Path for `output = "word"` or optional save path when
-#'   `output = "flextable"`.
+#'   `output = "flextable"`. Defaults to `NULL`.
 #'
 #' @return Depends on `output` and `style`:
 #' - `"long"` + `"raw"`: long numeric data frame.
@@ -138,7 +149,7 @@ table_apa <- function(
   weights = NULL,
   rescale = FALSE,
   correct = FALSE,
-  simulate_p = TRUE,
+  simulate_p = FALSE,
   simulate_B = 2000,
   percent_digits = 1,
   p_digits = 3,
@@ -194,7 +205,11 @@ table_apa <- function(
   }
   labels <- as.character(labels)
 
-  if (!is.logical(include_total) || length(include_total) != 1 || is.na(include_total)) {
+  if (
+    !is.logical(include_total) ||
+      length(include_total) != 1 ||
+      is.na(include_total)
+  ) {
     stop("`include_total` must be TRUE/FALSE.", call. = FALSE)
   }
   if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
@@ -218,10 +233,18 @@ table_apa <- function(
     stop("`simulate_B` must be a positive integer.", call. = FALSE)
   }
   simulate_B <- as.integer(simulate_B)
-  if (!is.logical(add_multilevel_header) || length(add_multilevel_header) != 1 || is.na(add_multilevel_header)) {
+  if (
+    !is.logical(add_multilevel_header) ||
+      length(add_multilevel_header) != 1 ||
+      is.na(add_multilevel_header)
+  ) {
     stop("`add_multilevel_header` must be TRUE/FALSE.", call. = FALSE)
   }
-  if (!is.logical(blank_na_wide) || length(blank_na_wide) != 1 || is.na(blank_na_wide)) {
+  if (
+    !is.logical(blank_na_wide) ||
+      length(blank_na_wide) != 1 ||
+      is.na(blank_na_wide)
+  ) {
     stop("`blank_na_wide` must be TRUE/FALSE.", call. = FALSE)
   }
   if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
@@ -232,7 +255,10 @@ table_apa <- function(
   if (!is.null(weights)) {
     if (is.character(weights) && length(weights) == 1) {
       if (!(weights %in% names(data))) {
-        stop("When character, `weights` must be a column name in `data`.", call. = FALSE)
+        stop(
+          "When character, `weights` must be a column name in `data`.",
+          call. = FALSE
+        )
       }
       weights_vec <- data[[weights]]
     } else if (is.numeric(weights)) {
@@ -241,12 +267,17 @@ table_apa <- function(
       }
       weights_vec <- weights
     } else {
-      stop("`weights` must be NULL, numeric vector, or a single column name.", call. = FALSE)
+      stop(
+        "`weights` must be NULL, numeric vector, or a single column name.",
+        call. = FALSE
+      )
     }
   }
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
-    warning("`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.")
+    warning(
+      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`."
+    )
     rescale <- FALSE
   }
 
@@ -401,7 +432,8 @@ table_apa <- function(
     }
 
     ct_pct <- spicy::cross_tab(
-      x, g,
+      x,
+      g,
       percent = "c",
       weights = w,
       rescale = rescale,
@@ -410,7 +442,8 @@ table_apa <- function(
       simulate_B = simulate_B
     )
     ct_n <- spicy::cross_tab(
-      x, g,
+      x,
+      g,
       weights = w,
       rescale = rescale,
       correct = correct,
@@ -486,7 +519,8 @@ table_apa <- function(
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
     long_raw <- long_raw[
-      order(long_raw$variable, long_raw$level, long_raw$group), ,
+      order(long_raw$variable, long_raw$level, long_raw$group),
+      ,
       drop = FALSE
     ]
     long_raw$variable <- as.character(long_raw$variable)
@@ -522,7 +556,8 @@ table_apa <- function(
 
     for (k in seq_len(nrow(key))) {
       sv <- ldf[
-        ldf$variable == key$variable[k] & ldf$level == key$level[k], ,
+        ldf$variable == key$variable[k] & ldf$level == key$level[k],
+        ,
         drop = FALSE
       ]
       r <- as.list(setNames(rep(NA, length(cols)), cols))
@@ -706,7 +741,9 @@ table_apa <- function(
       stop("Install package 'tinytable'.", call. = FALSE)
     }
 
+    old_tt_opt <- getOption("tinytable_print_output")
     options(tinytable_print_output = "html") # RStudio Viewer
+    on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
     dat_tt <- report_wide_char
 

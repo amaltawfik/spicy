@@ -8,15 +8,19 @@
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `dplyr::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).
-#' @param min_valid Minimum number of valid (non-NA) values required per row. If a proportion, it's applied to the number of selected columns.
+#' @param min_valid Minimum number of valid (non-NA) values required per row.
+#'   If a proportion, it's applied to the number of selected columns.
+#'   Defaults to `NULL` (all values must be valid).
 #' @param digits Optional number of decimal places to round the result.
-#' @param regex If `TRUE`, the `select` argument is treated as a regular expression. If `FALSE`, uses tidyselect helpers.
-#' @param verbose If `TRUE`, prints a message about processing.
+#'   Defaults to `NULL` (no rounding).
+#' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers.
+#'   If `TRUE`, the `select` argument is treated as a regular expression.
+#' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
+#'   If `TRUE`, prints a message about non-numeric columns excluded.
 #'
 #' @return A numeric vector of row-wise sums
 #'
 #' @importFrom dplyr pick
-#' @importFrom dplyr everything
 #' @importFrom dplyr select
 #' @importFrom dplyr where
 #' @importFrom rlang inform
@@ -106,17 +110,15 @@
 #' mat |> sum_n(min_valid = 2)
 #'
 #' @export
-sum_n <- function(data = NULL,
-                  select = dplyr::everything(),
-                  exclude = NULL,
-                  min_valid = NULL,
-                  digits = NULL,
-                  regex = FALSE,
-                  verbose = FALSE) {
-  if (!requireNamespace("rlang", quietly = TRUE)) {
-    stop("Package 'rlang' is required for sum_n(). Please install it.")
-  }
-
+sum_n <- function(
+  data = NULL,
+  select = dplyr::everything(),
+  exclude = NULL,
+  min_valid = NULL,
+  digits = NULL,
+  regex = FALSE,
+  verbose = FALSE
+) {
   if (is.matrix(data)) {
     data <- as.data.frame(data)
   }
@@ -130,7 +132,10 @@ sum_n <- function(data = NULL,
       select <- ".*"
     }
     if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      stop("When `regex = TRUE`, `select` must be a single character pattern.", call. = FALSE)
+      stop(
+        "When `regex = TRUE`, `select` must be a single character pattern.",
+        call. = FALSE
+      )
     }
     col_names <- names(data)
     matched <- grep(select, col_names, value = TRUE)
@@ -145,16 +150,21 @@ sum_n <- function(data = NULL,
   data <- dplyr::select(data, dplyr::where(is.numeric))
   numeric_cols <- names(data)
 
-  # Always show non-numeric column info
   ignored <- setdiff(all_cols, numeric_cols)
-  if (length(ignored) > 0) {
+  if (verbose && length(ignored) > 0) {
     rlang::inform(
-      message = paste0("sum_n(): Ignored non-numeric columns: ", paste(ignored, collapse = ", "))
+      message = paste0(
+        "sum_n(): Ignored non-numeric columns: ",
+        paste(ignored, collapse = ", ")
+      )
     )
   }
 
   if (length(numeric_cols) == 0) {
-    warning("sum_n(): No numeric columns selected; returning NA for all rows.", call. = FALSE)
+    warning(
+      "sum_n(): No numeric columns selected; returning NA for all rows.",
+      call. = FALSE
+    )
     return(rep(NA_real_, nrow(data)))
   }
 
@@ -176,7 +186,12 @@ sum_n <- function(data = NULL,
 
   if (verbose) {
     rlang::inform(
-      message = paste0("sum_n(): Row sums computed with min_valid = ", min_valid, ", regex = ", regex)
+      message = paste0(
+        "sum_n(): Row sums computed with min_valid = ",
+        min_valid,
+        ", regex = ",
+        regex
+      )
     )
   }
 

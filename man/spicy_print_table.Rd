@@ -34,20 +34,20 @@ attribute of \code{x} if present.}
 \item \code{"wide"} - extra spacing (for wide displays)
 }}
 
-\item{first_column_line}{Logical; if \code{TRUE} (default), adds a vertical separator
+\item{first_column_line}{Logical. If \code{TRUE} (the default), adds a vertical separator
 after the first column.}
 
 \item{row_total_line, column_total_line, bottom_line}{Logical flags controlling
 the presence of horizontal lines before total rows/columns or at the bottom
 of the table.
-Defaults are \code{TRUE} for \code{row_total_line} and \code{column_total_line}, and \code{FALSE}
-for \code{bottom_line}.}
+Both \code{row_total_line} and \code{column_total_line} default to \code{TRUE};
+\code{bottom_line} defaults to \code{FALSE}.}
 
-\item{lines_color}{Character; color for table separators (default: \code{"darkgrey"}).
+\item{lines_color}{Character. Color for table separators. Defaults to \code{"darkgrey"}.
 Only applied if the output supports ANSI colors (see \code{\link[crayon:has_color]{crayon::has_color()}}).}
 
 \item{align_left_cols}{Integer vector of column indices to left-align.
-If \code{NULL} (default), alignment is auto-detected based on \code{x}:
+If \code{NULL} (the default), alignment is auto-detected based on \code{x}:
 \itemize{
 \item For \code{freq} tables -> \code{c(1, 2)}
 \item For \code{cross} tables -> \code{1}
