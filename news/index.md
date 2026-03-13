@@ -2,6 +2,8 @@
 
 ## spicy 0.5.0
 
+### New features
+
 - New
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   helper to build APA-ready cross-tab reports with multiple output
@@ -13,8 +15,9 @@
   controls for weighting and inference (`weights`, `rescale`, `correct`,
   `simulate_p`, `simulate_B`) and now handles missing values explicitly
   when `drop_na = FALSE`.
-- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
-  parameter `message` renamed to `show_message`.
+
+### Bug fixes
+
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   no longer crashes when `special = "NaN"` is used with non-numeric
   columns. Passing `count = NA` now errors with a message directing to
@@ -23,13 +26,18 @@
   fixes a spurious rescale warning for explicit all-ones weights and
   aligns the Cramer’s V formula with
   [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md).
-- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
-  dispatches printing correctly via S3.
 - [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   no longer leaks global options on error. The `simulate_p` default is
   aligned to `FALSE`.
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   title generation no longer crashes on unrecognizable expressions.
+
+### Minor improvements
+
+- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
+  parameter `message` renamed to `show_message`.
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  dispatches printing correctly via S3.
 - Removed unused `collapse` and `stringi` from `Imports`.
 
 ## spicy 0.4.2

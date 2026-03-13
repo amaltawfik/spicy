@@ -34,23 +34,32 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="spicy-050">spicy 0.5.0<a class="anchor" aria-label="anchor" href="#spicy-050"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
 <ul><li>New <code><a href="../reference/table_apa.html">table_apa()</a></code> helper to build APA-ready cross-tab reports with multiple output formats (<code>wide</code>, <code>long</code>, <code>tinytable</code>, <code>flextable</code>, <code>excel</code>, <code>clipboard</code>, <code>word</code>).</li>
 <li>
 <code><a href="../reference/table_apa.html">table_apa()</a></code> exposes key <code><a href="../reference/cross_tab.html">cross_tab()</a></code> controls for weighting and inference (<code>weights</code>, <code>rescale</code>, <code>correct</code>, <code>simulate_p</code>, <code>simulate_B</code>) and now handles missing values explicitly when <code>drop_na = FALSE</code>.</li>
-<li>
-<code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> parameter <code>message</code> renamed to <code>show_message</code>.</li>
-<li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-5-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-0"></a></h3>
+<ul><li>
 <code><a href="../reference/count_n.html">count_n()</a></code> no longer crashes when <code>special = "NaN"</code> is used with non-numeric columns. Passing <code>count = NA</code> now errors with a message directing to <code>special = "NA"</code>.</li>
 <li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> fixes a spurious rescale warning for explicit all-ones weights and aligns the Cramer’s V formula with <code><a href="../reference/cramer_v.html">cramer_v()</a></code>.</li>
 <li>
-<code><a href="../reference/freq.html">freq()</a></code> now dispatches printing correctly via S3.</li>
-<li>
 <code><a href="../reference/table_apa.html">table_apa()</a></code> no longer leaks global options on error. The <code>simulate_p</code> default is aligned to <code>FALSE</code>.</li>
 <li>
 <code><a href="../reference/varlist.html">varlist()</a></code> title generation no longer crashes on unrecognizable expressions.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-improvements-0-5-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-5-0"></a></h3>
+<ul><li>
+<code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> parameter <code>message</code> renamed to <code>show_message</code>.</li>
+<li>
+<code><a href="../reference/freq.html">freq()</a></code> now dispatches printing correctly via S3.</li>
 <li>Removed unused <code>collapse</code> and <code>stringi</code> from <code>Imports</code>.</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="spicy-042">spicy 0.4.2<a class="anchor" aria-label="anchor" href="#spicy-042"></a></h2><p class="text-muted">CRAN release: 2026-03-06</p>
 <ul><li>
