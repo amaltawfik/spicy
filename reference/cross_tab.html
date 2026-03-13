@@ -75,7 +75,10 @@ use <code><a href="freq.html">freq()</a></code> instead.</p>
 <span>  digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  styled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'spicy_cross_table_list'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -105,41 +108,51 @@ or a combination of multiple variables (e.g. <code>interaction(vs, am)</code>).<
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
-<dd><p>Logical. If TRUE, rescales weights so total weighted N matches raw N (default FALSE).</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), weights are used as-is.
+If <code>TRUE</code>, rescales weights so total weighted N matches raw N.</p></dd>
 
 
 <dt id="arg-percent">percent<a class="anchor" aria-label="anchor" href="#arg-percent"></a></dt>
-<dd><p>One of <code>"none"</code>, <code>"row"</code>, <code>"column"</code>.
+<dd><p>One of <code>"none"</code> (the default), <code>"row"</code>, <code>"column"</code>.
 Unique abbreviations are accepted (e.g. <code>"n"</code>, <code>"r"</code>, <code>"c"</code>).</p></dd>
 
 
 <dt id="arg-include-stats">include_stats<a class="anchor" aria-label="anchor" href="#arg-include-stats"></a></dt>
-<dd><p>Logical; compute Chi-squared and Cramer's V (default TRUE).</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), computes Chi-squared
+and Cramer's V.</p></dd>
 
 
 <dt id="arg-correct">correct<a class="anchor" aria-label="anchor" href="#arg-correct"></a></dt>
-<dd><p>Logical; apply Yates continuity correction to the Chi-squared
-test. Only applicable to 2x2 tables. Default is FALSE.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), no continuity correction is
+applied. If <code>TRUE</code>, applies Yates correction (only for 2x2 tables).</p></dd>
 
 
 <dt id="arg-simulate-p">simulate_p<a class="anchor" aria-label="anchor" href="#arg-simulate-p"></a></dt>
-<dd><p>Logical; use Monte Carlo p-value simulation (default FALSE).</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), uses asymptotic p-values.
+If <code>TRUE</code>, uses Monte Carlo simulation.</p></dd>
 
 
 <dt id="arg-simulate-b">simulate_B<a class="anchor" aria-label="anchor" href="#arg-simulate-b"></a></dt>
-<dd><p>Integer; number of replicates for Monte Carlo (default 2000).</p></dd>
+<dd><p>Integer. Number of replicates for Monte Carlo simulation.
+Defaults to <code>2000</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimals (default 1 for percentages, 0 for counts).</p></dd>
+<dd><p>Number of decimals. Defaults to <code>1</code> for percentages, <code>0</code> for counts.</p></dd>
 
 
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
-<dd><p>Logical; if TRUE, returns a "spicy_cross_table" object (for printing).</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), returns a <code>spicy_cross_table</code> object
+(for formatted printing). If <code>FALSE</code>, returns a plain <code>data.frame</code>.</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
-<dd><p>Logical; if TRUE, adds marginal N totals when percent != "none".</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), adds marginal N totals when
+<code>percent != "none"</code>.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments passed to individual print methods.</p></dd>
 
 </dl></div>
     <div class="section level2">

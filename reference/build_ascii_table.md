@@ -45,22 +45,22 @@ build_ascii_table(
 
 - first_column_line:
 
-  Logical. If `TRUE` (default), a vertical separator is drawn after the
-  first column (useful for separating categories from data).
+  Logical. If `TRUE` (the default), a vertical separator is drawn after
+  the first column (useful for separating categories from data).
 
 - row_total_line, column_total_line:
 
-  Logical. Control horizontal rules before total rows or columns
-  (default: `TRUE`).
+  Logical. Control horizontal rules before total rows or columns. Both
+  default to `TRUE`.
 
 - bottom_line:
 
-  Logical. If `TRUE`, draws a closing line at the bottom of the table
-  (default: `FALSE`).
+  Logical. If `FALSE` (the default), no closing line is drawn. If
+  `TRUE`, draws a closing line at the bottom of the table.
 
 - lines_color:
 
-  Character. Color used for table separators (default: `"darkgrey"`).
+  Character. Color used for table separators. Defaults to `"darkgrey"`.
   The color is applied only when ANSI color support is available (see
   [`crayon::has_color()`](http://r-lib.github.io/crayon/reference/has_color.md)).
 

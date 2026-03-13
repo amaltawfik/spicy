@@ -20,7 +20,7 @@ table_apa(
   weights = NULL,
   rescale = FALSE,
   correct = FALSE,
-  simulate_p = TRUE,
+  simulate_p = FALSE,
   simulate_B = 2000,
   percent_digits = 1,
   p_digits = 3,
@@ -64,98 +64,105 @@ table_apa(
 
 - include_total:
 
-  Logical; include `Total` group if available.
+  Logical. If `TRUE` (the default), includes a `Total` group when
+  available.
 
 - drop_na:
 
-  Logical; if `TRUE`, remove rows with NA in row/group variable before
-  each cross-tabulation. If `FALSE`, missing values are displayed as a
-  dedicated `"(Missing)"` level.
+  Logical. If `TRUE` (the default), removes rows with `NA` in the
+  row/group variable before each cross-tabulation. If `FALSE`, missing
+  values are displayed as a dedicated `"(Missing)"` level.
 
 - weights:
 
-  Optional weights. Either `NULL`, a numeric vector of length
-  `nrow(data)`, or a single column name in `data`.
+  Optional weights. Either `NULL` (the default), a numeric vector of
+  length `nrow(data)`, or a single column name in `data`.
 
 - rescale:
 
-  Logical; passed to
-  [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  to rescale weights.
+  Logical. If `FALSE` (the default), weights are used as-is. If `TRUE`,
+  rescales weights so total weighted N matches raw N. Passed to
+  [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
 - correct:
 
-  Logical; passed to
-  [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  (Yates correction in 2x2 chi-squared contexts).
+  Logical. If `FALSE` (the default), no continuity correction is
+  applied. If `TRUE`, applies Yates correction in 2x2 chi-squared
+  contexts. Passed to
+  [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
 - simulate_p:
 
-  Logical; passed to
+  Logical. If `FALSE` (the default), uses asymptotic p-values. If
+  `TRUE`, uses Monte Carlo simulation. Passed to
   [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
 - simulate_B:
 
-  Integer; Monte Carlo replicates when `simulate_p = TRUE`.
+  Integer. Number of Monte Carlo replicates when `simulate_p = TRUE`.
+  Defaults to `2000`.
 
 - percent_digits:
 
-  Number of digits for percentages in report outputs.
+  Number of digits for percentages in report outputs. Defaults to `1`.
 
 - p_digits:
 
-  Number of digits for p-values (except `< .001`).
+  Number of digits for p-values (except `< .001`). Defaults to `3`.
 
 - v_digits:
 
-  Number of digits for Cramer's V.
+  Number of digits for Cramer's V. Defaults to `2`.
 
 - decimal_mark:
 
-  Decimal separator (`"."` or `","`).
+  Decimal separator (`"."` or `","`). Defaults to `"."`.
 
 - output:
 
-  Output format: `"wide"`, `"long"`, `"tinytable"`, `"flextable"`,
-  `"excel"`, `"clipboard"`, `"word"`.
+  Output format: `"wide"` (the default), `"long"`, `"tinytable"`,
+  `"flextable"`, `"excel"`, `"clipboard"`, `"word"`.
 
 - style:
 
-  `"raw"` for machine-friendly outputs, `"report"` for formatted
-  outputs, `"auto"` to select by output type.
+  `"auto"` (the default) to select by output type, `"raw"` for
+  machine-friendly outputs, `"report"` for formatted outputs.
 
 - indent_text:
 
-  Prefix used for modality labels in report table building.
+  Prefix used for modality labels in report table building. Defaults to
+  `" "` (two spaces).
 
 - indent_text_excel_clipboard:
 
-  Stronger indentation used in Excel and clipboard exports.
+  Stronger indentation used in Excel and clipboard exports. Defaults to
+  six non-breaking spaces.
 
 - add_multilevel_header:
 
-  Logical; merge top headers in Excel export.
+  Logical. If `TRUE` (the default), merges top headers in Excel export.
 
 - blank_na_wide:
 
-  Logical; replace NA by empty strings in wide raw output.
+  Logical. If `FALSE` (the default), `NA` values are kept as-is in wide
+  raw output. If `TRUE`, replaces them with empty strings.
 
 - excel_path:
 
-  Path for `output = "excel"`.
+  Path for `output = "excel"`. Defaults to `NULL`.
 
 - excel_sheet:
 
-  Sheet name for Excel export.
+  Sheet name for Excel export. Defaults to `"APA"`.
 
 - clipboard_delim:
 
-  Delimiter for clipboard text export.
+  Delimiter for clipboard text export. Defaults to `"\t"`.
 
 - word_path:
 
   Path for `output = "word"` or optional save path when
-  `output = "flextable"`.
+  `output = "flextable"`. Defaults to `NULL`.
 
 ## Value
 
@@ -214,14 +221,14 @@ table_apa(
   style = "raw"
 )
 #>          variable level       group  n   pct     p Cramer's V
-#> 1       Emploi SF   Non         BFH 12  80.0 0.001       0.62
-#> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.001       0.62
-#> 3       Emploi SF   Non       HESAV  4  80.0 0.001       0.62
-#> 4       Emploi SF   Non       Total 18  56.2 0.001       0.62
-#> 5       Emploi SF   Oui         BFH  3  20.0 0.001       0.62
-#> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.001       0.62
-#> 7       Emploi SF   Oui       HESAV  1  20.0 0.001       0.62
-#> 8       Emploi SF   Oui       Total 14  43.8 0.001       0.62
+#> 1       Emploi SF   Non         BFH 12  80.0 0.002       0.62
+#> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.002       0.62
+#> 3       Emploi SF   Non       HESAV  4  80.0 0.002       0.62
+#> 4       Emploi SF   Non       Total 18  56.2 0.002       0.62
+#> 5       Emploi SF   Oui         BFH  3  20.0 0.002       0.62
+#> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.002       0.62
+#> 7       Emploi SF   Oui       HESAV  1  20.0 0.002       0.62
+#> 8       Emploi SF   Oui       Total 14  43.8 0.002       0.62
 #> 9  Role recherche   Non         BFH 15 100.0 0.001       0.81
 #> 10 Role recherche   Non HEdS-Geneve  4  33.3 0.001       0.81
 #> 11 Role recherche   Non       HESAV  0   0.0 0.001       0.81

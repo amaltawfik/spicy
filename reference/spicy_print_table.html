@@ -98,7 +98,7 @@ attribute of <code>x</code> if present.</p></dd>
 
 
 <dt id="arg-first-column-line">first_column_line<a class="anchor" aria-label="anchor" href="#arg-first-column-line"></a></dt>
-<dd><p>Logical; if <code>TRUE</code> (default), adds a vertical separator
+<dd><p>Logical. If <code>TRUE</code> (the default), adds a vertical separator
 after the first column.</p></dd>
 
 
@@ -106,18 +106,18 @@ after the first column.</p></dd>
 <dd><p>Logical flags controlling
 the presence of horizontal lines before total rows/columns or at the bottom
 of the table.
-Defaults are <code>TRUE</code> for <code>row_total_line</code> and <code>column_total_line</code>, and <code>FALSE</code>
-for <code>bottom_line</code>.</p></dd>
+Both <code>row_total_line</code> and <code>column_total_line</code> default to <code>TRUE</code>;
+<code>bottom_line</code> defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-lines-color">lines_color<a class="anchor" aria-label="anchor" href="#arg-lines-color"></a></dt>
-<dd><p>Character; color for table separators (default: <code>"darkgrey"</code>).
+<dd><p>Character. Color for table separators. Defaults to <code>"darkgrey"</code>.
 Only applied if the output supports ANSI colors (see <code><a href="http://r-lib.github.io/crayon/reference/has_color.html" class="external-link">crayon::has_color()</a></code>).</p></dd>
 
 
 <dt id="arg-align-left-cols">align_left_cols<a class="anchor" aria-label="anchor" href="#arg-align-left-cols"></a></dt>
 <dd><p>Integer vector of column indices to left-align.
-If <code>NULL</code> (default), alignment is auto-detected based on <code>x</code>:</p><ul><li><p>For <code>freq</code> tables -&gt; <code>c(1, 2)</code></p></li>
+If <code>NULL</code> (the default), alignment is auto-detected based on <code>x</code>:</p><ul><li><p>For <code>freq</code> tables -&gt; <code>c(1, 2)</code></p></li>
 <li><p>For <code>cross</code> tables -&gt; <code>1</code></p></li>
 </ul></dd>
 

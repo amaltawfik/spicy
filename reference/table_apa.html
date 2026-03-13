@@ -56,7 +56,7 @@ variable (<code>group_var</code>) with one or many row variables (<code>row_vars
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  correct <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  simulate_p <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  simulate_B <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
@@ -101,95 +101,106 @@ modalities. If <code>NULL</code>, all observed levels are kept.</p></dd>
 
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>
-<dd><p>Logical; include <code>Total</code> group if available.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), includes a <code>Total</code> group
+when available.</p></dd>
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, remove rows with NA in row/group variable
-before each cross-tabulation. If <code>FALSE</code>, missing values are displayed as a
-dedicated <code>"(Missing)"</code> level.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), removes rows with <code>NA</code> in the
+row/group variable before each cross-tabulation. If <code>FALSE</code>, missing values
+are displayed as a dedicated <code>"(Missing)"</code> level.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
-<dd><p>Optional weights. Either <code>NULL</code>, a numeric vector of length
-<code>nrow(data)</code>, or a single column name in <code>data</code>.</p></dd>
+<dd><p>Optional weights. Either <code>NULL</code> (the default), a numeric vector
+of length <code>nrow(data)</code>, or a single column name in <code>data</code>.</p></dd>
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
-<dd><p>Logical; passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code> to rescale weights.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), weights are used as-is.
+If <code>TRUE</code>, rescales weights so total weighted N matches raw N.
+Passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code>.</p></dd>
 
 
 <dt id="arg-correct">correct<a class="anchor" aria-label="anchor" href="#arg-correct"></a></dt>
-<dd><p>Logical; passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code> (Yates correction in
-2x2 chi-squared contexts).</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), no continuity correction is
+applied. If <code>TRUE</code>, applies Yates correction in 2x2 chi-squared contexts.
+Passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code>.</p></dd>
 
 
 <dt id="arg-simulate-p">simulate_p<a class="anchor" aria-label="anchor" href="#arg-simulate-p"></a></dt>
-<dd><p>Logical; passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code>.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), uses asymptotic p-values.
+If <code>TRUE</code>, uses Monte Carlo simulation. Passed to <code><a href="cross_tab.html">spicy::cross_tab()</a></code>.</p></dd>
 
 
 <dt id="arg-simulate-b">simulate_B<a class="anchor" aria-label="anchor" href="#arg-simulate-b"></a></dt>
-<dd><p>Integer; Monte Carlo replicates when <code>simulate_p = TRUE</code>.</p></dd>
+<dd><p>Integer. Number of Monte Carlo replicates when
+<code>simulate_p = TRUE</code>. Defaults to <code>2000</code>.</p></dd>
 
 
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
-<dd><p>Number of digits for percentages in report outputs.</p></dd>
+<dd><p>Number of digits for percentages in report outputs.
+Defaults to <code>1</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
-<dd><p>Number of digits for p-values (except <code>&lt; .001</code>).</p></dd>
+<dd><p>Number of digits for p-values (except <code>&lt; .001</code>).
+Defaults to <code>3</code>.</p></dd>
 
 
 <dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
-<dd><p>Number of digits for Cramer's V.</p></dd>
+<dd><p>Number of digits for Cramer's V. Defaults to <code>2</code>.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Decimal separator (<code>"."</code> or <code>","</code>).</p></dd>
+<dd><p>Decimal separator (<code>"."</code> or <code>","</code>). Defaults to <code>"."</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
-<dd><p>Output format: <code>"wide"</code>, <code>"long"</code>, <code>"tinytable"</code>,
+<dd><p>Output format: <code>"wide"</code> (the default), <code>"long"</code>, <code>"tinytable"</code>,
 <code>"flextable"</code>, <code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>.</p></dd>
 
 
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p><code>"raw"</code> for machine-friendly outputs, <code>"report"</code> for formatted
-outputs, <code>"auto"</code> to select by output type.</p></dd>
+<dd><p><code>"auto"</code> (the default) to select by output type, <code>"raw"</code> for
+machine-friendly outputs, <code>"report"</code> for formatted outputs.</p></dd>
 
 
 <dt id="arg-indent-text">indent_text<a class="anchor" aria-label="anchor" href="#arg-indent-text"></a></dt>
-<dd><p>Prefix used for modality labels in report table building.</p></dd>
+<dd><p>Prefix used for modality labels in report table building.
+Defaults to <code>"  "</code> (two spaces).</p></dd>
 
 
 <dt id="arg-indent-text-excel-clipboard">indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-excel-clipboard"></a></dt>
 <dd><p>Stronger indentation used in Excel and
-clipboard exports.</p></dd>
+clipboard exports. Defaults to six non-breaking spaces.</p></dd>
 
 
 <dt id="arg-add-multilevel-header">add_multilevel_header<a class="anchor" aria-label="anchor" href="#arg-add-multilevel-header"></a></dt>
-<dd><p>Logical; merge top headers in Excel export.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), merges top
+headers in Excel export.</p></dd>
 
 
 <dt id="arg-blank-na-wide">blank_na_wide<a class="anchor" aria-label="anchor" href="#arg-blank-na-wide"></a></dt>
-<dd><p>Logical; replace NA by empty strings in wide raw output.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), <code>NA</code> values are kept
+as-is in wide raw output. If <code>TRUE</code>, replaces them with empty strings.</p></dd>
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>Path for <code>output = "excel"</code>.</p></dd>
+<dd><p>Path for <code>output = "excel"</code>. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
-<dd><p>Sheet name for Excel export.</p></dd>
+<dd><p>Sheet name for Excel export. Defaults to <code>"APA"</code>.</p></dd>
 
 
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
-<dd><p>Delimiter for clipboard text export.</p></dd>
+<dd><p>Delimiter for clipboard text export. Defaults to <code>"\t"</code>.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
 <dd><p>Path for <code>output = "word"</code> or optional save path when
-<code>output = "flextable"</code>.</p></dd>
+<code>output = "flextable"</code>. Defaults to <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -234,14 +245,14 @@ headers, p-values, and Cramer's V.</p>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          variable level       group  n   pct     p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH 12  80.0 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4  80.0 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 18  56.2 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3  20.0 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  1  20.0 0.001       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 14  43.8 0.001       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH 12  80.0 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4  80.0 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 18  56.2 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3  20.0 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  1  20.0 0.002       0.62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 14  43.8 0.002       0.62</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9  Role recherche   Non         BFH 15 100.0 0.001       0.81</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10 Role recherche   Non HEdS-Geneve  4  33.3 0.001       0.81</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11 Role recherche   Non       HESAV  0   0.0 0.001       0.81</span>

@@ -64,15 +64,18 @@ It supports type-safe comparison, case-insensitive string matching, and detectio
 
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
-<dd><p>Columns to include. Uses tidyselect helpers like <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">tidyselect::everything()</a></code>, <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">tidyselect::starts_with()</a></code>, etc. If <code>regex = TRUE</code>, <code>select</code> is treated as a regex string.</p></dd>
+<dd><p>Columns to include. Defaults to <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">tidyselect::everything()</a></code>.
+Uses tidyselect helpers like <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">tidyselect::starts_with()</a></code>, etc.
+If <code>regex = TRUE</code>, <code>select</code> is treated as a regex string.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
-<dd><p>Character vector of column names to exclude after selection.</p></dd>
+<dd><p>Character vector of column names to exclude after selection.
+Defaults to <code>NULL</code> (no exclusion).</p></dd>
 
 
 <dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
-<dd><p>Value(s) to count. Ignored if <code>special</code> is used.
+<dd><p>Value(s) to count. Defaults to <code>NULL</code>. Ignored if <code>special</code> is used.
 Multiple values are allowed (e.g., <code>count = c(1, 2, 3)</code> or <code>count = c("yes", "no")</code>).
 R automatically coerces all values in <code>count</code> to a common type (e.g., <code>c(2, "2")</code> becomes <code>c("2", "2")</code>),
 so all values are expected to be of the same final type.
@@ -81,24 +84,29 @@ If <code>allow_coercion = FALSE</code>, matching is type-safe using <code><a hre
 
 <dt id="arg-special">special<a class="anchor" aria-label="anchor" href="#arg-special"></a></dt>
 <dd><p>Character vector of special values to count: <code>"NA"</code>, <code>"NaN"</code>, <code>"Inf"</code>, <code>"-Inf"</code>, or <code>"all"</code>.
+Defaults to <code>NULL</code>.
 <code>"NA"</code> uses <code><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na()</a></code>, and therefore includes both <code>NA</code> and <code>NaN</code> values.
 <code>"NaN"</code> uses <code><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.nan()</a></code> to match only actual NaN values.</p></dd>
 
 
 <dt id="arg-allow-coercion">allow_coercion<a class="anchor" aria-label="anchor" href="#arg-allow-coercion"></a></dt>
-<dd><p>Logical (default <code>TRUE</code>). If <code>FALSE</code>, uses strict matching via <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), values are compared after coercion.
+If <code>FALSE</code>, uses strict matching via <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>.</p></dd>
 
 
 <dt id="arg-ignore-case">ignore_case<a class="anchor" aria-label="anchor" href="#arg-ignore-case"></a></dt>
-<dd><p>Logical (default <code>FALSE</code>). If <code>TRUE</code>, performs case-insensitive string comparisons.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), comparisons are case-sensitive.
+If <code>TRUE</code>, performs case-insensitive string comparisons.</p></dd>
 
 
 <dt id="arg-regex">regex<a class="anchor" aria-label="anchor" href="#arg-regex"></a></dt>
-<dd><p>Logical (default <code>FALSE</code>). If <code>TRUE</code>, interprets <code>select</code> as a regular expression pattern.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), uses tidyselect helpers.
+If <code>TRUE</code>, interprets <code>select</code> as a regular expression pattern.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical (default <code>FALSE</code>). If <code>TRUE</code>, prints processing messages.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), messages are suppressed.
+If <code>TRUE</code>, prints processing messages.</p></dd>
 
 </dl></div>
     <div class="section level2">

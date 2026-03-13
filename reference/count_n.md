@@ -30,30 +30,32 @@ count_n(
 
 - select:
 
-  Columns to include. Uses tidyselect helpers like
-  [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html),
+  Columns to include. Defaults to
+  [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html).
+  Uses tidyselect helpers like
   [`tidyselect::starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html),
   etc. If `regex = TRUE`, `select` is treated as a regex string.
 
 - exclude:
 
-  Character vector of column names to exclude after selection.
+  Character vector of column names to exclude after selection. Defaults
+  to `NULL` (no exclusion).
 
 - count:
 
-  Value(s) to count. Ignored if `special` is used. Multiple values are
-  allowed (e.g., `count = c(1, 2, 3)` or `count = c("yes", "no")`). R
-  automatically coerces all values in `count` to a common type (e.g.,
-  `c(2, "2")` becomes `c("2", "2")`), so all values are expected to be
-  of the same final type. If `allow_coercion = FALSE`, matching is
-  type-safe using
+  Value(s) to count. Defaults to `NULL`. Ignored if `special` is used.
+  Multiple values are allowed (e.g., `count = c(1, 2, 3)` or
+  `count = c("yes", "no")`). R automatically coerces all values in
+  `count` to a common type (e.g., `c(2, "2")` becomes `c("2", "2")`), so
+  all values are expected to be of the same final type. If
+  `allow_coercion = FALSE`, matching is type-safe using
   [`identical()`](https://rdrr.io/r/base/identical.html), and the type
   of `count` must match that of the values in the data.
 
 - special:
 
   Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`,
-  `"-Inf"`, or `"all"`. `"NA"` uses
+  `"-Inf"`, or `"all"`. Defaults to `NULL`. `"NA"` uses
   [`is.na()`](https://rdrr.io/r/base/NA.html), and therefore includes
   both `NA` and `NaN` values. `"NaN"` uses
   [`is.nan()`](https://rdrr.io/r/base/is.finite.html) to match only
@@ -61,22 +63,24 @@ count_n(
 
 - allow_coercion:
 
-  Logical (default `TRUE`). If `FALSE`, uses strict matching via
+  Logical. If `TRUE` (the default), values are compared after coercion.
+  If `FALSE`, uses strict matching via
   [`identical()`](https://rdrr.io/r/base/identical.html).
 
 - ignore_case:
 
-  Logical (default `FALSE`). If `TRUE`, performs case-insensitive string
-  comparisons.
+  Logical. If `FALSE` (the default), comparisons are case-sensitive. If
+  `TRUE`, performs case-insensitive string comparisons.
 
 - regex:
 
-  Logical (default `FALSE`). If `TRUE`, interprets `select` as a regular
-  expression pattern.
+  Logical. If `FALSE` (the default), uses tidyselect helpers. If `TRUE`,
+  interprets `select` as a regular expression pattern.
 
 - verbose:
 
-  Logical (default `FALSE`). If `TRUE`, prints processing messages.
+  Logical. If `FALSE` (the default), messages are suppressed. If `TRUE`,
+  prints processing messages.
 
 ## Value
 

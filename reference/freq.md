@@ -58,7 +58,8 @@ freq(
 
 - cum:
 
-  Logical. If `TRUE`, add cumulative percentages.
+  Logical. If `FALSE` (the default), cumulative percentages are omitted.
+  If `TRUE`, adds cumulative percentages.
 
 - sort:
 
@@ -312,8 +313,16 @@ df |> freq(sexe, sort = "name-")
 # Non-styled return (for programmatic use)
 f <- freq(df, sexe, styled = FALSE)
 head(f)
-#>    value n      prop valid_prop
-#> 1 Female 3 0.5000000        0.6
-#> 2   Male 2 0.3333333        0.4
-#> 3   <NA> 1 0.1666667         NA
+#> Frequency table: sexe
+#> 
+#>  Category │ Values  Freq.  Percent  Valid Percent 
+#> ──────────┼───────────────────────────────────────
+#>  Valid    │ Female      3     50.0           60.0 
+#>           │ Male        2     33.3           40.0 
+#>  Missing  │ NA          1     16.7                
+#> ──────────┼───────────────────────────────────────
+#>  Total    │             6    100.0          100.0 
+#> 
+#> Class: factor
+#> Data: df
 ```

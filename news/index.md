@@ -58,7 +58,7 @@ CRAN release: 2025-12-21
 
 ## spicy 0.4.0
 
-- `print.spicy()` has been fully redesigned to produce clean, aligned
+- Print methods have been fully redesigned to produce clean, aligned
   ASCII tables inspired by Stata’s layout. The new implementation
   improves formatting, adds optional color support, and provides more
   consistent handling of totals and column spacing.

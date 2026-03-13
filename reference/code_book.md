@@ -66,13 +66,9 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 
 ## Dependencies
 
-Requires the following packages:
+Requires the following package:
 
 - **DT**
-
-- **cli**
-
-- **tools**
 
 ## See also
 

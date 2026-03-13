@@ -47,7 +47,7 @@ You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a sp
 <span>  row.names.as.col <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  row.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  col.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  message <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  show_message <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -62,23 +62,23 @@ You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a sp
 
 
 <dt id="arg-row-names-as-col">row.names.as.col<a class="anchor" aria-label="anchor" href="#arg-row-names-as-col"></a></dt>
-<dd><p>Logical or character. If <code>FALSE</code> (default), row names are not added as a column. If <code>TRUE</code>, a column named <code>"rownames"</code> is prepended. If a character string is supplied, it is used as the column name for row names.</p></dd>
+<dd><p>Logical or character. If <code>FALSE</code> (the default), row names are not added as a column. If <code>TRUE</code>, a column named <code>"rownames"</code> is prepended. If a character string is supplied, it is used as the column name for row names.</p></dd>
 
 
 <dt id="arg-row-names">row.names<a class="anchor" aria-label="anchor" href="#arg-row-names"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (default), includes row names in the clipboard output. If <code>FALSE</code>, row names are omitted.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), includes row names in the clipboard output. If <code>FALSE</code>, row names are omitted.</p></dd>
 
 
 <dt id="arg-col-names">col.names<a class="anchor" aria-label="anchor" href="#arg-col-names"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (default), includes column names in the clipboard output. If <code>FALSE</code>, column names are omitted.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), includes column names in the clipboard output. If <code>FALSE</code>, column names are omitted.</p></dd>
 
 
-<dt id="arg-message">message<a class="anchor" aria-label="anchor" href="#arg-message"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (default), displays a success message after copying. If <code>FALSE</code>, no success message is printed.</p></dd>
+<dt id="arg-show-message">show_message<a class="anchor" aria-label="anchor" href="#arg-show-message"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (the default), displays a success message after copying. If <code>FALSE</code>, no success message is printed.</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, suppresses all messages, including success, coercion notices, and warnings. If <code>FALSE</code> (default), messages are shown.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), messages are shown. If <code>TRUE</code>, suppresses all messages, including success, coercion notices, and warnings.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

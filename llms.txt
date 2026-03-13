@@ -325,7 +325,7 @@ table_apa(
 # Low-level ASCII builders used by print methods
 tab <- cross_tab(mtcars, cyl, gear)
 spicy_print_table(tab)
-build_ascii_table(tab, title = attr(tab, "title"), note = attr(tab, "note"))
+build_ascii_table(tab)
 
 # Clipboard export helper (interactive session)
 copy_clipboard(head(mtcars))
@@ -385,6 +385,7 @@ This package is licensed under the MIT license. See
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table (spicy engine)
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
   : Compute Cramer's V
@@ -415,6 +416,10 @@ This package is licensed under the MIT license. See
 
 - [`print(`*`<spicy_cross_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
   : Print method for spicy_cross_table objects
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  : Cross-tabulation
 
 - [`print(`*`<spicy_freq_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
   :

@@ -56,7 +56,10 @@
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Cramer's V is based on the chi-squared statistic and adjusts for the size of the table.
+    <p>Cramer's V is computed as \(V = \sqrt{\chi^2 / (n \cdot (k - 1))}\),
+where \(\chi^2\) is the Pearson chi-squared statistic, \(n\) is the
+total number of observations, and \(k = \min(r, c)\) with \(r\) and
+\(c\) the number of rows and columns.
 It is suitable for nominal (unordered categorical) variables.</p>
     </div>
 

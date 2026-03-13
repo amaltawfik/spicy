@@ -42,20 +42,23 @@ sum_n(
 - min_valid:
 
   Minimum number of valid (non-NA) values required per row. If a
-  proportion, it's applied to the number of selected columns.
+  proportion, it's applied to the number of selected columns. Defaults
+  to `NULL` (all values must be valid).
 
 - digits:
 
-  Optional number of decimal places to round the result.
+  Optional number of decimal places to round the result. Defaults to
+  `NULL` (no rounding).
 
 - regex:
 
-  If `TRUE`, the `select` argument is treated as a regular expression.
-  If `FALSE`, uses tidyselect helpers.
+  Logical. If `FALSE` (the default), uses tidyselect helpers. If `TRUE`,
+  the `select` argument is treated as a regular expression.
 
 - verbose:
 
-  If `TRUE`, prints a message about processing.
+  Logical. If `FALSE` (the default), messages are suppressed. If `TRUE`,
+  prints a message about non-numeric columns excluded.
 
 ## Value
 
@@ -175,7 +178,6 @@ df_mixed
 
 # Non-numeric columns are ignored
 sum_n(df_mixed)
-#> sum_n(): Ignored non-numeric columns: name, group
 #> [1] NA NA 65 NA 85
 
 # Use inside mutate with mixed data
@@ -191,7 +193,6 @@ df_mixed |> mutate(sum_score = sum_n(select = starts_with("var")))
 
 # Use everything(), but exclude known non-numeric
 sum_n(df_mixed, select = everything(), exclude = "group")
-#> sum_n(): Ignored non-numeric columns: name
 #> [1] NA NA 65 NA 85
 
 # Select columns using regex

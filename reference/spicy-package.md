@@ -1,13 +1,13 @@
 # spicy: Descriptive Statistics and Data Management Tools
 
-Extracts and summarizes metadata from data frames, including variable
-names, labels, types, and missing values. Computes compact descriptive
-statistics, frequency tables, cross-tabulations, and APA-style reporting
-tables to support efficient data exploration and reporting workflows.
-Includes an interactive and exportable codebook generator for
-documenting variable metadata, as well as clipboard, spreadsheet, and
-document-oriented export helpers. Designed to streamline initial data
-management, descriptive analysis, and reporting workflows within 'R'.
+Provides tools for early data exploration, variable inspection, and
+quick tabulation workflows in 'R'. Summarizes variable metadata, labels,
+classes, missing values, and representative values, with support for
+readable frequency tables, cross-tabulations, and APA-style reporting
+tables. Includes helpers for interactive codebooks, variable label
+extraction, clipboard export, and row-wise descriptive summaries.
+Designed to make initial data analysis faster, clearer, and easier to
+work with in practice.
 
 ## See also
 

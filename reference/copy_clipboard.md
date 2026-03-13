@@ -13,7 +13,7 @@ copy_clipboard(
   row.names.as.col = FALSE,
   row.names = TRUE,
   col.names = TRUE,
-  message = TRUE,
+  show_message = TRUE,
   quiet = FALSE,
   ...
 )
@@ -28,31 +28,31 @@ copy_clipboard(
 
 - row.names.as.col:
 
-  Logical or character. If `FALSE` (default), row names are not added as
-  a column. If `TRUE`, a column named `"rownames"` is prepended. If a
-  character string is supplied, it is used as the column name for row
-  names.
+  Logical or character. If `FALSE` (the default), row names are not
+  added as a column. If `TRUE`, a column named `"rownames"` is
+  prepended. If a character string is supplied, it is used as the column
+  name for row names.
 
 - row.names:
 
-  Logical. If `TRUE` (default), includes row names in the clipboard
+  Logical. If `TRUE` (the default), includes row names in the clipboard
   output. If `FALSE`, row names are omitted.
 
 - col.names:
 
-  Logical. If `TRUE` (default), includes column names in the clipboard
-  output. If `FALSE`, column names are omitted.
+  Logical. If `TRUE` (the default), includes column names in the
+  clipboard output. If `FALSE`, column names are omitted.
 
-- message:
+- show_message:
 
-  Logical. If `TRUE` (default), displays a success message after
+  Logical. If `TRUE` (the default), displays a success message after
   copying. If `FALSE`, no success message is printed.
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses all messages, including success,
-  coercion notices, and warnings. If `FALSE` (default), messages are
-  shown.
+  Logical. If `FALSE` (the default), messages are shown. If `TRUE`,
+  suppresses all messages, including success, coercion notices, and
+  warnings.
 
 - ...:
 

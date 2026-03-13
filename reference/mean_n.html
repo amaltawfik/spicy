@@ -74,19 +74,24 @@ If <code>regex = TRUE</code>, provide a regular expression pattern (character st
 
 
 <dt id="arg-min-valid">min_valid<a class="anchor" aria-label="anchor" href="#arg-min-valid"></a></dt>
-<dd><p>Minimum number of valid (non-NA) values required per row. If a proportion, it's applied to the number of selected columns.</p></dd>
+<dd><p>Minimum number of valid (non-NA) values required per row.
+If a proportion, it's applied to the number of selected columns.
+Defaults to <code>NULL</code> (all values must be valid).</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Optional number of decimal places to round the result.</p></dd>
+<dd><p>Optional number of decimal places to round the result.
+Defaults to <code>NULL</code> (no rounding).</p></dd>
 
 
 <dt id="arg-regex">regex<a class="anchor" aria-label="anchor" href="#arg-regex"></a></dt>
-<dd><p>If <code>TRUE</code>, the <code>select</code> argument is treated as a regular expression. If <code>FALSE</code>, uses tidyselect helpers.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), uses tidyselect helpers.
+If <code>TRUE</code>, the <code>select</code> argument is treated as a regular expression.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>If <code>TRUE</code>, prints a message about processing.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), messages are suppressed.
+If <code>TRUE</code>, prints a message about non-numeric columns excluded.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -207,7 +212,6 @@ If <code>regex = TRUE</code>, provide a regular expression pattern (character st
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Non-numeric columns are ignored</span></span></span>
 <span class="r-in"><span><span class="fu">mean_n</span><span class="op">(</span><span class="va">df_mixed</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> mean_n(): Ignored non-numeric columns: name, group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1]       NA       NA 21.66667       NA 28.33333</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use within mutate() on mixed data</span></span></span>
@@ -223,7 +227,6 @@ If <code>regex = TRUE</code>, provide a regular expression pattern (character st
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use everything() but exclude non-numeric columns manually</span></span></span>
 <span class="r-in"><span><span class="fu">mean_n</span><span class="op">(</span><span class="va">df_mixed</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, exclude <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> mean_n(): Ignored non-numeric columns: name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1]       NA       NA 21.66667       NA 28.33333</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Select columns using regex</span></span></span>

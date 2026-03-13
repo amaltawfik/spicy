@@ -31,6 +31,9 @@ cross_tab(
   styled = TRUE,
   show_n = TRUE
 )
+
+# S3 method for class 'spicy_cross_table_list'
+print(x, ...)
 ```
 
 ## Arguments
@@ -60,42 +63,50 @@ cross_tab(
 
 - rescale:
 
-  Logical. If TRUE, rescales weights so total weighted N matches raw N
-  (default FALSE).
+  Logical. If `FALSE` (the default), weights are used as-is. If `TRUE`,
+  rescales weights so total weighted N matches raw N.
 
 - percent:
 
-  One of `"none"`, `"row"`, `"column"`. Unique abbreviations are
-  accepted (e.g. `"n"`, `"r"`, `"c"`).
+  One of `"none"` (the default), `"row"`, `"column"`. Unique
+  abbreviations are accepted (e.g. `"n"`, `"r"`, `"c"`).
 
 - include_stats:
 
-  Logical; compute Chi-squared and Cramer's V (default TRUE).
+  Logical. If `TRUE` (the default), computes Chi-squared and Cramer's V.
 
 - correct:
 
-  Logical; apply Yates continuity correction to the Chi-squared test.
-  Only applicable to 2x2 tables. Default is FALSE.
+  Logical. If `FALSE` (the default), no continuity correction is
+  applied. If `TRUE`, applies Yates correction (only for 2x2 tables).
 
 - simulate_p:
 
-  Logical; use Monte Carlo p-value simulation (default FALSE).
+  Logical. If `FALSE` (the default), uses asymptotic p-values. If
+  `TRUE`, uses Monte Carlo simulation.
 
 - simulate_B:
 
-  Integer; number of replicates for Monte Carlo (default 2000).
+  Integer. Number of replicates for Monte Carlo simulation. Defaults to
+  `2000`.
 
 - digits:
 
-  Number of decimals (default 1 for percentages, 0 for counts).
+  Number of decimals. Defaults to `1` for percentages, `0` for counts.
 
 - styled:
 
-  Logical; if TRUE, returns a "spicy_cross_table" object (for printing).
+  Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
+  (for formatted printing). If `FALSE`, returns a plain `data.frame`.
 
 - show_n:
 
-  Logical; if TRUE, adds marginal N totals when percent != "none".
+  Logical. If `TRUE` (the default), adds marginal N totals when
+  `percent != "none"`.
+
+- ...:
+
+  Additional arguments passed to individual print methods.
 
 ## Value
 

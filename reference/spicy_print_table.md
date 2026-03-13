@@ -58,26 +58,26 @@ spicy_print_table(
 
 - first_column_line:
 
-  Logical; if `TRUE` (default), adds a vertical separator after the
+  Logical. If `TRUE` (the default), adds a vertical separator after the
   first column.
 
 - row_total_line, column_total_line, bottom_line:
 
   Logical flags controlling the presence of horizontal lines before
-  total rows/columns or at the bottom of the table. Defaults are `TRUE`
-  for `row_total_line` and `column_total_line`, and `FALSE` for
-  `bottom_line`.
+  total rows/columns or at the bottom of the table. Both
+  `row_total_line` and `column_total_line` default to `TRUE`;
+  `bottom_line` defaults to `FALSE`.
 
 - lines_color:
 
-  Character; color for table separators (default: `"darkgrey"`). Only
+  Character. Color for table separators. Defaults to `"darkgrey"`. Only
   applied if the output supports ANSI colors (see
   [`crayon::has_color()`](http://r-lib.github.io/crayon/reference/has_color.md)).
 
 - align_left_cols:
 
-  Integer vector of column indices to left-align. If `NULL` (default),
-  alignment is auto-detected based on `x`:
+  Integer vector of column indices to left-align. If `NULL` (the
+  default), alignment is auto-detected based on `x`:
 
   - For `freq` tables -\> `c(1, 2)`
 

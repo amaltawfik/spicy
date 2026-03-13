@@ -19,6 +19,7 @@
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table (spicy engine)
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
   : Compute Cramer's V
@@ -49,6 +50,10 @@
 
 - [`print(`*`<spicy_cross_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
   : Print method for spicy_cross_table objects
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  : Cross-tabulation
 
 - [`print(`*`<spicy_freq_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
   :
