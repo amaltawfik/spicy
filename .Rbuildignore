@@ -10,3 +10,6 @@
 ^CRAN-SUBMISSION$
 ^codecov\.yml$
 ^dev$
+^\.claude$
+^CLAUDE\.md$
+^AGENTS\.md$

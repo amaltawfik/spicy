@@ -427,8 +427,7 @@ cross_tab <- function(
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
-    tab_perc <- switch(
-      percent,
+    tab_perc <- switch(percent,
       "row" = prop.table(tab_full, 1) * 100,
       "column" = prop.table(tab_full, 2) * 100,
       "none" = tab_full
@@ -612,8 +611,7 @@ cross_tab <- function(
       }
     }
 
-    perc_label <- switch(
-      percent,
+    perc_label <- switch(percent,
       "row" = " (Row %)",
       "column" = " (Column %)",
       "none" = " (N)"
@@ -702,6 +700,8 @@ cross_tab <- function(
 }
 
 
+#' @rdname cross_tab
+#' @param ... Additional arguments passed to individual print methods.
 #' @export
 print.spicy_cross_table_list <- function(x, ...) {
   n <- length(x)
@@ -725,7 +725,6 @@ print.spicy_cross_table_list <- function(x, ...) {
 #' @export
 print.spicy_cross_table <- function(x, digits = NULL, ...) {
   title <- attr(x, "title")
-  note <- attr(x, "note")
   digits_attr <- attr(x, "digits")
 
   if (is.null(digits)) {

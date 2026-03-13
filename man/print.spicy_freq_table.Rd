@@ -68,7 +68,7 @@ x <- labelled(
 var_label(x) <- "Satisfaction level"
 # Capture result without printing, then print explicitly
 df <- spicy::freq(x, styled = FALSE)
-print(df)  # dispatches to print.spicy_freq_table()
+print(df) # dispatches to print.spicy_freq_table()
 
 }
 \seealso{

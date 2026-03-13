@@ -47,6 +47,20 @@ test_that("count_n handles special = NA, NaN, Inf, -Inf", {
   expect_equal(count_n(df, special = "all"), c(2, 1, 2, 2, 2))
 })
 
+test_that("count_n special works with non-numeric columns", {
+  df <- tibble::tibble(
+    x = c("a", NA, "b"),
+    y = c(1, NaN, 3),
+    z = factor(c("x", NA, "y"))
+  )
+
+  # NaN should only count in numeric column y, not crash on character/factor
+  expect_equal(count_n(df, special = "NaN"), c(0, 1, 0))
+  # NA: x=NA, y=NaN (is.na(NaN)==TRUE), z=NA → 3 NAs in row 2
+  expect_equal(count_n(df, special = "NA"), c(0, 3, 0))
+  expect_equal(count_n(df, special = "all"), c(0, 3, 0))
+})
+
 test_that("count_n handles factor variables including ignore_case", {
   df <- tibble::tibble(
     x = factor(c("a", "b", "c")), # levels: a, b, c
@@ -169,5 +183,14 @@ test_that("count_n throws error if neither count nor special is specified", {
   expect_error(
     count_n(df),
     "You must specify either `count` or `special`"
+  )
+})
+
+test_that("count_n throws error when count = NA", {
+  df <- tibble::tibble(x = c(1, NA, 3))
+  expect_error(
+    count_n(df, count = NA),
+    'Use `special = "NA"`',
+    fixed = TRUE
   )
 })

@@ -323,7 +323,7 @@ table_apa(
 # Low-level ASCII builders used by print methods
 tab <- cross_tab(mtcars, cyl, gear)
 spicy_print_table(tab)
-build_ascii_table(tab, title = attr(tab, "title"), note = attr(tab, "note"))
+build_ascii_table(tab)
 
 # Clipboard export helper (interactive session)
 copy_clipboard(head(mtcars))

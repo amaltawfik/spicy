@@ -237,6 +237,13 @@ base_count_n <- function(
     stop("You must specify either `count` or `special`.", call. = FALSE)
   }
 
+  if (!is.null(count) && length(count) == 1 && is.na(count)) {
+    stop(
+      "Use `special = \"NA\"` to count missing values, not `count = NA`.",
+      call. = FALSE
+    )
+  }
+
   data <- data[, select, drop = FALSE]
   data <- data[!vapply(data, is.list, logical(1))]
 
@@ -251,7 +258,9 @@ base_count_n <- function(
 
     checkers <- list(
       "NA" = is.na,
-      "NaN" = is.nan,
+      "NaN" = function(x) {
+        if (is.numeric(x)) is.nan(x) else rep(FALSE, length(x))
+      },
       "Inf" = function(x) {
         if (is.numeric(x)) is.infinite(x) & x > 0 else rep(FALSE, length(x))
       },
