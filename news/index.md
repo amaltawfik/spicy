@@ -13,6 +13,36 @@
   controls for weighting and inference (`weights`, `rescale`, `correct`,
   `simulate_p`, `simulate_B`) and now handles missing values explicitly
   when `drop_na = FALSE`.
+- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
+  now uses `crayon` for colored output instead of raw ANSI escape codes,
+  and the `message` parameter has been renamed to `show_message` for
+  clarity.
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  no longer crashes when `special = "NaN"` is used with non-numeric
+  columns (character, factor). The `count = NA` trap is now caught with
+  an informative error directing users to `special = "NA"`.
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  fixes a bug where the rescale warning fired incorrectly for explicitly
+  provided all-ones weights. The Cramer’s V formula now matches
+  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md).
+  The `simulate_p` default in
+  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  is aligned to `FALSE`.
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  assigns a proper S3 class (`spicy_freq_table`) and dispatches printing
+  correctly.
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  now protects global options with
+  [`on.exit()`](https://rdrr.io/r/base/on.exit.html), preventing side
+  effects when the function errors.
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  title generation no longer crashes on unrecognizable expressions; a
+  safe fallback is used instead. The NA detection logic in value
+  summaries now uses pre-computed flags for robustness.
+- Removed phantom dependencies `collapse` and `stringi` from `Imports`
+  (they were loaded but never called).
+- Documentation harmonized across all functions: all `@param` entries
+  now mention default values using a consistent style.
 
 ## spicy 0.4.2
 

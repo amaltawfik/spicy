@@ -37,6 +37,20 @@
 <ul><li>New <code><a href="../reference/table_apa.html">table_apa()</a></code> helper to build APA-ready cross-tab reports with multiple output formats (<code>wide</code>, <code>long</code>, <code>tinytable</code>, <code>flextable</code>, <code>excel</code>, <code>clipboard</code>, <code>word</code>).</li>
 <li>
 <code><a href="../reference/table_apa.html">table_apa()</a></code> exposes key <code><a href="../reference/cross_tab.html">cross_tab()</a></code> controls for weighting and inference (<code>weights</code>, <code>rescale</code>, <code>correct</code>, <code>simulate_p</code>, <code>simulate_B</code>) and now handles missing values explicitly when <code>drop_na = FALSE</code>.</li>
+<li>
+<code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> now uses <code>crayon</code> for colored output instead of raw ANSI escape codes, and the <code>message</code> parameter has been renamed to <code>show_message</code> for clarity.</li>
+<li>
+<code><a href="../reference/count_n.html">count_n()</a></code> no longer crashes when <code>special = "NaN"</code> is used with non-numeric columns (character, factor). The <code>count = NA</code> trap is now caught with an informative error directing users to <code>special = "NA"</code>.</li>
+<li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> fixes a bug where the rescale warning fired incorrectly for explicitly provided all-ones weights. The Cramer’s V formula now matches <code><a href="../reference/cramer_v.html">cramer_v()</a></code>. The <code>simulate_p</code> default in <code><a href="../reference/table_apa.html">table_apa()</a></code> is aligned to <code>FALSE</code>.</li>
+<li>
+<code><a href="../reference/freq.html">freq()</a></code> now assigns a proper S3 class (<code>spicy_freq_table</code>) and dispatches printing correctly.</li>
+<li>
+<code><a href="../reference/table_apa.html">table_apa()</a></code> now protects global options with <code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code>, preventing side effects when the function errors.</li>
+<li>
+<code><a href="../reference/varlist.html">varlist()</a></code> title generation no longer crashes on unrecognizable expressions; a safe fallback is used instead. The NA detection logic in value summaries now uses pre-computed flags for robustness.</li>
+<li>Removed phantom dependencies <code>collapse</code> and <code>stringi</code> from <code>Imports</code> (they were loaded but never called).</li>
+<li>Documentation harmonized across all functions: all <code>@param</code> entries now mention default values using a consistent style.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="spicy-042">spicy 0.4.2<a class="anchor" aria-label="anchor" href="#spicy-042"></a></h2><p class="text-muted">CRAN release: 2026-03-06</p>
