@@ -14,14 +14,17 @@ This is version 0.5.0 of the **spicy** package.
 
 ### Bug fixes and improvements
 
-* Fixed `cross_tab()` rescale warning firing incorrectly for explicit all-ones weights.
 * Fixed `count_n()` crash when `special = "NaN"` is used with non-numeric columns.
-* Fixed `table_apa()` leaking global options on error (now protected with `on.exit()`).
-* `freq()` now assigns proper S3 class and dispatches printing correctly.
-* Removed unused `collapse` and `stringi` from `Imports`.
+* Fixed `cross_tab()` spurious rescale warning for explicit all-ones weights.
+* Fixed `table_apa()` leaking global options on error.
+* `varlist()` title generation no longer crashes on unrecognizable expressions.
+* `freq()` now dispatches printing correctly via S3.
 * `copy_clipboard()` parameter `message` renamed to `show_message`.
-* Documentation harmonized: all `@param` entries now document default values.
+* Removed unused `collapse` and `stringi` from `Imports`.
 
-There are no breaking changes for users besides the `copy_clipboard(message=)` rename to `show_message`.
+There are no breaking changes besides the `copy_clipboard(message=)` rename to `show_message`.
 
 ### Testing environments
+
+* Windows 11 (local), R 4.5.3
+* GitHub Actions: ubuntu-latest (R release), windows-latest (R release), macOS-latest (R release)
