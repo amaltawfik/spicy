@@ -1,13 +1,21 @@
 # spicy 0.5.0
 
+## New features
+
 * New `table_apa()` helper to build APA-ready cross-tab reports with multiple output formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
 * `table_apa()` exposes key `cross_tab()` controls for weighting and inference (`weights`, `rescale`, `correct`, `simulate_p`, `simulate_B`) and now handles missing values explicitly when `drop_na = FALSE`.
-* `copy_clipboard()` parameter `message` renamed to `show_message`.
+
+## Bug fixes
+
 * `count_n()` no longer crashes when `special = "NaN"` is used with non-numeric columns. Passing `count = NA` now errors with a message directing to `special = "NA"`.
 * `cross_tab()` fixes a spurious rescale warning for explicit all-ones weights and aligns the Cramer's V formula with `cramer_v()`.
-* `freq()` now dispatches printing correctly via S3.
 * `table_apa()` no longer leaks global options on error. The `simulate_p` default is aligned to `FALSE`.
 * `varlist()` title generation no longer crashes on unrecognizable expressions.
+
+## Minor improvements
+
+* `copy_clipboard()` parameter `message` renamed to `show_message`.
+* `freq()` now dispatches printing correctly via S3.
 * Removed unused `collapse` and `stringi` from `Imports`.
 
 
