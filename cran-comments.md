@@ -1,6 +1,9 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1-2 notes
+
+* The spelling NOTE flags "APA" and "codebooks" as possibly misspelled words in DESCRIPTION. Both are standard terms in social sciences ("APA" refers to the American Psychological Association reporting style).
+* On R-oldrelease (4.4.3), an additional NOTE reports that the Author field differs from Authors@R. This is caused by the `ROR` identifier in the `comment` field, which older R versions do not parse. The NOTE does not appear on R-release or R-devel.
 
 ## Comments
 
