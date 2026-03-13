@@ -31,3 +31,5 @@ There are no breaking changes besides the `copy_clipboard(message=)` rename to `
 
 * Windows 11 (local), R 4.5.3
 * GitHub Actions: ubuntu-latest (R release), windows-latest (R release), macOS-latest (R release)
+* win-builder: R-release, R-devel, R-oldrelease
+* R-hub: linux, windows
