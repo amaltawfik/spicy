@@ -76,10 +76,12 @@ pak::pak("amaltawfik/spicy")
 
 ## Example usage
 
-Here are some quick examples using built-in datasets:
+### Inspect variables with `varlist()`
 
 ![varlist demo with labelled
 data](reference/figures/animation_varlist.gif)
+
+### More examples
 
 ``` r
 # Get a summary of all variables as a tibble
