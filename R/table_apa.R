@@ -930,6 +930,12 @@ table_apa <- function(
       align = "right",
       columns = c("p", "Cramers_V")
     )
+    # Left-align the Variable spanner label
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(align = "left"),
+      locations = gt::cells_column_spanners(spanners = "spn_variable")
+    )
 
     # APA-style borders ------------------------------------------------
     # gt emits "border-bottom-style: hidden" on the spanner <tr>,
