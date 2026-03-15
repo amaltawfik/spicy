@@ -6,6 +6,10 @@
   gains `output = "gt"` to produce a `gt_tbl` object with APA-style
   formatting, column spanners, and alignment.
 
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  now correctly centers spanner labels over their column pairs in
+  `tinytable` and `flextable` output.
+
 ## spicy 0.5.0
 
 CRAN release: 2026-03-14
