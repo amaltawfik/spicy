@@ -332,6 +332,139 @@
 <span></span>
 <span><span class="co"># Clipboard export helper (interactive session)</span></span>
 <span><span class="fu"><a href="reference/copy_clipboard.html">copy_clipboard</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="apa-ready-table-builder">APA-ready table builder<a class="anchor" aria-label="anchor" href="#apa-ready-table-builder"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">mtcars</span>,</span>
+<span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"vs"</span>, <span class="st">"am"</span><span class="op">)</span>,</span>
+<span>  group_var <span class="op">=</span> <span class="st">"gear"</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Engine"</span>, <span class="st">"Transmission"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="6%">
+<col width="7%">
+<col width="6%">
+<col width="8%">
+<col width="6%">
+<col width="8%">
+<col width="8%">
+<col width="7%">
+<col width="10%">
+<col width="14%">
+</colgroup>
+<thead><tr class="header">
+<th>Variable</th>
+<th>4</th>
+<th></th>
+<th>3</th>
+<th></th>
+<th>5</th>
+<th></th>
+<th>Total</th>
+<th></th>
+<th>p</th>
+<th>Cramer’s V</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>n</td>
+<td>%</td>
+<td>n</td>
+<td>%</td>
+<td>n</td>
+<td>%</td>
+<td>n</td>
+<td>%</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Engine</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>.002</td>
+<td>.62</td>
+</tr>
+<tr class="odd">
+<td>     0</td>
+<td>2</td>
+<td>16.7</td>
+<td>12</td>
+<td>80.0</td>
+<td>4</td>
+<td>80.0</td>
+<td>18</td>
+<td>56.2</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>     1</td>
+<td>10</td>
+<td>83.3</td>
+<td>3</td>
+<td>20.0</td>
+<td>1</td>
+<td>20.0</td>
+<td>14</td>
+<td>43.8</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Transmission</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>&lt; .001</td>
+<td>.81</td>
+</tr>
+<tr class="even">
+<td>     0</td>
+<td>4</td>
+<td>33.3</td>
+<td>15</td>
+<td>100.0</td>
+<td>0</td>
+<td>0.0</td>
+<td>19</td>
+<td>59.4</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>     1</td>
+<td>8</td>
+<td>66.7</td>
+<td>0</td>
+<td>0.0</td>
+<td>5</td>
+<td>100.0</td>
+<td>13</td>
+<td>40.6</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <blockquote>
 <p>All functions can be directly used in pipelines.</p>
 </blockquote>
