@@ -963,16 +963,22 @@ table_apa <- function(
     )
 
     # 2) tab_style rules (work in inline-CSS renderers)
-    # Rule 1: top of spanners
+    # Rule 1: top of spanners (full width)
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
       locations = gt::cells_column_spanners()
     )
-    # Rules 2+3: above and below column labels
+    # Rule 2: intermediate line below spanners (group columns only)
     tbl <- gt::tab_style(
       tbl,
-      style = list(rule_top, rule),
+      style = rule_top,
+      locations = gt::cells_column_labels(columns = grp_cols)
+    )
+    # Rule 3: below column labels (full width)
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule,
       locations = gt::cells_column_labels()
     )
     # Rule 4: bottom of last body row
@@ -984,6 +990,17 @@ table_apa <- function(
 
     # 3) opt_css rules (override gt's hidden borders in normal
     #    renderers: RStudio viewer, Quarto, pkgdown)
+    # Build CSS selector for group-column <th> elements
+    grp_css_sel <- paste(
+      vapply(
+        grp_cols,
+        function(id) {
+          sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
+        },
+        character(1)
+      ),
+      collapse = ",\n"
+    )
     apa_css <- paste(
       ".gt_table thead tr:first-child {",
       "  border-top: 1px solid black !important;",
@@ -991,8 +1008,11 @@ table_apa <- function(
       ".gt_table thead tr.gt_spanner_row {",
       "  border-bottom-style: none !important;",
       "}",
-      ".gt_table thead tr:last-child {",
+      # Intermediate line: only group columns
+      paste0(grp_css_sel, " {"),
       "  border-top: 1px solid black !important;",
+      "}",
+      ".gt_table thead tr:last-child {",
       "  border-bottom: 1px solid black !important;",
       "}",
       ".gt_table tbody tr:last-child {",
