@@ -1,5 +1,7 @@
 # spicy 0.5.1
 
+* `table_apa()` gains `output = "gt"` to produce a `gt_tbl` object with APA-style formatting, column spanners, and alignment.
+
 # spicy 0.5.0
 
 ## New features

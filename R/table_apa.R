@@ -37,8 +37,9 @@
 #'   Defaults to `3`.
 #' @param v_digits Number of digits for Cramer's V. Defaults to `2`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
-#' @param output Output format: `"wide"` (the default), `"long"`, `"tinytable"`,
-#'   `"flextable"`, `"excel"`, `"clipboard"`, `"word"`.
+#' @param output Output format: `"wide"` (the default), `"long"`,
+#'   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
+#'   `"word"`.
 #' @param style `"auto"` (the default) to select by output type, `"raw"` for
 #'   machine-friendly outputs, `"report"` for formatted outputs.
 #' @param indent_text Prefix used for modality labels in report table building.
@@ -61,11 +62,14 @@
 #' - `"long"` + `"report"`: long formatted character data frame.
 #' - `"wide"` + `"report"`: wide formatted character data frame.
 #' - `"tinytable"`: a `tinytable` object.
+#' - `"gt"`: a `gt_tbl` object.
 #' - `"flextable"`: a `flextable` object.
-#' - `"excel"` / `"clipboard"` / `"word"`: invisibly returns written object/path.
+#' - `"excel"` / `"clipboard"` / `"word"`: invisibly returns written
+#'   object/path.
 #'
 #' @details Optional output engines require suggested packages:
 #' - `tinytable` for `output = "tinytable"`
+#' - `gt` for `output = "gt"`
 #' - `flextable` + `officer` for `output = "flextable"`/`"word"`
 #' - `openxlsx` for `output = "excel"`
 #' - `clipr` for `output = "clipboard"`
@@ -159,6 +163,7 @@ table_apa <- function(
     "wide",
     "long",
     "tinytable",
+    "gt",
     "flextable",
     "excel",
     "clipboard",
@@ -519,7 +524,8 @@ table_apa <- function(
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
     long_raw <- long_raw[
-      order(long_raw$variable, long_raw$level, long_raw$group), ,
+      order(long_raw$variable, long_raw$level, long_raw$group),
+      ,
       drop = FALSE
     ]
     long_raw$variable <- as.character(long_raw$variable)
@@ -555,7 +561,8 @@ table_apa <- function(
 
     for (k in seq_len(nrow(key))) {
       sv <- ldf[
-        ldf$variable == key$variable[k] & ldf$level == key$level[k], ,
+        ldf$variable == key$variable[k] & ldf$level == key$level[k],
+        ,
         drop = FALSE
       ]
       r <- as.list(setNames(rep(NA, length(cols)), cols))
@@ -829,6 +836,113 @@ table_apa <- function(
     )
 
     return(tt)
+  }
+
+  # ---------------- gt ----------------
+  if (output == "gt") {
+    if (!requireNamespace("gt", quietly = TRUE)) {
+      stop("Install package 'gt'.", call. = FALSE)
+    }
+
+    dat_gt <- report_wide_char
+
+    # Indent modality rows with non-breaking spaces
+    mod_rows <- which(
+      dat_gt[["p"]] == "" &
+        dat_gt[["Cramer's V"]] == "" &
+        nzchar(dat_gt[[1]])
+    )
+    if (length(mod_rows)) {
+      dat_gt[[1]][mod_rows] <- paste0(
+        strrep("\u00A0", 4),
+        dat_gt[[1]][mod_rows]
+      )
+    }
+
+    # Rename n/% columns to unique names for gt, then relabel
+    col_ids <- character(ncol(dat_gt))
+    col_ids[1] <- "Variable"
+    for (gi in seq_along(group_levels)) {
+      col_ids[2 * gi] <- paste0(group_levels[gi], "_n")
+      col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
+    }
+    col_ids[ncol(dat_gt) - 1] <- "p"
+    col_ids[ncol(dat_gt)] <- "Cramers_V"
+    names(dat_gt) <- col_ids
+
+    tbl <- gt::gt(dat_gt)
+
+    # Column labels: n / % under each group
+    label_list <- list()
+    label_list[["Variable"]] <- ""
+    for (gi in seq_along(group_levels)) {
+      label_list[[paste0(group_levels[gi], "_n")]] <- "n"
+      label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
+    }
+    label_list[["p"]] <- "p"
+    label_list[["Cramers_V"]] <- "Cramer's V"
+    tbl <- gt::cols_label(tbl, .list = label_list)
+
+    # Spanners for each group
+    for (gi in seq_along(group_levels)) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = group_levels[gi],
+        columns = c(
+          paste0(group_levels[gi], "_n"),
+          paste0(group_levels[gi], "_pct")
+        )
+      )
+    }
+
+    # Alignment
+    tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+    tbl <- gt::cols_align(
+      tbl,
+      align = "right",
+      columns = setdiff(col_ids, "Variable")
+    )
+
+    # APA-style borders
+    border_style <- gt::cell_borders(
+      sides = "top",
+      color = "black",
+      weight = gt::px(1)
+    )
+    border_bottom <- gt::cell_borders(
+      sides = "bottom",
+      color = "black",
+      weight = gt::px(1)
+    )
+
+    # Top border on column spanners
+    tbl <- gt::tab_style(
+      tbl,
+      style = border_style,
+      locations = gt::cells_column_spanners()
+    )
+    # Bottom border under column labels
+    tbl <- gt::tab_style(
+      tbl,
+      style = border_bottom,
+      locations = gt::cells_column_labels()
+    )
+    # Bottom border on last row
+    tbl <- gt::tab_style(
+      tbl,
+      style = border_bottom,
+      locations = gt::cells_body(rows = nrow(dat_gt))
+    )
+    # Remove default table borders for clean APA look
+    tbl <- gt::tab_options(
+      tbl,
+      table.border.top.style = "hidden",
+      table.border.bottom.style = "hidden",
+      column_labels.border.top.style = "hidden",
+      column_labels.border.bottom.style = "hidden"
+    )
+
+    return(tbl)
   }
 
   # ---------------- flextable / word ----------------

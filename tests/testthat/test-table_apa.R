@@ -146,3 +146,23 @@ test_that("table_apa returns tinytable object when requested", {
 
   expect_true(methods::is(tt, "tinytable"))
 })
+
+test_that("table_apa returns gt object when requested", {
+  skip_if_not_installed("gt")
+
+  df <- data.frame(
+    grp = c("A", "A", "B", "B", "A", "B"),
+    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
+  )
+
+  gt_tbl <- table_apa(
+    data = df,
+    row_vars = "v1",
+    group_var = "grp",
+    labels = "Var 1",
+    simulate_p = FALSE,
+    output = "gt"
+  )
+
+  expect_s3_class(gt_tbl, "gt_tbl")
+})

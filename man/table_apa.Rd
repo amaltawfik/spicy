@@ -21,7 +21,8 @@ table_apa(
   p_digits = 3,
   v_digits = 2,
   decimal_mark = ".",
-  output = c("wide", "long", "tinytable", "flextable", "excel", "clipboard", "word"),
+  output = c("wide", "long", "tinytable", "gt", "flextable", "excel", "clipboard",
+    "word"),
   style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = "      ",
@@ -79,8 +80,9 @@ Defaults to \code{3}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
-\item{output}{Output format: \code{"wide"} (the default), \code{"long"}, \code{"tinytable"},
-\code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}.}
+\item{output}{Output format: \code{"wide"} (the default), \code{"long"},
+\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, \code{"excel"}, \code{"clipboard"},
+\code{"word"}.}
 
 \item{style}{\code{"auto"} (the default) to select by output type, \code{"raw"} for
 machine-friendly outputs, \code{"report"} for formatted outputs.}
@@ -114,8 +116,10 @@ Depends on \code{output} and \code{style}:
 \item \code{"long"} + \code{"report"}: long formatted character data frame.
 \item \code{"wide"} + \code{"report"}: wide formatted character data frame.
 \item \code{"tinytable"}: a \code{tinytable} object.
+\item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
-\item \code{"excel"} / \code{"clipboard"} / \code{"word"}: invisibly returns written object/path.
+\item \code{"excel"} / \code{"clipboard"} / \code{"word"}: invisibly returns written
+object/path.
 }
 }
 \description{
@@ -131,6 +135,7 @@ headers, p-values, and Cramer's V.
 Optional output engines require suggested packages:
 \itemize{
 \item \code{tinytable} for \code{output = "tinytable"}
+\item \code{gt} for \code{output = "gt"}
 \item \code{flextable} + \code{officer} for \code{output = "flextable"}/\code{"word"}
 \item \code{openxlsx} for \code{output = "excel"}
 \item \code{clipr} for \code{output = "clipboard"}

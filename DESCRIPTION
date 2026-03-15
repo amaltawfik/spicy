@@ -33,6 +33,7 @@ Suggests:
     clipr,
     DT,
     flextable,
+    gt,
     officer,
     openxlsx,
     testthat (>= 3.0.0),
