@@ -76,7 +76,7 @@ pak::pak("amaltawfik/spicy")
 
 ## Example usage
 
-### Inspect variables with `varlist()`
+### Inspect variables with `varlist()` (and its shortcut `vl()`)
 
 <img src="man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
 
@@ -304,13 +304,21 @@ table_apa(
   row_vars = c("vs", "am"),
   group_var = "gear",
   labels = c("Engine", "Transmission"),
-  output = "flextable"
+  output = "tinytable"
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="100%" />
+| Variable     | 4   |      | 3   |       | 5   |       | Total |      | p       | Cramer’s V |
+|--------------|-----|------|-----|-------|-----|-------|-------|------|---------|------------|
+|              | n   | %    | n   | %     | n   | %     | n     | %    |         |            |
+| Engine       |     |      |     |       |     |       |       |      | .002    | .62        |
+|      0       | 2   | 16.7 | 12  | 80.0  | 4   | 80.0  | 18    | 56.2 |         |            |
+|      1       | 10  | 83.3 | 3   | 20.0  | 1   | 20.0  | 14    | 43.8 |         |            |
+| Transmission |     |      |     |       |     |       |       |      | \< .001 | .81        |
+|      0       | 4   | 33.3 | 15  | 100.0 | 0   | 0.0   | 19    | 59.4 |         |            |
+|      1       | 8   | 66.7 | 0   | 0.0   | 5   | 100.0 | 13    | 40.6 |         |            |
 
-Additional exported helpers:
+### Additional exported helpers
 
 ``` r
 # Interactive codebook (requires DT)

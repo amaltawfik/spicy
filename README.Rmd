@@ -63,7 +63,7 @@ pak::pak("amaltawfik/spicy")
 
 ## Example usage
 
-### Inspect variables with `varlist()`
+### Inspect variables with `varlist()` (and its shortcut `vl()`)
 
 <img src="man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
 
@@ -138,11 +138,11 @@ table_apa(
   row_vars = c("vs", "am"),
   group_var = "gear",
   labels = c("Engine", "Transmission"),
-  output = "flextable"
+  output = "tinytable"
 )
 ```
 
-Additional exported helpers:
+### Additional exported helpers
 
 ```{r eval=FALSE}
 # Interactive codebook (requires DT)
