@@ -903,11 +903,11 @@ table_apa <- function(
       columns = setdiff(col_ids, "Variable")
     )
 
-    # APA-style borders: strip everything, then add 3 rules
-    no_border <- gt::cell_borders(
-      sides = c("top", "bottom"),
-      weight = gt::px(0)
-    )
+    # APA-style borders ------------------------------------------------
+    # gt emits "border-bottom-style: hidden" on the spanner <tr>,
+    # which wins in border-collapse:collapse and blocks tab_style().
+    # We use opt_css(!important) for full control, plus tab_style()
+    # so inline-CSS renderers (as_raw_html) also get the rules.
     rule <- gt::cell_borders(
       sides = "bottom",
       color = "black",
@@ -919,43 +919,64 @@ table_apa <- function(
       weight = gt::px(1)
     )
 
-    # Remove all default borders
+    # 1) Silence every default border.  Setting width to 0 is
+    #    critical: gt defaults to 2px, and in border-collapse the
+    #    wider border wins regardless of colour.
     tbl <- gt::tab_options(
       tbl,
-      table.border.top.color = "transparent",
-      table.border.bottom.color = "transparent",
-      table_body.border.top.color = "transparent",
-      table_body.border.bottom.color = "transparent",
+      table.border.top.width = gt::px(0),
+      table.border.bottom.width = gt::px(0),
+      table_body.border.top.width = gt::px(0),
+      table_body.border.bottom.width = gt::px(0),
       table_body.hlines.color = "transparent",
-      column_labels.border.top.color = "transparent",
-      column_labels.border.bottom.color = "transparent",
+      column_labels.border.top.width = gt::px(0),
+      column_labels.border.bottom.width = gt::px(0),
       column_labels.border.lr.color = "transparent"
     )
-    # Remove body row borders
-    tbl <- gt::tab_style(
-      tbl,
-      style = no_border,
-      locations = gt::cells_body()
-    )
 
+    # 2) tab_style rules (work in inline-CSS renderers)
     # Rule 1: top of spanners
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
       locations = gt::cells_column_spanners()
     )
-    # Rule 2: between spanners and n/% labels
+    # Rules 2+3: above and below column labels
     tbl <- gt::tab_style(
       tbl,
       style = list(rule_top, rule),
       locations = gt::cells_column_labels()
     )
-    # Rule 3: bottom of table
+    # Rule 4: bottom of last body row
     tbl <- gt::tab_style(
       tbl,
       style = rule,
       locations = gt::cells_body(rows = nrow(dat_gt))
     )
+
+    # 3) opt_css rules (override gt's hidden borders in normal
+    #    renderers: RStudio viewer, Quarto, pkgdown)
+    apa_css <- paste(
+      ".gt_table thead tr:first-child {",
+      "  border-top: 1px solid black !important;",
+      "}",
+      ".gt_table thead tr.gt_spanner_row {",
+      "  border-bottom-style: none !important;",
+      "}",
+      ".gt_table thead tr:last-child {",
+      "  border-top: 1px solid black !important;",
+      "  border-bottom: 1px solid black !important;",
+      "}",
+      ".gt_table tbody tr:last-child {",
+      "  border-bottom: 1px solid black !important;",
+      "}",
+      ".gt_table tbody tr {",
+      "  border-top-style: none !important;",
+      "  border-bottom-style: none !important;",
+      "}",
+      sep = "\n"
+    )
+    tbl <- gt::opt_css(tbl, css = apa_css)
 
     return(tbl)
   }
