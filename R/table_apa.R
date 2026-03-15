@@ -903,43 +903,58 @@ table_apa <- function(
       columns = setdiff(col_ids, "Variable")
     )
 
-    # APA-style borders
-    border_style <- gt::cell_borders(
-      sides = "top",
-      color = "black",
-      weight = gt::px(1)
+    # APA-style borders: strip everything, then add 3 rules
+    no_border <- gt::cell_borders(
+      sides = c("top", "bottom"),
+      weight = gt::px(0)
     )
-    border_bottom <- gt::cell_borders(
+    rule <- gt::cell_borders(
       sides = "bottom",
       color = "black",
       weight = gt::px(1)
     )
+    rule_top <- gt::cell_borders(
+      sides = "top",
+      color = "black",
+      weight = gt::px(1)
+    )
 
-    # Top border on column spanners
-    tbl <- gt::tab_style(
-      tbl,
-      style = border_style,
-      locations = gt::cells_column_spanners()
-    )
-    # Bottom border under column labels
-    tbl <- gt::tab_style(
-      tbl,
-      style = border_bottom,
-      locations = gt::cells_column_labels()
-    )
-    # Bottom border on last row
-    tbl <- gt::tab_style(
-      tbl,
-      style = border_bottom,
-      locations = gt::cells_body(rows = nrow(dat_gt))
-    )
-    # Remove default table borders for clean APA look
+    # Remove all default borders
     tbl <- gt::tab_options(
       tbl,
-      table.border.top.style = "hidden",
-      table.border.bottom.style = "hidden",
-      column_labels.border.top.style = "hidden",
-      column_labels.border.bottom.style = "hidden"
+      table.border.top.color = "transparent",
+      table.border.bottom.color = "transparent",
+      table_body.border.top.color = "transparent",
+      table_body.border.bottom.color = "transparent",
+      table_body.hlines.color = "transparent",
+      column_labels.border.top.color = "transparent",
+      column_labels.border.bottom.color = "transparent",
+      column_labels.border.lr.color = "transparent"
+    )
+    # Remove body row borders
+    tbl <- gt::tab_style(
+      tbl,
+      style = no_border,
+      locations = gt::cells_body()
+    )
+
+    # Rule 1: top of spanners
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule_top,
+      locations = gt::cells_column_spanners()
+    )
+    # Rule 2: between spanners and n/% labels
+    tbl <- gt::tab_style(
+      tbl,
+      style = list(rule_top, rule),
+      locations = gt::cells_column_labels()
+    )
+    # Rule 3: bottom of table
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule,
+      locations = gt::cells_body(rows = nrow(dat_gt))
     )
 
     return(tbl)
