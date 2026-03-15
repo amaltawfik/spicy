@@ -788,8 +788,12 @@ table_apa <- function(
 
     # Alignement
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
-    tt <- tinytable::style_tt(tt, j = 2:ncol(dat_tt), align = "r")
-    # Centre spanner labels (row -1 = spanner row in tinytable)
+    data_j <- 2:(1 + 2 * length(group_levels))
+    stat_j <- (ncol(dat_tt) - 1):ncol(dat_tt)
+    tt <- tinytable::style_tt(tt, j = c(data_j, stat_j), align = "r")
+    # Centre n/% labels (row 0 = column labels row)
+    tt <- tinytable::style_tt(tt, i = 0, j = data_j, align = "c")
+    # Centre spanner labels (row -1 = spanner row)
     tt <- tinytable::style_tt(tt, i = -1, j = 2:ncol(dat_tt), align = "c")
     if (length(mod_rows)) {
       tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
@@ -874,18 +878,24 @@ table_apa <- function(
 
     tbl <- gt::gt(dat_gt)
 
-    # Column labels: n / % under each group
+    # Column labels: n / % under each group; empty for single-col spanners
     label_list <- list()
     label_list[["Variable"]] <- ""
     for (gi in seq_along(group_levels)) {
       label_list[[paste0(group_levels[gi], "_n")]] <- "n"
       label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
     }
-    label_list[["p"]] <- "p"
-    label_list[["Cramers_V"]] <- "Cramer's V"
+    label_list[["p"]] <- ""
+    label_list[["Cramers_V"]] <- ""
     tbl <- gt::cols_label(tbl, .list = label_list)
 
-    # Spanners for each group
+    # Spanners: group names over n/% pairs, single-col for Variable/p/V
+    tbl <- gt::tab_spanner(
+      tbl,
+      label = "Variable",
+      columns = "Variable",
+      id = "spn_variable"
+    )
     for (gi in seq_along(group_levels)) {
       tbl <- gt::tab_spanner(
         tbl,
@@ -896,13 +906,29 @@ table_apa <- function(
         )
       )
     }
+    tbl <- gt::tab_spanner(
+      tbl,
+      label = "p",
+      columns = "p",
+      id = "spn_p"
+    )
+    tbl <- gt::tab_spanner(
+      tbl,
+      label = "Cramer's V",
+      columns = "Cramers_V",
+      id = "spn_v"
+    )
 
     # Alignment
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+    grp_cols <- unlist(lapply(group_levels, function(g) {
+      c(paste0(g, "_n"), paste0(g, "_pct"))
+    }))
+    tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
     tbl <- gt::cols_align(
       tbl,
       align = "right",
-      columns = setdiff(col_ids, "Variable")
+      columns = c("p", "Cramers_V")
     )
 
     # APA-style borders ------------------------------------------------
@@ -1007,9 +1033,12 @@ table_apa <- function(
     bd <- officer::fp_border(color = "black", width = 1)
 
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
-    ft <- flextable::align(ft, j = 2:ncol(df), part = "all", align = "right")
-    # Centre spanner labels (top header row)
-    ft <- flextable::align(ft, i = 1, part = "header", align = "center")
+    ft <- flextable::align(ft, j = 2:ncol(df), part = "body", align = "right")
+    # Centre n/% labels and spanner labels in header
+    ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
+    # Right-align p and Cramer's V in header
+    stat_j <- (ncol(df) - 1):ncol(df)
+    ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
     ft <- flextable::hline(ft, i = 1, j = grp_j, part = "header", border = bd)
