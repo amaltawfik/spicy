@@ -287,32 +287,13 @@ labelled::var_label(out)
 #> [1] "Total score. Manually computed."
 ```
 
-Additional exported helpers:
+### Association strength
 
 ``` r
-# Association strength from a contingency table
 cramer_v(table(mtcars$cyl, mtcars$gear))
-
-# Interactive codebook (requires DT)
-code_book(iris)
-
-# APA-ready table builder
-table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
-  output = "long",
-  style = "raw"
-)
-
-# Low-level ASCII builders used by print methods
-tab <- cross_tab(mtcars, cyl, gear)
-spicy_print_table(tab)
-build_ascii_table(tab)
-
-# Clipboard export helper (interactive session)
-copy_clipboard(head(mtcars))
+#> Warning in stats::chisq.test(x, correct = FALSE): L’approximation du Chi-2 est
+#> peut-être incorrecte
+#> [1] 0.5308655
 ```
 
 ### APA-ready table builder
@@ -336,6 +317,40 @@ table_apa(
 | Transmission |     |      |     |       |     |       |       |      | \< .001 | .81        |
 |      0       | 4   | 33.3 | 15  | 100.0 | 0   | 0.0   | 19    | 59.4 |         |            |
 |      1       | 8   | 66.7 | 0   | 0.0   | 5   | 100.0 | 13    | 40.6 |         |            |
+
+Additional exported helpers:
+
+``` r
+# Interactive codebook (requires DT)
+code_book(iris)
+
+# APA-ready table: wide format
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "wide"
+)
+
+# APA-ready table: export to Excel
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "excel",
+  excel_path = "apa_table.xlsx"
+)
+
+# Low-level ASCII builders used by print methods
+tab <- cross_tab(mtcars, cyl, gear)
+spicy_print_table(tab)
+build_ascii_table(tab)
+
+# Clipboard export helper (interactive session)
+copy_clipboard(head(mtcars))
+```
 
 > All functions can be directly used in pipelines.
 

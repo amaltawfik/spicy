@@ -123,32 +123,10 @@ out <- label_from_names(df)
 labelled::var_label(out)
 ```
 
-Additional exported helpers:
+### Association strength
 
-```{r eval=FALSE}
-# Association strength from a contingency table
+```{r eval=TRUE}
 cramer_v(table(mtcars$cyl, mtcars$gear))
-
-# Interactive codebook (requires DT)
-code_book(iris)
-
-# APA-ready table builder
-table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
-  output = "long",
-  style = "raw"
-)
-
-# Low-level ASCII builders used by print methods
-tab <- cross_tab(mtcars, cyl, gear)
-spicy_print_table(tab)
-build_ascii_table(tab)
-
-# Clipboard export helper (interactive session)
-copy_clipboard(head(mtcars))
 ```
 
 ### APA-ready table builder
@@ -161,6 +139,40 @@ table_apa(
   labels = c("Engine", "Transmission"),
   output = "tinytable"
 )
+```
+
+Additional exported helpers:
+
+```{r eval=FALSE}
+# Interactive codebook (requires DT)
+code_book(iris)
+
+# APA-ready table: wide format
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "wide"
+)
+
+# APA-ready table: export to Excel
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "excel",
+  excel_path = "apa_table.xlsx"
+)
+
+# Low-level ASCII builders used by print methods
+tab <- cross_tab(mtcars, cyl, gear)
+spicy_print_table(tab)
+build_ascii_table(tab)
+
+# Clipboard export helper (interactive session)
+copy_clipboard(head(mtcars))
 ```
 
 > All functions can be directly used in pipelines.
