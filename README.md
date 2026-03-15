@@ -315,6 +315,28 @@ build_ascii_table(tab)
 copy_clipboard(head(mtcars))
 ```
 
+### APA-ready table builder
+
+``` r
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "tinytable"
+)
+```
+
+| Variable     | 4   |      | 3   |       | 5   |       | Total |      | p       | Cramer’s V |
+|--------------|-----|------|-----|-------|-----|-------|-------|------|---------|------------|
+|              | n   | %    | n   | %     | n   | %     | n     | %    |         |            |
+| Engine       |     |      |     |       |     |       |       |      | .002    | .62        |
+|      0       | 2   | 16.7 | 12  | 80.0  | 4   | 80.0  | 18    | 56.2 |         |            |
+|      1       | 10  | 83.3 | 3   | 20.0  | 1   | 20.0  | 14    | 43.8 |         |            |
+| Transmission |     |      |     |       |     |       |       |      | \< .001 | .81        |
+|      0       | 4   | 33.3 | 15  | 100.0 | 0   | 0.0   | 19    | 59.4 |         |            |
+|      1       | 8   | 66.7 | 0   | 0.0   | 5   | 100.0 | 13    | 40.6 |         |            |
+
 > All functions can be directly used in pipelines.
 
 ------------------------------------------------------------------------

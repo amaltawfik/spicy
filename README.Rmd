@@ -151,6 +151,18 @@ build_ascii_table(tab)
 copy_clipboard(head(mtcars))
 ```
 
+### APA-ready table builder
+
+```{r eval=TRUE}
+table_apa(
+  data = mtcars,
+  row_vars = c("vs", "am"),
+  group_var = "gear",
+  labels = c("Engine", "Transmission"),
+  output = "tinytable"
+)
+```
+
 > All functions can be directly used in pipelines.
 
 ---
