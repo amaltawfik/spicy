@@ -291,8 +291,8 @@ labelled::var_label(out)
 
 ``` r
 cramer_v(table(mtcars$cyl, mtcars$gear))
-#> Warning in stats::chisq.test(x, correct = FALSE): L’approximation du Chi-2 est
-#> peut-être incorrecte
+#> Warning in stats::chisq.test(x, correct = FALSE): Chi-squared approximation may
+#> be incorrect
 #> [1] 0.5308655
 ```
 
@@ -304,19 +304,11 @@ table_apa(
   row_vars = c("vs", "am"),
   group_var = "gear",
   labels = c("Engine", "Transmission"),
-  output = "tinytable"
+  output = "flextable"
 )
 ```
 
-| Variable     | 4   |      | 3   |       | 5   |       | Total |      | p       | Cramer’s V |
-|--------------|-----|------|-----|-------|-----|-------|-------|------|---------|------------|
-|              | n   | %    | n   | %     | n   | %     | n     | %    |         |            |
-| Engine       |     |      |     |       |     |       |       |      | .002    | .62        |
-|      0       | 2   | 16.7 | 12  | 80.0  | 4   | 80.0  | 18    | 56.2 |         |            |
-|      1       | 10  | 83.3 | 3   | 20.0  | 1   | 20.0  | 14    | 43.8 |         |            |
-| Transmission |     |      |     |       |     |       |       |      | \< .001 | .81        |
-|      0       | 4   | 33.3 | 15  | 100.0 | 0   | 0.0   | 19    | 59.4 |         |            |
-|      1       | 8   | 66.7 | 0   | 0.0   | 5   | 100.0 | 13    | 40.6 |         |            |
+<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="100%" />
 
 Additional exported helpers:
 

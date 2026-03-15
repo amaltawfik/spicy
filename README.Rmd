@@ -3,6 +3,7 @@ output: github_document
 ---
 
 ```{r, include = FALSE}
+Sys.setenv(LANGUAGE = "en")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -137,7 +138,7 @@ table_apa(
   row_vars = c("vs", "am"),
   group_var = "gear",
   labels = c("Engine", "Transmission"),
-  output = "tinytable"
+  output = "flextable"
 )
 ```
 
