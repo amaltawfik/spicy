@@ -2,6 +2,8 @@
 
 * `table_apa()` gains `output = "gt"` to produce a `gt_tbl` object with APA-style formatting, column spanners, and alignment.
 
+* `table_apa()` now correctly centers spanner labels over their column pairs in `tinytable` and `flextable` output.
+
 # spicy 0.5.0
 
 ## New features
