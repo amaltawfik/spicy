@@ -26,7 +26,8 @@ table_apa(
   p_digits = 3,
   v_digits = 2,
   decimal_mark = ".",
-  output = c("wide", "long", "tinytable", "flextable", "excel", "clipboard", "word"),
+  output = c("wide", "long", "tinytable", "gt", "flextable", "excel", "clipboard",
+    "word"),
   style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = "      ",
@@ -121,7 +122,7 @@ table_apa(
 - output:
 
   Output format: `"wide"` (the default), `"long"`, `"tinytable"`,
-  `"flextable"`, `"excel"`, `"clipboard"`, `"word"`.
+  `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`, `"word"`.
 
 - style:
 
@@ -178,6 +179,8 @@ Depends on `output` and `style`:
 
 - `"tinytable"`: a `tinytable` object.
 
+- `"gt"`: a `gt_tbl` object.
+
 - `"flextable"`: a `flextable` object.
 
 - `"excel"` / `"clipboard"` / `"word"`: invisibly returns written
@@ -192,6 +195,8 @@ multi-level headers, p-values, and Cramer's V.
 Optional output engines require suggested packages:
 
 - `tinytable` for `output = "tinytable"`
+
+- `gt` for `output = "gt"`
 
 - `flextable` + `officer` for `output = "flextable"`/`"word"`
 

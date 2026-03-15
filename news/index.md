@@ -2,6 +2,10 @@
 
 ## spicy 0.5.1
 
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  gains `output = "gt"` to produce a `gt_tbl` object with APA-style
+  formatting, column spanners, and alignment.
+
 ## spicy 0.5.0
 
 CRAN release: 2026-03-14
