@@ -789,6 +789,8 @@ table_apa <- function(
     # Alignement
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     tt <- tinytable::style_tt(tt, j = 2:ncol(dat_tt), align = "r")
+    # Centre spanner labels (row -1 = spanner row in tinytable)
+    tt <- tinytable::style_tt(tt, i = -1, j = 2:ncol(dat_tt), align = "c")
     if (length(mod_rows)) {
       tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
       tt <- tinytable::style_tt(
@@ -1004,9 +1006,10 @@ table_apa <- function(
 
     bd <- officer::fp_border(color = "black", width = 1)
 
-    ft <- flextable::align(ft, part = "header", align = "center")
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
     ft <- flextable::align(ft, j = 2:ncol(df), part = "all", align = "right")
+    # Centre spanner labels (top header row)
+    ft <- flextable::align(ft, i = 1, part = "header", align = "center")
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
     ft <- flextable::hline(ft, i = 1, j = grp_j, part = "header", border = bd)
