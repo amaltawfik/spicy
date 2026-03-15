@@ -278,7 +278,9 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
       # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
       extras <- c()
       if (include_na) {
-        if (has_na) extras <- c(extras, "NA")
+        if (has_na) {
+          extras <- c(extras, "NA")
+        }
         if (has_nan) extras <- c(extras, "NaN")
       }
 
@@ -324,7 +326,9 @@ summarize_values_all <- function(col, include_na = FALSE) {
     # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
     extras <- c()
     if (include_na) {
-      if (has_na) extras <- c(extras, "NA")
+      if (has_na) {
+        extras <- c(extras, "NA")
+      }
       if (has_nan) extras <- c(extras, "NaN")
     }
 
