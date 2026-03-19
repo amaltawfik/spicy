@@ -159,18 +159,20 @@
 <h3 id="frequency-tables-and-cross-tabulations">Frequency tables and cross-tabulations<a class="anchor" aria-label="anchor" href="#frequency-tables-and-cross-tabulations"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Frequency table: education</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">income_group</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Frequency table: income_group</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Category │ Values           Freq.  Percent </span></span>
-<span><span class="co">#&gt; ──────────┼─────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Valid    │ Lower secondary    261     21.8 </span></span>
-<span><span class="co">#&gt;           │ Upper secondary    539     44.9 </span></span>
-<span><span class="co">#&gt;           │ Tertiary           400     33.3 </span></span>
-<span><span class="co">#&gt; ──────────┼─────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Total    │                   1200    100.0 </span></span>
+<span><span class="co">#&gt;  Category │ Values        Freq.  Percent  Valid Percent </span></span>
+<span><span class="co">#&gt; ──────────┼─────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Valid    │ Low             247     20.6           20.9 </span></span>
+<span><span class="co">#&gt;           │ Lower middle    388     32.3           32.8 </span></span>
+<span><span class="co">#&gt;           │ Upper middle    328     27.3           27.7 </span></span>
+<span><span class="co">#&gt;           │ High            219     18.2           18.5 </span></span>
+<span><span class="co">#&gt;  Missing  │ NA               18      1.5                </span></span>
+<span><span class="co">#&gt; ──────────┼─────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Total    │                1200    100.0          100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Label: Highest education level</span></span>
+<span><span class="co">#&gt; Label: Household income group</span></span>
 <span><span class="co">#&gt; Class: ordered, factor</span></span>
 <span><span class="co">#&gt; Data: sochealth</span></span>
 <span></span>
@@ -213,129 +215,9 @@
 <span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"flextable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="16%">
-<col width="14%">
-<col width="5%">
-<col width="14%">
-<col width="5%">
-<col width="8%">
-<col width="5%">
-<col width="6%">
-<col width="5%">
-<col width="7%">
-<col width="10%">
-</colgroup>
-<thead><tr class="header">
-<th>Variable</th>
-<th>Lower secondary</th>
-<th></th>
-<th>Upper secondary</th>
-<th></th>
-<th>Tertiary</th>
-<th></th>
-<th>Total</th>
-<th></th>
-<th>p</th>
-<th>Cramer’s V</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>n</td>
-<td>%</td>
-<td>n</td>
-<td>%</td>
-<td>n</td>
-<td>%</td>
-<td>n</td>
-<td>%</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Current smoker</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>&lt; .001</td>
-<td>.14</td>
-</tr>
-<tr class="odd">
-<td>     No</td>
-<td>179</td>
-<td>69.6</td>
-<td>415</td>
-<td>78.7</td>
-<td>332</td>
-<td>84.9</td>
-<td>926</td>
-<td>78.8</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>     Yes</td>
-<td>78</td>
-<td>30.4</td>
-<td>112</td>
-<td>21.3</td>
-<td>59</td>
-<td>15.1</td>
-<td>249</td>
-<td>21.2</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Physical activity</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>&lt; .001</td>
-<td>.21</td>
-</tr>
-<tr class="even">
-<td>     No</td>
-<td>177</td>
-<td>67.8</td>
-<td>310</td>
-<td>57.5</td>
-<td>163</td>
-<td>40.8</td>
-<td>650</td>
-<td>54.2</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>     Yes</td>
-<td>84</td>
-<td>32.2</td>
-<td>229</td>
-<td>42.5</td>
-<td>237</td>
-<td>59.2</td>
-<td>550</td>
-<td>45.8</td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+<p><img src="reference/figures/README-unnamed-chunk-6-1.png" alt="" width="100%"></p>
 <p>See <code><a href="articles/table-apa.html">vignette("table-apa")</a></code> for all output formats, weights, CI, and export options.</p>
 </div>
 <div class="section level3">
@@ -350,6 +232,8 @@
 <span></span>
 <span><span class="fu"><a href="reference/mean_n.html">mean_n</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]       NA       NA 21.66667       NA 28.33333</span></span>
+<span><span class="fu"><a href="reference/sum_n.html">sum_n</a></span><span class="op">(</span><span class="va">df</span>, min_valid <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 15 NA 65 90 85</span></span>
 <span><span class="fu"><a href="reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1 2 0 1 0</span></span></code></pre></div>
 </div>

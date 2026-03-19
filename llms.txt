@@ -106,18 +106,20 @@ varlist(sochealth, tbl = TRUE)
 ### Frequency tables and cross-tabulations
 
 ``` r
-freq(sochealth, education)
-#> Frequency table: education
+freq(sochealth, income_group)
+#> Frequency table: income_group
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    261     21.8 
-#>           │ Upper secondary    539     44.9 
-#>           │ Tertiary           400     33.3 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category │ Values        Freq.  Percent  Valid Percent 
+#> ──────────┼─────────────────────────────────────────────
+#>  Valid    │ Low             247     20.6           20.9 
+#>           │ Lower middle    388     32.3           32.8 
+#>           │ Upper middle    328     27.3           27.7 
+#>           │ High            219     18.2           18.5 
+#>  Missing  │ NA               18      1.5                
+#> ──────────┼─────────────────────────────────────────────
+#>  Total    │                1200    100.0          100.0 
 #> 
-#> Label: Highest education level
+#> Label: Household income group
 #> Class: ordered, factor
 #> Data: sochealth
 
@@ -163,19 +165,11 @@ table_apa(
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
-  output = "tinytable"
+  output = "flextable"
 )
 ```
 
-| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer’s V |
-|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
-|                   | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
-| Current smoker    |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
-|      No           | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
-|      Yes          | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
-| Physical activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
-|      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
-|      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
+![](reference/figures/README-unnamed-chunk-6-1.png)
 
 See
 [`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)
@@ -192,6 +186,8 @@ df <- data.frame(
 
 mean_n(df)
 #> [1]       NA       NA 21.66667       NA 28.33333
+sum_n(df, min_valid = 2)
+#> [1] 15 NA 65 90 85
 count_n(df, special = "NA")
 #> [1] 1 2 0 1 0
 ```
