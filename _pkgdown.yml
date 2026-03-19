@@ -28,6 +28,15 @@ navbar:
     get-started:
       text: Get started
       href: articles/spicy.html
+    articles:
+      text: Articles
+      menu:
+        - text: Getting started with spicy
+          href: articles/spicy.html
+        - text: Association measures for contingency tables
+          href: articles/association-measures.html
+        - text: APA tables with table_apa()
+          href: articles/table-apa.html
     github:
       icon: fa-github
       aria-label: GitHub repository

@@ -183,7 +183,7 @@ varlist <- function(
       }
     )
   } else {
-    message("Non-interactive session: use `tbl = TRUE` to return the table.")
+    message("Non-interactive session: use `tbl = TRUE` to return a tibble.")
   }
 
   invisible(NULL)

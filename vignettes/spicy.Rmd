@@ -32,13 +32,13 @@ variable in a data frame: name, label, representative values, class,
 number of distinct values, valid observations, and missing values.
 
 ```{r varlist}
-varlist(sochealth)
+varlist(sochealth, tbl = TRUE)
 ```
 
 You can also select specific columns with tidyselect syntax:
 
 ```{r varlist-select}
-varlist(sochealth, starts_with("bmi"), income, weight)
+varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 ```
 
 ## Frequency tables
