@@ -585,3 +585,9 @@ This package is licensed under the MIT license. See
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering
 
+# Articles
+
+### Articles
+
+- [Getting started with
+  spicy](https://amaltawfik.github.io/spicy/articles/spicy.md):
