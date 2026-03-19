@@ -149,7 +149,7 @@ cramer_v(tbl)
 
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper        p
 #>    0.176     0.120     0.231  < 0.001
 ```
 

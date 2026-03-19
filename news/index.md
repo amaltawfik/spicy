@@ -42,6 +42,21 @@
   now correctly centers spanner labels over their column pairs in
   `tinytable` and `flextable` output.
 
+- All association measure functions and
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  gain a `digits` argument (default 3) that controls the number of
+  decimal places when printed. The p-value always uses 3 decimal places
+  or `< 0.001`.
+
+- `detail = TRUE` results now print with formatted output (aligned
+  columns, fixed decimal places) via a new
+  [`print.spicy_assoc_detail()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
+  method.
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  output uses a new
+  [`print.spicy_assoc_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
+  method with the same formatting.
+
 - New bundled dataset `sochealth`: a simulated social-health survey (n =
   1200, 20 variables) with variable labels, ordered factors, survey
   weights, and missing values. Designed to showcase
@@ -51,6 +66,10 @@
   and the association measure functions.
 
 ### Bug fixes
+
+- [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
+  is now consistently named “Kendall’s Tau-c” throughout the package
+  (previously “Stuart’s Tau-c” in some places).
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   rescale logic now operates on complete cases only, so the weighted
