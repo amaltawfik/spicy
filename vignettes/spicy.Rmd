@@ -157,7 +157,8 @@ sochealth |>
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
   dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
-  head()
+  head() |>
+  as.data.frame()
 ```
 
 ## Learn more
