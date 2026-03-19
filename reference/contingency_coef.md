@@ -23,8 +23,8 @@ contingency_coef(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 
 - conf_level:
 
-  Confidence level for the confidence interval (default `0.95`). Only
-  used when `detail = TRUE`. Set to `NULL` to omit the confidence
+  A number between 0 and 1 giving the confidence level (default `0.95`).
+  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
   interval.
 
 - .include_se:
