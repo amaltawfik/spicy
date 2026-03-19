@@ -58,7 +58,7 @@
 ## APA Tables
 
 - [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  : Build APA-Style Cross-Tabulation Tables From Multiple Row Variables
+  : Build APA-Style Cross-Tabulation Tables
 
 ## Export
 
