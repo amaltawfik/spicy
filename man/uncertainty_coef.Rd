@@ -2,7 +2,7 @@
 % Please edit documentation in R/assoc.R
 \name{uncertainty_coef}
 \alias{uncertainty_coef}
-\title{Uncertainty coefficient}
+\title{Uncertainty Coefficient}
 \usage{
 uncertainty_coef(
   x,
@@ -34,7 +34,7 @@ Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
 }
 \description{
-\code{uncertainty_coef()} computes the uncertainty coefficient
+\code{uncertainty_coef()} computes the Uncertainty Coefficient
 (Theil's U) for a two-way contingency table, based on
 information entropy.
 }
@@ -47,6 +47,8 @@ For \code{direction = "row"}:
 the joint entropy.
 The symmetric version is
 \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

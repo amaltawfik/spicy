@@ -35,6 +35,8 @@ Stuart's Tau-c is computed as
 \eqn{m = \min(r, c)}. It is appropriate for rectangular
 tables and is not restricted to the range \eqn{[-1, 1]} only for
 square tables.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

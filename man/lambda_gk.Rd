@@ -2,7 +2,7 @@
 % Please edit documentation in R/assoc.R
 \name{lambda_gk}
 \alias{lambda_gk}
-\title{Goodman-Kruskal lambda}
+\title{Goodman-Kruskal's Lambda}
 \usage{
 lambda_gk(
   x,
@@ -34,7 +34,7 @@ Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
 }
 \description{
-\code{lambda_gk()} computes Goodman-Kruskal's lambda, a proportional
+\code{lambda_gk()} computes Goodman-Kruskal's Lambda, a proportional
 reduction in error (PRE) measure for nominal variables.
 }
 \details{
@@ -44,6 +44,8 @@ variable. It ranges from 0 (no reduction) to 1 (perfect
 prediction). Lambda can equal zero even when variables
 are associated if the modal category dominates in every
 column (or row).
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

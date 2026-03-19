@@ -32,6 +32,8 @@ The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}.
 It is equivalent to Cramer's V for 2x2 tables and equals the
 Pearson correlation between the two binary variables.
 The confidence interval uses the Fisher z-transformation.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

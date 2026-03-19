@@ -33,6 +33,8 @@ Gamma is computed as \eqn{\gamma = (C - D) / (C + D)}, where
 \eqn{C} and \eqn{D} are the numbers of concordant and
 discordant pairs. It ignores tied pairs, making it appropriate
 for ordinal variables with many ties.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

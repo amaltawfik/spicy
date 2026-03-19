@@ -45,6 +45,8 @@ Somers' D is an asymmetric ordinal measure defined as
 number of pairs tied on the independent variable.
 The symmetric version is the harmonic mean of the two
 asymmetric values.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

@@ -42,6 +42,8 @@ variables.
 Unlike \code{\link[=lambda_gk]{lambda_gk()}}, Goodman-Kruskal's Tau uses all cell
 frequencies rather than only the modal categories, making it
 more sensitive to association patterns where lambda may be zero.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

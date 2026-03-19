@@ -348,7 +348,7 @@ table_apa <- function(
     vm <- regmatches(
       txt,
       regexec(
-        "(?:Cramer's V|Phi|Goodman-Kruskal (?:Gamma|Tau)|Kendall's Tau-b|Stuart's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
+        "(?:Cramer's V|Phi|Goodman-Kruskal(?:'s)? (?:Gamma|Tau)|Kendall's Tau-b|Stuart's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
         txt,
         perl = TRUE
       )

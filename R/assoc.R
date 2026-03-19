@@ -233,6 +233,8 @@ cramer_v <- function(
 #' It is equivalent to Cramer's V for 2x2 tables and equals the
 #' Pearson correlation between the two binary variables.
 #' The confidence interval uses the Fisher z-transformation.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -380,6 +382,8 @@ contingency_coef <- function(
 #' It is equivalent to the Goodman-Kruskal Gamma for 2x2 tables.
 #' The asymptotic standard error is
 #' \eqn{SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}}.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -435,9 +439,9 @@ yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 }
 
 
-#' Goodman-Kruskal lambda
+#' Goodman-Kruskal's Lambda
 #'
-#' `lambda_gk()` computes Goodman-Kruskal's lambda, a proportional
+#' `lambda_gk()` computes Goodman-Kruskal's Lambda, a proportional
 #' reduction in error (PRE) measure for nominal variables.
 #'
 #' @inheritParams cramer_v
@@ -455,6 +459,8 @@ yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 #' prediction). Lambda can equal zero even when variables
 #' are associated if the modal category dominates in every
 #' column (or row).
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -591,6 +597,8 @@ lambda_gk <- function(
 #' Unlike [lambda_gk()], Goodman-Kruskal's Tau uses all cell
 #' frequencies rather than only the modal categories, making it
 #' more sensitive to association patterns where lambda may be zero.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -724,9 +732,9 @@ goodman_kruskal_tau <- function(
 }
 
 
-#' Uncertainty coefficient
+#' Uncertainty Coefficient
 #'
-#' `uncertainty_coef()` computes the uncertainty coefficient
+#' `uncertainty_coef()` computes the Uncertainty Coefficient
 #' (Theil's U) for a two-way contingency table, based on
 #' information entropy.
 #'
@@ -747,6 +755,8 @@ goodman_kruskal_tau <- function(
 #' the joint entropy.
 #' The symmetric version is
 #' \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -870,6 +880,8 @@ uncertainty_coef <- function(
 #' \eqn{C} and \eqn{D} are the numbers of concordant and
 #' discordant pairs. It ignores tied pairs, making it appropriate
 #' for ordinal variables with many ties.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -939,6 +951,8 @@ gamma_gk <- function(
 #' pairs tied on the row variable, and \eqn{n_2} is the number
 #' tied on the column variable. Tau-b corrects for ties and is
 #' appropriate for square tables.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -1036,6 +1050,8 @@ kendall_tau_b <- function(
 #' \eqn{m = \min(r, c)}. It is appropriate for rectangular
 #' tables and is not restricted to the range \eqn{[-1, 1]} only for
 #' square tables.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -1115,6 +1131,8 @@ kendall_tau_c <- function(
 #' number of pairs tied on the independent variable.
 #' The symmetric version is the harmonic mean of the two
 #' asymmetric values.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
 #' data(mtcars)
@@ -1312,7 +1330,7 @@ assoc_measures <- function(
       .include_se = TRUE
     )
   }
-  nominal_fns[["Goodman-Kruskal Tau R|C"]] <- \(t) {
+  nominal_fns[["Goodman-Kruskal's Tau R|C"]] <- \(t) {
     goodman_kruskal_tau(
       t,
       "row",
@@ -1321,7 +1339,7 @@ assoc_measures <- function(
       .include_se = TRUE
     )
   }
-  nominal_fns[["Goodman-Kruskal Tau C|R"]] <- \(t) {
+  nominal_fns[["Goodman-Kruskal's Tau C|R"]] <- \(t) {
     goodman_kruskal_tau(
       t,
       "column",

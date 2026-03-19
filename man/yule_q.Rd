@@ -34,6 +34,8 @@ For a 2x2 table with cells \eqn{a, b, c, d}, Yule's Q is
 It is equivalent to the Goodman-Kruskal Gamma for 2x2 tables.
 The asymptotic standard error is
 \eqn{SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}}.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)

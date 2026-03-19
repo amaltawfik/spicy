@@ -35,6 +35,8 @@ where \eqn{n_0 = n(n-1)/2}, \eqn{n_1} is the number of
 pairs tied on the row variable, and \eqn{n_2} is the number
 tied on the column variable. Tau-b corrects for ties and is
 appropriate for square tables.
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 data(mtcars)
