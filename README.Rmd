@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 [![GitHub release](https://img.shields.io/github/v/release/amaltawfik/spicy?label=GitHub%20release&color=blue)](https://github.com/amaltawfik/spicy/releases)
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
 [![R-hub](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml)
+[![Codecov](https://codecov.io/gh/amaltawfik/spicy/branch/main/graph/badge.svg)](https://app.codecov.io/gh/amaltawfik/spicy)
+[![r-universe](https://amaltawfik.r-universe.dev/badges/spicy)](https://amaltawfik.r-universe.dev/spicy)
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
@@ -52,7 +54,13 @@ For the stable version, install from CRAN.
 install.packages("spicy")
 ```
 
-You can install the development version of spicy from GitHub with:
+You can also install from [r-universe](https://amaltawfik.r-universe.dev/spicy):
+
+```r
+install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+Or install the development version from GitHub:
 
 ```r
 # install.packages("pak")
