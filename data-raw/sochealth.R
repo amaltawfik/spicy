@@ -256,16 +256,16 @@ sochealth <- sochealth |>
   mutate(
     weight = {
       w <- case_when(
-        sex == "Female" & age < 35 ~ 1.15,
-        sex == "Female" & age < 50 ~ 1.05,
-        sex == "Female" & age < 65 ~ 0.95,
-        sex == "Female" ~ 0.90,
-        sex == "Male" & age < 35 ~ 1.10,
-        sex == "Male" & age < 50 ~ 0.98,
-        sex == "Male" & age < 65 ~ 0.92,
-        TRUE ~ 0.88
+        sex == "Female" & age < 35 ~ 1.45,
+        sex == "Female" & age < 50 ~ 1.15,
+        sex == "Female" & age < 65 ~ 0.80,
+        sex == "Female" ~ 0.65,
+        sex == "Male" & age < 35 ~ 1.35,
+        sex == "Male" & age < 50 ~ 1.05,
+        sex == "Male" & age < 65 ~ 0.70,
+        TRUE ~ 0.55
       )
-      round(w * rlnorm(n(), 0, 0.12), 3)
+      round(w * rlnorm(n(), 0, 0.25), 3)
     }
   )
 

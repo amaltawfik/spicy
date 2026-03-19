@@ -110,7 +110,7 @@ varlist(sochealth, tbl = TRUE)
 #> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
 #> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
 #> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
-#> 20 weight              Survey design weig… 0.664… nume…        483    1200     0
+#> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
 
 # Tabulate frequencies (ordered factor with labels)
 freq(sochealth, education)
