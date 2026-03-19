@@ -32,6 +32,7 @@ to \code{NULL} to omit the confidence interval.}
 \value{
 Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
+The p-value tests H0: lambda = 0 (Wald z-test).
 }
 \description{
 \code{lambda_gk()} computes Goodman-Kruskal's Lambda, a proportional

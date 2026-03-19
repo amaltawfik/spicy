@@ -26,7 +26,8 @@ When \code{detail = TRUE} and \code{conf_level} is non-\code{NULL}:
 \code{c(estimate, ci_lower, ci_upper, p_value)}.
 When \code{detail = TRUE} and \code{conf_level = NULL}:
 \code{c(estimate, p_value)}.
-The p-value comes from the Pearson chi-squared test.
+The p-value tests the null hypothesis of no association
+(Pearson chi-squared test).
 }
 \description{
 \code{cramer_v()} computes Cramer's V for a two-way contingency table,

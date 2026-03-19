@@ -18,7 +18,10 @@ interval.}
 }
 \value{
 A data frame with columns \code{measure}, \code{estimate}, \code{se},
-\code{ci_lower}, \code{ci_upper}, and \code{p_value}.
+\code{ci_lower}, \code{ci_upper}, and \code{p_value}. For nominal measures
+(Cramer's V, Phi, Contingency Coef.), the p-value comes from
+the Pearson chi-squared test of independence. For all other
+measures, it is a Wald z-test of H0: measure = 0.
 }
 \description{
 \code{assoc_measures()} computes a range of association measures for a

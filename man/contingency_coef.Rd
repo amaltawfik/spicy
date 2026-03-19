@@ -22,8 +22,9 @@ to \code{NULL} to omit the confidence interval.}
 \value{
 Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
-CI values are \code{NA} because no standard asymptotic SE exists
-for C.
+The p-value tests the null hypothesis of no association
+(Pearson chi-squared test). CI values are \code{NA} because no
+standard asymptotic SE exists for C.
 }
 \description{
 \code{contingency_coef()} computes Pearson's contingency coefficient C

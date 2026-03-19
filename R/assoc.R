@@ -128,7 +128,8 @@
 #'   `c(estimate, ci_lower, ci_upper, p_value)`.
 #'   When `detail = TRUE` and `conf_level = NULL`:
 #'   `c(estimate, p_value)`.
-#'   The p-value comes from the Pearson chi-squared test.
+#'   The p-value tests the null hypothesis of no association
+#'   (Pearson chi-squared test).
 #'
 #' @details
 #' Cramer's V is computed as
@@ -225,7 +226,8 @@ cramer_v <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value comes from the Pearson chi-squared test.
+#'   The p-value tests the null hypothesis of no association
+#'   (Pearson chi-squared test).
 #'
 #' @details
 #' The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}.
@@ -303,8 +305,9 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   CI values are `NA` because no standard asymptotic SE exists
-#'   for C.
+#'   The p-value tests the null hypothesis of no association
+#'   (Pearson chi-squared test). CI values are `NA` because no
+#'   standard asymptotic SE exists for C.
 #'
 #' @details
 #' The contingency coefficient is
@@ -371,7 +374,7 @@ contingency_coef <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value is based on a Wald test.
+#'   The p-value tests H0: Q = 0 (Wald z-test).
 #'
 #' @details
 #' For a 2x2 table with cells \eqn{a, b, c, d}, Yule's Q is
@@ -447,6 +450,7 @@ yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
+#'   The p-value tests H0: lambda = 0 (Wald z-test).
 #'
 #' @details
 #' Lambda measures how much prediction error is reduced when
@@ -587,6 +591,7 @@ lambda_gk <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
+#'   The p-value tests H0: tau = 0 (Wald z-test).
 #'
 #' @details
 #' Unlike [lambda_gk()], Goodman-Kruskal's Tau uses all cell
@@ -739,6 +744,7 @@ goodman_kruskal_tau <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
+#'   The p-value tests H0: U = 0 (Wald z-test).
 #'
 #' @details
 #' The uncertainty coefficient measures association using
@@ -866,7 +872,7 @@ uncertainty_coef <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value is based on a Wald test.
+#'   The p-value tests H0: gamma = 0 (Wald z-test).
 #'
 #' @details
 #' Gamma is computed as \eqn{\gamma = (C - D) / (C + D)}, where
@@ -934,7 +940,7 @@ gamma_gk <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value is based on a Wald test.
+#'   The p-value tests H0: tau-b = 0 (Wald z-test).
 #'
 #' @details
 #' Kendall's Tau-b is computed as
@@ -1033,7 +1039,7 @@ kendall_tau_b <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value is based on a Wald test.
+#'   The p-value tests H0: tau-c = 0 (Wald z-test).
 #'
 #' @details
 #' Stuart's Tau-c is computed as
@@ -1113,7 +1119,7 @@ kendall_tau_c <- function(
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
-#'   The p-value is based on a Wald test.
+#'   The p-value tests H0: D = 0 (Wald z-test).
 #'
 #' @details
 #' Somers' D is an asymmetric ordinal measure defined as
@@ -1229,7 +1235,10 @@ somers_d <- function(
 #'   interval.
 #'
 #' @return A data frame with columns `measure`, `estimate`, `se`,
-#'   `ci_lower`, `ci_upper`, and `p_value`.
+#'   `ci_lower`, `ci_upper`, and `p_value`. For nominal measures
+#'   (Cramer's V, Phi, Contingency Coef.), the p-value comes from
+#'   the Pearson chi-squared test of independence. For all other
+#'   measures, it is a Wald z-test of H0: measure = 0.
 #'
 #' @details
 #' `type = "all"` (the default) returns all nominal and ordinal

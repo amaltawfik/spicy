@@ -22,7 +22,7 @@ to \code{NULL} to omit the confidence interval.}
 \value{
 Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
-The p-value is based on a Wald test.
+The p-value tests H0: Q = 0 (Wald z-test).
 }
 \description{
 \code{yule_q()} computes Yule's Q coefficient of association for a 2x2

@@ -22,7 +22,8 @@ to \code{NULL} to omit the confidence interval.}
 \value{
 Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when
 \code{detail = FALSE}, a named vector when \code{detail = TRUE}.
-The p-value comes from the Pearson chi-squared test.
+The p-value tests the null hypothesis of no association
+(Pearson chi-squared test).
 }
 \description{
 \code{phi()} computes the phi coefficient for a 2x2 contingency table.
