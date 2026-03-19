@@ -2,6 +2,38 @@
 
 ## spicy 0.5.1
 
+### New features
+
+- New family of association measure functions for contingency tables:
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md),
+  [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md),
+  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
+  [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
+  [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md),
+  [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
+  [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
+  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
+  [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md),
+  and
+  [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md).
+  Each returns a bare scalar by default; pass `detail = TRUE` for a
+  named vector with estimate, confidence interval, and p-value.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  gains `assoc_measure` and `assoc_ci` arguments. When both variables
+  are ordered factors, it automatically selects Kendall’s Tau-b instead
+  of Cramer’s V. The note format changes from `Chi-2: 18.0 (df = 4)` to
+  `Chi-2(4) = 18.0`. Numeric attributes (`chi2`, `df`, `p_value`,
+  `assoc_measure`, `assoc_value`, `assoc_result`) are now attached to
+  the output data frame.
+
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  now dynamically labels the association measure column based on the
+  measure used, instead of always showing “Cramer’s V”. New
+  `assoc_measure` and `assoc_ci` arguments are passed through to
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+
 - [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   gains `output = "gt"` to produce a `gt_tbl` object with APA-style
   formatting, column spanners, and alignment.
@@ -9,6 +41,15 @@
 - [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
   now correctly centers spanner labels over their column pairs in
   `tinytable` and `flextable` output.
+
+### Breaking changes
+
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  now accepts a `detail` argument. By default it returns a bare scalar
+  (as before). Pass `detail = TRUE` to get a 4-element named vector
+  (`estimate`, `ci_lower`, `ci_upper`, `p_value`), or
+  `detail = TRUE, conf_level = NULL` for a 2-element vector (`estimate`,
+  `p_value`) without CI.
 
 ## spicy 0.5.0
 

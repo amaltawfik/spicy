@@ -67,6 +67,8 @@ variable (<code>group_var</code>) with one or many row variables (<code>row_vars
 <span>  percent_digits <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  v_digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  assoc_measure <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  assoc_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>, <span class="st">"clipboard"</span>,</span>
 <span>    <span class="st">"word"</span><span class="op">)</span>,</span>
@@ -156,7 +158,19 @@ Defaults to <code>3</code>.</p></dd>
 
 
 <dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
-<dd><p>Number of digits for Cramer's V. Defaults to <code>2</code>.</p></dd>
+<dd><p>Number of digits for the association measure. Defaults
+to <code>2</code>.</p></dd>
+
+
+<dt id="arg-assoc-measure">assoc_measure<a class="anchor" aria-label="anchor" href="#arg-assoc-measure"></a></dt>
+<dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. Which association measure
+to report (<code>"auto"</code>, <code>"cramer_v"</code>, <code>"phi"</code>, <code>"gamma"</code>, <code>"tau_b"</code>,
+<code>"tau_c"</code>, <code>"somers_d"</code>, <code>"lambda"</code>, <code>"none"</code>). Defaults to <code>"auto"</code>.</p></dd>
+
+
+<dt id="arg-assoc-ci">assoc_ci<a class="anchor" aria-label="anchor" href="#arg-assoc-ci"></a></dt>
+<dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. If <code>TRUE</code>, includes the
+confidence interval. Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
@@ -227,7 +241,7 @@ object/path.</p></li>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>It supports raw data outputs (<code>wide</code>, <code>long</code>) and report-oriented outputs
 (<code>tinytable</code>, <code>flextable</code>, <code>excel</code>, <code>clipboard</code>, <code>word</code>) with multi-level
-headers, p-values, and Cramer's V.</p>
+headers, p-values, and an association measure.</p>
 <p>Optional output engines require suggested packages:</p><ul><li><p><code>tinytable</code> for <code>output = "tinytable"</code></p></li>
 <li><p><code>gt</code> for <code>output = "gt"</code></p></li>
 <li><p><code>flextable</code> + <code>officer</code> for <code>output = "flextable"</code>/<code>"word"</code></p></li>
@@ -237,100 +251,100 @@ headers, p-values, and Cramer's V.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Build a minimal reproducible dataset</span></span></span>
-<span class="r-in"><span><span class="va">d_ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Build a dataset from mtcars</span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">mtcars</span>,</span></span>
-<span class="r-in"><span>  hes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">gear</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BFH"</span>, <span class="st">"HEdS-Geneve"</span>, <span class="st">"HESAV"</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  emploi_sf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">vs</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Oui"</span>, <span class="st">"Non"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  role_prof_recherche <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">am</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Oui"</span>, <span class="st">"Non"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  transmission <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">am</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Automatic"</span>, <span class="st">"Manual"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  engine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">vs</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V-shaped"</span>, <span class="st">"Straight"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  cylinders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  w <span class="op">=</span> <span class="va">mpg</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Raw long output (machine-friendly)</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable level       group  n   pct     p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH 12  80.0 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4  80.0 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 18  56.2 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3  20.0 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  1  20.0 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 14  43.8 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Role recherche   Non         BFH 15 100.0 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Role recherche   Non HEdS-Geneve  4  33.3 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Role recherche   Non       HESAV  0   0.0 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Role recherche   Non       Total 19  59.4 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Role recherche   Oui         BFH  0   0.0 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Role recherche   Oui HEdS-Geneve  8  66.7 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Role recherche   Oui       HESAV  5 100.0 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Role recherche   Oui       Total 13  40.6 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        variable     level group  n   pct            p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Transmission Automatic     4  3  27.3 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Transmission Automatic     6  4  57.1 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Transmission Automatic     8 12  85.7 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Transmission Automatic Total 19  59.4 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Transmission    Manual     4  8  72.7 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Transmission    Manual     6  3  42.9 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Transmission    Manual     8  2  14.3 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Transmission    Manual Total 13  40.6 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Engine type  Straight     4 10  90.9 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Engine type  Straight     6  4  57.1 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Engine type  Straight     8  0   0.0 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Engine type  Straight Total 14  43.8 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  Engine type  V-shaped     4  1   9.1 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Engine type  V-shaped     6  3  42.9 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Engine type  V-shaped     8 14 100.0 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Engine type  V-shaped Total 18  56.2 2.323235e-05  0.8166228</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Raw wide output</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Variable Level BFH n BFH % HEdS-Geneve n HEdS-Geneve % HESAV n HESAV %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      Emploi SF   Non    12    80             2          16.7       4      80</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      Emploi SF   Oui     3    20            10          83.3       1      20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Role recherche   Non    15   100             4          33.3       0       0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Role recherche   Oui     0     0             8          66.7       5     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Total n Total %     p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      18    56.2 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      14    43.8 0.002       0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      19    59.4 0.001       0.81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      13    40.6 0.001       0.81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Variable     Level 4 n  4 % 6 n  6 % 8 n   8 % Total n Total %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Transmission Automatic   3 27.3   4 57.1  12  85.7      19    59.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Transmission    Manual   8 72.7   3 42.9   2  14.3      13    40.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Engine type  Straight  10 90.9   4 57.1   0   0.0      14    43.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Engine type  V-shaped   1  9.1   3 42.9  14 100.0      18    56.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1.264661e-02  0.5226355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2.323235e-05  0.8166228</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Weighted example</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"w"</span>,</span></span>
 <span class="r-in"><span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable level       group        n   pct     p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       Emploi SF   Non         BFH  9.00000  74.8 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Emploi SF   Non HEdS-Geneve  2.00000  14.3 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       Emploi SF   Non       HESAV  4.00000  71.6 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Emploi SF   Non       Total 14.88754  46.5 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       Emploi SF   Oui         BFH  3.00000  25.2 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       Emploi SF   Oui HEdS-Geneve 13.00000  85.7 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       Emploi SF   Oui       HESAV  2.00000  28.4 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       Emploi SF   Oui       Total 17.11246  53.5 0.003       0.59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Role recherche   Non         BFH 12.00000 100.0 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Role recherche   Non HEdS-Geneve  4.00000  28.6 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Role recherche   Non       HESAV  0.00000   0.0 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Role recherche   Non       Total 16.21652  50.7 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Role recherche   Oui         BFH  0.00000   0.0 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Role recherche   Oui HEdS-Geneve 10.00000  71.4 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Role recherche   Oui       HESAV  5.00000 100.0 0.001       0.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Role recherche   Oui       Total 15.78348  49.3 0.001       0.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        variable     level group        n   pct           p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Transmission Automatic     4  3.00000  23.4 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Transmission Automatic     6  4.00000  55.4 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Transmission Automatic     8  9.00000  85.4 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Transmission Automatic Total 16.21652  50.7 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Transmission    Manual     4 11.00000  76.6 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Transmission    Manual     6  3.00000  44.6 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Transmission    Manual     8  2.00000  14.6 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Transmission    Manual Total 15.78348  49.3 0.008725743  0.5443734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Engine type  Straight     4 13.00000  91.1 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Engine type  Straight     6  4.00000  55.4 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Engine type  Straight     8  0.00000   0.0 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Engine type  Straight Total 17.11246  53.5 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  Engine type  V-shaped     4  1.00000   8.9 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Engine type  V-shaped     6  3.00000  44.6 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Engine type  V-shaped     8 11.00000 100.0 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Engine type  V-shaped Total 14.88754  46.5 0.000036682  0.7989534</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: tinytable</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">tt_ex</span> <span class="op">&lt;-</span> <span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
-<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -338,10 +352,10 @@ headers, p-values, and Cramer's V.</p>
 <span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d_ex</span>,</span></span>
-<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emploi_sf"</span>, <span class="st">"role_prof_recherche"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"hes"</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Emploi SF"</span>, <span class="st">"Role recherche"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
 <span class="r-in"><span>    excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>

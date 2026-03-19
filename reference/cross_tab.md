@@ -6,7 +6,8 @@ inferential statistics.
 
 `cross_tab()` produces weighted or unweighted contingency tables with
 row or column percentages, optional grouping via `by`, and associated
-Chi-squared tests with Cramer's V and diagnostic information.
+Chi-squared tests with an association measure and diagnostic
+information.
 
 Both `x` and `y` variables are required. For one-way frequency tables,
 use [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
@@ -24,6 +25,8 @@ cross_tab(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
+  assoc_measure = "auto",
+  assoc_ci = FALSE,
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -73,7 +76,20 @@ print(x, ...)
 
 - include_stats:
 
-  Logical. If `TRUE` (the default), computes Chi-squared and Cramer's V.
+  Logical. If `TRUE` (the default), computes Chi-squared and an
+  association measure (see `assoc_measure`).
+
+- assoc_measure:
+
+  Character. Which association measure to report. `"auto"` (default)
+  selects Kendall's Tau-b when both variables are ordered factors and
+  Cramer's V otherwise. Other choices: `"cramer_v"`, `"phi"`, `"gamma"`,
+  `"tau_b"`, `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`.
+
+- assoc_ci:
+
+  Logical. If `TRUE`, includes the 95 percent confidence interval of the
+  association measure in the note. Defaults to `FALSE`.
 
 - correct:
 
@@ -156,8 +172,8 @@ cross_tab(mtcars, cyl, gear)
 #> ─────────────┼──────────────────────────┼────────────
 #>  Total       │      15       12       5 │         32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Weighted (rescaled)
@@ -172,8 +188,8 @@ cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
 #> ─────────────┼──────────────────────────┼────────────
 #>  Total       │      12       15       6 │         32 
 #> 
-#> Chi-2: 17.7 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 17.7, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 7 expected cells < 5 (77.8%). Minimum expected = 1.14. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> Weight: mpg (rescaled)
 
@@ -189,8 +205,8 @@ cross_tab(mtcars, cyl, gear, by = am)
 #> ─────────────┼─────────────────────────┼────────────
 #>  Total       │      15       4       0 │         19 
 #> 
-#> Chi-2: 9.0 (df = 2), p = 0.011
-#> Cramer's V: 0.69
+#> Chi-2(2) = 9.0, p = 0.011
+#> Cramer's V = 0.69
 #> Warning: 5 expected cells < 5 (83.3%). 2 expected cells < 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | am = 1
@@ -203,8 +219,8 @@ cross_tab(mtcars, cyl, gear, by = am)
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       8       5 │         13 
 #> 
-#> Chi-2: 3.8 (df = 2), p = 0.146
-#> Cramer's V: 0.54
+#> Chi-2(2) = 3.8, p = 0.146
+#> Cramer's V = 0.54
 #> Warning: 6 expected cells < 5 (100%). 1 expected cell < 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Grouped by an interaction
@@ -229,8 +245,8 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      3       4       0 │          7 
 #> 
-#> Chi-2: 0.2 (df = 1), p = 0.659
-#> Cramer's V: 0.17
+#> Chi-2(1) = 0.2, p = 0.659
+#> Cramer's V = 0.17
 #> Warning: 4 expected cells < 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | vs x am = 0.1
@@ -243,8 +259,8 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       2       4 │          6 
 #> 
-#> Chi-2: 3.0 (df = 2), p = 0.223
-#> Cramer's V: 0.71
+#> Chi-2(2) = 3.0, p = 0.223
+#> Cramer's V = 0.71
 #> Warning: 6 expected cells < 5 (100%). 3 expected cells < 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | vs x am = 1.1
@@ -270,8 +286,8 @@ cross_tab(mtcars$cyl, mtcars$gear, percent = "c")
 #>  Total       │      100.0       100.0       100.0 │      100.0 
 #>  N           │         15          12           5 │         32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Set default percent mode globally
@@ -290,8 +306,8 @@ cross_tab(mtcars, cyl, gear)
 #>  Total       │      100.0       100.0       100.0 │      100.0 
 #>  N           │         15          12           5 │         32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Reset to default behavior
@@ -308,7 +324,7 @@ cross_tab(mtcars, vs, am, correct = TRUE)
 #> ─────────────┼──────────────────┼────────────
 #>  Total       │      19       13 │         32 
 #> 
-#> Chi-2: 0.3 (df = 1), p = 0.556
-#> Cramer's V: 0.10
+#> Chi-2(1) = 0.3, p = 0.556
+#> Cramer's V = 0.17
 #> Yates continuity correction applied.
 ```

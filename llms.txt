@@ -18,12 +18,17 @@ quickly toward usable outputs. It helps you:
   of missing observations. Similar to the “Variable View” in SPSS or the
   “Variables Manager” in Stata.
 - Explore distributions with
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
   inspect associations with
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  and
-  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
-  all with readable console output.
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  and compute a full suite of association measures
+  ([`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
+  [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
+  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
+  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
+  and more) with confidence intervals and p-values via
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md).
 - Compute row-wise summaries with
   [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
@@ -122,8 +127,8 @@ cross_tab(mtcars, cyl, gear)
 #> ─────────────┼──────────────────────────┼────────────
 #>  Total       │      15       12       5 │         32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Cross-tab with column percentages
@@ -139,8 +144,8 @@ cross_tab(mtcars, cyl, gear, percent = "column")
 #>  Total       │      100.0       100.0       100.0 │      100.0 
 #>  N           │         15          12           5 │         32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Cross-tab with row percentages
@@ -155,8 +160,8 @@ cross_tab(mtcars, cyl, gear, percent = "row")
 #> ─────────────┼─────────────────────────────────┼─────────────────────
 #>  Total       │      46.9       37.5       15.6 │      100.0       32 
 #> 
-#> Chi-2: 18.0 (df = 4), p = 0.001
-#> Cramer's V: 0.53
+#> Chi-2(4) = 18.0, p = 0.001
+#> Cramer's V = 0.53
 #> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Cross-tab grouped by a single variable
@@ -171,8 +176,8 @@ cross_tab(mtcars, cyl, gear, by = am)
 #> ─────────────┼─────────────────────────┼────────────
 #>  Total       │      15       4       0 │         19 
 #> 
-#> Chi-2: 9.0 (df = 2), p = 0.011
-#> Cramer's V: 0.69
+#> Chi-2(2) = 9.0, p = 0.011
+#> Cramer's V = 0.69
 #> Warning: 5 expected cells < 5 (83.3%). 2 expected cells < 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | am = 1
@@ -185,8 +190,8 @@ cross_tab(mtcars, cyl, gear, by = am)
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       8       5 │         13 
 #> 
-#> Chi-2: 3.8 (df = 2), p = 0.146
-#> Cramer's V: 0.54
+#> Chi-2(2) = 3.8, p = 0.146
+#> Cramer's V = 0.54
 #> Warning: 6 expected cells < 5 (100%). 1 expected cell < 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # Cross-tab grouped by two variables
@@ -211,8 +216,8 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      3       4       0 │          7 
 #> 
-#> Chi-2: 0.2 (df = 1), p = 0.659
-#> Cramer's V: 0.17
+#> Chi-2(1) = 0.2, p = 0.659
+#> Cramer's V = 0.17
 #> Warning: 4 expected cells < 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | vs x am = 0.1
@@ -225,8 +230,8 @@ cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
 #> ─────────────┼────────────────────────┼────────────
 #>  Total       │      0       2       4 │          6 
 #> 
-#> Chi-2: 3.0 (df = 2), p = 0.223
-#> Cramer's V: 0.71
+#> Chi-2(2) = 3.0, p = 0.223
+#> Cramer's V = 0.71
 #> Warning: 6 expected cells < 5 (100%). 3 expected cells < 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> 
 #> Crosstable: cyl x gear (N) | vs x am = 1.1
@@ -288,13 +293,54 @@ labelled::var_label(out)
 #> [1] "Total score. Manually computed."
 ```
 
-### Association strength
+### Association measures
 
 ``` r
-cramer_v(table(mtcars$cyl, mtcars$gear))
-#> Warning in stats::chisq.test(x, correct = FALSE): Chi-squared approximation may
-#> be incorrect
+tab <- table(mtcars$cyl, mtcars$gear)
+
+# Quick scalar estimate
+cramer_v(tab)
 #> [1] 0.5308655
+
+# Detailed result with CI and p-value
+cramer_v(tab, detail = TRUE)
+#>    estimate    ci_lower    ci_upper     p_value 
+#> 0.530865503 0.223553416 0.742175638 0.001214066
+
+# Summary of all available measures
+assoc_measures(tab)
+#>                              measure   estimate         se   ci_lower
+#> 1                         Cramer's V  0.5308655         NA  0.2235534
+#> 2            Contingency Coefficient  0.6003875         NA         NA
+#> 3                   Lambda symmetric  0.4857143 0.12920157  0.2324839
+#> 4                         Lambda R|C  0.4444444 0.14344383  0.1632997
+#> 5                         Lambda C|R  0.5294118 0.15628498  0.2230988
+#> 6            Goodman-Kruskal Tau R|C  0.3386018 0.09944838  0.1436866
+#> 7            Goodman-Kruskal Tau C|R  0.3825603 0.11759802  0.1520724
+#> 8  Uncertainty Coefficient symmetric  0.3504372 0.08940615  0.1752043
+#> 9        Uncertainty Coefficient R|C  0.3424818 0.08737530  0.1712294
+#> 10       Uncertainty Coefficient C|R  0.3587709 0.09349119  0.1755315
+#> 11             Goodman-Kruskal Gamma -0.6573705 0.17278471 -0.9960223
+#> 12                   Kendall's Tau-b -0.5125435 0.14631499 -0.7993156
+#> 13                    Stuart's Tau-c -0.4833984 0.13209204 -0.7422941
+#> 14                     Somers' D R|C -0.5238095 0.16050578 -0.8383951
+#> 15                     Somers' D C|R -0.5015198 0.14077197 -0.7774278
+#>      ci_upper      p_value
+#> 1   0.7421756 1.214066e-03
+#> 2          NA 1.214066e-03
+#> 3   0.7389447 1.703534e-04
+#> 4   0.7255892 1.945774e-03
+#> 5   0.8357247 7.053865e-04
+#> 6   0.5335171 6.621256e-04
+#> 7   0.6130482 1.141459e-03
+#> 8   0.5256700 8.869272e-05
+#> 9   0.5137342 8.867261e-05
+#> 10  0.5420102 1.243016e-04
+#> 11 -0.3187187 1.420541e-04
+#> 12 -0.2257714 4.600250e-04
+#> 13 -0.2245028 2.526509e-04
+#> 14 -0.2092240 1.100478e-03
+#> 15 -0.2256118 3.671451e-04
 ```
 
 ### APA-ready table builder
@@ -404,14 +450,39 @@ This package is licensed under the MIT license. See
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
-- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  : Compute Cramer's V
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) :
   Row Means with Optional Minimum Valid Values
 - [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) :
   Row Sums with Optional Minimum Valid Values
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
+
+## Measures of Association
+
+- [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  : Association measures summary table
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  : Cramer's V
+- [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) : Phi
+  coefficient
+- [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
+  : Pearson's contingency coefficient
+- [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
+  : Goodman-Kruskal lambda
+- [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
+  : Goodman-Kruskal's Tau
+- [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
+  : Uncertainty coefficient
+- [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md) :
+  Yule's Q
+- [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)
+  : Goodman-Kruskal Gamma
+- [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
+  : Kendall's Tau-b
+- [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
+  : Stuart's Tau-c
+- [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+  : Somers' D
 
 ## APA Tables
 

@@ -25,6 +25,8 @@ table_apa(
   percent_digits = 1,
   p_digits = 3,
   v_digits = 2,
+  assoc_measure = "auto",
+  assoc_ci = FALSE,
   decimal_mark = ".",
   output = c("wide", "long", "tinytable", "gt", "flextable", "excel", "clipboard",
     "word"),
@@ -113,7 +115,21 @@ table_apa(
 
 - v_digits:
 
-  Number of digits for Cramer's V. Defaults to `2`.
+  Number of digits for the association measure. Defaults to `2`.
+
+- assoc_measure:
+
+  Passed to
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+  Which association measure to report (`"auto"`, `"cramer_v"`, `"phi"`,
+  `"gamma"`, `"tau_b"`, `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`).
+  Defaults to `"auto"`.
+
+- assoc_ci:
+
+  Passed to
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+  If `TRUE`, includes the confidence interval. Defaults to `FALSE`.
 
 - decimal_mark:
 
@@ -190,7 +206,7 @@ Depends on `output` and `style`:
 
 It supports raw data outputs (`wide`, `long`) and report-oriented
 outputs (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with
-multi-level headers, p-values, and Cramer's V.
+multi-level headers, p-values, and an association measure.
 
 Optional output engines require suggested packages:
 
@@ -207,100 +223,100 @@ Optional output engines require suggested packages:
 ## Examples
 
 ``` r
-# Build a minimal reproducible dataset
-d_ex <- transform(
+# Build a dataset from mtcars
+d <- transform(
   mtcars,
-  hes = factor(gear, labels = c("BFH", "HEdS-Geneve", "HESAV")),
-  emploi_sf = ifelse(vs == 1, "Oui", "Non"),
-  role_prof_recherche = ifelse(am == 1, "Oui", "Non"),
+  transmission = factor(am, labels = c("Automatic", "Manual")),
+  engine = factor(vs, labels = c("V-shaped", "Straight")),
+  cylinders = factor(cyl),
   w = mpg
 )
 
 # Raw long output (machine-friendly)
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   output = "long",
   style = "raw"
 )
-#>          variable level       group  n   pct     p Cramer's V
-#> 1       Emploi SF   Non         BFH 12  80.0 0.002       0.62
-#> 2       Emploi SF   Non HEdS-Geneve  2  16.7 0.002       0.62
-#> 3       Emploi SF   Non       HESAV  4  80.0 0.002       0.62
-#> 4       Emploi SF   Non       Total 18  56.2 0.002       0.62
-#> 5       Emploi SF   Oui         BFH  3  20.0 0.002       0.62
-#> 6       Emploi SF   Oui HEdS-Geneve 10  83.3 0.002       0.62
-#> 7       Emploi SF   Oui       HESAV  1  20.0 0.002       0.62
-#> 8       Emploi SF   Oui       Total 14  43.8 0.002       0.62
-#> 9  Role recherche   Non         BFH 15 100.0 0.001       0.81
-#> 10 Role recherche   Non HEdS-Geneve  4  33.3 0.001       0.81
-#> 11 Role recherche   Non       HESAV  0   0.0 0.001       0.81
-#> 12 Role recherche   Non       Total 19  59.4 0.001       0.81
-#> 13 Role recherche   Oui         BFH  0   0.0 0.001       0.81
-#> 14 Role recherche   Oui HEdS-Geneve  8  66.7 0.001       0.81
-#> 15 Role recherche   Oui       HESAV  5 100.0 0.001       0.81
-#> 16 Role recherche   Oui       Total 13  40.6 0.001       0.81
+#>        variable     level group  n   pct            p Cramer's V
+#> 1  Transmission Automatic     4  3  27.3 1.264661e-02  0.5226355
+#> 2  Transmission Automatic     6  4  57.1 1.264661e-02  0.5226355
+#> 3  Transmission Automatic     8 12  85.7 1.264661e-02  0.5226355
+#> 4  Transmission Automatic Total 19  59.4 1.264661e-02  0.5226355
+#> 5  Transmission    Manual     4  8  72.7 1.264661e-02  0.5226355
+#> 6  Transmission    Manual     6  3  42.9 1.264661e-02  0.5226355
+#> 7  Transmission    Manual     8  2  14.3 1.264661e-02  0.5226355
+#> 8  Transmission    Manual Total 13  40.6 1.264661e-02  0.5226355
+#> 9   Engine type  Straight     4 10  90.9 2.323235e-05  0.8166228
+#> 10  Engine type  Straight     6  4  57.1 2.323235e-05  0.8166228
+#> 11  Engine type  Straight     8  0   0.0 2.323235e-05  0.8166228
+#> 12  Engine type  Straight Total 14  43.8 2.323235e-05  0.8166228
+#> 13  Engine type  V-shaped     4  1   9.1 2.323235e-05  0.8166228
+#> 14  Engine type  V-shaped     6  3  42.9 2.323235e-05  0.8166228
+#> 15  Engine type  V-shaped     8 14 100.0 2.323235e-05  0.8166228
+#> 16  Engine type  V-shaped Total 18  56.2 2.323235e-05  0.8166228
 
 # Raw wide output
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   output = "wide",
   style = "raw"
 )
-#>         Variable Level BFH n BFH % HEdS-Geneve n HEdS-Geneve % HESAV n HESAV %
-#> 1      Emploi SF   Non    12    80             2          16.7       4      80
-#> 2      Emploi SF   Oui     3    20            10          83.3       1      20
-#> 3 Role recherche   Non    15   100             4          33.3       0       0
-#> 4 Role recherche   Oui     0     0             8          66.7       5     100
-#>   Total n Total %     p Cramer's V
-#> 1      18    56.2 0.002       0.62
-#> 2      14    43.8 0.002       0.62
-#> 3      19    59.4 0.001       0.81
-#> 4      13    40.6 0.001       0.81
+#>       Variable     Level 4 n  4 % 6 n  6 % 8 n   8 % Total n Total %
+#> 1 Transmission Automatic   3 27.3   4 57.1  12  85.7      19    59.4
+#> 2 Transmission    Manual   8 72.7   3 42.9   2  14.3      13    40.6
+#> 3  Engine type  Straight  10 90.9   4 57.1   0   0.0      14    43.8
+#> 4  Engine type  V-shaped   1  9.1   3 42.9  14 100.0      18    56.2
+#>              p Cramer's V
+#> 1 1.264661e-02  0.5226355
+#> 2 1.264661e-02  0.5226355
+#> 3 2.323235e-05  0.8166228
+#> 4 2.323235e-05  0.8166228
 
 # Weighted example
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   weights = "w",
   rescale = TRUE,
   simulate_p = FALSE,
   output = "long",
   style = "raw"
 )
-#>          variable level       group        n   pct     p Cramer's V
-#> 1       Emploi SF   Non         BFH  9.00000  74.8 0.003       0.59
-#> 2       Emploi SF   Non HEdS-Geneve  2.00000  14.3 0.003       0.59
-#> 3       Emploi SF   Non       HESAV  4.00000  71.6 0.003       0.59
-#> 4       Emploi SF   Non       Total 14.88754  46.5 0.003       0.59
-#> 5       Emploi SF   Oui         BFH  3.00000  25.2 0.003       0.59
-#> 6       Emploi SF   Oui HEdS-Geneve 13.00000  85.7 0.003       0.59
-#> 7       Emploi SF   Oui       HESAV  2.00000  28.4 0.003       0.59
-#> 8       Emploi SF   Oui       Total 17.11246  53.5 0.003       0.59
-#> 9  Role recherche   Non         BFH 12.00000 100.0 0.001       0.79
-#> 10 Role recherche   Non HEdS-Geneve  4.00000  28.6 0.001       0.79
-#> 11 Role recherche   Non       HESAV  0.00000   0.0 0.001       0.79
-#> 12 Role recherche   Non       Total 16.21652  50.7 0.001       0.79
-#> 13 Role recherche   Oui         BFH  0.00000   0.0 0.001       0.79
-#> 14 Role recherche   Oui HEdS-Geneve 10.00000  71.4 0.001       0.79
-#> 15 Role recherche   Oui       HESAV  5.00000 100.0 0.001       0.79
-#> 16 Role recherche   Oui       Total 15.78348  49.3 0.001       0.79
+#>        variable     level group        n   pct           p Cramer's V
+#> 1  Transmission Automatic     4  3.00000  23.4 0.008725743  0.5443734
+#> 2  Transmission Automatic     6  4.00000  55.4 0.008725743  0.5443734
+#> 3  Transmission Automatic     8  9.00000  85.4 0.008725743  0.5443734
+#> 4  Transmission Automatic Total 16.21652  50.7 0.008725743  0.5443734
+#> 5  Transmission    Manual     4 11.00000  76.6 0.008725743  0.5443734
+#> 6  Transmission    Manual     6  3.00000  44.6 0.008725743  0.5443734
+#> 7  Transmission    Manual     8  2.00000  14.6 0.008725743  0.5443734
+#> 8  Transmission    Manual Total 15.78348  49.3 0.008725743  0.5443734
+#> 9   Engine type  Straight     4 13.00000  91.1 0.000036682  0.7989534
+#> 10  Engine type  Straight     6  4.00000  55.4 0.000036682  0.7989534
+#> 11  Engine type  Straight     8  0.00000   0.0 0.000036682  0.7989534
+#> 12  Engine type  Straight Total 17.11246  53.5 0.000036682  0.7989534
+#> 13  Engine type  V-shaped     4  1.00000   8.9 0.000036682  0.7989534
+#> 14  Engine type  V-shaped     6  3.00000  44.6 0.000036682  0.7989534
+#> 15  Engine type  V-shaped     8 11.00000 100.0 0.000036682  0.7989534
+#> 16  Engine type  V-shaped Total 14.88754  46.5 0.000036682  0.7989534
 
 # \donttest{
 # Optional output: tinytable
 if (requireNamespace("tinytable", quietly = TRUE)) {
   tt_ex <- table_apa(
-    data = d_ex,
-    row_vars = c("emploi_sf", "role_prof_recherche"),
-    group_var = "hes",
-    labels = c("Emploi SF", "Role recherche"),
+    data = d,
+    row_vars = c("transmission", "engine"),
+    group_var = "cylinders",
+    labels = c("Transmission", "Engine type"),
     output = "tinytable"
   )
 }
@@ -308,10 +324,10 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 # Optional output: Excel
 if (requireNamespace("openxlsx", quietly = TRUE)) {
   table_apa(
-    data = d_ex,
-    row_vars = c("emploi_sf", "role_prof_recherche"),
-    group_var = "hes",
-    labels = c("Emploi SF", "Role recherche"),
+    data = d,
+    row_vars = c("transmission", "engine"),
+    group_var = "cylinders",
+    labels = c("Transmission", "Engine type"),
     output = "excel",
     excel_path = tempfile(fileext = ".xlsx")
   )

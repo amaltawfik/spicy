@@ -21,14 +21,39 @@
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
-- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  : Compute Cramer's V
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) :
   Row Means with Optional Minimum Valid Values
 - [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) :
   Row Sums with Optional Minimum Valid Values
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
+
+## Measures of Association
+
+- [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  : Association measures summary table
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  : Cramer's V
+- [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) : Phi
+  coefficient
+- [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
+  : Pearson's contingency coefficient
+- [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
+  : Goodman-Kruskal lambda
+- [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
+  : Goodman-Kruskal's Tau
+- [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
+  : Uncertainty coefficient
+- [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md) :
+  Yule's Q
+- [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)
+  : Goodman-Kruskal Gamma
+- [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
+  : Kendall's Tau-b
+- [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
+  : Stuart's Tau-c
+- [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+  : Somers' D
 
 ## APA Tables
 

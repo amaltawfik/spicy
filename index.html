@@ -17,8 +17,8 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Descriptive Statistics and Data Management Tools">
-<meta name="description" content="Provides tools for early data exploration, variable inspection, and quick tabulation workflows in R. Summarizes variable metadata, labels, classes, missing values, and representative values, with support for readable frequency tables, cross-tabulations, and APA-style reporting tables. Includes helpers for interactive codebooks, variable label extraction, clipboard export, and row-wise descriptive summaries. Designed to make initial data analysis faster, clearer, and easier to work with in practice.">
-<meta property="og:description" content="Provides tools for early data exploration, variable inspection, and quick tabulation workflows in R. Summarizes variable metadata, labels, classes, missing values, and representative values, with support for readable frequency tables, cross-tabulations, and APA-style reporting tables. Includes helpers for interactive codebooks, variable label extraction, clipboard export, and row-wise descriptive summaries. Designed to make initial data analysis faster, clearer, and easier to work with in practice.">
+<meta name="description" content="Provides tools for early data exploration, variable inspection, and quick tabulation workflows in R. Summarizes variable metadata, labels, classes, missing values, and representative values, with support for readable frequency tables, cross-tabulations, association measures for contingency tables (Cramers V, Phi, Goodman-Kruskal Gamma, Kendalls Tau-b, Somers' D, and others), and APA-style reporting tables. Includes helpers for interactive codebooks, variable label extraction, clipboard export, and row-wise descriptive summaries. Designed to make initial data analysis faster, clearer, and easier to work with in practice.">
+<meta property="og:description" content="Provides tools for early data exploration, variable inspection, and quick tabulation workflows in R. Summarizes variable metadata, labels, classes, missing values, and representative values, with support for readable frequency tables, cross-tabulations, association measures for contingency tables (Cramers V, Phi, Goodman-Kruskal Gamma, Kendalls Tau-b, Somers' D, and others), and APA-style reporting tables. Includes helpers for interactive codebooks, variable label extraction, clipboard export, and row-wise descriptive summaries. Designed to make initial data analysis faster, clearer, and easier to work with in practice.">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.png">
 </head>
 <body>
@@ -77,7 +77,7 @@
 <p>spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and moving quickly toward usable outputs. It helps you:</p>
 <ul>
 <li>Inspect variables quickly with <code><a href="reference/varlist.html">varlist()</a></code> (and its shortcut <code><a href="reference/varlist.html">vl()</a></code>), including names, labels, representative values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the “Variable View” in SPSS or the “Variables Manager” in Stata.</li>
-<li>Explore distributions with <code><a href="reference/freq.html">freq()</a></code>, and inspect associations with <code><a href="reference/cross_tab.html">cross_tab()</a></code> and <code><a href="reference/cramer_v.html">cramer_v()</a></code>, all with readable console output.</li>
+<li>Explore distributions with <code><a href="reference/freq.html">freq()</a></code>, inspect associations with <code><a href="reference/cross_tab.html">cross_tab()</a></code>, and compute a full suite of association measures (<code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code>, and more) with confidence intervals and p-values via <code><a href="reference/assoc_measures.html">assoc_measures()</a></code>.</li>
 <li>Compute row-wise summaries with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code> with automatic handling of missing data.</li>
 <li>Build publication-ready APA cross-tab reports with <code><a href="reference/table_apa.html">table_apa()</a></code> and export to multiple formats (<code>wide</code>, <code>long</code>, <code>tinytable</code>, <code>flextable</code>, <code>excel</code>, <code>clipboard</code>, <code>word</code>).</li>
 <li>Generate an interactive codebook with <code><a href="reference/code_book.html">code_book()</a></code>, extending <code><a href="reference/varlist.html">varlist()</a></code> with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable</a></code>.</li>
@@ -150,8 +150,8 @@
 <span><span class="co">#&gt; ─────────────┼──────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      15       12       5 │         32 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.53</span></span>
+<span><span class="co">#&gt; Chi-2(4) = 18.0, p = 0.001</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span></span>
 <span><span class="co"># Cross-tab with column percentages</span></span>
@@ -167,8 +167,8 @@
 <span><span class="co">#&gt;  Total       │      100.0       100.0       100.0 │      100.0 </span></span>
 <span><span class="co">#&gt;  N           │         15          12           5 │         32 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.53</span></span>
+<span><span class="co">#&gt; Chi-2(4) = 18.0, p = 0.001</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span></span>
 <span><span class="co"># Cross-tab with row percentages</span></span>
@@ -183,8 +183,8 @@
 <span><span class="co">#&gt; ─────────────┼─────────────────────────────────┼─────────────────────</span></span>
 <span><span class="co">#&gt;  Total       │      46.9       37.5       15.6 │      100.0       32 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 18.0 (df = 4), p = 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.53</span></span>
+<span><span class="co">#&gt; Chi-2(4) = 18.0, p = 0.001</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.53</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span></span>
 <span><span class="co"># Cross-tab grouped by a single variable</span></span>
@@ -199,8 +199,8 @@
 <span><span class="co">#&gt; ─────────────┼─────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      15       4       0 │         19 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 9.0 (df = 2), p = 0.011</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.69</span></span>
+<span><span class="co">#&gt; Chi-2(2) = 9.0, p = 0.011</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.69</span></span>
 <span><span class="co">#&gt; Warning: 5 expected cells &lt; 5 (83.3%). 2 expected cells &lt; 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | am = 1</span></span>
@@ -213,8 +213,8 @@
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      0       8       5 │         13 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 3.8 (df = 2), p = 0.146</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.54</span></span>
+<span><span class="co">#&gt; Chi-2(2) = 3.8, p = 0.146</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.54</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (100%). 1 expected cell &lt; 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span></span>
 <span><span class="co"># Cross-tab grouped by two variables</span></span>
@@ -239,8 +239,8 @@
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      3       4       0 │          7 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 0.2 (df = 1), p = 0.659</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.17</span></span>
+<span><span class="co">#&gt; Chi-2(1) = 0.2, p = 0.659</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.17</span></span>
 <span><span class="co">#&gt; Warning: 4 expected cells &lt; 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 0.1</span></span>
@@ -253,8 +253,8 @@
 <span><span class="co">#&gt; ─────────────┼────────────────────────┼────────────</span></span>
 <span><span class="co">#&gt;  Total       │      0       2       4 │          6 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2: 3.0 (df = 2), p = 0.223</span></span>
-<span><span class="co">#&gt; Cramer's V: 0.71</span></span>
+<span><span class="co">#&gt; Chi-2(2) = 3.0, p = 0.223</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.71</span></span>
 <span><span class="co">#&gt; Warning: 6 expected cells &lt; 5 (100%). 3 expected cells &lt; 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Crosstable: cyl x gear (N) | vs x am = 1.1</span></span>
@@ -316,13 +316,54 @@
 <span><span class="co">#&gt; [1] "Total score. Manually computed."</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="association-strength">Association strength<a class="anchor" aria-label="anchor" href="#association-strength"></a>
+<h3 id="association-measures">Association measures<a class="anchor" aria-label="anchor" href="#association-measures"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">cyl</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">gear</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in stats::chisq.test(x, correct = FALSE): Chi-squared approximation may</span></span>
-<span><span class="co">#&gt; be incorrect</span></span>
-<span><span class="co">#&gt; [1] 0.5308655</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">cyl</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">gear</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Quick scalar estimate</span></span>
+<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.5308655</span></span>
+<span></span>
+<span><span class="co"># Detailed result with CI and p-value</span></span>
+<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tab</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    estimate    ci_lower    ci_upper     p_value </span></span>
+<span><span class="co">#&gt; 0.530865503 0.223553416 0.742175638 0.001214066</span></span>
+<span></span>
+<span><span class="co"># Summary of all available measures</span></span>
+<span><span class="fu"><a href="reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                              measure   estimate         se   ci_lower</span></span>
+<span><span class="co">#&gt; 1                         Cramer's V  0.5308655         NA  0.2235534</span></span>
+<span><span class="co">#&gt; 2            Contingency Coefficient  0.6003875         NA         NA</span></span>
+<span><span class="co">#&gt; 3                   Lambda symmetric  0.4857143 0.12920157  0.2324839</span></span>
+<span><span class="co">#&gt; 4                         Lambda R|C  0.4444444 0.14344383  0.1632997</span></span>
+<span><span class="co">#&gt; 5                         Lambda C|R  0.5294118 0.15628498  0.2230988</span></span>
+<span><span class="co">#&gt; 6            Goodman-Kruskal Tau R|C  0.3386018 0.09944838  0.1436866</span></span>
+<span><span class="co">#&gt; 7            Goodman-Kruskal Tau C|R  0.3825603 0.11759802  0.1520724</span></span>
+<span><span class="co">#&gt; 8  Uncertainty Coefficient symmetric  0.3504372 0.08940615  0.1752043</span></span>
+<span><span class="co">#&gt; 9        Uncertainty Coefficient R|C  0.3424818 0.08737530  0.1712294</span></span>
+<span><span class="co">#&gt; 10       Uncertainty Coefficient C|R  0.3587709 0.09349119  0.1755315</span></span>
+<span><span class="co">#&gt; 11             Goodman-Kruskal Gamma -0.6573705 0.17278471 -0.9960223</span></span>
+<span><span class="co">#&gt; 12                   Kendall's Tau-b -0.5125435 0.14631499 -0.7993156</span></span>
+<span><span class="co">#&gt; 13                    Stuart's Tau-c -0.4833984 0.13209204 -0.7422941</span></span>
+<span><span class="co">#&gt; 14                     Somers' D R|C -0.5238095 0.16050578 -0.8383951</span></span>
+<span><span class="co">#&gt; 15                     Somers' D C|R -0.5015198 0.14077197 -0.7774278</span></span>
+<span><span class="co">#&gt;      ci_upper      p_value</span></span>
+<span><span class="co">#&gt; 1   0.7421756 1.214066e-03</span></span>
+<span><span class="co">#&gt; 2          NA 1.214066e-03</span></span>
+<span><span class="co">#&gt; 3   0.7389447 1.703534e-04</span></span>
+<span><span class="co">#&gt; 4   0.7255892 1.945774e-03</span></span>
+<span><span class="co">#&gt; 5   0.8357247 7.053865e-04</span></span>
+<span><span class="co">#&gt; 6   0.5335171 6.621256e-04</span></span>
+<span><span class="co">#&gt; 7   0.6130482 1.141459e-03</span></span>
+<span><span class="co">#&gt; 8   0.5256700 8.869272e-05</span></span>
+<span><span class="co">#&gt; 9   0.5137342 8.867261e-05</span></span>
+<span><span class="co">#&gt; 10  0.5420102 1.243016e-04</span></span>
+<span><span class="co">#&gt; 11 -0.3187187 1.420541e-04</span></span>
+<span><span class="co">#&gt; 12 -0.2257714 4.600250e-04</span></span>
+<span><span class="co">#&gt; 13 -0.2245028 2.526509e-04</span></span>
+<span><span class="co">#&gt; 14 -0.2092240 1.100478e-03</span></span>
+<span><span class="co">#&gt; 15 -0.2256118 3.671451e-04</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="apa-ready-table-builder">APA-ready table builder<a class="anchor" aria-label="anchor" href="#apa-ready-table-builder"></a>
