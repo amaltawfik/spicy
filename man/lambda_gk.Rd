@@ -20,7 +20,7 @@ lambda_gk(
 or \code{"column"} (row predicts column).}
 
 \item{detail}{Logical. If \code{FALSE} (default), return the estimate
-as a bare scalar. If \code{TRUE}, return a named numeric vector
+as a numeric scalar. If \code{TRUE}, return a named numeric vector
 including confidence interval and p-value.}
 
 \item{conf_level}{Confidence level for the confidence interval
