@@ -288,39 +288,39 @@ table_apa(
   style = "raw"
 )
 #>             variable level           group        n  pct            p
-#> 1     Current smoker    No Lower secondary 179.0000 69.6 1.309388e-05
-#> 2     Current smoker    No Upper secondary 419.0000 79.2 1.309388e-05
-#> 3     Current smoker    No        Tertiary 331.0000 85.2 1.309388e-05
-#> 4     Current smoker    No           Total 929.1337 79.1 1.309388e-05
-#> 5     Current smoker   Yes Lower secondary  78.0000 30.4 1.309388e-05
-#> 6     Current smoker   Yes Upper secondary 110.0000 20.8 1.309388e-05
-#> 7     Current smoker   Yes        Tertiary  58.0000 14.8 1.309388e-05
-#> 8     Current smoker   Yes           Total 245.8663 20.9 1.309388e-05
-#> 9  Physical activity    No Lower secondary 177.0000 67.9 2.268995e-11
-#> 10 Physical activity    No Upper secondary 315.0000 58.1 2.268995e-11
-#> 11 Physical activity    No        Tertiary 165.0000 41.4 2.268995e-11
-#> 12 Physical activity    No           Total 656.3024 54.7 2.268995e-11
-#> 13 Physical activity   Yes Lower secondary  84.0000 32.1 2.268995e-11
-#> 14 Physical activity   Yes Upper secondary 227.0000 41.9 2.268995e-11
-#> 15 Physical activity   Yes        Tertiary 233.0000 58.6 2.268995e-11
-#> 16 Physical activity   Yes           Total 543.6976 45.3 2.268995e-11
+#> 1     Current smoker    No Lower secondary 177.0000 69.1 1.866089e-06
+#> 2     Current smoker    No Upper secondary 427.0000 79.8 1.866089e-06
+#> 3     Current smoker    No        Tertiary 329.0000 85.9 1.866089e-06
+#> 4     Current smoker    No           Total 933.4983 79.4 1.866089e-06
+#> 5     Current smoker   Yes Lower secondary  79.0000 30.9 1.866089e-06
+#> 6     Current smoker   Yes Upper secondary 108.0000 20.2 1.866089e-06
+#> 7     Current smoker   Yes        Tertiary  54.0000 14.1 1.866089e-06
+#> 8     Current smoker   Yes           Total 241.5017 20.6 1.866089e-06
+#> 9  Physical activity    No Lower secondary 177.0000 68.0 7.411895e-11
+#> 10 Physical activity    No Upper secondary 324.0000 59.0 7.411895e-11
+#> 11 Physical activity    No        Tertiary 166.0000 42.4 7.411895e-11
+#> 12 Physical activity    No           Total 666.2816 55.5 7.411895e-11
+#> 13 Physical activity   Yes Lower secondary  83.0000 32.0 7.411895e-11
+#> 14 Physical activity   Yes Upper secondary 225.0000 41.0 7.411895e-11
+#> 15 Physical activity   Yes        Tertiary 226.0000 57.6 7.411895e-11
+#> 16 Physical activity   Yes           Total 533.7184 44.5 7.411895e-11
 #>    Cramer's V
-#> 1   0.1383389
-#> 2   0.1383389
-#> 3   0.1383389
-#> 4   0.1383389
-#> 5   0.1383389
-#> 6   0.1383389
-#> 7   0.1383389
-#> 8   0.1383389
-#> 9   0.2021101
-#> 10  0.2021101
-#> 11  0.2021101
-#> 12  0.2021101
-#> 13  0.2021101
-#> 14  0.2021101
-#> 15  0.2021101
-#> 16  0.2021101
+#> 1   0.1498463
+#> 2   0.1498463
+#> 3   0.1498463
+#> 4   0.1498463
+#> 5   0.1498463
+#> 6   0.1498463
+#> 7   0.1498463
+#> 8   0.1498463
+#> 9   0.1971689
+#> 10  0.1971689
+#> 11  0.1971689
+#> 12  0.1971689
+#> 13  0.1971689
+#> 14  0.1971689
+#> 15  0.1971689
+#> 16  0.1971689
 
 # \donttest{
 # Optional output: tinytable

@@ -113,7 +113,7 @@ varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #> 3 wellbeing_score    WHO-5 wellbeing inde… 18.7,… nume…        517    1200     0
 #> 4 bmi                Body mass index       16, 1… nume…        181    1188    12
 #> 5 political_position Political position (… 0, 1,… nume…         11    1185    15
-#> 6 weight             Survey design weight  0.664… nume…        483    1200     0
+#> 6 weight             Survey design weight  0.323… nume…        810    1200     0
 varlist(sochealth, tbl = TRUE)
 #> # A tibble: 20 × 7
 #>    Variable            Label               Values Class N_distinct N_valid   NAs
@@ -137,7 +137,7 @@ varlist(sochealth, tbl = TRUE)
 #> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
 #> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
 #> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
-#> 20 weight              Survey design weig… 0.664… nume…        483    1200     0
+#> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
 varlist(iris, tbl = TRUE)
 #> # A tibble: 5 × 7
 #>   Variable     Label Values                       Class N_distinct N_valid   NAs
@@ -163,5 +163,5 @@ vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #> 3 wellbeing_score    WHO-5 wellbeing inde… 18.7,… nume…        517    1200     0
 #> 4 bmi                Body mass index       16, 1… nume…        181    1188    12
 #> 5 political_position Political position (… 0, 1,… nume…         11    1185    15
-#> 6 weight             Survey design weight  0.664… nume…        483    1200     0
+#> 6 weight             Survey design weight  0.323… nume…        810    1200     0
 ```
