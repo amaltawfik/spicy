@@ -7,25 +7,19 @@
 
 ## Comments
 
-This is version 0.5.0 of the **spicy** package.
+This is version 0.6.0 of the **spicy** package.
 
 ### Main changes
 
-* Added new `table_apa()` helper to build APA-ready cross-tab reports with multiple output formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
-* Added key `cross_tab()` controls to `table_apa()`: `weights`, `rescale`, `correct`, `simulate_p`, and `simulate_B`.
-* Improved handling of missing values in `table_apa()` when `drop_na = FALSE`.
+* New family of association measure functions for contingency tables: `assoc_measures()`, `contingency_coef()`, `gamma_gk()`, `goodman_kruskal_tau()`, `kendall_tau_b()`, `kendall_tau_c()`, `lambda_gk()`, `phi()`, `somers_d()`, `uncertainty_coef()`, and `yule_q()`.
+* `cross_tab()` gains `assoc_measure` and `assoc_ci` arguments with automatic ordinal detection.
+* `table_apa()` gains `output = "gt"` and dynamic association measure labeling.
+* New bundled dataset `sochealth` (simulated social-health survey, n = 1200, 20 variables).
+* `cramer_v()` gains a `detail` argument (breaking: returns a named vector when `detail = TRUE`).
 
-### Bug fixes and improvements
+### Bug fixes
 
-* Fixed `count_n()` crash when `special = "NaN"` is used with non-numeric columns.
-* Fixed `cross_tab()` spurious rescale warning for explicit all-ones weights.
-* Fixed `table_apa()` leaking global options on error.
-* `varlist()` title generation no longer crashes on unrecognizable expressions.
-* `freq()` now dispatches printing correctly via S3.
-* `copy_clipboard()` parameter `message` renamed to `show_message`.
-* Removed unused `collapse` and `stringi` from `Imports`.
-
-There are no breaking changes besides the `copy_clipboard(message=)` rename to `show_message`.
+* `cross_tab()` rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present.
 
 ### Testing environments
 
