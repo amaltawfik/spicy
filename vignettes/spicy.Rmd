@@ -108,15 +108,15 @@ cramer_v(tbl, detail = TRUE)
 crossing one grouping variable with one or many row variables. It
 supports multiple output formats.
 
-With `output = "gt"` you get a formatted table suitable for R Markdown
-or Quarto documents:
+With `output = "tinytable"` you get a formatted table suitable for
+R Markdown or Quarto documents:
 
-```{r table-apa-gt}
+```{r table-apa-tt}
 table_apa(
   sochealth,
   row_vars = c("smoking", "physical_activity", "dentist_12m"),
   group_var = "education",
-  output = "gt"
+  output = "tinytable"
 )
 ```
 
@@ -127,12 +127,12 @@ table_apa(
   sochealth,
   row_vars = "smoking",
   group_var = "education",
-  output = "gt",
+  output = "tinytable",
   assoc_ci = TRUE
 )
 ```
 
-Other formats include `"tinytable"`, `"flextable"`, `"excel"`,
+Other formats include `"gt"`, `"flextable"`, `"excel"`,
 `"clipboard"`, and `"word"`. The `"wide"` and `"long"` formats return
 data frames for further processing:
 
