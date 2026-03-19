@@ -8,7 +8,7 @@ spicy is an R package for the first phase of data analysis: inspecting
 variables, checking distributions, exploring associations, and producing
 publication-ready tables. This vignette walks through the core workflow
 using the bundled `sochealth` dataset, a simulated social-health survey
-with 1 200 respondents and 20 variables.
+with 1 200 respondents and 24 variables.
 
 ## Inspect your data
 
@@ -21,29 +21,20 @@ observations, and missing values.
 
 ``` r
 varlist(sochealth, tbl = TRUE)
-#> # A tibble: 20 × 7
-#>    Variable            Label               Values Class N_distinct N_valid   NAs
-#>    <chr>               <chr>               <chr>  <chr>      <int>   <int> <int>
-#>  1 sex                 Sex                 Femal… fact…          2    1200     0
-#>  2 age                 Age (years)         25, 2… nume…         51    1200     0
-#>  3 age_group           Age group           25-34… orde…          4    1200     0
-#>  4 education           Highest education … Lower… orde…          3    1200     0
-#>  5 social_class        Subjective social … Lower… orde…          5    1200     0
-#>  6 region              Region of residence Centr… fact…          6    1200     0
-#>  7 employment_status   Employment status   Emplo… fact…          4    1200     0
-#>  8 income_group        Household income g… Low, … orde…          4    1182    18
-#>  9 income              Monthly household … 1000,… nume…       1053    1200     0
-#> 10 smoking             Current smoker      No, Y… fact…          2    1175    25
-#> 11 physical_activity   Regular physical a… No, Y… fact…          2    1200     0
-#> 12 dentist_12m         Dentist visit in l… No, Y… fact…          2    1200     0
-#> 13 self_rated_health   Self-rated health   Poor,… orde…          4    1180    20
-#> 14 wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    1200     0
-#> 15 bmi                 Body mass index     16, 1… nume…        181    1188    12
-#> 16 bmi_category        BMI category        Norma… orde…          3    1188    12
-#> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
-#> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
-#> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
-#> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
+#> # A tibble: 24 × 7
+#>    Variable          Label                 Values Class N_distinct N_valid   NAs
+#>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
+#>  1 sex               Sex                   Femal… fact…          2    1200     0
+#>  2 age               Age (years)           25, 2… nume…         51    1200     0
+#>  3 age_group         Age group             25-34… orde…          4    1200     0
+#>  4 education         Highest education le… Lower… orde…          3    1200     0
+#>  5 social_class      Subjective social cl… Lower… orde…          5    1200     0
+#>  6 region            Region of residence   Centr… fact…          6    1200     0
+#>  7 employment_status Employment status     Emplo… fact…          4    1200     0
+#>  8 income_group      Household income gro… Low, … orde…          4    1182    18
+#>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
+#> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
+#> # ℹ 14 more rows
 ```
 
 You can also select specific columns with tidyselect syntax:
@@ -53,10 +44,10 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 #> # A tibble: 4 × 7
 #>   Variable     Label                       Values Class N_distinct N_valid   NAs
 #>   <chr>        <chr>                       <chr>  <chr>      <int>   <int> <int>
-#> 1 bmi          Body mass index             16, 1… nume…        181    1188    12
+#> 1 bmi          Body mass index             16, 1… nume…        177    1188    12
 #> 2 bmi_category BMI category                Norma… orde…          3    1188    12
-#> 3 income       Monthly household income (… 1000,… nume…       1053    1200     0
-#> 4 weight       Survey design weight        0.323… nume…        810    1200     0
+#> 3 income       Monthly household income (… 1000,… nume…       1052    1200     0
+#> 4 weight       Survey design weight        0.294… nume…        794    1200     0
 ```
 
 ## Frequency tables
@@ -91,9 +82,9 @@ freq(sochealth, education, weights = weight, rescale = TRUE)
 #> 
 #>  Category │ Values            Freq.  Percent 
 #> ──────────┼──────────────────────────────────
-#>  Valid    │ Lower secondary  259.49     21.6 
-#>           │ Upper secondary  548.55     45.7 
-#>           │ Tertiary         391.95     32.7 
+#>  Valid    │ Lower secondary  258.62     21.6 
+#>           │ Upper secondary  546.40     45.5 
+#>           │ Tertiary         394.99     32.9 
 #> ──────────┼──────────────────────────────────
 #>  Total    │                    1200    100.0 
 #> 
@@ -306,19 +297,34 @@ compute row-wise statistics across selected columns, with automatic
 handling of missing values.
 
 ``` r
-d <- sochealth[, c("bmi", "wellbeing_score", "political_position")]
-d$row_mean <- mean_n(sochealth, c("bmi", "wellbeing_score", "political_position"))
-d$n_missing <- count_n(sochealth, c("bmi", "wellbeing_score", "political_position"), special = "NA")
+items <- c("life_sat_health", "life_sat_work",
+           "life_sat_relationships", "life_sat_standard")
+d <- sochealth[, items]
+d$mean_sat <- mean_n(sochealth, items)
+#> Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
+#> ℹ Please use `all_of()` or `any_of()` instead.
+#>   # Was:
+#>   data %>% select(items)
+#> 
+#>   # Now:
+#>   data %>% select(all_of(items))
+#> 
+#> See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
+d$n_missing <- count_n(sochealth, items, special = "NA")
 head(d)
-#> # A tibble: 6 × 5
-#>     bmi wellbeing_score political_position row_mean n_missing
-#>   <dbl>           <dbl>              <dbl>    <dbl>     <dbl>
-#> 1  27.7            90.9                  7     41.9         0
-#> 2  22.6            79.5                  4     35.4         0
-#> 3  23.2            44.2                  6     24.5         0
-#> 4  26.7            62.4                 10     33.0         0
-#> 5  19.7            95.8                  4     39.8         0
-#> 6  26.4            76                    6     36.1         0
+#> # A tibble: 6 × 6
+#>   life_sat_health life_sat_work life_sat_relationships life_sat_standard
+#>             <int>         <int>                  <int>             <int>
+#> 1               5             3                      5                 5
+#> 2               4             4                      5                 5
+#> 3               3             2                      5                 3
+#> 4               3             4                      3                 2
+#> 5               4             5                      4                 4
+#> 6               5             5                      5                 3
+#> # ℹ 2 more variables: mean_sat <dbl>, n_missing <dbl>
 ```
 
 ## Learn more

@@ -13,7 +13,7 @@ sochealth
 
 ## Format
 
-A tibble with 1200 rows and 20 variables:
+A tibble with 1200 rows and 24 variables:
 
 - sex:
 
@@ -92,6 +92,26 @@ A tibble with 1200 rows and 20 variables:
 - political_position:
 
   Numeric. Political position on a 0 (left) to 10 (right) scale.
+  Contains missing values.
+
+- life_sat_health:
+
+  Integer. Satisfaction with own health (1–5 Likert scale). Contains
+  missing values.
+
+- life_sat_work:
+
+  Integer. Satisfaction with work or main activity (1–5 Likert scale).
+  Contains missing values.
+
+- life_sat_relationships:
+
+  Integer. Satisfaction with personal relationships (1–5 Likert scale).
+  Contains missing values.
+
+- life_sat_standard:
+
+  Integer. Satisfaction with standard of living (1–5 Likert scale).
   Contains missing values.
 
 - response_date:

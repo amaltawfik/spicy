@@ -195,13 +195,13 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> 
 #>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
 #> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                  177                   427            329 │        933 
-#>  Yes         │                   79                   108             54 │        242 
+#>  No          │                  176                   419            325 │        921 
+#>  Yes         │                   79                   115             60 │        254 
 #> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  256                   535            383 │       1175 
+#>  Total       │                  255                   534            385 │       1175 
 #> 
-#> Chi-2(2) = 26.4, p < 0.001
-#> Cramer's V = 0.15
+#> Chi-2(2) = 21.4, p < 0.001
+#> Cramer's V = 0.13
 #> Weight: weight (rescaled)
 
 # Grouped by sex

@@ -58,12 +58,14 @@
   method with the same formatting.
 
 - New bundled dataset `sochealth`: a simulated social-health survey (n =
-  1200, 20 variables) with variable labels, ordered factors, survey
-  weights, and missing values. Designed to showcase
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
-  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md),
-  and the association measure functions.
+  1200, 24 variables) with variable labels, ordered factors, survey
+  weights, and missing values. Includes four Likert-scaled life
+  satisfaction items (`life_sat_health`, `life_sat_work`,
+  `life_sat_relationships`, `life_sat_standard`) for demonstrating
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
 
 ### Bug fixes
 
