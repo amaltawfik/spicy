@@ -166,3 +166,56 @@ test_that("table_apa returns gt object when requested", {
 
   expect_s3_class(gt_tbl, "gt_tbl")
 })
+
+# ── Dynamic association measure column ─────────────────────────────────────
+
+test_that("table_apa default column is Cramer's V", {
+  df <- data.frame(
+    grp = factor(c("A", "A", "B", "B", "A", "B")),
+    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
+  )
+  out <- table_apa(
+    df,
+    "v1",
+    "grp",
+    labels = "Var 1",
+    output = "long",
+    style = "raw"
+  )
+  expect_true("Cramer's V" %in% names(out))
+})
+
+test_that("table_apa uses dynamic column name with assoc_measure = 'gamma'", {
+  df <- data.frame(
+    grp = factor(c("A", "A", "B", "B", "A", "B")),
+    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
+  )
+  out <- table_apa(
+    df,
+    "v1",
+    "grp",
+    labels = "Var 1",
+    assoc_measure = "gamma",
+    output = "long",
+    style = "raw"
+  )
+  expect_true("Goodman-Kruskal Gamma" %in% names(out))
+  expect_false("Cramer's V" %in% names(out))
+})
+
+test_that("table_apa wide report has dynamic column name", {
+  df <- data.frame(
+    grp = factor(c("A", "A", "B", "B", "A", "B")),
+    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
+  )
+  out <- table_apa(
+    df,
+    "v1",
+    "grp",
+    labels = "Var 1",
+    assoc_measure = "tau_b",
+    output = "wide",
+    style = "report"
+  )
+  expect_true("Kendall's Tau-b" %in% names(out))
+})

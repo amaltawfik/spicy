@@ -20,6 +20,8 @@ table_apa(
   percent_digits = 1,
   p_digits = 3,
   v_digits = 2,
+  assoc_measure = "auto",
+  assoc_ci = FALSE,
   decimal_mark = ".",
   output = c("wide", "long", "tinytable", "gt", "flextable", "excel", "clipboard",
     "word"),
@@ -76,7 +78,15 @@ Defaults to \code{1}.}
 \item{p_digits}{Number of digits for p-values (except \verb{< .001}).
 Defaults to \code{3}.}
 
-\item{v_digits}{Number of digits for Cramer's V. Defaults to \code{2}.}
+\item{v_digits}{Number of digits for the association measure. Defaults
+to \code{2}.}
+
+\item{assoc_measure}{Passed to \code{\link[=cross_tab]{cross_tab()}}. Which association measure
+to report (\code{"auto"}, \code{"cramer_v"}, \code{"phi"}, \code{"gamma"}, \code{"tau_b"},
+\code{"tau_c"}, \code{"somers_d"}, \code{"lambda"}, \code{"none"}). Defaults to \code{"auto"}.}
+
+\item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
+confidence interval. Defaults to \code{FALSE}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
@@ -130,7 +140,7 @@ variable (\code{group_var}) with one or many row variables (\code{row_vars}), us
 \details{
 It supports raw data outputs (\code{wide}, \code{long}) and report-oriented outputs
 (\code{tinytable}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word}) with multi-level
-headers, p-values, and Cramer's V.
+headers, p-values, and an association measure.
 
 Optional output engines require suggested packages:
 \itemize{
@@ -142,41 +152,41 @@ Optional output engines require suggested packages:
 }
 }
 \examples{
-# Build a minimal reproducible dataset
-d_ex <- transform(
+# Build a dataset from mtcars
+d <- transform(
   mtcars,
-  hes = factor(gear, labels = c("BFH", "HEdS-Geneve", "HESAV")),
-  emploi_sf = ifelse(vs == 1, "Oui", "Non"),
-  role_prof_recherche = ifelse(am == 1, "Oui", "Non"),
+  transmission = factor(am, labels = c("Automatic", "Manual")),
+  engine = factor(vs, labels = c("V-shaped", "Straight")),
+  cylinders = factor(cyl),
   w = mpg
 )
 
 # Raw long output (machine-friendly)
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   output = "long",
   style = "raw"
 )
 
 # Raw wide output
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   output = "wide",
   style = "raw"
 )
 
 # Weighted example
 table_apa(
-  data = d_ex,
-  row_vars = c("emploi_sf", "role_prof_recherche"),
-  group_var = "hes",
-  labels = c("Emploi SF", "Role recherche"),
+  data = d,
+  row_vars = c("transmission", "engine"),
+  group_var = "cylinders",
+  labels = c("Transmission", "Engine type"),
   weights = "w",
   rescale = TRUE,
   simulate_p = FALSE,
@@ -188,10 +198,10 @@ table_apa(
 # Optional output: tinytable
 if (requireNamespace("tinytable", quietly = TRUE)) {
   tt_ex <- table_apa(
-    data = d_ex,
-    row_vars = c("emploi_sf", "role_prof_recherche"),
-    group_var = "hes",
-    labels = c("Emploi SF", "Role recherche"),
+    data = d,
+    row_vars = c("transmission", "engine"),
+    group_var = "cylinders",
+    labels = c("Transmission", "Engine type"),
     output = "tinytable"
   )
 }
@@ -199,10 +209,10 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 # Optional output: Excel
 if (requireNamespace("openxlsx", quietly = TRUE)) {
   table_apa(
-    data = d_ex,
-    row_vars = c("emploi_sf", "role_prof_recherche"),
-    group_var = "hes",
-    labels = c("Emploi SF", "Role recherche"),
+    data = d,
+    row_vars = c("transmission", "engine"),
+    group_var = "cylinders",
+    labels = c("Transmission", "Engine type"),
     output = "excel",
     excel_path = tempfile(fileext = ".xlsx")
   )

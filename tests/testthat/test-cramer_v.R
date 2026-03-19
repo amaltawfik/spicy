@@ -1,4 +1,4 @@
-test_that("cramer_v computes Cramer's V correctly with mtcars example", {
+test_that("cramer_v returns scalar by default", {
   data(mtcars)
 
   mtcars$gear <- as.factor(mtcars$gear)
@@ -10,8 +10,25 @@ test_that("cramer_v computes Cramer's V correctly with mtcars example", {
 
   expect_type(result, "double")
   expect_length(result, 1)
+  expect_null(names(result))
   expect_gte(result, 0)
   expect_lte(result, 1)
+})
+
+test_that("cramer_v with detail = TRUE returns 4-element vector", {
+  data(mtcars)
+  tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+  result <- suppressWarnings(cramer_v(tab, detail = TRUE))
+  expect_length(result, 4)
+  expect_named(result, c("estimate", "ci_lower", "ci_upper", "p_value"))
+})
+
+test_that("cramer_v with detail = TRUE, conf_level = NULL returns 2 elements", {
+  data(mtcars)
+  tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+  result <- suppressWarnings(cramer_v(tab, detail = TRUE, conf_level = NULL))
+  expect_length(result, 2)
+  expect_named(result, c("estimate", "p_value"))
 })
 
 test_that("cramer_v fails gracefully with non-table input", {
@@ -26,13 +43,7 @@ test_that("cramer_v fails gracefully with non-table input", {
   )
 })
 
-test_that("cramer_v returns NA for degenerate tables", {
+test_that("cramer_v rejects degenerate 1-row tables", {
   tab <- table(factor(c("A", "A")), factor(c("X", "Y")))
-
-  expect_warning(
-    out <- cramer_v(tab),
-    "undefined for empty or 1-dimensional tables",
-    fixed = TRUE
-  )
-  expect_true(is.na(out))
+  expect_error(cramer_v(tab), "at least 2x2")
 })

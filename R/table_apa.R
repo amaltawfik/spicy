@@ -6,7 +6,7 @@
 #'
 #' It supports raw data outputs (`wide`, `long`) and report-oriented outputs
 #' (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with multi-level
-#' headers, p-values, and Cramer's V.
+#' headers, p-values, and an association measure.
 #'
 #' @param data A data frame.
 #' @param row_vars Character vector of variable names to place in rows.
@@ -35,7 +35,13 @@
 #'   Defaults to `1`.
 #' @param p_digits Number of digits for p-values (except `< .001`).
 #'   Defaults to `3`.
-#' @param v_digits Number of digits for Cramer's V. Defaults to `2`.
+#' @param v_digits Number of digits for the association measure. Defaults
+#'   to `2`.
+#' @param assoc_measure Passed to [cross_tab()]. Which association measure
+#'   to report (`"auto"`, `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`,
+#'   `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`). Defaults to `"auto"`.
+#' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
+#'   confidence interval. Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
 #' @param output Output format: `"wide"` (the default), `"long"`,
 #'   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
@@ -75,41 +81,41 @@
 #' - `clipr` for `output = "clipboard"`
 #'
 #' @examples
-#' # Build a minimal reproducible dataset
-#' d_ex <- transform(
+#' # Build a dataset from mtcars
+#' d <- transform(
 #'   mtcars,
-#'   hes = factor(gear, labels = c("BFH", "HEdS-Geneve", "HESAV")),
-#'   emploi_sf = ifelse(vs == 1, "Oui", "Non"),
-#'   role_prof_recherche = ifelse(am == 1, "Oui", "Non"),
+#'   transmission = factor(am, labels = c("Automatic", "Manual")),
+#'   engine = factor(vs, labels = c("V-shaped", "Straight")),
+#'   cylinders = factor(cyl),
 #'   w = mpg
 #' )
 #'
 #' # Raw long output (machine-friendly)
 #' table_apa(
-#'   data = d_ex,
-#'   row_vars = c("emploi_sf", "role_prof_recherche"),
-#'   group_var = "hes",
-#'   labels = c("Emploi SF", "Role recherche"),
+#'   data = d,
+#'   row_vars = c("transmission", "engine"),
+#'   group_var = "cylinders",
+#'   labels = c("Transmission", "Engine type"),
 #'   output = "long",
 #'   style = "raw"
 #' )
 #'
 #' # Raw wide output
 #' table_apa(
-#'   data = d_ex,
-#'   row_vars = c("emploi_sf", "role_prof_recherche"),
-#'   group_var = "hes",
-#'   labels = c("Emploi SF", "Role recherche"),
+#'   data = d,
+#'   row_vars = c("transmission", "engine"),
+#'   group_var = "cylinders",
+#'   labels = c("Transmission", "Engine type"),
 #'   output = "wide",
 #'   style = "raw"
 #' )
 #'
 #' # Weighted example
 #' table_apa(
-#'   data = d_ex,
-#'   row_vars = c("emploi_sf", "role_prof_recherche"),
-#'   group_var = "hes",
-#'   labels = c("Emploi SF", "Role recherche"),
+#'   data = d,
+#'   row_vars = c("transmission", "engine"),
+#'   group_var = "cylinders",
+#'   labels = c("Transmission", "Engine type"),
 #'   weights = "w",
 #'   rescale = TRUE,
 #'   simulate_p = FALSE,
@@ -121,10 +127,10 @@
 #' # Optional output: tinytable
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
 #'   tt_ex <- table_apa(
-#'     data = d_ex,
-#'     row_vars = c("emploi_sf", "role_prof_recherche"),
-#'     group_var = "hes",
-#'     labels = c("Emploi SF", "Role recherche"),
+#'     data = d,
+#'     row_vars = c("transmission", "engine"),
+#'     group_var = "cylinders",
+#'     labels = c("Transmission", "Engine type"),
 #'     output = "tinytable"
 #'   )
 #' }
@@ -132,10 +138,10 @@
 #' # Optional output: Excel
 #' if (requireNamespace("openxlsx", quietly = TRUE)) {
 #'   table_apa(
-#'     data = d_ex,
-#'     row_vars = c("emploi_sf", "role_prof_recherche"),
-#'     group_var = "hes",
-#'     labels = c("Emploi SF", "Role recherche"),
+#'     data = d,
+#'     row_vars = c("transmission", "engine"),
+#'     group_var = "cylinders",
+#'     labels = c("Transmission", "Engine type"),
 #'     output = "excel",
 #'     excel_path = tempfile(fileext = ".xlsx")
 #'   )
@@ -158,6 +164,8 @@ table_apa <- function(
   percent_digits = 1,
   p_digits = 3,
   v_digits = 2,
+  assoc_measure = "auto",
+  assoc_ci = FALSE,
   decimal_mark = ".",
   output = c(
     "wide",
@@ -305,7 +313,24 @@ table_apa <- function(
 
   `%||%` <- function(x, y) if (is.null(x)) y else x
 
-  parse_note <- function(note_txt) {
+  parse_stats <- function(ct_obj) {
+    # Read numeric attributes set by cross_tab()
+    p_val <- attr(ct_obj, "p_value")
+    v_val <- attr(ct_obj, "assoc_value")
+    m_name <- attr(ct_obj, "assoc_measure")
+
+    if (!is.null(p_val) && !is.null(v_val)) {
+      p_op <- if (!is.na(p_val) && p_val < 0.001) "<" else "="
+      return(list(
+        p = p_val,
+        p_op = p_op,
+        v = v_val,
+        measure = m_name %||% "Cramer's V"
+      ))
+    }
+
+    # Fallback: parse note text
+    note_txt <- attr(ct_obj, "note")
     txt <- paste(note_txt %||% "", collapse = " ")
 
     pm <- regmatches(
@@ -319,9 +344,14 @@ table_apa <- function(
       NA_real_
     }
 
+    # Try to match any "Measure = value" pattern
     vm <- regmatches(
       txt,
-      regexec("Cramer's V:\\s*([0-9.]+(?:e[-+]?\\d+)?)", txt, perl = TRUE)
+      regexec(
+        "(?:Cramer's V|Phi|Goodman-Kruskal (?:Gamma|Tau)|Kendall's Tau-b|Stuart's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
+        txt,
+        perl = TRUE
+      )
     )[[1]]
     v_val <- if (length(vm) >= 2) {
       suppressWarnings(as.numeric(vm[2]))
@@ -329,7 +359,7 @@ table_apa <- function(
       NA_real_
     }
 
-    list(p = p_val, p_op = p_op, v = v_val)
+    list(p = p_val, p_op = p_op, v = v_val, measure = "Cramer's V")
   }
 
   fmt_num <- function(x, digits = 1, na = "") {
@@ -410,6 +440,7 @@ table_apa <- function(
   # ---------------- LONG RAW ----------------
   rows <- list()
   rr <- 1L
+  measure_col <- NULL
 
   for (i in seq_along(row_vars)) {
     x <- data[[row_vars[i]]]
@@ -444,7 +475,9 @@ table_apa <- function(
       rescale = rescale,
       correct = correct,
       simulate_p = simulate_p,
-      simulate_B = simulate_B
+      simulate_B = simulate_B,
+      assoc_measure = assoc_measure,
+      assoc_ci = assoc_ci
     )
     ct_n <- spicy::cross_tab(
       x,
@@ -453,9 +486,13 @@ table_apa <- function(
       rescale = rescale,
       correct = correct,
       simulate_p = simulate_p,
-      simulate_B = simulate_B
+      simulate_B = simulate_B,
+      assoc_measure = "none"
     )
-    st <- parse_note(attr(ct_pct, "note"))
+    st <- parse_stats(ct_pct)
+    if (is.null(measure_col)) {
+      measure_col <- st$measure %||% "Cramer's V"
+    }
 
     groups_present <- setdiff(names(ct_n), "Values")
     groups_use <- intersect(group_levels, groups_present)
@@ -480,7 +517,7 @@ table_apa <- function(
       }
 
       for (gr in groups_use) {
-        rows[[rr]] <- data.frame(
+        row_df <- data.frame(
           variable = labels[i],
           level = lv,
           group = gr,
@@ -488,13 +525,19 @@ table_apa <- function(
           pct = suppressWarnings(as.numeric(ct_pct[in_p, gr])),
           p = st$p,
           p_op = st$p_op,
-          `Cramer's V` = st$v,
+          .assoc = st$v,
           stringsAsFactors = FALSE,
           check.names = FALSE
         )
+        names(row_df)[names(row_df) == ".assoc"] <- measure_col
+        rows[[rr]] <- row_df
         rr <- rr + 1L
       }
     }
+  }
+
+  if (is.null(measure_col)) {
+    measure_col <- "Cramer's V"
   }
 
   if (length(rows) == 0) {
@@ -506,10 +549,11 @@ table_apa <- function(
       pct = numeric(0),
       p = numeric(0),
       p_op = character(0),
-      `Cramer's V` = numeric(0),
+      .assoc = numeric(0),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
+    names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
   } else {
     long_raw <- do.call(rbind, rows)
   }
@@ -547,7 +591,7 @@ table_apa <- function(
       "Level",
       as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
       "p",
-      "Cramer's V"
+      measure_col
     )
     if (nrow(ldf) == 0) {
       return(as.data.frame(
@@ -576,7 +620,7 @@ table_apa <- function(
       }
 
       r$p <- if (nrow(sv)) sv$p[1] else NA_real_
-      r[["Cramer's V"]] <- if (nrow(sv)) sv[["Cramer's V"]][1] else NA_real_
+      r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
 
       out[[k]] <- as.data.frame(
         r,
@@ -605,8 +649,8 @@ table_apa <- function(
     long_rep$n <- fmt_n(long_rep$n)
     long_rep$pct <- fmt_num(long_rep$pct, percent_digits)
     long_rep$p <- mapply(fmt_p, long_rep$p, long_rep$p_op, USE.NAMES = FALSE)
-    long_rep[["Cramer's V"]] <- vapply(
-      long_rep[["Cramer's V"]],
+    long_rep[[measure_col]] <- vapply(
+      long_rep[[measure_col]],
       fmt_v,
       character(1)
     )
@@ -619,7 +663,7 @@ table_apa <- function(
     "Variable",
     as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
     "p",
-    "Cramer's V"
+    measure_col
   )
 
   make_report_wide <- function(ldf, mode = c("char", "excel")) {
@@ -644,7 +688,7 @@ table_apa <- function(
         )
         out$Variable <- character(0)
         out$p <- character(0)
-        out[["Cramer's V"]] <- character(0)
+        out[[measure_col]] <- character(0)
         return(out[, report_cols, drop = FALSE])
       }
     }
@@ -672,7 +716,7 @@ table_apa <- function(
       }
       r0$Variable <- lab
       r0$p <- fmt_p(sv$p[1], sv$p_op[1])
-      r0[["Cramer's V"]] <- fmt_v(sv[["Cramer's V"]][1])
+      r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
       out[[z]] <- as.data.frame(
         r0,
         stringsAsFactors = FALSE,
@@ -705,7 +749,7 @@ table_apa <- function(
         }
 
         r1$p <- ""
-        r1[["Cramer's V"]] <- ""
+        r1[[measure_col]] <- ""
         out[[z]] <- as.data.frame(
           r1,
           stringsAsFactors = FALSE,
@@ -729,13 +773,13 @@ table_apa <- function(
     "Variable",
     rep(group_levels, each = 2),
     "p",
-    "Cramer's V"
+    measure_col
   )
   top_header_flat <- c(
     "Variable",
     as.vector(rbind(group_levels, rep("", length(group_levels)))),
     "p",
-    "Cramer's V"
+    measure_col
   )
   bot_header <- c("", rep(c("n", "%"), times = length(group_levels)), "", "")
   grp_j <- 2:(1 + 2 * length(group_levels))
@@ -752,7 +796,7 @@ table_apa <- function(
 
     dat_tt <- report_wide_char
 
-    # Detect modality rows before header rename (p / Cramer's V still named)
+    # Detect modality rows before header rename
     mod_rows <- which(
       dat_tt[[ncol(dat_tt) - 1]] == "" &
         dat_tt[[ncol(dat_tt)]] == "" &
@@ -779,7 +823,7 @@ table_apa <- function(
         lapply(seq_along(group_levels), function(i) c(2 * i, 2 * i + 1)),
         group_levels
       ),
-      list("p" = ncol(dat_tt) - 1, "Cramer's V" = ncol(dat_tt))
+      setNames(list(ncol(dat_tt) - 1, ncol(dat_tt)), c("p", measure_col))
     )
 
     tt <- tinytable::tt(dat_tt, escape = FALSE)
@@ -855,7 +899,7 @@ table_apa <- function(
     # Indent modality rows with non-breaking spaces
     mod_rows <- which(
       dat_gt[["p"]] == "" &
-        dat_gt[["Cramer's V"]] == "" &
+        dat_gt[[measure_col]] == "" &
         nzchar(dat_gt[[1]])
     )
     if (length(mod_rows)) {
@@ -873,7 +917,7 @@ table_apa <- function(
       col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
     }
     col_ids[ncol(dat_gt) - 1] <- "p"
-    col_ids[ncol(dat_gt)] <- "Cramers_V"
+    col_ids[ncol(dat_gt)] <- "assoc_col"
     names(dat_gt) <- col_ids
 
     tbl <- gt::gt(dat_gt)
@@ -886,7 +930,7 @@ table_apa <- function(
       label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
     }
     label_list[["p"]] <- ""
-    label_list[["Cramers_V"]] <- ""
+    label_list[["assoc_col"]] <- ""
     tbl <- gt::cols_label(tbl, .list = label_list)
 
     # Spanners: group names over n/% pairs, single-col for Variable/p/V
@@ -914,8 +958,8 @@ table_apa <- function(
     )
     tbl <- gt::tab_spanner(
       tbl,
-      label = "Cramer's V",
-      columns = "Cramers_V",
+      label = measure_col,
+      columns = "assoc_col",
       id = "spn_v"
     )
 
@@ -928,7 +972,7 @@ table_apa <- function(
     tbl <- gt::cols_align(
       tbl,
       align = "right",
-      columns = c("p", "Cramers_V")
+      columns = c("p", "assoc_col")
     )
     # Left-align the Variable spanner label
     tbl <- gt::tab_style(
@@ -1062,7 +1106,7 @@ table_apa <- function(
     ft <- flextable::align(ft, j = 2:ncol(df), part = "body", align = "right")
     # Centre n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
-    # Right-align p and Cramer's V in header
+    # Right-align p and association measure in header
     stat_j <- (ncol(df) - 1):ncol(df)
     ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
 
@@ -1071,7 +1115,7 @@ table_apa <- function(
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
 
-    id_mod <- which(df$p == "" & df[["Cramer's V"]] == "" & nzchar(df[[1]]))
+    id_mod <- which(df$p == "" & df[[measure_col]] == "" & nzchar(df[[1]]))
     if (length(id_mod)) {
       ft <- flextable::padding(
         ft,
@@ -1111,7 +1155,7 @@ table_apa <- function(
   )
   to_excel_text <- function(x) ifelse(x == "", "", paste0("=\"", x, "\""))
   clip_body$p <- to_excel_text(clip_body$p)
-  clip_body[["Cramer's V"]] <- to_excel_text(clip_body[["Cramer's V"]])
+  clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
 
   clip_mat <- rbind(top_header_flat, bot_header, as.matrix(clip_body))
 
@@ -1149,7 +1193,7 @@ table_apa <- function(
       indent_text_excel_clipboard
     )
     body_xl$p <- report_wide_char$p
-    body_xl[["Cramer's V"]] <- report_wide_char[["Cramer's V"]]
+    body_xl[[measure_col]] <- report_wide_char[[measure_col]]
 
     openxlsx::writeData(
       wb,

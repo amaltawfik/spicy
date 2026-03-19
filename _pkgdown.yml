@@ -40,10 +40,23 @@ reference:
     contents:
       - freq
       - cross_tab
-      - cramer_v
       - mean_n
       - sum_n
       - count_n
+  - title: Measures of Association
+    contents:
+      - assoc_measures
+      - cramer_v
+      - phi
+      - contingency_coef
+      - lambda_gk
+      - goodman_kruskal_tau
+      - uncertainty_coef
+      - yule_q
+      - gamma_gk
+      - kendall_tau_b
+      - kendall_tau_c
+      - somers_d
   - title: APA Tables
     contents:
       - table_apa

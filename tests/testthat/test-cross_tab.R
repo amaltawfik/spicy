@@ -89,7 +89,7 @@ test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale"
   res <- cross_tab(data, cyl, gear, weights = mpg, styled = FALSE)
 
   # Verify attributes and global option effect
-  expect_true(grepl("Chi-2:", attr(res, "note")))
+  expect_true(grepl("Chi-2\\(", attr(res, "note")))
   expect_true(isTRUE(all.equal(round(attr(res, "n_total")), nrow(data))))
 
   # Restore options
@@ -187,4 +187,40 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
     fixed = TRUE
   ))
   expect_false(grepl("p = NA", note_b, fixed = TRUE))
+})
+
+# ── Association measure features ───────────────────────────────────────────
+
+test_that("cross_tab stores numeric attributes", {
+  res <- cross_tab(mtcars, cyl, gear, styled = FALSE)
+  expect_true(is.numeric(attr(res, "chi2")))
+  expect_true(is.numeric(attr(res, "df")))
+  expect_true(is.numeric(attr(res, "p_value")))
+  expect_equal(attr(res, "assoc_measure"), "Cramer's V")
+  expect_true(is.numeric(attr(res, "assoc_value")))
+  expect_true(length(attr(res, "assoc_result")) == 4)
+})
+
+test_that("cross_tab auto-detects ordinal variables", {
+  mt <- mtcars
+  mt$cyl <- ordered(mt$cyl)
+  mt$gear <- ordered(mt$gear)
+  res <- cross_tab(mt, cyl, gear, styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Kendall's Tau-b")
+})
+
+test_that("cross_tab assoc_ci adds CI to note", {
+  res <- cross_tab(mtcars, cyl, gear, assoc_ci = TRUE, styled = FALSE)
+  expect_true(grepl("95% CI", attr(res, "note")))
+})
+
+test_that("cross_tab assoc_measure = 'none' omits coefficient line", {
+  res <- cross_tab(mtcars, cyl, gear, assoc_measure = "none", styled = FALSE)
+  expect_false(grepl("Cramer", attr(res, "note")))
+  expect_true(grepl("Chi-2", attr(res, "note")))
+})
+
+test_that("cross_tab note uses new Chi-2(df) format", {
+  res <- cross_tab(mtcars, cyl, gear, styled = FALSE)
+  expect_true(grepl("Chi-2\\(\\d+\\) =", attr(res, "note")))
 })

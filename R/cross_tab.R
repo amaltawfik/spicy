@@ -7,7 +7,7 @@
 #'
 #' `cross_tab()` produces weighted or unweighted contingency tables with
 #' row or column percentages, optional grouping via `by`, and associated
-#' Chi-squared tests with Cramer's V and diagnostic information.
+#' Chi-squared tests with an association measure and diagnostic information.
 #'
 #' Both `x` and `y` variables are required. For one-way frequency tables,
 #' use [freq()] instead.
@@ -24,7 +24,14 @@
 #' @param percent One of `"none"` (the default), `"row"`, `"column"`.
 #'   Unique abbreviations are accepted (e.g. `"n"`, `"r"`, `"c"`).
 #' @param include_stats Logical. If `TRUE` (the default), computes Chi-squared
-#'   and Cramer's V.
+#'   and an association measure (see `assoc_measure`).
+#' @param assoc_measure Character. Which association measure to report.
+#'   `"auto"` (default) selects Kendall's Tau-b when both variables are
+#'   ordered factors and Cramer's V otherwise. Other choices:
+#'   `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`, `"tau_c"`,
+#'   `"somers_d"`, `"lambda"`, `"none"`.
+#' @param assoc_ci Logical. If `TRUE`, includes the 95 percent confidence
+#'   interval of the association measure in the note. Defaults to `FALSE`.
 #' @param correct Logical. If `FALSE` (the default), no continuity correction is
 #'   applied. If `TRUE`, applies Yates correction (only for 2x2 tables).
 #' @param simulate_p Logical. If `FALSE` (the default), uses asymptotic p-values.
@@ -106,6 +113,8 @@ cross_tab <- function(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
+  assoc_measure = "auto",
+  assoc_ci = FALSE,
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -539,7 +548,66 @@ cross_tab <- function(
         chi2 <- as.numeric(chi$statistic)
         df_ <- as.numeric(chi$parameter)
         pval <- as.numeric(chi$p.value)
-        cramer <- sqrt(chi2 / (sum(tab_stats) * (min(dim(tab_stats)) - 1)))
+
+        # Resolve association measure
+        assoc_choice <- assoc_measure
+        if (assoc_choice == "auto") {
+          both_ordered <- is.ordered(x_val) && is.ordered(y_val)
+          assoc_choice <- if (both_ordered) "tau_b" else "cramer_v"
+        }
+
+        # Compute association measure
+        assoc_result <- NULL
+        assoc_name <- NULL
+        if (assoc_choice != "none") {
+          assoc_out <- tryCatch(
+            suppressWarnings(switch(
+              assoc_choice,
+              cramer_v = {
+                assoc_name <- "Cramer's V"
+                cramer_v(tab_stats, detail = TRUE)
+              },
+              phi = {
+                assoc_name <- "Phi"
+                phi(tab_stats, detail = TRUE)
+              },
+              gamma = {
+                assoc_name <- "Goodman-Kruskal Gamma"
+                gamma_gk(tab_stats, detail = TRUE)
+              },
+              tau_b = {
+                assoc_name <- "Kendall's Tau-b"
+                kendall_tau_b(tab_stats, detail = TRUE)
+              },
+              tau_c = {
+                assoc_name <- "Stuart's Tau-c"
+                kendall_tau_c(tab_stats, detail = TRUE)
+              },
+              somers_d = {
+                assoc_name <- "Somers' D"
+                somers_d(tab_stats, "symmetric", detail = TRUE)
+              },
+              lambda = {
+                assoc_name <- "Lambda"
+                lambda_gk(tab_stats, "symmetric", detail = TRUE)
+              },
+              {
+                assoc_name <- "Cramer's V"
+                cramer_v(tab_stats, detail = TRUE)
+              }
+            )),
+            error = function(e) NULL
+          )
+          if (!is.null(assoc_out)) {
+            assoc_result <- assoc_out
+          }
+        }
+
+        estimate <- if (!is.null(assoc_result)) {
+          assoc_result[["estimate"]]
+        } else {
+          NA_real_
+        }
 
         p_str <- if (is.na(pval)) {
           "= NA"
@@ -549,34 +617,52 @@ cross_tab <- function(
           paste0("= ", formatC(pval, format = "f", digits = 3))
         }
 
+        chi2_str <- ifelse(
+          is.nan(chi2) | is.na(chi2),
+          "NA",
+          formatC(chi2, format = "f", digits = 1)
+        )
         note <- paste0(
-          "Chi-2: ",
-          ifelse(
-            is.nan(chi2) | is.na(chi2),
-            "NA",
-            formatC(chi2, format = "f", digits = 1)
-          ),
-          " (df = ",
+          "Chi-2(",
           df_,
-          "), p ",
+          ") = ",
+          chi2_str,
+          ", p ",
           p_str,
-          if (simulate_p) " (simulated)",
-          "\n",
-          "Cramer's V: ",
-          ifelse(
-            is.nan(cramer) | is.na(cramer),
-            "NA",
-            formatC(cramer, format = "f", digits = 2)
-          )
+          if (simulate_p) " (simulated)"
         )
 
-        if (isTRUE(correct_used)) {
-          note <- if (is.null(note) || note == "") {
-            "Yates continuity correction applied."
-          } else {
-            paste0(note, "\nYates continuity correction applied.")
+        if (!is.null(assoc_name) && !is.na(estimate)) {
+          est_str <- formatC(estimate, format = "f", digits = 2)
+          assoc_line <- paste0(assoc_name, " = ", est_str)
+          if (isTRUE(assoc_ci) && !is.null(assoc_result)) {
+            ci_lo <- assoc_result[["ci_lower"]]
+            ci_hi <- assoc_result[["ci_upper"]]
+            if (!is.na(ci_lo) && !is.na(ci_hi)) {
+              assoc_line <- paste0(
+                assoc_line,
+                ", 95% CI [",
+                formatC(ci_lo, format = "f", digits = 2),
+                ", ",
+                formatC(ci_hi, format = "f", digits = 2),
+                "]"
+              )
+            }
           }
+          note <- paste0(note, "\n", assoc_line)
         }
+
+        if (isTRUE(correct_used)) {
+          note <- paste0(note, "\nYates continuity correction applied.")
+        }
+
+        # Store numeric attributes
+        attr(df_out, "chi2") <- chi2
+        attr(df_out, "df") <- df_
+        attr(df_out, "p_value") <- pval
+        attr(df_out, "assoc_measure") <- assoc_name
+        attr(df_out, "assoc_value") <- estimate
+        attr(df_out, "assoc_result") <- assoc_result
 
         expected <- chi$expected
         small5 <- sum(expected < 5, na.rm = TRUE)
@@ -608,7 +694,7 @@ cross_tab <- function(
           )
         }
       } else {
-        note <- "Chi-2 and Cramer's V not computed: insufficient data (only one non-empty row/column)."
+        note <- "Chi-2 not computed: insufficient data (only one non-empty row/column)."
       }
     }
 

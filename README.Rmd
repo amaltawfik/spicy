@@ -32,7 +32,7 @@ spicy brings polished, console-first data exploration to R for everyday analysis
 spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and moving quickly toward usable outputs. It helps you:
 
 - Inspect variables quickly with `varlist()` (and its shortcut `vl()`), including names, labels, representative values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the "Variable View" in SPSS or the "Variables Manager" in Stata.
-- Explore distributions with `freq()`, and inspect associations with `cross_tab()` and `cramer_v()`, all with readable console output.
+- Explore distributions with `freq()`, inspect associations with `cross_tab()`, and compute a full suite of association measures (`cramer_v()`, `phi()`, `gamma_gk()`, `kendall_tau_b()`, `somers_d()`, and more) with confidence intervals and p-values via `assoc_measures()`.
 - Compute row-wise summaries with `mean_n()`, `sum_n()`, and `count_n()` with automatic handling of missing data.
 - Build publication-ready APA cross-tab reports with `table_apa()` and export to multiple formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
 - Generate an interactive codebook with `code_book()`, extending `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`.
@@ -124,10 +124,19 @@ out <- label_from_names(df)
 labelled::var_label(out)
 ```
 
-### Association strength
+### Association measures
 
 ```{r eval=TRUE}
-cramer_v(table(mtcars$cyl, mtcars$gear))
+tab <- table(mtcars$cyl, mtcars$gear)
+
+# Quick scalar estimate
+cramer_v(tab)
+
+# Detailed result with CI and p-value
+cramer_v(tab, detail = TRUE)
+
+# Summary of all available measures
+assoc_measures(tab)
 ```
 
 ### APA-ready table builder
