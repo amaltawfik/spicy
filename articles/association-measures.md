@@ -40,38 +40,38 @@ computes all available measures at once:
 ``` r
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
-#>                              measure     estimate          se     ci_lower
-#> 1                         Cramer's V  0.135667681          NA  0.079092643
-#> 2            Contingency Coefficient  0.134436125          NA           NA
-#> 3                   Lambda symmetric  0.000000000 0.000000000  0.000000000
-#> 4                         Lambda R|C  0.000000000 0.000000000  0.000000000
-#> 5                         Lambda C|R  0.000000000 0.000000000  0.000000000
-#> 6          Goodman-Kruskal's Tau R|C  0.018405720 0.008085719  0.002558001
-#> 7          Goodman-Kruskal's Tau C|R  0.007609460 0.003311779  0.001118492
-#> 8  Uncertainty Coefficient symmetric  0.011487616 0.004981856  0.001723359
-#> 9        Uncertainty Coefficient R|C  0.017512300 0.007583030  0.002649834
-#> 10       Uncertainty Coefficient C|R  0.008547169 0.003712463  0.001270875
-#> 11             Goodman-Kruskal Gamma -0.268067807 0.056281007 -0.378376554
-#> 12                   Kendall's Tau-b -0.126415453 0.027412072 -0.180142125
-#> 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910
-#> 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280
-#> 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966
-#>       ci_upper        p_value
-#> 1   0.19137158 0.000020128774
-#> 2           NA 0.000020128774
-#> 3   0.00000000             NA
-#> 4   0.00000000             NA
-#> 5   0.00000000             NA
-#> 6   0.03425344 0.022826600446
-#> 7   0.01410043 0.021579122521
-#> 8   0.02125187 0.021116720521
-#> 9   0.03237477 0.020921026002
-#> 10  0.01582346 0.021318784966
-#> 11 -0.15775906 0.000001907128
-#> 12 -0.07268878 0.000003994450
-#> 13 -0.06651701 0.000005454892
-#> 14 -0.05204808 0.000005153607
-#> 15 -0.10090317 0.000003689888
+#>                              measure estimate      se ci_lower ci_upper
+#> 1                         Cramer's V  0.13567      NA  0.07909   0.1914
+#> 2            Contingency Coefficient  0.13444      NA       NA       NA
+#> 3                   Lambda symmetric  0.00000 0.00000  0.00000   0.0000
+#> 4                         Lambda R|C  0.00000 0.00000  0.00000   0.0000
+#> 5                         Lambda C|R  0.00000 0.00000  0.00000   0.0000
+#> 6          Goodman-Kruskal's Tau R|C  0.01841 0.00809  0.00256   0.0343
+#> 7          Goodman-Kruskal's Tau C|R  0.00761 0.00331  0.00112   0.0141
+#> 8  Uncertainty Coefficient symmetric  0.01149 0.00498  0.00172   0.0213
+#> 9        Uncertainty Coefficient R|C  0.01751 0.00758  0.00265   0.0324
+#> 10       Uncertainty Coefficient C|R  0.00855 0.00371  0.00127   0.0158
+#> 11             Goodman-Kruskal Gamma -0.26807 0.05628 -0.37838  -0.1578
+#> 12                   Kendall's Tau-b -0.12642 0.02741 -0.18014  -0.0727
+#> 13                    Stuart's Tau-c -0.11692 0.02572 -0.16732  -0.0665
+#> 14                     Somers' D R|C -0.09131 0.02003 -0.13057  -0.0520
+#> 15                     Somers' D C|R -0.17502 0.03782 -0.24914  -0.1009
+#>       p_value
+#> 1  0.00002013
+#> 2  0.00002013
+#> 3          NA
+#> 4          NA
+#> 5          NA
+#> 6  0.02282660
+#> 7  0.02157912
+#> 8  0.02111672
+#> 9  0.02092103
+#> 10 0.02131878
+#> 11 0.00000191
+#> 12 0.00000399
+#> 13 0.00000545
+#> 14 0.00000515
+#> 15 0.00000369
 ```
 
 This is useful for exploratory analysis. For reporting, pick the measure
@@ -87,7 +87,7 @@ variables. It ranges from 0 (no association) to 1 (perfect association).
 ``` r
 tbl <- xtabs(~ smoking + education, data = sochealth)
 cramer_v(tbl)
-#> [1] 0.1356677
+#> [1] 0.136
 ```
 
 Pass `detail = TRUE` for the confidence interval and p-value. The
@@ -96,8 +96,8 @@ chi-squared test.
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#>      estimate      ci_lower      ci_upper       p_value 
-#> 0.13566768051 0.07909264263 0.19137158459 0.00002012877
+#>  estimate  ci_lower  ci_upper   p_value 
+#> 0.1356677 0.0790926 0.1913716 0.0000201
 ```
 
 ### Phi coefficient
@@ -108,8 +108,8 @@ negative when the table is 2x2, indicating the direction of association.
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.005910601 0.000000000 0.063077970 0.839443630
+#> estimate ci_lower ci_upper  p_value 
+#>  0.00591  0.00000  0.06308  0.83944
 ```
 
 ### Contingency coefficient
@@ -120,8 +120,8 @@ across tables of different sizes.
 
 ``` r
 contingency_coef(tbl, detail = TRUE)
-#>      estimate      ci_lower      ci_upper       p_value 
-#> 0.13443612479            NA            NA 0.00002012877
+#>  estimate  ci_lower  ci_upper   p_value 
+#> 0.1344361        NA        NA 0.0000201
 ```
 
 ## Ordinal variables
@@ -138,10 +138,10 @@ strength when there are many ties.
 ``` r
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
 gamma_gk(tbl_ord, detail = TRUE)
-#>                  estimate                  ci_lower                  ci_upper 
-#> 0.31047908806401242065576 0.23762577188158526264594 0.38333240424643955091000 
-#>                   p_value 
-#> 0.00000000000000006667393
+#>              estimate              ci_lower              ci_upper 
+#> 0.3104790880640124207 0.2376257718815852626 0.3833324042464395509 
+#>               p_value 
+#> 0.0000000000000000667
 ```
 
 A positive value means that higher values on one variable tend to occur
@@ -155,23 +155,23 @@ preferred over Gamma for square or near-square tables.
 
 ``` r
 kendall_tau_b(tbl_ord, detail = TRUE)
-#>                 estimate                 ci_lower                 ci_upper 
-#> 0.2045524107732165364215 0.1552194601769311121942 0.2538853613695019606489 
-#>                  p_value 
-#> 0.0000000000000004410418
+#>             estimate             ci_lower             ci_upper 
+#> 0.204552410773216536 0.155219460176931112 0.253885361369501961 
+#>              p_value 
+#> 0.000000000000000441
 ```
 
-### Stuart’s Tau-c
+### Kendall’s Tau-c (Stuart’s Tau-c)
 
 Tau-c is similar to Tau-b but adjusts for rectangular tables where the
 number of rows and columns differ.
 
 ``` r
 kendall_tau_c(tbl_ord, detail = TRUE)
-#>                 estimate                 ci_lower                 ci_upper 
-#> 0.1996409077851192259700 0.1509952174139821412524 0.2482865981562563106877 
-#>                  p_value 
-#> 0.0000000000000008720015
+#>             estimate             ci_lower             ci_upper 
+#> 0.199640907785119226 0.150995217413982141 0.248286598156256311 
+#>              p_value 
+#> 0.000000000000000872
 ```
 
 ### Somers’ D
@@ -182,10 +182,10 @@ dependent (D(R\|C)).
 
 ``` r
 somers_d(tbl_ord, detail = TRUE)
-#>                 estimate                 ci_lower                 ci_upper 
-#> 0.2076130769799534314668 0.1573452002361157842092 0.2578809537237911064800 
-#>                  p_value 
-#> 0.0000000000000005730469
+#>             estimate             ci_lower             ci_upper 
+#> 0.207613076979953431 0.157345200236115784 0.257880953723791106 
+#>              p_value 
+#> 0.000000000000000573
 ```
 
 ## Asymmetric (PRE) measures
@@ -215,8 +215,8 @@ the mode).
 
 ``` r
 goodman_kruskal_tau(tbl, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.011754531 0.002910365 0.020598697 0.009189229
+#> estimate ci_lower ci_upper  p_value 
+#>  0.01175  0.00291  0.02060  0.00919
 ```
 
 ### Uncertainty coefficient
@@ -226,8 +226,8 @@ how much knowing one variable reduces uncertainty about the other.
 
 ``` r
 uncertainty_coef(tbl, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.014340586 0.004867184 0.023813987 0.003007778
+#> estimate ci_lower ci_upper  p_value 
+#>  0.01434  0.00487  0.02381  0.00301
 ```
 
 ## Yule’s Q
@@ -238,8 +238,8 @@ equivalent to Gamma for 2x2 tables.
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 yule_q(tbl_22, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#>  0.01450794 -0.12582192  0.15483780  0.83942419
+#> estimate ci_lower ci_upper  p_value 
+#>   0.0145  -0.1258   0.1548   0.8394
 ```
 
 ## Automatic selection in cross_tab()
@@ -307,14 +307,14 @@ confidence level defaults to 95% and can be changed with `conf_level`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
-#>        estimate        ci_lower        ci_upper         p_value 
-#> 0.1269149168801 0.0531020955399 0.1993484144163 0.0000008352614
+#>    estimate    ci_lower    ci_upper     p_value 
+#> 0.126914917 0.053102096 0.199348414 0.000000835
 ```
 
 To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
-#>        estimate         p_value 
-#> 0.1269149168801 0.0000008352614
+#>    estimate     p_value 
+#> 0.126914917 0.000000835
 ```

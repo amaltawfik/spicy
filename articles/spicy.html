@@ -166,13 +166,13 @@ N:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Category <span style="color: #9E9E9E;">│</span> Values            Freq.  Percent </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Valid    <span style="color: #9E9E9E;">│</span> Lower secondary  259.49     21.6 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Upper secondary  548.55     45.7 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Tertiary         391.95     32.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                    1200    100.0 </span></span>
+<span><span class="co">#&gt;  Category <span style="color: #9E9E9E;">│</span> Values           Freq.  Percent </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Valid    <span style="color: #9E9E9E;">│</span> Lower secondary    259     21.6 </span></span>
+<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Upper secondary    549     45.7 </span></span>
+<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Tertiary           392     32.7 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                   1200    100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Label: Highest education level</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Class: ordered, factor</span></span></span>
@@ -265,46 +265,46 @@ contingency table to <code><a href="../reference/assoc_measures.html">assoc_meas
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                              measure     estimate          se     ci_lower</span></span>
-<span><span class="co">#&gt; 1                         Cramer's V  0.135667681          NA  0.079092643</span></span>
-<span><span class="co">#&gt; 2            Contingency Coefficient  0.134436125          NA           NA</span></span>
-<span><span class="co">#&gt; 3                   Lambda symmetric  0.000000000 0.000000000  0.000000000</span></span>
-<span><span class="co">#&gt; 4                         Lambda R|C  0.000000000 0.000000000  0.000000000</span></span>
-<span><span class="co">#&gt; 5                         Lambda C|R  0.000000000 0.000000000  0.000000000</span></span>
-<span><span class="co">#&gt; 6          Goodman-Kruskal's Tau R|C  0.018405720 0.008085719  0.002558001</span></span>
-<span><span class="co">#&gt; 7          Goodman-Kruskal's Tau C|R  0.007609460 0.003311779  0.001118492</span></span>
-<span><span class="co">#&gt; 8  Uncertainty Coefficient symmetric  0.011487616 0.004981856  0.001723359</span></span>
-<span><span class="co">#&gt; 9        Uncertainty Coefficient R|C  0.017512300 0.007583030  0.002649834</span></span>
-<span><span class="co">#&gt; 10       Uncertainty Coefficient C|R  0.008547169 0.003712463  0.001270875</span></span>
-<span><span class="co">#&gt; 11             Goodman-Kruskal Gamma -0.268067807 0.056281007 -0.378376554</span></span>
-<span><span class="co">#&gt; 12                   Kendall's Tau-b -0.126415453 0.027412072 -0.180142125</span></span>
-<span><span class="co">#&gt; 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910</span></span>
-<span><span class="co">#&gt; 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280</span></span>
-<span><span class="co">#&gt; 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966</span></span>
-<span><span class="co">#&gt;       ci_upper        p_value</span></span>
-<span><span class="co">#&gt; 1   0.19137158 0.000020128774</span></span>
-<span><span class="co">#&gt; 2           NA 0.000020128774</span></span>
-<span><span class="co">#&gt; 3   0.00000000             NA</span></span>
-<span><span class="co">#&gt; 4   0.00000000             NA</span></span>
-<span><span class="co">#&gt; 5   0.00000000             NA</span></span>
-<span><span class="co">#&gt; 6   0.03425344 0.022826600446</span></span>
-<span><span class="co">#&gt; 7   0.01410043 0.021579122521</span></span>
-<span><span class="co">#&gt; 8   0.02125187 0.021116720521</span></span>
-<span><span class="co">#&gt; 9   0.03237477 0.020921026002</span></span>
-<span><span class="co">#&gt; 10  0.01582346 0.021318784966</span></span>
-<span><span class="co">#&gt; 11 -0.15775906 0.000001907128</span></span>
-<span><span class="co">#&gt; 12 -0.07268878 0.000003994450</span></span>
-<span><span class="co">#&gt; 13 -0.06651701 0.000005454892</span></span>
-<span><span class="co">#&gt; 14 -0.05204808 0.000005153607</span></span>
-<span><span class="co">#&gt; 15 -0.10090317 0.000003689888</span></span></code></pre></div>
+<span><span class="co">#&gt;                              measure estimate      se ci_lower ci_upper</span></span>
+<span><span class="co">#&gt; 1                         Cramer's V  0.13567      NA  0.07909   0.1914</span></span>
+<span><span class="co">#&gt; 2            Contingency Coefficient  0.13444      NA       NA       NA</span></span>
+<span><span class="co">#&gt; 3                   Lambda symmetric  0.00000 0.00000  0.00000   0.0000</span></span>
+<span><span class="co">#&gt; 4                         Lambda R|C  0.00000 0.00000  0.00000   0.0000</span></span>
+<span><span class="co">#&gt; 5                         Lambda C|R  0.00000 0.00000  0.00000   0.0000</span></span>
+<span><span class="co">#&gt; 6          Goodman-Kruskal's Tau R|C  0.01841 0.00809  0.00256   0.0343</span></span>
+<span><span class="co">#&gt; 7          Goodman-Kruskal's Tau C|R  0.00761 0.00331  0.00112   0.0141</span></span>
+<span><span class="co">#&gt; 8  Uncertainty Coefficient symmetric  0.01149 0.00498  0.00172   0.0213</span></span>
+<span><span class="co">#&gt; 9        Uncertainty Coefficient R|C  0.01751 0.00758  0.00265   0.0324</span></span>
+<span><span class="co">#&gt; 10       Uncertainty Coefficient C|R  0.00855 0.00371  0.00127   0.0158</span></span>
+<span><span class="co">#&gt; 11             Goodman-Kruskal Gamma -0.26807 0.05628 -0.37838  -0.1578</span></span>
+<span><span class="co">#&gt; 12                   Kendall's Tau-b -0.12642 0.02741 -0.18014  -0.0727</span></span>
+<span><span class="co">#&gt; 13                    Stuart's Tau-c -0.11692 0.02572 -0.16732  -0.0665</span></span>
+<span><span class="co">#&gt; 14                     Somers' D R|C -0.09131 0.02003 -0.13057  -0.0520</span></span>
+<span><span class="co">#&gt; 15                     Somers' D C|R -0.17502 0.03782 -0.24914  -0.1009</span></span>
+<span><span class="co">#&gt;       p_value</span></span>
+<span><span class="co">#&gt; 1  0.00002013</span></span>
+<span><span class="co">#&gt; 2  0.00002013</span></span>
+<span><span class="co">#&gt; 3          NA</span></span>
+<span><span class="co">#&gt; 4          NA</span></span>
+<span><span class="co">#&gt; 5          NA</span></span>
+<span><span class="co">#&gt; 6  0.02282660</span></span>
+<span><span class="co">#&gt; 7  0.02157912</span></span>
+<span><span class="co">#&gt; 8  0.02111672</span></span>
+<span><span class="co">#&gt; 9  0.02092103</span></span>
+<span><span class="co">#&gt; 10 0.02131878</span></span>
+<span><span class="co">#&gt; 11 0.00000191</span></span>
+<span><span class="co">#&gt; 12 0.00000399</span></span>
+<span><span class="co">#&gt; 13 0.00000545</span></span>
+<span><span class="co">#&gt; 14 0.00000515</span></span>
+<span><span class="co">#&gt; 15 0.00000369</span></span></code></pre></div>
 <p>Individual functions such as <code><a href="../reference/cramer_v.html">cramer_v()</a></code>,
 <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, or <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> return a scalar
 by default. Pass <code>detail = TRUE</code> for the confidence interval
 and p-value:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      estimate      ci_lower      ci_upper       p_value </span></span>
-<span><span class="co">#&gt; 0.13566768051 0.07909264263 0.19137158459 0.00002012877</span></span></code></pre></div>
+<span><span class="co">#&gt;  estimate  ci_lower  ci_upper   p_value </span></span>
+<span><span class="co">#&gt; 0.1356677 0.0790926 0.1913716 0.0000201</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="apa-tables">APA tables<a class="anchor" aria-label="anchor" href="#apa-tables"></a>
@@ -1560,16 +1560,16 @@ for further processing:</p>
 <span><span class="co">#&gt; 2           smoking   Yes                78              30.4               112</span></span>
 <span><span class="co">#&gt; 3 physical_activity    No               177              67.8               310</span></span>
 <span><span class="co">#&gt; 4 physical_activity   Yes                84              32.2               229</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %                    p</span></span>
-<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 0.000020128773946486</span></span>
-<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 0.000020128773946486</span></span>
-<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 0.000000000008333584</span></span>
-<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 0.000000000008333584</span></span>
+<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %                p</span></span>
+<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 0.00002012877395</span></span>
+<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 0.00002012877395</span></span>
+<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 0.00000000000833</span></span>
+<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 0.00000000000833</span></span>
 <span><span class="co">#&gt;   Cramer's V</span></span>
-<span><span class="co">#&gt; 1  0.1356677</span></span>
-<span><span class="co">#&gt; 2  0.1356677</span></span>
-<span><span class="co">#&gt; 3  0.2061986</span></span>
-<span><span class="co">#&gt; 4  0.2061986</span></span></code></pre></div>
+<span><span class="co">#&gt; 1      0.136</span></span>
+<span><span class="co">#&gt; 2      0.136</span></span>
+<span><span class="co">#&gt; 3      0.206</span></span>
+<span><span class="co">#&gt; 4      0.206</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
