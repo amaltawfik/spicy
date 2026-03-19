@@ -195,5 +195,5 @@ sum_n <- function(
     )
   }
 
-  return(result)
+  result
 }

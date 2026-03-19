@@ -327,5 +327,5 @@ base_count_n <- function(
 
   result <- rowSums(as.data.frame(results), na.rm = TRUE)
   names(result) <- NULL
-  return(result)
+  result
 }

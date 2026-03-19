@@ -195,5 +195,5 @@ mean_n <- function(
     )
   }
 
-  return(result)
+  result
 }
