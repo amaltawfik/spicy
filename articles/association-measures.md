@@ -303,3 +303,39 @@ cramer_v(tbl, detail = TRUE, conf_level = NULL)
 #> Estimate        p
 #>    0.176  < 0.001
 ```
+
+## Controlling decimal places
+
+By default, results are printed with 3 decimal places. Use the `digits`
+argument of [`print()`](https://rdrr.io/r/base/print.html) to change
+this (the p-value always uses 3 decimal places or `< 0.001`):
+
+``` r
+res <- cramer_v(tbl, detail = TRUE)
+print(res, digits = 4)
+#> Estimate  CI lower  CI upper        p
+#>   0.1762    0.1203    0.2309  < 0.001
+```
+
+The same `digits` argument works for
+[`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md):
+
+``` r
+print(assoc_measures(tbl), digits = 2)
+#> Measure                            Estimate    SE  CI lower  CI upper        p 
+#> Cramer's V                             0.18    --      0.12      0.23  < 0.001 
+#> Contingency Coefficient                0.24    --        --        --  < 0.001 
+#> Lambda symmetric                       0.01  0.01      0.00      0.04    0.389 
+#> Lambda R|C                             0.00  0.00      0.00      0.00       -- 
+#> Lambda C|R                             0.02  0.03      0.00      0.07    0.386 
+#> Goodman-Kruskal's Tau R|C              0.02  0.00      0.01      0.03  < 0.001 
+#> Goodman-Kruskal's Tau C|R              0.03  0.01      0.01      0.04  < 0.001 
+#> Uncertainty Coefficient symmetric      0.03  0.01      0.02      0.04  < 0.001 
+#> Uncertainty Coefficient R|C            0.03  0.01      0.01      0.04  < 0.001 
+#> Uncertainty Coefficient C|R            0.03  0.01      0.02      0.04  < 0.001 
+#> Goodman-Kruskal Gamma                  0.31  0.04      0.24      0.38  < 0.001 
+#> Kendall's Tau-b                        0.20  0.03      0.16      0.25  < 0.001 
+#> Kendall's Tau-c                        0.20  0.02      0.15      0.25  < 0.001 
+#> Somers' D R|C                          0.21  0.03      0.16      0.26  < 0.001 
+#> Somers' D C|R                          0.20  0.02      0.15      0.25  < 0.001
+```

@@ -426,6 +426,38 @@ be changed with <code>conf_level</code>:</p>
 <span><span class="co">#&gt; Estimate        p</span></span>
 <span><span class="co">#&gt;    0.176  &lt; 0.001</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="controlling-decimal-places">Controlling decimal places<a class="anchor" aria-label="anchor" href="#controlling-decimal-places"></a>
+</h2>
+<p>By default, results are printed with 3 decimal places. Use the
+<code>digits</code> argument of <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> to change this (the
+p-value always uses 3 decimal places or <code>&lt; 0.001</code>):</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
+<span><span class="co">#&gt;   0.1762    0.1203    0.2309  &lt; 0.001</span></span></code></pre></div>
+<p>The same <code>digits</code> argument works for
+<code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Measure                            Estimate    SE  CI lower  CI upper        p </span></span>
+<span><span class="co">#&gt; Cramer's V                             0.18    --      0.12      0.23  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Contingency Coefficient                0.24    --        --        --  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Lambda symmetric                       0.01  0.01      0.00      0.04    0.389 </span></span>
+<span><span class="co">#&gt; Lambda R|C                             0.00  0.00      0.00      0.00       -- </span></span>
+<span><span class="co">#&gt; Lambda C|R                             0.02  0.03      0.00      0.07    0.386 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau R|C              0.02  0.00      0.01      0.03  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau C|R              0.03  0.01      0.01      0.04  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient symmetric      0.03  0.01      0.02      0.04  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient R|C            0.03  0.01      0.01      0.04  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient C|R            0.03  0.01      0.02      0.04  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal Gamma                  0.31  0.04      0.24      0.38  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Kendall's Tau-b                        0.20  0.03      0.16      0.25  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Kendall's Tau-c                        0.20  0.02      0.15      0.25  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Somers' D R|C                          0.21  0.03      0.16      0.26  &lt; 0.001 </span></span>
+<span><span class="co">#&gt; Somers' D C|R                          0.20  0.02      0.15      0.25  &lt; 0.001</span></span></code></pre></div>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
