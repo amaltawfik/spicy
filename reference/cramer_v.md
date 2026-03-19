@@ -36,8 +36,8 @@ cramer_v(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 When `detail = FALSE`: a single numeric value (the estimate). When
 `detail = TRUE` and `conf_level` is non-`NULL`:
 `c(estimate, ci_lower, ci_upper, p_value)`. When `detail = TRUE` and
-`conf_level = NULL`: `c(estimate, p_value)`. The p-value comes from the
-Pearson chi-squared test.
+`conf_level = NULL`: `c(estimate, p_value)`. The p-value tests the null
+hypothesis of no association (Pearson chi-squared test).
 
 ## Details
 

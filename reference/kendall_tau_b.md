@@ -36,7 +36,7 @@ kendall_tau_b(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 Same structure as
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md):
 a scalar when `detail = FALSE`, a named vector when `detail = TRUE`. The
-p-value is based on a Wald test.
+p-value tests H0: tau-b = 0 (Wald z-test).
 
 ## Details
 

@@ -35,8 +35,10 @@ contingency_coef(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 
 Same structure as
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md):
-a scalar when `detail = FALSE`, a named vector when `detail = TRUE`. CI
-values are `NA` because no standard asymptotic SE exists for C.
+a scalar when `detail = FALSE`, a named vector when `detail = TRUE`. The
+p-value tests the null hypothesis of no association (Pearson chi-squared
+test). CI values are `NA` because no standard asymptotic SE exists for
+C.
 
 ## Details
 

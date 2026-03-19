@@ -28,7 +28,10 @@ assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 ## Value
 
 A data frame with columns `measure`, `estimate`, `se`, `ci_lower`,
-`ci_upper`, and `p_value`.
+`ci_upper`, and `p_value`. For nominal measures (Cramer's V, Phi,
+Contingency Coef.), the p-value comes from the Pearson chi-squared test
+of independence. For all other measures, it is a Wald z-test of H0:
+measure = 0.
 
 ## Details
 

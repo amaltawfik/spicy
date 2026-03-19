@@ -46,7 +46,8 @@ lambda_gk(
 
 Same structure as
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md):
-a scalar when `detail = FALSE`, a named vector when `detail = TRUE`.
+a scalar when `detail = FALSE`, a named vector when `detail = TRUE`. The
+p-value tests H0: lambda = 0 (Wald z-test).
 
 ## Details
 
