@@ -41,8 +41,8 @@ quickly toward usable outputs. It helps you:
 - Compute row-wise summaries with `mean_n()`, `sum_n()`, and `count_n()`
   with automatic handling of missing data.
 - Build publication-ready APA cross-tab reports with `table_apa()` and
-  export to multiple formats (`wide`, `long`, `tinytable`, `flextable`,
-  `excel`, `clipboard`, `word`).
+  export to multiple formats (`wide`, `long`, `gt`, `tinytable`,
+  `flextable`, `excel`, `clipboard`, `word`).
 - Generate an interactive codebook with `code_book()`, extending
   `varlist()` with searchable summaries and built-in export options
   (Copy, CSV, Excel, PDF, Print) via `DT::datatable`.
@@ -406,15 +406,15 @@ table_apa(
 )
 ```
 
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer’s V |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| Current smoker |  |  |  |  |  |  |  |  | \< .001 | .14 |
-|      No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
-|      Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
-| Physical activity |  |  |  |  |  |  |  |  | \< .001 | .21 |
-|      No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |  |  |
-|      Yes | 84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |  |  |
+| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer’s V |
+|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
+|                   | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
+| Current smoker    |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
+|      No           | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|      Yes          | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
+| Physical activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
+|      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
+|      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
 
 ### Additional exported helpers
 

@@ -34,7 +34,7 @@ spicy is an R package for the first phase of data analysis: inspecting variables
 - Inspect variables quickly with `varlist()` (and its shortcut `vl()`), including names, labels, representative values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the "Variable View" in SPSS or the "Variables Manager" in Stata.
 - Explore distributions with `freq()`, inspect associations with `cross_tab()`, and compute a full suite of association measures (`cramer_v()`, `phi()`, `gamma_gk()`, `kendall_tau_b()`, `somers_d()`, and more) with confidence intervals and p-values via `assoc_measures()`.
 - Compute row-wise summaries with `mean_n()`, `sum_n()`, and `count_n()` with automatic handling of missing data.
-- Build publication-ready APA cross-tab reports with `table_apa()` and export to multiple formats (`wide`, `long`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
+- Build publication-ready APA cross-tab reports with `table_apa()` and export to multiple formats (`wide`, `long`, `gt`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
 - Generate an interactive codebook with `code_book()`, extending `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`.
 - Copy data frames or result tables directly to the clipboard with `copy_clipboard()` for fast export to spreadsheets or text editors.
 - Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow a "name [separator] label" pattern -- any string can be used as the separator (e.g., ". ", " - ", ":", etc.).
