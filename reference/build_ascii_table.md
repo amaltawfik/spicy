@@ -1,4 +1,4 @@
-# Build a formatted ASCII table (internal spicy engine)
+# Build a formatted ASCII table
 
 Low-level internal function that constructs a visually aligned ASCII
 table from a `data.frame`. It supports Unicode characters, ANSI colors,

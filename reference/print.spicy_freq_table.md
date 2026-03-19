@@ -1,4 +1,4 @@
-# Styled print method for `freq()` tables (spicy engine)
+# Styled print method for `freq()` tables
 
 Internal print method used by
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) to

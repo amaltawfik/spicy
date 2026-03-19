@@ -17,7 +17,7 @@
 ## Descriptive Statistics
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
-  Frequency Table (spicy engine)
+  Frequency Table
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
@@ -71,7 +71,7 @@
   : Print a spicy-formatted ASCII table
 
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
-  : Build a formatted ASCII table (internal spicy engine)
+  : Build a formatted ASCII table
 
 - [`print(`*`<spicy_cross_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
   : Print method for spicy_cross_table objects
@@ -85,7 +85,7 @@
 
   Styled print method for
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-  tables (spicy engine)
+  tables
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering
