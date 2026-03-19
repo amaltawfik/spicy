@@ -1239,8 +1239,8 @@ somers_d <- function(
 #' @param x A contingency table (of class `table`).
 #' @param type Which family of measures to compute:
 #'   `"all"` (default), `"nominal"`, or `"ordinal"`.
-#' @param conf_level Confidence level for the confidence interval
-#'   (default `0.95`). Set to `NULL` to omit the confidence
+#' @param conf_level A number between 0 and 1 giving the confidence
+#'   level (default `0.95`). Set to `NULL` to omit the confidence
 #'   interval.
 #'
 #' @return A data frame with columns `measure`, `estimate`, `se`,

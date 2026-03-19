@@ -12,8 +12,8 @@ assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 \item{type}{Which family of measures to compute:
 \code{"all"} (default), \code{"nominal"}, or \code{"ordinal"}.}
 
-\item{conf_level}{Confidence level for the confidence interval
-(default \code{0.95}). Set to \code{NULL} to omit the confidence
+\item{conf_level}{A number between 0 and 1 giving the confidence
+level (default \code{0.95}). Set to \code{NULL} to omit the confidence
 interval.}
 }
 \value{
