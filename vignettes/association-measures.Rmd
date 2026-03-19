@@ -1,0 +1,227 @@
+---
+title: "Association measures for contingency tables"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Association measures for contingency tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+spicy provides a full suite of association measures for contingency
+tables. This vignette explains which measure to use depending on the
+measurement level of your variables, and how to obtain confidence
+intervals and p-values.
+
+## Choosing the right measure
+
+The table below summarizes the recommended measures by variable type.
+
+| Variable types | Recommended measure | Function |
+|---|---|---|
+| Nominal x Nominal | Cramer's V | `cramer_v()` |
+| Nominal x Nominal (2x2) | Phi | `phi()` |
+| Ordinal x Ordinal | Kendall's Tau-b | `kendall_tau_b()` |
+| Ordinal x Ordinal | Goodman-Kruskal Gamma | `gamma_gk()` |
+| Ordinal x Ordinal (asymmetric) | Somers' D | `somers_d()` |
+| Nominal (asymmetric, PRE) | Lambda | `lambda_gk()` |
+| Nominal (asymmetric, PRE) | Goodman-Kruskal Tau | `goodman_kruskal_tau()` |
+| Nominal (asymmetric, PRE) | Uncertainty Coefficient | `uncertainty_coef()` |
+| 2x2 table | Yule's Q | `yule_q()` |
+
+PRE = Proportional Reduction in Error. These measures quantify how much
+knowing one variable reduces prediction error for the other.
+
+All functions accept a contingency table (class `table`, typically from
+`xtabs()` or `table()`).
+
+## Quick overview with assoc_measures()
+
+`assoc_measures()` computes all available measures at once:
+
+```{r assoc-all}
+tbl <- xtabs(~ smoking + education, data = sochealth)
+assoc_measures(tbl)
+```
+
+This is useful for exploratory analysis. For reporting, pick the measure
+that matches your variable types.
+
+## Nominal variables
+
+### Cramer's V
+
+Cramer's V measures the strength of association between two nominal
+variables. It ranges from 0 (no association) to 1 (perfect association).
+
+```{r cramer}
+tbl <- xtabs(~ smoking + education, data = sochealth)
+cramer_v(tbl)
+```
+
+Pass `detail = TRUE` for the confidence interval and p-value. The
+p-value tests the null hypothesis of no association using the Pearson
+chi-squared test.
+
+```{r cramer-detail}
+cramer_v(tbl, detail = TRUE)
+```
+
+### Phi coefficient
+
+For 2x2 tables, Phi is equivalent to Cramer's V. Unlike V, Phi can be
+negative when the table is 2x2, indicating the direction of association.
+
+```{r phi}
+tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
+phi(tbl_22, detail = TRUE)
+```
+
+### Contingency coefficient
+
+The contingency coefficient is an alternative to Cramer's V. Its upper
+bound depends on the table dimensions, which makes it harder to compare
+across tables of different sizes.
+
+```{r contingency}
+contingency_coef(tbl, detail = TRUE)
+```
+
+## Ordinal variables
+
+When both variables are ordinal (ordered factors), measures that account
+for the ordering are more appropriate than Cramer's V.
+
+### Goodman-Kruskal Gamma
+
+Gamma ranges from -1 to +1. It ignores tied pairs, which makes it
+sensitive to the direction of association but tends to overestimate
+strength when there are many ties.
+
+```{r gamma}
+tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
+gamma_gk(tbl_ord, detail = TRUE)
+```
+
+A positive value means that higher values on one variable tend to occur
+with higher values on the other. The p-value tests H0: Gamma = 0 using
+a Wald z-test.
+
+### Kendall's Tau-b
+
+Tau-b adjusts for ties and ranges from -1 to +1. It is generally
+preferred over Gamma for square or near-square tables.
+
+```{r tau-b}
+kendall_tau_b(tbl_ord, detail = TRUE)
+```
+
+### Stuart's Tau-c
+
+Tau-c is similar to Tau-b but adjusts for rectangular tables where the
+number of rows and columns differ.
+
+```{r tau-c}
+kendall_tau_c(tbl_ord, detail = TRUE)
+```
+
+### Somers' D
+
+Somers' D is an asymmetric measure: it distinguishes between a dependent
+and an independent variable. By default, the row variable is treated as
+dependent (D(R|C)).
+
+```{r somers}
+somers_d(tbl_ord, detail = TRUE)
+```
+
+## Asymmetric (PRE) measures
+
+These measures answer a specific question: how much does knowing the
+column variable reduce our error in predicting the row variable (or vice
+versa)?
+
+### Lambda
+
+Lambda measures the proportional reduction in classification error. It
+can equal zero even when the variables are associated, if the modal
+category does not change across columns.
+
+```{r lambda}
+tbl <- xtabs(~ employment_status + education, data = sochealth)
+lambda_gk(tbl, detail = TRUE)
+```
+
+### Goodman-Kruskal Tau
+
+Tau measures the proportional reduction in error when predicting the row
+variable from the column variable, using the full distribution (not just
+the mode).
+
+```{r gk-tau}
+goodman_kruskal_tau(tbl, detail = TRUE)
+```
+
+### Uncertainty coefficient
+
+The uncertainty coefficient (Theil's U) is based on entropy. It measures
+how much knowing one variable reduces uncertainty about the other.
+
+```{r uncertainty}
+uncertainty_coef(tbl, detail = TRUE)
+```
+
+## Yule's Q
+
+Yule's Q is defined for 2x2 tables only. It ranges from -1 to +1 and
+is equivalent to Gamma for 2x2 tables.
+
+```{r yule}
+tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
+yule_q(tbl_22, detail = TRUE)
+```
+
+## Automatic selection in cross_tab()
+
+`cross_tab()` can automatically select an appropriate measure via
+`assoc_measure = "auto"` (the default). When both variables are ordered
+factors, it picks Kendall's Tau-b; otherwise it uses Cramer's V.
+
+```{r cross-tab-auto}
+# Nominal: Cramer's V
+cross_tab(sochealth, smoking, education)
+
+# Ordinal: Kendall's Tau-b (automatic)
+cross_tab(sochealth, self_rated_health, education)
+```
+
+You can override the automatic choice:
+
+```{r cross-tab-override}
+cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
+```
+
+## Confidence intervals
+
+All functions support confidence intervals via `detail = TRUE`. The
+confidence level defaults to 95% and can be changed with `conf_level`:
+
+```{r ci-level}
+cramer_v(tbl, detail = TRUE, conf_level = 0.99)
+```
+
+To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
+
+```{r ci-null}
+cramer_v(tbl, detail = TRUE, conf_level = NULL)
+```

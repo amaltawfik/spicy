@@ -35,6 +35,7 @@ articles:
     navbar: ~
     contents:
       - spicy
+      - association-measures
 
 reference:
   - title: Variable Metadata
