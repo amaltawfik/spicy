@@ -151,12 +151,13 @@ table_apa(
 across selected columns, with automatic handling of missing values.
 
 ```{r mean-n}
-items <- c("life_sat_health", "life_sat_work",
-           "life_sat_relationships", "life_sat_standard")
-d <- sochealth[, items]
-d$mean_sat <- mean_n(sochealth, items)
-d$n_missing <- count_n(sochealth, items, special = "NA")
-head(d)
+sochealth |>
+  dplyr::mutate(
+    mean_sat  = mean_n(select = starts_with("life_sat")),
+    n_missing = count_n(select = starts_with("life_sat"), special = "NA")
+  ) |>
+  dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
+  head()
 ```
 
 ## Learn more

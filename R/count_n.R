@@ -205,7 +205,16 @@ count_n <- function(
     }
     grep(select, names(data), value = TRUE)
   } else {
-    names(tidyselect::eval_select(rlang::enquo(select), data))
+    sel_quo <- rlang::enquo(select)
+    sel_val <- tryCatch(
+      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
+      error = function(e) NULL
+    )
+    if (is.character(sel_val)) {
+      sel_val
+    } else {
+      names(tidyselect::eval_select(sel_quo, data))
+    }
   }
 
   if (!is.null(exclude)) {

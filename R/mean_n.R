@@ -141,7 +141,16 @@ mean_n <- function(
     matched <- grep(select, col_names, value = TRUE)
     data <- data[, matched, drop = FALSE]
   } else {
-    data <- dplyr::select(data, {{ select }})
+    sel_quo <- rlang::enquo(select)
+    sel_val <- tryCatch(
+      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
+      error = function(e) NULL
+    )
+    if (is.character(sel_val)) {
+      data <- dplyr::select(data, dplyr::all_of(sel_val))
+    } else {
+      data <- dplyr::select(data, !!sel_quo)
+    }
   }
 
   data <- dplyr::select(data, -dplyr::any_of(exclude))
