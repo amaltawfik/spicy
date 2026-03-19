@@ -51,7 +51,7 @@
 - [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
   : Kendall's Tau-b
 - [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
-  : Stuart's Tau-c
+  : Kendall's Tau-c (Stuart's Tau-c)
 - [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
   : Somers' D
 
