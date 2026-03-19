@@ -93,6 +93,9 @@ cross_tab(sochealth, smoking, education, percent = "row")
 # Cross-tab grouped by sex
 cross_tab(sochealth, smoking, education, by = sex)
 
+# Cross-tab grouped by combination of variables
+cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
+
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
   var1 = c(10, NA, 30, 40, 50),

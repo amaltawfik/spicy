@@ -73,7 +73,7 @@
 #' Example:
 #' ```r
 #' options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
-#' cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
+#' cross_tab(sochealth, smoking, education, weights = weight)
 #' ```
 #' @examples
 #' # Basic crosstab
@@ -87,6 +87,9 @@
 #'
 #' # Grouped by sex
 #' cross_tab(sochealth, smoking, education, by = sex)
+#'
+#' # Grouped by combination of variables
+#' cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #'
 #' # Ordinal variables: auto-selects Kendall's Tau-b
 #' cross_tab(sochealth, education, self_rated_health)

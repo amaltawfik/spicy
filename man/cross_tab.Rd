@@ -117,7 +117,7 @@ They can be disabled or reset by setting them to \code{NULL}:
 Example:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
-cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
+cross_tab(sochealth, smoking, education, weights = weight)
 }\if{html}{\out{</div>}}
 }
 
@@ -133,6 +133,9 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 
 # Grouped by sex
 cross_tab(sochealth, smoking, education, by = sex)
+
+# Grouped by combination of variables
+cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 
 # Ordinal variables: auto-selects Kendall's Tau-b
 cross_tab(sochealth, education, self_rated_health)
