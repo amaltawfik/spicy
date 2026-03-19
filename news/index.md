@@ -50,6 +50,13 @@
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md),
   and the association measure functions.
 
+### Bug fixes
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  rescale logic now operates on complete cases only, so the weighted
+  total N matches the unweighted N when missing values are present
+  (consistent with Stata behavior).
+
 ### Breaking changes
 
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)

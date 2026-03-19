@@ -56,6 +56,11 @@
 <li><p>New bundled dataset <code>sochealth</code>: a simulated social-health survey (n = 1200, 20 variables) with labelled variables, ordered factors, survey weights, and missing values. Designed to showcase <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/table_apa.html">table_apa()</a></code>, and the association measure functions.</p></li>
 </ul></div>
 <div class="section level3">
+<h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
+<ul><li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present (consistent with Stata behavior).</li>
+</ul></div>
+<div class="section level3">
 <h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
 <ul><li>
 <code><a href="../reference/cramer_v.html">cramer_v()</a></code> now accepts a <code>detail</code> argument. By default it returns a numeric scalar (as before). Pass <code>detail = TRUE</code> to get a 4-element named vector (<code>estimate</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>p_value</code>), or <code>detail = TRUE, conf_level = NULL</code> for a 2-element vector (<code>estimate</code>, <code>p_value</code>) without CI.</li>
