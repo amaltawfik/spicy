@@ -436,8 +436,7 @@ cross_tab <- function(
 
     total_n <- sum(tab_full, na.rm = TRUE)
 
-    tab_perc <- switch(
-      percent,
+    tab_perc <- switch(percent,
       "row" = prop.table(tab_full, 1) * 100,
       "column" = prop.table(tab_full, 2) * 100,
       "none" = tab_full
@@ -561,8 +560,7 @@ cross_tab <- function(
         assoc_name <- NULL
         if (assoc_choice != "none") {
           assoc_out <- tryCatch(
-            suppressWarnings(switch(
-              assoc_choice,
+            suppressWarnings(switch(assoc_choice,
               cramer_v = {
                 assoc_name <- "Cramer's V"
                 cramer_v(tab_stats, detail = TRUE)
@@ -698,8 +696,7 @@ cross_tab <- function(
       }
     }
 
-    perc_label <- switch(
-      percent,
+    perc_label <- switch(percent,
       "row" = " (Row %)",
       "column" = " (Column %)",
       "none" = " (N)"

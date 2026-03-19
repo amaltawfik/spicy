@@ -230,8 +230,7 @@ freq <- function(
       )
     }
 
-    mode_display <- switch(
-      labelled_levels,
+    mode_display <- switch(labelled_levels,
       "p" = "prefixed",
       "l" = "labels",
       "v" = "values",
@@ -286,8 +285,7 @@ freq <- function(
   # --- Tri
   if (sort != "") {
     decreasing <- sort %in% c("-", "name-")
-    sort_col <- switch(
-      sort,
+    sort_col <- switch(sort,
       "+" = "n",
       "-" = "n",
       "name+" = "value",
