@@ -16,15 +16,14 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version-ago/spicy)](https://CRAN.R-project.org/package=spicy)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
-[![GitHub release](https://img.shields.io/github/v/release/amaltawfik/spicy?label=GitHub%20release&color=blue)](https://github.com/amaltawfik/spicy/releases)
+[![r-universe](https://amaltawfik.r-universe.dev/badges/spicy)](https://amaltawfik.r-universe.dev/spicy)
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
 [![R-hub](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml)
 [![Codecov](https://codecov.io/gh/amaltawfik/spicy/branch/main/graph/badge.svg)](https://app.codecov.io/gh/amaltawfik/spicy)
-[![r-universe](https://amaltawfik.r-universe.dev/badges/spicy)](https://amaltawfik.r-universe.dev/spicy)
-[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 <!-- badges: end -->
 
 spicy brings polished, console-first data exploration to R for everyday analysis workflows.
