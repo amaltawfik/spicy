@@ -30,36 +30,35 @@ spicy brings polished, console-first data exploration to R for everyday analysis
 
 ## What is spicy?
 
-spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and moving quickly toward usable outputs. It helps you:
+spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and producing publication-ready tables. It helps you:
 
-- Inspect variables quickly with `varlist()` (and its shortcut `vl()`), including names, labels, representative values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the "Variable View" in SPSS or the "Variables Manager" in Stata.
-- Explore distributions with `freq()`, inspect associations with `cross_tab()`, and compute a full suite of association measures (`cramer_v()`, `phi()`, `gamma_gk()`, `kendall_tau_b()`, `somers_d()`, and more) with confidence intervals and p-values via `assoc_measures()`.
-- Compute row-wise summaries with `mean_n()`, `sum_n()`, and `count_n()` with automatic handling of missing data.
-- Build publication-ready APA cross-tab reports with `table_apa()` and export to multiple formats (`wide`, `long`, `gt`, `tinytable`, `flextable`, `excel`, `clipboard`, `word`).
-- Generate an interactive codebook with `code_book()`, extending `varlist()` with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via `DT::datatable`.
-- Copy data frames or result tables directly to the clipboard with `copy_clipboard()` for fast export to spreadsheets or text editors.
-- Extract and assign variable labels from column headers with `label_from_names()`, especially useful for LimeSurvey CSV exports where headers follow a "name [separator] label" pattern -- any string can be used as the separator (e.g., ". ", " - ", ":", etc.).
-- Work comfortably with `labelled`, `factor`, `Date`, `POSIXct`, and other commonly used variable types.
+- **Inspect variables** with `varlist()` — names, labels, values, classes, missings. Similar to SPSS "Variable View" or Stata "Variables Manager".
+- **Explore distributions** with `freq()` and associations with `cross_tab()`.
+- **Measure associations** with `cramer_v()`, `phi()`, `gamma_gk()`, `kendall_tau_b()`, `somers_d()`, and more — all with confidence intervals and p-values.
+- **Build APA tables** with `table_apa()` — export to gt, tinytable, flextable, Excel, Word, or clipboard.
+- **Compute row-wise summaries** with `mean_n()`, `sum_n()`, and `count_n()`.
+- **Generate codebooks** with `code_book()` — interactive HTML with search, sort, and export.
+- **Extract labels** from column headers with `label_from_names()` — useful for LimeSurvey CSV exports.
 
-The goal is simple: make early data exploration faster, clearer, and more pleasant in everyday analysis and data science workflows.
+Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other common variable types. See `vignette("spicy")` for a full tour.
 
 ---
 
 ## Installation
 
-For the stable version, install from CRAN.
+Install the stable version from CRAN:
 
 ```r
 install.packages("spicy")
 ```
 
-You can also install from [r-universe](https://amaltawfik.r-universe.dev/spicy):
+Or from [r-universe](https://amaltawfik.r-universe.dev/spicy):
 
 ```r
 install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
-Or install the development version from GitHub:
+Or the development version from GitHub:
 
 ```r
 # install.packages("pak")
@@ -68,89 +67,47 @@ pak::pak("amaltawfik/spicy")
 
 ---
 
-## Example usage
-
-### Inspect variables with `varlist()` (and its shortcut `vl()`)
-
-<img src="man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
-
-### More examples
+## Quick tour
 
 ```{r echo=FALSE, message=FALSE}
 library(spicy)
-library(dplyr)
 ```
 
-```{r eval=TRUE}
-# Get a summary of all variables as a tibble
-varlist(sochealth, tbl = TRUE)
+### Inspect variables
 
-# Tabulate frequencies (ordered factor with labels)
+<img src="man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
+
+```{r eval=TRUE}
+varlist(sochealth, tbl = TRUE)
+```
+
+### Frequency tables and cross-tabulations
+
+```{r eval=TRUE}
 freq(sochealth, education)
 
-# Cross-tab with frequencies
-cross_tab(sochealth, smoking, education)
-
-# Cross-tab with column percentages
-cross_tab(sochealth, smoking, education, percent = "column")
-
-# Cross-tab with row percentages
-cross_tab(sochealth, smoking, education, percent = "row")
-
-# Cross-tab grouped by sex
-cross_tab(sochealth, smoking, education, by = sex)
-
-# Cross-tab grouped by combination of variables
-cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
-
-# Compute row-wise mean/sum (all values must be valid by default) or specific value
-df <- data.frame(
-  var1 = c(10, NA, 30, 40, 50),
-  var2 = c(5, NA, 15, NA, 25),
-  var3 = c(NA, 30, 20, 50, 10)
-)
-df
-mean_n(df)
-sum_n(df)
-count_n(df, count = 10)
-count_n(df, special = "NA")
-df |> mutate(count30 = count_n(count = 30))
-
-# Extract labels from column names like "varname. label"
-# This format ("name. label") is the default in LimeSurvey CSV exports
-# when using: Export results -> Export format: CSV -> Headings: Question code & question text.
-# It uses ". " (dot + space) as the default separator between the question code and question text.
-df <- tibble::tibble(
-  "age. Age of respondent" = c(25, 30),
-  "score. Total score. Manually computed." = c(12, 14)
-)
-
-out <- label_from_names(df)
-
-# View assigned labels
-labelled::var_label(out)
+cross_tab(sochealth, smoking, education, percent = "col")
 ```
 
 ### Association measures
 
 ```{r eval=TRUE}
-tab <- table(sochealth$education, sochealth$self_rated_health)
+tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 
 # Quick scalar estimate
-cramer_v(tab)
+cramer_v(tbl)
 
 # Detailed result with CI and p-value
-cramer_v(tab, detail = TRUE)
-
-# Summary of all available measures
-assoc_measures(tab)
+cramer_v(tbl, detail = TRUE)
 ```
 
-### APA-ready table builder
+See `vignette("association-measures")` for a guide on choosing the right measure.
+
+### APA tables
 
 ```{r eval=TRUE}
 table_apa(
-  data = sochealth,
+  sochealth,
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
@@ -158,62 +115,45 @@ table_apa(
 )
 ```
 
-### Additional exported helpers
+See `vignette("table-apa")` for all output formats, weights, CI, and export options.
 
-```{r eval=FALSE}
-# Interactive codebook (requires DT)
-code_book(sochealth)
+### Row-wise summaries
 
-# APA-ready table: wide format
-table_apa(
-  data = sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
-  labels = c("Current smoker", "Physical activity"),
-  output = "wide"
+```{r eval=TRUE}
+df <- data.frame(
+  x1 = c(10, NA, 30, 40, 50),
+  x2 = c(5, NA, 15, NA, 25),
+  x3 = c(NA, 30, 20, 50, 10)
 )
 
-# APA-ready table: export to Excel
-table_apa(
-  data = sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
-  labels = c("Current smoker", "Physical activity"),
-  output = "excel",
-  excel_path = "apa_table.xlsx"
-)
-
-# Copy data to clipboard (interactive session)
-copy_clipboard(sochealth)
+mean_n(df)
+count_n(df, special = "NA")
 ```
 
-> All functions can be directly used in pipelines.
+### Label extraction
 
----
-
-## Why use `spicy`?
-
-- Clean, expressive output
-- Works well with labelled survey data
-- Handles weights, percentages, NA counts
-- Great for exploring data and variables, teaching, or reporting
+```{r eval=TRUE}
+# LimeSurvey-style headers: "code. label"
+df <- tibble::tibble(
+  "age. Age of respondent" = c(25, 30),
+  "score. Total score" = c(12, 14)
+)
+out <- label_from_names(df)
+labelled::var_label(out)
+```
 
 ---
 
 ## Citation
 
-If you use `spicy` in a publication or teaching material:
+If you use spicy in a publication or teaching material:
 
-- Use `citation("spicy")` for the exact BibTeX entry of your installed version.
-- CRAN does not assign package DOI values.
-- The archival DOI for `spicy` is: <https://doi.org/10.5281/zenodo.15397865>.
-
-You can also view the source citation file:
-<https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
+- Use `citation("spicy")` for the BibTeX entry.
+- The archival DOI is: <https://doi.org/10.5281/zenodo.15397865>.
+- Source citation file: <https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
 ---
 
 ## License
 
-This package is licensed under the MIT license. See [`LICENSE`](LICENSE) for details.
-
+MIT. See [`LICENSE`](LICENSE) for details.
