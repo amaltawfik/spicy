@@ -1,4 +1,4 @@
-#' Build APA-Style Cross-Tabulation Tables From Multiple Row Variables
+#' Build APA-Style Cross-Tabulation Tables
 #'
 #' `table_apa()` builds a publication-ready table by crossing one grouping
 #' variable (`group_var`) with one or many row variables (`row_vars`), using

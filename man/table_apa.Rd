@@ -2,7 +2,7 @@
 % Please edit documentation in R/table_apa.R
 \name{table_apa}
 \alias{table_apa}
-\title{Build APA-Style Cross-Tabulation Tables From Multiple Row Variables}
+\title{Build APA-Style Cross-Tabulation Tables}
 \usage{
 table_apa(
   data,
