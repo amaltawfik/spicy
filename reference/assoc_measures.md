@@ -22,8 +22,8 @@ assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 
 - conf_level:
 
-  Confidence level for the confidence interval (default `0.95`). Set to
-  `NULL` to omit the confidence interval.
+  A number between 0 and 1 giving the confidence level (default `0.95`).
+  Set to `NULL` to omit the confidence interval.
 
 ## Value
 
