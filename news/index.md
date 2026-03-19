@@ -42,6 +42,14 @@
   now correctly centers spanner labels over their column pairs in
   `tinytable` and `flextable` output.
 
+- New bundled dataset `sochealth`: a simulated social-health survey (n =
+  1200, 20 variables) with labelled variables, ordered factors, survey
+  weights, and missing values. Designed to showcase
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md),
+  and the association measure functions.
+
 ### Breaking changes
 
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)

@@ -65,6 +65,11 @@
 - [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
   : Copy data to the clipboard
 
+## Data
+
+- [`sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md)
+  : Simulated social-health survey
+
 ## Printing
 
 - [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
