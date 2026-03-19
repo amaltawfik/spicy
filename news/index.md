@@ -1,6 +1,6 @@
 # Changelog
 
-## spicy 0.5.1
+## spicy 0.6.0
 
 ### New features
 
