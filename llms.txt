@@ -70,7 +70,14 @@ For the stable version, install from CRAN.
 install.packages("spicy")
 ```
 
-You can install the development version of spicy from GitHub with:
+You can also install from
+[r-universe](https://amaltawfik.r-universe.dev/spicy):
+
+``` r
+install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+Or install the development version from GitHub:
 
 ``` r
 # install.packages("pak")

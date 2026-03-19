@@ -129,7 +129,11 @@ table_apa(
 
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  If `TRUE`, includes the confidence interval. Defaults to `FALSE`.
+  If `TRUE`, includes the confidence interval. In data/export formats
+  (`wide`, `long`, `excel`, `clipboard`), two extra columns `CI lower`
+  and `CI upper` are added. In rendered formats (`gt`, `tinytable`,
+  `flextable`, `word`), the CI is shown inline as `.14 [.08, .19]` in
+  the association measure column. Defaults to `FALSE`.
 
 - decimal_mark:
 

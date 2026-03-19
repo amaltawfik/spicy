@@ -43,7 +43,7 @@
   `tinytable` and `flextable` output.
 
 - New bundled dataset `sochealth`: a simulated social-health survey (n =
-  1200, 20 variables) with labelled variables, ordered factors, survey
+  1200, 20 variables) with variable labels, ordered factors, survey
   weights, and missing values. Designed to showcase
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),

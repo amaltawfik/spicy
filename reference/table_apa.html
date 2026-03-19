@@ -176,7 +176,11 @@ to report (<code>"auto"</code>, <code>"cramer_v"</code>, <code>"phi"</code>, <co
 
 <dt id="arg-assoc-ci">assoc_ci<a class="anchor" aria-label="anchor" href="#arg-assoc-ci"></a></dt>
 <dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. If <code>TRUE</code>, includes the
-confidence interval. Defaults to <code>FALSE</code>.</p></dd>
+confidence interval. In data/export formats (<code>wide</code>, <code>long</code>, <code>excel</code>,
+<code>clipboard</code>), two extra columns <code>CI lower</code> and <code>CI upper</code> are added.
+In rendered formats (<code>gt</code>, <code>tinytable</code>, <code>flextable</code>, <code>word</code>), the CI
+is shown inline as <code>.14 [.08, .19]</code> in the association measure column.
+Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
