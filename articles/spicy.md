@@ -297,24 +297,13 @@ compute row-wise statistics across selected columns, with automatic
 handling of missing values.
 
 ``` r
-items <- c("life_sat_health", "life_sat_work",
-           "life_sat_relationships", "life_sat_standard")
-d <- sochealth[, items]
-d$mean_sat <- mean_n(sochealth, items)
-#> Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
-#> ℹ Please use `all_of()` or `any_of()` instead.
-#>   # Was:
-#>   data %>% select(items)
-#> 
-#>   # Now:
-#>   data %>% select(all_of(items))
-#> 
-#> See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
-d$n_missing <- count_n(sochealth, items, special = "NA")
-head(d)
+sochealth |>
+  dplyr::mutate(
+    mean_sat  = mean_n(select = starts_with("life_sat")),
+    n_missing = count_n(select = starts_with("life_sat"), special = "NA")
+  ) |>
+  dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
+  head()
 #> # A tibble: 6 × 6
 #>   life_sat_health life_sat_work life_sat_relationships life_sat_standard
 #>             <int>         <int>                  <int>             <int>
