@@ -28,8 +28,7 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Articles</h6></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/association-measures.html">Association measures for contingency tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-apa.html">APA tables with table_apa()</a></li>
   </ul></li>
@@ -132,9 +131,9 @@ If the data frame is a transformation (e.g. <code>head(df)</code> or <code>df[ ,
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">varlist</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Variable           Label                 Values Class N_distinct N_valid   NAs</span>
@@ -177,11 +176,11 @@ If the data frame is a transformation (e.g. <code>head(df)</code> or <code>df[ ,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category BMI category    Normal weight, Ov… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">vl</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Variable           Label                 Values Class N_distinct N_valid   NAs</span>

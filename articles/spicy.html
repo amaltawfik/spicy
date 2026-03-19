@@ -47,8 +47,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Articles</h6></li>
+<li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/association-measures.html">Association measures for contingency tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-apa.html">APA tables with table_apa()</a></li>
   </ul>
@@ -105,12 +104,40 @@ compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
 observations, and missing values.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Non-interactive session: use `tbl = TRUE` to return the table.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
+<span><span class="co">#&gt;    Variable            Label               Values Class N_distinct N_valid   NAs</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> sex                 Sex                 Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> age                 Age (years)         25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> age_group           Age group           25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> education           Highest education … Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> social_class        Subjective social … Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> region              Region of residence Centr… fact…          6    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> employment_status   Employment status   Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> income_group        Household income g… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> income              Monthly household … 1000,… nume…       <span style="text-decoration: underline;">1</span>053    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> smoking             Current smoker      No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> physical_activity   Regular physical a… No, Y… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> dentist_12m         Dentist visit in l… No, Y… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> self_rated_health   Self-rated health   Poor,… orde…          4    <span style="text-decoration: underline;">1</span>180    20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> bmi                 Body mass index     16, 1… nume…        181    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> bmi_category        BMI category        Norma… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> institutional_trust Trust in instituti… Very … orde…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> political_position  Political position… 0, 1,… nume…         11    <span style="text-decoration: underline;">1</span>185    15</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> response_date       Survey response da… 2024-… POSI…       <span style="text-decoration: underline;">1</span>200    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> weight              Survey design weig… 0.323… nume…        810    <span style="text-decoration: underline;">1</span>200     0</span></span></code></pre></div>
 <p>You can also select specific columns with tidyselect syntax:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, <span class="va">income</span>, <span class="va">weight</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Non-interactive session: use `tbl = TRUE` to return the table.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, <span class="va">income</span>, <span class="va">weight</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 7</span></span></span>
+<span><span class="co">#&gt;   Variable     Label                       Values Class N_distinct N_valid   NAs</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi          Body mass index             16, 1… nume…        181    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi_category BMI category                Norma… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income       Monthly household income (… 1000,… nume…       <span style="text-decoration: underline;">1</span>053    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> weight       Survey design weight        0.323… nume…        810    <span style="text-decoration: underline;">1</span>200     0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="frequency-tables">Frequency tables<a class="anchor" aria-label="anchor" href="#frequency-tables"></a>

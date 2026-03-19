@@ -32,8 +32,7 @@ weights, association measures, and APA-style reporting."><meta property="og:imag
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Articles</h6></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/association-measures.html">Association measures for contingency tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-apa.html">APA tables with table_apa()</a></li>
   </ul></li>
@@ -166,7 +165,7 @@ selection.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return the table.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
 <span class="r-in"><span><span class="fu"><a href="freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

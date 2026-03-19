@@ -20,15 +20,43 @@ representative values, class, number of distinct values, valid
 observations, and missing values.
 
 ``` r
-varlist(sochealth)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+varlist(sochealth, tbl = TRUE)
+#> # A tibble: 20 × 7
+#>    Variable            Label               Values Class N_distinct N_valid   NAs
+#>    <chr>               <chr>               <chr>  <chr>      <int>   <int> <int>
+#>  1 sex                 Sex                 Femal… fact…          2    1200     0
+#>  2 age                 Age (years)         25, 2… nume…         51    1200     0
+#>  3 age_group           Age group           25-34… orde…          4    1200     0
+#>  4 education           Highest education … Lower… orde…          3    1200     0
+#>  5 social_class        Subjective social … Lower… orde…          5    1200     0
+#>  6 region              Region of residence Centr… fact…          6    1200     0
+#>  7 employment_status   Employment status   Emplo… fact…          4    1200     0
+#>  8 income_group        Household income g… Low, … orde…          4    1182    18
+#>  9 income              Monthly household … 1000,… nume…       1053    1200     0
+#> 10 smoking             Current smoker      No, Y… fact…          2    1175    25
+#> 11 physical_activity   Regular physical a… No, Y… fact…          2    1200     0
+#> 12 dentist_12m         Dentist visit in l… No, Y… fact…          2    1200     0
+#> 13 self_rated_health   Self-rated health   Poor,… orde…          4    1180    20
+#> 14 wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    1200     0
+#> 15 bmi                 Body mass index     16, 1… nume…        181    1188    12
+#> 16 bmi_category        BMI category        Norma… orde…          3    1188    12
+#> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
+#> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
+#> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
+#> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
 ```
 
 You can also select specific columns with tidyselect syntax:
 
 ``` r
-varlist(sochealth, starts_with("bmi"), income, weight)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
+#> # A tibble: 4 × 7
+#>   Variable     Label                       Values Class N_distinct N_valid   NAs
+#>   <chr>        <chr>                       <chr>  <chr>      <int>   <int> <int>
+#> 1 bmi          Body mass index             16, 1… nume…        181    1188    12
+#> 2 bmi_category BMI category                Norma… orde…          3    1188    12
+#> 3 income       Monthly household income (… 1000,… nume…       1053    1200     0
+#> 4 weight       Survey design weight        0.323… nume…        810    1200     0
 ```
 
 ## Frequency tables

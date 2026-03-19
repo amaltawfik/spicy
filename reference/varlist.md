@@ -101,9 +101,9 @@ For full documentation, see `varlist()`.
 
 ``` r
 varlist(sochealth)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 sochealth |> varlist()
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #> # A tibble: 6 × 7
 #>   Variable           Label                 Values Class N_distinct N_valid   NAs
@@ -146,11 +146,11 @@ varlist(sochealth, starts_with("bmi"), tbl = TRUE)
 #> 2 bmi_category BMI category    Normal weight, Ov… orde…          3    1188    12
 
 vl(sochealth)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 sochealth |> vl()
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 vl(sochealth, starts_with("bmi"))
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #> # A tibble: 6 × 7
 #>   Variable           Label                 Values Class N_distinct N_valid   NAs

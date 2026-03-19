@@ -121,7 +121,7 @@ can demonstrate automatic ordinal measure selection.
 ``` r
 data(sochealth)
 varlist(sochealth)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
+#> Non-interactive session: use `tbl = TRUE` to return a tibble.
 freq(sochealth, education)
 #> Frequency table: education
 #> 
