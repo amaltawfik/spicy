@@ -84,7 +84,7 @@ varlist(sochealth, tbl = TRUE)
 ### Frequency tables and cross-tabulations
 
 ```{r eval=TRUE}
-freq(sochealth, education)
+freq(sochealth, income_group)
 
 cross_tab(sochealth, smoking, education, percent = "col")
 ```
@@ -111,7 +111,7 @@ table_apa(
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
-  output = "tinytable"
+  output = "flextable"
 )
 ```
 
@@ -127,6 +127,7 @@ df <- data.frame(
 )
 
 mean_n(df)
+sum_n(df, min_valid = 2)
 count_n(df, special = "NA")
 ```
 
