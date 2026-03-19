@@ -10,7 +10,7 @@
 #' so that [cross_tab()] can demonstrate automatic ordinal measure
 #' selection.
 #'
-#' @format A tibble with 1200 rows and 20 variables:
+#' @format A tibble with 1200 rows and 24 variables:
 #' \describe{
 #'   \item{sex}{Factor. Sex of the respondent.}
 #'   \item{age}{Numeric. Age in years (25--75).}
@@ -44,6 +44,15 @@
 #'     (Very low, Low, High, Very high).}
 #'   \item{political_position}{Numeric. Political position on a
 #'     0 (left) to 10 (right) scale. Contains missing values.}
+#'   \item{life_sat_health}{Integer. Satisfaction with own health
+#'     (1--5 Likert scale). Contains missing values.}
+#'   \item{life_sat_work}{Integer. Satisfaction with work or main
+#'     activity (1--5 Likert scale). Contains missing values.}
+#'   \item{life_sat_relationships}{Integer. Satisfaction with
+#'     personal relationships (1--5 Likert scale). Contains missing
+#'     values.}
+#'   \item{life_sat_standard}{Integer. Satisfaction with standard
+#'     of living (1--5 Likert scale). Contains missing values.}
 #'   \item{response_date}{POSIXct. Date and time of survey response
 #'     (September--November 2024).}
 #'   \item{weight}{Numeric. Survey design weight.}

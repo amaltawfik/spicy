@@ -198,6 +198,97 @@ sochealth <- sochealth |>
     }
   )
 
+# -- Life satisfaction items (1-5 Likert) ----------------
+# Inspired by the Personal Wellbeing Index (International Wellbeing Group).
+# A shared latent factor drives inter-item correlations (target r ~ 0.3-0.5).
+# Each item also has a domain-specific component.
+
+# Shared latent factor based on wellbeing, education, and health
+latent_sat <- with(sochealth, {
+  base <- (wellbeing_score - 65) *
+    0.03 +
+    case_when(
+      education == "Tertiary" ~ 0.3,
+      education == "Upper secondary" ~ 0.1,
+      education == "Lower secondary" ~ -0.2
+    ) +
+    case_when(
+      self_rated_health == "Very good" ~ 0.4,
+      self_rated_health == "Good" ~ 0.1,
+      self_rated_health == "Fair" ~ -0.2,
+      self_rated_health == "Poor" ~ -0.5,
+      TRUE ~ 0
+    )
+  rnorm(nrow(sochealth), mean = base, sd = 0.3)
+})
+
+sochealth <- sochealth |>
+  mutate(
+    life_sat_health = {
+      mu <- 3.2 +
+        latent_sat +
+        case_when(
+          self_rated_health == "Very good" ~ 0.6,
+          self_rated_health == "Good" ~ 0.2,
+          self_rated_health == "Fair" ~ -0.3,
+          self_rated_health == "Poor" ~ -0.8,
+          TRUE ~ 0
+        )
+      as.integer(pmin(pmax(round(rnorm(n(), mu, 0.9)), 1), 5))
+    },
+    life_sat_work = {
+      mu <- 3.0 +
+        latent_sat +
+        case_when(
+          employment_status == "Employed" ~ 0.3,
+          employment_status == "Student" ~ 0.1,
+          employment_status == "Unemployed" ~ -0.6,
+          employment_status == "Inactive" ~ -0.2
+        )
+      as.integer(pmin(pmax(round(rnorm(n(), mu, 0.9)), 1), 5))
+    },
+    life_sat_relationships = {
+      mu <- 3.5 +
+        latent_sat +
+        if_else(sex == "Female", 0.1, -0.05) +
+        case_when(
+          age < 35 ~ 0.1,
+          age < 50 ~ 0.0,
+          age < 65 ~ -0.1,
+          TRUE ~ 0.05
+        )
+      as.integer(pmin(pmax(round(rnorm(n(), mu, 0.9)), 1), 5))
+    },
+    life_sat_standard = {
+      mu <- 3.1 +
+        latent_sat +
+        case_when(
+          income_group == "High" ~ 0.5,
+          income_group == "Upper middle" ~ 0.2,
+          income_group == "Lower middle" ~ -0.1,
+          income_group == "Low" ~ -0.4,
+          TRUE ~ 0
+        )
+      as.integer(pmin(pmax(round(rnorm(n(), mu, 0.9)), 1), 5))
+    }
+  )
+
+rm(latent_sat)
+
+# Inject missing values in life_sat items (8 per item)
+set.seed(2027)
+sochealth <- sochealth |>
+  mutate(
+    life_sat_health = replace(life_sat_health, sample(seq_len(n), 8), NA),
+    life_sat_work = replace(life_sat_work, sample(seq_len(n), 8), NA),
+    life_sat_relationships = replace(
+      life_sat_relationships,
+      sample(seq_len(n), 8),
+      NA
+    ),
+    life_sat_standard = replace(life_sat_standard, sample(seq_len(n), 8), NA)
+  )
+
 # -- Income (continuous, CHF) ----------------------------
 sochealth <- sochealth |>
   mutate(
@@ -358,6 +449,10 @@ labelled::var_label(sochealth) <- list(
   bmi_category = "BMI category",
   institutional_trust = "Trust in institutions",
   political_position = "Political position (0 = left, 10 = right)",
+  life_sat_health = "Satisfaction with health (1-5)",
+  life_sat_work = "Satisfaction with work (1-5)",
+  life_sat_relationships = "Satisfaction with relationships (1-5)",
+  life_sat_standard = "Satisfaction with standard of living (1-5)",
   response_date = "Survey response date",
   weight = "Survey design weight"
 )
@@ -383,6 +478,10 @@ sochealth <- sochealth |>
     bmi_category,
     institutional_trust,
     political_position,
+    life_sat_health,
+    life_sat_work,
+    life_sat_relationships,
+    life_sat_standard,
     response_date,
     weight
   )

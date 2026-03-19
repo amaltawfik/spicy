@@ -22,7 +22,7 @@ spicy is an R package for the first phase of data analysis: inspecting
 variables, checking distributions, exploring associations, and producing
 publication-ready tables. This vignette walks through the core workflow
 using the bundled `sochealth` dataset, a simulated social-health survey
-with 1 200 respondents and 20 variables.
+with 1 200 respondents and 24 variables.
 
 ## Inspect your data
 
@@ -151,9 +151,11 @@ table_apa(
 across selected columns, with automatic handling of missing values.
 
 ```{r mean-n}
-d <- sochealth[, c("bmi", "wellbeing_score", "political_position")]
-d$row_mean <- mean_n(sochealth, c("bmi", "wellbeing_score", "political_position"))
-d$n_missing <- count_n(sochealth, c("bmi", "wellbeing_score", "political_position"), special = "NA")
+items <- c("life_sat_health", "life_sat_work",
+           "life_sat_relationships", "life_sat_standard")
+d <- sochealth[, items]
+d$mean_sat <- mean_n(sochealth, items)
+d$n_missing <- count_n(sochealth, items, special = "NA")
 head(d)
 ```
 

@@ -16,7 +16,7 @@
 
 * `detail = TRUE` results now print with formatted output (aligned columns, fixed decimal places) via a new `print.spicy_assoc_detail()` method. `assoc_measures()` output uses a new `print.spicy_assoc_table()` method with the same formatting.
 
-* New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 20 variables) with variable labels, ordered factors, survey weights, and missing values. Designed to showcase `varlist()`, `cross_tab()`, `table_apa()`, and the association measure functions.
+* New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 24 variables) with variable labels, ordered factors, survey weights, and missing values. Includes four Likert-scaled life satisfaction items (`life_sat_health`, `life_sat_work`, `life_sat_relationships`, `life_sat_standard`) for demonstrating `mean_n()`, `sum_n()`, and `count_n()`.
 
 ## Bug fixes
 
