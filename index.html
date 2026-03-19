@@ -89,7 +89,7 @@
 <div class="section level2">
 <h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
 </h2>
-<p>spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and producing publication-ready tables. It helps you:</p>
+<p>spicy is an R package for descriptive data analysis: inspecting variables, checking distributions, exploring associations, and producing publication-ready tables. It helps you:</p>
 <ul>
 <li>
 <strong>Inspect variables</strong> with <code><a href="reference/varlist.html">varlist()</a></code> — names, labels, values, classes, missings. Similar to SPSS “Variable View” or Stata “Variables Manager”.</li>
@@ -133,29 +133,20 @@
 <p><img src="reference/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 20 × 7</span></span>
-<span><span class="co">#&gt;    Variable            Label               Values Class N_distinct N_valid   NAs</span></span>
-<span><span class="co">#&gt;    &lt;chr&gt;               &lt;chr&gt;               &lt;chr&gt;  &lt;chr&gt;      &lt;int&gt;   &lt;int&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1 sex                 Sex                 Femal… fact…          2    1200     0</span></span>
-<span><span class="co">#&gt;  2 age                 Age (years)         25, 2… nume…         51    1200     0</span></span>
-<span><span class="co">#&gt;  3 age_group           Age group           25-34… orde…          4    1200     0</span></span>
-<span><span class="co">#&gt;  4 education           Highest education … Lower… orde…          3    1200     0</span></span>
-<span><span class="co">#&gt;  5 social_class        Subjective social … Lower… orde…          5    1200     0</span></span>
-<span><span class="co">#&gt;  6 region              Region of residence Centr… fact…          6    1200     0</span></span>
-<span><span class="co">#&gt;  7 employment_status   Employment status   Emplo… fact…          4    1200     0</span></span>
-<span><span class="co">#&gt;  8 income_group        Household income g… Low, … orde…          4    1182    18</span></span>
-<span><span class="co">#&gt;  9 income              Monthly household … 1000,… nume…       1053    1200     0</span></span>
-<span><span class="co">#&gt; 10 smoking             Current smoker      No, Y… fact…          2    1175    25</span></span>
-<span><span class="co">#&gt; 11 physical_activity   Regular physical a… No, Y… fact…          2    1200     0</span></span>
-<span><span class="co">#&gt; 12 dentist_12m         Dentist visit in l… No, Y… fact…          2    1200     0</span></span>
-<span><span class="co">#&gt; 13 self_rated_health   Self-rated health   Poor,… orde…          4    1180    20</span></span>
-<span><span class="co">#&gt; 14 wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    1200     0</span></span>
-<span><span class="co">#&gt; 15 bmi                 Body mass index     16, 1… nume…        181    1188    12</span></span>
-<span><span class="co">#&gt; 16 bmi_category        BMI category        Norma… orde…          3    1188    12</span></span>
-<span><span class="co">#&gt; 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0</span></span>
-<span><span class="co">#&gt; 18 political_position  Political position… 0, 1,… nume…         11    1185    15</span></span>
-<span><span class="co">#&gt; 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0</span></span>
-<span><span class="co">#&gt; 20 weight              Survey design weig… 0.323… nume…        810    1200     0</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 24 × 7</span></span>
+<span><span class="co">#&gt;    Variable          Label                 Values Class N_distinct N_valid   NAs</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;             &lt;chr&gt;                 &lt;chr&gt;  &lt;chr&gt;      &lt;int&gt;   &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1 sex               Sex                   Femal… fact…          2    1200     0</span></span>
+<span><span class="co">#&gt;  2 age               Age (years)           25, 2… nume…         51    1200     0</span></span>
+<span><span class="co">#&gt;  3 age_group         Age group             25-34… orde…          4    1200     0</span></span>
+<span><span class="co">#&gt;  4 education         Highest education le… Lower… orde…          3    1200     0</span></span>
+<span><span class="co">#&gt;  5 social_class      Subjective social cl… Lower… orde…          5    1200     0</span></span>
+<span><span class="co">#&gt;  6 region            Region of residence   Centr… fact…          6    1200     0</span></span>
+<span><span class="co">#&gt;  7 employment_status Employment status     Emplo… fact…          4    1200     0</span></span>
+<span><span class="co">#&gt;  8 income_group      Household income gro… Low, … orde…          4    1182    18</span></span>
+<span><span class="co">#&gt;  9 income            Monthly household in… 1000,… nume…       1052    1200     0</span></span>
+<span><span class="co">#&gt; 10 smoking           Current smoker        No, Y… fact…          2    1175    25</span></span>
+<span><span class="co">#&gt; # ℹ 14 more rows</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="frequency-tables-and-cross-tabulations">Frequency tables and cross-tabulations<a class="anchor" aria-label="anchor" href="#frequency-tables-and-cross-tabulations"></a>
