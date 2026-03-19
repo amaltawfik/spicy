@@ -12,9 +12,15 @@
 
 * `table_apa()` now correctly centers spanner labels over their column pairs in `tinytable` and `flextable` output.
 
+* All association measure functions and `assoc_measures()` gain a `digits` argument (default 3) that controls the number of decimal places when printed. The p-value always uses 3 decimal places or `< 0.001`.
+
+* `detail = TRUE` results now print with formatted output (aligned columns, fixed decimal places) via a new `print.spicy_assoc_detail()` method. `assoc_measures()` output uses a new `print.spicy_assoc_table()` method with the same formatting.
+
 * New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 20 variables) with variable labels, ordered factors, survey weights, and missing values. Designed to showcase `varlist()`, `cross_tab()`, `table_apa()`, and the association measure functions.
 
 ## Bug fixes
+
+* `kendall_tau_c()` is now consistently named "Kendall's Tau-c" throughout the package (previously "Stuart's Tau-c" in some places).
 
 * `cross_tab()` rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present (consistent with Stata behavior).
 
