@@ -4,18 +4,13 @@
 \alias{assoc_measures}
 \title{Association measures summary table}
 \usage{
-assoc_measures(
-  x,
-  type = c("auto", "nominal", "ordinal", "all"),
-  conf_level = 0.95
-)
+assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 }
 \arguments{
 \item{x}{A contingency table (of class \code{table}).}
 
 \item{type}{Which family of measures to compute:
-\code{"auto"} (default, all measures), \code{"nominal"}, \code{"ordinal"},
-or \code{"all"}.}
+\code{"all"} (default), \code{"nominal"}, or \code{"ordinal"}.}
 
 \item{conf_level}{Confidence level for the confidence interval
 (default \code{0.95}). Set to \code{NULL} to omit the confidence
@@ -30,7 +25,7 @@ A data frame with columns \code{measure}, \code{estimate}, \code{se},
 two-way contingency table and returns them in a tidy data frame.
 }
 \details{
-\code{type = "auto"} (the default) returns all nominal and ordinal
+\code{type = "all"} (the default) returns all nominal and ordinal
 measures. Use \code{type = "nominal"} or \code{type = "ordinal"} to
 restrict the output to a single family.
 
@@ -45,8 +40,8 @@ The ordinal family includes \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=ke
 data(mtcars)
 tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
 assoc_measures(tab)
+assoc_measures(tab, type = "nominal")
 assoc_measures(tab, type = "ordinal")
-assoc_measures(tab, type = "all")
 
 }
 \references{

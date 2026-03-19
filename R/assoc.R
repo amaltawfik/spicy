@@ -1215,8 +1215,7 @@ somers_d <- function(
 #'
 #' @param x A contingency table (of class `table`).
 #' @param type Which family of measures to compute:
-#'   `"auto"` (default, all measures), `"nominal"`, `"ordinal"`,
-#'   or `"all"`.
+#'   `"all"` (default), `"nominal"`, or `"ordinal"`.
 #' @param conf_level Confidence level for the confidence interval
 #'   (default `0.95`). Set to `NULL` to omit the confidence
 #'   interval.
@@ -1225,7 +1224,7 @@ somers_d <- function(
 #'   `ci_lower`, `ci_upper`, and `p_value`.
 #'
 #' @details
-#' `type = "auto"` (the default) returns all nominal and ordinal
+#' `type = "all"` (the default) returns all nominal and ordinal
 #' measures. Use `type = "nominal"` or `type = "ordinal"` to
 #' restrict the output to a single family.
 #'
@@ -1240,8 +1239,8 @@ somers_d <- function(
 #' data(mtcars)
 #' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
 #' assoc_measures(tab)
+#' assoc_measures(tab, type = "nominal")
 #' assoc_measures(tab, type = "ordinal")
-#' assoc_measures(tab, type = "all")
 #'
 #' @references
 #' Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
@@ -1256,7 +1255,7 @@ somers_d <- function(
 #' @export
 assoc_measures <- function(
   x,
-  type = c("auto", "nominal", "ordinal", "all"),
+  type = c("all", "nominal", "ordinal"),
   conf_level = 0.95
 ) {
   .validate_table(x)
@@ -1400,8 +1399,7 @@ assoc_measures <- function(
     type,
     nominal = nominal_fns,
     ordinal = ordinal_fns,
-    all = c(nominal_fns, ordinal_fns),
-    auto = c(nominal_fns, ordinal_fns)
+    all = c(nominal_fns, ordinal_fns)
   )
 
   .extract <- function(res, field) {
