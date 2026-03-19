@@ -129,9 +129,9 @@ varlist <- function(
         lbl <- attributes(col)[["label"]]
 
         if (is.null(lbl)) {
-          return(NA_character_)
+          NA_character_
         } else {
-          return(as.character(lbl))
+          as.character(lbl)
         }
       },
       character(1)
@@ -292,14 +292,14 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
         }
       }
 
-      return(val_str)
+      val_str
     },
     error = function(e) {
-      return("Invalid or unsupported format")
+      "Invalid or unsupported format"
     }
   )
 
-  return(vals)
+  vals
 }
 
 
@@ -314,7 +314,7 @@ summarize_values_all <- function(col, include_na = FALSE) {
         sort(unique(v))
       },
       error = function(e) {
-        return("Error: invalid values")
+        "Error: invalid values"
       }
     )
 
@@ -359,7 +359,7 @@ summarize_values_all <- function(col, include_na = FALSE) {
     ))
   }
 
-  return(show_vals(na_omit_col))
+  show_vals(na_omit_col)
 }
 
 
