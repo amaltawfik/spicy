@@ -2,7 +2,7 @@
 % Please edit documentation in R/assoc.R
 \name{kendall_tau_c}
 \alias{kendall_tau_c}
-\title{Stuart's Tau-c}
+\title{Kendall's Tau-c (Stuart's Tau-c)}
 \usage{
 kendall_tau_c(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 }

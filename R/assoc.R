@@ -1032,7 +1032,7 @@ kendall_tau_b <- function(
 }
 
 
-#' Stuart's Tau-c
+#' Kendall's Tau-c (Stuart's Tau-c)
 #'
 #' `kendall_tau_c()` computes Stuart's Tau-c (also known as
 #' Kendall's Tau-c) for a two-way contingency table of ordinal
