@@ -47,17 +47,17 @@ To preserve a tabular structure, you should extract a 2D slice before copying. F
 \donttest{
 if (clipr::clipr_available()) {
   # Data frame
-  copy_clipboard(mtcars)
+  copy_clipboard(sochealth)
 
   # Data frame with row names as column
-  copy_clipboard(mtcars, row.names.as.col = "car")
+  copy_clipboard(head(sochealth), row.names.as.col = "id")
 
   # Matrix
   mat <- matrix(1:6, nrow = 2)
   copy_clipboard(mat)
 
   # Table
-  tbl <- table(iris$Species)
+  tbl <- table(sochealth$education)
   copy_clipboard(tbl)
 
   # Array (3D) — flattened to character
@@ -74,7 +74,7 @@ if (clipr::clipr_available()) {
   copy_clipboard(c("apple", "banana", "cherry"))
 
   # Quiet mode (no messages shown)
-  copy_clipboard(mtcars, quiet = TRUE)
+  copy_clipboard(sochealth, quiet = TRUE)
 }
 }
 }

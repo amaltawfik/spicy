@@ -4,7 +4,7 @@
 #'
 #' The function can also apply tidyselect-style variable selectors to filter columns dynamically.
 #'
-#' If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like `vl: iris`. If the data frame has been transformed or subsetted, the title will display an asterisk (`*`), e.g. `vl: iris*`.
+#' If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like `vl: sochealth`. If the data frame has been transformed or subsetted, the title will display an asterisk (`*`), e.g. `vl: sochealth*`.
 #'
 #' @aliases vl
 #'
@@ -56,7 +56,7 @@
 #' sochealth |> varlist()
 #' varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #' varlist(sochealth, tbl = TRUE)
-#' varlist(iris, tbl = TRUE)
+#' varlist(sochealth, starts_with("bmi"), tbl = TRUE)
 #'
 # .raw_expr is used internally by `vl()` to capture the original expression
 # passed as `x`, so it can be used to generate the display title (e.g. "vl: df").

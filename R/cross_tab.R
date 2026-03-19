@@ -222,7 +222,7 @@ cross_tab <- function(
   is_vector_mode <- is_vector_input
 
   if (is_vector_mode) {
-    # Vector mode : cross_tab(mtcars$cyl, mtcars$gear, ...)
+    # Vector mode : cross_tab(df$x, df$y, ...)
     x_vals <- data
     y_vals <- x # 2nd argument becomes y
 
@@ -368,7 +368,8 @@ cross_tab <- function(
           call. = FALSE
         )
       }
-      w <- w * length(w) / w_sum
+      # Actual rescaling deferred to compute_ctab() so it operates
+      # only on complete cases (matching Stata behavior).
     }
   }
 
@@ -425,6 +426,16 @@ cross_tab <- function(
       w_val = w_val,
       stringsAsFactors = FALSE
     )
+
+    # Rescale weights on complete cases only (NA rows are dropped by xtabs)
+    if (rescale && !rlang::quo_is_null(w_expr)) {
+      complete <- complete.cases(df_sub[, c("x_val", "y_val", "w_val")])
+      n_complete <- sum(complete)
+      w_sum_complete <- sum(df_sub$w_val[complete], na.rm = TRUE)
+      if (w_sum_complete > 0) {
+        df_sub$w_val <- df_sub$w_val * n_complete / w_sum_complete
+      }
+    }
 
     tab_full <- stats::xtabs(w_val ~ x_val + y_val, data = df_sub)
 

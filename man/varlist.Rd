@@ -59,7 +59,7 @@ If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}
 \details{
 The function can also apply tidyselect-style variable selectors to filter columns dynamically.
 
-If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \code{vl: iris}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{vl: iris*}.
+If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \code{vl: sochealth}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{vl: sochealth*}.
 
 For full documentation, see \code{\link[=varlist]{varlist()}}.
 }
@@ -68,7 +68,7 @@ varlist(sochealth)
 sochealth |> varlist()
 varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 varlist(sochealth, tbl = TRUE)
-varlist(iris, tbl = TRUE)
+varlist(sochealth, starts_with("bmi"), tbl = TRUE)
 
 vl(sochealth)
 sochealth |> vl()
