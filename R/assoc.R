@@ -92,7 +92,7 @@ print.spicy_assoc_detail <- function(x, digits = 3, ...) {
     se = "SE",
     ci_lower = "CI lower",
     ci_upper = "CI upper",
-    p_value = "p value"
+    p_value = "p"
   )
   hdr <- labels[nms]
   vals <- vapply(
@@ -1551,7 +1551,7 @@ print.spicy_assoc_table <- function(x, digits = 3, ...) {
     SE = fmt_num(x$se),
     `CI lower` = fmt_num(x$ci_lower),
     `CI upper` = fmt_num(x$ci_upper),
-    `p value` = fmt_p(x$p_value)
+    p = fmt_p(x$p_value)
   )
   widths <- vapply(
     names(cols),

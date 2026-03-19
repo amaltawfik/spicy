@@ -240,7 +240,7 @@ test_that("print.spicy_assoc_detail formats output", {
   out <- capture.output(print(res))
   expect_length(out, 2)
   expect_match(out[1], "Estimate")
-  expect_match(out[1], "p value")
+  expect_match(out[1], "\\bp\\b")
 })
 
 test_that("print.spicy_assoc_detail respects digits argument", {
@@ -263,7 +263,7 @@ test_that("print.spicy_assoc_table formats output", {
   res <- assoc_measures(tab)
   out <- capture.output(print(res))
   expect_match(out[1], "Measure")
-  expect_match(out[1], "p value")
+  expect_match(out[1], "\\bp\\b")
   expect_true(length(out) > 1)
 })
 
