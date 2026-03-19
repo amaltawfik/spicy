@@ -154,9 +154,10 @@ across selected columns, with automatic handling of missing values.
 sochealth |>
   dplyr::mutate(
     mean_sat  = mean_n(select = starts_with("life_sat")),
+    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 2),
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
-  dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
+  dplyr::select(starts_with("life_sat"), mean_sat, sum_sat, n_missing) |>
   head() |>
   as.data.frame()
 ```
