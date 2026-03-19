@@ -286,660 +286,205 @@ and p-value:</p>
 <p><code><a href="../reference/table_apa.html">table_apa()</a></code> builds a publication-ready cross-tabulation
 report by crossing one grouping variable with one or many row variables.
 It supports multiple output formats.</p>
-<p>With <code>output = "gt"</code> you get a formatted table suitable
-for R Markdown or Quarto documents:</p>
+<p>With <code>output = "tinytable"</code> you get a formatted table
+suitable for R Markdown or Quarto documents:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span>, <span class="st">"dentist_12m"</span><span class="op">)</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mwlefoodfi table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+<!-- preamble start -->
 
-#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi tr, #mwlefoodfi td, #mwlefoodfi th {
-  border-style: none;
-}
+    <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
+      // Create table-specific functions using external factory
+      const tableFns_6v58l9vxglu05x0o7wvi = TinyTable.createTableFunctions("tinytable_6v58l9vxglu05x0o7wvi");
+      // tinytable span after
+      window.addEventListener('load', function () {
+          var cellsToStyle = [
+            // tinytable style arrays after
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_7avfax9a7hlg4e4rbosr',}, 
+          { positions: [ { i: '9', j: 2 }, { i: '9', j: 3 }, { i: '9', j: 4 }, { i: '9', j: 5 }, { i: '9', j: 6 }, { i: '9', j: 7 }, { i: '9', j: 8 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 }, { i: '0', j: 11 }, { i: '9', j: 11 } ], css_id: 'tinytable_css_bmj3iklkidrjok56654b',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 }, { i: '7', j: 11 }, { i: '8', j: 11 } ], css_id: 'tinytable_css_fzwsoxmcup2gwkhqnxj4',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_ijtdx5ntl7d2hervnp7p',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_16hpwp18wfmevjq0o9ux',}, 
+          { positions: [ { i: '9', j: 1 } ], css_id: 'tinytable_css_9n8o98iosemua6rb2f7b',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 }, { i: '6', j: 1 }, { i: '8', j: 1 } ], css_id: 'tinytable_css_qbaehks92zd14h3igmus',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_8oyhm3xhtibg9ckz0265',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_pd4bgcwwchv4awz6mnx7',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_rrapy1m2305li10rw6b1',}, 
+          ];
 
-#mwlefoodfi p {
-  margin: 0;
-  padding: 0;
-}
-
-#mwlefoodfi .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#mwlefoodfi .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mwlefoodfi .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mwlefoodfi .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#mwlefoodfi .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mwlefoodfi .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mwlefoodfi .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#mwlefoodfi .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#mwlefoodfi .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mwlefoodfi .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mwlefoodfi .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mwlefoodfi .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#mwlefoodfi .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mwlefoodfi .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_left {
-  text-align: left;
-}
-
-#mwlefoodfi .gt_center {
-  text-align: center;
-}
-
-#mwlefoodfi .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mwlefoodfi .gt_font_normal {
-  font-weight: normal;
-}
-
-#mwlefoodfi .gt_font_bold {
-  font-weight: bold;
-}
-
-#mwlefoodfi .gt_font_italic {
-  font-style: italic;
-}
-
-#mwlefoodfi .gt_super {
-  font-size: 65%;
-}
-
-#mwlefoodfi .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#mwlefoodfi .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#mwlefoodfi .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#mwlefoodfi .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#mwlefoodfi .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#mwlefoodfi .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#mwlefoodfi .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#mwlefoodfi .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#mwlefoodfi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
-.gt_table thead tr:first-child {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr.gt_spanner_row {
-  border-bottom-style: none !important;
-}
-
-.gt_table thead th, .gt_table thead td {
-  background-color: transparent !important;
-}
-
-.gt_table thead tr:last-child th[id="Lower secondary_n"],
-.gt_table thead tr:last-child th[id="Lower secondary_pct"],
-.gt_table thead tr:last-child th[id="Upper secondary_n"],
-.gt_table thead tr:last-child th[id="Upper secondary_pct"],
-.gt_table thead tr:last-child th[id="Tertiary_n"],
-.gt_table thead tr:last-child th[id="Tertiary_pct"],
-.gt_table thead tr:last-child th[id="Total_n"],
-.gt_table thead tr:last-child th[id="Total_pct"] {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr {
-  border-top-style: none !important;
-  border-bottom-style: none !important;
-}
-</style>
-<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+          // Loop over the arrays to style the cells
+          cellsToStyle.forEach(function (group) {
+              group.positions.forEach(function (cell) {
+                  tableFns_6v58l9vxglu05x0o7wvi.styleCell(cell.i, cell.j, group.css_id);
+              });
+          });
+      });
+    </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
+<style>
+    /* tinytable css entries after */
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_7avfax9a7hlg4e4rbosr, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_7avfax9a7hlg4e4rbosr {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_bmj3iklkidrjok56654b, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_bmj3iklkidrjok56654b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_fzwsoxmcup2gwkhqnxj4, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_fzwsoxmcup2gwkhqnxj4 { text-align: right }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_ijtdx5ntl7d2hervnp7p, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_ijtdx5ntl7d2hervnp7p {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_16hpwp18wfmevjq0o9ux, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_16hpwp18wfmevjq0o9ux {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_9n8o98iosemua6rb2f7b, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_9n8o98iosemua6rb2f7b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_qbaehks92zd14h3igmus, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_qbaehks92zd14h3igmus { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_8oyhm3xhtibg9ckz0265, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_8oyhm3xhtibg9ckz0265 { text-align: left }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_pd4bgcwwchv4awz6mnx7, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_pd4bgcwwchv4awz6mnx7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_rrapy1m2305li10rw6b1, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_rrapy1m2305li10rw6b1 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    </style>
+<div class="container">
+      <table class="table tinytable" id="tinytable_6v58l9vxglu05x0o7wvi" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <thead>
-<tr class="gt_col_headings gt_spanner_row">
-<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">
-        <div class="gt_column_spanner">Variable</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Lower secondary">
-        <div class="gt_column_spanner">Lower secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Upper secondary">
-        <div class="gt_column_spanner">Upper secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Tertiary">
-        <div class="gt_column_spanner">Tertiary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Total">
-        <div class="gt_column_spanner">Total</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
-        <div class="gt_column_spanner">Cramer's V</div>
-      </th>
-    </tr>
-<tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="assoc_col"></th>
-    </tr>
+<tr>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
+</tr>
+<tr>
+<th scope="col" data-row="0" data-col="1"></th>
+                <th scope="col" data-row="0" data-col="2">n</th>
+                <th scope="col" data-row="0" data-col="3">%</th>
+                <th scope="col" data-row="0" data-col="4">n</th>
+                <th scope="col" data-row="0" data-col="5">%</th>
+                <th scope="col" data-row="0" data-col="6">n</th>
+                <th scope="col" data-row="0" data-col="7">%</th>
+                <th scope="col" data-row="0" data-col="8">n</th>
+                <th scope="col" data-row="0" data-col="9">%</th>
+                <th scope="col" data-row="0" data-col="10"></th>
+                <th scope="col" data-row="0" data-col="11"></th>
+              </tr>
 </thead>
-<tbody class="gt_table_body">
+<tbody>
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking</td>
-<td headers="Lower secondary_n" class="gt_row gt_center"></td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
-<td headers="Upper secondary_n" class="gt_row gt_center"></td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
-<td headers="Tertiary_n" class="gt_row gt_center"></td>
-<td headers="Tertiary_pct" class="gt_row gt_center"></td>
-<td headers="Total_n" class="gt_row gt_center"></td>
-<td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">&lt; .001</td>
-<td headers="assoc_col" class="gt_row gt_right">.14</td>
-</tr>
+<td data-row="1" data-col="1">smoking</td>
+                  <td data-row="1" data-col="2"></td>
+                  <td data-row="1" data-col="3"></td>
+                  <td data-row="1" data-col="4"></td>
+                  <td data-row="1" data-col="5"></td>
+                  <td data-row="1" data-col="6"></td>
+                  <td data-row="1" data-col="7"></td>
+                  <td data-row="1" data-col="8"></td>
+                  <td data-row="1" data-col="9"></td>
+                  <td data-row="1" data-col="10">&lt; .001</td>
+                  <td data-row="1" data-col="11">.14</td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">179</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">69.6</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">415</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">78.7</td>
-<td headers="Tertiary_n" class="gt_row gt_center">332</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">84.9</td>
-<td headers="Total_n" class="gt_row gt_center">926</td>
-<td headers="Total_pct" class="gt_row gt_center">78.8</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="2" data-col="1">      No</td>
+                  <td data-row="2" data-col="2">179</td>
+                  <td data-row="2" data-col="3">69.6</td>
+                  <td data-row="2" data-col="4">415</td>
+                  <td data-row="2" data-col="5">78.7</td>
+                  <td data-row="2" data-col="6">332</td>
+                  <td data-row="2" data-col="7">84.9</td>
+                  <td data-row="2" data-col="8">926</td>
+                  <td data-row="2" data-col="9">78.8</td>
+                  <td data-row="2" data-col="10"></td>
+                  <td data-row="2" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      Yes</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">78</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">30.4</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">112</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">21.3</td>
-<td headers="Tertiary_n" class="gt_row gt_center">59</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">15.1</td>
-<td headers="Total_n" class="gt_row gt_center">249</td>
-<td headers="Total_pct" class="gt_row gt_center">21.2</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="3" data-col="1">      Yes</td>
+                  <td data-row="3" data-col="2">78</td>
+                  <td data-row="3" data-col="3">30.4</td>
+                  <td data-row="3" data-col="4">112</td>
+                  <td data-row="3" data-col="5">21.3</td>
+                  <td data-row="3" data-col="6">59</td>
+                  <td data-row="3" data-col="7">15.1</td>
+                  <td data-row="3" data-col="8">249</td>
+                  <td data-row="3" data-col="9">21.2</td>
+                  <td data-row="3" data-col="10"></td>
+                  <td data-row="3" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">physical_activity</td>
-<td headers="Lower secondary_n" class="gt_row gt_center"></td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
-<td headers="Upper secondary_n" class="gt_row gt_center"></td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
-<td headers="Tertiary_n" class="gt_row gt_center"></td>
-<td headers="Tertiary_pct" class="gt_row gt_center"></td>
-<td headers="Total_n" class="gt_row gt_center"></td>
-<td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">&lt; .001</td>
-<td headers="assoc_col" class="gt_row gt_right">.21</td>
-</tr>
+<td data-row="4" data-col="1">physical_activity</td>
+                  <td data-row="4" data-col="2"></td>
+                  <td data-row="4" data-col="3"></td>
+                  <td data-row="4" data-col="4"></td>
+                  <td data-row="4" data-col="5"></td>
+                  <td data-row="4" data-col="6"></td>
+                  <td data-row="4" data-col="7"></td>
+                  <td data-row="4" data-col="8"></td>
+                  <td data-row="4" data-col="9"></td>
+                  <td data-row="4" data-col="10">&lt; .001</td>
+                  <td data-row="4" data-col="11">.21</td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">177</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">67.8</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">310</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">57.5</td>
-<td headers="Tertiary_n" class="gt_row gt_center">163</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">40.8</td>
-<td headers="Total_n" class="gt_row gt_center">650</td>
-<td headers="Total_pct" class="gt_row gt_center">54.2</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="5" data-col="1">      No</td>
+                  <td data-row="5" data-col="2">177</td>
+                  <td data-row="5" data-col="3">67.8</td>
+                  <td data-row="5" data-col="4">310</td>
+                  <td data-row="5" data-col="5">57.5</td>
+                  <td data-row="5" data-col="6">163</td>
+                  <td data-row="5" data-col="7">40.8</td>
+                  <td data-row="5" data-col="8">650</td>
+                  <td data-row="5" data-col="9">54.2</td>
+                  <td data-row="5" data-col="10"></td>
+                  <td data-row="5" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      Yes</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">84</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">32.2</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">229</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">42.5</td>
-<td headers="Tertiary_n" class="gt_row gt_center">237</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">59.2</td>
-<td headers="Total_n" class="gt_row gt_center">550</td>
-<td headers="Total_pct" class="gt_row gt_center">45.8</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="6" data-col="1">      Yes</td>
+                  <td data-row="6" data-col="2">84</td>
+                  <td data-row="6" data-col="3">32.2</td>
+                  <td data-row="6" data-col="4">229</td>
+                  <td data-row="6" data-col="5">42.5</td>
+                  <td data-row="6" data-col="6">237</td>
+                  <td data-row="6" data-col="7">59.2</td>
+                  <td data-row="6" data-col="8">550</td>
+                  <td data-row="6" data-col="9">45.8</td>
+                  <td data-row="6" data-col="10"></td>
+                  <td data-row="6" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">dentist_12m</td>
-<td headers="Lower secondary_n" class="gt_row gt_center"></td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
-<td headers="Upper secondary_n" class="gt_row gt_center"></td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
-<td headers="Tertiary_n" class="gt_row gt_center"></td>
-<td headers="Tertiary_pct" class="gt_row gt_center"></td>
-<td headers="Total_n" class="gt_row gt_center"></td>
-<td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">&lt; .001</td>
-<td headers="assoc_col" class="gt_row gt_right">.22</td>
-</tr>
+<td data-row="7" data-col="1">dentist_12m</td>
+                  <td data-row="7" data-col="2"></td>
+                  <td data-row="7" data-col="3"></td>
+                  <td data-row="7" data-col="4"></td>
+                  <td data-row="7" data-col="5"></td>
+                  <td data-row="7" data-col="6"></td>
+                  <td data-row="7" data-col="7"></td>
+                  <td data-row="7" data-col="8"></td>
+                  <td data-row="7" data-col="9"></td>
+                  <td data-row="7" data-col="10">&lt; .001</td>
+                  <td data-row="7" data-col="11">.22</td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">113</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">43.3</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">174</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">32.3</td>
-<td headers="Tertiary_n" class="gt_row gt_center">67</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">16.8</td>
-<td headers="Total_n" class="gt_row gt_center">354</td>
-<td headers="Total_pct" class="gt_row gt_center">29.5</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="8" data-col="1">      No</td>
+                  <td data-row="8" data-col="2">113</td>
+                  <td data-row="8" data-col="3">43.3</td>
+                  <td data-row="8" data-col="4">174</td>
+                  <td data-row="8" data-col="5">32.3</td>
+                  <td data-row="8" data-col="6">67</td>
+                  <td data-row="8" data-col="7">16.8</td>
+                  <td data-row="8" data-col="8">354</td>
+                  <td data-row="8" data-col="9">29.5</td>
+                  <td data-row="8" data-col="10"></td>
+                  <td data-row="8" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">      Yes</td>
-<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">148</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">56.7</td>
-<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">365</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">67.7</td>
-<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">333</td>
-<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">83.2</td>
-<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">846</td>
-<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">70.5</td>
-<td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="assoc_col" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-</tr>
+<td data-row="9" data-col="1">      Yes</td>
+                  <td data-row="9" data-col="2">148</td>
+                  <td data-row="9" data-col="3">56.7</td>
+                  <td data-row="9" data-col="4">365</td>
+                  <td data-row="9" data-col="5">67.7</td>
+                  <td data-row="9" data-col="6">333</td>
+                  <td data-row="9" data-col="7">83.2</td>
+                  <td data-row="9" data-col="8">846</td>
+                  <td data-row="9" data-col="9">70.5</td>
+                  <td data-row="9" data-col="10"></td>
+                  <td data-row="9" data-col="11"></td>
+                </tr>
 </tbody>
 </table>
 </div>
+<!-- hack to avoid NA insertion in last line -->
 <p>Use <code>assoc_ci = TRUE</code> to display the confidence interval
 inline:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -947,581 +492,125 @@ inline:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  row_vars <span class="op">=</span> <span class="st">"smoking"</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"tinytable"</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="eexombwkke" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#eexombwkke table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+<!-- preamble start -->
 
-#eexombwkke thead, #eexombwkke tbody, #eexombwkke tfoot, #eexombwkke tr, #eexombwkke td, #eexombwkke th {
-  border-style: none;
-}
+    <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
+      // Create table-specific functions using external factory
+      const tableFns_rp18b5x1wg0rwyfubc70 = TinyTable.createTableFunctions("tinytable_rp18b5x1wg0rwyfubc70");
+      // tinytable span after
+      window.addEventListener('load', function () {
+          var cellsToStyle = [
+            // tinytable style arrays after
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_rm6eduyxl0ztaa91o8a0',}, 
+          { positions: [ { i: '3', j: 2 }, { i: '3', j: 3 }, { i: '3', j: 4 }, { i: '3', j: 5 }, { i: '3', j: 6 }, { i: '3', j: 7 }, { i: '3', j: 8 }, { i: '3', j: 9 }, { i: '0', j: 10 }, { i: '3', j: 10 }, { i: '0', j: 11 }, { i: '3', j: 11 } ], css_id: 'tinytable_css_hqj4w0ioy0lc1w6vygmi',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 } ], css_id: 'tinytable_css_9svyad9jn7scmwhdtt7i',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_j6k6qk1n4y3wmwlmimxg',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_h34t7stsbnbucz7eq866',}, 
+          { positions: [ { i: '3', j: 1 } ], css_id: 'tinytable_css_zqv0x2gd4b69pzpxj7ro',}, 
+          { positions: [ { i: '2', j: 1 } ], css_id: 'tinytable_css_4olspg8l5gya08tpxs7f',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_avlpyuvwvoji80fl9572',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_9dc94va645er44c0k8p3',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_jyhdexk56yzyz96aco8g',}, 
+          ];
 
-#eexombwkke p {
-  margin: 0;
-  padding: 0;
-}
-
-#eexombwkke .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#eexombwkke .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#eexombwkke .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#eexombwkke .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#eexombwkke .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#eexombwkke .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eexombwkke .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#eexombwkke .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#eexombwkke .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#eexombwkke .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#eexombwkke .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#eexombwkke .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#eexombwkke .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#eexombwkke .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#eexombwkke .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#eexombwkke .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#eexombwkke .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#eexombwkke .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#eexombwkke .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eexombwkke .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#eexombwkke .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#eexombwkke .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#eexombwkke .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eexombwkke .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#eexombwkke .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#eexombwkke .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eexombwkke .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eexombwkke .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#eexombwkke .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eexombwkke .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#eexombwkke .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eexombwkke .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#eexombwkke .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eexombwkke .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#eexombwkke .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eexombwkke .gt_left {
-  text-align: left;
-}
-
-#eexombwkke .gt_center {
-  text-align: center;
-}
-
-#eexombwkke .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#eexombwkke .gt_font_normal {
-  font-weight: normal;
-}
-
-#eexombwkke .gt_font_bold {
-  font-weight: bold;
-}
-
-#eexombwkke .gt_font_italic {
-  font-style: italic;
-}
-
-#eexombwkke .gt_super {
-  font-size: 65%;
-}
-
-#eexombwkke .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#eexombwkke .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#eexombwkke .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#eexombwkke .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#eexombwkke .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#eexombwkke .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#eexombwkke .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#eexombwkke .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#eexombwkke div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
-.gt_table thead tr:first-child {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr.gt_spanner_row {
-  border-bottom-style: none !important;
-}
-
-.gt_table thead th, .gt_table thead td {
-  background-color: transparent !important;
-}
-
-.gt_table thead tr:last-child th[id="Lower secondary_n"],
-.gt_table thead tr:last-child th[id="Lower secondary_pct"],
-.gt_table thead tr:last-child th[id="Upper secondary_n"],
-.gt_table thead tr:last-child th[id="Upper secondary_pct"],
-.gt_table thead tr:last-child th[id="Tertiary_n"],
-.gt_table thead tr:last-child th[id="Tertiary_pct"],
-.gt_table thead tr:last-child th[id="Total_n"],
-.gt_table thead tr:last-child th[id="Total_pct"] {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr {
-  border-top-style: none !important;
-  border-bottom-style: none !important;
-}
-</style>
-<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+          // Loop over the arrays to style the cells
+          cellsToStyle.forEach(function (group) {
+              group.positions.forEach(function (cell) {
+                  tableFns_rp18b5x1wg0rwyfubc70.styleCell(cell.i, cell.j, group.css_id);
+              });
+          });
+      });
+    </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
+<style>
+    /* tinytable css entries after */
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_rm6eduyxl0ztaa91o8a0, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_rm6eduyxl0ztaa91o8a0 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_hqj4w0ioy0lc1w6vygmi, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_hqj4w0ioy0lc1w6vygmi {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_9svyad9jn7scmwhdtt7i, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_9svyad9jn7scmwhdtt7i { text-align: right }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_j6k6qk1n4y3wmwlmimxg, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_j6k6qk1n4y3wmwlmimxg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_h34t7stsbnbucz7eq866, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_h34t7stsbnbucz7eq866 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_zqv0x2gd4b69pzpxj7ro, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_zqv0x2gd4b69pzpxj7ro {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_4olspg8l5gya08tpxs7f, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_4olspg8l5gya08tpxs7f { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_avlpyuvwvoji80fl9572, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_avlpyuvwvoji80fl9572 { text-align: left }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_9dc94va645er44c0k8p3, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_9dc94va645er44c0k8p3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_rp18b5x1wg0rwyfubc70 td.tinytable_css_jyhdexk56yzyz96aco8g, #tinytable_rp18b5x1wg0rwyfubc70 th.tinytable_css_jyhdexk56yzyz96aco8g {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    </style>
+<div class="container">
+      <table class="table tinytable" id="tinytable_rp18b5x1wg0rwyfubc70" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <thead>
-<tr class="gt_col_headings gt_spanner_row">
-<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">
-        <div class="gt_column_spanner">Variable</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Lower secondary">
-        <div class="gt_column_spanner">Lower secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Upper secondary">
-        <div class="gt_column_spanner">Upper secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Tertiary">
-        <div class="gt_column_spanner">Tertiary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Total">
-        <div class="gt_column_spanner">Total</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
-        <div class="gt_column_spanner">Cramer's V</div>
-      </th>
-    </tr>
-<tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="assoc_col"></th>
-    </tr>
+<tr>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
+</tr>
+<tr>
+<th scope="col" data-row="0" data-col="1"></th>
+                <th scope="col" data-row="0" data-col="2">n</th>
+                <th scope="col" data-row="0" data-col="3">%</th>
+                <th scope="col" data-row="0" data-col="4">n</th>
+                <th scope="col" data-row="0" data-col="5">%</th>
+                <th scope="col" data-row="0" data-col="6">n</th>
+                <th scope="col" data-row="0" data-col="7">%</th>
+                <th scope="col" data-row="0" data-col="8">n</th>
+                <th scope="col" data-row="0" data-col="9">%</th>
+                <th scope="col" data-row="0" data-col="10"></th>
+                <th scope="col" data-row="0" data-col="11"></th>
+              </tr>
 </thead>
-<tbody class="gt_table_body">
+<tbody>
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking</td>
-<td headers="Lower secondary_n" class="gt_row gt_center"></td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
-<td headers="Upper secondary_n" class="gt_row gt_center"></td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
-<td headers="Tertiary_n" class="gt_row gt_center"></td>
-<td headers="Tertiary_pct" class="gt_row gt_center"></td>
-<td headers="Total_n" class="gt_row gt_center"></td>
-<td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">&lt; .001</td>
-<td headers="assoc_col" class="gt_row gt_right">.14 [.08, .19]</td>
-</tr>
+<td data-row="1" data-col="1">smoking</td>
+                  <td data-row="1" data-col="2"></td>
+                  <td data-row="1" data-col="3"></td>
+                  <td data-row="1" data-col="4"></td>
+                  <td data-row="1" data-col="5"></td>
+                  <td data-row="1" data-col="6"></td>
+                  <td data-row="1" data-col="7"></td>
+                  <td data-row="1" data-col="8"></td>
+                  <td data-row="1" data-col="9"></td>
+                  <td data-row="1" data-col="10">&lt; .001</td>
+                  <td data-row="1" data-col="11">.14 [.08, .19]</td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">179</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">69.6</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">415</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">78.7</td>
-<td headers="Tertiary_n" class="gt_row gt_center">332</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">84.9</td>
-<td headers="Total_n" class="gt_row gt_center">926</td>
-<td headers="Total_pct" class="gt_row gt_center">78.8</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
+<td data-row="2" data-col="1">      No</td>
+                  <td data-row="2" data-col="2">179</td>
+                  <td data-row="2" data-col="3">69.6</td>
+                  <td data-row="2" data-col="4">415</td>
+                  <td data-row="2" data-col="5">78.7</td>
+                  <td data-row="2" data-col="6">332</td>
+                  <td data-row="2" data-col="7">84.9</td>
+                  <td data-row="2" data-col="8">926</td>
+                  <td data-row="2" data-col="9">78.8</td>
+                  <td data-row="2" data-col="10"></td>
+                  <td data-row="2" data-col="11"></td>
+                </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">      Yes</td>
-<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">78</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">30.4</td>
-<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">112</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">21.3</td>
-<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">59</td>
-<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">15.1</td>
-<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">249</td>
-<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">21.2</td>
-<td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="assoc_col" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-</tr>
+<td data-row="3" data-col="1">      Yes</td>
+                  <td data-row="3" data-col="2">78</td>
+                  <td data-row="3" data-col="3">30.4</td>
+                  <td data-row="3" data-col="4">112</td>
+                  <td data-row="3" data-col="5">21.3</td>
+                  <td data-row="3" data-col="6">59</td>
+                  <td data-row="3" data-col="7">15.1</td>
+                  <td data-row="3" data-col="8">249</td>
+                  <td data-row="3" data-col="9">21.2</td>
+                  <td data-row="3" data-col="10"></td>
+                  <td data-row="3" data-col="11"></td>
+                </tr>
 </tbody>
 </table>
 </div>
-<p>Other formats include <code>"tinytable"</code>,
-<code>"flextable"</code>, <code>"excel"</code>,
-<code>"clipboard"</code>, and <code>"word"</code>. The
-<code>"wide"</code> and <code>"long"</code> formats return data frames
-for further processing:</p>
+<!-- hack to avoid NA insertion in last line -->
+<p>Other formats include <code>"gt"</code>, <code>"flextable"</code>,
+<code>"excel"</code>, <code>"clipboard"</code>, and <code>"word"</code>.
+The <code>"wide"</code> and <code>"long"</code> formats return data
+frames for further processing:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>

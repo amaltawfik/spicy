@@ -232,19 +232,30 @@ builds a publication-ready cross-tabulation report by crossing one
 grouping variable with one or many row variables. It supports multiple
 output formats.
 
-With `output = "gt"` you get a formatted table suitable for R Markdown
-or Quarto documents:
+With `output = "tinytable"` you get a formatted table suitable for R
+Markdown or Quarto documents:
 
 ``` r
 table_apa(
   sochealth,
   row_vars = c("smoking", "physical_activity", "dentist_12m"),
   group_var = "education",
-  output = "gt"
+  output = "tinytable"
 )
 ```
 
-[TABLE]
+| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V |
+|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
+|                   | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
+| smoking           |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
+|      No           | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|      Yes          | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
+| physical_activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
+|      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
+|      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
+| dentist_12m       |                 |      |                 |      |          |      |       |      | \< .001 | .22        |
+|      No           | 113             | 43.3 | 174             | 32.3 | 67       | 16.8 | 354   | 29.5 |         |            |
+|      Yes          | 148             | 56.7 | 365             | 67.7 | 333      | 83.2 | 846   | 70.5 |         |            |
 
 Use `assoc_ci = TRUE` to display the confidence interval inline:
 
@@ -253,16 +264,21 @@ table_apa(
   sochealth,
   row_vars = "smoking",
   group_var = "education",
-  output = "gt",
+  output = "tinytable",
   assoc_ci = TRUE
 )
 ```
 
-[TABLE]
+| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V       |
+|----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------------|
+|          | n               | %    | n               | %    | n        | %    | n     | %    |         |                  |
+| smoking  |                 |      |                 |      |          |      |       |      | \< .001 | .14 \[.08, .19\] |
+|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |                  |
+|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |                  |
 
-Other formats include `"tinytable"`, `"flextable"`, `"excel"`,
-`"clipboard"`, and `"word"`. The `"wide"` and `"long"` formats return
-data frames for further processing:
+Other formats include `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
+and `"word"`. The `"wide"` and `"long"` formats return data frames for
+further processing:
 
 ``` r
 table_apa(
