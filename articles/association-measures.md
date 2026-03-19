@@ -306,9 +306,11 @@ cramer_v(tbl, detail = TRUE, conf_level = NULL)
 
 ## Controlling decimal places
 
-By default, results are printed with 3 decimal places. Pass `digits`
-directly to change this (the p-value always uses 3 decimal places or
-`< 0.001`):
+When `detail = FALSE` (the default), functions return a plain numeric
+scalar, so R’s own formatting rules apply. When `detail = TRUE`, the
+result uses a custom print method that defaults to 3 decimal places.
+Pass `digits` to change this (the p-value always uses 3 decimal places
+or `< 0.001`):
 
 ``` r
 cramer_v(tbl, detail = TRUE, digits = 4)
@@ -339,4 +341,12 @@ assoc_measures(tbl, digits = 2)
 #> Somers' D C|R                          0.20  0.02      0.15      0.25  < 0.001
 ```
 
-You can also override at print time with `print(res, digits = 4)`.
+You can also store a result and re-display it with a different precision
+without recalculating:
+
+``` r
+res <- cramer_v(tbl, detail = TRUE)
+print(res, digits = 5)
+#> Estimate  CI lower  CI upper        p
+#>  0.17617   0.12031   0.23092  < 0.001
+```

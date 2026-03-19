@@ -316,9 +316,10 @@ handling of missing values.
 sochealth |>
   dplyr::mutate(
     mean_sat  = mean_n(select = starts_with("life_sat")),
+    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 2),
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
-  dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
+  dplyr::select(starts_with("life_sat"), mean_sat, sum_sat, n_missing) |>
   head() |>
   as.data.frame()
 #>   life_sat_health life_sat_work life_sat_relationships life_sat_standard
@@ -328,13 +329,13 @@ sochealth |>
 #> 4               3             4                      3                 2
 #> 5               4             5                      4                 4
 #> 6               5             5                      5                 3
-#>   mean_sat n_missing
-#> 1     4.50         0
-#> 2     4.50         0
-#> 3     3.25         0
-#> 4     3.00         0
-#> 5     4.25         0
-#> 6     4.50         0
+#>   mean_sat sum_sat n_missing
+#> 1     4.50      18         0
+#> 2     4.50      18         0
+#> 3     3.25      13         0
+#> 4     3.00      12         0
+#> 5     4.25      17         0
+#> 6     4.50      18         0
 ```
 
 ## Learn more

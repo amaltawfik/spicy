@@ -429,9 +429,12 @@ be changed with <code>conf_level</code>:</p>
 <div class="section level2">
 <h2 id="controlling-decimal-places">Controlling decimal places<a class="anchor" aria-label="anchor" href="#controlling-decimal-places"></a>
 </h2>
-<p>By default, results are printed with 3 decimal places. Pass
-<code>digits</code> directly to change this (the p-value always uses 3
-decimal places or <code>&lt; 0.001</code>):</p>
+<p>When <code>detail = FALSE</code> (the default), functions return a
+plain numeric scalar, so R’s own formatting rules apply. When
+<code>detail = TRUE</code>, the result uses a custom print method that
+defaults to 3 decimal places. Pass <code>digits</code> to change this
+(the p-value always uses 3 decimal places or
+<code>&lt; 0.001</code>):</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
@@ -456,8 +459,13 @@ decimal places or <code>&lt; 0.001</code>):</p>
 <span><span class="co">#&gt; Kendall's Tau-c                        0.20  0.02      0.15      0.25  &lt; 0.001 </span></span>
 <span><span class="co">#&gt; Somers' D R|C                          0.21  0.03      0.16      0.26  &lt; 0.001 </span></span>
 <span><span class="co">#&gt; Somers' D C|R                          0.20  0.02      0.15      0.25  &lt; 0.001</span></span></code></pre></div>
-<p>You can also override at print time with
-<code>print(res, digits = 4)</code>.</p>
+<p>You can also store a result and re-display it with a different
+precision without recalculating:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
+<span><span class="co">#&gt;  0.17617   0.12031   0.23092  &lt; 0.001</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
