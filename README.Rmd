@@ -4,6 +4,7 @@ output: github_document
 
 ```{r, include = FALSE}
 Sys.setenv(LANGUAGE = "en")
+options(scipen = 999)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -111,7 +112,8 @@ table_apa(
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
-  output = "flextable"
+  output = "wide",
+  style = "report"
 )
 ```
 
