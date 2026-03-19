@@ -23,8 +23,11 @@ navbar:
       text: Reference
       href: reference/index.html
     news:
-      text: Changelog
+      text: News
       href: news/index.html
+    get-started:
+      text: Get started
+      href: articles/spicy.html
     github:
       icon: fa-github
       aria-label: GitHub repository
@@ -32,7 +35,7 @@ navbar:
 
 articles:
   - title: Articles
-    navbar: ~
+    navbar: Articles
     contents:
       - spicy
       - association-measures
