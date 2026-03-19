@@ -6,7 +6,13 @@ contingency table of ordinal variables.
 ## Usage
 
 ``` r
-gamma_gk(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
+gamma_gk(
+  x,
+  detail = FALSE,
+  conf_level = 0.95,
+  digits = 3L,
+  .include_se = FALSE
+)
 ```
 
 ## Arguments
@@ -26,6 +32,11 @@ gamma_gk(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
   A number between 0 and 1 giving the confidence level (default `0.95`).
   Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
   interval.
+
+- digits:
+
+  Number of decimal places used when printing the result (default `3`).
+  Only affects the `detail = TRUE` output.
 
 - .include_se:
 

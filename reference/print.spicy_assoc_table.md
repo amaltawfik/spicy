@@ -9,7 +9,7 @@ small p-values.
 
 ``` r
 # S3 method for class 'spicy_assoc_table'
-print(x, digits = 3, ...)
+print(x, digits = attr(x, "digits") %||% 3L, ...)
 ```
 
 ## Arguments

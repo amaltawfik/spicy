@@ -306,13 +306,12 @@ cramer_v(tbl, detail = TRUE, conf_level = NULL)
 
 ## Controlling decimal places
 
-By default, results are printed with 3 decimal places. Use the `digits`
-argument of [`print()`](https://rdrr.io/r/base/print.html) to change
-this (the p-value always uses 3 decimal places or `< 0.001`):
+By default, results are printed with 3 decimal places. Pass `digits`
+directly to change this (the p-value always uses 3 decimal places or
+`< 0.001`):
 
 ``` r
-res <- cramer_v(tbl, detail = TRUE)
-print(res, digits = 4)
+cramer_v(tbl, detail = TRUE, digits = 4)
 #> Estimate  CI lower  CI upper        p
 #>   0.1762    0.1203    0.2309  < 0.001
 ```
@@ -321,7 +320,7 @@ The same `digits` argument works for
 [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md):
 
 ``` r
-print(assoc_measures(tbl), digits = 2)
+assoc_measures(tbl, digits = 2)
 #> Measure                            Estimate    SE  CI lower  CI upper        p 
 #> Cramer's V                             0.18    --      0.12      0.23  < 0.001 
 #> Contingency Coefficient                0.24    --        --        --  < 0.001 
@@ -339,3 +338,5 @@ print(assoc_measures(tbl), digits = 2)
 #> Somers' D R|C                          0.21  0.03      0.16      0.26  < 0.001 
 #> Somers' D C|R                          0.20  0.02      0.15      0.25  < 0.001
 ```
+
+You can also override at print time with `print(res, digits = 4)`.

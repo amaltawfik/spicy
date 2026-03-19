@@ -6,7 +6,12 @@ two-way contingency table and returns them in a tidy data frame.
 ## Usage
 
 ``` r
-assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
+assoc_measures(
+  x,
+  type = c("all", "nominal", "ordinal"),
+  conf_level = 0.95,
+  digits = 3L
+)
 ```
 
 ## Arguments
@@ -24,6 +29,10 @@ assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 
   A number between 0 and 1 giving the confidence level (default `0.95`).
   Set to `NULL` to omit the confidence interval.
+
+- digits:
+
+  Number of decimal places used when printing the result (default `3`).
 
 ## Value
 
