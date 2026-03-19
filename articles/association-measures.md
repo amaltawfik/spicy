@@ -13,17 +13,19 @@ intervals and p-values.
 
 The table below summarizes the recommended measures by variable type.
 
-| Variable types                 | Recommended measure     | Function                                                                                       |
-|--------------------------------|-------------------------|------------------------------------------------------------------------------------------------|
-| Nominal x Nominal              | Cramer’s V              | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)                       |
-| Nominal x Nominal (2x2)        | Phi                     | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md)                                 |
-| Ordinal x Ordinal              | Kendall’s Tau-b         | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)             |
-| Ordinal x Ordinal              | Goodman-Kruskal Gamma   | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)                       |
-| Ordinal x Ordinal (asymmetric) | Somers’ D               | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)                       |
-| Nominal (asymmetric, PRE)      | Lambda                  | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)                     |
-| Nominal (asymmetric, PRE)      | Goodman-Kruskal Tau     | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
-| Nominal (asymmetric, PRE)      | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)       |
-| 2x2 table                      | Yule’s Q                | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)                           |
+| Variable types                  | Recommended measure     | Function                                                                                       |
+|---------------------------------|-------------------------|------------------------------------------------------------------------------------------------|
+| Nominal x Nominal               | Cramer’s V              | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)                       |
+| Nominal x Nominal               | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)       |
+| Nominal x Nominal (2x2)         | Phi                     | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md)                                 |
+| Ordinal x Ordinal               | Kendall’s Tau-b         | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)             |
+| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c         | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)             |
+| Ordinal x Ordinal               | Goodman-Kruskal Gamma   | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)                       |
+| Ordinal x Ordinal (asymmetric)  | Somers’ D               | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)                       |
+| Nominal (asymmetric, PRE)       | Lambda                  | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)                     |
+| Nominal (asymmetric, PRE)       | Goodman-Kruskal Tau     | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
+| Nominal (asymmetric, PRE)       | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)       |
+| 2x2 table                       | Yule’s Q                | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)                           |
 
 PRE = Proportional Reduction in Error. These measures quantify how much
 knowing one variable reduces prediction error for the other.
@@ -177,10 +179,10 @@ can equal zero even when the variables are associated, if the modal
 category does not change across columns.
 
 ``` r
-tbl <- xtabs(~ employment_status + education, data = sochealth)
+tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p 
-#>    0.000     0.000     0.000  --
+#> Estimate  CI lower  CI upper  p    
+#>    0.012     0.000     0.039  0.389
 ```
 
 ### Goodman-Kruskal Tau
@@ -191,8 +193,8 @@ the mode).
 
 ``` r
 goodman_kruskal_tau(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p    
-#>    0.012     0.003     0.021  0.009
+#> Estimate  CI lower  CI upper  p      
+#>    0.017     0.008     0.026  < 0.001
 ```
 
 ### Uncertainty coefficient
@@ -202,8 +204,8 @@ how much knowing one variable reduces uncertainty about the other.
 
 ``` r
 uncertainty_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p    
-#>    0.014     0.005     0.024  0.003
+#> Estimate  CI lower  CI upper  p      
+#>    0.028     0.016     0.040  < 0.001
 ```
 
 ## Yule’s Q
@@ -284,7 +286,7 @@ confidence level defaults to 95% and can be changed with `conf_level`:
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
 #> Estimate  CI lower  CI upper  p      
-#>    0.127     0.053     0.199  < 0.001
+#>    0.176     0.103     0.248  < 0.001
 ```
 
 To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
@@ -292,5 +294,5 @@ To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
 #> Estimate  p      
-#>    0.127  < 0.001
+#>    0.176  < 0.001
 ```
