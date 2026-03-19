@@ -52,14 +52,11 @@
 #' @export
 #'
 #' @examples
-#' varlist(iris)
-#' iris |> varlist()
-#' iris |> varlist(starts_with("Sepal"), tbl = TRUE)
-#' varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
-#' varlist(head(mtcars), tbl = TRUE)
-#' varlist(mtcars, tbl = TRUE)
-#' varlist(iris[, 1:3], tbl = TRUE)
-#' varlist(mtcars[1:10, ], tbl = TRUE)
+#' varlist(sochealth)
+#' sochealth |> varlist()
+#' varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
+#' varlist(sochealth, tbl = TRUE)
+#' varlist(iris, tbl = TRUE)
 #'
 # .raw_expr is used internally by `vl()` to capture the original expression
 # passed as `x`, so it can be used to generate the display title (e.g. "vl: df").
@@ -384,11 +381,10 @@ summarize_values_all <- function(col, include_na = FALSE) {
 #' @export
 #'
 #' @examples
-#' vl(iris)
-#' iris |> vl()
-#' vl(mtcars, starts_with("d"))
-#' vl(head(iris), include_na = TRUE)
-#' vl(iris[, 1:3], values = TRUE, tbl = TRUE)
+#' vl(sochealth)
+#' sochealth |> vl()
+#' vl(sochealth, starts_with("bmi"))
+#' vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 vl <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE) {
   raw_expr <- substitute(x)
   varlist(

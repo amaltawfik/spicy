@@ -37,8 +37,7 @@ the table dimensions. No standard asymptotic standard error exists,
 so the confidence interval is not computed.
 }
 \examples{
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 contingency_coef(tab)
 
 }

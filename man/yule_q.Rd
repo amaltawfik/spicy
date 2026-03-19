@@ -38,8 +38,7 @@ Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
-data(mtcars)
-tab <- table(factor(mtcars$vs), factor(mtcars$am))
+tab <- table(sochealth$smoking, sochealth$sex)
 yule_q(tab)
 
 }

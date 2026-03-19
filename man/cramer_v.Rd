@@ -42,8 +42,7 @@ Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024).
 }
 \examples{
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 cramer_v(tab)
 cramer_v(tab, detail = TRUE)
 cramer_v(tab, detail = TRUE, conf_level = NULL)

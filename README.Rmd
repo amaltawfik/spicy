@@ -76,25 +76,22 @@ library(dplyr)
 
 ```{r eval=TRUE}
 # Get a summary of all variables as a tibble
-varlist(iris, tbl = TRUE)
+varlist(sochealth, tbl = TRUE)
 
-# Tabulate frequencies with sort alphabetically (Z-A)
-freq(iris, Species, sort = "name-")
+# Tabulate frequencies (ordered factor with labels)
+freq(sochealth, education)
 
 # Cross-tab with frequencies
-cross_tab(mtcars, cyl, gear)
+cross_tab(sochealth, smoking, education)
 
 # Cross-tab with column percentages
-cross_tab(mtcars, cyl, gear, percent = "column")
+cross_tab(sochealth, smoking, education, percent = "column")
 
 # Cross-tab with row percentages
-cross_tab(mtcars, cyl, gear, percent = "row")
+cross_tab(sochealth, smoking, education, percent = "row")
 
-# Cross-tab grouped by a single variable
-cross_tab(mtcars, cyl, gear, by = am)
-
-# Cross-tab grouped by two variables
-cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
+# Cross-tab grouped by sex
+cross_tab(sochealth, smoking, education, by = sex)
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
@@ -127,7 +124,7 @@ labelled::var_label(out)
 ### Association measures
 
 ```{r eval=TRUE}
-tab <- table(mtcars$cyl, mtcars$gear)
+tab <- table(sochealth$education, sochealth$self_rated_health)
 
 # Quick scalar estimate
 cramer_v(tab)
@@ -143,10 +140,10 @@ assoc_measures(tab)
 
 ```{r eval=TRUE}
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "tinytable"
 )
 ```
@@ -155,29 +152,29 @@ table_apa(
 
 ```{r eval=FALSE}
 # Interactive codebook (requires DT)
-code_book(iris)
+code_book(sochealth)
 
 # APA-ready table: wide format
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "wide"
 )
 
 # APA-ready table: export to Excel
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "excel",
   excel_path = "apa_table.xlsx"
 )
 
 # Copy data to clipboard (interactive session)
-copy_clipboard(mtcars)
+copy_clipboard(sochealth)
 ```
 
 > All functions can be directly used in pipelines.

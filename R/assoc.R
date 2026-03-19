@@ -148,8 +148,7 @@
 #' Statistics*. R package.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' cramer_v(tab)
 #' cramer_v(tab, detail = TRUE)
 #' cramer_v(tab, detail = TRUE, conf_level = NULL)
@@ -237,8 +236,7 @@ cramer_v <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$vs), factor(mtcars$am))
+#' tab <- table(sochealth$smoking, sochealth$sex)
 #' phi(tab)
 #' phi(tab, detail = TRUE)
 #'
@@ -316,8 +314,7 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 #' so the confidence interval is not computed.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' contingency_coef(tab)
 #'
 #' @seealso [cramer_v()], [assoc_measures()]
@@ -386,8 +383,7 @@ contingency_coef <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$vs), factor(mtcars$am))
+#' tab <- table(sochealth$smoking, sochealth$sex)
 #' yule_q(tab)
 #'
 #' @seealso [phi()], [gamma_gk()], [assoc_measures()]
@@ -463,8 +459,7 @@ yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' lambda_gk(tab)
 #' lambda_gk(tab, direction = "row")
 #' lambda_gk(tab, direction = "column", detail = TRUE)
@@ -492,7 +487,8 @@ lambda_gk <- function(
   max_rsum <- max(rsum)
   max_csum <- max(csum)
 
-  est <- switch(direction,
+  est <- switch(
+    direction,
     symmetric = {
       0.5 *
         (sum(rmax, cmax) - (max_csum + max_rsum)) /
@@ -507,7 +503,8 @@ lambda_gk <- function(
   }
 
   # ASE (DescTools approach)
-  sigma2 <- switch(direction,
+  sigma2 <- switch(
+    direction,
     row = {
       L_row_max <- min(which(rsum == max_rsum))
       L_row <- integer(nc)
@@ -599,8 +596,7 @@ lambda_gk <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' goodman_kruskal_tau(tab)
 #' goodman_kruskal_tau(tab, direction = "column", detail = TRUE)
 #'
@@ -757,8 +753,7 @@ goodman_kruskal_tau <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' uncertainty_coef(tab)
 #' uncertainty_coef(tab, direction = "row", detail = TRUE)
 #'
@@ -785,7 +780,8 @@ uncertainty_coef <- function(
 
   mi <- H_x + H_y - H_xy # mutual information
 
-  U <- switch(direction,
+  U <- switch(
+    direction,
     row = if (H_x > 0) mi / H_x else 0,
     column = if (H_y > 0) mi / H_y else 0,
     symmetric = if (H_x + H_y > 0) 2 * mi / (H_x + H_y) else 0
@@ -881,8 +877,7 @@ uncertainty_coef <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' gamma_gk(tab)
 #' gamma_gk(tab, detail = TRUE)
 #'
@@ -952,8 +947,7 @@ gamma_gk <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' kendall_tau_b(tab)
 #'
 #' @seealso [kendall_tau_c()], [gamma_gk()], [somers_d()],
@@ -1051,8 +1045,7 @@ kendall_tau_b <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' kendall_tau_c(tab)
 #'
 #' @seealso [kendall_tau_b()], [gamma_gk()], [somers_d()],
@@ -1132,8 +1125,7 @@ kendall_tau_c <- function(
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' somers_d(tab, direction = "row")
 #' somers_d(tab, direction = "column", detail = TRUE)
 #'
@@ -1161,11 +1153,7 @@ somers_d <- function(
   n2 <- sum(csum * (csum - 1)) / 2 # column ties
 
   # DescTools: ni. = colSums for "row", rowSums for "column"
-  ni <- switch(direction,
-    row = csum,
-    column = rsum,
-    symmetric = NULL
-  )
+  ni <- switch(direction, row = csum, column = rsum, symmetric = NULL)
 
   if (direction == "symmetric") {
     # Symmetric Somers' d equals tau-b
@@ -1177,10 +1165,7 @@ somers_d <- function(
     ))
   }
 
-  denom <- n0 - switch(direction,
-    row = n2,
-    column = n1
-  )
+  denom <- n0 - switch(direction, row = n2, column = n1)
   if (denom == 0) {
     warning(
       "Somers' d is undefined for this table; returning NA.",
@@ -1262,8 +1247,7 @@ somers_d <- function(
 #' (Signorell et al., 2024).
 #'
 #' @examples
-#' data(mtcars)
-#' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+#' tab <- table(sochealth$smoking, sochealth$education)
 #' assoc_measures(tab)
 #' assoc_measures(tab, type = "nominal")
 #' assoc_measures(tab, type = "ordinal")
@@ -1420,7 +1404,8 @@ assoc_measures <- function(
     }
   )
 
-  fns <- switch(type,
+  fns <- switch(
+    type,
     nominal = nominal_fns,
     ordinal = ordinal_fns,
     all = c(nominal_fns, ordinal_fns)

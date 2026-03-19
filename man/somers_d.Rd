@@ -49,8 +49,7 @@ Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$education, sochealth$self_rated_health)
 somers_d(tab, direction = "row")
 somers_d(tab, direction = "column", detail = TRUE)
 

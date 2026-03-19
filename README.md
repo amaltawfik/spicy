@@ -87,159 +87,115 @@ pak::pak("amaltawfik/spicy")
 
 ``` r
 # Get a summary of all variables as a tibble
-varlist(iris, tbl = TRUE)
-#> # A tibble: 5 × 7
-#>   Variable     Label Values                       Class N_distinct N_valid   NAs
-#>   <chr>        <chr> <chr>                        <chr>      <int>   <int> <int>
-#> 1 Sepal.Length <NA>  4.3, 4.4, 4.5, ..., 7.9      nume…         35     150     0
-#> 2 Sepal.Width  <NA>  2, 2.2, 2.3, ..., 4.4        nume…         23     150     0
-#> 3 Petal.Length <NA>  1, 1.1, 1.2, ..., 6.9        nume…         43     150     0
-#> 4 Petal.Width  <NA>  0.1, 0.2, 0.3, ..., 2.5      nume…         22     150     0
-#> 5 Species      <NA>  setosa, versicolor, virgini… fact…          3     150     0
+varlist(sochealth, tbl = TRUE)
+#> # A tibble: 20 × 7
+#>    Variable            Label               Values Class N_distinct N_valid   NAs
+#>    <chr>               <chr>               <chr>  <chr>      <int>   <int> <int>
+#>  1 sex                 Sex                 Femal… fact…          2    1200     0
+#>  2 age                 Age (years)         25, 2… nume…         51    1200     0
+#>  3 age_group           Age group           25-34… orde…          4    1200     0
+#>  4 education           Highest education … Lower… orde…          3    1200     0
+#>  5 social_class        Subjective social … Lower… orde…          5    1200     0
+#>  6 region              Region of residence Centr… fact…          6    1200     0
+#>  7 employment_status   Employment status   Emplo… fact…          4    1200     0
+#>  8 income_group        Household income g… Low, … orde…          4    1182    18
+#>  9 income              Monthly household … 1000,… nume…       1053    1200     0
+#> 10 smoking             Current smoker      No, Y… fact…          2    1175    25
+#> 11 physical_activity   Regular physical a… No, Y… fact…          2    1200     0
+#> 12 dentist_12m         Dentist visit in l… No, Y… fact…          2    1200     0
+#> 13 self_rated_health   Self-rated health   Poor,… orde…          4    1180    20
+#> 14 wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    1200     0
+#> 15 bmi                 Body mass index     16, 1… nume…        181    1188    12
+#> 16 bmi_category        BMI category        Norma… orde…          3    1188    12
+#> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
+#> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
+#> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
+#> 20 weight              Survey design weig… 0.664… nume…        483    1200     0
 
-# Tabulate frequencies with sort alphabetically (Z-A)
-freq(iris, Species, sort = "name-")
-#> Frequency table: Species
+# Tabulate frequencies (ordered factor with labels)
+freq(sochealth, education)
+#> Frequency table: education
 #> 
-#>  Category │ Values      Freq.  Percent 
-#> ──────────┼────────────────────────────
-#>  Valid    │ virginica      50     33.3 
-#>           │ versicolor     50     33.3 
-#>           │ setosa         50     33.3 
-#> ──────────┼────────────────────────────
-#>  Total    │               150    100.0 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    261     21.8 
+#>           │ Upper secondary    539     44.9 
+#>           │ Tertiary           400     33.3 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
 #> 
-#> Class: factor
-#> Data: iris
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
 
 # Cross-tab with frequencies
-cross_tab(mtcars, cyl, gear)
-#> Crosstable: cyl x gear (N)
+cross_tab(sochealth, smoking, education)
+#> Crosstable: smoking x education (N)
 #> 
-#>  Values      │       3        4       5 │      Total 
-#> ─────────────┼──────────────────────────┼────────────
-#>  4           │       1        8       2 │         11 
-#>  6           │       2        4       1 │          7 
-#>  8           │      12        0       2 │         14 
-#> ─────────────┼──────────────────────────┼────────────
-#>  Total       │      15       12       5 │         32 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
 #> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
 
 # Cross-tab with column percentages
-cross_tab(mtcars, cyl, gear, percent = "column")
-#> Crosstable: cyl x gear (Column %)
+cross_tab(sochealth, smoking, education, percent = "column")
+#> Crosstable: smoking x education (Column %)
 #> 
-#>  Values      │          3           4           5 │      Total 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  4           │        6.7        66.7        40.0 │       34.4 
-#>  6           │       13.3        33.3        20.0 │       21.9 
-#>  8           │       80.0         0.0        40.0 │       43.8 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  Total       │      100.0       100.0       100.0 │      100.0 
-#>  N           │         15          12           5 │         32 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                 69.6                  78.7           84.9 │       78.8 
+#>  Yes         │                 30.4                  21.3           15.1 │       21.2 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                100.0                 100.0          100.0 │      100.0 
+#>  N           │                  257                   527            391 │       1175 
 #> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
 
 # Cross-tab with row percentages
-cross_tab(mtcars, cyl, gear, percent = "row")
-#> Crosstable: cyl x gear (Row %)
+cross_tab(sochealth, smoking, education, percent = "row")
+#> Crosstable: smoking x education (Row %)
 #> 
-#>  Values      │         3          4          5 │      Total        N 
-#> ─────────────┼─────────────────────────────────┼─────────────────────
-#>  4           │       9.1       72.7       18.2 │      100.0       11 
-#>  6           │      28.6       57.1       14.3 │      100.0        7 
-#>  8           │      85.7        0.0       14.3 │      100.0       14 
-#> ─────────────┼─────────────────────────────────┼─────────────────────
-#>  Total       │      46.9       37.5       15.6 │      100.0       32 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total          N 
+#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
+#>  No          │                 19.3                  44.8           35.9 │      100.0        926 
+#>  Yes         │                 31.3                  45.0           23.7 │      100.0        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
+#>  Total       │                 21.9                  44.9           33.3 │      100.0       1175 
 #> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
 
-# Cross-tab grouped by a single variable
-cross_tab(mtcars, cyl, gear, by = am)
-#> Crosstable: cyl x gear (N) | am = 0
+# Cross-tab grouped by sex
+cross_tab(sochealth, smoking, education, by = sex)
+#> Crosstable: smoking x education (N) | sex = Female
 #> 
-#>  Values      │       3       4       5 │      Total 
-#> ─────────────┼─────────────────────────┼────────────
-#>  4           │       1       2       0 │          3 
-#>  6           │       2       2       0 │          4 
-#>  8           │      12       0       0 │         12 
-#> ─────────────┼─────────────────────────┼────────────
-#>  Total       │      15       4       0 │         19 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   95                   220            160 │        475 
+#>  Yes         │                   38                    62             31 │        131 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  133                   282            191 │        606 
 #> 
-#> Chi-2(2) = 9.0, p = 0.011
-#> Cramer's V = 0.69
-#> Warning: 5 expected cells < 5 (83.3%). 2 expected cells < 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 7.1, p = 0.029
+#> Cramer's V = 0.11
 #> 
-#> Crosstable: cyl x gear (N) | am = 1
+#> Crosstable: smoking x education (N) | sex = Male
 #> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       6       2 │          8 
-#>  6           │      0       2       1 │          3 
-#>  8           │      0       0       2 │          2 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       8       5 │         13 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   84                   195            172 │        451 
+#>  Yes         │                   40                    50             28 │        118 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  124                   245            200 │        569 
 #> 
-#> Chi-2(2) = 3.8, p = 0.146
-#> Cramer's V = 0.54
-#> Warning: 6 expected cells < 5 (100%). 1 expected cell < 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-
-# Cross-tab grouped by two variables
-cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
-#> Crosstable: cyl x gear (N) | vs x am = 0.0
-#> 
-#>  Values      │       3       4       5 │      Total 
-#> ─────────────┼─────────────────────────┼────────────
-#>  4           │       0       0       0 │          0 
-#>  6           │       0       0       0 │          0 
-#>  8           │      12       0       0 │         12 
-#> ─────────────┼─────────────────────────┼────────────
-#>  Total       │      12       0       0 │         12 
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 1.0
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      1       2       0 │          3 
-#>  6           │      2       2       0 │          4 
-#>  8           │      0       0       0 │          0 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      3       4       0 │          7 
-#> 
-#> Chi-2(1) = 0.2, p = 0.659
+#> Chi-2(2) = 15.6, p < 0.001
 #> Cramer's V = 0.17
-#> Warning: 4 expected cells < 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 0.1
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       0       1 │          1 
-#>  6           │      0       2       1 │          3 
-#>  8           │      0       0       2 │          2 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       2       4 │          6 
-#> 
-#> Chi-2(2) = 3.0, p = 0.223
-#> Cramer's V = 0.71
-#> Warning: 6 expected cells < 5 (100%). 3 expected cells < 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 1.1
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       6       1 │          7 
-#>  6           │      0       0       0 │          0 
-#>  8           │      0       0       0 │          0 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       6       1 │          7
 
 # Compute row-wise mean/sum (all values must be valid by default) or specific value
 df <- data.frame(
@@ -293,102 +249,102 @@ labelled::var_label(out)
 ### Association measures
 
 ``` r
-tab <- table(mtcars$cyl, mtcars$gear)
+tab <- table(sochealth$education, sochealth$self_rated_health)
 
 # Quick scalar estimate
 cramer_v(tab)
-#> [1] 0.5308655
+#> [1] 0.1761697
 
 # Detailed result with CI and p-value
 cramer_v(tab, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.530865503 0.223553416 0.742175638 0.001214066
+#>     estimate     ci_lower     ci_upper      p_value 
+#> 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14
 
 # Summary of all available measures
 assoc_measures(tab)
-#>                              measure   estimate         se   ci_lower
-#> 1                         Cramer's V  0.5308655         NA  0.2235534
-#> 2            Contingency Coefficient  0.6003875         NA         NA
-#> 3                   Lambda symmetric  0.4857143 0.12920157  0.2324839
-#> 4                         Lambda R|C  0.4444444 0.14344383  0.1632997
-#> 5                         Lambda C|R  0.5294118 0.15628498  0.2230988
-#> 6          Goodman-Kruskal's Tau R|C  0.3386018 0.09944838  0.1436866
-#> 7          Goodman-Kruskal's Tau C|R  0.3825603 0.11759802  0.1520724
-#> 8  Uncertainty Coefficient symmetric  0.3504372 0.08940615  0.1752043
-#> 9        Uncertainty Coefficient R|C  0.3424818 0.08737530  0.1712294
-#> 10       Uncertainty Coefficient C|R  0.3587709 0.09349119  0.1755315
-#> 11             Goodman-Kruskal Gamma -0.6573705 0.17278471 -0.9960223
-#> 12                   Kendall's Tau-b -0.5125435 0.14631499 -0.7993156
-#> 13                    Stuart's Tau-c -0.4833984 0.13209204 -0.7422941
-#> 14                     Somers' D R|C -0.5238095 0.16050578 -0.8383951
-#> 15                     Somers' D C|R -0.5015198 0.14077197 -0.7774278
+#>                              measure   estimate          se    ci_lower
+#> 1                         Cramer's V 0.17616972          NA 0.120311922
+#> 2            Contingency Coefficient 0.24175160          NA          NA
+#> 3                   Lambda symmetric 0.01176471 0.013655494 0.000000000
+#> 4                         Lambda R|C 0.02297090 0.026522213 0.000000000
+#> 5                         Lambda C|R 0.00000000 0.000000000 0.000000000
+#> 6          Goodman-Kruskal's Tau R|C 0.02678191 0.006174750 0.014679623
+#> 7          Goodman-Kruskal's Tau C|R 0.01720331 0.004665374 0.008059345
+#> 8  Uncertainty Coefficient symmetric 0.02778300 0.006227780 0.015576773
+#> 9        Uncertainty Coefficient R|C 0.02949061 0.006636785 0.016482749
+#> 10       Uncertainty Coefficient C|R 0.02626232 0.005871713 0.014753970
+#> 11             Goodman-Kruskal Gamma 0.31047909 0.037170742 0.237625772
+#> 12                   Kendall's Tau-b 0.20455241 0.025201007 0.155159344
+#> 13                    Stuart's Tau-c 0.19964091 0.024819686 0.150995217
+#> 14                     Somers' D R|C 0.20153687 0.024718963 0.153088589
+#> 15                     Somers' D C|R 0.20761308 0.025647347 0.157345200
 #>      ci_upper      p_value
-#> 1   0.7421756 1.214066e-03
-#> 2          NA 1.214066e-03
-#> 3   0.7389447 1.703534e-04
-#> 4   0.7255892 1.945774e-03
-#> 5   0.8357247 7.053865e-04
-#> 6   0.5335171 6.621256e-04
-#> 7   0.6130482 1.141459e-03
-#> 8   0.5256700 8.869272e-05
-#> 9   0.5137342 8.867261e-05
-#> 10  0.5420102 1.243016e-04
-#> 11 -0.3187187 1.420541e-04
-#> 12 -0.2257714 4.600250e-04
-#> 13 -0.2245028 2.526509e-04
-#> 14 -0.2092240 1.100478e-03
-#> 15 -0.2256118 3.671451e-04
+#> 1  0.23091555 8.817446e-14
+#> 2          NA 8.817446e-14
+#> 3  0.03852898 3.889427e-01
+#> 4  0.07495349 3.864350e-01
+#> 5  0.00000000           NA
+#> 6  0.03888420 1.442259e-05
+#> 7  0.02634727 2.265169e-04
+#> 8  0.03998922 8.152484e-06
+#> 9  0.04249847 8.850380e-06
+#> 10 0.03777066 7.724391e-06
+#> 11 0.38333240 6.667393e-17
+#> 12 0.25394548 4.784996e-16
+#> 13 0.24828660 8.720015e-16
+#> 14 0.24998514 3.546299e-16
+#> 15 0.25788095 5.730469e-16
 ```
 
 ### APA-ready table builder
 
 ``` r
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "tinytable"
 )
 ```
 
-| Variable     | 4   |      | 3   |       | 5   |       | Total |      | p       | Cramer’s V |
-|--------------|-----|------|-----|-------|-----|-------|-------|------|---------|------------|
-|              | n   | %    | n   | %     | n   | %     | n     | %    |         |            |
-| Engine       |     |      |     |       |     |       |       |      | .002    | .62        |
-|      0       | 2   | 16.7 | 12  | 80.0  | 4   | 80.0  | 18    | 56.2 |         |            |
-|      1       | 10  | 83.3 | 3   | 20.0  | 1   | 20.0  | 14    | 43.8 |         |            |
-| Transmission |     |      |     |       |     |       |       |      | \< .001 | .81        |
-|      0       | 4   | 33.3 | 15  | 100.0 | 0   | 0.0   | 19    | 59.4 |         |            |
-|      1       | 8   | 66.7 | 0   | 0.0   | 5   | 100.0 | 13    | 40.6 |         |            |
+| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer’s V |
+|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
+|                   | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
+| Current smoker    |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
+|      No           | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|      Yes          | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
+| Physical activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
+|      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
+|      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
 
 ### Additional exported helpers
 
 ``` r
 # Interactive codebook (requires DT)
-code_book(iris)
+code_book(sochealth)
 
 # APA-ready table: wide format
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "wide"
 )
 
 # APA-ready table: export to Excel
 table_apa(
-  data = mtcars,
-  row_vars = c("vs", "am"),
-  group_var = "gear",
-  labels = c("Engine", "Transmission"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "excel",
   excel_path = "apa_table.xlsx"
 )
 
 # Copy data to clipboard (interactive session)
-copy_clipboard(mtcars)
+copy_clipboard(sochealth)
 ```
 
 > All functions can be directly used in pipelines.

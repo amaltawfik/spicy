@@ -77,31 +77,22 @@
 #' ```
 #' @examples
 #' # Basic crosstab
-#' cross_tab(mtcars, cyl, gear)
+#' cross_tab(sochealth, smoking, education)
+#'
+#' # Column percentages
+#' cross_tab(sochealth, smoking, education, percent = "column")
 #'
 #' # Weighted (rescaled)
-#' cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
+#' cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #'
-#' # Grouped
-#' cross_tab(mtcars, cyl, gear, by = am)
+#' # Grouped by sex
+#' cross_tab(sochealth, smoking, education, by = sex)
 #'
-#' # Grouped by an interaction
-#' cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
-#'
-#' # Vector interface
-#' cross_tab(mtcars$cyl, mtcars$gear, percent = "c")
-#'
-#' # Set default percent mode globally
-#' options(spicy.percent = "column")
-#'
-#' # Now this will display column percentages by default
-#' cross_tab(mtcars, cyl, gear)
-#'
-#' # Reset to default behavior
-#' options(spicy.percent = NULL)
+#' # Ordinal variables: auto-selects Kendall's Tau-b
+#' cross_tab(sochealth, education, self_rated_health)
 #'
 #' # 2x2 table with Yates correction
-#' cross_tab(mtcars, vs, am, correct = TRUE)
+#' cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
 #'
 #' @export
 cross_tab <- function(

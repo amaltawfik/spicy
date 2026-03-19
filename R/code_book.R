@@ -38,11 +38,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Example with a built-in dataset
-#' df <- head(mtcars)
-#'
 #' # Launch the interactive codebook (opens in Viewer)
-#' code_book(df)
+#' code_book(sochealth)
 #' }
 #'
 #' @seealso

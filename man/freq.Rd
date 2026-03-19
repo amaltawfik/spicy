@@ -113,6 +113,10 @@ computed proportionally to the weights. The argument \code{rescale = TRUE}
 normalizes weights so their sum equals the unweighted sample size.
 }
 \examples{
+# Frequency table with labelled ordered factor
+freq(sochealth, education)
+freq(sochealth, self_rated_health, sort = "-")
+
 library(labelled)
 
 # Simple numeric vector

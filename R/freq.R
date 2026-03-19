@@ -78,6 +78,10 @@
 #' If `styled = TRUE`, prints the formatted table to the console and returns it invisibly.
 #'
 #' @examples
+#' # Frequency table with labelled ordered factor
+#' freq(sochealth, education)
+#' freq(sochealth, self_rated_health, sort = "-")
+#'
 #' library(labelled)
 #'
 #' # Simple numeric vector
@@ -230,7 +234,8 @@ freq <- function(
       )
     }
 
-    mode_display <- switch(labelled_levels,
+    mode_display <- switch(
+      labelled_levels,
       "p" = "prefixed",
       "l" = "labels",
       "v" = "values",
@@ -285,7 +290,8 @@ freq <- function(
   # --- Tri
   if (sort != "") {
     decreasing <- sort %in% c("-", "name-")
-    sort_col <- switch(sort,
+    sort_col <- switch(
+      sort,
       "+" = "n",
       "-" = "n",
       "name+" = "value",

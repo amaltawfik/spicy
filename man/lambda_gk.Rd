@@ -48,8 +48,7 @@ Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 lambda_gk(tab)
 lambda_gk(tab, direction = "row")
 lambda_gk(tab, direction = "column", detail = TRUE)
