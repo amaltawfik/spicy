@@ -399,7 +399,7 @@ table_apa <- function(
       return("")
     }
     if ((!is.na(op) && op == "<" && p <= 0.001) || p < 0.001) {
-      return(if (decimal_mark == ".") "< .001" else "< ,001")
+      return(if (decimal_mark == ".") "<\u00A0.001" else "<\u00A0,001")
     }
     s <- formatC(p, format = "f", digits = p_digits)
     s <- sub("^0\\.", ".", s)
@@ -943,6 +943,12 @@ table_apa <- function(
       j = seq_len(ncol(dat_tt)),
       line = "b",
       line_width = 0.06
+    )
+    # Prevent p-value and measure columns from wrapping
+    tt <- tinytable::style_tt(
+      tt,
+      j = stat_j,
+      html_css = "white-space: nowrap;"
     )
 
     return(tt)
