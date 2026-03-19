@@ -218,19 +218,19 @@ p-value. The p-value tests the null hypothesis of no association using
 the Pearson chi-squared test.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.136     0.079     0.191  &lt; 0.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="phi-coefficient">Phi coefficient<a class="anchor" aria-label="anchor" href="#phi-coefficient"></a>
 </h3>
 <p>For 2x2 tables, Phi is equivalent to Cramer’s V. Unlike V, Phi can be
-negative when the table is 2x2, indicating the direction of
-association.</p>
+negative when the table is 2x2, indicating the direction of association.
+The p-value tests H0: no association (Pearson chi-squared test).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/phi.html">phi</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p    </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.006     0.000     0.063  0.839</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -238,10 +238,11 @@ association.</p>
 </h3>
 <p>The contingency coefficient is an alternative to Cramer’s V. Its
 upper bound depends on the table dimensions, which makes it harder to
-compare across tables of different sizes.</p>
+compare across tables of different sizes. The p-value tests H0: no
+association (Pearson chi-squared test).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/contingency_coef.html">contingency_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.134        --        --  &lt; 0.001</span></span></code></pre></div>
 </div>
 </div>
@@ -259,7 +260,7 @@ strength when there are many ties.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/gamma_gk.html">gamma_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.310     0.238     0.383  &lt; 0.001</span></span></code></pre></div>
 <p>A positive value means that higher values on one variable tend to
 occur with higher values on the other. The p-value tests H0: Gamma = 0
@@ -269,20 +270,22 @@ using a Wald z-test.</p>
 <h3 id="kendalls-tau-b">Kendall’s Tau-b<a class="anchor" aria-label="anchor" href="#kendalls-tau-b"></a>
 </h3>
 <p>Tau-b adjusts for ties and ranges from -1 to +1. It is generally
-preferred over Gamma for square or near-square tables.</p>
+preferred over Gamma for square or near-square tables. The p-value tests
+H0: Tau-b = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/kendall_tau_b.html">kendall_tau_b</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.205     0.155     0.254  &lt; 0.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="kendalls-tau-c-stuarts-tau-c">Kendall’s Tau-c (Stuart’s Tau-c)<a class="anchor" aria-label="anchor" href="#kendalls-tau-c-stuarts-tau-c"></a>
 </h3>
 <p>Tau-c is similar to Tau-b but adjusts for rectangular tables where
-the number of rows and columns differ.</p>
+the number of rows and columns differ. The p-value tests H0: Tau-c = 0
+(Wald z-test).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/kendall_tau_c.html">kendall_tau_c</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.200     0.151     0.248  &lt; 0.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -290,10 +293,11 @@ the number of rows and columns differ.</p>
 </h3>
 <p>Somers’ D is an asymmetric measure: it distinguishes between a
 dependent and an independent variable. By default, the row variable is
-treated as dependent (D(R|C)).</p>
+treated as dependent (D(R|C)). The p-value tests H0: D = 0 (Wald
+z-test).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/somers_d.html">somers_d</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.208     0.157     0.258  &lt; 0.001</span></span></code></pre></div>
 </div>
 </div>
@@ -308,11 +312,12 @@ versa)?</p>
 </h3>
 <p>Lambda measures the proportional reduction in classification error.
 It can equal zero even when the variables are associated, if the modal
-category does not change across columns.</p>
+category does not change across columns. The p-value tests H0: Lambda =
+0 (Wald z-test).</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/lambda_gk.html">lambda_gk</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p    </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.012     0.000     0.039  0.389</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -320,10 +325,10 @@ category does not change across columns.</p>
 </h3>
 <p>Tau measures the proportional reduction in error when predicting the
 row variable from the column variable, using the full distribution (not
-just the mode).</p>
+just the mode). The p-value tests H0: Tau = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.017     0.008     0.026  &lt; 0.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -331,10 +336,10 @@ just the mode).</p>
 </h3>
 <p>The uncertainty coefficient (Theil’s U) is based on entropy. It
 measures how much knowing one variable reduces uncertainty about the
-other.</p>
+other. The p-value tests H0: U = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/uncertainty_coef.html">uncertainty_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.028     0.016     0.040  &lt; 0.001</span></span></code></pre></div>
 </div>
 </div>
@@ -342,11 +347,12 @@ other.</p>
 <h2 id="yules-q">Yule’s Q<a class="anchor" aria-label="anchor" href="#yules-q"></a>
 </h2>
 <p>Yule’s Q is defined for 2x2 tables only. It ranges from -1 to +1 and
-is equivalent to Gamma for 2x2 tables.</p>
+is equivalent to Gamma for 2x2 tables. The p-value tests H0: Q = 0 (Wald
+z-test).</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/yule_q.html">yule_q</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p    </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.015    -0.126     0.155  0.839</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -411,13 +417,13 @@ uses Cramer’s V.</p>
 be changed with <code>conf_level</code>:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
 <span><span class="co">#&gt;    0.176     0.103     0.248  &lt; 0.001</span></span></code></pre></div>
 <p>To get only the estimate and p-value (no CI), pass
 <code>conf_level = NULL</code>:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  p      </span></span>
+<span><span class="co">#&gt; Estimate        p</span></span>
 <span><span class="co">#&gt;    0.176  &lt; 0.001</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -230,7 +230,7 @@ interval and p-value:
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.136     0.079     0.191  < 0.001
 ```
 

@@ -82,7 +82,7 @@ chi-squared test.
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.136     0.079     0.191  < 0.001
 ```
 
@@ -90,11 +90,12 @@ cramer_v(tbl, detail = TRUE)
 
 For 2x2 tables, Phi is equivalent to Cramer’s V. Unlike V, Phi can be
 negative when the table is 2x2, indicating the direction of association.
+The p-value tests H0: no association (Pearson chi-squared test).
 
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
-#> Estimate  CI lower  CI upper  p    
+#> Estimate  CI lower  CI upper      p
 #>    0.006     0.000     0.063  0.839
 ```
 
@@ -102,11 +103,12 @@ phi(tbl_22, detail = TRUE)
 
 The contingency coefficient is an alternative to Cramer’s V. Its upper
 bound depends on the table dimensions, which makes it harder to compare
-across tables of different sizes.
+across tables of different sizes. The p-value tests H0: no association
+(Pearson chi-squared test).
 
 ``` r
 contingency_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.134        --        --  < 0.001
 ```
 
@@ -124,7 +126,7 @@ strength when there are many ties.
 ``` r
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
 gamma_gk(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.310     0.238     0.383  < 0.001
 ```
 
@@ -135,22 +137,24 @@ Wald z-test.
 ### Kendall’s Tau-b
 
 Tau-b adjusts for ties and ranges from -1 to +1. It is generally
-preferred over Gamma for square or near-square tables.
+preferred over Gamma for square or near-square tables. The p-value tests
+H0: Tau-b = 0 (Wald z-test).
 
 ``` r
 kendall_tau_b(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.205     0.155     0.254  < 0.001
 ```
 
 ### Kendall’s Tau-c (Stuart’s Tau-c)
 
 Tau-c is similar to Tau-b but adjusts for rectangular tables where the
-number of rows and columns differ.
+number of rows and columns differ. The p-value tests H0: Tau-c = 0 (Wald
+z-test).
 
 ``` r
 kendall_tau_c(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.200     0.151     0.248  < 0.001
 ```
 
@@ -158,11 +162,11 @@ kendall_tau_c(tbl_ord, detail = TRUE)
 
 Somers’ D is an asymmetric measure: it distinguishes between a dependent
 and an independent variable. By default, the row variable is treated as
-dependent (D(R\|C)).
+dependent (D(R\|C)). The p-value tests H0: D = 0 (Wald z-test).
 
 ``` r
 somers_d(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.208     0.157     0.258  < 0.001
 ```
 
@@ -176,12 +180,13 @@ versa)?
 
 Lambda measures the proportional reduction in classification error. It
 can equal zero even when the variables are associated, if the modal
-category does not change across columns.
+category does not change across columns. The p-value tests H0: Lambda =
+0 (Wald z-test).
 
 ``` r
 tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p    
+#> Estimate  CI lower  CI upper      p
 #>    0.012     0.000     0.039  0.389
 ```
 
@@ -189,34 +194,36 @@ lambda_gk(tbl, detail = TRUE)
 
 Tau measures the proportional reduction in error when predicting the row
 variable from the column variable, using the full distribution (not just
-the mode).
+the mode). The p-value tests H0: Tau = 0 (Wald z-test).
 
 ``` r
 goodman_kruskal_tau(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.017     0.008     0.026  < 0.001
 ```
 
 ### Uncertainty coefficient
 
 The uncertainty coefficient (Theil’s U) is based on entropy. It measures
-how much knowing one variable reduces uncertainty about the other.
+how much knowing one variable reduces uncertainty about the other. The
+p-value tests H0: U = 0 (Wald z-test).
 
 ``` r
 uncertainty_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.028     0.016     0.040  < 0.001
 ```
 
 ## Yule’s Q
 
 Yule’s Q is defined for 2x2 tables only. It ranges from -1 to +1 and is
-equivalent to Gamma for 2x2 tables.
+equivalent to Gamma for 2x2 tables. The p-value tests H0: Q = 0 (Wald
+z-test).
 
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 yule_q(tbl_22, detail = TRUE)
-#> Estimate  CI lower  CI upper  p    
+#> Estimate  CI lower  CI upper      p
 #>    0.015    -0.126     0.155  0.839
 ```
 
@@ -285,7 +292,7 @@ confidence level defaults to 95% and can be changed with `conf_level`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
-#> Estimate  CI lower  CI upper  p      
+#> Estimate  CI lower  CI upper        p
 #>    0.176     0.103     0.248  < 0.001
 ```
 
@@ -293,6 +300,6 @@ To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
-#> Estimate  p      
+#> Estimate        p
 #>    0.176  < 0.001
 ```
