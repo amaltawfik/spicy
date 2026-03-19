@@ -136,15 +136,16 @@
 #' is the Pearson chi-squared statistic, \eqn{n} is the total count,
 #' and \eqn{k = \min(r, c)}.
 #' The confidence interval uses the Fisher z-transformation.
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024).
 #'
 #' @references
 #' Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
 #'
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 #'
-#' Signorell, A. et al. (2024). DescTools: Tools for Descriptive
-#' Statistics. R package. Standard error formulas follow the
-#' DescTools implementations.
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package.
 #'
 #' @examples
 #' data(mtcars)
@@ -1235,6 +1236,9 @@ somers_d <- function(
 #' The ordinal family includes [gamma_gk()], [kendall_tau_b()],
 #' [kendall_tau_c()], and [somers_d()].
 #'
+#' Standard error formulas follow the DescTools implementations
+#' (Signorell et al., 2024).
+#'
 #' @examples
 #' data(mtcars)
 #' tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
@@ -1247,9 +1251,8 @@ somers_d <- function(
 #'
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 #'
-#' Signorell, A. et al. (2024). DescTools: Tools for Descriptive
-#' Statistics. R package. Standard error formulas follow the
-#' DescTools implementations.
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package.
 #'
 #' @seealso [cramer_v()], [gamma_gk()], [kendall_tau_b()]
 #' @export

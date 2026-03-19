@@ -35,6 +35,9 @@ and (for 2x2 tables) \code{\link[=phi]{phi()}} and \code{\link[=yule_q]{yule_q()
 
 The ordinal family includes \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=kendall_tau_b]{kendall_tau_b()}},
 \code{\link[=kendall_tau_c]{kendall_tau_c()}}, and \code{\link[=somers_d]{somers_d()}}.
+
+Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024).
 }
 \examples{
 data(mtcars)
@@ -49,9 +52,8 @@ Agresti, A. (2002). \emph{Categorical Data Analysis} (2nd ed.). Wiley.
 
 Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
 
-Signorell, A. et al. (2024). DescTools: Tools for Descriptive
-Statistics. R package. Standard error formulas follow the
-DescTools implementations.
+Signorell, A. et al. (2024). \emph{DescTools: Tools for Descriptive
+Statistics}. R package.
 }
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=kendall_tau_b]{kendall_tau_b()}}
