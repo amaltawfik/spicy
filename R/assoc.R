@@ -111,7 +111,7 @@ print.spicy_assoc_detail <- function(x, digits = 3, ...) {
     character(1)
   )
   widths <- pmax(nchar(hdr), nchar(vals))
-  hdr_parts <- mapply(formatC, hdr, width = widths, flag = "-")
+  hdr_parts <- mapply(formatC, hdr, width = widths)
   val_parts <- mapply(formatC, vals, width = widths)
   cat(
     paste(hdr_parts, collapse = "  "),

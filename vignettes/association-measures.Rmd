@@ -83,6 +83,7 @@ cramer_v(tbl, detail = TRUE)
 
 For 2x2 tables, Phi is equivalent to Cramer's V. Unlike V, Phi can be
 negative when the table is 2x2, indicating the direction of association.
+The p-value tests H0: no association (Pearson chi-squared test).
 
 ```{r phi}
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
@@ -93,7 +94,8 @@ phi(tbl_22, detail = TRUE)
 
 The contingency coefficient is an alternative to Cramer's V. Its upper
 bound depends on the table dimensions, which makes it harder to compare
-across tables of different sizes.
+across tables of different sizes. The p-value tests H0: no association
+(Pearson chi-squared test).
 
 ```{r contingency}
 contingency_coef(tbl, detail = TRUE)
@@ -122,7 +124,8 @@ a Wald z-test.
 ### Kendall's Tau-b
 
 Tau-b adjusts for ties and ranges from -1 to +1. It is generally
-preferred over Gamma for square or near-square tables.
+preferred over Gamma for square or near-square tables. The p-value
+tests H0: Tau-b = 0 (Wald z-test).
 
 ```{r tau-b}
 kendall_tau_b(tbl_ord, detail = TRUE)
@@ -131,7 +134,8 @@ kendall_tau_b(tbl_ord, detail = TRUE)
 ### Kendall's Tau-c (Stuart's Tau-c)
 
 Tau-c is similar to Tau-b but adjusts for rectangular tables where the
-number of rows and columns differ.
+number of rows and columns differ. The p-value tests H0: Tau-c = 0
+(Wald z-test).
 
 ```{r tau-c}
 kendall_tau_c(tbl_ord, detail = TRUE)
@@ -141,7 +145,7 @@ kendall_tau_c(tbl_ord, detail = TRUE)
 
 Somers' D is an asymmetric measure: it distinguishes between a dependent
 and an independent variable. By default, the row variable is treated as
-dependent (D(R|C)).
+dependent (D(R|C)). The p-value tests H0: D = 0 (Wald z-test).
 
 ```{r somers}
 somers_d(tbl_ord, detail = TRUE)
@@ -157,7 +161,8 @@ versa)?
 
 Lambda measures the proportional reduction in classification error. It
 can equal zero even when the variables are associated, if the modal
-category does not change across columns.
+category does not change across columns. The p-value tests H0:
+Lambda = 0 (Wald z-test).
 
 ```{r lambda}
 tbl <- xtabs(~ self_rated_health + education, data = sochealth)
@@ -168,7 +173,7 @@ lambda_gk(tbl, detail = TRUE)
 
 Tau measures the proportional reduction in error when predicting the row
 variable from the column variable, using the full distribution (not just
-the mode).
+the mode). The p-value tests H0: Tau = 0 (Wald z-test).
 
 ```{r gk-tau}
 goodman_kruskal_tau(tbl, detail = TRUE)
@@ -177,7 +182,8 @@ goodman_kruskal_tau(tbl, detail = TRUE)
 ### Uncertainty coefficient
 
 The uncertainty coefficient (Theil's U) is based on entropy. It measures
-how much knowing one variable reduces uncertainty about the other.
+how much knowing one variable reduces uncertainty about the other. The
+p-value tests H0: U = 0 (Wald z-test).
 
 ```{r uncertainty}
 uncertainty_coef(tbl, detail = TRUE)
@@ -186,7 +192,8 @@ uncertainty_coef(tbl, detail = TRUE)
 ## Yule's Q
 
 Yule's Q is defined for 2x2 tables only. It ranges from -1 to +1 and
-is equivalent to Gamma for 2x2 tables.
+is equivalent to Gamma for 2x2 tables. The p-value tests H0: Q = 0
+(Wald z-test).
 
 ```{r yule}
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
