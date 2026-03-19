@@ -2,7 +2,7 @@
 % Please edit documentation in R/freq_print.R
 \name{print.spicy_freq_table}
 \alias{print.spicy_freq_table}
-\title{Styled print method for \code{freq()} tables (spicy engine)}
+\title{Styled print method for \code{freq()} tables}
 \usage{
 \method{print}{spicy_freq_table}(x, ...)
 }

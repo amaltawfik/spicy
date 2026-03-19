@@ -1,4 +1,4 @@
-#' Styled print method for `freq()` tables (spicy engine)
+#' Styled print method for `freq()` tables
 #'
 #' @description
 #' Internal print method used by [freq()] to display a styled, spicy-formatted

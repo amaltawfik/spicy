@@ -2,7 +2,7 @@
 % Please edit documentation in R/tables_ascii.R
 \name{build_ascii_table}
 \alias{build_ascii_table}
-\title{Build a formatted ASCII table (internal spicy engine)}
+\title{Build a formatted ASCII table}
 \usage{
 build_ascii_table(
   x,

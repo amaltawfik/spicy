@@ -1,4 +1,4 @@
-#' Build a formatted ASCII table (internal spicy engine)
+#' Build a formatted ASCII table
 #'
 #' @description
 #' Low-level internal function that constructs a visually aligned ASCII table
