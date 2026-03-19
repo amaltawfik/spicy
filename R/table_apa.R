@@ -1048,12 +1048,12 @@ table_apa <- function(
     # so inline-CSS renderers (as_raw_html) also get the rules.
     rule <- gt::cell_borders(
       sides = "bottom",
-      color = "black",
+      color = "currentColor",
       weight = gt::px(1)
     )
     rule_top <- gt::cell_borders(
       sides = "top",
-      color = "black",
+      color = "currentColor",
       weight = gt::px(1)
     )
 
@@ -1113,20 +1113,23 @@ table_apa <- function(
     )
     apa_css <- paste(
       ".gt_table thead tr:first-child {",
-      "  border-top: 1px solid black !important;",
+      "  border-top: 1px solid currentColor !important;",
       "}",
       ".gt_table thead tr.gt_spanner_row {",
       "  border-bottom-style: none !important;",
       "}",
+      ".gt_table thead th, .gt_table thead td {",
+      "  background-color: transparent !important;",
+      "}",
       # Intermediate line: only group columns
       paste0(grp_css_sel, " {"),
-      "  border-top: 1px solid black !important;",
+      "  border-top: 1px solid currentColor !important;",
       "}",
       ".gt_table thead tr:last-child {",
-      "  border-bottom: 1px solid black !important;",
+      "  border-bottom: 1px solid currentColor !important;",
       "}",
       ".gt_table tbody tr:last-child {",
-      "  border-bottom: 1px solid black !important;",
+      "  border-bottom: 1px solid currentColor !important;",
       "}",
       ".gt_table tbody tr {",
       "  border-top-style: none !important;",

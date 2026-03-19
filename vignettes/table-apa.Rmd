@@ -99,9 +99,8 @@ table_apa(
 
 ## Custom labels
 
-By default, `table_apa()` uses the variable labels from the data (if
-available) or the variable names. Override them with the `labels`
-argument:
+By default, `table_apa()` uses variable names as row headers. Use the
+`labels` argument to provide human-readable labels:
 
 ```{r labels}
 table_apa(

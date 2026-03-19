@@ -13,7 +13,7 @@ template:
 
 navbar:
   structure:
-    left: [intro, reference, articles, news]
+    left: [intro, get-started, reference, articles, news]
     right: [search, lightswitch, github]
   components:
     intro:
