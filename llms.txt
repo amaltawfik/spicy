@@ -37,7 +37,7 @@ quickly toward usable outputs. It helps you:
   with automatic handling of missing data.
 - Build publication-ready APA cross-tab reports with
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  and export to multiple formats (`wide`, `long`, `tinytable`,
+  and export to multiple formats (`wide`, `long`, `gt`, `tinytable`,
   `flextable`, `excel`, `clipboard`, `word`).
 - Generate an interactive codebook with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
