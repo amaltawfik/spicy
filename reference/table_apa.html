@@ -257,111 +257,141 @@ headers, p-values, and an association measure.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Build a dataset from mtcars</span></span></span>
-<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">mtcars</span>,</span></span>
-<span class="r-in"><span>  transmission <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">am</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Automatic"</span>, <span class="st">"Manual"</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  engine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">vs</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V-shaped"</span>, <span class="st">"Straight"</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  cylinders <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  w <span class="op">=</span> <span class="va">mpg</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Raw long output (machine-friendly)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Raw long output (machine-friendly)</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        variable     level group  n   pct            p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Transmission Automatic     4  3  27.3 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Transmission Automatic     6  4  57.1 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Transmission Automatic     8 12  85.7 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Transmission Automatic Total 19  59.4 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Transmission    Manual     4  8  72.7 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Transmission    Manual     6  3  42.9 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Transmission    Manual     8  2  14.3 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Transmission    Manual Total 13  40.6 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Engine type  Straight     4 10  90.9 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Engine type  Straight     6  4  57.1 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Engine type  Straight     8  0   0.0 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Engine type  Straight Total 14  43.8 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  Engine type  V-shaped     4  1   9.1 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Engine type  V-shaped     6  3  42.9 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Engine type  V-shaped     8 14 100.0 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Engine type  V-shaped Total 18  56.2 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group   n  pct            p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 179 69.6 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 415 78.7 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 332 84.9 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 926 78.8 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  78 30.4 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 112 21.3 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  59 15.1 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 249 21.2 2.012877e-05  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 177 67.8 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 310 57.5 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 163 40.8 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 650 54.2 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  84 32.2 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 229 42.5 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 237 59.2 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 550 45.8 8.333584e-12  0.2061986</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Raw wide output</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       Variable     Level 4 n  4 % 6 n  6 % 8 n   8 % Total n Total %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Transmission Automatic   3 27.3   4 57.1  12  85.7      19    59.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Transmission    Manual   8 72.7   3 42.9   2  14.3      13    40.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Engine type  Straight  10 90.9   4 57.1   0   0.0      14    43.8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Engine type  V-shaped   1  9.1   3 42.9  14 100.0      18    56.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1.264661e-02  0.5226355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2.323235e-05  0.8166228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2.323235e-05  0.8166228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            Variable Level Lower secondary n Lower secondary % Upper secondary n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    Current smoker    No               179              69.6               415</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    Current smoker   Yes                78              30.4               112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Physical activity    No               177              67.8               310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Physical activity   Yes                84              32.2               229</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              78.7        332       84.9     926    78.8 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              21.3         59       15.1     249    21.2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3              57.5        163       40.8     650    54.2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4              42.5        237       59.2     550    45.8 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.2061986</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Weighted example</span></span></span>
 <span class="r-in"><span><span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"w"</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"weight"</span>,</span></span>
 <span class="r-in"><span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span>,</span></span>
 <span class="r-in"><span>  style <span class="op">=</span> <span class="st">"raw"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        variable     level group        n   pct           p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Transmission Automatic     4  3.00000  23.4 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Transmission Automatic     6  4.00000  55.4 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Transmission Automatic     8  9.00000  85.4 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Transmission Automatic Total 16.21652  50.7 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Transmission    Manual     4 11.00000  76.6 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Transmission    Manual     6  3.00000  44.6 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Transmission    Manual     8  2.00000  14.6 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Transmission    Manual Total 15.78348  49.3 0.008725743  0.5443734</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   Engine type  Straight     4 13.00000  91.1 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  Engine type  Straight     6  4.00000  55.4 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  Engine type  Straight     8  0.00000   0.0 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  Engine type  Straight Total 17.11246  53.5 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  Engine type  V-shaped     4  1.00000   8.9 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  Engine type  V-shaped     6  3.00000  44.6 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  Engine type  V-shaped     8 11.00000 100.0 0.000036682  0.7989534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  Engine type  V-shaped Total 14.88754  46.5 0.000036682  0.7989534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group        n  pct            p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 179.0000 69.6 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 419.0000 79.2 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 331.0000 85.2 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 929.1337 79.1 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  78.0000 30.4 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 110.0000 20.8 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  58.0000 14.8 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 245.8663 20.9 1.309388e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 177.0000 67.9 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 315.0000 58.1 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 165.0000 41.4 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 656.3024 54.7 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  84.0000 32.1 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 227.0000 41.9 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 233.0000 58.6 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 543.6976 45.3 2.268995e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.1383389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0.2021101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  0.2021101</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: tinytable</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">tt_ex</span> <span class="op">&lt;-</span> <span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu">table_apa</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"education"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable          | Lower secondary  | Upper secondary  | Tertiary   | Total      | p      | Cramer's V |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                   | n      | %       | n      | %       | n   | %    | n   | %    |        |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +===================+========+=========+========+=========+=====+======+=====+======+========+============+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Current smoker    |        |         |        |         |     |      |     |      | &lt; .001 | .14        |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 179    | 69.6    | 415    | 78.7    | 332 | 84.9 | 926 | 78.8 |        |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 78     | 30.4    | 112    | 21.3    | 59  | 15.1 | 249 | 21.2 |        |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Physical activity |        |         |        |         |     |      |     |      | &lt; .001 | .21        |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 177    | 67.8    | 310    | 57.5    | 163 | 40.8 | 650 | 54.2 |        |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 84     | 32.2    | 229    | 42.5    | 237 | 59.2 | 550 | 45.8 |        |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+ </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_apa</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">d</span>,</span></span>
-<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transmission"</span>, <span class="st">"engine"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"cylinders"</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Transmission"</span>, <span class="st">"Engine type"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>    row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    group_var <span class="op">=</span> <span class="st">"education"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
 <span class="r-in"><span>    excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>

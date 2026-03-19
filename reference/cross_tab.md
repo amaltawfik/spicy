@@ -161,170 +161,102 @@ Example:
 
 ``` r
 # Basic crosstab
-cross_tab(mtcars, cyl, gear)
-#> Crosstable: cyl x gear (N)
+cross_tab(sochealth, smoking, education)
+#> Crosstable: smoking x education (N)
 #> 
-#>  Values      │       3        4       5 │      Total 
-#> ─────────────┼──────────────────────────┼────────────
-#>  4           │       1        8       2 │         11 
-#>  6           │       2        4       1 │          7 
-#>  8           │      12        0       2 │         14 
-#> ─────────────┼──────────────────────────┼────────────
-#>  Total       │      15       12       5 │         32 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
 #> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
+
+# Column percentages
+cross_tab(sochealth, smoking, education, percent = "column")
+#> Crosstable: smoking x education (Column %)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                 69.6                  78.7           84.9 │       78.8 
+#>  Yes         │                 30.4                  21.3           15.1 │       21.2 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                100.0                 100.0          100.0 │      100.0 
+#>  N           │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
 
 # Weighted (rescaled)
-cross_tab(mtcars, cyl, gear, weights = mtcars$mpg, rescale = TRUE)
-#> Crosstable: cyl x gear (N)
+cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
+#> Crosstable: smoking x education (N)
 #> 
-#>  Values      │       3        4       5 │      Total 
-#> ─────────────┼──────────────────────────┼────────────
-#>  4           │       1       11       3 │         15 
-#>  6           │       2        4       1 │          7 
-#>  8           │       9        0       2 │         11 
-#> ─────────────┼──────────────────────────┼────────────
-#>  Total       │      12       15       6 │         32 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  178                   419            331 │        928 
+#>  Yes         │                   78                   110             58 │        246 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  256                   529            389 │       1173 
 #> 
-#> Chi-2(4) = 17.7, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 7 expected cells < 5 (77.8%). Minimum expected = 1.14. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-#> Weight: mpg (rescaled)
+#> Chi-2(2) = 22.5, p < 0.001
+#> Cramer's V = 0.14
+#> Weight: weight (rescaled)
 
-# Grouped
-cross_tab(mtcars, cyl, gear, by = am)
-#> Crosstable: cyl x gear (N) | am = 0
+# Grouped by sex
+cross_tab(sochealth, smoking, education, by = sex)
+#> Crosstable: smoking x education (N) | sex = Female
 #> 
-#>  Values      │       3       4       5 │      Total 
-#> ─────────────┼─────────────────────────┼────────────
-#>  4           │       1       2       0 │          3 
-#>  6           │       2       2       0 │          4 
-#>  8           │      12       0       0 │         12 
-#> ─────────────┼─────────────────────────┼────────────
-#>  Total       │      15       4       0 │         19 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   95                   220            160 │        475 
+#>  Yes         │                   38                    62             31 │        131 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  133                   282            191 │        606 
 #> 
-#> Chi-2(2) = 9.0, p = 0.011
-#> Cramer's V = 0.69
-#> Warning: 5 expected cells < 5 (83.3%). 2 expected cells < 1. Minimum expected = 0.63. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Chi-2(2) = 7.1, p = 0.029
+#> Cramer's V = 0.11
 #> 
-#> Crosstable: cyl x gear (N) | am = 1
+#> Crosstable: smoking x education (N) | sex = Male
 #> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       6       2 │          8 
-#>  6           │      0       2       1 │          3 
-#>  8           │      0       0       2 │          2 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       8       5 │         13 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   84                   195            172 │        451 
+#>  Yes         │                   40                    50             28 │        118 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  124                   245            200 │        569 
 #> 
-#> Chi-2(2) = 3.8, p = 0.146
-#> Cramer's V = 0.54
-#> Warning: 6 expected cells < 5 (100%). 1 expected cell < 1. Minimum expected = 0.77. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-
-# Grouped by an interaction
-cross_tab(mtcars, cyl, gear, by = interaction(vs, am))
-#> Crosstable: cyl x gear (N) | vs x am = 0.0
-#> 
-#>  Values      │       3       4       5 │      Total 
-#> ─────────────┼─────────────────────────┼────────────
-#>  4           │       0       0       0 │          0 
-#>  6           │       0       0       0 │          0 
-#>  8           │      12       0       0 │         12 
-#> ─────────────┼─────────────────────────┼────────────
-#>  Total       │      12       0       0 │         12 
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 1.0
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      1       2       0 │          3 
-#>  6           │      2       2       0 │          4 
-#>  8           │      0       0       0 │          0 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      3       4       0 │          7 
-#> 
-#> Chi-2(1) = 0.2, p = 0.659
+#> Chi-2(2) = 15.6, p < 0.001
 #> Cramer's V = 0.17
-#> Warning: 4 expected cells < 5 (100%). Minimum expected = 1.29. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 0.1
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       0       1 │          1 
-#>  6           │      0       2       1 │          3 
-#>  8           │      0       0       2 │          2 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       2       4 │          6 
-#> 
-#> Chi-2(2) = 3.0, p = 0.223
-#> Cramer's V = 0.71
-#> Warning: 6 expected cells < 5 (100%). 3 expected cells < 1. Minimum expected = 0.33. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-#> 
-#> Crosstable: cyl x gear (N) | vs x am = 1.1
-#> 
-#>  Values      │      3       4       5 │      Total 
-#> ─────────────┼────────────────────────┼────────────
-#>  4           │      0       6       1 │          7 
-#>  6           │      0       0       0 │          0 
-#>  8           │      0       0       0 │          0 
-#> ─────────────┼────────────────────────┼────────────
-#>  Total       │      0       6       1 │          7 
 
-# Vector interface
-cross_tab(mtcars$cyl, mtcars$gear, percent = "c")
-#> Crosstable: cyl x gear (Column %)
+# Ordinal variables: auto-selects Kendall's Tau-b
+cross_tab(sochealth, education, self_rated_health)
+#> Crosstable: education x self_rated_health (N)
 #> 
-#>  Values      │          3           4           5 │      Total 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  4           │        6.7        66.7        40.0 │       34.4 
-#>  6           │       13.3        33.3        20.0 │       21.9 
-#>  8           │       80.0         0.0        40.0 │       43.8 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  Total       │      100.0       100.0       100.0 │      100.0 
-#>  N           │         15          12           5 │         32 
+#>  Values               │      Poor       Fair       Good       Very good │      Total 
+#> ──────────────────────┼─────────────────────────────────────────────────┼────────────
+#>  Lower secondary      │        28         86        102              44 │        260 
+#>  Upper secondary      │        28        118        263             118 │        527 
+#>  Tertiary             │         5         62        193             133 │        393 
+#> ──────────────────────┼─────────────────────────────────────────────────┼────────────
+#>  Total                │        61        266        558             295 │       1180 
 #> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-
-# Set default percent mode globally
-options(spicy.percent = "column")
-
-# Now this will display column percentages by default
-cross_tab(mtcars, cyl, gear)
-#> Crosstable: cyl x gear (Column %)
-#> 
-#>  Values      │          3           4           5 │      Total 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  4           │        6.7        66.7        40.0 │       34.4 
-#>  6           │       13.3        33.3        20.0 │       21.9 
-#>  8           │       80.0         0.0        40.0 │       43.8 
-#> ─────────────┼────────────────────────────────────┼────────────
-#>  Total       │      100.0       100.0       100.0 │      100.0 
-#>  N           │         15          12           5 │         32 
-#> 
-#> Chi-2(4) = 18.0, p = 0.001
-#> Cramer's V = 0.53
-#> Warning: 6 expected cells < 5 (66.7%). Minimum expected = 1.09. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
-
-# Reset to default behavior
-options(spicy.percent = NULL)
+#> Chi-2(6) = 73.2, p < 0.001
+#> Kendall's Tau-b = 0.20
 
 # 2x2 table with Yates correction
-cross_tab(mtcars, vs, am, correct = TRUE)
-#> Crosstable: vs x am (N)
+cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
+#> Crosstable: smoking x physical_activity (N)
 #> 
-#>  Values      │       0        1 │      Total 
-#> ─────────────┼──────────────────┼────────────
-#>  0           │      12        6 │         18 
-#>  1           │       7        7 │         14 
-#> ─────────────┼──────────────────┼────────────
-#>  Total       │      19       13 │         32 
+#>  Values      │       No       Yes │      Total 
+#> ─────────────┼────────────────────┼────────────
+#>  No          │      505       421 │        926 
+#>  Yes         │      134       115 │        249 
+#> ─────────────┼────────────────────┼────────────
+#>  Total       │      639       536 │       1175 
 #> 
-#> Chi-2(1) = 0.3, p = 0.556
-#> Cramer's V = 0.17
+#> Chi-2(1) = 0.0, p = 0.896
+#> Cramer's V = 0.01
 #> Yates continuity correction applied.
 ```

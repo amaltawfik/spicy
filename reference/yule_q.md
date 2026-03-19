@@ -57,8 +57,7 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$vs), factor(mtcars$am))
+tab <- table(sochealth$smoking, sochealth$sex)
 yule_q(tab)
-#> [1] 0.3333333
+#> [1] -0.02632653
 ```

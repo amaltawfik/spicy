@@ -186,7 +186,39 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://larmarange.github.io/labelled/" class="external-link">labelled</a></span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Frequency table with labelled ordered factor</span></span></span>
+<span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: education</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values           Freq.  Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Lower secondary    261     21.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Upper secondary    539     44.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Tertiary           400     33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                   1200    100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Highest education level</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: ordered, factor</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: sochealth</span></span>
+<span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">self_rated_health</span>, sort <span class="op">=</span> <span class="st">"-"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: self_rated_health</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values     Freq.  Percent  Valid Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Good         558     46.5           47.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Very good    295     24.6           25.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Fair         266     22.2           22.5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Poor          61      5.1            5.2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA            20      1.7                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             1200    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Self-rated health</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: ordered, factor</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: sochealth</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://larmarange.github.io/labelled/" class="external-link">labelled</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Simple numeric vector</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="cn">NA</span><span class="op">)</span></span></span>

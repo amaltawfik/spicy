@@ -68,11 +68,10 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 goodman_kruskal_tau(tab)
-#> [1] 0.3825603
+#> [1] 0.01840572
 goodman_kruskal_tau(tab, direction = "column", detail = TRUE)
-#>     estimate     ci_lower     ci_upper      p_value 
-#> 0.3386018237 0.1436865849 0.5335170625 0.0006621256 
+#>    estimate    ci_lower    ci_upper     p_value 
+#> 0.007609460 0.001118492 0.014100428 0.021579123 
 ```

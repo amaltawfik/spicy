@@ -65,14 +65,13 @@ Statistics*. R package.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 cramer_v(tab)
-#> [1] 0.5308655
+#> [1] 0.1356677
 cramer_v(tab, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.530865503 0.223553416 0.742175638 0.001214066 
+#>     estimate     ci_lower     ci_upper      p_value 
+#> 1.356677e-01 7.909264e-02 1.913716e-01 2.012877e-05 
 cramer_v(tab, detail = TRUE, conf_level = NULL)
-#>    estimate     p_value 
-#> 0.530865503 0.001214066 
+#>     estimate      p_value 
+#> 1.356677e-01 2.012877e-05 
 ```

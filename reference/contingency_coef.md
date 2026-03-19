@@ -53,8 +53,7 @@ confidence interval is not computed.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 contingency_coef(tab)
-#> [1] 0.6003875
+#> [1] 0.1344361
 ```

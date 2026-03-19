@@ -69,11 +69,10 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$education, sochealth$self_rated_health)
 somers_d(tab, direction = "row")
-#> [1] -0.5015198
+#> [1] 0.2015369
 somers_d(tab, direction = "column", detail = TRUE)
 #>     estimate     ci_lower     ci_upper      p_value 
-#> -0.523809524 -0.838395071 -0.209223976  0.001100478 
+#> 2.076131e-01 1.573452e-01 2.578810e-01 5.730469e-16 
 ```

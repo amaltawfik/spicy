@@ -68,13 +68,12 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 lambda_gk(tab)
-#> [1] 0.4857143
+#> [1] 0
 lambda_gk(tab, direction = "row")
-#> [1] 0.5294118
+#> [1] 0
 lambda_gk(tab, direction = "column", detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.444444444 0.163299708 0.725589180 0.001945774 
+#> estimate ci_lower ci_upper  p_value 
+#>        0        0        0       NA 
 ```

@@ -165,6 +165,38 @@ for the underlying ASCII rendering engine.
 ## Examples
 
 ``` r
+# Frequency table with labelled ordered factor
+freq(sochealth, education)
+#> Frequency table: education
+#> 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    261     21.8 
+#>           │ Upper secondary    539     44.9 
+#>           │ Tertiary           400     33.3 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+freq(sochealth, self_rated_health, sort = "-")
+#> Frequency table: self_rated_health
+#> 
+#>  Category │ Values     Freq.  Percent  Valid Percent 
+#> ──────────┼──────────────────────────────────────────
+#>  Valid    │ Good         558     46.5           47.3 
+#>           │ Very good    295     24.6           25.0 
+#>           │ Fair         266     22.2           22.5 
+#>           │ Poor          61      5.1            5.2 
+#>  Missing  │ NA            20      1.7                
+#> ──────────┼──────────────────────────────────────────
+#>  Total    │             1200    100.0          100.0 
+#> 
+#> Label: Self-rated health
+#> Class: ordered, factor
+#> Data: sochealth
+
 library(labelled)
 
 # Simple numeric vector

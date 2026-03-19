@@ -223,111 +223,141 @@ Optional output engines require suggested packages:
 ## Examples
 
 ``` r
-# Build a dataset from mtcars
-d <- transform(
-  mtcars,
-  transmission = factor(am, labels = c("Automatic", "Manual")),
-  engine = factor(vs, labels = c("V-shaped", "Straight")),
-  cylinders = factor(cyl),
-  w = mpg
-)
-
 # Raw long output (machine-friendly)
 table_apa(
-  data = d,
-  row_vars = c("transmission", "engine"),
-  group_var = "cylinders",
-  labels = c("Transmission", "Engine type"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "long",
   style = "raw"
 )
-#>        variable     level group  n   pct            p Cramer's V
-#> 1  Transmission Automatic     4  3  27.3 1.264661e-02  0.5226355
-#> 2  Transmission Automatic     6  4  57.1 1.264661e-02  0.5226355
-#> 3  Transmission Automatic     8 12  85.7 1.264661e-02  0.5226355
-#> 4  Transmission Automatic Total 19  59.4 1.264661e-02  0.5226355
-#> 5  Transmission    Manual     4  8  72.7 1.264661e-02  0.5226355
-#> 6  Transmission    Manual     6  3  42.9 1.264661e-02  0.5226355
-#> 7  Transmission    Manual     8  2  14.3 1.264661e-02  0.5226355
-#> 8  Transmission    Manual Total 13  40.6 1.264661e-02  0.5226355
-#> 9   Engine type  Straight     4 10  90.9 2.323235e-05  0.8166228
-#> 10  Engine type  Straight     6  4  57.1 2.323235e-05  0.8166228
-#> 11  Engine type  Straight     8  0   0.0 2.323235e-05  0.8166228
-#> 12  Engine type  Straight Total 14  43.8 2.323235e-05  0.8166228
-#> 13  Engine type  V-shaped     4  1   9.1 2.323235e-05  0.8166228
-#> 14  Engine type  V-shaped     6  3  42.9 2.323235e-05  0.8166228
-#> 15  Engine type  V-shaped     8 14 100.0 2.323235e-05  0.8166228
-#> 16  Engine type  V-shaped Total 18  56.2 2.323235e-05  0.8166228
+#>             variable level           group   n  pct            p Cramer's V
+#> 1     Current smoker    No Lower secondary 179 69.6 2.012877e-05  0.1356677
+#> 2     Current smoker    No Upper secondary 415 78.7 2.012877e-05  0.1356677
+#> 3     Current smoker    No        Tertiary 332 84.9 2.012877e-05  0.1356677
+#> 4     Current smoker    No           Total 926 78.8 2.012877e-05  0.1356677
+#> 5     Current smoker   Yes Lower secondary  78 30.4 2.012877e-05  0.1356677
+#> 6     Current smoker   Yes Upper secondary 112 21.3 2.012877e-05  0.1356677
+#> 7     Current smoker   Yes        Tertiary  59 15.1 2.012877e-05  0.1356677
+#> 8     Current smoker   Yes           Total 249 21.2 2.012877e-05  0.1356677
+#> 9  Physical activity    No Lower secondary 177 67.8 8.333584e-12  0.2061986
+#> 10 Physical activity    No Upper secondary 310 57.5 8.333584e-12  0.2061986
+#> 11 Physical activity    No        Tertiary 163 40.8 8.333584e-12  0.2061986
+#> 12 Physical activity    No           Total 650 54.2 8.333584e-12  0.2061986
+#> 13 Physical activity   Yes Lower secondary  84 32.2 8.333584e-12  0.2061986
+#> 14 Physical activity   Yes Upper secondary 229 42.5 8.333584e-12  0.2061986
+#> 15 Physical activity   Yes        Tertiary 237 59.2 8.333584e-12  0.2061986
+#> 16 Physical activity   Yes           Total 550 45.8 8.333584e-12  0.2061986
 
 # Raw wide output
 table_apa(
-  data = d,
-  row_vars = c("transmission", "engine"),
-  group_var = "cylinders",
-  labels = c("Transmission", "Engine type"),
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
   output = "wide",
   style = "raw"
 )
-#>       Variable     Level 4 n  4 % 6 n  6 % 8 n   8 % Total n Total %
-#> 1 Transmission Automatic   3 27.3   4 57.1  12  85.7      19    59.4
-#> 2 Transmission    Manual   8 72.7   3 42.9   2  14.3      13    40.6
-#> 3  Engine type  Straight  10 90.9   4 57.1   0   0.0      14    43.8
-#> 4  Engine type  V-shaped   1  9.1   3 42.9  14 100.0      18    56.2
-#>              p Cramer's V
-#> 1 1.264661e-02  0.5226355
-#> 2 1.264661e-02  0.5226355
-#> 3 2.323235e-05  0.8166228
-#> 4 2.323235e-05  0.8166228
+#>            Variable Level Lower secondary n Lower secondary % Upper secondary n
+#> 1    Current smoker    No               179              69.6               415
+#> 2    Current smoker   Yes                78              30.4               112
+#> 3 Physical activity    No               177              67.8               310
+#> 4 Physical activity   Yes                84              32.2               229
+#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
+#> 1              78.7        332       84.9     926    78.8 2.012877e-05
+#> 2              21.3         59       15.1     249    21.2 2.012877e-05
+#> 3              57.5        163       40.8     650    54.2 8.333584e-12
+#> 4              42.5        237       59.2     550    45.8 8.333584e-12
+#>   Cramer's V
+#> 1  0.1356677
+#> 2  0.1356677
+#> 3  0.2061986
+#> 4  0.2061986
 
 # Weighted example
 table_apa(
-  data = d,
-  row_vars = c("transmission", "engine"),
-  group_var = "cylinders",
-  labels = c("Transmission", "Engine type"),
-  weights = "w",
+  data = sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Current smoker", "Physical activity"),
+  weights = "weight",
   rescale = TRUE,
   simulate_p = FALSE,
   output = "long",
   style = "raw"
 )
-#>        variable     level group        n   pct           p Cramer's V
-#> 1  Transmission Automatic     4  3.00000  23.4 0.008725743  0.5443734
-#> 2  Transmission Automatic     6  4.00000  55.4 0.008725743  0.5443734
-#> 3  Transmission Automatic     8  9.00000  85.4 0.008725743  0.5443734
-#> 4  Transmission Automatic Total 16.21652  50.7 0.008725743  0.5443734
-#> 5  Transmission    Manual     4 11.00000  76.6 0.008725743  0.5443734
-#> 6  Transmission    Manual     6  3.00000  44.6 0.008725743  0.5443734
-#> 7  Transmission    Manual     8  2.00000  14.6 0.008725743  0.5443734
-#> 8  Transmission    Manual Total 15.78348  49.3 0.008725743  0.5443734
-#> 9   Engine type  Straight     4 13.00000  91.1 0.000036682  0.7989534
-#> 10  Engine type  Straight     6  4.00000  55.4 0.000036682  0.7989534
-#> 11  Engine type  Straight     8  0.00000   0.0 0.000036682  0.7989534
-#> 12  Engine type  Straight Total 17.11246  53.5 0.000036682  0.7989534
-#> 13  Engine type  V-shaped     4  1.00000   8.9 0.000036682  0.7989534
-#> 14  Engine type  V-shaped     6  3.00000  44.6 0.000036682  0.7989534
-#> 15  Engine type  V-shaped     8 11.00000 100.0 0.000036682  0.7989534
-#> 16  Engine type  V-shaped Total 14.88754  46.5 0.000036682  0.7989534
+#>             variable level           group        n  pct            p
+#> 1     Current smoker    No Lower secondary 179.0000 69.6 1.309388e-05
+#> 2     Current smoker    No Upper secondary 419.0000 79.2 1.309388e-05
+#> 3     Current smoker    No        Tertiary 331.0000 85.2 1.309388e-05
+#> 4     Current smoker    No           Total 929.1337 79.1 1.309388e-05
+#> 5     Current smoker   Yes Lower secondary  78.0000 30.4 1.309388e-05
+#> 6     Current smoker   Yes Upper secondary 110.0000 20.8 1.309388e-05
+#> 7     Current smoker   Yes        Tertiary  58.0000 14.8 1.309388e-05
+#> 8     Current smoker   Yes           Total 245.8663 20.9 1.309388e-05
+#> 9  Physical activity    No Lower secondary 177.0000 67.9 2.268995e-11
+#> 10 Physical activity    No Upper secondary 315.0000 58.1 2.268995e-11
+#> 11 Physical activity    No        Tertiary 165.0000 41.4 2.268995e-11
+#> 12 Physical activity    No           Total 656.3024 54.7 2.268995e-11
+#> 13 Physical activity   Yes Lower secondary  84.0000 32.1 2.268995e-11
+#> 14 Physical activity   Yes Upper secondary 227.0000 41.9 2.268995e-11
+#> 15 Physical activity   Yes        Tertiary 233.0000 58.6 2.268995e-11
+#> 16 Physical activity   Yes           Total 543.6976 45.3 2.268995e-11
+#>    Cramer's V
+#> 1   0.1383389
+#> 2   0.1383389
+#> 3   0.1383389
+#> 4   0.1383389
+#> 5   0.1383389
+#> 6   0.1383389
+#> 7   0.1383389
+#> 8   0.1383389
+#> 9   0.2021101
+#> 10  0.2021101
+#> 11  0.2021101
+#> 12  0.2021101
+#> 13  0.2021101
+#> 14  0.2021101
+#> 15  0.2021101
+#> 16  0.2021101
 
 # \donttest{
 # Optional output: tinytable
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  tt_ex <- table_apa(
-    data = d,
-    row_vars = c("transmission", "engine"),
-    group_var = "cylinders",
-    labels = c("Transmission", "Engine type"),
+  table_apa(
+    data = sochealth,
+    row_vars = c("smoking", "physical_activity"),
+    group_var = "education",
+    labels = c("Current smoker", "Physical activity"),
     output = "tinytable"
   )
 }
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> | Variable          | Lower secondary  | Upper secondary  | Tertiary   | Total      | p      | Cramer's V |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> |                   | n      | %       | n      | %       | n   | %    | n   | %    |        |            |
+#> +===================+========+=========+========+=========+=====+======+=====+======+========+============+
+#> | Current smoker    |        |         |        |         |     |      |     |      | < .001 | .14        |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> |        No         | 179    | 69.6    | 415    | 78.7    | 332 | 84.9 | 926 | 78.8 |        |            |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> |        Yes        | 78     | 30.4    | 112    | 21.3    | 59  | 15.1 | 249 | 21.2 |        |            |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> | Physical activity |        |         |        |         |     |      |     |      | < .001 | .21        |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> |        No         | 177    | 67.8    | 310    | 57.5    | 163 | 40.8 | 650 | 54.2 |        |            |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+
+#> |        Yes        | 84     | 32.2    | 229    | 42.5    | 237 | 59.2 | 550 | 45.8 |        |            |
+#> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+ 
 
 # Optional output: Excel
 if (requireNamespace("openxlsx", quietly = TRUE)) {
   table_apa(
-    data = d,
-    row_vars = c("transmission", "engine"),
-    group_var = "cylinders",
-    labels = c("Transmission", "Engine type"),
+    data = sochealth,
+    row_vars = c("smoking", "physical_activity"),
+    group_var = "education",
+    labels = c("Current smoker", "Physical activity"),
     output = "excel",
     excel_path = tempfile(fileext = ".xlsx")
   )

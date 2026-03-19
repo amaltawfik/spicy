@@ -56,11 +56,10 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$vs), factor(mtcars$am))
+tab <- table(sochealth$smoking, sochealth$sex)
 phi(tab)
-#> [1] 0.1683451
+#> [1] 0.0107495
 phi(tab, detail = TRUE)
-#>  estimate  ci_lower  ci_upper   p_value 
-#> 0.1683451 0.0000000 0.4883712 0.3409429 
+#>   estimate   ci_lower   ci_upper    p_value 
+#> 0.01074950 0.00000000 0.06789645 0.71251957 
 ```

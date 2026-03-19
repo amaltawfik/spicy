@@ -58,11 +58,10 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$education, sochealth$self_rated_health)
 gamma_gk(tab)
-#> [1] -0.6573705
+#> [1] 0.3104791
 gamma_gk(tab, detail = TRUE)
-#>      estimate      ci_lower      ci_upper       p_value 
-#> -0.6573705179 -0.9960223287 -0.3187187071  0.0001420541 
+#>     estimate     ci_lower     ci_upper      p_value 
+#> 3.104791e-01 2.376258e-01 3.833324e-01 6.667393e-17 
 ```

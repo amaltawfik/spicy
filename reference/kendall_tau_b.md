@@ -59,8 +59,7 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$education, sochealth$self_rated_health)
 kendall_tau_b(tab)
-#> [1] -0.5125435
+#> [1] 0.2045524
 ```

@@ -108,71 +108,76 @@ Statistics</em>. R package.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">gear</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">cyl</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">smoking</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                              measure   estimate         se   ci_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         Cramer's V  0.5308655         NA  0.2235534</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            Contingency Coefficient  0.6003875         NA         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   Lambda symmetric  0.4857143 0.12920157  0.2324839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         Lambda R|C  0.5294118 0.15628498  0.2230988</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         Lambda C|R  0.4444444 0.14344383  0.1632997</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          Goodman-Kruskal's Tau R|C  0.3825603 0.11759802  0.1520724</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7          Goodman-Kruskal's Tau C|R  0.3386018 0.09944838  0.1436866</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Uncertainty Coefficient symmetric  0.3504372 0.08940615  0.1752043</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        Uncertainty Coefficient R|C  0.3587709 0.09349119  0.1755315</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       Uncertainty Coefficient C|R  0.3424818 0.08737530  0.1712294</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11             Goodman-Kruskal Gamma -0.6573705 0.17278471 -0.9960223</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                   Kendall's Tau-b -0.5125435 0.14889469 -0.8043717</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                    Stuart's Tau-c -0.4833984 0.13209204 -0.7422941</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14                     Somers' D R|C -0.5015198 0.14077197 -0.7774278</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15                     Somers' D C|R -0.5238095 0.16050578 -0.8383951</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      ci_upper      p_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.7421756 1.214066e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          NA 1.214066e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.7389447 1.703534e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.8357247 7.053865e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.7255892 1.945774e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.6130482 1.141459e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.5335171 6.621256e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.5256700 8.869272e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.5420102 1.243016e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.5137342 8.867261e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 -0.3187187 1.420541e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 -0.2207153 5.767428e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 -0.2245028 2.526509e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 -0.2256118 3.671451e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 -0.2092240 1.100478e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              measure     estimate          se     ci_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         Cramer's V  0.135667681          NA  0.079092643</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            Contingency Coefficient  0.134436125          NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   Lambda symmetric  0.000000000 0.000000000  0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         Lambda R|C  0.000000000 0.000000000  0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         Lambda C|R  0.000000000 0.000000000  0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          Goodman-Kruskal's Tau R|C  0.018405720 0.008085719  0.002558001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7          Goodman-Kruskal's Tau C|R  0.007609460 0.003311779  0.001118492</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Uncertainty Coefficient symmetric  0.011487616 0.004981856  0.001723359</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        Uncertainty Coefficient R|C  0.017512300 0.007583030  0.002649834</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       Uncertainty Coefficient C|R  0.008547169 0.003712463  0.001270875</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11             Goodman-Kruskal Gamma -0.268067807 0.056281007 -0.378376554</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                   Kendall's Tau-b -0.126415453 0.027412072 -0.180142125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ci_upper      p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.19137158 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           NA 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.03425344 2.282660e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.01410043 2.157912e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.02125187 2.111672e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.03237477 2.092103e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.01582346 2.131878e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 -0.15775906 1.907128e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 -0.07268878 3.994450e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 -0.06651701 5.454892e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 -0.05204808 5.153607e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 -0.10090317 3.689888e-06</span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span>, type <span class="op">=</span> <span class="st">"nominal"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                              measure  estimate         se  ci_lower  ci_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         Cramer's V 0.5308655         NA 0.2235534 0.7421756</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            Contingency Coefficient 0.6003875         NA        NA        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   Lambda symmetric 0.4857143 0.12920157 0.2324839 0.7389447</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         Lambda R|C 0.5294118 0.15628498 0.2230988 0.8357247</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         Lambda C|R 0.4444444 0.14344383 0.1632997 0.7255892</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          Goodman-Kruskal's Tau R|C 0.3825603 0.11759802 0.1520724 0.6130482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7          Goodman-Kruskal's Tau C|R 0.3386018 0.09944838 0.1436866 0.5335171</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Uncertainty Coefficient symmetric 0.3504372 0.08940615 0.1752043 0.5256700</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        Uncertainty Coefficient R|C 0.3587709 0.09349119 0.1755315 0.5420102</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       Uncertainty Coefficient C|R 0.3424818 0.08737530 0.1712294 0.5137342</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         p_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1.214066e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1.214066e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1.703534e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  7.053865e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  1.945774e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  1.141459e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  6.621256e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  8.869272e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  1.243016e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 8.867261e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              measure    estimate          se    ci_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         Cramer's V 0.135667681          NA 0.079092643</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            Contingency Coefficient 0.134436125          NA          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   Lambda symmetric 0.000000000 0.000000000 0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         Lambda R|C 0.000000000 0.000000000 0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         Lambda C|R 0.000000000 0.000000000 0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          Goodman-Kruskal's Tau R|C 0.018405720 0.008085719 0.002558001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7          Goodman-Kruskal's Tau C|R 0.007609460 0.003311779 0.001118492</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Uncertainty Coefficient symmetric 0.011487616 0.004981856 0.001723359</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        Uncertainty Coefficient R|C 0.017512300 0.007583030 0.002649834</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       Uncertainty Coefficient C|R 0.008547169 0.003712463 0.001270875</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      ci_upper      p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.19137158 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          NA 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.00000000           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.03425344 2.282660e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  0.01410043 2.157912e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  0.02125187 2.111672e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  0.03237477 2.092103e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 0.01582346 2.131878e-02</span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span>, type <span class="op">=</span> <span class="st">"ordinal"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 measure   estimate        se   ci_lower   ci_upper      p_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Goodman-Kruskal Gamma -0.6573705 0.1727847 -0.9960223 -0.3187187 0.0001420541</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Kendall's Tau-b -0.5125435 0.1488947 -0.8043717 -0.2207153 0.0005767428</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        Stuart's Tau-c -0.4833984 0.1320920 -0.7422941 -0.2245028 0.0002526509</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4         Somers' D R|C -0.5015198 0.1407720 -0.7774278 -0.2256118 0.0003671451</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5         Somers' D C|R -0.5238095 0.1605058 -0.8383951 -0.2092240 0.0011004782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 measure    estimate         se   ci_lower    ci_upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Goodman-Kruskal Gamma -0.26806781 0.05628101 -0.3783766 -0.15775906</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       Kendall's Tau-b -0.12641545 0.02741207 -0.1801421 -0.07268878</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        Stuart's Tau-c -0.11692096 0.02571677 -0.1673249 -0.06651701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         Somers' D R|C -0.09130668 0.02003027 -0.1305653 -0.05204808</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         Somers' D C|R -0.17502407 0.03781748 -0.2491450 -0.10090317</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.907128e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 3.994450e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 5.454892e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 5.153607e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 3.689888e-06</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

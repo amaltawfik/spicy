@@ -100,97 +100,68 @@ For full documentation, see `varlist()`.
 ## Examples
 
 ``` r
-varlist(iris)
+varlist(sochealth)
 #> Non-interactive session: use `tbl = TRUE` to return the table.
-iris |> varlist()
+sochealth |> varlist()
 #> Non-interactive session: use `tbl = TRUE` to return the table.
-iris |> varlist(starts_with("Sepal"), tbl = TRUE)
-#> # A tibble: 2 × 7
-#>   Variable     Label Values                  Class   N_distinct N_valid   NAs
-#>   <chr>        <chr> <chr>                   <chr>        <int>   <int> <int>
-#> 1 Sepal.Length NA    4.3, 4.4, 4.5, ..., 7.9 numeric         35     150     0
-#> 2 Sepal.Width  NA    2, 2.2, 2.3, ..., 4.4   numeric         23     150     0
-varlist(mtcars, where(is.numeric), values = TRUE, tbl = TRUE)
-#> # A tibble: 11 × 7
-#>    Variable Label Values                          Class N_distinct N_valid   NAs
-#>    <chr>    <chr> <chr>                           <chr>      <int>   <int> <int>
-#>  1 mpg      NA    10.4, 13.3, 14.3, 14.7, 15, 15… nume…         25      32     0
-#>  2 cyl      NA    4, 6, 8                         nume…          3      32     0
-#>  3 disp     NA    71.1, 75.7, 78.7, 79, 95.1, 10… nume…         27      32     0
-#>  4 hp       NA    52, 62, 65, 66, 91, 93, 95, 97… nume…         22      32     0
-#>  5 drat     NA    2.76, 2.93, 3, 3.07, 3.08, 3.1… nume…         22      32     0
-#>  6 wt       NA    1.513, 1.615, 1.835, 1.935, 2.… nume…         29      32     0
-#>  7 qsec     NA    14.5, 14.6, 15.41, 15.5, 15.84… nume…         30      32     0
-#>  8 vs       NA    0, 1                            nume…          2      32     0
-#>  9 am       NA    0, 1                            nume…          2      32     0
-#> 10 gear     NA    3, 4, 5                         nume…          3      32     0
-#> 11 carb     NA    1, 2, 3, 4, 6, 8                nume…          6      32     0
-varlist(head(mtcars), tbl = TRUE)
-#> # A tibble: 11 × 7
-#>    Variable Label Values                          Class N_distinct N_valid   NAs
-#>    <chr>    <chr> <chr>                           <chr>      <int>   <int> <int>
-#>  1 mpg      NA    18.1, 18.7, 21, ..., 22.8       nume…          5       6     0
-#>  2 cyl      NA    4, 6, 8                         nume…          3       6     0
-#>  3 disp     NA    108, 160, 225, ..., 360         nume…          5       6     0
-#>  4 hp       NA    93, 105, 110, 175               nume…          4       6     0
-#>  5 drat     NA    2.76, 3.08, 3.15, ..., 3.9      nume…          5       6     0
-#>  6 wt       NA    2.32, 2.62, 2.875, ..., 3.46    nume…          6       6     0
-#>  7 qsec     NA    16.46, 17.02, 18.61, ..., 20.22 nume…          5       6     0
-#>  8 vs       NA    0, 1                            nume…          2       6     0
-#>  9 am       NA    0, 1                            nume…          2       6     0
-#> 10 gear     NA    3, 4                            nume…          2       6     0
-#> 11 carb     NA    1, 2, 4                         nume…          3       6     0
-varlist(mtcars, tbl = TRUE)
-#> # A tibble: 11 × 7
-#>    Variable Label Values                          Class N_distinct N_valid   NAs
-#>    <chr>    <chr> <chr>                           <chr>      <int>   <int> <int>
-#>  1 mpg      NA    10.4, 13.3, 14.3, ..., 33.9     nume…         25      32     0
-#>  2 cyl      NA    4, 6, 8                         nume…          3      32     0
-#>  3 disp     NA    71.1, 75.7, 78.7, ..., 472      nume…         27      32     0
-#>  4 hp       NA    52, 62, 65, ..., 335            nume…         22      32     0
-#>  5 drat     NA    2.76, 2.93, 3, ..., 4.93        nume…         22      32     0
-#>  6 wt       NA    1.513, 1.615, 1.835, ..., 5.424 nume…         29      32     0
-#>  7 qsec     NA    14.5, 14.6, 15.41, ..., 22.9    nume…         30      32     0
-#>  8 vs       NA    0, 1                            nume…          2      32     0
-#>  9 am       NA    0, 1                            nume…          2      32     0
-#> 10 gear     NA    3, 4, 5                         nume…          3      32     0
-#> 11 carb     NA    1, 2, 3, ..., 8                 nume…          6      32     0
-varlist(iris[, 1:3], tbl = TRUE)
-#> # A tibble: 3 × 7
-#>   Variable     Label Values                  Class   N_distinct N_valid   NAs
-#>   <chr>        <chr> <chr>                   <chr>        <int>   <int> <int>
-#> 1 Sepal.Length NA    4.3, 4.4, 4.5, ..., 7.9 numeric         35     150     0
-#> 2 Sepal.Width  NA    2, 2.2, 2.3, ..., 4.4   numeric         23     150     0
-#> 3 Petal.Length NA    1, 1.1, 1.2, ..., 6.9   numeric         43     150     0
-varlist(mtcars[1:10, ], tbl = TRUE)
-#> # A tibble: 11 × 7
-#>    Variable Label Values                         Class  N_distinct N_valid   NAs
-#>    <chr>    <chr> <chr>                          <chr>       <int>   <int> <int>
-#>  1 mpg      NA    14.3, 18.1, 18.7, ..., 24.4    numer…          8      10     0
-#>  2 cyl      NA    4, 6, 8                        numer…          3      10     0
-#>  3 disp     NA    108, 140.8, 146.7, ..., 360    numer…          8      10     0
-#>  4 hp       NA    62, 93, 95, ..., 245           numer…          8      10     0
-#>  5 drat     NA    2.76, 3.08, 3.15, ..., 3.92    numer…          8      10     0
-#>  6 wt       NA    2.32, 2.62, 2.875, ..., 3.57   numer…          9      10     0
-#>  7 qsec     NA    15.84, 16.46, 17.02, ..., 22.9 numer…          9      10     0
-#>  8 vs       NA    0, 1                           numer…          2      10     0
-#>  9 am       NA    0, 1                           numer…          2      10     0
-#> 10 gear     NA    3, 4                           numer…          2      10     0
-#> 11 carb     NA    1, 2, 4                        numer…          3      10     0
-
-vl(iris)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
-iris |> vl()
-#> Non-interactive session: use `tbl = TRUE` to return the table.
-vl(mtcars, starts_with("d"))
-#> Non-interactive session: use `tbl = TRUE` to return the table.
-vl(head(iris), include_na = TRUE)
-#> Non-interactive session: use `tbl = TRUE` to return the table.
-vl(iris[, 1:3], values = TRUE, tbl = TRUE)
-#> # A tibble: 3 × 7
+varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
+#> # A tibble: 6 × 7
+#>   Variable           Label                 Values Class N_distinct N_valid   NAs
+#>   <chr>              <chr>                 <chr>  <chr>      <int>   <int> <int>
+#> 1 age                Age (years)           25, 2… nume…         51    1200     0
+#> 2 income             Monthly household in… 1000,… nume…       1053    1200     0
+#> 3 wellbeing_score    WHO-5 wellbeing inde… 18.7,… nume…        517    1200     0
+#> 4 bmi                Body mass index       16, 1… nume…        181    1188    12
+#> 5 political_position Political position (… 0, 1,… nume…         11    1185    15
+#> 6 weight             Survey design weight  0.664… nume…        483    1200     0
+varlist(sochealth, tbl = TRUE)
+#> # A tibble: 20 × 7
+#>    Variable            Label               Values Class N_distinct N_valid   NAs
+#>    <chr>               <chr>               <chr>  <chr>      <int>   <int> <int>
+#>  1 sex                 Sex                 Femal… fact…          2    1200     0
+#>  2 age                 Age (years)         25, 2… nume…         51    1200     0
+#>  3 age_group           Age group           25-34… orde…          4    1200     0
+#>  4 education           Highest education … Lower… orde…          3    1200     0
+#>  5 social_class        Subjective social … Lower… orde…          5    1200     0
+#>  6 region              Region of residence Centr… fact…          6    1200     0
+#>  7 employment_status   Employment status   Emplo… fact…          4    1200     0
+#>  8 income_group        Household income g… Low, … orde…          4    1182    18
+#>  9 income              Monthly household … 1000,… nume…       1053    1200     0
+#> 10 smoking             Current smoker      No, Y… fact…          2    1175    25
+#> 11 physical_activity   Regular physical a… No, Y… fact…          2    1200     0
+#> 12 dentist_12m         Dentist visit in l… No, Y… fact…          2    1200     0
+#> 13 self_rated_health   Self-rated health   Poor,… orde…          4    1180    20
+#> 14 wellbeing_score     WHO-5 wellbeing in… 18.7,… nume…        517    1200     0
+#> 15 bmi                 Body mass index     16, 1… nume…        181    1188    12
+#> 16 bmi_category        BMI category        Norma… orde…          3    1188    12
+#> 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0
+#> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
+#> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
+#> 20 weight              Survey design weig… 0.664… nume…        483    1200     0
+varlist(iris, tbl = TRUE)
+#> # A tibble: 5 × 7
 #>   Variable     Label Values                       Class N_distinct N_valid   NAs
 #>   <chr>        <chr> <chr>                        <chr>      <int>   <int> <int>
-#> 1 Sepal.Length NA    4.3, 4.4, 4.5, 4.6, 4.7, 4.… nume…         35     150     0
-#> 2 Sepal.Width  NA    2, 2.2, 2.3, 2.4, 2.5, 2.6,… nume…         23     150     0
-#> 3 Petal.Length NA    1, 1.1, 1.2, 1.3, 1.4, 1.5,… nume…         43     150     0
+#> 1 Sepal.Length NA    4.3, 4.4, 4.5, ..., 7.9      nume…         35     150     0
+#> 2 Sepal.Width  NA    2, 2.2, 2.3, ..., 4.4        nume…         23     150     0
+#> 3 Petal.Length NA    1, 1.1, 1.2, ..., 6.9        nume…         43     150     0
+#> 4 Petal.Width  NA    0.1, 0.2, 0.3, ..., 2.5      nume…         22     150     0
+#> 5 Species      NA    setosa, versicolor, virgini… fact…          3     150     0
+
+vl(sochealth)
+#> Non-interactive session: use `tbl = TRUE` to return the table.
+sochealth |> vl()
+#> Non-interactive session: use `tbl = TRUE` to return the table.
+vl(sochealth, starts_with("bmi"))
+#> Non-interactive session: use `tbl = TRUE` to return the table.
+vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
+#> # A tibble: 6 × 7
+#>   Variable           Label                 Values Class N_distinct N_valid   NAs
+#>   <chr>              <chr>                 <chr>  <chr>      <int>   <int> <int>
+#> 1 age                Age (years)           25, 2… nume…         51    1200     0
+#> 2 income             Monthly household in… 1000,… nume…       1053    1200     0
+#> 3 wellbeing_score    WHO-5 wellbeing inde… 18.7,… nume…        517    1200     0
+#> 4 bmi                Body mass index       16, 1… nume…        181    1188    12
+#> 5 political_position Political position (… 0, 1,… nume…         11    1185    15
+#> 6 weight             Survey design weight  0.664… nume…        483    1200     0
 ```

@@ -68,11 +68,10 @@ for full references.
 ## Examples
 
 ``` r
-data(mtcars)
-tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+tab <- table(sochealth$smoking, sochealth$education)
 uncertainty_coef(tab)
-#> [1] 0.3504372
+#> [1] 0.01148762
 uncertainty_coef(tab, direction = "row", detail = TRUE)
-#>     estimate     ci_lower     ci_upper      p_value 
-#> 0.3587708805 0.1755315202 0.5420102407 0.0001243016 
+#>    estimate    ci_lower    ci_upper     p_value 
+#> 0.017512300 0.002649834 0.032374766 0.020921026 
 ```
