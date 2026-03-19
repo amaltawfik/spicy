@@ -15,6 +15,7 @@
 #' @importFrom rlang eval_tidy
 #' @importFrom rlang inform
 #' @importFrom rlang quo_is_null
+#' @importFrom stats complete.cases
 #' @importFrom stats na.omit
 #' @importFrom stats setNames
 #' @importFrom stats xtabs
