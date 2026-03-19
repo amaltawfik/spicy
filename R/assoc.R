@@ -348,21 +348,24 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
     ci_upper <- NA_real_
   }
 
-  if (.include_se) {
-    return(c(
+  out <- if (.include_se) {
+    c(
       estimate = ph,
       se = NA_real_,
       ci_lower = ci_lower,
       ci_upper = ci_upper,
       p_value = p_value
-    ))
+    )
+  } else {
+    c(
+      estimate = ph,
+      ci_lower = ci_lower,
+      ci_upper = ci_upper,
+      p_value = p_value
+    )
   }
-  c(
-    estimate = ph,
-    ci_lower = ci_lower,
-    ci_upper = ci_upper,
-    p_value = p_value
-  )
+  class(out) <- "spicy_assoc_detail"
+  out
 }
 
 
@@ -420,21 +423,24 @@ contingency_coef <- function(
     return(out)
   }
 
-  if (.include_se) {
-    return(c(
+  out <- if (.include_se) {
+    c(
       estimate = C_val,
       se = NA_real_,
       ci_lower = NA_real_,
       ci_upper = NA_real_,
       p_value = p_value
-    ))
+    )
+  } else {
+    c(
+      estimate = C_val,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      p_value = p_value
+    )
   }
-  c(
-    estimate = C_val,
-    ci_lower = NA_real_,
-    ci_upper = NA_real_,
-    p_value = p_value
-  )
+  class(out) <- "spicy_assoc_detail"
+  out
 }
 
 
