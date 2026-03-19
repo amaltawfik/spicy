@@ -6,78 +6,61 @@ analysis workflows.
 ## What is spicy?
 
 spicy is an R package for the first phase of data analysis: inspecting
-variables, checking distributions, exploring associations, and moving
-quickly toward usable outputs. It helps you:
+variables, checking distributions, exploring associations, and producing
+publication-ready tables. It helps you:
 
-- Inspect variables quickly with
+- **Inspect variables** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  (and its shortcut
-  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)),
-  including names, labels, representative values, classes, number of
-  distinct non-missing values, number of valid observations, and number
-  of missing observations. Similar to the “Variable View” in SPSS or the
-  “Variables Manager” in Stata.
-- Explore distributions with
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
-  inspect associations with
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
-  and compute a full suite of association measures
-  ([`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
+  — names, labels, values, classes, missings. Similar to SPSS “Variable
+  View” or Stata “Variables Manager”.
+- **Explore distributions** with
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  associations with
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+- **Measure associations** with
+  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
   [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
   [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
   [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
-  and more) with confidence intervals and p-values via
-  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md).
-- Compute row-wise summaries with
+  and more — all with confidence intervals and p-values.
+- **Build APA tables** with
+  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  — export to gt, tinytable, flextable, Excel, Word, or clipboard.
+- **Compute row-wise summaries** with
   [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
   and
-  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-  with automatic handling of missing data.
-- Build publication-ready APA cross-tab reports with
-  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  and export to multiple formats (`wide`, `long`, `gt`, `tinytable`,
-  `flextable`, `excel`, `clipboard`, `word`).
-- Generate an interactive codebook with
-  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
-  extending
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  with searchable summaries and built-in export options (Copy, CSV,
-  Excel, PDF, Print) via
-  [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html).
-- Copy data frames or result tables directly to the clipboard with
-  [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
-  for fast export to spreadsheets or text editors.
-- Extract and assign variable labels from column headers with
-  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
-  especially useful for LimeSurvey CSV exports where headers follow a
-  “name \[separator\] label” pattern – any string can be used as the
-  separator (e.g., “.”, ” - “,”:“, etc.).
-- Work comfortably with `labelled`, `factor`, `Date`, `POSIXct`, and
-  other commonly used variable types.
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
+- **Generate codebooks** with
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  — interactive HTML with search, sort, and export.
+- **Extract labels** from column headers with
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  — useful for LimeSurvey CSV exports.
 
-The goal is simple: make early data exploration faster, clearer, and
-more pleasant in everyday analysis and data science workflows.
+Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
+common variable types. See
+[`vignette("spicy")`](https://amaltawfik.github.io/spicy/articles/spicy.md)
+for a full tour.
 
 ------------------------------------------------------------------------
 
 ## Installation
 
-For the stable version, install from CRAN.
+Install the stable version from CRAN:
 
 ``` r
 install.packages("spicy")
 ```
 
-You can also install from
-[r-universe](https://amaltawfik.r-universe.dev/spicy):
+Or from [r-universe](https://amaltawfik.r-universe.dev/spicy):
 
 ``` r
 install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
-Or install the development version from GitHub:
+Or the development version from GitHub:
 
 ``` r
 # install.packages("pak")
@@ -86,17 +69,14 @@ pak::pak("amaltawfik/spicy")
 
 ------------------------------------------------------------------------
 
-## Example usage
+## Quick tour
 
-### Inspect variables with `varlist()` (and its shortcut `vl()`)
+### Inspect variables
 
 ![varlist demo with labelled
 data](reference/figures/animation_varlist.gif)
 
-### More examples
-
 ``` r
-# Get a summary of all variables as a tibble
 varlist(sochealth, tbl = TRUE)
 #> # A tibble: 20 × 7
 #>    Variable            Label               Values Class N_distinct N_valid   NAs
@@ -121,8 +101,11 @@ varlist(sochealth, tbl = TRUE)
 #> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
 #> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
 #> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
+```
 
-# Tabulate frequencies (ordered factor with labels)
+### Frequency tables and cross-tabulations
+
+``` r
 freq(sochealth, education)
 #> Frequency table: education
 #> 
@@ -138,22 +121,7 @@ freq(sochealth, education)
 #> Class: ordered, factor
 #> Data: sochealth
 
-# Cross-tab with frequencies
-cross_tab(sochealth, smoking, education)
-#> Crosstable: smoking x education (N)
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                  179                   415            332 │        926 
-#>  Yes         │                   78                   112             59 │        249 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  257                   527            391 │       1175 
-#> 
-#> Chi-2(2) = 21.6, p < 0.001
-#> Cramer's V = 0.14
-
-# Cross-tab with column percentages
-cross_tab(sochealth, smoking, education, percent = "column")
+cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
 #>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
@@ -166,249 +134,32 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #> 
 #> Chi-2(2) = 21.6, p < 0.001
 #> Cramer's V = 0.14
-
-# Cross-tab with row percentages
-cross_tab(sochealth, smoking, education, percent = "row")
-#> Crosstable: smoking x education (Row %)
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total          N 
-#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
-#>  No          │                 19.3                  44.8           35.9 │      100.0        926 
-#>  Yes         │                 31.3                  45.0           23.7 │      100.0        249 
-#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
-#>  Total       │                 21.9                  44.9           33.3 │      100.0       1175 
-#> 
-#> Chi-2(2) = 21.6, p < 0.001
-#> Cramer's V = 0.14
-
-# Cross-tab grouped by sex
-cross_tab(sochealth, smoking, education, by = sex)
-#> Crosstable: smoking x education (N) | sex = Female
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   95                   220            160 │        475 
-#>  Yes         │                   38                    62             31 │        131 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  133                   282            191 │        606 
-#> 
-#> Chi-2(2) = 7.1, p = 0.029
-#> Cramer's V = 0.11
-#> 
-#> Crosstable: smoking x education (N) | sex = Male
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   84                   195            172 │        451 
-#>  Yes         │                   40                    50             28 │        118 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  124                   245            200 │        569 
-#> 
-#> Chi-2(2) = 15.6, p < 0.001
-#> Cramer's V = 0.17
-
-# Cross-tab grouped by combination of variables
-cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
-#> Crosstable: smoking x education (N) | sex x age_group = Female.25-34
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   23                    49             29 │        101 
-#>  Yes         │                    9                     9              7 │         25 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   32                    58             36 │        126 
-#> 
-#> Chi-2(2) = 2.1, p = 0.356
-#> Cramer's V = 0.13
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                    9                    42             32 │         83 
-#>  Yes         │                   11                    11              4 │         26 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   20                    53             36 │        109 
-#> 
-#> Chi-2(2) = 14.2, p < 0.001
-#> Cramer's V = 0.36
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   24                    73             48 │        145 
-#>  Yes         │                   10                    20              8 │         38 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   34                    93             56 │        183 
-#> 
-#> Chi-2(2) = 3.0, p = 0.223
-#> Cramer's V = 0.13
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   33                    59             60 │        152 
-#>  Yes         │                   14                    17              7 │         38 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   47                    76             67 │        190 
-#> 
-#> Chi-2(2) = 6.9, p = 0.032
-#> Cramer's V = 0.19
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   28                    63             45 │        136 
-#>  Yes         │                    8                    16              6 │         30 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   36                    79             51 │        166 
-#> 
-#> Chi-2(2) = 2.0, p = 0.360
-#> Cramer's V = 0.11
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   28                    58             42 │        128 
-#>  Yes         │                    8                    13              5 │         26 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   36                    71             47 │        154 
-#> 
-#> Chi-2(2) = 2.1, p = 0.343
-#> Cramer's V = 0.12
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   20                    35             38 │         93 
-#>  Yes         │                   11                    17             10 │         38 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   31                    52             48 │        131 
-#> 
-#> Chi-2(2) = 2.5, p = 0.282
-#> Cramer's V = 0.14
-#> 
-#> Crosstable: smoking x education (N) | sex x age_group = Male.65-75
-#> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                   14                    36             38 │         88 
-#>  Yes         │                    7                     9             12 │         28 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                   21                    45             50 │        116 
-#> 
-#> Chi-2(2) = 1.4, p = 0.499
-#> Cramer's V = 0.11
-
-# Compute row-wise mean/sum (all values must be valid by default) or specific value
-df <- data.frame(
-  var1 = c(10, NA, 30, 40, 50),
-  var2 = c(5, NA, 15, NA, 25),
-  var3 = c(NA, 30, 20, 50, 10)
-)
-df
-#>   var1 var2 var3
-#> 1   10    5   NA
-#> 2   NA   NA   30
-#> 3   30   15   20
-#> 4   40   NA   50
-#> 5   50   25   10
-mean_n(df)
-#> [1]       NA       NA 21.66667       NA 28.33333
-sum_n(df)
-#> [1] NA NA 65 NA 85
-count_n(df, count = 10)
-#> [1] 1 0 0 0 1
-count_n(df, special = "NA")
-#> [1] 1 2 0 1 0
-df |> mutate(count30 = count_n(count = 30))
-#>   var1 var2 var3 count30
-#> 1   10    5   NA       0
-#> 2   NA   NA   30       1
-#> 3   30   15   20       1
-#> 4   40   NA   50       0
-#> 5   50   25   10       0
-
-# Extract labels from column names like "varname. label"
-# This format ("name. label") is the default in LimeSurvey CSV exports
-# when using: Export results -> Export format: CSV -> Headings: Question code & question text.
-# It uses ". " (dot + space) as the default separator between the question code and question text.
-df <- tibble::tibble(
-  "age. Age of respondent" = c(25, 30),
-  "score. Total score. Manually computed." = c(12, 14)
-)
-
-out <- label_from_names(df)
-
-# View assigned labels
-labelled::var_label(out)
-#> $age
-#> [1] "Age of respondent"
-#> 
-#> $score
-#> [1] "Total score. Manually computed."
 ```
 
 ### Association measures
 
 ``` r
-tab <- table(sochealth$education, sochealth$self_rated_health)
+tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 
 # Quick scalar estimate
-cramer_v(tab)
+cramer_v(tbl)
 #> [1] 0.1761697
 
 # Detailed result with CI and p-value
-cramer_v(tab, detail = TRUE)
+cramer_v(tbl, detail = TRUE)
 #>     estimate     ci_lower     ci_upper      p_value 
 #> 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14
-
-# Summary of all available measures
-assoc_measures(tab)
-#>                              measure   estimate          se    ci_lower
-#> 1                         Cramer's V 0.17616972          NA 0.120311922
-#> 2            Contingency Coefficient 0.24175160          NA          NA
-#> 3                   Lambda symmetric 0.01176471 0.013655494 0.000000000
-#> 4                         Lambda R|C 0.02297090 0.026522213 0.000000000
-#> 5                         Lambda C|R 0.00000000 0.000000000 0.000000000
-#> 6          Goodman-Kruskal's Tau R|C 0.02678191 0.006174750 0.014679623
-#> 7          Goodman-Kruskal's Tau C|R 0.01720331 0.004665374 0.008059345
-#> 8  Uncertainty Coefficient symmetric 0.02778300 0.006227780 0.015576773
-#> 9        Uncertainty Coefficient R|C 0.02949061 0.006636785 0.016482749
-#> 10       Uncertainty Coefficient C|R 0.02626232 0.005871713 0.014753970
-#> 11             Goodman-Kruskal Gamma 0.31047909 0.037170742 0.237625772
-#> 12                   Kendall's Tau-b 0.20455241 0.025201007 0.155159344
-#> 13                    Stuart's Tau-c 0.19964091 0.024819686 0.150995217
-#> 14                     Somers' D R|C 0.20153687 0.024718963 0.153088589
-#> 15                     Somers' D C|R 0.20761308 0.025647347 0.157345200
-#>      ci_upper      p_value
-#> 1  0.23091555 8.817446e-14
-#> 2          NA 8.817446e-14
-#> 3  0.03852898 3.889427e-01
-#> 4  0.07495349 3.864350e-01
-#> 5  0.00000000           NA
-#> 6  0.03888420 1.442259e-05
-#> 7  0.02634727 2.265169e-04
-#> 8  0.03998922 8.152484e-06
-#> 9  0.04249847 8.850380e-06
-#> 10 0.03777066 7.724391e-06
-#> 11 0.38333240 6.667393e-17
-#> 12 0.25394548 4.784996e-16
-#> 13 0.24828660 8.720015e-16
-#> 14 0.24998514 3.546299e-16
-#> 15 0.25788095 5.730469e-16
 ```
 
-### APA-ready table builder
+See
+[`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+for a guide on choosing the right measure.
+
+### APA tables
 
 ``` r
 table_apa(
-  data = sochealth,
+  sochealth,
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
@@ -426,64 +177,56 @@ table_apa(
 |      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
 |      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
 
-### Additional exported helpers
+See
+[`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)
+for all output formats, weights, CI, and export options.
+
+### Row-wise summaries
 
 ``` r
-# Interactive codebook (requires DT)
-code_book(sochealth)
-
-# APA-ready table: wide format
-table_apa(
-  data = sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
-  labels = c("Current smoker", "Physical activity"),
-  output = "wide"
+df <- data.frame(
+  x1 = c(10, NA, 30, 40, 50),
+  x2 = c(5, NA, 15, NA, 25),
+  x3 = c(NA, 30, 20, 50, 10)
 )
 
-# APA-ready table: export to Excel
-table_apa(
-  data = sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
-  labels = c("Current smoker", "Physical activity"),
-  output = "excel",
-  excel_path = "apa_table.xlsx"
-)
-
-# Copy data to clipboard (interactive session)
-copy_clipboard(sochealth)
+mean_n(df)
+#> [1]       NA       NA 21.66667       NA 28.33333
+count_n(df, special = "NA")
+#> [1] 1 2 0 1 0
 ```
 
-> All functions can be directly used in pipelines.
+### Label extraction
 
-------------------------------------------------------------------------
-
-## Why use `spicy`?
-
-- Clean, expressive output
-- Works well with labelled survey data
-- Handles weights, percentages, NA counts
-- Great for exploring data and variables, teaching, or reporting
+``` r
+# LimeSurvey-style headers: "code. label"
+df <- tibble::tibble(
+  "age. Age of respondent" = c(25, 30),
+  "score. Total score" = c(12, 14)
+)
+out <- label_from_names(df)
+labelled::var_label(out)
+#> $age
+#> [1] "Age of respondent"
+#> 
+#> $score
+#> [1] "Total score"
+```
 
 ------------------------------------------------------------------------
 
 ## Citation
 
-If you use `spicy` in a publication or teaching material:
+If you use spicy in a publication or teaching material:
 
-- Use `citation("spicy")` for the exact BibTeX entry of your installed
-  version.
-- CRAN does not assign package DOI values.
-- The archival DOI for `spicy` is:
-  <https://doi.org/10.5281/zenodo.15397865>.
-
-You can also view the source citation file:
-<https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
+- Use `citation("spicy")` for the BibTeX entry.
+- The archival DOI is: <https://doi.org/10.5281/zenodo.15397865>.
+- Source citation file:
+  <https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
 ------------------------------------------------------------------------
 
 ## License
 
-This package is licensed under the MIT license. See
-[`LICENSE`](https://amaltawfik.github.io/spicy/LICENSE) for details.
+MIT. See [`LICENSE`](https://amaltawfik.github.io/spicy/LICENSE) for
+details.

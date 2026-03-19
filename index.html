@@ -87,49 +87,50 @@
 <div class="section level2">
 <h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
 </h2>
-<p>spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and moving quickly toward usable outputs. It helps you:</p>
+<p>spicy is an R package for the first phase of data analysis: inspecting variables, checking distributions, exploring associations, and producing publication-ready tables. It helps you:</p>
 <ul>
-<li>Inspect variables quickly with <code><a href="reference/varlist.html">varlist()</a></code> (and its shortcut <code><a href="reference/varlist.html">vl()</a></code>), including names, labels, representative values, classes, number of distinct non-missing values, number of valid observations, and number of missing observations. Similar to the “Variable View” in SPSS or the “Variables Manager” in Stata.</li>
-<li>Explore distributions with <code><a href="reference/freq.html">freq()</a></code>, inspect associations with <code><a href="reference/cross_tab.html">cross_tab()</a></code>, and compute a full suite of association measures (<code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code>, and more) with confidence intervals and p-values via <code><a href="reference/assoc_measures.html">assoc_measures()</a></code>.</li>
-<li>Compute row-wise summaries with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code> with automatic handling of missing data.</li>
-<li>Build publication-ready APA cross-tab reports with <code><a href="reference/table_apa.html">table_apa()</a></code> and export to multiple formats (<code>wide</code>, <code>long</code>, <code>gt</code>, <code>tinytable</code>, <code>flextable</code>, <code>excel</code>, <code>clipboard</code>, <code>word</code>).</li>
-<li>Generate an interactive codebook with <code><a href="reference/code_book.html">code_book()</a></code>, extending <code><a href="reference/varlist.html">varlist()</a></code> with searchable summaries and built-in export options (Copy, CSV, Excel, PDF, Print) via <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable</a></code>.</li>
-<li>Copy data frames or result tables directly to the clipboard with <code><a href="reference/copy_clipboard.html">copy_clipboard()</a></code> for fast export to spreadsheets or text editors.</li>
-<li>Extract and assign variable labels from column headers with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, especially useful for LimeSurvey CSV exports where headers follow a “name [separator] label” pattern – any string can be used as the separator (e.g., “.”, ” - “,”:“, etc.).</li>
-<li>Work comfortably with <code>labelled</code>, <code>factor</code>, <code>Date</code>, <code>POSIXct</code>, and other commonly used variable types.</li>
+<li>
+<strong>Inspect variables</strong> with <code><a href="reference/varlist.html">varlist()</a></code> — names, labels, values, classes, missings. Similar to SPSS “Variable View” or Stata “Variables Manager”.</li>
+<li>
+<strong>Explore distributions</strong> with <code><a href="reference/freq.html">freq()</a></code> and associations with <code><a href="reference/cross_tab.html">cross_tab()</a></code>.</li>
+<li>
+<strong>Measure associations</strong> with <code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code>, and more — all with confidence intervals and p-values.</li>
+<li>
+<strong>Build APA tables</strong> with <code><a href="reference/table_apa.html">table_apa()</a></code> — export to gt, tinytable, flextable, Excel, Word, or clipboard.</li>
+<li>
+<strong>Compute row-wise summaries</strong> with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code>.</li>
+<li>
+<strong>Generate codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> — interactive HTML with search, sort, and export.</li>
+<li>
+<strong>Extract labels</strong> from column headers with <code><a href="reference/label_from_names.html">label_from_names()</a></code> — useful for LimeSurvey CSV exports.</li>
 </ul>
-<p>The goal is simple: make early data exploration faster, clearer, and more pleasant in everyday analysis and data science workflows.</p>
+<p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types. See <code><a href="articles/spicy.html">vignette("spicy")</a></code> for a full tour.</p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>For the stable version, install from CRAN.</p>
+<p>Install the stable version from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"spicy"</span><span class="op">)</span></span></code></pre></div>
-<p>You can also install from <a href="https://amaltawfik.r-universe.dev/spicy" class="external-link">r-universe</a>:</p>
+<p>Or from <a href="https://amaltawfik.r-universe.dev/spicy" class="external-link">r-universe</a>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"spicy"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://amaltawfik.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Or install the development version from GitHub:</p>
+<p>Or the development version from GitHub:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"amaltawfik/spicy"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="example-usage">Example usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
+<h2 id="quick-tour">Quick tour<a class="anchor" aria-label="anchor" href="#quick-tour"></a>
 </h2>
 <div class="section level3">
-<h3 id="inspect-variables-with-varlist-and-its-shortcut-vl">Inspect variables with <code>varlist()</code> (and its shortcut <code>vl()</code>)<a class="anchor" aria-label="anchor" href="#inspect-variables-with-varlist-and-its-shortcut-vl"></a>
+<h3 id="inspect-variables">Inspect variables<a class="anchor" aria-label="anchor" href="#inspect-variables"></a>
 </h3>
 <p><img src="reference/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%"></p>
-</div>
-<div class="section level3">
-<h3 id="more-examples">More examples<a class="anchor" aria-label="anchor" href="#more-examples"></a>
-</h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get a summary of all variables as a tibble</span></span>
-<span><span class="fu"><a href="reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 20 × 7</span></span>
 <span><span class="co">#&gt;    Variable            Label               Values Class N_distinct N_valid   NAs</span></span>
 <span><span class="co">#&gt;    &lt;chr&gt;               &lt;chr&gt;               &lt;chr&gt;  &lt;chr&gt;      &lt;int&gt;   &lt;int&gt; &lt;int&gt;</span></span>
@@ -152,10 +153,13 @@
 <span><span class="co">#&gt; 17 institutional_trust Trust in instituti… Very … orde…          4    1200     0</span></span>
 <span><span class="co">#&gt; 18 political_position  Political position… 0, 1,… nume…         11    1185    15</span></span>
 <span><span class="co">#&gt; 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0</span></span>
-<span><span class="co">#&gt; 20 weight              Survey design weig… 0.323… nume…        810    1200     0</span></span>
-<span></span>
-<span><span class="co"># Tabulate frequencies (ordered factor with labels)</span></span>
-<span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 20 weight              Survey design weig… 0.323… nume…        810    1200     0</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="frequency-tables-and-cross-tabulations">Frequency tables and cross-tabulations<a class="anchor" aria-label="anchor" href="#frequency-tables-and-cross-tabulations"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Frequency table: education</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Category │ Values           Freq.  Percent </span></span>
@@ -170,22 +174,7 @@
 <span><span class="co">#&gt; Class: ordered, factor</span></span>
 <span><span class="co">#&gt; Data: sochealth</span></span>
 <span></span>
-<span><span class="co"># Cross-tab with frequencies</span></span>
-<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                  179                   415            332 │        926 </span></span>
-<span><span class="co">#&gt;  Yes         │                   78                   112             59 │        249 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                  257                   527            391 │       1175 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
-<span></span>
-<span><span class="co"># Cross-tab with column percentages</span></span>
-<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: smoking x education (Column %)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
@@ -197,250 +186,30 @@
 <span><span class="co">#&gt;  N           │                  257                   527            391 │       1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
-<span></span>
-<span><span class="co"># Cross-tab with row percentages</span></span>
-<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"row"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (Row %)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total          N </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────</span></span>
-<span><span class="co">#&gt;  No          │                 19.3                  44.8           35.9 │      100.0        926 </span></span>
-<span><span class="co">#&gt;  Yes         │                 31.3                  45.0           23.7 │      100.0        249 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────</span></span>
-<span><span class="co">#&gt;  Total       │                 21.9                  44.9           33.3 │      100.0       1175 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
-<span></span>
-<span><span class="co"># Cross-tab grouped by sex</span></span>
-<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex = Female</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   95                   220            160 │        475 </span></span>
-<span><span class="co">#&gt;  Yes         │                   38                    62             31 │        131 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                  133                   282            191 │        606 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 7.1, p = 0.029</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.11</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex = Male</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   84                   195            172 │        451 </span></span>
-<span><span class="co">#&gt;  Yes         │                   40                    50             28 │        118 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                  124                   245            200 │        569 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 15.6, p &lt; 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.17</span></span>
-<span></span>
-<span><span class="co"># Cross-tab grouped by combination of variables</span></span>
-<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">age_group</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.25-34</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   23                    49             29 │        101 </span></span>
-<span><span class="co">#&gt;  Yes         │                    9                     9              7 │         25 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   32                    58             36 │        126 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 2.1, p = 0.356</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.13</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                    9                    42             32 │         83 </span></span>
-<span><span class="co">#&gt;  Yes         │                   11                    11              4 │         26 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   20                    53             36 │        109 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 14.2, p &lt; 0.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.36</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   24                    73             48 │        145 </span></span>
-<span><span class="co">#&gt;  Yes         │                   10                    20              8 │         38 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   34                    93             56 │        183 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 3.0, p = 0.223</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.13</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   33                    59             60 │        152 </span></span>
-<span><span class="co">#&gt;  Yes         │                   14                    17              7 │         38 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   47                    76             67 │        190 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 6.9, p = 0.032</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.19</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   28                    63             45 │        136 </span></span>
-<span><span class="co">#&gt;  Yes         │                    8                    16              6 │         30 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   36                    79             51 │        166 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 2.0, p = 0.360</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.11</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   28                    58             42 │        128 </span></span>
-<span><span class="co">#&gt;  Yes         │                    8                    13              5 │         26 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   36                    71             47 │        154 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 2.1, p = 0.343</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.12</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   20                    35             38 │         93 </span></span>
-<span><span class="co">#&gt;  Yes         │                   11                    17             10 │         38 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   31                    52             48 │        131 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 2.5, p = 0.282</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                   14                    36             38 │         88 </span></span>
-<span><span class="co">#&gt;  Yes         │                    7                     9             12 │         28 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                   21                    45             50 │        116 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 1.4, p = 0.499</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.11</span></span>
-<span></span>
-<span><span class="co"># Compute row-wise mean/sum (all values must be valid by default) or specific value</span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  var1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  var2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
-<span>  var3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">20</span>, <span class="fl">50</span>, <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">df</span></span>
-<span><span class="co">#&gt;   var1 var2 var3</span></span>
-<span><span class="co">#&gt; 1   10    5   NA</span></span>
-<span><span class="co">#&gt; 2   NA   NA   30</span></span>
-<span><span class="co">#&gt; 3   30   15   20</span></span>
-<span><span class="co">#&gt; 4   40   NA   50</span></span>
-<span><span class="co">#&gt; 5   50   25   10</span></span>
-<span><span class="fu"><a href="reference/mean_n.html">mean_n</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]       NA       NA 21.66667       NA 28.33333</span></span>
-<span><span class="fu"><a href="reference/sum_n.html">sum_n</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] NA NA 65 NA 85</span></span>
-<span><span class="fu"><a href="reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1 0 0 0 1</span></span>
-<span><span class="fu"><a href="reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1 2 0 1 0</span></span>
-<span><span class="va">df</span> <span class="op">|&gt;</span> <span class="fu">mutate</span><span class="op">(</span>count30 <span class="op">=</span> <span class="fu"><a href="reference/count_n.html">count_n</a></span><span class="op">(</span>count <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   var1 var2 var3 count30</span></span>
-<span><span class="co">#&gt; 1   10    5   NA       0</span></span>
-<span><span class="co">#&gt; 2   NA   NA   30       1</span></span>
-<span><span class="co">#&gt; 3   30   15   20       1</span></span>
-<span><span class="co">#&gt; 4   40   NA   50       0</span></span>
-<span><span class="co">#&gt; 5   50   25   10       0</span></span>
-<span></span>
-<span><span class="co"># Extract labels from column names like "varname. label"</span></span>
-<span><span class="co"># This format ("name. label") is the default in LimeSurvey CSV exports</span></span>
-<span><span class="co"># when using: Export results -&gt; Export format: CSV -&gt; Headings: Question code &amp; question text.</span></span>
-<span><span class="co"># It uses ". " (dot + space) as the default separator between the question code and question text.</span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
-<span>  <span class="st">"score. Total score. Manually computed."</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">14</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/label_from_names.html">label_from_names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># View assigned labels</span></span>
-<span><span class="fu">labelled</span><span class="fu">::</span><span class="fu"><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">var_label</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $age</span></span>
-<span><span class="co">#&gt; [1] "Age of respondent"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $score</span></span>
-<span><span class="co">#&gt; [1] "Total score. Manually computed."</span></span></code></pre></div>
+<span><span class="co">#&gt; Cramer's V = 0.14</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="association-measures">Association measures<a class="anchor" aria-label="anchor" href="#association-measures"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">education</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">self_rated_health</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Quick scalar estimate</span></span>
-<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.1761697</span></span>
 <span></span>
 <span><span class="co"># Detailed result with CI and p-value</span></span>
-<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tab</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14</span></span>
-<span></span>
-<span><span class="co"># Summary of all available measures</span></span>
-<span><span class="fu"><a href="reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                              measure   estimate          se    ci_lower</span></span>
-<span><span class="co">#&gt; 1                         Cramer's V 0.17616972          NA 0.120311922</span></span>
-<span><span class="co">#&gt; 2            Contingency Coefficient 0.24175160          NA          NA</span></span>
-<span><span class="co">#&gt; 3                   Lambda symmetric 0.01176471 0.013655494 0.000000000</span></span>
-<span><span class="co">#&gt; 4                         Lambda R|C 0.02297090 0.026522213 0.000000000</span></span>
-<span><span class="co">#&gt; 5                         Lambda C|R 0.00000000 0.000000000 0.000000000</span></span>
-<span><span class="co">#&gt; 6          Goodman-Kruskal's Tau R|C 0.02678191 0.006174750 0.014679623</span></span>
-<span><span class="co">#&gt; 7          Goodman-Kruskal's Tau C|R 0.01720331 0.004665374 0.008059345</span></span>
-<span><span class="co">#&gt; 8  Uncertainty Coefficient symmetric 0.02778300 0.006227780 0.015576773</span></span>
-<span><span class="co">#&gt; 9        Uncertainty Coefficient R|C 0.02949061 0.006636785 0.016482749</span></span>
-<span><span class="co">#&gt; 10       Uncertainty Coefficient C|R 0.02626232 0.005871713 0.014753970</span></span>
-<span><span class="co">#&gt; 11             Goodman-Kruskal Gamma 0.31047909 0.037170742 0.237625772</span></span>
-<span><span class="co">#&gt; 12                   Kendall's Tau-b 0.20455241 0.025201007 0.155159344</span></span>
-<span><span class="co">#&gt; 13                    Stuart's Tau-c 0.19964091 0.024819686 0.150995217</span></span>
-<span><span class="co">#&gt; 14                     Somers' D R|C 0.20153687 0.024718963 0.153088589</span></span>
-<span><span class="co">#&gt; 15                     Somers' D C|R 0.20761308 0.025647347 0.157345200</span></span>
-<span><span class="co">#&gt;      ci_upper      p_value</span></span>
-<span><span class="co">#&gt; 1  0.23091555 8.817446e-14</span></span>
-<span><span class="co">#&gt; 2          NA 8.817446e-14</span></span>
-<span><span class="co">#&gt; 3  0.03852898 3.889427e-01</span></span>
-<span><span class="co">#&gt; 4  0.07495349 3.864350e-01</span></span>
-<span><span class="co">#&gt; 5  0.00000000           NA</span></span>
-<span><span class="co">#&gt; 6  0.03888420 1.442259e-05</span></span>
-<span><span class="co">#&gt; 7  0.02634727 2.265169e-04</span></span>
-<span><span class="co">#&gt; 8  0.03998922 8.152484e-06</span></span>
-<span><span class="co">#&gt; 9  0.04249847 8.850380e-06</span></span>
-<span><span class="co">#&gt; 10 0.03777066 7.724391e-06</span></span>
-<span><span class="co">#&gt; 11 0.38333240 6.667393e-17</span></span>
-<span><span class="co">#&gt; 12 0.25394548 4.784996e-16</span></span>
-<span><span class="co">#&gt; 13 0.24828660 8.720015e-16</span></span>
-<span><span class="co">#&gt; 14 0.24998514 3.546299e-16</span></span>
-<span><span class="co">#&gt; 15 0.25788095 5.730469e-16</span></span></code></pre></div>
+<span><span class="co">#&gt; 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14</span></span></code></pre></div>
+<p>See <code><a href="articles/association-measures.html">vignette("association-measures")</a></code> for a guide on choosing the right measure.</p>
 </div>
 <div class="section level3">
-<h3 id="apa-ready-table-builder">APA-ready table builder<a class="anchor" aria-label="anchor" href="#apa-ready-table-builder"></a>
+<h3 id="apa-tables">APA tables<a class="anchor" aria-label="anchor" href="#apa-tables"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
 <span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
@@ -567,68 +336,58 @@
 </tr>
 </tbody>
 </table>
+<p>See <code><a href="articles/table-apa.html">vignette("table-apa")</a></code> for all output formats, weights, CI, and export options.</p>
 </div>
 <div class="section level3">
-<h3 id="additional-exported-helpers">Additional exported helpers<a class="anchor" aria-label="anchor" href="#additional-exported-helpers"></a>
+<h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Interactive codebook (requires DT)</span></span>
-<span><span class="fu"><a href="reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># APA-ready table: wide format</span></span>
-<span><span class="fu"><a href="reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span>
-<span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"wide"</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
+<span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
+<span>  x3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">20</span>, <span class="fl">50</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># APA-ready table: export to Excel</span></span>
-<span><span class="fu"><a href="reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span>
-<span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"excel"</span>,</span>
-<span>  excel_path <span class="op">=</span> <span class="st">"apa_table.xlsx"</span></span>
+<span><span class="fu"><a href="reference/mean_n.html">mean_n</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]       NA       NA 21.66667       NA 28.33333</span></span>
+<span><span class="fu"><a href="reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1 2 0 1 0</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
+<span>  <span class="st">"score. Total score"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">14</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Copy data to clipboard (interactive session)</span></span>
-<span><span class="fu"><a href="reference/copy_clipboard.html">copy_clipboard</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></code></pre></div>
-<blockquote>
-<p>All functions can be directly used in pipelines.</p>
-</blockquote>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/label_from_names.html">label_from_names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu">labelled</span><span class="fu">::</span><span class="fu"><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">var_label</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $age</span></span>
+<span><span class="co">#&gt; [1] "Age of respondent"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $score</span></span>
+<span><span class="co">#&gt; [1] "Total score"</span></span></code></pre></div>
 <hr>
 </div>
-</div>
-<div class="section level2">
-<h2 id="why-use-spicy">Why use <code>spicy</code>?<a class="anchor" aria-label="anchor" href="#why-use-spicy"></a>
-</h2>
-<ul>
-<li>Clean, expressive output</li>
-<li>Works well with labelled survey data</li>
-<li>Handles weights, percentages, NA counts</li>
-<li>Great for exploring data and variables, teaching, or reporting</li>
-</ul>
-<hr>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>If you use <code>spicy</code> in a publication or teaching material:</p>
+<p>If you use spicy in a publication or teaching material:</p>
 <ul>
-<li>Use <code>citation("spicy")</code> for the exact BibTeX entry of your installed version.</li>
-<li>CRAN does not assign package DOI values.</li>
-<li>The archival DOI for <code>spicy</code> is: <a href="https://doi.org/10.5281/zenodo.15397865" class="external-link uri">https://doi.org/10.5281/zenodo.15397865</a>.</li>
+<li>Use <code>citation("spicy")</code> for the BibTeX entry.</li>
+<li>The archival DOI is: <a href="https://doi.org/10.5281/zenodo.15397865" class="external-link uri">https://doi.org/10.5281/zenodo.15397865</a>.</li>
+<li>Source citation file: <a href="https://github.com/amaltawfik/spicy/blob/main/inst/CITATION" class="external-link uri">https://github.com/amaltawfik/spicy/blob/main/inst/CITATION</a>
+</li>
 </ul>
-<p>You can also view the source citation file: <a href="https://github.com/amaltawfik/spicy/blob/main/inst/CITATION" class="external-link uri">https://github.com/amaltawfik/spicy/blob/main/inst/CITATION</a></p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>This package is licensed under the MIT license. See <a href="LICENSE"><code>LICENSE</code></a> for details.</p>
+<p>MIT. See <a href="LICENSE"><code>LICENSE</code></a> for details.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
