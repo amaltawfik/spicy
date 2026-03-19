@@ -12,7 +12,7 @@
 
 * `table_apa()` now correctly centers spanner labels over their column pairs in `tinytable` and `flextable` output.
 
-* New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 20 variables) with labelled variables, ordered factors, survey weights, and missing values. Designed to showcase `varlist()`, `cross_tab()`, `table_apa()`, and the association measure functions.
+* New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 20 variables) with variable labels, ordered factors, survey weights, and missing values. Designed to showcase `varlist()`, `cross_tab()`, `table_apa()`, and the association measure functions.
 
 ## Bug fixes
 

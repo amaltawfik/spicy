@@ -53,7 +53,7 @@ sochealth
 \description{
 A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
-the spicy package: labelled variables, ordered factors, survey
+the spicy package: variable labels, ordered factors, survey
 weights, association measures, and APA-style reporting.
 }
 \details{
