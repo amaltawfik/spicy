@@ -1,0 +1,166 @@
+---
+title: "Getting started with spicy"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with spicy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+spicy is an R package for the first phase of data analysis: inspecting
+variables, checking distributions, exploring associations, and producing
+publication-ready tables. This vignette walks through the core workflow
+using the bundled `sochealth` dataset, a simulated social-health survey
+with 1 200 respondents and 20 variables.
+
+## Inspect your data
+
+`varlist()` (or its shortcut `vl()`) gives a compact overview of every
+variable in a data frame: name, label, representative values, class,
+number of distinct values, valid observations, and missing values.
+
+```{r varlist}
+varlist(sochealth)
+```
+
+You can also select specific columns with tidyselect syntax:
+
+```{r varlist-select}
+varlist(sochealth, starts_with("bmi"), income, weight)
+```
+
+## Frequency tables
+
+`freq()` produces frequency tables with counts, percentages, and
+(optionally) valid and cumulative percentages.
+
+```{r freq}
+freq(sochealth, education)
+```
+
+Weighted frequencies use the `weights` argument. With `rescale = TRUE`,
+the total weighted N matches the unweighted N:
+
+```{r freq-weighted}
+freq(sochealth, education, weights = weight, rescale = TRUE)
+```
+
+## Cross-tabulations
+
+`cross_tab()` crosses two categorical variables. By default it shows
+counts, a chi-squared test, and Cramer's V:
+
+```{r crosstab}
+cross_tab(sochealth, smoking, education)
+```
+
+Add percentages with `percent`:
+
+```{r crosstab-pct}
+cross_tab(sochealth, smoking, education, percent = "col")
+```
+
+Group by a third variable with `by`:
+
+```{r crosstab-by}
+cross_tab(sochealth, smoking, education, by = sex)
+```
+
+When both variables are ordered factors, `cross_tab()` automatically
+selects an ordinal measure (Kendall's Tau-b) instead of Cramer's V:
+
+```{r crosstab-ordinal}
+cross_tab(sochealth, self_rated_health, education)
+```
+
+## Association measures
+
+For a quick overview of all available association statistics, pass a
+contingency table to `assoc_measures()`:
+
+```{r assoc-measures}
+tbl <- xtabs(~ smoking + education, data = sochealth)
+assoc_measures(tbl)
+```
+
+Individual functions such as `cramer_v()`, `gamma_gk()`, or
+`kendall_tau_b()` return a scalar by default. Pass `detail = TRUE` for
+the confidence interval and p-value:
+
+```{r cramer-detail}
+cramer_v(tbl, detail = TRUE)
+```
+
+## APA tables
+
+`table_apa()` builds a publication-ready cross-tabulation report by
+crossing one grouping variable with one or many row variables. It
+supports multiple output formats.
+
+With `output = "gt"` you get a formatted table suitable for R Markdown
+or Quarto documents:
+
+```{r table-apa-gt}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity", "dentist_12m"),
+  group_var = "education",
+  output = "gt"
+)
+```
+
+Use `assoc_ci = TRUE` to display the confidence interval inline:
+
+```{r table-apa-ci}
+table_apa(
+  sochealth,
+  row_vars = "smoking",
+  group_var = "education",
+  output = "gt",
+  assoc_ci = TRUE
+)
+```
+
+Other formats include `"tinytable"`, `"flextable"`, `"excel"`,
+`"clipboard"`, and `"word"`. The `"wide"` and `"long"` formats return
+data frames for further processing:
+
+```{r table-apa-wide}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  output = "wide"
+)
+```
+
+## Row-wise summaries
+
+`mean_n()`, `sum_n()`, and `count_n()` compute row-wise statistics
+across selected columns, with automatic handling of missing values.
+
+```{r mean-n}
+d <- sochealth[, c("bmi", "wellbeing_score", "political_position")]
+d$row_mean <- mean_n(sochealth, c("bmi", "wellbeing_score", "political_position"))
+d$n_missing <- count_n(sochealth, c("bmi", "wellbeing_score", "political_position"), special = "NA")
+head(d)
+```
+
+## Learn more
+
+- See `?cross_tab` for the full list of arguments (weights, simulation,
+  association measures).
+- See `?table_apa` for all output formats and customization options.
+- See `?assoc_measures` for the complete list of association statistics.
+- See `?code_book` to generate an interactive HTML codebook.

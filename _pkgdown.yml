@@ -13,7 +13,7 @@ template:
 
 navbar:
   structure:
-    left: [intro, reference, news]
+    left: [intro, reference, articles, news]
     right: [search, lightswitch, github]
   components:
     intro:
@@ -29,6 +29,12 @@ navbar:
       icon: fa-github
       aria-label: GitHub repository
       href: https://github.com/amaltawfik/spicy
+
+articles:
+  - title: Articles
+    navbar: ~
+    contents:
+      - spicy
 
 reference:
   - title: Variable Metadata
