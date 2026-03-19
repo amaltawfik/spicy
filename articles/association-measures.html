@@ -230,8 +230,8 @@ association.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/phi.html">phi</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    estimate    ci_lower    ci_upper     p_value </span></span>
-<span><span class="co">#&gt; 0.005910601 0.000000000 0.063077970 0.839443630</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper  p    </span></span>
+<span><span class="co">#&gt;    0.006     0.000     0.063  0.839</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="contingency-coefficient">Contingency coefficient<a class="anchor" aria-label="anchor" href="#contingency-coefficient"></a>
@@ -241,8 +241,8 @@ upper bound depends on the table dimensions, which makes it harder to
 compare across tables of different sizes.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/contingency_coef.html">contingency_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.344361e-01           NA           NA 2.012877e-05</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper  p      </span></span>
+<span><span class="co">#&gt;    0.134        --        --  &lt; 0.001</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

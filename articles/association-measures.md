@@ -94,8 +94,8 @@ negative when the table is 2x2, indicating the direction of association.
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.005910601 0.000000000 0.063077970 0.839443630
+#> Estimate  CI lower  CI upper  p    
+#>    0.006     0.000     0.063  0.839
 ```
 
 ### Contingency coefficient
@@ -106,8 +106,8 @@ across tables of different sizes.
 
 ``` r
 contingency_coef(tbl, detail = TRUE)
-#>     estimate     ci_lower     ci_upper      p_value 
-#> 1.344361e-01           NA           NA 2.012877e-05
+#> Estimate  CI lower  CI upper  p      
+#>    0.134        --        --  < 0.001
 ```
 
 ## Ordinal variables
