@@ -219,3 +219,73 @@ test_that("table_apa wide report has dynamic column name", {
   )
   expect_true("Kendall's Tau-b" %in% names(out))
 })
+
+test_that("assoc_ci adds CI columns in wide raw output", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "wide",
+    style = "raw",
+    assoc_ci = TRUE
+  )
+  expect_true("CI lower" %in% names(out))
+  expect_true("CI upper" %in% names(out))
+  expect_true(is.numeric(out[["CI lower"]]))
+  expect_true(all(!is.na(out[["CI lower"]])))
+})
+
+test_that("assoc_ci = FALSE omits CI columns in wide raw output", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "wide",
+    style = "raw",
+    assoc_ci = FALSE
+  )
+  expect_false("CI lower" %in% names(out))
+  expect_false("CI upper" %in% names(out))
+})
+
+test_that("assoc_ci adds CI columns in long raw output", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "long",
+    style = "raw",
+    assoc_ci = TRUE
+  )
+  expect_true("ci_lower" %in% names(out))
+  expect_true("ci_upper" %in% names(out))
+  expect_true(is.numeric(out$ci_lower))
+})
+
+test_that("assoc_ci shows inline CI in rendered formats", {
+  skip_if_not_installed("gt")
+  gt_out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "gt",
+    assoc_ci = TRUE
+  )
+  dat <- gt_out[["_data"]]
+  expect_match(dat$assoc_col[1], "\\[")
+  expect_false("CI lower" %in% names(dat))
+})
+
+test_that("assoc_ci adds formatted CI columns in wide report", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "wide",
+    style = "report",
+    assoc_ci = TRUE
+  )
+  expect_true("CI lower" %in% names(out))
+  expect_true("CI upper" %in% names(out))
+  expect_match(out[["CI lower"]][1], "^\\.")
+})

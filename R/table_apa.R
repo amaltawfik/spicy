@@ -41,7 +41,11 @@
 #'   to report (`"auto"`, `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`,
 #'   `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`). Defaults to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
-#'   confidence interval. Defaults to `FALSE`.
+#'   confidence interval. In data/export formats (`wide`, `long`, `excel`,
+#'   `clipboard`), two extra columns `CI lower` and `CI upper` are added.
+#'   In rendered formats (`gt`, `tinytable`, `flextable`, `word`), the CI
+#'   is shown inline as `.14 [.08, .19]` in the association measure column.
+#'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
 #' @param output Output format: `"wide"` (the default), `"long"`,
 #'   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
@@ -309,6 +313,9 @@ table_apa <- function(
     p_val <- attr(ct_obj, "p_value")
     v_val <- attr(ct_obj, "assoc_value")
     m_name <- attr(ct_obj, "assoc_measure")
+    ar <- attr(ct_obj, "assoc_result")
+    ci_lo <- if (!is.null(ar)) ar[["ci_lower"]] else NA_real_
+    ci_hi <- if (!is.null(ar)) ar[["ci_upper"]] else NA_real_
 
     if (!is.null(p_val) && !is.null(v_val)) {
       p_op <- if (!is.na(p_val) && p_val < 0.001) "<" else "="
@@ -316,7 +323,9 @@ table_apa <- function(
         p = p_val,
         p_op = p_op,
         v = v_val,
-        measure = m_name %||% "Cramer's V"
+        measure = m_name %||% "Cramer's V",
+        ci_lower = ci_lo,
+        ci_upper = ci_hi
       ))
     }
 
@@ -350,7 +359,14 @@ table_apa <- function(
       NA_real_
     }
 
-    list(p = p_val, p_op = p_op, v = v_val, measure = "Cramer's V")
+    list(
+      p = p_val,
+      p_op = p_op,
+      v = v_val,
+      measure = "Cramer's V",
+      ci_lower = NA_real_,
+      ci_upper = NA_real_
+    )
   }
 
   fmt_num <- function(x, digits = 1, na = "") {
@@ -517,6 +533,8 @@ table_apa <- function(
           p = st$p,
           p_op = st$p_op,
           .assoc = st$v,
+          ci_lower = st$ci_lower,
+          ci_upper = st$ci_upper,
           stringsAsFactors = FALSE,
           check.names = FALSE
         )
@@ -541,6 +559,8 @@ table_apa <- function(
       p = numeric(0),
       p_op = character(0),
       .assoc = numeric(0),
+      ci_lower = numeric(0),
+      ci_upper = numeric(0),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
@@ -572,6 +592,10 @@ table_apa <- function(
   if (output == "long" && style == "raw") {
     out <- long_raw
     out$p_op <- NULL
+    if (!assoc_ci) {
+      out$ci_lower <- NULL
+      out$ci_upper <- NULL
+    }
     return(out)
   }
 
@@ -584,6 +608,9 @@ table_apa <- function(
       "p",
       measure_col
     )
+    if (assoc_ci) {
+      cols <- c(cols, "CI lower", "CI upper")
+    }
     if (nrow(ldf) == 0) {
       return(as.data.frame(
         setNames(replicate(length(cols), logical(0), simplify = FALSE), cols),
@@ -612,6 +639,10 @@ table_apa <- function(
 
       r$p <- if (nrow(sv)) sv$p[1] else NA_real_
       r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
+      if (assoc_ci) {
+        r[["CI lower"]] <- if (nrow(sv)) sv$ci_lower[1] else NA_real_
+        r[["CI upper"]] <- if (nrow(sv)) sv$ci_upper[1] else NA_real_
+      }
 
       out[[k]] <- as.data.frame(
         r,
@@ -646,6 +677,13 @@ table_apa <- function(
       character(1)
     )
     long_rep$p_op <- NULL
+    if (assoc_ci) {
+      long_rep$ci_lower <- vapply(long_rep$ci_lower, fmt_v, character(1))
+      long_rep$ci_upper <- vapply(long_rep$ci_upper, fmt_v, character(1))
+    } else {
+      long_rep$ci_lower <- NULL
+      long_rep$ci_upper <- NULL
+    }
     return(long_rep)
   }
 
@@ -656,6 +694,9 @@ table_apa <- function(
     "p",
     measure_col
   )
+  if (assoc_ci) {
+    report_cols <- c(report_cols, "CI lower", "CI upper")
+  }
 
   make_report_wide <- function(ldf, mode = c("char", "excel")) {
     mode <- match.arg(mode)
@@ -708,6 +749,15 @@ table_apa <- function(
       r0$Variable <- lab
       r0$p <- fmt_p(sv$p[1], sv$p_op[1])
       r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
+      if (assoc_ci) {
+        if (mode == "char") {
+          r0[["CI lower"]] <- fmt_v(sv$ci_lower[1])
+          r0[["CI upper"]] <- fmt_v(sv$ci_upper[1])
+        } else {
+          r0[["CI lower"]] <- sv$ci_lower[1]
+          r0[["CI upper"]] <- sv$ci_upper[1]
+        }
+      }
       out[[z]] <- as.data.frame(
         r0,
         stringsAsFactors = FALSE,
@@ -759,7 +809,26 @@ table_apa <- function(
     return(report_wide_char)
   }
 
-  # Headers
+  # For rendered formats: merge CI inline into measure column, drop CI cols
+  merge_ci_inline <- function(df) {
+    if (!assoc_ci || !("CI lower" %in% names(df))) {
+      return(df)
+    }
+    has_val <- nzchar(df[[measure_col]]) & nzchar(df[["CI lower"]])
+    df[[measure_col]][has_val] <- paste0(
+      df[[measure_col]][has_val],
+      " [",
+      df[["CI lower"]][has_val],
+      ", ",
+      df[["CI upper"]][has_val],
+      "]"
+    )
+    df[["CI lower"]] <- NULL
+    df[["CI upper"]] <- NULL
+    df
+  }
+
+  # Headers (base: without CI — used by rendered formats)
   top_header_span <- c(
     "Variable",
     rep(group_levels, each = 2),
@@ -785,7 +854,7 @@ table_apa <- function(
     options(tinytable_print_output = "html") # RStudio Viewer
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
-    dat_tt <- report_wide_char
+    dat_tt <- merge_ci_inline(report_wide_char)
 
     # Detect modality rows before header rename
     mod_rows <- which(
@@ -885,7 +954,7 @@ table_apa <- function(
       stop("Install package 'gt'.", call. = FALSE)
     }
 
-    dat_gt <- report_wide_char
+    dat_gt <- merge_ci_inline(report_wide_char)
 
     # Indent modality rows with non-breaking spaces
     mod_rows <- which(
@@ -1121,7 +1190,7 @@ table_apa <- function(
   }
 
   if (output == "flextable") {
-    ft <- build_flextable(report_wide_char)
+    ft <- build_flextable(merge_ci_inline(report_wide_char))
     if (!is.null(word_path) && nzchar(word_path)) {
       flextable::save_as_docx(ft, path = word_path)
     }
@@ -1132,9 +1201,20 @@ table_apa <- function(
     if (is.null(word_path) || !nzchar(word_path)) {
       stop("Provide `word_path` for output='word'.", call. = FALSE)
     }
-    ft <- build_flextable(report_wide_char)
+    ft <- build_flextable(merge_ci_inline(report_wide_char))
     flextable::save_as_docx(ft, path = word_path)
     return(invisible(word_path))
+  }
+
+  # Extend headers with CI columns for data/export formats
+  if (assoc_ci) {
+    top_header_flat_ex <- c(top_header_flat, "CI lower", "CI upper")
+    bot_header_ex <- c(bot_header, "", "")
+    top_header_span_ex <- c(top_header_span, "CI lower", "CI upper")
+  } else {
+    top_header_flat_ex <- top_header_flat
+    bot_header_ex <- bot_header
+    top_header_span_ex <- top_header_span
   }
 
   # ---------------- clipboard matrix ----------------
@@ -1147,8 +1227,12 @@ table_apa <- function(
   to_excel_text <- function(x) ifelse(x == "", "", paste0("=\"", x, "\""))
   clip_body$p <- to_excel_text(clip_body$p)
   clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
+  if (assoc_ci) {
+    clip_body[["CI lower"]] <- to_excel_text(clip_body[["CI lower"]])
+    clip_body[["CI upper"]] <- to_excel_text(clip_body[["CI upper"]])
+  }
 
-  clip_mat <- rbind(top_header_flat, bot_header, as.matrix(clip_body))
+  clip_mat <- rbind(top_header_flat_ex, bot_header_ex, as.matrix(clip_body))
 
   # ---------------- excel ----------------
   if (output == "excel") {
@@ -1165,14 +1249,14 @@ table_apa <- function(
     openxlsx::writeData(
       wb,
       excel_sheet,
-      x = as.data.frame(t(top_header_flat), stringsAsFactors = FALSE),
+      x = as.data.frame(t(top_header_flat_ex), stringsAsFactors = FALSE),
       startRow = 1,
       colNames = FALSE
     )
     openxlsx::writeData(
       wb,
       excel_sheet,
-      x = as.data.frame(t(bot_header), stringsAsFactors = FALSE),
+      x = as.data.frame(t(bot_header_ex), stringsAsFactors = FALSE),
       startRow = 2,
       colNames = FALSE
     )
@@ -1185,6 +1269,10 @@ table_apa <- function(
     )
     body_xl$p <- report_wide_char$p
     body_xl[[measure_col]] <- report_wide_char[[measure_col]]
+    if (assoc_ci) {
+      body_xl[["CI lower"]] <- report_wide_char[["CI lower"]]
+      body_xl[["CI upper"]] <- report_wide_char[["CI upper"]]
+    }
 
     openxlsx::writeData(
       wb,
@@ -1241,12 +1329,13 @@ table_apa <- function(
         gridExpand = TRUE,
         stack = TRUE
       )
+      text_cols <- if (assoc_ci) (nc - 3):nc else c(nc - 1, nc)
       openxlsx::addStyle(
         wb,
         excel_sheet,
         st_text,
         rows = 3:last_row,
-        cols = c(nc - 1, nc),
+        cols = text_cols,
         gridExpand = TRUE,
         stack = TRUE
       )
