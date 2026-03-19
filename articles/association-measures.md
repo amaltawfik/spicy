@@ -40,7 +40,7 @@ computes all available measures at once:
 ``` r
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
-#> Measure                            Estimate     SE  CI lower  CI upper  p value 
+#> Measure                            Estimate     SE  CI lower  CI upper        p 
 #> Cramer's V                            0.136     --     0.079     0.191  < 0.001 
 #> Contingency Coefficient               0.134     --        --        --  < 0.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000       -- 
@@ -80,7 +80,7 @@ chi-squared test.
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.136     0.079     0.191  < 0.001
 ```
 
@@ -122,7 +122,7 @@ strength when there are many ties.
 ``` r
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
 gamma_gk(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.310     0.238     0.383  < 0.001
 ```
 
@@ -137,7 +137,7 @@ preferred over Gamma for square or near-square tables.
 
 ``` r
 kendall_tau_b(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.205     0.155     0.254  < 0.001
 ```
 
@@ -148,7 +148,7 @@ number of rows and columns differ.
 
 ``` r
 kendall_tau_c(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.200     0.151     0.248  < 0.001
 ```
 
@@ -160,7 +160,7 @@ dependent (D(R\|C)).
 
 ``` r
 somers_d(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.208     0.157     0.258  < 0.001
 ```
 
@@ -179,8 +179,8 @@ category does not change across columns.
 ``` r
 tbl <- xtabs(~ employment_status + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
-#>    0.000     0.000     0.000       --
+#> Estimate  CI lower  CI upper  p 
+#>    0.000     0.000     0.000  --
 ```
 
 ### Goodman-Kruskal Tau
@@ -191,8 +191,8 @@ the mode).
 
 ``` r
 goodman_kruskal_tau(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
-#>    0.012     0.003     0.021    0.009
+#> Estimate  CI lower  CI upper  p    
+#>    0.012     0.003     0.021  0.009
 ```
 
 ### Uncertainty coefficient
@@ -202,8 +202,8 @@ how much knowing one variable reduces uncertainty about the other.
 
 ``` r
 uncertainty_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
-#>    0.014     0.005     0.024    0.003
+#> Estimate  CI lower  CI upper  p    
+#>    0.014     0.005     0.024  0.003
 ```
 
 ## Yule’s Q
@@ -214,8 +214,8 @@ equivalent to Gamma for 2x2 tables.
 ``` r
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 yule_q(tbl_22, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
-#>    0.015    -0.126     0.155    0.839
+#> Estimate  CI lower  CI upper  p    
+#>    0.015    -0.126     0.155  0.839
 ```
 
 ## Automatic selection in cross_tab()
@@ -283,7 +283,7 @@ confidence level defaults to 95% and can be changed with `conf_level`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.127     0.053     0.199  < 0.001
 ```
 
@@ -291,6 +291,6 @@ To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 
 ``` r
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
-#> Estimate  p value
+#> Estimate  p      
 #>    0.127  < 0.001
 ```

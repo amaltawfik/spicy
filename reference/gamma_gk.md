@@ -62,6 +62,6 @@ tab <- table(sochealth$education, sochealth$self_rated_health)
 gamma_gk(tab)
 #> [1] 0.3104791
 gamma_gk(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.310     0.238     0.383  < 0.001
 ```

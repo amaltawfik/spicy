@@ -202,7 +202,7 @@ contingency table to
 ``` r
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
-#> Measure                            Estimate     SE  CI lower  CI upper  p value 
+#> Measure                            Estimate     SE  CI lower  CI upper        p 
 #> Cramer's V                            0.136     --     0.079     0.191  < 0.001 
 #> Contingency Coefficient               0.134     --        --        --  < 0.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000       -- 
@@ -230,7 +230,7 @@ interval and p-value:
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper  p value
+#> Estimate  CI lower  CI upper  p      
 #>    0.136     0.079     0.191  < 0.001
 ```
 
