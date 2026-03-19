@@ -17,7 +17,7 @@
   [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md),
   and
   [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md).
-  Each returns a bare scalar by default; pass `detail = TRUE` for a
+  Each returns a numeric scalar by default; pass `detail = TRUE` for a
   named vector with estimate, confidence interval, and p-value.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
@@ -45,9 +45,9 @@
 ### Breaking changes
 
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  now accepts a `detail` argument. By default it returns a bare scalar
-  (as before). Pass `detail = TRUE` to get a 4-element named vector
-  (`estimate`, `ci_lower`, `ci_upper`, `p_value`), or
+  now accepts a `detail` argument. By default it returns a numeric
+  scalar (as before). Pass `detail = TRUE` to get a 4-element named
+  vector (`estimate`, `ci_lower`, `ci_upper`, `p_value`), or
   `detail = TRUE, conf_level = NULL` for a 2-element vector (`estimate`,
   `p_value`) without CI.
 

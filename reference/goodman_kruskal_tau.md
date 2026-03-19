@@ -28,9 +28,9 @@ goodman_kruskal_tau(
 
 - detail:
 
-  Logical. If `FALSE` (default), return the estimate as a bare scalar.
-  If `TRUE`, return a named numeric vector including confidence interval
-  and p-value.
+  Logical. If `FALSE` (default), return the estimate as a numeric
+  scalar. If `TRUE`, return a named numeric vector including confidence
+  interval and p-value.
 
 - conf_level:
 

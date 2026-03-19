@@ -17,9 +17,9 @@ kendall_tau_b(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
 
 - detail:
 
-  Logical. If `FALSE` (default), return the estimate as a bare scalar.
-  If `TRUE`, return a named numeric vector including confidence interval
-  and p-value.
+  Logical. If `FALSE` (default), return the estimate as a numeric
+  scalar. If `TRUE`, return a named numeric vector including confidence
+  interval and p-value.
 
 - conf_level:
 
