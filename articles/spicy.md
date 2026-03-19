@@ -303,17 +303,22 @@ sochealth |>
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
   dplyr::select(starts_with("life_sat"), mean_sat, n_missing) |>
-  head()
-#> # A tibble: 6 × 6
+  head() |>
+  as.data.frame()
 #>   life_sat_health life_sat_work life_sat_relationships life_sat_standard
-#>             <int>         <int>                  <int>             <int>
 #> 1               5             3                      5                 5
 #> 2               4             4                      5                 5
 #> 3               3             2                      5                 3
 #> 4               3             4                      3                 2
 #> 5               4             5                      4                 4
 #> 6               5             5                      5                 3
-#> # ℹ 2 more variables: mean_sat <dbl>, n_missing <dbl>
+#>   mean_sat n_missing
+#> 1     4.50         0
+#> 2     4.50         0
+#> 3     3.25         0
+#> 4     3.00         0
+#> 5     4.25         0
+#> 6     4.50         0
 ```
 
 ## Learn more
