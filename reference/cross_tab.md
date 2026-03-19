@@ -155,7 +155,7 @@ functions. They can be disabled or reset by setting them to `NULL`:
 Example:
 
     options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
-    cross_tab(mtcars, cyl, gear, weights = mtcars$mpg)
+    cross_tab(sochealth, smoking, education, weights = weight)
 
 ## Examples
 
@@ -229,6 +229,104 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 15.6, p < 0.001
 #> Cramer's V = 0.17
+
+# Grouped by combination of variables
+cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
+#> Crosstable: smoking x education (N) | sex x age_group = Female.25-34
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   23                    49             29 │        101 
+#>  Yes         │                    9                     9              7 │         25 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   32                    58             36 │        126 
+#> 
+#> Chi-2(2) = 2.1, p = 0.356
+#> Cramer's V = 0.13
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                    9                    42             32 │         83 
+#>  Yes         │                   11                    11              4 │         26 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   20                    53             36 │        109 
+#> 
+#> Chi-2(2) = 14.2, p < 0.001
+#> Cramer's V = 0.36
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   24                    73             48 │        145 
+#>  Yes         │                   10                    20              8 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   34                    93             56 │        183 
+#> 
+#> Chi-2(2) = 3.0, p = 0.223
+#> Cramer's V = 0.13
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   33                    59             60 │        152 
+#>  Yes         │                   14                    17              7 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   47                    76             67 │        190 
+#> 
+#> Chi-2(2) = 6.9, p = 0.032
+#> Cramer's V = 0.19
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   28                    63             45 │        136 
+#>  Yes         │                    8                    16              6 │         30 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   36                    79             51 │        166 
+#> 
+#> Chi-2(2) = 2.0, p = 0.360
+#> Cramer's V = 0.11
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   28                    58             42 │        128 
+#>  Yes         │                    8                    13              5 │         26 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   36                    71             47 │        154 
+#> 
+#> Chi-2(2) = 2.1, p = 0.343
+#> Cramer's V = 0.12
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   20                    35             38 │         93 
+#>  Yes         │                   11                    17             10 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   31                    52             48 │        131 
+#> 
+#> Chi-2(2) = 2.5, p = 0.282
+#> Cramer's V = 0.14
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.65-75
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   14                    36             38 │         88 
+#>  Yes         │                    7                     9             12 │         28 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   21                    45             50 │        116 
+#> 
+#> Chi-2(2) = 1.4, p = 0.499
+#> Cramer's V = 0.11
 
 # Ordinal variables: auto-selects Kendall's Tau-b
 cross_tab(sochealth, education, self_rated_health)

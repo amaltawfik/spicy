@@ -229,6 +229,104 @@
 <span><span class="co">#&gt; Chi-2(2) = 15.6, p &lt; 0.001</span></span>
 <span><span class="co">#&gt; Cramer's V = 0.17</span></span>
 <span></span>
+<span><span class="co"># Cross-tab grouped by combination of variables</span></span>
+<span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">age_group</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.25-34</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   23                    49             29 │        101 </span></span>
+<span><span class="co">#&gt;  Yes         │                    9                     9              7 │         25 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   32                    58             36 │        126 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 2.1, p = 0.356</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                    9                    42             32 │         83 </span></span>
+<span><span class="co">#&gt;  Yes         │                   11                    11              4 │         26 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   20                    53             36 │        109 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 14.2, p &lt; 0.001</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.36</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   24                    73             48 │        145 </span></span>
+<span><span class="co">#&gt;  Yes         │                   10                    20              8 │         38 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   34                    93             56 │        183 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 3.0, p = 0.223</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   33                    59             60 │        152 </span></span>
+<span><span class="co">#&gt;  Yes         │                   14                    17              7 │         38 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   47                    76             67 │        190 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 6.9, p = 0.032</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.19</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   28                    63             45 │        136 </span></span>
+<span><span class="co">#&gt;  Yes         │                    8                    16              6 │         30 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   36                    79             51 │        166 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 2.0, p = 0.360</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.11</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   28                    58             42 │        128 </span></span>
+<span><span class="co">#&gt;  Yes         │                    8                    13              5 │         26 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   36                    71             47 │        154 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 2.1, p = 0.343</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.12</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   20                    35             38 │         93 </span></span>
+<span><span class="co">#&gt;  Yes         │                   11                    17             10 │         38 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   31                    52             48 │        131 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 2.5, p = 0.282</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │                   14                    36             38 │         88 </span></span>
+<span><span class="co">#&gt;  Yes         │                    7                     9             12 │         28 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │                   21                    45             50 │        116 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chi-2(2) = 1.4, p = 0.499</span></span>
+<span><span class="co">#&gt; Cramer's V = 0.11</span></span>
+<span></span>
 <span><span class="co"># Compute row-wise mean/sum (all values must be valid by default) or specific value</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  var1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
