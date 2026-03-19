@@ -37,29 +37,90 @@
     return(estimate)
   }
   if (is.null(conf_level) || is.na(conf_level)) {
-    if (.include_se) {
-      return(c(estimate = estimate, se = se, p_value = p_value))
+    out <- if (.include_se) {
+      c(estimate = estimate, se = se, p_value = p_value)
+    } else {
+      c(estimate = estimate, p_value = p_value)
     }
-    return(c(estimate = estimate, p_value = p_value))
+    class(out) <- "spicy_assoc_detail"
+    return(out)
   }
   z <- stats::qnorm(1 - (1 - conf_level) / 2)
   ci_lower <- max(lower_bound, estimate - z * se)
   ci_upper <- min(upper_bound, estimate + z * se)
-  if (.include_se) {
-    return(c(
+  out <- if (.include_se) {
+    c(
       estimate = estimate,
       se = se,
       ci_lower = ci_lower,
       ci_upper = ci_upper,
       p_value = p_value
-    ))
+    )
+  } else {
+    c(
+      estimate = estimate,
+      ci_lower = ci_lower,
+      ci_upper = ci_upper,
+      p_value = p_value
+    )
   }
-  c(
-    estimate = estimate,
-    ci_lower = ci_lower,
-    ci_upper = ci_upper,
-    p_value = p_value
+  class(out) <- "spicy_assoc_detail"
+  out
+}
+
+
+#' Print a detailed association measure result
+#'
+#' Formats a `spicy_assoc_detail` vector (returned by association
+#' functions with `detail = TRUE`) with fixed decimal places and
+#' `< 0.001` notation for small p-values.
+#'
+#' @param x A `spicy_assoc_detail` object.
+#' @param digits Number of decimal places for the estimate, SE, and
+#'   confidence interval. Defaults to 3. The p-value is always
+#'   formatted separately (`< 0.001` or three decimal places).
+#' @param ... Ignored.
+#' @return `x`, invisibly.
+#'
+#' @seealso [cramer_v()], [assoc_measures()]
+#'
+#' @export
+print.spicy_assoc_detail <- function(x, digits = 3, ...) {
+  nms <- names(x)
+  labels <- c(
+    estimate = "Estimate",
+    se = "SE",
+    ci_lower = "CI lower",
+    ci_upper = "CI upper",
+    p_value = "p value"
   )
+  hdr <- labels[nms]
+  vals <- vapply(
+    nms,
+    function(nm) {
+      v <- x[[nm]]
+      if (is.na(v)) {
+        return("--")
+      }
+      if (nm == "p_value") {
+        if (v < 0.001) "< 0.001" else formatC(v, format = "f", digits = 3)
+      } else {
+        formatC(v, format = "f", digits = digits)
+      }
+    },
+    character(1)
+  )
+  widths <- pmax(nchar(hdr), nchar(vals))
+  hdr_parts <- mapply(formatC, hdr, width = widths, flag = "-")
+  val_parts <- mapply(formatC, vals, width = widths)
+  cat(
+    paste(hdr_parts, collapse = "  "),
+    "\n",
+    paste(val_parts, collapse = "  "),
+    "\n",
+    sep = ""
+  )
+  invisible(x)
 }
 
 
@@ -183,10 +244,13 @@ cramer_v <- function(
   p_value <- as.numeric(chi$p.value)
 
   if (is.null(conf_level) || is.na(conf_level)) {
-    if (.include_se) {
-      return(c(estimate = V, se = NA_real_, p_value = p_value))
+    out <- if (.include_se) {
+      c(estimate = V, se = NA_real_, p_value = p_value)
+    } else {
+      c(estimate = V, p_value = p_value)
     }
-    return(c(estimate = V, p_value = p_value))
+    class(out) <- "spicy_assoc_detail"
+    return(out)
   }
 
   z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
@@ -200,21 +264,24 @@ cramer_v <- function(
     ci_upper <- NA_real_
   }
 
-  if (.include_se) {
-    return(c(
+  out <- if (.include_se) {
+    c(
       estimate = V,
       se = NA_real_,
       ci_lower = ci_lower,
       ci_upper = ci_upper,
       p_value = p_value
-    ))
+    )
+  } else {
+    c(
+      estimate = V,
+      ci_lower = ci_lower,
+      ci_upper = ci_upper,
+      p_value = p_value
+    )
   }
-  c(
-    estimate = V,
-    ci_lower = ci_lower,
-    ci_upper = ci_upper,
-    p_value = p_value
-  )
+  class(out) <- "spicy_assoc_detail"
+  out
 }
 
 
@@ -261,10 +328,13 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
   p_value <- as.numeric(chi$p.value)
 
   if (is.null(conf_level) || is.na(conf_level)) {
-    if (.include_se) {
-      return(c(estimate = ph, se = NA_real_, p_value = p_value))
+    out <- if (.include_se) {
+      c(estimate = ph, se = NA_real_, p_value = p_value)
+    } else {
+      c(estimate = ph, p_value = p_value)
     }
-    return(c(estimate = ph, p_value = p_value))
+    class(out) <- "spicy_assoc_detail"
+    return(out)
   }
 
   z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
@@ -341,10 +411,13 @@ contingency_coef <- function(
   p_value <- as.numeric(chi$p.value)
 
   if (is.null(conf_level) || is.na(conf_level)) {
-    if (.include_se) {
-      return(c(estimate = C_val, se = NA_real_, p_value = p_value))
+    out <- if (.include_se) {
+      c(estimate = C_val, se = NA_real_, p_value = p_value)
+    } else {
+      c(estimate = C_val, p_value = p_value)
     }
-    return(c(estimate = C_val, p_value = p_value))
+    class(out) <- "spicy_assoc_detail"
+    return(out)
   }
 
   if (.include_se) {
@@ -1385,7 +1458,7 @@ assoc_measures <- function(
         .include_se = TRUE
       )
     },
-    "Stuart's Tau-c" = \(t) {
+    "Kendall's Tau-c" = \(t) {
       kendall_tau_c(
         t,
         detail = TRUE,
@@ -1439,5 +1512,74 @@ assoc_measures <- function(
       stringsAsFactors = FALSE
     )
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  class(out) <- c("spicy_assoc_table", "data.frame")
+  out
+}
+
+
+#' Print an association measures summary table
+#'
+#' Formats a `spicy_assoc_table` data frame (returned by
+#' [assoc_measures()]) with fixed decimal places, aligned columns,
+#' and `< 0.001` notation for small p-values.
+#'
+#' @param x A `spicy_assoc_table` object.
+#' @param digits Number of decimal places for estimates, SE, and
+#'   confidence intervals. Defaults to 3. The p-value is always
+#'   formatted separately (`< 0.001` or three decimal places).
+#' @param ... Ignored.
+#' @return `x`, invisibly.
+#'
+#' @seealso [assoc_measures()]
+#'
+#' @export
+print.spicy_assoc_table <- function(x, digits = 3, ...) {
+  fmt_num <- function(v) {
+    ifelse(is.na(v), "--", formatC(v, format = "f", digits = digits))
+  }
+  fmt_p <- function(v) {
+    ifelse(
+      is.na(v),
+      "--",
+      ifelse(v < 0.001, "< 0.001", formatC(v, format = "f", digits = 3))
+    )
+  }
+  cols <- list(
+    Measure = format(x$measure, justify = "left"),
+    Estimate = fmt_num(x$estimate),
+    SE = fmt_num(x$se),
+    `CI lower` = fmt_num(x$ci_lower),
+    `CI upper` = fmt_num(x$ci_upper),
+    `p value` = fmt_p(x$p_value)
+  )
+  widths <- vapply(
+    names(cols),
+    \(nm) max(nchar(nm), max(nchar(cols[[nm]]))),
+    integer(1)
+  )
+  hdr <- paste(
+    mapply(
+      \(nm, w) formatC(nm, width = w, flag = if (nm == "Measure") "-" else ""),
+      names(cols),
+      widths
+    ),
+    collapse = "  "
+  )
+  cat(hdr, "\n")
+  for (i in seq_len(nrow(x))) {
+    row_str <- paste(
+      mapply(
+        \(nm, w) {
+          v <- cols[[nm]][i]
+          formatC(v, width = w, flag = if (nm == "Measure") "-" else "")
+        },
+        names(cols),
+        widths
+      ),
+      collapse = "  "
+    )
+    cat(row_str, "\n")
+  }
+  invisible(x)
 }

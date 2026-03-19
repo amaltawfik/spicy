@@ -223,3 +223,53 @@ test_that("all functions reject non-table input", {
   expect_error(kendall_tau_b(data.frame(a = 1)), "contingency table")
   expect_error(somers_d(1:10), "contingency table")
 })
+
+test_that("detail = TRUE returns spicy_assoc_detail class", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- cramer_v(tab, detail = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_named(res, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  res2 <- cramer_v(tab, detail = TRUE, conf_level = NULL)
+  expect_s3_class(res2, "spicy_assoc_detail")
+  expect_named(res2, c("estimate", "p_value"))
+})
+
+test_that("print.spicy_assoc_detail formats output", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- cramer_v(tab, detail = TRUE)
+  out <- capture.output(print(res))
+  expect_length(out, 2)
+  expect_match(out[1], "Estimate")
+  expect_match(out[1], "p value")
+})
+
+test_that("print.spicy_assoc_detail respects digits argument", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- cramer_v(tab, detail = TRUE)
+  out4 <- capture.output(print(res, digits = 4))
+  expect_match(out4[2], "\\.[0-9]{4}")
+})
+
+test_that("assoc_measures returns spicy_assoc_table class", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- assoc_measures(tab)
+  expect_s3_class(res, "spicy_assoc_table")
+  expect_s3_class(res, "data.frame")
+  expect_true("measure" %in% names(res))
+})
+
+test_that("print.spicy_assoc_table formats output", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- assoc_measures(tab)
+  out <- capture.output(print(res))
+  expect_match(out[1], "Measure")
+  expect_match(out[1], "p value")
+  expect_true(length(out) > 1)
+})
+
+test_that("print.spicy_assoc_table respects digits argument", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- assoc_measures(tab)
+  out4 <- capture.output(print(res, digits = 4))
+  expect_match(out4[2], "\\.[0-9]{4}")
+})

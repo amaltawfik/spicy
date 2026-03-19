@@ -151,10 +151,8 @@ cramer_v(tbl)
 
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
-#>               estimate               ci_lower               ci_upper 
-#> 0.17616971554359892038 0.12031192176770615088 0.23091555134963898110 
-#>                p_value 
-#> 0.00000000000008817446
+#> Estimate  CI lower  CI upper  p value
+#>    0.176     0.120     0.231  < 0.001
 ```
 
 See `vignette("association-measures")` for a guide on choosing the right

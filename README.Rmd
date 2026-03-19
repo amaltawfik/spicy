@@ -4,7 +4,6 @@ output: github_document
 
 ```{r, include = FALSE}
 Sys.setenv(LANGUAGE = "en")
-options(scipen = 999)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",

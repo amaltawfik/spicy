@@ -94,4 +94,6 @@ reference:
       - print.spicy_cross_table
       - print.spicy_cross_table_list
       - print.spicy_freq_table
+      - print.spicy_assoc_detail
+      - print.spicy_assoc_table
       - spicy_tables

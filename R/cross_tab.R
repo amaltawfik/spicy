@@ -585,7 +585,7 @@ cross_tab <- function(
                 kendall_tau_b(tab_stats, detail = TRUE)
               },
               tau_c = {
-                assoc_name <- "Stuart's Tau-c"
+                assoc_name <- "Kendall's Tau-c"
                 kendall_tau_c(tab_stats, detail = TRUE)
               },
               somers_d = {
