@@ -128,8 +128,8 @@ table_apa(
 
 By default,
 [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-uses the variable labels from the data (if available) or the variable
-names. Override them with the `labels` argument:
+uses variable names as row headers. Use the `labels` argument to provide
+human-readable labels:
 
 ``` r
 table_apa(
