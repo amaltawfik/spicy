@@ -12,6 +12,8 @@
 
 * `table_apa()` now correctly centers spanner labels over their column pairs in `tinytable` and `flextable` output.
 
+* New bundled dataset `sochealth`: a simulated social-health survey (n = 1200, 20 variables) with labelled variables, ordered factors, survey weights, and missing values. Designed to showcase `varlist()`, `cross_tab()`, `table_apa()`, and the association measure functions.
+
 ## Breaking changes
 
 * `cramer_v()` now accepts a `detail` argument. By default it returns a numeric scalar (as before). Pass `detail = TRUE` to get a 4-element named vector (`estimate`, `ci_lower`, `ci_upper`, `p_value`), or `detail = TRUE, conf_level = NULL` for a 2-element vector (`estimate`, `p_value`) without CI.
