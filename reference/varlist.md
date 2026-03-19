@@ -91,9 +91,9 @@ The function can also apply tidyselect-style variable selectors to
 filter columns dynamically.
 
 If used interactively (e.g. in RStudio), the summary is displayed in the
-Viewer pane with a contextual title like `vl: iris`. If the data frame
-has been transformed or subsetted, the title will display an asterisk
-(`*`), e.g. `vl: iris*`.
+Viewer pane with a contextual title like `vl: sochealth`. If the data
+frame has been transformed or subsetted, the title will display an
+asterisk (`*`), e.g. `vl: sochealth*`.
 
 For full documentation, see `varlist()`.
 
@@ -138,15 +138,12 @@ varlist(sochealth, tbl = TRUE)
 #> 18 political_position  Political position… 0, 1,… nume…         11    1185    15
 #> 19 response_date       Survey response da… 2024-… POSI…       1200    1200     0
 #> 20 weight              Survey design weig… 0.323… nume…        810    1200     0
-varlist(iris, tbl = TRUE)
-#> # A tibble: 5 × 7
-#>   Variable     Label Values                       Class N_distinct N_valid   NAs
-#>   <chr>        <chr> <chr>                        <chr>      <int>   <int> <int>
-#> 1 Sepal.Length NA    4.3, 4.4, 4.5, ..., 7.9      nume…         35     150     0
-#> 2 Sepal.Width  NA    2, 2.2, 2.3, ..., 4.4        nume…         23     150     0
-#> 3 Petal.Length NA    1, 1.1, 1.2, ..., 6.9        nume…         43     150     0
-#> 4 Petal.Width  NA    0.1, 0.2, 0.3, ..., 2.5      nume…         22     150     0
-#> 5 Species      NA    setosa, versicolor, virgini… fact…          3     150     0
+varlist(sochealth, starts_with("bmi"), tbl = TRUE)
+#> # A tibble: 2 × 7
+#>   Variable     Label           Values             Class N_distinct N_valid   NAs
+#>   <chr>        <chr>           <chr>              <chr>      <int>   <int> <int>
+#> 1 bmi          Body mass index 16, 16.2, 16.4, .… nume…        181    1188    12
+#> 2 bmi_category BMI category    Normal weight, Ov… orde…          3    1188    12
 
 vl(sochealth)
 #> Non-interactive session: use `tbl = TRUE` to return the table.
