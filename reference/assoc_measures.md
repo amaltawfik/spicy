@@ -53,15 +53,17 @@ The ordinal family includes
 and
 [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md).
 
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024).
+
 ## References
 
 Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
 
 Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 
-Signorell, A. et al. (2024). DescTools: Tools for Descriptive
-Statistics. R package. Standard error formulas follow the DescTools
-implementations.
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
 
 ## See also
 

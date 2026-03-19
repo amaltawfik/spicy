@@ -44,7 +44,8 @@ Pearson chi-squared test.
 Cramer's V is computed as \\V = \sqrt{\chi^2 / (n \cdot (k - 1))}\\,
 where \\\chi^2\\ is the Pearson chi-squared statistic, \\n\\ is the
 total count, and \\k = \min(r, c)\\. The confidence interval uses the
-Fisher z-transformation.
+Fisher z-transformation. Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024).
 
 ## References
 
@@ -52,9 +53,8 @@ Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
 
 Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 
-Signorell, A. et al. (2024). DescTools: Tools for Descriptive
-Statistics. R package. Standard error formulas follow the DescTools
-implementations.
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
 
 ## See also
 
