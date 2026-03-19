@@ -31,7 +31,8 @@
   p_value = NA_real_,
   lower_bound = -Inf,
   upper_bound = Inf,
-  .include_se = FALSE
+  .include_se = FALSE,
+  digits = 3L
 ) {
   if (!detail) {
     return(estimate)
@@ -43,6 +44,7 @@
       c(estimate = estimate, p_value = p_value)
     }
     class(out) <- "spicy_assoc_detail"
+    attr(out, "digits") <- digits
     return(out)
   }
   z <- stats::qnorm(1 - (1 - conf_level) / 2)
@@ -65,6 +67,7 @@
     )
   }
   class(out) <- "spicy_assoc_detail"
+  attr(out, "digits") <- digits
   out
 }
 
@@ -85,7 +88,11 @@
 #' @seealso [cramer_v()], [assoc_measures()]
 #'
 #' @export
-print.spicy_assoc_detail <- function(x, digits = 3, ...) {
+print.spicy_assoc_detail <- function(
+  x,
+  digits = attr(x, "digits") %||% 3L,
+  ...
+) {
   nms <- names(x)
   labels <- c(
     estimate = "Estimate",
@@ -181,6 +188,8 @@ print.spicy_assoc_detail <- function(x, digits = 3, ...) {
 #' @param conf_level A number between 0 and 1 giving the confidence
 #'   level (default `0.95`). Only used when `detail = TRUE`. Set
 #'   to `NULL` to omit the confidence interval.
+#' @param digits Number of decimal places used when printing the
+#'   result (default `3`). Only affects the `detail = TRUE` output.
 #' @param .include_se Internal parameter; do not use.
 #'
 #' @return When `detail = FALSE`: a single numeric value (the
@@ -221,6 +230,7 @@ cramer_v <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -250,6 +260,7 @@ cramer_v <- function(
       c(estimate = V, p_value = p_value)
     }
     class(out) <- "spicy_assoc_detail"
+    attr(out, "digits") <- digits
     return(out)
   }
 
@@ -281,6 +292,7 @@ cramer_v <- function(
     )
   }
   class(out) <- "spicy_assoc_detail"
+  attr(out, "digits") <- digits
   out
 }
 
@@ -311,7 +323,13 @@ cramer_v <- function(
 #'
 #' @seealso [cramer_v()], [yule_q()], [assoc_measures()]
 #' @export
-phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
+phi <- function(
+  x,
+  detail = FALSE,
+  conf_level = 0.95,
+  digits = 3L,
+  .include_se = FALSE
+) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
     stop("`x` must be a 2x2 table for the phi coefficient.", call. = FALSE)
@@ -334,6 +352,7 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
       c(estimate = ph, p_value = p_value)
     }
     class(out) <- "spicy_assoc_detail"
+    attr(out, "digits") <- digits
     return(out)
   }
 
@@ -365,6 +384,7 @@ phi <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
     )
   }
   class(out) <- "spicy_assoc_detail"
+  attr(out, "digits") <- digits
   out
 }
 
@@ -399,6 +419,7 @@ contingency_coef <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -420,6 +441,7 @@ contingency_coef <- function(
       c(estimate = C_val, p_value = p_value)
     }
     class(out) <- "spicy_assoc_detail"
+    attr(out, "digits") <- digits
     return(out)
   }
 
@@ -440,6 +462,7 @@ contingency_coef <- function(
     )
   }
   class(out) <- "spicy_assoc_detail"
+  attr(out, "digits") <- digits
   out
 }
 
@@ -470,7 +493,13 @@ contingency_coef <- function(
 #'
 #' @seealso [phi()], [gamma_gk()], [assoc_measures()]
 #' @export
-yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
+yule_q <- function(
+  x,
+  detail = FALSE,
+  conf_level = 0.95,
+  digits = 3L,
+  .include_se = FALSE
+) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
     stop("`x` must be a 2x2 table for Yule's Q.", call. = FALSE)
@@ -512,7 +541,8 @@ yule_q <- function(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE) {
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -555,6 +585,7 @@ lambda_gk <- function(
   direction = c("symmetric", "row", "column"),
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -652,7 +683,8 @@ lambda_gk <- function(
     p_value = p_value,
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -691,6 +723,7 @@ goodman_kruskal_tau <- function(
   direction = c("row", "column"),
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -741,7 +774,8 @@ goodman_kruskal_tau <- function(
     p_value = unname(p_value),
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -849,6 +883,7 @@ uncertainty_coef <- function(
   direction = c("symmetric", "row", "column"),
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -892,7 +927,8 @@ uncertainty_coef <- function(
     p_value = p_value,
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -973,6 +1009,7 @@ gamma_gk <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -1005,7 +1042,8 @@ gamma_gk <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -1042,6 +1080,7 @@ kendall_tau_b <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -1103,7 +1142,8 @@ kendall_tau_b <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -1140,6 +1180,7 @@ kendall_tau_c <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -1180,7 +1221,8 @@ kendall_tau_c <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -1221,6 +1263,7 @@ somers_d <- function(
   direction = c("row", "column", "symmetric"),
   detail = FALSE,
   conf_level = 0.95,
+  digits = 3L,
   .include_se = FALSE
 ) {
   .validate_table(x)
@@ -1294,7 +1337,8 @@ somers_d <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se
+    .include_se = .include_se,
+    digits = digits
   )
 }
 
@@ -1312,6 +1356,8 @@ somers_d <- function(
 #' @param conf_level A number between 0 and 1 giving the confidence
 #'   level (default `0.95`). Set to `NULL` to omit the confidence
 #'   interval.
+#' @param digits Number of decimal places used when printing the
+#'   result (default `3`).
 #'
 #' @return A data frame with columns `measure`, `estimate`, `se`,
 #'   `ci_lower`, `ci_upper`, and `p_value`. For nominal measures
@@ -1353,7 +1399,8 @@ somers_d <- function(
 assoc_measures <- function(
   x,
   type = c("all", "nominal", "ordinal"),
-  conf_level = 0.95
+  conf_level = 0.95,
+  digits = 3L
 ) {
   .validate_table(x)
   type <- match.arg(type)
@@ -1520,6 +1567,7 @@ assoc_measures <- function(
   })
   out <- do.call(rbind, rows)
   class(out) <- c("spicy_assoc_table", "data.frame")
+  attr(out, "digits") <- digits
   out
 }
 
@@ -1540,7 +1588,11 @@ assoc_measures <- function(
 #' @seealso [assoc_measures()]
 #'
 #' @export
-print.spicy_assoc_table <- function(x, digits = 3, ...) {
+print.spicy_assoc_table <- function(
+  x,
+  digits = attr(x, "digits") %||% 3L,
+  ...
+) {
   fmt_num <- function(v) {
     ifelse(is.na(v), "--", formatC(v, format = "f", digits = digits))
   }

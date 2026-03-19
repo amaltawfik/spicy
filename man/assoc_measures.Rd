@@ -4,7 +4,12 @@
 \alias{assoc_measures}
 \title{Association measures summary table}
 \usage{
-assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
+assoc_measures(
+  x,
+  type = c("all", "nominal", "ordinal"),
+  conf_level = 0.95,
+  digits = 3L
+)
 }
 \arguments{
 \item{x}{A contingency table (of class \code{table}).}
@@ -15,6 +20,9 @@ assoc_measures(x, type = c("all", "nominal", "ordinal"), conf_level = 0.95)
 \item{conf_level}{A number between 0 and 1 giving the confidence
 level (default \code{0.95}). Set to \code{NULL} to omit the confidence
 interval.}
+
+\item{digits}{Number of decimal places used when printing the
+result (default \code{3}).}
 }
 \value{
 A data frame with columns \code{measure}, \code{estimate}, \code{se},

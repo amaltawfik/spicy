@@ -4,7 +4,7 @@
 \alias{print.spicy_assoc_detail}
 \title{Print a detailed association measure result}
 \usage{
-\method{print}{spicy_assoc_detail}(x, digits = 3, ...)
+\method{print}{spicy_assoc_detail}(x, digits = attr(x, "digits") \%||\% 3L, ...)
 }
 \arguments{
 \item{x}{A \code{spicy_assoc_detail} object.}

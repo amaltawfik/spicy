@@ -245,9 +245,16 @@ test_that("print.spicy_assoc_detail formats output", {
 
 test_that("print.spicy_assoc_detail respects digits argument", {
   tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
-  res <- cramer_v(tab, detail = TRUE)
-  out4 <- capture.output(print(res, digits = 4))
+  out4 <- capture.output(print(cramer_v(tab, detail = TRUE), digits = 4))
   expect_match(out4[2], "\\.[0-9]{4}")
+})
+
+test_that("digits argument in function propagates to print", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- cramer_v(tab, detail = TRUE, digits = 4)
+  expect_equal(attr(res, "digits"), 4)
+  out <- capture.output(print(res))
+  expect_match(out[2], "\\.[0-9]{4}")
 })
 
 test_that("assoc_measures returns spicy_assoc_table class", {
@@ -269,7 +276,14 @@ test_that("print.spicy_assoc_table formats output", {
 
 test_that("print.spicy_assoc_table respects digits argument", {
   tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
-  res <- assoc_measures(tab)
-  out4 <- capture.output(print(res, digits = 4))
+  out4 <- capture.output(print(assoc_measures(tab), digits = 4))
   expect_match(out4[2], "\\.[0-9]{4}")
+})
+
+test_that("digits argument in assoc_measures propagates to print", {
+  tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
+  res <- assoc_measures(tab, digits = 2)
+  expect_equal(attr(res, "digits"), 2)
+  out <- capture.output(print(res))
+  expect_match(out[2], "\\.[0-9]{2}\\b")
 })

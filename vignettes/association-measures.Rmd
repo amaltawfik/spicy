@@ -237,17 +237,18 @@ cramer_v(tbl, detail = TRUE, conf_level = NULL)
 
 ## Controlling decimal places
 
-By default, results are printed with 3 decimal places. Use the `digits`
-argument of `print()` to change this (the p-value always uses 3 decimal
-places or `< 0.001`):
+By default, results are printed with 3 decimal places. Pass `digits`
+directly to change this (the p-value always uses 3 decimal places or
+`< 0.001`):
 
 ```{r digits}
-res <- cramer_v(tbl, detail = TRUE)
-print(res, digits = 4)
+cramer_v(tbl, detail = TRUE, digits = 4)
 ```
 
 The same `digits` argument works for `assoc_measures()`:
 
 ```{r digits-table}
-print(assoc_measures(tbl), digits = 2)
+assoc_measures(tbl, digits = 2)
 ```
+
+You can also override at print time with `print(res, digits = 4)`.

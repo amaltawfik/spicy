@@ -4,7 +4,13 @@
 \alias{kendall_tau_b}
 \title{Kendall's Tau-b}
 \usage{
-kendall_tau_b(x, detail = FALSE, conf_level = 0.95, .include_se = FALSE)
+kendall_tau_b(
+  x,
+  detail = FALSE,
+  conf_level = 0.95,
+  digits = 3L,
+  .include_se = FALSE
+)
 }
 \arguments{
 \item{x}{A contingency table (of class \code{table}).}
@@ -16,6 +22,9 @@ including confidence interval and p-value.}
 \item{conf_level}{A number between 0 and 1 giving the confidence
 level (default \code{0.95}). Only used when \code{detail = TRUE}. Set
 to \code{NULL} to omit the confidence interval.}
+
+\item{digits}{Number of decimal places used when printing the
+result (default \code{3}). Only affects the \code{detail = TRUE} output.}
 
 \item{.include_se}{Internal parameter; do not use.}
 }
