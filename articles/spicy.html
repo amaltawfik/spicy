@@ -254,30 +254,30 @@ contingency table to <code><a href="../reference/assoc_measures.html">assoc_meas
 <span><span class="co">#&gt; 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910</span></span>
 <span><span class="co">#&gt; 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280</span></span>
 <span><span class="co">#&gt; 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966</span></span>
-<span><span class="co">#&gt;       ci_upper      p_value</span></span>
-<span><span class="co">#&gt; 1   0.19137158 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2           NA 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 4   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 5   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 6   0.03425344 2.282660e-02</span></span>
-<span><span class="co">#&gt; 7   0.01410043 2.157912e-02</span></span>
-<span><span class="co">#&gt; 8   0.02125187 2.111672e-02</span></span>
-<span><span class="co">#&gt; 9   0.03237477 2.092103e-02</span></span>
-<span><span class="co">#&gt; 10  0.01582346 2.131878e-02</span></span>
-<span><span class="co">#&gt; 11 -0.15775906 1.907128e-06</span></span>
-<span><span class="co">#&gt; 12 -0.07268878 3.994450e-06</span></span>
-<span><span class="co">#&gt; 13 -0.06651701 5.454892e-06</span></span>
-<span><span class="co">#&gt; 14 -0.05204808 5.153607e-06</span></span>
-<span><span class="co">#&gt; 15 -0.10090317 3.689888e-06</span></span></code></pre></div>
+<span><span class="co">#&gt;       ci_upper        p_value</span></span>
+<span><span class="co">#&gt; 1   0.19137158 0.000020128774</span></span>
+<span><span class="co">#&gt; 2           NA 0.000020128774</span></span>
+<span><span class="co">#&gt; 3   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 4   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 5   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 6   0.03425344 0.022826600446</span></span>
+<span><span class="co">#&gt; 7   0.01410043 0.021579122521</span></span>
+<span><span class="co">#&gt; 8   0.02125187 0.021116720521</span></span>
+<span><span class="co">#&gt; 9   0.03237477 0.020921026002</span></span>
+<span><span class="co">#&gt; 10  0.01582346 0.021318784966</span></span>
+<span><span class="co">#&gt; 11 -0.15775906 0.000001907128</span></span>
+<span><span class="co">#&gt; 12 -0.07268878 0.000003994450</span></span>
+<span><span class="co">#&gt; 13 -0.06651701 0.000005454892</span></span>
+<span><span class="co">#&gt; 14 -0.05204808 0.000005153607</span></span>
+<span><span class="co">#&gt; 15 -0.10090317 0.000003689888</span></span></code></pre></div>
 <p>Individual functions such as <code><a href="../reference/cramer_v.html">cramer_v()</a></code>,
 <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, or <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> return a scalar
 by default. Pass <code>detail = TRUE</code> for the confidence interval
 and p-value:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.356677e-01 7.909264e-02 1.913716e-01 2.012877e-05</span></span></code></pre></div>
+<span><span class="co">#&gt;      estimate      ci_lower      ci_upper       p_value </span></span>
+<span><span class="co">#&gt; 0.13566768051 0.07909264263 0.19137158459 0.00002012877</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="apa-tables">APA tables<a class="anchor" aria-label="anchor" href="#apa-tables"></a>
@@ -1533,11 +1533,11 @@ for further processing:</p>
 <span><span class="co">#&gt; 2           smoking   Yes                78              30.4               112</span></span>
 <span><span class="co">#&gt; 3 physical_activity    No               177              67.8               310</span></span>
 <span><span class="co">#&gt; 4 physical_activity   Yes                84              32.2               229</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
-<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 8.333584e-12</span></span>
-<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 8.333584e-12</span></span>
+<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %                    p</span></span>
+<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 0.000020128773946486</span></span>
+<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 0.000020128773946486</span></span>
+<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 0.000000000008333584</span></span>
+<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 0.000000000008333584</span></span>
 <span><span class="co">#&gt;   Cramer's V</span></span>
 <span><span class="co">#&gt; 1  0.1356677</span></span>
 <span><span class="co">#&gt; 2  0.1356677</span></span>

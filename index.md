@@ -149,8 +149,10 @@ cramer_v(tbl)
 
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
-#>     estimate     ci_lower     ci_upper      p_value 
-#> 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14
+#>               estimate               ci_lower               ci_upper 
+#> 0.17616971554359892038 0.12031192176770615088 0.23091555134963898110 
+#>                p_value 
+#> 0.00000000000008817446
 ```
 
 See
@@ -165,11 +167,24 @@ table_apa(
   row_vars = c("smoking", "physical_activity"),
   group_var = "education",
   labels = c("Current smoker", "Physical activity"),
-  output = "flextable"
+  output = "wide",
+  style = "report"
 )
+#>            Variable Lower secondary n Lower secondary % Upper secondary n
+#> 1    Current smoker                                                      
+#> 2                No               179              69.6               415
+#> 3               Yes                78              30.4               112
+#> 4 Physical activity                                                      
+#> 5                No               177              67.8               310
+#> 6               Yes                84              32.2               229
+#>   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V
+#> 1                                                         < .001        .14
+#> 2              78.7        332       84.9     926    78.8                  
+#> 3              21.3         59       15.1     249    21.2                  
+#> 4                                                         < .001        .21
+#> 5              57.5        163       40.8     650    54.2                  
+#> 6              42.5        237       59.2     550    45.8
 ```
-
-![](reference/figures/README-unnamed-chunk-6-1.png)
 
 See
 [`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)

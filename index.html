@@ -205,8 +205,10 @@
 <span></span>
 <span><span class="co"># Detailed result with CI and p-value</span></span>
 <span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.761697e-01 1.203119e-01 2.309156e-01 8.817446e-14</span></span></code></pre></div>
+<span><span class="co">#&gt;               estimate               ci_lower               ci_upper </span></span>
+<span><span class="co">#&gt; 0.17616971554359892038 0.12031192176770615088 0.23091555134963898110 </span></span>
+<span><span class="co">#&gt;                p_value </span></span>
+<span><span class="co">#&gt; 0.00000000000008817446</span></span></code></pre></div>
 <p>See <code><a href="articles/association-measures.html">vignette("association-measures")</a></code> for a guide on choosing the right measure.</p>
 </div>
 <div class="section level3">
@@ -218,9 +220,23 @@
 <span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"flextable"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" alt="" width="100%"></p>
+<span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span>
+<span>  style <span class="op">=</span> <span class="st">"report"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;            Variable Lower secondary n Lower secondary % Upper secondary n</span></span>
+<span><span class="co">#&gt; 1    Current smoker                                                      </span></span>
+<span><span class="co">#&gt; 2                No               179              69.6               415</span></span>
+<span><span class="co">#&gt; 3               Yes                78              30.4               112</span></span>
+<span><span class="co">#&gt; 4 Physical activity                                                      </span></span>
+<span><span class="co">#&gt; 5                No               177              67.8               310</span></span>
+<span><span class="co">#&gt; 6               Yes                84              32.2               229</span></span>
+<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V</span></span>
+<span><span class="co">#&gt; 1                                                         &lt; .001        .14</span></span>
+<span><span class="co">#&gt; 2              78.7        332       84.9     926    78.8                  </span></span>
+<span><span class="co">#&gt; 3              21.3         59       15.1     249    21.2                  </span></span>
+<span><span class="co">#&gt; 4                                                         &lt; .001        .21</span></span>
+<span><span class="co">#&gt; 5              57.5        163       40.8     650    54.2                  </span></span>
+<span><span class="co">#&gt; 6              42.5        237       59.2     550    45.8</span></span></code></pre></div>
 <p>See <code><a href="articles/table-apa.html">vignette("table-apa")</a></code> for all output formats, weights, CI, and export options.</p>
 </div>
 <div class="section level3">

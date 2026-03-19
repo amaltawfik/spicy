@@ -188,22 +188,22 @@ once:</p>
 <span><span class="co">#&gt; 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910</span></span>
 <span><span class="co">#&gt; 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280</span></span>
 <span><span class="co">#&gt; 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966</span></span>
-<span><span class="co">#&gt;       ci_upper      p_value</span></span>
-<span><span class="co">#&gt; 1   0.19137158 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2           NA 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 4   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 5   0.00000000           NA</span></span>
-<span><span class="co">#&gt; 6   0.03425344 2.282660e-02</span></span>
-<span><span class="co">#&gt; 7   0.01410043 2.157912e-02</span></span>
-<span><span class="co">#&gt; 8   0.02125187 2.111672e-02</span></span>
-<span><span class="co">#&gt; 9   0.03237477 2.092103e-02</span></span>
-<span><span class="co">#&gt; 10  0.01582346 2.131878e-02</span></span>
-<span><span class="co">#&gt; 11 -0.15775906 1.907128e-06</span></span>
-<span><span class="co">#&gt; 12 -0.07268878 3.994450e-06</span></span>
-<span><span class="co">#&gt; 13 -0.06651701 5.454892e-06</span></span>
-<span><span class="co">#&gt; 14 -0.05204808 5.153607e-06</span></span>
-<span><span class="co">#&gt; 15 -0.10090317 3.689888e-06</span></span></code></pre></div>
+<span><span class="co">#&gt;       ci_upper        p_value</span></span>
+<span><span class="co">#&gt; 1   0.19137158 0.000020128774</span></span>
+<span><span class="co">#&gt; 2           NA 0.000020128774</span></span>
+<span><span class="co">#&gt; 3   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 4   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 5   0.00000000             NA</span></span>
+<span><span class="co">#&gt; 6   0.03425344 0.022826600446</span></span>
+<span><span class="co">#&gt; 7   0.01410043 0.021579122521</span></span>
+<span><span class="co">#&gt; 8   0.02125187 0.021116720521</span></span>
+<span><span class="co">#&gt; 9   0.03237477 0.020921026002</span></span>
+<span><span class="co">#&gt; 10  0.01582346 0.021318784966</span></span>
+<span><span class="co">#&gt; 11 -0.15775906 0.000001907128</span></span>
+<span><span class="co">#&gt; 12 -0.07268878 0.000003994450</span></span>
+<span><span class="co">#&gt; 13 -0.06651701 0.000005454892</span></span>
+<span><span class="co">#&gt; 14 -0.05204808 0.000005153607</span></span>
+<span><span class="co">#&gt; 15 -0.10090317 0.000003689888</span></span></code></pre></div>
 <p>This is useful for exploratory analysis. For reporting, pick the
 measure that matches your variable types.</p>
 </div>
@@ -225,8 +225,8 @@ p-value. The p-value tests the null hypothesis of no association using
 the Pearson chi-squared test.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.356677e-01 7.909264e-02 1.913716e-01 2.012877e-05</span></span></code></pre></div>
+<span><span class="co">#&gt;      estimate      ci_lower      ci_upper       p_value </span></span>
+<span><span class="co">#&gt; 0.13566768051 0.07909264263 0.19137158459 0.00002012877</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="phi-coefficient">Phi coefficient<a class="anchor" aria-label="anchor" href="#phi-coefficient"></a>
@@ -248,8 +248,8 @@ upper bound depends on the table dimensions, which makes it harder to
 compare across tables of different sizes.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/contingency_coef.html">contingency_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.344361e-01           NA           NA 2.012877e-05</span></span></code></pre></div>
+<span><span class="co">#&gt;      estimate      ci_lower      ci_upper       p_value </span></span>
+<span><span class="co">#&gt; 0.13443612479            NA            NA 0.00002012877</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -266,8 +266,10 @@ strength when there are many ties.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/gamma_gk.html">gamma_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 3.104791e-01 2.376258e-01 3.833324e-01 6.667393e-17</span></span></code></pre></div>
+<span><span class="co">#&gt;                  estimate                  ci_lower                  ci_upper </span></span>
+<span><span class="co">#&gt; 0.31047908806401242065576 0.23762577188158526264594 0.38333240424643955091000 </span></span>
+<span><span class="co">#&gt;                   p_value </span></span>
+<span><span class="co">#&gt; 0.00000000000000006667393</span></span></code></pre></div>
 <p>A positive value means that higher values on one variable tend to
 occur with higher values on the other. The p-value tests H0: Gamma = 0
 using a Wald z-test.</p>
@@ -279,8 +281,10 @@ using a Wald z-test.</p>
 preferred over Gamma for square or near-square tables.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/kendall_tau_b.html">kendall_tau_b</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 2.045524e-01 1.552195e-01 2.538854e-01 4.410418e-16</span></span></code></pre></div>
+<span><span class="co">#&gt;                 estimate                 ci_lower                 ci_upper </span></span>
+<span><span class="co">#&gt; 0.2045524107732165364215 0.1552194601769311121942 0.2538853613695019606489 </span></span>
+<span><span class="co">#&gt;                  p_value </span></span>
+<span><span class="co">#&gt; 0.0000000000000004410418</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="stuarts-tau-c">Stuart’s Tau-c<a class="anchor" aria-label="anchor" href="#stuarts-tau-c"></a>
@@ -289,8 +293,10 @@ preferred over Gamma for square or near-square tables.</p>
 the number of rows and columns differ.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/kendall_tau_c.html">kendall_tau_c</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.996409e-01 1.509952e-01 2.482866e-01 8.720015e-16</span></span></code></pre></div>
+<span><span class="co">#&gt;                 estimate                 ci_lower                 ci_upper </span></span>
+<span><span class="co">#&gt; 0.1996409077851192259700 0.1509952174139821412524 0.2482865981562563106877 </span></span>
+<span><span class="co">#&gt;                  p_value </span></span>
+<span><span class="co">#&gt; 0.0000000000000008720015</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="somers-d">Somers’ D<a class="anchor" aria-label="anchor" href="#somers-d"></a>
@@ -300,8 +306,10 @@ dependent and an independent variable. By default, the row variable is
 treated as dependent (D(R|C)).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/somers_d.html">somers_d</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 2.076131e-01 1.573452e-01 2.578810e-01 5.730469e-16</span></span></code></pre></div>
+<span><span class="co">#&gt;                 estimate                 ci_lower                 ci_upper </span></span>
+<span><span class="co">#&gt; 0.2076130769799534314668 0.1573452002361157842092 0.2578809537237911064800 </span></span>
+<span><span class="co">#&gt;                  p_value </span></span>
+<span><span class="co">#&gt; 0.0000000000000005730469</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -418,14 +426,14 @@ uses Cramer’s V.</p>
 be changed with <code>conf_level</code>:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate     ci_lower     ci_upper      p_value </span></span>
-<span><span class="co">#&gt; 1.269149e-01 5.310210e-02 1.993484e-01 8.352614e-07</span></span></code></pre></div>
+<span><span class="co">#&gt;        estimate        ci_lower        ci_upper         p_value </span></span>
+<span><span class="co">#&gt; 0.1269149168801 0.0531020955399 0.1993484144163 0.0000008352614</span></span></code></pre></div>
 <p>To get only the estimate and p-value (no CI), pass
 <code>conf_level = NULL</code>:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     estimate      p_value </span></span>
-<span><span class="co">#&gt; 1.269149e-01 8.352614e-07</span></span></code></pre></div>
+<span><span class="co">#&gt;        estimate         p_value </span></span>
+<span><span class="co">#&gt; 0.1269149168801 0.0000008352614</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
