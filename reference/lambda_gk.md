@@ -75,6 +75,6 @@ lambda_gk(tab)
 lambda_gk(tab, direction = "row")
 #> [1] 0
 lambda_gk(tab, direction = "column", detail = TRUE)
-#> estimate ci_lower ci_upper  p_value 
-#>        0        0        0       NA 
+#> Estimate  CI lower  CI upper  p value
+#>    0.000     0.000     0.000       --
 ```

@@ -92,5 +92,11 @@
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
 
+- [`print(`*`<spicy_assoc_detail>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
+  : Print a detailed association measure result
+
+- [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
+  : Print an association measures summary table
+
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering

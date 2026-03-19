@@ -73,6 +73,6 @@ tab <- table(sochealth$smoking, sochealth$education)
 goodman_kruskal_tau(tab)
 #> [1] 0.01840572
 goodman_kruskal_tau(tab, direction = "column", detail = TRUE)
-#>    estimate    ci_lower    ci_upper     p_value 
-#> 0.007609460 0.001118492 0.014100428 0.021579123 
+#> Estimate  CI lower  CI upper  p value
+#>    0.008     0.001     0.014    0.022
 ```

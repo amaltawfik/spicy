@@ -89,13 +89,13 @@ the total weighted N matches the unweighted N:
 freq(sochealth, education, weights = weight, rescale = TRUE)
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    259     21.6 
-#>           │ Upper secondary    549     45.7 
-#>           │ Tertiary           392     32.7 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category │ Values            Freq.  Percent 
+#> ──────────┼──────────────────────────────────
+#>  Valid    │ Lower secondary  259.49     21.6 
+#>           │ Upper secondary  548.55     45.7 
+#>           │ Tertiary         391.95     32.7 
+#> ──────────┼──────────────────────────────────
+#>  Total    │                    1200    100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -202,38 +202,22 @@ contingency table to
 ``` r
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
-#>                              measure estimate      se ci_lower ci_upper
-#> 1                         Cramer's V  0.13567      NA  0.07909   0.1914
-#> 2            Contingency Coefficient  0.13444      NA       NA       NA
-#> 3                   Lambda symmetric  0.00000 0.00000  0.00000   0.0000
-#> 4                         Lambda R|C  0.00000 0.00000  0.00000   0.0000
-#> 5                         Lambda C|R  0.00000 0.00000  0.00000   0.0000
-#> 6          Goodman-Kruskal's Tau R|C  0.01841 0.00809  0.00256   0.0343
-#> 7          Goodman-Kruskal's Tau C|R  0.00761 0.00331  0.00112   0.0141
-#> 8  Uncertainty Coefficient symmetric  0.01149 0.00498  0.00172   0.0213
-#> 9        Uncertainty Coefficient R|C  0.01751 0.00758  0.00265   0.0324
-#> 10       Uncertainty Coefficient C|R  0.00855 0.00371  0.00127   0.0158
-#> 11             Goodman-Kruskal Gamma -0.26807 0.05628 -0.37838  -0.1578
-#> 12                   Kendall's Tau-b -0.12642 0.02741 -0.18014  -0.0727
-#> 13                    Stuart's Tau-c -0.11692 0.02572 -0.16732  -0.0665
-#> 14                     Somers' D R|C -0.09131 0.02003 -0.13057  -0.0520
-#> 15                     Somers' D C|R -0.17502 0.03782 -0.24914  -0.1009
-#>       p_value
-#> 1  0.00002013
-#> 2  0.00002013
-#> 3          NA
-#> 4          NA
-#> 5          NA
-#> 6  0.02282660
-#> 7  0.02157912
-#> 8  0.02111672
-#> 9  0.02092103
-#> 10 0.02131878
-#> 11 0.00000191
-#> 12 0.00000399
-#> 13 0.00000545
-#> 14 0.00000515
-#> 15 0.00000369
+#> Measure                            Estimate     SE  CI lower  CI upper  p value 
+#> Cramer's V                            0.136     --     0.079     0.191  < 0.001 
+#> Contingency Coefficient               0.134     --        --        --  < 0.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000       -- 
+#> Lambda R|C                            0.000  0.000     0.000     0.000       -- 
+#> Lambda C|R                            0.000  0.000     0.000     0.000       -- 
+#> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034    0.023 
+#> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014    0.022 
+#> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021    0.021 
+#> Uncertainty Coefficient R|C           0.018  0.008     0.003     0.032    0.021 
+#> Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016    0.021 
+#> Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  < 0.001 
+#> Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  < 0.001 
+#> Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  < 0.001 
+#> Somers' D R|C                        -0.091  0.020    -0.131    -0.052  < 0.001 
+#> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  < 0.001
 ```
 
 Individual functions such as
@@ -246,8 +230,8 @@ interval and p-value:
 
 ``` r
 cramer_v(tbl, detail = TRUE)
-#>  estimate  ci_lower  ci_upper   p_value 
-#> 0.1356677 0.0790926 0.1913716 0.0000201
+#> Estimate  CI lower  CI upper  p value
+#>    0.136     0.079     0.191  < 0.001
 ```
 
 ## APA tables
@@ -301,16 +285,16 @@ table_apa(
 #> 2           smoking   Yes                78              30.4               112
 #> 3 physical_activity    No               177              67.8               310
 #> 4 physical_activity   Yes                84              32.2               229
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %                p
-#> 1              78.7        332       84.9     926    78.8 0.00002012877395
-#> 2              21.3         59       15.1     249    21.2 0.00002012877395
-#> 3              57.5        163       40.8     650    54.2 0.00000000000833
-#> 4              42.5        237       59.2     550    45.8 0.00000000000833
+#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
+#> 1              78.7        332       84.9     926    78.8 2.012877e-05
+#> 2              21.3         59       15.1     249    21.2 2.012877e-05
+#> 3              57.5        163       40.8     650    54.2 8.333584e-12
+#> 4              42.5        237       59.2     550    45.8 8.333584e-12
 #>   Cramer's V
-#> 1      0.136
-#> 2      0.136
-#> 3      0.206
-#> 4      0.206
+#> 1  0.1356677
+#> 2  0.1356677
+#> 3  0.2061986
+#> 4  0.2061986
 ```
 
 ## Row-wise summaries

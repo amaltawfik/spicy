@@ -79,72 +79,39 @@ Statistics*. R package.
 ``` r
 tab <- table(sochealth$smoking, sochealth$education)
 assoc_measures(tab)
-#>                              measure     estimate          se     ci_lower
-#> 1                         Cramer's V  0.135667681          NA  0.079092643
-#> 2            Contingency Coefficient  0.134436125          NA           NA
-#> 3                   Lambda symmetric  0.000000000 0.000000000  0.000000000
-#> 4                         Lambda R|C  0.000000000 0.000000000  0.000000000
-#> 5                         Lambda C|R  0.000000000 0.000000000  0.000000000
-#> 6          Goodman-Kruskal's Tau R|C  0.018405720 0.008085719  0.002558001
-#> 7          Goodman-Kruskal's Tau C|R  0.007609460 0.003311779  0.001118492
-#> 8  Uncertainty Coefficient symmetric  0.011487616 0.004981856  0.001723359
-#> 9        Uncertainty Coefficient R|C  0.017512300 0.007583030  0.002649834
-#> 10       Uncertainty Coefficient C|R  0.008547169 0.003712463  0.001270875
-#> 11             Goodman-Kruskal Gamma -0.268067807 0.056281007 -0.378376554
-#> 12                   Kendall's Tau-b -0.126415453 0.027412072 -0.180142125
-#> 13                    Stuart's Tau-c -0.116920960 0.025716774 -0.167324910
-#> 14                     Somers' D R|C -0.091306679 0.020030266 -0.130565280
-#> 15                     Somers' D C|R -0.175024070 0.037817479 -0.249144966
-#>       ci_upper      p_value
-#> 1   0.19137158 2.012877e-05
-#> 2           NA 2.012877e-05
-#> 3   0.00000000           NA
-#> 4   0.00000000           NA
-#> 5   0.00000000           NA
-#> 6   0.03425344 2.282660e-02
-#> 7   0.01410043 2.157912e-02
-#> 8   0.02125187 2.111672e-02
-#> 9   0.03237477 2.092103e-02
-#> 10  0.01582346 2.131878e-02
-#> 11 -0.15775906 1.907128e-06
-#> 12 -0.07268878 3.994450e-06
-#> 13 -0.06651701 5.454892e-06
-#> 14 -0.05204808 5.153607e-06
-#> 15 -0.10090317 3.689888e-06
+#> Measure                            Estimate     SE  CI lower  CI upper  p value 
+#> Cramer's V                            0.136     --     0.079     0.191  < 0.001 
+#> Contingency Coefficient               0.134     --        --        --  < 0.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000       -- 
+#> Lambda R|C                            0.000  0.000     0.000     0.000       -- 
+#> Lambda C|R                            0.000  0.000     0.000     0.000       -- 
+#> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034    0.023 
+#> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014    0.022 
+#> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021    0.021 
+#> Uncertainty Coefficient R|C           0.018  0.008     0.003     0.032    0.021 
+#> Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016    0.021 
+#> Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  < 0.001 
+#> Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  < 0.001 
+#> Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  < 0.001 
+#> Somers' D R|C                        -0.091  0.020    -0.131    -0.052  < 0.001 
+#> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  < 0.001 
 assoc_measures(tab, type = "nominal")
-#>                              measure    estimate          se    ci_lower
-#> 1                         Cramer's V 0.135667681          NA 0.079092643
-#> 2            Contingency Coefficient 0.134436125          NA          NA
-#> 3                   Lambda symmetric 0.000000000 0.000000000 0.000000000
-#> 4                         Lambda R|C 0.000000000 0.000000000 0.000000000
-#> 5                         Lambda C|R 0.000000000 0.000000000 0.000000000
-#> 6          Goodman-Kruskal's Tau R|C 0.018405720 0.008085719 0.002558001
-#> 7          Goodman-Kruskal's Tau C|R 0.007609460 0.003311779 0.001118492
-#> 8  Uncertainty Coefficient symmetric 0.011487616 0.004981856 0.001723359
-#> 9        Uncertainty Coefficient R|C 0.017512300 0.007583030 0.002649834
-#> 10       Uncertainty Coefficient C|R 0.008547169 0.003712463 0.001270875
-#>      ci_upper      p_value
-#> 1  0.19137158 2.012877e-05
-#> 2          NA 2.012877e-05
-#> 3  0.00000000           NA
-#> 4  0.00000000           NA
-#> 5  0.00000000           NA
-#> 6  0.03425344 2.282660e-02
-#> 7  0.01410043 2.157912e-02
-#> 8  0.02125187 2.111672e-02
-#> 9  0.03237477 2.092103e-02
-#> 10 0.01582346 2.131878e-02
+#> Measure                            Estimate     SE  CI lower  CI upper  p value 
+#> Cramer's V                            0.136     --     0.079     0.191  < 0.001 
+#> Contingency Coefficient               0.134     --        --        --  < 0.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000       -- 
+#> Lambda R|C                            0.000  0.000     0.000     0.000       -- 
+#> Lambda C|R                            0.000  0.000     0.000     0.000       -- 
+#> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034    0.023 
+#> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014    0.022 
+#> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021    0.021 
+#> Uncertainty Coefficient R|C           0.018  0.008     0.003     0.032    0.021 
+#> Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016    0.021 
 assoc_measures(tab, type = "ordinal")
-#>                 measure    estimate         se   ci_lower    ci_upper
-#> 1 Goodman-Kruskal Gamma -0.26806781 0.05628101 -0.3783766 -0.15775906
-#> 2       Kendall's Tau-b -0.12641545 0.02741207 -0.1801421 -0.07268878
-#> 3        Stuart's Tau-c -0.11692096 0.02571677 -0.1673249 -0.06651701
-#> 4         Somers' D R|C -0.09130668 0.02003027 -0.1305653 -0.05204808
-#> 5         Somers' D C|R -0.17502407 0.03781748 -0.2491450 -0.10090317
-#>        p_value
-#> 1 1.907128e-06
-#> 2 3.994450e-06
-#> 3 5.454892e-06
-#> 4 5.153607e-06
-#> 5 3.689888e-06
+#> Measure                Estimate     SE  CI lower  CI upper  p value 
+#> Goodman-Kruskal Gamma    -0.268  0.056    -0.378    -0.158  < 0.001 
+#> Kendall's Tau-b          -0.126  0.027    -0.180    -0.073  < 0.001 
+#> Kendall's Tau-c          -0.117  0.026    -0.167    -0.067  < 0.001 
+#> Somers' D R|C            -0.091  0.020    -0.131    -0.052  < 0.001 
+#> Somers' D C|R            -0.175  0.038    -0.249    -0.101  < 0.001 
 ```

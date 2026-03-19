@@ -73,6 +73,6 @@ tab <- table(sochealth$education, sochealth$self_rated_health)
 somers_d(tab, direction = "row")
 #> [1] 0.2015369
 somers_d(tab, direction = "column", detail = TRUE)
-#>     estimate     ci_lower     ci_upper      p_value 
-#> 2.076131e-01 1.573452e-01 2.578810e-01 5.730469e-16 
+#> Estimate  CI lower  CI upper  p value
+#>    0.208     0.157     0.258  < 0.001
 ```

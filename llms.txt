@@ -149,10 +149,8 @@ cramer_v(tbl)
 
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
-#>               estimate               ci_lower               ci_upper 
-#> 0.17616971554359892038 0.12031192176770615088 0.23091555134963898110 
-#>                p_value 
-#> 0.00000000000008817446
+#> Estimate  CI lower  CI upper  p value
+#>    0.176     0.120     0.231  < 0.001
 ```
 
 See
@@ -335,6 +333,12 @@ details.
   Styled print method for
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
+
+- [`print(`*`<spicy_assoc_detail>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
+  : Print a detailed association measure result
+
+- [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
+  : Print an association measures summary table
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering
