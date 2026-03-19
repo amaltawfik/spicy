@@ -30,8 +30,10 @@ The table below summarizes the recommended measures by variable type.
 | Variable types | Recommended measure | Function |
 |---|---|---|
 | Nominal x Nominal | Cramer's V | `cramer_v()` |
+| Nominal x Nominal | Contingency Coefficient | `contingency_coef()` |
 | Nominal x Nominal (2x2) | Phi | `phi()` |
 | Ordinal x Ordinal | Kendall's Tau-b | `kendall_tau_b()` |
+| Ordinal x Ordinal (rectangular) | Kendall's Tau-c | `kendall_tau_c()` |
 | Ordinal x Ordinal | Goodman-Kruskal Gamma | `gamma_gk()` |
 | Ordinal x Ordinal (asymmetric) | Somers' D | `somers_d()` |
 | Nominal (asymmetric, PRE) | Lambda | `lambda_gk()` |
@@ -158,7 +160,7 @@ can equal zero even when the variables are associated, if the modal
 category does not change across columns.
 
 ```{r lambda}
-tbl <- xtabs(~ employment_status + education, data = sochealth)
+tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
 ```
 
