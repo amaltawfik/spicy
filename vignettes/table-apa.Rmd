@@ -1,0 +1,258 @@
+---
+title: "APA tables with table_apa()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{APA tables with table_apa()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_apa()` builds publication-ready cross-tabulation tables by
+crossing one grouping variable with one or many row variables. It
+handles p-values, association measures, confidence intervals, and
+multi-level headers automatically. This vignette walks through the main
+features.
+
+## Basic usage
+
+At minimum, provide a data frame, one or more row variables, and a
+grouping variable:
+
+```{r basic}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity", "dentist_12m"),
+  group_var = "education"
+)
+```
+
+The default output is `"wide"` with `style = "raw"`, which returns a
+data frame with numeric values suitable for further processing.
+
+## Output formats
+
+`table_apa()` supports several output formats. The table below
+summarizes the options:
+
+| Format | Description |
+|---|---|
+| `"wide"` | Data frame, one row per modality (default) |
+| `"long"` | Data frame, one row per modality x group |
+| `"gt"` | Formatted gt table |
+| `"tinytable"` | Formatted tinytable |
+| `"flextable"` | Formatted flextable |
+| `"excel"` | Excel file (requires `excel_path`) |
+| `"clipboard"` | Copy to clipboard |
+| `"word"` | Word document (requires `word_path`) |
+
+### gt output
+
+The `"gt"` format produces a table with APA-style borders, column
+spanners, and proper alignment:
+
+```{r gt}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity", "dentist_12m"),
+  group_var = "education",
+  output = "gt"
+)
+```
+
+### tinytable output
+
+```{r tinytable}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  output = "tinytable"
+)
+```
+
+### Data frame output
+
+Use `style = "report"` with `"wide"` or `"long"` to get formatted
+character columns (ready for display), or `style = "raw"` for numeric
+values (ready for analysis):
+
+```{r wide-report}
+table_apa(
+  sochealth,
+  row_vars = "smoking",
+  group_var = "education",
+  output = "wide",
+  style = "report"
+)
+```
+
+## Custom labels
+
+By default, `table_apa()` uses the variable labels from the data (if
+available) or the variable names. Override them with the `labels`
+argument:
+
+```{r labels}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  labels = c("Smoking status", "Regular physical activity"),
+  output = "gt"
+)
+```
+
+## Association measures and confidence intervals
+
+By default, `table_apa()` reports Cramer's V for nominal variables and
+automatically switches to Kendall's Tau-b when both variables are
+ordered factors. Override with `assoc_measure`:
+
+```{r assoc-measure}
+table_apa(
+  sochealth,
+  row_vars = "smoking",
+  group_var = "education",
+  assoc_measure = "phi",
+  output = "gt"
+)
+```
+
+Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
+(gt, tinytable, flextable), the CI is shown inline:
+
+```{r ci-rendered}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  assoc_ci = TRUE,
+  output = "gt"
+)
+```
+
+In data formats (wide, long, excel, clipboard), separate `CI lower` and
+`CI upper` columns are added:
+
+```{r ci-data}
+table_apa(
+  sochealth,
+  row_vars = "smoking",
+  group_var = "education",
+  assoc_ci = TRUE,
+  output = "wide",
+  style = "report"
+)
+```
+
+## Weighted tables
+
+Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
+the total weighted N matches the unweighted N:
+
+```{r weighted}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  weights = "weight",
+  rescale = TRUE,
+  output = "gt"
+)
+```
+
+## Handling missing values
+
+By default, rows with missing values are dropped (`drop_na = TRUE`).
+Set `drop_na = FALSE` to display them as a "(Missing)" category:
+
+```{r missing}
+table_apa(
+  sochealth,
+  row_vars = "income_group",
+  group_var = "education",
+  drop_na = FALSE,
+  output = "gt"
+)
+```
+
+## Filtering levels
+
+Use `levels_keep` to display only specific modalities and control their
+order:
+
+```{r levels-keep}
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  levels_keep = c("Yes"),
+  output = "gt"
+)
+```
+
+## Formatting options
+
+Control the number of digits for percentages, p-values, and the
+association measure:
+
+```{r formatting}
+table_apa(
+  sochealth,
+  row_vars = "smoking",
+  group_var = "education",
+  percent_digits = 2,
+  p_digits = 4,
+  v_digits = 3,
+  output = "gt"
+)
+```
+
+## Exporting to Excel or Word
+
+For Excel export, provide a file path:
+
+```r
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity", "dentist_12m"),
+  group_var = "education",
+  output = "excel",
+  excel_path = "my_table.xlsx"
+)
+```
+
+For Word, use `output = "word"`:
+
+```r
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity", "dentist_12m"),
+  group_var = "education",
+  output = "word",
+  word_path = "my_table.docx"
+)
+```
+
+You can also copy directly to the clipboard for pasting into a
+spreadsheet:
+
+```r
+table_apa(
+  sochealth,
+  row_vars = c("smoking", "physical_activity"),
+  group_var = "education",
+  output = "clipboard"
+)
+```
