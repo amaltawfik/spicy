@@ -42,7 +42,10 @@ p-value comes from the Pearson chi-squared test.
 The phi coefficient is \\\phi = \sqrt{\chi^2 / n}\\. It is equivalent to
 Cramer's V for 2x2 tables and equals the Pearson correlation between the
 two binary variables. The confidence interval uses the Fisher
-z-transformation.
+z-transformation. Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

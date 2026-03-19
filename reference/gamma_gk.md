@@ -43,6 +43,10 @@ p-value is based on a Wald test.
 Gamma is computed as \\\gamma = (C - D) / (C + D)\\, where \\C\\ and
 \\D\\ are the numbers of concordant and discordant pairs. It ignores
 tied pairs, making it appropriate for ordinal variables with many ties.
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

@@ -1,6 +1,6 @@
-# Goodman-Kruskal lambda
+# Goodman-Kruskal's Lambda
 
-`lambda_gk()` computes Goodman-Kruskal's lambda, a proportional
+`lambda_gk()` computes Goodman-Kruskal's Lambda, a proportional
 reduction in error (PRE) measure for nominal variables.
 
 ## Usage
@@ -54,7 +54,10 @@ Lambda measures how much prediction error is reduced when the
 independent variable is used to predict the dependent variable. It
 ranges from 0 (no reduction) to 1 (perfect prediction). Lambda can equal
 zero even when variables are associated if the modal category dominates
-in every column (or row).
+in every column (or row). Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

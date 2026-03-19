@@ -1,6 +1,6 @@
-# Uncertainty coefficient
+# Uncertainty Coefficient
 
-`uncertainty_coef()` computes the uncertainty coefficient (Theil's U)
+`uncertainty_coef()` computes the Uncertainty Coefficient (Theil's U)
 for a two-way contingency table, based on information entropy.
 
 ## Usage
@@ -54,7 +54,10 @@ The uncertainty coefficient measures association using Shannon entropy.
 For `direction = "row"`: \\U = (H_X + H_Y - H\_{XY}) / H_X\\, where
 \\H_X\\, \\H_Y\\ are the marginal entropies and \\H\_{XY}\\ is the joint
 entropy. The symmetric version is \\U = 2 (H_X + H_Y - H\_{XY}) / (H_X +
-H_Y)\\.
+H_Y)\\. Standard error formulas follow the DescTools implementations
+(Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

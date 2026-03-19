@@ -468,11 +468,11 @@ This package is licensed under the MIT license. See
 - [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
   : Pearson's contingency coefficient
 - [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
-  : Goodman-Kruskal lambda
+  : Goodman-Kruskal's Lambda
 - [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
   : Goodman-Kruskal's Tau
 - [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
-  : Uncertainty coefficient
+  : Uncertainty Coefficient
 - [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md) :
   Yule's Q
 - [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)

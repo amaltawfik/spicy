@@ -43,6 +43,10 @@ p-value is based on a Wald test.
 Stuart's Tau-c is computed as \\\tau_c = 2m(C - D) / (n^2(m - 1))\\,
 where \\m = \min(r, c)\\. It is appropriate for rectangular tables and
 is not restricted to the range \\\[-1, 1\]\\ only for square tables.
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

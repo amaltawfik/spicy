@@ -54,7 +54,10 @@ Unlike
 [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
 Goodman-Kruskal's Tau uses all cell frequencies rather than only the
 modal categories, making it more sensitive to association patterns where
-lambda may be zero.
+lambda may be zero. Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

@@ -43,7 +43,10 @@ p-value is based on a Wald test.
 For a 2x2 table with cells \\a, b, c, d\\, Yule's Q is \\Q = (ad - bc) /
 (ad + bc)\\. It is equivalent to the Goodman-Kruskal Gamma for 2x2
 tables. The asymptotic standard error is \\SE = 0.5 (1 - Q^2)
-\sqrt{1/a + 1/b + 1/c + 1/d}\\.
+\sqrt{1/a + 1/b + 1/c + 1/d}\\. Standard error formulas follow the
+DescTools implementations (Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 

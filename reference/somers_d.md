@@ -55,7 +55,10 @@ p-value is based on a Wald test.
 Somers' D is an asymmetric ordinal measure defined as \\d = (C - D) /
 (C + D + T)\\, where \\T\\ is the number of pairs tied on the
 independent variable. The symmetric version is the harmonic mean of the
-two asymmetric values.
+two asymmetric values. Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024); see
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+for full references.
 
 ## See also
 
