@@ -23,9 +23,9 @@ or \code{"column"} (row predicts column).}
 as a numeric scalar. If \code{TRUE}, return a named numeric vector
 including confidence interval and p-value.}
 
-\item{conf_level}{Confidence level for the confidence interval
-(default \code{0.95}). Only used when \code{detail = TRUE}. Set to
-\code{NULL} to omit the confidence interval.}
+\item{conf_level}{A number between 0 and 1 giving the confidence
+level (default \code{0.95}). Only used when \code{detail = TRUE}. Set
+to \code{NULL} to omit the confidence interval.}
 
 \item{.include_se}{Internal parameter; do not use.}
 }

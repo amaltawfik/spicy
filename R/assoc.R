@@ -117,9 +117,9 @@
 #' @param detail Logical. If `FALSE` (default), return the estimate
 #'   as a numeric scalar. If `TRUE`, return a named numeric vector
 #'   including confidence interval and p-value.
-#' @param conf_level Confidence level for the confidence interval
-#'   (default `0.95`). Only used when `detail = TRUE`. Set to
-#'   `NULL` to omit the confidence interval.
+#' @param conf_level A number between 0 and 1 giving the confidence
+#'   level (default `0.95`). Only used when `detail = TRUE`. Set
+#'   to `NULL` to omit the confidence interval.
 #' @param .include_se Internal parameter; do not use.
 #'
 #' @return When `detail = FALSE`: a single numeric value (the
