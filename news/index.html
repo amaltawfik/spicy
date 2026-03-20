@@ -68,6 +68,8 @@
 <h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
 <ul><li><p><code><a href="../reference/kendall_tau_c.html">kendall_tau_c()</a></code> is now consistently named “Kendall’s Tau-c” throughout the package (previously “Stuart’s Tau-c” in some places).</p></li>
 <li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present (consistent with Stata behavior).</p></li>
+<li><p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and <code><a href="../reference/count_n.html">count_n()</a></code> no longer trigger a tidyselect deprecation warning when <code>select</code> receives a character vector. Character vectors are now automatically wrapped with <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of()</a></code>.</p></li>
+<li><p><code><a href="../reference/table_apa.html">table_apa()</a></code> p-values no longer wrap across lines in <code>tinytable</code> HTML output.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>

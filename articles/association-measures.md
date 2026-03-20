@@ -146,7 +146,7 @@ kendall_tau_b(tbl_ord, detail = TRUE)
 #>    0.205     0.155     0.254  < 0.001
 ```
 
-### Kendall’s Tau-c (Stuart’s Tau-c)
+### Kendall’s Tau-c
 
 Tau-c is similar to Tau-b but adjusts for rectangular tables where the
 number of rows and columns differ. The p-value tests H0: Tau-c = 0 (Wald

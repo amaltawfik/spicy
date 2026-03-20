@@ -78,6 +78,18 @@
   total N matches the unweighted N when missing values are present
   (consistent with Stata behavior).
 
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  no longer trigger a tidyselect deprecation warning when `select`
+  receives a character vector. Character vectors are now automatically
+  wrapped with
+  [`all_of()`](https://tidyselect.r-lib.org/reference/all_of.html).
+
+- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+  p-values no longer wrap across lines in `tinytable` HTML output.
+
 ### Breaking changes
 
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
