@@ -593,3 +593,81 @@ test_that("table_apa with drop_na = FALSE includes Missing level", {
   )
   expect_true(any(grepl("Missing", out$level)))
 })
+
+# ── Digit validation ─────────────────────────────────────────────────────
+
+test_that("table_apa rejects invalid digit arguments", {
+  df <- data.frame(
+    grp = c("A", "B", "A", "B"),
+    v1 = c("x", "y", "x", "y")
+  )
+
+  expect_error(
+    table_apa(df, "v1", "grp", percent_digits = -1, output = "long"),
+    "percent_digits"
+  )
+  expect_error(
+    table_apa(df, "v1", "grp", p_digits = "a", output = "long"),
+    "p_digits"
+  )
+  expect_error(
+    table_apa(df, "v1", "grp", v_digits = NA, output = "long"),
+    "v_digits"
+  )
+})
+
+# ── Level ordering ───────────────────────────────────────────────────────
+
+test_that("table_apa preserves factor level order in row variables", {
+  df <- data.frame(
+    grp = c("A", "A", "B", "B", "A", "B"),
+    v1 = factor(
+      c("Low", "High", "Medium", "Low", "High", "Medium"),
+      levels = c("Low", "Medium", "High")
+    )
+  )
+  out <- table_apa(
+    df,
+    "v1",
+    "grp",
+    include_total = FALSE,
+    output = "long",
+    style = "raw"
+  )
+  lvs <- unique(out$level)
+  expect_equal(lvs, c("Low", "Medium", "High"))
+})
+
+test_that("table_apa places (Missing) at end when drop_na = FALSE", {
+  df <- data.frame(
+    grp = c("A", "A", "B", "B", "A", "B"),
+    v1 = factor(
+      c("Yes", NA, "No", "Yes", NA, "No"),
+      levels = c("Yes", "No")
+    )
+  )
+  out <- table_apa(
+    df,
+    "v1",
+    "grp",
+    drop_na = FALSE,
+    include_total = FALSE,
+    output = "long",
+    style = "raw"
+  )
+  lvs <- unique(out$level)
+  expect_equal(lvs, c("Yes", "No", "(Missing)"))
+})
+
+test_that("table_apa rescale warning includes call. = FALSE", {
+  df <- data.frame(
+    grp = c("A", "B", "A", "B"),
+    v1 = c("x", "y", "x", "y")
+  )
+  w <- tryCatch(
+    table_apa(df, "v1", "grp", rescale = TRUE, output = "long", style = "raw"),
+    warning = function(w) w
+  )
+  expect_s3_class(w, "simpleWarning")
+  expect_null(w$call)
+})

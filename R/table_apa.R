@@ -258,6 +258,20 @@ table_apa <- function(
   if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
     stop("`decimal_mark` must be either '.' or ','.", call. = FALSE)
   }
+  for (.dname in c("percent_digits", "p_digits", "v_digits")) {
+    .dval <- get(.dname)
+    if (
+      !is.numeric(.dval) || length(.dval) != 1L || is.na(.dval) || .dval < 0
+    ) {
+      stop(
+        paste0("`", .dname, "` must be a single non-negative number."),
+        call. = FALSE
+      )
+    }
+  }
+  percent_digits <- as.integer(percent_digits)
+  p_digits <- as.integer(p_digits)
+  v_digits <- as.integer(v_digits)
 
   weights_vec <- NULL
   if (!is.null(weights)) {
@@ -284,7 +298,8 @@ table_apa <- function(
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
     warning(
-      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`."
+      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.",
+      call. = FALSE
     )
     rescale <- FALSE
   }
@@ -305,8 +320,6 @@ table_apa <- function(
       idx <- idx + 1L
     }
   }
-
-  `%||%` <- function(x, y) if (is.null(x)) y else x
 
   parse_stats <- function(ct_obj) {
     # Read numeric attributes set by cross_tab()
@@ -448,11 +461,19 @@ table_apa <- function(
   rows <- list()
   rr <- 1L
   measure_col <- NULL
+  all_level_order <- character(0)
 
   for (i in seq_along(row_vars)) {
     x <- data[[row_vars[i]]]
     g <- data[[group_var]]
     w <- weights_vec
+
+    # Capture original level order before any filtering/conversion
+    if (is.factor(x)) {
+      var_level_order <- levels(x)
+    } else {
+      var_level_order <- unique(as.character(x[!is.na(x)]))
+    }
 
     keep <- rep(TRUE, length(x))
     if (drop_na) {
@@ -511,10 +532,16 @@ table_apa <- function(
     vals_p <- as.character(ct_pct$Values)
 
     lv_use <- if (is.null(levels_keep)) {
-      setdiff(unique(vals_n), c("Total", "N"))
+      raw_levels <- setdiff(unique(vals_n), c("Total", "N"))
+      # Reorder to match original factor/occurrence order
+      known <- intersect(var_level_order, raw_levels)
+      extra <- setdiff(raw_levels, c(var_level_order, missing_label))
+      missing_end <- intersect(raw_levels, missing_label)
+      c(known, extra, missing_end)
     } else {
       intersect(as.character(levels_keep), vals_n)
     }
+    all_level_order <- c(all_level_order, lv_use)
 
     for (lv in lv_use) {
       in_n <- match(lv, vals_n)
@@ -575,6 +602,11 @@ table_apa <- function(
       long_raw$level <- factor(
         long_raw$level,
         levels = as.character(levels_keep)
+      )
+    } else {
+      long_raw$level <- factor(
+        long_raw$level,
+        levels = unique(all_level_order)
       )
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
@@ -890,7 +922,7 @@ table_apa <- function(
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- tinytable::theme_empty(tt)
 
-    # Alignement
+    # Alignment
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
     stat_j <- (ncol(dat_tt) - 1):ncol(dat_tt)
@@ -909,10 +941,10 @@ table_apa <- function(
       )
     }
 
-    # Lignes
+    # Lines
     grp_j <- 2:(1 + 2 * length(group_levels))
 
-    # Haut du tableau
+    # Top of table
     tt <- tinytable::style_tt(
       tt,
       i = -1,
@@ -920,7 +952,7 @@ table_apa <- function(
       line = "t",
       line_width = 0.06
     )
-    # Ligne intermédiaire sous spanner: seulement colonnes groupes
+    # Intermediate line under spanner: group columns only
     tt <- tinytable::style_tt(
       tt,
       i = -1,
@@ -928,7 +960,7 @@ table_apa <- function(
       line = "b",
       line_width = 0.06
     )
-    # Ligne sous header n/%: toute la largeur
+    # Line under n/% header: full width
     tt <- tinytable::style_tt(
       tt,
       i = 0,
@@ -936,7 +968,7 @@ table_apa <- function(
       line = "b",
       line_width = 0.06
     )
-    # Ligne de fermeture bas tableau
+    # Bottom closing line
     tt <- tinytable::style_tt(
       tt,
       i = nrow(dat_tt),
@@ -1433,6 +1465,4 @@ table_apa <- function(
     clipr::write_clip(txt)
     return(invisible(txt))
   }
-
-  stop("Unsupported `output`.", call. = FALSE)
 }
