@@ -163,12 +163,12 @@ table_apa(
 )
 ```
 
-| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Phi |
-|----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|-----|
-|          | n               | %    | n               | %    | n        | %    | n     | %    |         |     |
-| smoking  |                 |      |                 |      |          |      |       |      | \< .001 |     |
-|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |     |
-|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |     |
+| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V |
+|----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
+|          | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
+| smoking  |                 |      |                 |      |          |      |       |      | \< .001 |            |
+|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
