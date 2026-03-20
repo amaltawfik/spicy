@@ -100,18 +100,9 @@ var_label(x) <- "Satisfaction level"
 # Capture result without printing, then print explicitly
 df <- spicy::freq(x, styled = FALSE)
 print(df) # dispatches to print.spicy_freq_table()
-#> Frequency table: x
-#> 
-#>  Category │ Values      Freq.  Percent  Valid Percent 
-#> ──────────┼───────────────────────────────────────────
-#>  Valid    │ [1] Low         3     33.3           37.5 
-#>           │ [2] Medium      3     33.3           37.5 
-#>           │ [3] High        2     22.2           25.0 
-#>  Missing  │ NA              1     11.1                
-#> ──────────┼───────────────────────────────────────────
-#>  Total    │                 9    100.0          100.0 
-#> 
-#> Label: Satisfaction level
-#> Class: haven_labelled, vctrs_vctr, double
-#> Data: x
+#>        value n      prop valid_prop
+#> 1    [1] Low 3 0.3333333      0.375
+#> 2 [2] Medium 3 0.3333333      0.375
+#> 3   [3] High 2 0.2222222      0.250
+#> 4       <NA> 1 0.1111111         NA
 ```
