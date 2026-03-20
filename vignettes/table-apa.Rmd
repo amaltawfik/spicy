@@ -124,7 +124,7 @@ table_apa(
   row_vars = "smoking",
   group_var = "education",
   assoc_measure = "phi",
-  output = "gt"
+  output = "tinytable"
 )
 ```
 
@@ -186,17 +186,19 @@ table_apa(
 )
 ```
 
-## Filtering levels
+## Filtering and reordering levels
 
-Use `levels_keep` to display only specific modalities and control their
-order:
+Use `levels_keep` to display only specific modalities. The order you
+specify controls the display order, which is useful for placing
+"(Missing)" last:
 
 ```{r levels-keep}
 table_apa(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
+  row_vars = "income_group",
   group_var = "education",
-  levels_keep = c("Yes"),
+  drop_na = FALSE,
+  levels_keep = c("Low", "High", "(Missing)"),
   output = "gt"
 )
 ```
