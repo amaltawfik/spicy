@@ -486,7 +486,7 @@ test_that("table_apa returns flextable object when requested", {
 # ── Excel output ──────────────────────────────────────────────────────────
 
 test_that("table_apa writes excel file", {
-  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("openxlsx")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   table_apa(
@@ -512,4 +512,84 @@ test_that("table_apa assoc_measure = 'none' returns NA for association", {
   )
   assoc_col <- out[["Cramer's V"]]
   expect_true(all(is.na(assoc_col)))
+})
+
+# ── Report mode (no rendering dependency) ─────────────────────────────────
+
+test_that("table_apa long report has formatted values", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "long",
+    style = "report"
+  )
+  expect_s3_class(out, "data.frame")
+  expect_true("variable" %in% names(out))
+  expect_true(is.character(out$pct))
+})
+
+test_that("table_apa with assoc_ci includes CI columns in raw long", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    assoc_ci = TRUE,
+    output = "long",
+    style = "raw"
+  )
+  expect_true("CI lower" %in% names(out) || "ci_lower" %in% names(out))
+})
+
+test_that("table_apa fmt_p formats small p-values", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "long",
+    style = "report"
+  )
+  p_col <- out$p
+  p_vals <- p_col[p_col != "" & !is.na(p_col)]
+  expect_true(length(p_vals) > 0)
+})
+
+test_that("table_apa decimal_mark comma in long report output", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    decimal_mark = ",",
+    output = "long",
+    style = "report"
+  )
+  pct_vals <- out$pct[out$pct != "" & !is.na(out$pct)]
+  expect_true(any(grepl(",", pct_vals)))
+})
+
+test_that("table_apa simulate_p works in long output", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    simulate_p = TRUE,
+    output = "long",
+    style = "raw"
+  )
+  expect_s3_class(out, "data.frame")
+  expect_true(nrow(out) > 0)
+})
+
+test_that("table_apa with drop_na = FALSE includes Missing level", {
+  df <- sochealth
+  df$smoking[1:5] <- NA
+  out <- table_apa(
+    df,
+    "smoking",
+    "education",
+    drop_na = FALSE,
+    output = "long",
+    style = "raw"
+  )
+  expect_true(any(grepl("Missing", out$level)))
 })
