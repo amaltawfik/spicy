@@ -252,3 +252,8 @@ test_that("freq() cum + valid styled prints invisibly", {
   x <- c("A", "B", NA, "A")
   expect_invisible(freq(x, cum = TRUE, valid = TRUE, styled = TRUE))
 })
+
+test_that("freq() else branch when data is vector and x is given", {
+  res <- freq(c(1, 2, 3), x = c(4, 5, 6), styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})

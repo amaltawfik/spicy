@@ -50,6 +50,14 @@ test_that("print.spicy_freq_table handles weighted tables", {
 })
 
 
+test_that("print.spicy_freq_table shows generic weight label when weight_var is empty", {
+  df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
+  ftab <- freq(df, x, weights = w, styled = FALSE)
+  attr(ftab, "weight_var") <- NULL
+  output <- capture.output(print(ftab))
+  expect_true(any(grepl("Weight: \\(applied\\)", output)))
+})
+
 test_that("print.spicy_freq_table handles variables without labels or missing values", {
   # Vector without label and no missing values
   x <- factor(c("A", "B", "B", "A", "C", "A"))
