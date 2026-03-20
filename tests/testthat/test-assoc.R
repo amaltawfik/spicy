@@ -373,3 +373,88 @@ test_that("print.spicy_assoc_detail formats NA as --", {
   out <- capture.output(print(res))
   expect_true(any(grepl("--", out)))
 })
+
+test_that("print.spicy_assoc_detail formats p < 0.001", {
+  tab <- matrix(c(50L, 0L, 0L, 50L), 2, 2)
+  class(tab) <- "table"
+  res <- cramer_v(tab, detail = TRUE)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("< 0.001", out)))
+})
+
+test_that(".assoc_result detail = FALSE returns scalar", {
+  tab <- tab_3x3()
+  res <- gamma_gk(tab, detail = FALSE)
+  expect_length(res, 1)
+  expect_false(inherits(res, "spicy_assoc_detail"))
+})
+
+test_that(".assoc_result conf_level = NULL with .include_se = TRUE", {
+  tab <- tab_3x3()
+  res <- gamma_gk(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true("se" %in% names(res))
+  expect_true("p_value" %in% names(res))
+  expect_false("ci_lower" %in% names(res))
+})
+
+test_that("cramer_v conf_level = NULL with .include_se = TRUE", {
+  tab <- tab_3x3()
+  res <- cramer_v(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true("se" %in% names(res))
+})
+
+test_that("phi conf_level = NULL with .include_se = TRUE", {
+  tab <- tab_2x2()
+  res <- phi(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true("se" %in% names(res))
+})
+
+test_that("yule_q conf_level = NULL omits CI", {
+  tab <- tab_2x2()
+  res <- yule_q(tab, detail = TRUE, conf_level = NULL)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true("p_value" %in% names(res))
+  expect_false("ci_lower" %in% names(res))
+})
+
+test_that("contingency_coef conf_level = NULL with .include_se = TRUE", {
+  tab <- tab_3x3()
+  res <- contingency_coef(
+    tab,
+    detail = TRUE,
+    conf_level = NULL,
+    .include_se = TRUE
+  )
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true("se" %in% names(res))
+})
+
+test_that("kendall_tau_b warns when denom = 0", {
+  tab <- matrix(c(0L, 0L, 3L, 7L), 2, 2)
+  class(tab) <- "table"
+  expect_warning(kendall_tau_b(tab, detail = TRUE), "undefined")
+})
+
+test_that("kendall_tau_b se_sq clamped to 0 when tiny negative", {
+  tab <- matrix(c(10L, 0L, 0L, 10L), 2, 2)
+  class(tab) <- "table"
+  res <- kendall_tau_b(tab, detail = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+})
+
+test_that("lambda_gk row detail covers L_row_max branch", {
+  tab <- matrix(c(10L, 0L, 0L, 5L), 2, 2)
+  class(tab) <- "table"
+  res <- lambda_gk(tab, direction = "row", detail = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+})
+
+test_that("lambda_gk column detail covers L_col_max branch", {
+  tab <- matrix(c(10L, 0L, 0L, 5L), 2, 2)
+  class(tab) <- "table"
+  res <- lambda_gk(tab, direction = "column", detail = TRUE)
+  expect_s3_class(res, "spicy_assoc_detail")
+})

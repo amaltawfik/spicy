@@ -26,7 +26,6 @@
 .assoc_result <- function(
   estimate,
   se = NA_real_,
-  detail = FALSE,
   conf_level = 0.95,
   p_value = NA_real_,
   lower_bound = -Inf,
@@ -34,9 +33,6 @@
   .include_se = FALSE,
   digits = 3L
 ) {
-  if (!detail) {
-    return(estimate)
-  }
   if (is.null(conf_level) || is.na(conf_level)) {
     out <- if (.include_se) {
       c(estimate = estimate, se = se, p_value = p_value)
@@ -536,7 +532,6 @@ yule_q <- function(
   .assoc_result(
     Q,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = -1,
@@ -678,7 +673,6 @@ lambda_gk <- function(
   .assoc_result(
     est,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = 0,
@@ -769,7 +763,6 @@ goodman_kruskal_tau <- function(
   .assoc_result(
     unname(tau),
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = unname(p_value),
     lower_bound = 0,
@@ -922,7 +915,6 @@ uncertainty_coef <- function(
   .assoc_result(
     U,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = 0,
@@ -1037,7 +1029,6 @@ gamma_gk <- function(
   .assoc_result(
     G,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = -1,
@@ -1137,7 +1128,6 @@ kendall_tau_b <- function(
   .assoc_result(
     tau_b,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = -1,
@@ -1190,14 +1180,6 @@ kendall_tau_c <- function(
   C <- cd$C
   D <- cd$D
 
-  if (m <= 1) {
-    warning(
-      "Tau-c requires at least 2 rows and 2 columns; returning NA.",
-      call. = FALSE
-    )
-    return(c(estimate = NA_real_))
-  }
-
   tau_c <- 2 * m * (C - D) / (n^2 * (m - 1))
 
   if (!detail) {
@@ -1216,7 +1198,6 @@ kendall_tau_c <- function(
   .assoc_result(
     tau_c,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = -1,
@@ -1332,7 +1313,6 @@ somers_d <- function(
   .assoc_result(
     d_val,
     se,
-    detail = TRUE,
     conf_level = conf_level,
     p_value = p_value,
     lower_bound = -1,
