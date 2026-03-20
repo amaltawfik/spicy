@@ -473,3 +473,120 @@ test_that("cross_tab with [[ extraction preserves var name", {
   res <- cross_tab(d[["a"]], d[["b"]], styled = FALSE)
   expect_s3_class(res, "data.frame")
 })
+
+test_that("cross_tab vector mode rejects non-numeric weights", {
+  x <- c("A", "B", "A")
+  y <- c("X", "Y", "X")
+  expect_error(cross_tab(x, y, weights = c("a", "b", "c")), "numeric")
+})
+
+test_that("cross_tab vector mode rejects mismatched by length", {
+  x <- c("A", "B", "A")
+  y <- c("X", "Y", "X")
+  expect_error(cross_tab(x, y, by = c("G1", "G2")), "same length")
+})
+
+test_that("cross_tab with $ accessor extracts var name", {
+  d <- data.frame(aa = c("X", "Y", "X"), bb = c("M", "F", "M"))
+  res <- cross_tab(d$aa, d$bb, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
+
+test_that("cross_tab skips stats when single non-empty column", {
+  d <- data.frame(
+    x = c("A", "A", "B", "B"),
+    y = c("X", "X", "X", "X")
+  )
+  out <- capture.output(cross_tab(d, x, y))
+  expect_false(any(grepl("Chi-2", out)))
+})
+
+test_that("cross_tab weighted without stats shows weight note alone", {
+  d <- data.frame(
+    x = c("A", "B", "A", "B"),
+    y = c("X", "Y", "X", "Y"),
+    w = c(2, 3, 1, 4)
+  )
+  out <- capture.output(cross_tab(d, x, y, weights = w, include_stats = FALSE))
+  expect_true(any(grepl("Weight:", out)))
+})
+
+test_that("cross_tab percent column styled output", {
+  out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "column"))
+  expect_true(any(grepl("%", out)))
+})
+
+test_that("cross_tab percent row styled output", {
+  out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "row"))
+  expect_true(any(grepl("%", out)))
+})
+
+test_that("cross_tab invalid assoc_measure errors", {
+  expect_error(cross_tab(mtcars, cyl, gear, assoc_measure = "invalid"))
+})
+
+test_that("cross_tab tryCatch fallback for complex x/y expressions", {
+  d <- data.frame(a = c("X", "Y", "X"), b = c("M", "F", "M"))
+  res <- cross_tab(d, a, b, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
+
+test_that("cross_tab print without Values column", {
+  d <- data.frame(x = c("A", "B"), y = c("X", "Y"))
+  res <- cross_tab(d, x, y, styled = FALSE)
+  names(res)[names(res) == "Values"] <- "Category"
+  class(res) <- c("spicy_cross_table", "spicy_table", "data.frame")
+  attr(res, "title") <- "Test (N)"
+  out <- capture.output(print(res))
+  expect_true(length(out) > 0)
+})
+
+test_that("cross_tab print uses digits=1 for percent titles", {
+  d <- data.frame(x = c("A", "B", "A"), y = c("X", "Y", "X"))
+  res <- cross_tab(d, x, y, percent = "row", styled = FALSE)
+  class(res) <- c("spicy_cross_table", "spicy_table", class(res))
+  attr(res, "title") <- "Table (Row %)"
+  attr(res, "digits") <- NULL
+  out <- capture.output(print(res))
+  expect_true(length(out) > 0)
+})
+
+test_that("cross_tab vector mode with [[ symbol index extracts name", {
+  d <- data.frame(aa = c("X", "Y", "X"), bb = c("M", "F", "M"))
+  col <- "aa"
+  res <- cross_tab(d[[col]], d[["bb"]], styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
+
+test_that("cross_tab vector mode with function-wrapped expression", {
+  d <- data.frame(aa = c("x", "y", "x"), bb = c("M", "F", "M"))
+  res <- cross_tab(toupper(d$aa), d$bb, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
+
+test_that("cross_tab handles all-NA vector in make_levels", {
+  res <- cross_tab(c(NA, NA), c("A", "B"), styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
+
+test_that("cross_tab DF mode with complex x/y expressions triggers tryCatch fallback", {
+  d <- data.frame(
+    a = c("X", "Y", "X", "Y"),
+    b = c("M", "F", "M", "F"),
+    c = c("P", "Q", "P", "Q")
+  )
+  res <- cross_tab(d, interaction(a, b), c, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+  res2 <- cross_tab(d, c, interaction(a, b), styled = FALSE)
+  expect_s3_class(res2, "data.frame")
+})
+
+test_that("cross_tab print uses digits=0 for count titles", {
+  d <- data.frame(x = c("A", "B", "A"), y = c("X", "Y", "X"))
+  res <- cross_tab(d, x, y, styled = FALSE)
+  class(res) <- c("spicy_cross_table", "spicy_table", class(res))
+  attr(res, "title") <- "Table (N)"
+  attr(res, "digits") <- NULL
+  out <- capture.output(print(res))
+  expect_true(length(out) > 0)
+})

@@ -320,13 +320,9 @@ cross_tab <- function(
     x_name <- tryCatch(rlang::as_name(x_expr), error = function(e) {
       get_var_name(rlang::get_expr(x_expr))
     })
-    y_name <- if (!rlang::quo_is_null(y_expr)) {
-      tryCatch(rlang::as_name(y_expr), error = function(e) {
-        get_var_name(rlang::get_expr(y_expr))
-      })
-    } else {
-      NULL
-    }
+    y_name <- tryCatch(rlang::as_name(y_expr), error = function(e) {
+      get_var_name(rlang::get_expr(y_expr))
+    })
 
     if (!rlang::quo_is_null(by_expr)) {
       by_name <- parse_by_name(rlang::expr_text(by_expr))
@@ -357,23 +353,11 @@ cross_tab <- function(
     w <- rep(1, nrow(data))
   }
 
-  if (rescale) {
-    if (rlang::quo_is_null(w_expr)) {
-      warning(
-        "`rescale = TRUE` has no effect since no weights provided.",
-        call. = FALSE
-      )
-    } else {
-      w_sum <- sum(w, na.rm = TRUE)
-      if (!is.finite(w_sum) || w_sum <= 0) {
-        stop(
-          "`rescale = TRUE` requires a strictly positive sum of weights.",
-          call. = FALSE
-        )
-      }
-      # Actual rescaling deferred to compute_ctab() so it operates
-      # only on complete cases (matching Stata behavior).
-    }
+  if (rescale && rlang::quo_is_null(w_expr)) {
+    warning(
+      "`rescale = TRUE` has no effect since no weights provided.",
+      call. = FALSE
+    )
   }
 
   data$`..spicy_w` <- w
@@ -385,12 +369,10 @@ cross_tab <- function(
     names(row) <- names(template_df)
 
     nm <- names(values)
-    if (!is.null(nm)) {
-      for (i in seq_along(values)) {
-        key <- nm[[i]]
-        if (!is.na(key) && nzchar(key) && key %in% names(row)) {
-          row[[key]] <- values[[i]]
-        }
+    for (i in seq_along(values)) {
+      key <- nm[[i]]
+      if (nzchar(key) && key %in% names(row)) {
+        row[[key]] <- values[[i]]
       }
     }
 
@@ -400,22 +382,13 @@ cross_tab <- function(
   }
 
   append_rows <- function(df, rows) {
-    if (is.null(rows)) {
-      return(df)
-    }
     if (inherits(rows, "data.frame")) {
       rows <- list(rows)
     }
-
-    for (r in rows) {
-      if (is.null(r)) {
-        next
-      }
-      df <- rbind(df, r)
-    }
-
-    rownames(df) <- NULL
-    df
+    rows <- rows[!vapply(rows, is.null, logical(1))]
+    out <- do.call(rbind, c(list(df), rows))
+    rownames(out) <- NULL
+    out
   }
 
   compute_ctab <- function(df, group_label = NULL) {
@@ -435,9 +408,13 @@ cross_tab <- function(
       complete <- complete.cases(df_sub[, c("x_val", "y_val", "w_val")])
       n_complete <- sum(complete)
       w_sum_complete <- sum(df_sub$w_val[complete], na.rm = TRUE)
-      if (w_sum_complete > 0) {
-        df_sub$w_val <- df_sub$w_val * n_complete / w_sum_complete
+      if (!is.finite(w_sum_complete) || w_sum_complete <= 0) {
+        stop(
+          "`rescale = TRUE` requires a strictly positive sum of weights.",
+          call. = FALSE
+        )
       }
+      df_sub$w_val <- df_sub$w_val * n_complete / w_sum_complete
     }
 
     tab_full <- stats::xtabs(w_val ~ x_val + y_val, data = df_sub)
@@ -538,162 +515,145 @@ cross_tab <- function(
       drop = FALSE
     ]
     if (include_stats && all(dim(tab_stats) > 1)) {
-      if (sum(rowSums(tab_stats) > 0) > 1 && sum(colSums(tab_stats) > 0) > 1) {
-        # Yates correction only meaningful for 2x2 tables
-        correct_used <- isTRUE(correct) && all(dim(tab_stats) == c(2, 2))
-        chi <- suppressWarnings(stats::chisq.test(
-          tab_stats,
-          correct = correct_used,
-          simulate.p.value = simulate_p,
-          B = simulate_B
-        ))
+      # Yates correction only meaningful for 2x2 tables
+      correct_used <- isTRUE(correct) && all(dim(tab_stats) == c(2, 2))
+      chi <- suppressWarnings(stats::chisq.test(
+        tab_stats,
+        correct = correct_used,
+        simulate.p.value = simulate_p,
+        B = simulate_B
+      ))
 
-        chi2 <- as.numeric(chi$statistic)
-        df_ <- as.numeric(chi$parameter)
-        pval <- as.numeric(chi$p.value)
+      chi2 <- as.numeric(chi$statistic)
+      df_ <- as.numeric(chi$parameter)
+      pval <- as.numeric(chi$p.value)
 
-        # Resolve association measure
-        assoc_choice <- assoc_measure
-        if (assoc_choice == "auto") {
-          both_ordered <- is.ordered(x_val) && is.ordered(y_val)
-          assoc_choice <- if (both_ordered) "tau_b" else "cramer_v"
-        }
+      # Resolve association measure
+      assoc_choice <- assoc_measure
+      if (assoc_choice == "auto") {
+        both_ordered <- is.ordered(x_val) && is.ordered(y_val)
+        assoc_choice <- if (both_ordered) "tau_b" else "cramer_v"
+      }
 
-        # Compute association measure
-        assoc_result <- NULL
-        assoc_name <- NULL
-        if (assoc_choice != "none") {
-          assoc_out <- tryCatch(
-            suppressWarnings(switch(
-              assoc_choice,
-              cramer_v = {
-                assoc_name <- "Cramer's V"
-                cramer_v(tab_stats, detail = TRUE)
-              },
-              phi = {
-                assoc_name <- "Phi"
-                phi(tab_stats, detail = TRUE)
-              },
-              gamma = {
-                assoc_name <- "Goodman-Kruskal Gamma"
-                gamma_gk(tab_stats, detail = TRUE)
-              },
-              tau_b = {
-                assoc_name <- "Kendall's Tau-b"
-                kendall_tau_b(tab_stats, detail = TRUE)
-              },
-              tau_c = {
-                assoc_name <- "Kendall's Tau-c"
-                kendall_tau_c(tab_stats, detail = TRUE)
-              },
-              somers_d = {
-                assoc_name <- "Somers' D"
-                somers_d(tab_stats, "symmetric", detail = TRUE)
-              },
-              lambda = {
-                assoc_name <- "Lambda"
-                lambda_gk(tab_stats, "symmetric", detail = TRUE)
-              }
-            )),
-            error = function(e) NULL
-          )
-          if (!is.null(assoc_out)) {
-            assoc_result <- assoc_out
-          }
-        }
-
-        estimate <- if (!is.null(assoc_result)) {
-          assoc_result[["estimate"]]
-        } else {
-          NA_real_
-        }
-
-        p_str <- if (is.na(pval)) {
-          "= NA"
-        } else if (pval < 0.001) {
-          "< 0.001"
-        } else {
-          paste0("= ", formatC(pval, format = "f", digits = 3))
-        }
-
-        chi2_str <- ifelse(
-          is.nan(chi2) | is.na(chi2),
-          "NA",
-          formatC(chi2, format = "f", digits = 1)
+      # Compute association measure
+      assoc_result <- NULL
+      assoc_name <- NULL
+      if (assoc_choice != "none") {
+        assoc_labels <- c(
+          cramer_v = "Cramer's V",
+          phi = "Phi",
+          gamma = "Goodman-Kruskal Gamma",
+          tau_b = "Kendall's Tau-b",
+          tau_c = "Kendall's Tau-c",
+          somers_d = "Somers' D",
+          lambda = "Lambda"
         )
-        note <- paste0(
-          "Chi-2(",
-          df_,
-          ") = ",
-          chi2_str,
-          ", p ",
-          p_str,
-          if (simulate_p) " (simulated)"
+        assoc_out <- tryCatch(
+          suppressWarnings(switch(
+            assoc_choice,
+            cramer_v = cramer_v(tab_stats, detail = TRUE),
+            phi = phi(tab_stats, detail = TRUE),
+            gamma = gamma_gk(tab_stats, detail = TRUE),
+            tau_b = kendall_tau_b(tab_stats, detail = TRUE),
+            tau_c = kendall_tau_c(tab_stats, detail = TRUE),
+            somers_d = somers_d(tab_stats, "symmetric", detail = TRUE),
+            lambda = lambda_gk(tab_stats, "symmetric", detail = TRUE)
+          )),
+          error = function(e) NULL
         )
-
-        if (!is.null(assoc_name) && !is.na(estimate)) {
-          est_str <- formatC(estimate, format = "f", digits = 2)
-          assoc_line <- paste0(assoc_name, " = ", est_str)
-          if (isTRUE(assoc_ci) && !is.null(assoc_result)) {
-            ci_lo <- assoc_result[["ci_lower"]]
-            ci_hi <- assoc_result[["ci_upper"]]
-            if (!is.na(ci_lo) && !is.na(ci_hi)) {
-              assoc_line <- paste0(
-                assoc_line,
-                ", 95% CI [",
-                formatC(ci_lo, format = "f", digits = 2),
-                ", ",
-                formatC(ci_hi, format = "f", digits = 2),
-                "]"
-              )
-            }
-          }
-          note <- paste0(note, "\n", assoc_line)
+        if (!is.null(assoc_out)) {
+          assoc_result <- assoc_out
+          assoc_name <- assoc_labels[[assoc_choice]]
         }
+      }
 
-        if (isTRUE(correct_used)) {
-          note <- paste0(note, "\nYates continuity correction applied.")
-        }
-
-        # Store numeric attributes
-        attr(df_out, "chi2") <- chi2
-        attr(df_out, "df") <- df_
-        attr(df_out, "p_value") <- pval
-        attr(df_out, "assoc_measure") <- assoc_name
-        attr(df_out, "assoc_value") <- estimate
-        attr(df_out, "assoc_result") <- assoc_result
-
-        expected <- chi$expected
-        small5 <- sum(expected < 5, na.rm = TRUE)
-        small1 <- sum(expected < 1, na.rm = TRUE)
-        prop5 <- small5 / length(expected)
-        if ((prop5 > 0.20 || small1 > 0) && !simulate_p) {
-          min_exp <- round(min(expected, na.rm = TRUE), 2)
-          note <- paste0(
-            note,
-            "\nWarning: ",
-            small5,
-            " expected cell",
-            if (small5 > 1) "s" else "",
-            " < 5 (",
-            round(prop5 * 100, 1),
-            "%).",
-            if (small1 > 0) {
-              paste0(
-                " ",
-                small1,
-                " expected cell",
-                if (small1 > 1) "s" else "",
-                " < 1."
-              )
-            },
-            " Minimum expected = ",
-            min_exp,
-            ". Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`."
-          )
-        }
+      estimate <- if (!is.null(assoc_result)) {
+        assoc_result[["estimate"]]
       } else {
-        note <- "Chi-2 not computed: insufficient data (only one non-empty row/column)."
+        NA_real_
+      }
+
+      p_str <- if (pval < 0.001) {
+        "< 0.001"
+      } else {
+        paste0("= ", formatC(pval, format = "f", digits = 3))
+      }
+
+      chi2_str <- ifelse(
+        is.nan(chi2) | is.na(chi2),
+        "NA",
+        formatC(chi2, format = "f", digits = 1)
+      )
+      note <- paste0(
+        "Chi-2(",
+        df_,
+        ") = ",
+        chi2_str,
+        ", p ",
+        p_str,
+        if (simulate_p) " (simulated)"
+      )
+
+      if (!is.null(assoc_name) && !is.na(estimate)) {
+        est_str <- formatC(estimate, format = "f", digits = 2)
+        assoc_line <- paste0(assoc_name, " = ", est_str)
+        if (isTRUE(assoc_ci) && !is.null(assoc_result)) {
+          ci_lo <- assoc_result[["ci_lower"]]
+          ci_hi <- assoc_result[["ci_upper"]]
+          if (!is.na(ci_lo) && !is.na(ci_hi)) {
+            assoc_line <- paste0(
+              assoc_line,
+              ", 95% CI [",
+              formatC(ci_lo, format = "f", digits = 2),
+              ", ",
+              formatC(ci_hi, format = "f", digits = 2),
+              "]"
+            )
+          }
+        }
+        note <- paste0(note, "\n", assoc_line)
+      }
+
+      if (isTRUE(correct_used)) {
+        note <- paste0(note, "\nYates continuity correction applied.")
+      }
+
+      # Store numeric attributes
+      attr(df_out, "chi2") <- chi2
+      attr(df_out, "df") <- df_
+      attr(df_out, "p_value") <- pval
+      attr(df_out, "assoc_measure") <- assoc_name
+      attr(df_out, "assoc_value") <- estimate
+      attr(df_out, "assoc_result") <- assoc_result
+
+      expected <- chi$expected
+      small5 <- sum(expected < 5, na.rm = TRUE)
+      small1 <- sum(expected < 1, na.rm = TRUE)
+      prop5 <- small5 / length(expected)
+      if ((prop5 > 0.20 || small1 > 0) && !simulate_p) {
+        min_exp <- round(min(expected, na.rm = TRUE), 2)
+        note <- paste0(
+          note,
+          "\nWarning: ",
+          small5,
+          " expected cell",
+          if (small5 > 1) "s" else "",
+          " < 5 (",
+          round(prop5 * 100, 1),
+          "%).",
+          if (small1 > 0) {
+            paste0(
+              " ",
+              small1,
+              " expected cell",
+              if (small1 > 1) "s" else "",
+              " < 1."
+            )
+          },
+          " Minimum expected = ",
+          min_exp,
+          ". Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`."
+        )
       }
     }
 
@@ -825,23 +785,23 @@ print.spicy_cross_table <- function(x, digits = NULL, ...) {
 
   df_display <- x
 
-  n_row <- if ("Values" %in% names(df_display)) {
+  is_n_row <- if ("Values" %in% names(df_display)) {
     df_display$Values == "N"
   } else {
     rep(FALSE, nrow(df_display))
   }
-  n_col <- "N" %in% names(df_display)
+  has_n_col <- "N" %in% names(df_display)
 
   df_display[] <- Map(
     function(col, name) {
       if (is.numeric(col)) {
-        formatted <- if (n_col && name == "N") {
-          # Colonne N : entiers
+        formatted <- if (has_n_col && name == "N") {
+          # N column: always integers
           sprintf("%.0f", col)
-        } else if (any(n_row)) {
-          # Ligne N : entiers
+        } else if (any(is_n_row)) {
+          # N row: integers for that row, decimals elsewhere
           ifelse(
-            n_row,
+            is_n_row,
             sprintf("%.0f", col),
             sprintf(paste0("%.", digits, "f"), col)
           )

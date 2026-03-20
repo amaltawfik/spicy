@@ -32,3 +32,15 @@ test_that("spicy_print_table aligns Category and Values left", {
   # Rough alignment test (spaces after "Valid")
   expect_true(any(grepl("^ Valid", output)))
 })
+
+test_that("build_ascii_table supports wide padding", {
+  df <- data.frame(A = 1:2, B = c("x", "y"))
+  txt <- build_ascii_table(df, padding = "wide")
+  expect_type(txt, "character")
+})
+
+test_that("build_ascii_table supports bottom_line", {
+  df <- data.frame(A = 1:2, B = c("x", "y"))
+  txt <- build_ascii_table(df, bottom_line = TRUE)
+  expect_true(grepl("\u2534", txt))
+})

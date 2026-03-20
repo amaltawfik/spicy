@@ -44,10 +44,11 @@ test_that("code_book() errors on non-data.frame", {
 })
 
 test_that("code_book() errors when DT is not available", {
-  skip_if(requireNamespace("DT", quietly = TRUE) == FALSE)
-  # This test just verifies the guard exists — DT is available in test env
-  # so we test the positive path above
-  expect_true(TRUE)
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) if (pkg == "DT") FALSE else TRUE,
+    .package = "base"
+  )
+  expect_error(code_book(mtcars), "Package 'DT' is required")
 })
 
 test_that("code_book() passes values and include_na to varlist", {

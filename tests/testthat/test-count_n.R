@@ -194,3 +194,8 @@ test_that("count_n throws error when count = NA", {
     fixed = TRUE
   )
 })
+
+test_that("count_n throws error for invalid special values", {
+  df <- tibble::tibble(x = c(1, 2, 3))
+  expect_error(count_n(df, special = "bogus"), "Invalid `special`")
+})
