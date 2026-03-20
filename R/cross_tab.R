@@ -107,7 +107,17 @@ cross_tab <- function(
   rescale = FALSE,
   percent = c("none", "column", "row"),
   include_stats = TRUE,
-  assoc_measure = "auto",
+  assoc_measure = c(
+    "auto",
+    "cramer_v",
+    "phi",
+    "gamma",
+    "tau_b",
+    "tau_c",
+    "somers_d",
+    "lambda",
+    "none"
+  ),
   assoc_ci = FALSE,
   correct = FALSE,
   simulate_p = FALSE,
@@ -169,6 +179,7 @@ cross_tab <- function(
   }
 
   percent <- match.arg(percent)
+  assoc_measure <- match.arg(assoc_measure)
   if (is.null(digits)) {
     digits <- if (percent == "none") 0 else 1
   }
@@ -210,6 +221,21 @@ cross_tab <- function(
     rlang::as_label(expr)
   }
 
+  parse_by_name <- function(expr_txt, fallback_expr = NULL) {
+    expr_txt <- gsub("^~", "", expr_txt)
+    expr_txt <- gsub("\\s+", "", expr_txt)
+    if (grepl("^interaction\\(", expr_txt)) {
+      inside <- gsub("^interaction\\(|\\)$", "", expr_txt)
+      parts <- unlist(strsplit(inside, ","))
+      parts <- trimws(gsub(".*\\$", "", parts))
+      paste(parts, collapse = " x ")
+    } else if (!is.null(fallback_expr)) {
+      get_var_name(fallback_expr)
+    } else {
+      trimws(gsub(".*\\$", "", expr_txt))
+    }
+  }
+
   make_levels <- function(v) {
     vals <- unique(v[!is.na(v)])
     if (length(vals) == 0) {
@@ -229,7 +255,10 @@ cross_tab <- function(
     # Weight
     if (!is.null(weights)) {
       if (!is.numeric(weights)) {
-        stop("When using vector input, `weights` must be a numeric vector.")
+        stop(
+          "When using vector input, `weights` must be a numeric vector.",
+          call. = FALSE
+        )
       }
       if (length(weights) != length(x_vals)) {
         stop(
@@ -246,7 +275,10 @@ cross_tab <- function(
     if (!is.null(by)) {
       by_vals <- by
       if (length(by_vals) != length(x_vals)) {
-        stop("`by` must be the same length as `x` when using vector input.")
+        stop(
+          "`by` must be the same length as `x` when using vector input.",
+          call. = FALSE
+        )
       }
     } else {
       by_vals <- rep(NA, length(x_vals))
@@ -275,18 +307,7 @@ cross_tab <- function(
     y_name <- get_var_name(call_x)
 
     if (!missing(by) && !identical(call_by, quote(NULL))) {
-      expr_txt <- deparse(call_by)
-      expr_txt <- gsub("^~", "", expr_txt)
-      expr_txt <- gsub("\\s+", "", expr_txt)
-
-      if (grepl("^interaction\\(", expr_txt)) {
-        inside <- gsub("^interaction\\(|\\)$", "", expr_txt)
-        parts <- unlist(strsplit(inside, ","))
-        parts <- trimws(gsub(".*\\$", "", parts))
-        by_name <- paste(parts, collapse = " x ")
-      } else {
-        by_name <- get_var_name(call_by)
-      }
+      by_name <- parse_by_name(deparse(call_by), fallback_expr = call_by)
     } else {
       by_name <- NULL
     }
@@ -308,28 +329,10 @@ cross_tab <- function(
     }
 
     if (!rlang::quo_is_null(by_expr)) {
-      expr_txt <- rlang::expr_text(by_expr)
-      expr_txt <- gsub("^~", "", expr_txt)
-      expr_txt <- gsub("\\s+", "", expr_txt)
-
-      if (grepl("^interaction\\(", expr_txt)) {
-        inside <- gsub("^interaction\\(|\\)$", "", expr_txt)
-        parts <- unlist(strsplit(inside, ","))
-        parts <- trimws(gsub(".*\\$", "", parts))
-        by_name <- paste(parts, collapse = " x ")
-      } else {
-        by_name <- trimws(gsub(".*\\$", "", expr_txt))
-      }
+      by_name <- parse_by_name(rlang::expr_text(by_expr))
     } else {
       by_name <- NULL
     }
-  }
-
-  if (rlang::quo_is_null(y_expr)) {
-    stop(
-      "You must specify a `y` variable (e.g., cross_tab(data, x, y)).",
-      call. = FALSE
-    )
   }
 
   if (!rlang::quo_is_null(w_expr)) {
@@ -466,11 +469,10 @@ cross_tab <- function(
         total_values <- colSums(tab_perc, na.rm = TRUE)
         n_values <- colSums(tab_full, na.rm = TRUE)
 
-        df_out$Total <- if (sum(tab_full) > 0) {
-          round(rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100, digits)
-        } else {
-          rep(0, nrow(df_out))
-        }
+        df_out$Total <- round(
+          rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100,
+          digits
+        )
 
         total_row <- make_named_row(
           df_out,
@@ -501,11 +503,7 @@ cross_tab <- function(
         }
 
         col_tot <- colSums(tab_full, na.rm = TRUE)
-        col_perc <- if (sum(col_tot) > 0) {
-          round(col_tot / sum(col_tot) * 100, digits)
-        } else {
-          rep(0, length(col_tot))
-        }
+        col_perc <- round(col_tot / sum(col_tot) * 100, digits)
         names(col_perc) <- names(col_tot)
 
         total_values <- c(
@@ -595,10 +593,6 @@ cross_tab <- function(
               lambda = {
                 assoc_name <- "Lambda"
                 lambda_gk(tab_stats, "symmetric", detail = TRUE)
-              },
-              {
-                assoc_name <- "Cramer's V"
-                cramer_v(tab_stats, detail = TRUE)
               }
             )),
             error = function(e) NULL
@@ -721,8 +715,7 @@ cross_tab <- function(
 
     # Add weighting information to the note when applicable
     if (!rlang::quo_is_null(w_expr) && !isTRUE(all(w == 1))) {
-      w_name <- deparse(call_weights)
-      w_name <- sub(".*\\$", "", w_name) # keep only the variable name after $
+      w_name <- get_var_name(call_weights)
       w_text <- paste0("Weight: ", w_name)
       if (isTRUE(rescale)) {
         w_text <- paste0(w_text, " (rescaled)")
