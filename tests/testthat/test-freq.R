@@ -260,3 +260,57 @@ test_that("freq() warns when data is vector and x is given", {
   )
   expect_s3_class(res, "data.frame")
 })
+
+test_that("freq() errors with invalid digits", {
+  expect_error(freq(c(1, 2), digits = -1), "non-negative")
+  expect_error(freq(c(1, 2), digits = "a"), "non-negative")
+})
+
+test_that("freq() validates sort early", {
+  expect_error(freq(c(1, 2), sort = "bad"), "Invalid value for 'sort'")
+})
+
+test_that("freq() warns with NA weights", {
+  df <- data.frame(x = c("A", "B", "C"), w = c(1, NA, 3))
+  expect_warning(
+    res <- freq(df, x, weights = w, styled = FALSE),
+    "NA values in `weights`"
+  )
+})
+
+test_that("freq() errors when total frequency is zero", {
+  expect_error(
+    freq(character(0), styled = FALSE),
+    "Total frequency is zero"
+  )
+  expect_error(
+    freq(c("A", "B"), weights = c(0, 0), rescale = FALSE, styled = FALSE),
+    "Total frequency is zero"
+  )
+})
+
+test_that("freq() NA representation is consistent with and without weights", {
+  x <- c("A", "B", NA)
+  res_plain <- freq(x, styled = FALSE)
+  df <- data.frame(x = x, w = c(1, 2, 3))
+  res_weighted <- freq(df, x, weights = w, styled = FALSE)
+
+  # Both should use true NA, not "<NA>" string
+  expect_true(any(is.na(res_plain$value)))
+  expect_true(any(is.na(res_weighted$value)))
+  expect_false(any(res_plain$value == "<NA>", na.rm = TRUE))
+  expect_false(any(res_weighted$value == "<NA>", na.rm = TRUE))
+})
+
+test_that("freq() cum_valid_prop is NA for missing rows", {
+  x <- c("A", "B", NA, "A")
+  res <- freq(x, cum = TRUE, valid = TRUE, styled = FALSE)
+  na_row <- res[is.na(res$value), ]
+  expect_true(is.na(na_row$cum_valid_prop))
+})
+
+test_that("freq() styled = FALSE returns plain data.frame", {
+  res <- freq(c("A", "B"), styled = FALSE)
+  expect_equal(class(res), "data.frame")
+  expect_false(inherits(res, "spicy_freq_table"))
+})

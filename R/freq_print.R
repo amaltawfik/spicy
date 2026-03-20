@@ -78,8 +78,8 @@ print.spicy_freq_table <- function(x, ...) {
   var_name_clean <- sub("^.*\\$", "", var_name)
   data_name_clean <- sub("\\$.*$", "", data_name)
 
-  valid_block <- df[!is.na(df$value) & df$value != "<NA>", , drop = FALSE]
-  missing_block <- df[is.na(df$value) | df$value == "<NA>", , drop = FALSE]
+  valid_block <- df[!is.na(df$value), , drop = FALSE]
+  missing_block <- df[is.na(df$value), , drop = FALSE]
 
   show_valid_col <- nrow(missing_block) > 0
 
@@ -105,11 +105,7 @@ print.spicy_freq_table <- function(x, ...) {
     }
     out <- data.frame(
       Category = c(category, rep("", nrow(block) - 1L)),
-      Values = ifelse(
-        is.na(block$value) | block$value == "<NA>",
-        "NA",
-        block$value
-      ),
+      Values = ifelse(is.na(block$value), "NA", block$value),
       `Freq.` = fmt_int(block$n),
       Percent = fmt_pct(block$prop),
       stringsAsFactors = FALSE,

@@ -150,6 +150,24 @@ freq <- function(
   ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
+  labelled_levels <- switch(
+    labelled_levels,
+    "p" = "prefixed",
+    "l" = "labels",
+    "v" = "values",
+    labelled_levels
+  )
+
+  if (!is.numeric(digits) || length(digits) != 1L || digits < 0) {
+    stop("`digits` must be a single non-negative number.", call. = FALSE)
+  }
+
+  if (!sort %in% c("", "+", "-", "name+", "name-")) {
+    stop(
+      "Invalid value for 'sort'. Use '+', '-', 'name+', or 'name-'.",
+      call. = FALSE
+    )
+  }
 
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
@@ -216,7 +234,10 @@ freq <- function(
     if (any(!is.finite(weights[!is.na(weights)]))) {
       stop("`weights` must contain only finite numeric values.", call. = FALSE)
     }
-    weights[is.na(weights)] <- 0
+    if (any(is.na(weights))) {
+      warning("NA values in `weights` are treated as zero.", call. = FALSE)
+      weights[is.na(weights)] <- 0
+    }
 
     if (rescale) {
       w_sum <- sum(weights, na.rm = TRUE)
@@ -238,20 +259,12 @@ freq <- function(
       )
     }
 
-    mode_display <- switch(
-      labelled_levels,
-      "p" = "prefixed",
-      "l" = "labels",
-      "v" = "values",
-      labelled_levels
-    )
-
     if (!is.null(na_val)) {
       x_values <- unclass(x)
       x[x_values %in% na_val] <- NA
     }
 
-    x <- labelled::to_factor(x, levels = mode_display, nolabel_to_na = FALSE)
+    x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   } else {
     if (!is.null(na_val)) x[x %in% na_val] <- NA
   }
@@ -267,15 +280,15 @@ freq <- function(
   n_missing <- if (is.null(weights)) sum(is.na(x)) else sum(weights[is.na(x)])
   n_valid <- n_total - n_missing
 
+  if (n_total == 0) {
+    stop("Total frequency is zero; cannot compute proportions.", call. = FALSE)
+  }
+
   if (is.null(weights)) {
     tab <- table(x, useNA = "ifany")
   } else {
     f <- addNA(x, ifany = TRUE)
     tab <- tapply(weights, f, sum)
-
-    if (any(is.na(names(tab)))) {
-      names(tab)[is.na(names(tab))] <- "<NA>"
-    }
   }
 
   df <- data.frame(
@@ -285,32 +298,28 @@ freq <- function(
   )
 
   df$prop <- df$n / n_total
-  df$valid_prop <- if (valid) {
-    ifelse(df$value == "<NA>", NA, df$n / n_valid)
+  df$valid_prop <- if (valid && n_valid > 0) {
+    ifelse(is.na(df$value), NA, df$n / n_valid)
   } else {
     NA
   }
 
-  # --- Tri
+  # --- Sort
   if (sort != "") {
     decreasing <- sort %in% c("-", "name-")
-    sort_col <- switch(
-      sort,
-      "+" = "n",
-      "-" = "n",
-      "name+" = "value",
-      "name-" = "value",
-      stop("Invalid value for 'sort'. Use '+', '-', 'name+', or 'name-'.")
-    )
+    sort_col <- if (sort %in% c("+", "-")) "n" else "value"
     df <- df[order(df[[sort_col]], decreasing = decreasing), ]
   }
 
   if (cum) {
     df$cum_prop <- cumsum(df$prop)
-    df$cum_valid_prop <- if (valid) {
-      cumsum(ifelse(is.na(df$valid_prop), 0, df$valid_prop))
+    if (valid) {
+      df$cum_valid_prop <- cumsum(
+        ifelse(is.na(df$valid_prop), 0, df$valid_prop)
+      )
+      df$cum_valid_prop[is.na(df$valid_prop)] <- NA
     } else {
-      NA
+      df$cum_valid_prop <- NA
     }
   }
 
@@ -328,6 +337,7 @@ freq <- function(
   class(df) <- c("spicy_freq_table", "spicy_table", class(df))
 
   if (!styled) {
+    class(df) <- "data.frame"
     return(df)
   }
 
