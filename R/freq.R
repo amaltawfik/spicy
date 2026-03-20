@@ -168,6 +168,10 @@ freq <- function(
     data_name <- var_name
     x <- data
   } else {
+    warning(
+      "Both `data` and `x` are vectors; `data` is ignored.",
+      call. = FALSE
+    )
     var_name <- deparse(substitute(x))
     data_name <- deparse(substitute(data))
   }

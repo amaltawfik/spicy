@@ -30,6 +30,8 @@
   p_value = NA_real_,
   lower_bound = -Inf,
   upper_bound = Inf,
+  ci_lower = NULL,
+  ci_upper = NULL,
   .include_se = FALSE,
   digits = 3L
 ) {
@@ -43,9 +45,11 @@
     attr(out, "digits") <- digits
     return(out)
   }
-  z <- stats::qnorm(1 - (1 - conf_level) / 2)
-  ci_lower <- max(lower_bound, estimate - z * se)
-  ci_upper <- min(upper_bound, estimate + z * se)
+  if (is.null(ci_lower)) {
+    z <- stats::qnorm(1 - (1 - conf_level) / 2)
+    ci_lower <- max(lower_bound, estimate - z * se)
+    ci_upper <- min(upper_bound, estimate + z * se)
+  }
   out <- if (.include_se) {
     c(
       estimate = estimate,
@@ -249,47 +253,23 @@ cramer_v <- function(
 
   p_value <- as.numeric(chi$p.value)
 
-  if (is.null(conf_level) || is.na(conf_level)) {
-    out <- if (.include_se) {
-      c(estimate = V, se = NA_real_, p_value = p_value)
-    } else {
-      c(estimate = V, p_value = p_value)
-    }
-    class(out) <- "spicy_assoc_detail"
-    attr(out, "digits") <- digits
-    return(out)
+  ci_lower <- NULL
+  ci_upper <- NULL
+  if (!is.null(conf_level) && !is.na(conf_level) && n > 3 && V > 0) {
+    z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
+    ci_lower <- max(0, tanh(atanh(V) - z_alpha / sqrt(n - 3)))
+    ci_upper <- min(1, tanh(atanh(V) + z_alpha / sqrt(n - 3)))
   }
 
-  z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
-  if (n > 3 && V > 0) {
-    z_V <- atanh(V)
-    se_z <- 1 / sqrt(n - 3)
-    ci_lower <- max(0, tanh(z_V - z_alpha * se_z))
-    ci_upper <- min(1, tanh(z_V + z_alpha * se_z))
-  } else {
-    ci_lower <- NA_real_
-    ci_upper <- NA_real_
-  }
-
-  out <- if (.include_se) {
-    c(
-      estimate = V,
-      se = NA_real_,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  } else {
-    c(
-      estimate = V,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  }
-  class(out) <- "spicy_assoc_detail"
-  attr(out, "digits") <- digits
-  out
+  .assoc_result(
+    V,
+    conf_level = conf_level,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    .include_se = .include_se,
+    digits = digits
+  )
 }
 
 
@@ -341,47 +321,23 @@ phi <- function(
 
   p_value <- as.numeric(chi$p.value)
 
-  if (is.null(conf_level) || is.na(conf_level)) {
-    out <- if (.include_se) {
-      c(estimate = ph, se = NA_real_, p_value = p_value)
-    } else {
-      c(estimate = ph, p_value = p_value)
-    }
-    class(out) <- "spicy_assoc_detail"
-    attr(out, "digits") <- digits
-    return(out)
+  ci_lower <- NULL
+  ci_upper <- NULL
+  if (!is.null(conf_level) && !is.na(conf_level) && n > 3 && ph > 0) {
+    z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
+    ci_lower <- max(0, tanh(atanh(ph) - z_alpha / sqrt(n - 3)))
+    ci_upper <- min(1, tanh(atanh(ph) + z_alpha / sqrt(n - 3)))
   }
 
-  z_alpha <- stats::qnorm(1 - (1 - conf_level) / 2)
-  if (n > 3 && ph > 0) {
-    z_ph <- atanh(ph)
-    se_z <- 1 / sqrt(n - 3)
-    ci_lower <- max(0, tanh(z_ph - z_alpha * se_z))
-    ci_upper <- min(1, tanh(z_ph + z_alpha * se_z))
-  } else {
-    ci_lower <- NA_real_
-    ci_upper <- NA_real_
-  }
-
-  out <- if (.include_se) {
-    c(
-      estimate = ph,
-      se = NA_real_,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  } else {
-    c(
-      estimate = ph,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  }
-  class(out) <- "spicy_assoc_detail"
-  attr(out, "digits") <- digits
-  out
+  .assoc_result(
+    ph,
+    conf_level = conf_level,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    .include_se = .include_se,
+    digits = digits
+  )
 }
 
 
@@ -430,36 +386,15 @@ contingency_coef <- function(
 
   p_value <- as.numeric(chi$p.value)
 
-  if (is.null(conf_level) || is.na(conf_level)) {
-    out <- if (.include_se) {
-      c(estimate = C_val, se = NA_real_, p_value = p_value)
-    } else {
-      c(estimate = C_val, p_value = p_value)
-    }
-    class(out) <- "spicy_assoc_detail"
-    attr(out, "digits") <- digits
-    return(out)
-  }
-
-  out <- if (.include_se) {
-    c(
-      estimate = C_val,
-      se = NA_real_,
-      ci_lower = NA_real_,
-      ci_upper = NA_real_,
-      p_value = p_value
-    )
-  } else {
-    c(
-      estimate = C_val,
-      ci_lower = NA_real_,
-      ci_upper = NA_real_,
-      p_value = p_value
-    )
-  }
-  class(out) <- "spicy_assoc_detail"
-  attr(out, "digits") <- digits
-  out
+  .assoc_result(
+    C_val,
+    conf_level = conf_level,
+    p_value = p_value,
+    ci_lower = NA_real_,
+    ci_upper = NA_real_,
+    .include_se = .include_se,
+    digits = digits
+  )
 }
 
 
