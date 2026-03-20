@@ -601,8 +601,7 @@ lambda_gk <- function(
   max_rsum <- max(rsum)
   max_csum <- max(csum)
 
-  est <- switch(
-    direction,
+  est <- switch(direction,
     symmetric = {
       0.5 *
         (sum(rmax, cmax) - (max_csum + max_rsum)) /
@@ -617,8 +616,7 @@ lambda_gk <- function(
   }
 
   # ASE (DescTools approach)
-  sigma2 <- switch(
-    direction,
+  sigma2 <- switch(direction,
     row = {
       L_row_max <- min(which(rsum == max_rsum))
       L_row <- integer(nc)
@@ -900,8 +898,7 @@ uncertainty_coef <- function(
 
   mi <- H_x + H_y - H_xy # mutual information
 
-  U <- switch(
-    direction,
+  U <- switch(direction,
     row = if (H_x > 0) mi / H_x else 0,
     column = if (H_y > 0) mi / H_y else 0,
     symmetric = if (H_x + H_y > 0) 2 * mi / (H_x + H_y) else 0
@@ -1281,7 +1278,11 @@ somers_d <- function(
   n2 <- sum(csum * (csum - 1)) / 2 # column ties
 
   # DescTools: ni. = colSums for "row", rowSums for "column"
-  ni <- switch(direction, row = csum, column = rsum, symmetric = NULL)
+  ni <- switch(direction,
+    row = csum,
+    column = rsum,
+    symmetric = NULL
+  )
 
   if (direction == "symmetric") {
     # Symmetric Somers' d equals tau-b
@@ -1293,7 +1294,10 @@ somers_d <- function(
     ))
   }
 
-  denom <- n0 - switch(direction, row = n2, column = n1)
+  denom <- n0 - switch(direction,
+    row = n2,
+    column = n1
+  )
   if (denom == 0) {
     warning(
       "Somers' d is undefined for this table; returning NA.",
@@ -1539,8 +1543,7 @@ assoc_measures <- function(
     }
   )
 
-  fns <- switch(
-    type,
+  fns <- switch(type,
     nominal = nominal_fns,
     ordinal = ordinal_fns,
     all = c(nominal_fns, ordinal_fns)
