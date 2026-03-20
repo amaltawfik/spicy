@@ -271,7 +271,13 @@ base_count_n <- function(
   }
 
   data <- data[, select, drop = FALSE]
-  data <- data[!vapply(data, is.list, logical(1))]
+  is_list_col <- vapply(data, is.list, logical(1))
+  list_cols <- names(data)[is_list_col]
+  data <- data[!is_list_col]
+
+  if (verbose && length(list_cols) > 0) {
+    message("Ignored list columns: ", paste(list_cols, collapse = ", "))
+  }
 
   if (!is.null(special)) {
     allowed <- c("NA", "NaN", "Inf", "-Inf")

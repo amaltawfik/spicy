@@ -169,6 +169,14 @@ test_that("count_n ignores incompatible columns safely", {
   expect_equal(count_n(df, count = "b"), c(0, 1))
 })
 
+test_that("count_n verbose reports list columns", {
+  df <- tibble::tibble(x = c("a", "b"), z = list(1, 2))
+  expect_message(
+    count_n(df, count = "a", verbose = TRUE),
+    "Ignored list columns: z"
+  )
+})
+
 test_that("count_n returns 0 for empty or incompatible selection", {
   df <- tibble::tibble(x = 1:3, y = letters[1:3])
   expect_equal(count_n(df, count = "z", select = "x"), c(0, 0, 0))
