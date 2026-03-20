@@ -157,11 +157,16 @@ table_apa(
   row_vars = "smoking",
   group_var = "education",
   assoc_measure = "phi",
-  output = "gt"
+  output = "tinytable"
 )
 ```
 
-[TABLE]
+| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Phi |
+|----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|-----|
+|          | n               | %    | n               | %    | n        | %    | n     | %    |         |     |
+| smoking  |                 |      |                 |      |          |      |       |      | \< .001 |     |
+|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |     |
+|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |     |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
@@ -239,17 +244,19 @@ table_apa(
 
 [TABLE]
 
-## Filtering levels
+## Filtering and reordering levels
 
-Use `levels_keep` to display only specific modalities and control their
-order:
+Use `levels_keep` to display only specific modalities. The order you
+specify controls the display order, which is useful for placing
+“(Missing)” last:
 
 ``` r
 table_apa(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
+  row_vars = "income_group",
   group_var = "education",
-  levels_keep = c("Yes"),
+  drop_na = FALSE,
+  levels_keep = c("Low", "High", "(Missing)"),
   output = "gt"
 )
 ```
