@@ -18,11 +18,14 @@ knitr::opts_chunk$set(
 library(spicy)
 ```
 
-spicy is an R package for descriptive data analysis: inspecting
-variables, checking distributions, exploring associations, and producing
-publication-ready tables. This vignette walks through the core workflow
-using the bundled `sochealth` dataset, a simulated social-health survey
-with 1 200 respondents and 24 variables.
+spicy is an R package for descriptive statistics and data analysis,
+designed for data science and survey research workflows. It covers
+variable inspection, frequency tables, cross-tabulations with
+chi-squared tests and effect sizes, and publication-ready APA-style
+reporting — offering functionality similar to Stata or SPSS but within
+a tidyverse-friendly R environment. This vignette walks through the
+core workflow using the bundled `sochealth` dataset, a simulated
+social-health survey with 1 200 respondents and 24 variables.
 
 ## Inspect your data
 

@@ -23,9 +23,12 @@ analysis workflows.
 
 ## What is spicy?
 
-spicy is an R package for descriptive data analysis: inspecting
-variables, checking distributions, exploring associations, and producing
-publication-ready tables. It helps you:
+spicy is an R package for descriptive statistics and data analysis,
+designed for data science and survey research workflows. It covers
+variable inspection, frequency tables, cross-tabulations with
+chi-squared tests and effect sizes, and publication-ready APA-style
+reporting — offering functionality similar to Stata or SPSS but within a
+tidyverse-friendly R environment. It helps you:
 
 - **Inspect variables** with `varlist()` — names, labels, values,
   classes, missings. Similar to SPSS “Variable View” or Stata “Variables
