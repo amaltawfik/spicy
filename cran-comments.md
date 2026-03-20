@@ -14,12 +14,14 @@ This is version 0.6.0 of the **spicy** package.
 * New family of association measure functions for contingency tables: `assoc_measures()`, `contingency_coef()`, `gamma_gk()`, `goodman_kruskal_tau()`, `kendall_tau_b()`, `kendall_tau_c()`, `lambda_gk()`, `phi()`, `somers_d()`, `uncertainty_coef()`, and `yule_q()`.
 * `cross_tab()` gains `assoc_measure` and `assoc_ci` arguments with automatic ordinal detection.
 * `table_apa()` gains `output = "gt"` and dynamic association measure labeling.
-* New bundled dataset `sochealth` (simulated social-health survey, n = 1200, 20 variables).
+* New bundled dataset `sochealth` (simulated social-health survey, n = 1200, 24 variables).
 * `cramer_v()` gains a `detail` argument (breaking: returns a named vector when `detail = TRUE`).
 
 ### Bug fixes
 
 * `cross_tab()` rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present.
+* `mean_n()`, `sum_n()`, `count_n()` no longer trigger a tidyselect deprecation warning with character vector input.
+* `table_apa()` p-values no longer wrap across lines in `tinytable` HTML output.
 
 ### Testing environments
 

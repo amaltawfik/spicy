@@ -131,7 +131,7 @@ tests H0: Tau-b = 0 (Wald z-test).
 kendall_tau_b(tbl_ord, detail = TRUE)
 ```
 
-### Kendall's Tau-c (Stuart's Tau-c)
+### Kendall's Tau-c
 
 Tau-c is similar to Tau-b but adjusts for rectangular tables where the
 number of rows and columns differ. The p-value tests H0: Tau-c = 0
