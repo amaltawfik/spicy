@@ -80,3 +80,37 @@ test_that("sum_n regex mode supports default select", {
   df <- tibble::tibble(var1 = c(1, 2), var2 = c(3, 4))
   expect_equal(sum_n(df, regex = TRUE), c(4, 6))
 })
+
+test_that("sum_n works with character vector select", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+  items <- c("a", "b")
+  expect_equal(sum_n(df, select = items), c(4, 6))
+})
+
+test_that("sum_n digits argument rounds result", {
+  df <- tibble::tibble(a = c(1.111, 2.222), b = c(2.222, 3.333))
+  res <- sum_n(df, digits = 1)
+  expect_equal(res, c(3.3, 5.6))
+})
+
+test_that("sum_n verbose prints info messages", {
+  df <- tibble::tibble(num = c(1, 2), char = c("a", "b"))
+  expect_message(sum_n(df, verbose = TRUE), "Ignored non-numeric")
+  expect_message(sum_n(df, verbose = TRUE), "Row sums computed")
+})
+
+test_that("sum_n regex errors on non-character select", {
+  df <- tibble::tibble(a = 1, b = 2)
+  expect_error(sum_n(df, select = 1, regex = TRUE), "single character pattern")
+})
+
+test_that("sum_n works inside dplyr::mutate", {
+  df <- tibble::tibble(x = c(1, 2), y = c(3, 4))
+  res <- dplyr::mutate(df, s = sum_n(select = c(x, y)))
+  expect_equal(res$s, c(4, 6))
+})
+
+test_that("sum_n with exclude drops columns", {
+  df <- tibble::tibble(a = c(10, 20), b = c(30, 40), c = c(50, 60))
+  expect_equal(sum_n(df, exclude = c("a", "c")), c(30, 40))
+})

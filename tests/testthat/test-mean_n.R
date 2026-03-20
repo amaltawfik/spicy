@@ -80,3 +80,37 @@ test_that("mean_n regex mode supports default select", {
   df <- tibble::tibble(var1 = c(1, 2), var2 = c(3, 4))
   expect_equal(mean_n(df, regex = TRUE), c(2, 3))
 })
+
+test_that("mean_n works with character vector select", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+  items <- c("a", "b")
+  expect_equal(mean_n(df, select = items), c(2, 3))
+})
+
+test_that("mean_n digits argument rounds result", {
+  df <- tibble::tibble(a = c(1, 2), b = c(2, 3), c = c(3, 4))
+  res <- mean_n(df, digits = 1)
+  expect_equal(res, c(2.0, 3.0))
+})
+
+test_that("mean_n verbose prints info messages", {
+  df <- tibble::tibble(num = c(1, 2), char = c("a", "b"))
+  expect_message(mean_n(df, verbose = TRUE), "Ignored non-numeric")
+  expect_message(mean_n(df, verbose = TRUE), "Row means computed")
+})
+
+test_that("mean_n regex errors on non-character select", {
+  df <- tibble::tibble(a = 1, b = 2)
+  expect_error(mean_n(df, select = 1, regex = TRUE), "single character pattern")
+})
+
+test_that("mean_n works inside dplyr::mutate", {
+  df <- tibble::tibble(x = c(1, 2), y = c(3, 4))
+  res <- dplyr::mutate(df, m = mean_n(select = c(x, y)))
+  expect_equal(res$m, c(2, 3))
+})
+
+test_that("mean_n with exclude drops columns", {
+  df <- tibble::tibble(a = c(10, 20), b = c(30, 40), c = c(50, 60))
+  expect_equal(mean_n(df, exclude = c("a", "c")), c(30, 40))
+})

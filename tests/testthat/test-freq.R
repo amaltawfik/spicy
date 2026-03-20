@@ -158,3 +158,84 @@ test_that("freq() prints styled table invisibly", {
   x <- c("A", "B", "B", "C")
   expect_invisible(freq(x, styled = TRUE))
 })
+
+test_that("freq() cum = TRUE adds cumulative columns", {
+  x <- c("A", "B", "B", "C")
+  res <- freq(x, cum = TRUE, styled = FALSE)
+  expect_true("cum_prop" %in% names(res))
+  cum_vals <- res$cum_prop[!is.na(res$cum_prop)]
+  expect_equal(cum_vals[length(cum_vals)], 1)
+})
+
+test_that("freq() valid = FALSE keeps valid_prop as NA", {
+  x <- c(1, 2, 2, NA)
+  res <- freq(x, valid = FALSE, styled = FALSE)
+  expect_true("valid_prop" %in% names(res))
+  expect_true(all(is.na(res$valid_prop)))
+})
+
+test_that("freq() valid = TRUE includes valid_prop", {
+  x <- c(1, 2, 2, NA)
+  res <- freq(x, valid = TRUE, styled = FALSE)
+  expect_true("valid_prop" %in% names(res))
+})
+
+test_that("freq() labelled_levels = 'values' shows raw values", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 2, 3), labels = c(A = 1, B = 2, C = 3))
+  res <- freq(x, labelled_levels = "values", styled = FALSE)
+  expect_true(any(res$value %in% c("1", "2", "3")))
+})
+
+test_that("freq() with factor input works directly", {
+  f <- factor(c("x", "y", "x", "z"))
+  res <- freq(f, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+  expect_equal(sum(res$n, na.rm = TRUE), 4)
+})
+
+test_that("freq() cum + weighted works", {
+  df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
+  res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
+  expect_true("cum_prop" %in% names(res))
+})
+
+test_that("freq() na_val with plain vector", {
+  x <- c(1, 2, 3, 99, 99)
+  res <- freq(x, na_val = 99, styled = FALSE)
+  n_na <- res$n[is.na(res$value)]
+  expect_equal(n_na, 2)
+})
+
+test_that("freq() errors with non-finite weights", {
+  expect_error(freq(c(1, 2), weights = c(1, Inf)), "finite")
+})
+
+test_that("freq() styled output has class spicy_freq_table", {
+  res <- freq(c("A", "B", "A"))
+  expect_s3_class(res, "spicy_freq_table")
+})
+
+test_that("freq() cum + valid shows cumulative valid column", {
+  x <- c("A", "B", "B", NA)
+  res <- freq(x, cum = TRUE, valid = TRUE, styled = FALSE)
+  expect_true("cum_valid_prop" %in% names(res))
+})
+
+test_that("freq() styled weighted output prints invisibly", {
+  df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
+  expect_invisible(freq(df, x, weights = w, styled = TRUE))
+})
+
+test_that("freq() labelled with non-numeric na_val warns", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 2, 3), labels = c(A = 1, B = 2, C = 3))
+  expect_warning(
+    freq(x, na_val = "A", styled = FALSE),
+    "underlying numeric value"
+  )
+})
+
+test_that("freq() styled cum output prints invisibly", {
+  expect_invisible(freq(c("A", "B", "B"), cum = TRUE, styled = TRUE))
+})

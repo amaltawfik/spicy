@@ -37,3 +37,208 @@ test_that("varlist_title() adds * for transformed object", {
   transformed_expr <- quote(head(iris))
   expect_equal(varlist_title(transformed_expr), "vl: iris*")
 })
+
+test_that("varlist_title() adds * when selectors are used", {
+  expect_equal(varlist_title(quote(iris), selectors_used = TRUE), "vl: iris*")
+})
+
+test_that("varlist_title() handles nested calls", {
+  expect_equal(varlist_title(quote(dplyr::filter(df, x > 1))), "vl: df*")
+})
+
+test_that("varlist_title() extracts symbol from nested call arg", {
+  expect_equal(varlist_title(quote(fun(subset(df, x > 1)))), "vl: df*")
+})
+
+test_that("varlist_title() returns fallback for non-symbol expressions", {
+  expect_equal(varlist_title(1L), "vl: <data>")
+})
+
+test_that("varlist_title() returns fallback when deparse fails", {
+  bad <- structure(list(), class = "weird")
+  expect_equal(varlist_title(bad), "vl: <data>")
+})
+
+test_that("varlist() warns when no columns match", {
+  expect_warning(
+    varlist(mtcars, starts_with("zzz"), tbl = TRUE),
+    "No columns selected"
+  )
+})
+
+test_that("varlist() returns empty tibble when no columns match", {
+  res <- suppressWarnings(varlist(mtcars, starts_with("zzz"), tbl = TRUE))
+  expect_equal(nrow(res), 0L)
+  expect_named(
+    res,
+    c("Variable", "Label", "Values", "Class", "N_distinct", "N_valid", "NAs")
+  )
+})
+
+test_that("varlist() non-interactive with no tbl returns message", {
+  expect_message(
+    varlist(mtcars),
+    "Non-interactive session"
+  )
+})
+
+test_that("varlist() counts NAs correctly", {
+  df <- data.frame(a = c(1, NA, 3), b = c("x", "y", NA))
+  res <- varlist(df, tbl = TRUE)
+  expect_equal(unname(res$NAs), c(1L, 1L))
+  expect_equal(unname(res$N_valid), c(2L, 2L))
+})
+
+test_that("varlist() shows labels when available", {
+  df <- data.frame(x = 1:3)
+  attr(df$x, "label") <- "My label"
+  res <- varlist(df, tbl = TRUE)
+  expect_equal(unname(res$Label), "My label")
+})
+
+test_that("varlist() returns NA label when none set", {
+  res <- varlist(data.frame(x = 1:3), tbl = TRUE)
+  expect_true(is.na(res$Label))
+})
+
+test_that("varlist() values = TRUE shows all unique values", {
+  df <- data.frame(x = c(1, 2, 3, 4, 5, 6, 7))
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "1, 2, 3, 4, 5, 6, 7")
+})
+
+test_that("varlist() values = FALSE truncates >4 unique values", {
+  df <- data.frame(x = c(1, 2, 3, 4, 5, 6, 7))
+  res <- varlist(df, tbl = TRUE, values = FALSE)
+  expect_match(res$Values, "\\.\\.\\.")
+})
+
+test_that("varlist() values = FALSE shows all when <= 4 values", {
+  df <- data.frame(x = c(1, 2, 3))
+  res <- varlist(df, tbl = TRUE, values = FALSE)
+  expect_equal(unname(res$Values), "1, 2, 3")
+})
+
+test_that("varlist() include_na appends NA to values", {
+  df <- data.frame(x = c(1, 2, NA))
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_match(res$Values, "NA")
+})
+
+test_that("varlist() include_na appends NaN for numeric", {
+  df <- data.frame(x = c(1, 2, NaN))
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_match(res$Values, "NaN")
+})
+
+test_that("summarize_values_minmax handles factors", {
+  f <- factor(c("a", "b", "c"), levels = c("c", "b", "a"))
+  res <- varlist(data.frame(x = f), tbl = TRUE)
+  expect_equal(unname(res$Values), "c, b, a")
+})
+
+test_that("summarize_values_minmax handles Date columns", {
+  df <- data.frame(d = as.Date(c("2024-01-01", "2024-06-15", "2024-12-31")))
+  res <- varlist(df, tbl = TRUE)
+  expect_match(res$Values, "2024")
+})
+
+test_that("summarize_values_minmax handles POSIXct columns", {
+  df <- data.frame(t = as.POSIXct(c("2024-01-01 10:00", "2024-06-15 12:00")))
+  res <- varlist(df, tbl = TRUE)
+  expect_match(res$Values, "2024")
+})
+
+test_that("summarize_values_minmax handles list columns", {
+  df <- tibble::tibble(x = list(1:3, "a", TRUE))
+  res <- varlist(df, tbl = TRUE)
+  expect_match(res$Values, "List\\(3\\)")
+})
+
+test_that("summarize_values_all handles list columns", {
+  df <- tibble::tibble(x = list(1:3, "a"))
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_match(res$Values, "List\\(2\\)")
+})
+
+test_that("summarize_values_all handles logical columns", {
+  df <- data.frame(x = c(TRUE, FALSE, TRUE))
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_match(res$Values, "FALSE")
+  expect_match(res$Values, "TRUE")
+})
+
+test_that("summarize_values_all handles character columns", {
+  df <- data.frame(x = c("b", "a", "c"), stringsAsFactors = FALSE)
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "a, b, c")
+})
+
+test_that("summarize_values_all handles factors with values = TRUE", {
+  f <- factor(c("x", "y"), levels = c("y", "x"))
+  res <- varlist(data.frame(v = f), tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "x, y")
+})
+
+test_that("summarize_values_minmax handles all-NA column", {
+  df <- data.frame(x = c(NA_real_, NA_real_))
+  res <- varlist(df, tbl = TRUE)
+  expect_equal(unname(res$Values), "")
+  expect_equal(unname(res$N_distinct), 0L)
+})
+
+test_that("summarize_values_minmax include_na with empty non-NA values", {
+  df <- data.frame(x = c(NA_real_, NA_real_))
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_equal(unname(res$Values), "NA")
+})
+
+test_that("varlist() handles labelled columns", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 2, 3), labels = c(Low = 1, Mid = 2, High = 3))
+  df <- data.frame(v = x)
+  res <- varlist(df, tbl = TRUE)
+  expect_match(res$Values, "Low")
+  expect_match(res$Class, "labelled")
+})
+
+test_that("varlist() handles labelled columns with values = TRUE", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 2, 3), labels = c(Low = 1, Mid = 2, High = 3))
+  df <- data.frame(v = x)
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_match(res$Values, "Low")
+})
+
+test_that("N_distinct counts correctly", {
+  df <- data.frame(x = c(1, 1, 2, NA, 2))
+  res <- varlist(df, tbl = TRUE)
+  expect_equal(unname(res$N_distinct), 2L)
+})
+
+test_that("varlist() empty selection returns empty data.frame with tbl", {
+  df <- data.frame(x = 1:3, y = 4:6)
+  res <- suppressWarnings(varlist(df, starts_with("z"), tbl = TRUE))
+  expect_equal(nrow(res), 0L)
+})
+
+test_that("varlist() non-interactive empty selection prints message", {
+  df <- data.frame(x = 1:3)
+  expect_message(
+    suppressWarnings(varlist(df, starts_with("z"))),
+    "No columns selected"
+  )
+})
+
+test_that("varlist() non-interactive prints message", {
+  expect_message(
+    varlist(mtcars),
+    "Non-interactive"
+  )
+})
+
+test_that("varlist() values=TRUE with NaN shows NaN", {
+  df <- data.frame(x = c(1, NaN, 3))
+  res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+  expect_match(res$Values, "NaN")
+})

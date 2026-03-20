@@ -289,3 +289,227 @@ test_that("assoc_ci adds formatted CI columns in wide report", {
   expect_true("CI upper" %in% names(out))
   expect_match(out[["CI lower"]][1], "^\\.")
 })
+
+# ── Long report output ─────────────────────────────────────────────────────
+
+test_that("table_apa long report returns formatted character columns", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "long",
+    style = "report"
+  )
+  expect_s3_class(out, "data.frame")
+  expect_type(out$n, "character")
+  expect_type(out$pct, "character")
+})
+
+# ── levels_keep ────────────────────────────────────────────────────────────
+
+test_that("table_apa levels_keep filters and reorders levels", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    levels_keep = c("Yes"),
+    output = "wide",
+    style = "raw"
+  )
+  expect_true(all(out$Level == "Yes", na.rm = TRUE))
+})
+
+test_that("table_apa levels_keep with (Missing)", {
+  out <- table_apa(
+    sochealth,
+    "income_group",
+    "education",
+    drop_na = FALSE,
+    levels_keep = c("Low", "High", "(Missing)"),
+    output = "wide",
+    style = "raw"
+  )
+  lvls <- out$Level[!is.na(out$Level) & out$Level != ""]
+  expect_equal(lvls, c("Low", "High", "(Missing)"))
+})
+
+# ── decimal_mark ───────────────────────────────────────────────────────────
+
+test_that("table_apa decimal_mark = ',' uses comma separator", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    decimal_mark = ",",
+    output = "wide",
+    style = "report"
+  )
+  pct_col <- out[[grep("%$", names(out))[1]]]
+  pct_vals <- pct_col[!is.na(pct_col) & pct_col != ""]
+  expect_true(any(grepl(",", pct_vals)))
+})
+
+# ── blank_na_wide ──────────────────────────────────────────────────────────
+
+test_that("table_apa blank_na_wide replaces NA with empty strings", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "wide",
+    style = "raw",
+    blank_na_wide = TRUE
+  )
+  chr_cols <- vapply(out, is.character, logical(1))
+  if (any(chr_cols)) {
+    expect_false(any(is.na(out[chr_cols])))
+  }
+})
+
+# ── Validation errors ──────────────────────────────────────────────────────
+
+test_that("table_apa validates data argument", {
+  expect_error(table_apa("not_df", "v1", "grp"), "`data` must be a data.frame")
+})
+
+test_that("table_apa validates row_vars", {
+  df <- data.frame(g = 1, v = 1)
+  expect_error(table_apa(df, character(0), "g"), "`row_vars` must be non-empty")
+  expect_error(table_apa(df, "missing", "g"), "missing in `data`")
+})
+
+test_that("table_apa validates group_var", {
+  df <- data.frame(g = 1, v = 1)
+  expect_error(table_apa(df, "v", "missing"), "`group_var` must be one valid")
+})
+
+test_that("table_apa validates labels length", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_apa(df, "v", "g", labels = c("a", "b")),
+    "`labels` must have same length"
+  )
+})
+
+test_that("table_apa validates boolean arguments", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_apa(df, "v", "g", include_total = NA),
+    "`include_total` must be"
+  )
+  expect_error(table_apa(df, "v", "g", drop_na = "yes"), "`drop_na` must be")
+  expect_error(table_apa(df, "v", "g", rescale = NA), "`rescale` must be")
+  expect_error(table_apa(df, "v", "g", correct = NA), "`correct` must be")
+  expect_error(table_apa(df, "v", "g", simulate_p = NA), "`simulate_p` must be")
+  expect_error(
+    table_apa(df, "v", "g", blank_na_wide = NA),
+    "`blank_na_wide` must be"
+  )
+  expect_error(
+    table_apa(df, "v", "g", add_multilevel_header = NA),
+    "`add_multilevel_header` must be"
+  )
+})
+
+test_that("table_apa validates decimal_mark", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_apa(df, "v", "g", decimal_mark = ";"),
+    "`decimal_mark` must be"
+  )
+})
+
+test_that("table_apa validates weights type", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_apa(df, "v", "g", weights = TRUE),
+    "`weights` must be NULL"
+  )
+})
+
+test_that("table_apa validates weights column name", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_apa(df, "v", "g", weights = "nonexistent"),
+    "column name in `data`"
+  )
+})
+
+test_that("table_apa warns when rescale = TRUE without weights", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_warning(
+    table_apa(df, "v", "g", rescale = TRUE, output = "wide"),
+    "rescale = TRUE.*no effect"
+  )
+})
+
+# ── Multiple row_vars ──────────────────────────────────────────────────────
+
+test_that("table_apa handles multiple row_vars in wide output", {
+  out <- table_apa(
+    sochealth,
+    c("smoking", "physical_activity"),
+    "education",
+    output = "wide",
+    style = "raw"
+  )
+  expect_true(all(c("smoking", "physical_activity") %in% out$Variable))
+})
+
+# ── include_total = FALSE ──────────────────────────────────────────────────
+
+test_that("table_apa include_total = FALSE omits Total column", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    include_total = FALSE,
+    output = "wide",
+    style = "raw"
+  )
+  expect_false(any(grepl("^Total", names(out))))
+})
+
+# ── Flextable output ──────────────────────────────────────────────────────
+
+test_that("table_apa returns flextable object when requested", {
+  skip_if_not_installed("flextable")
+  ft <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "flextable"
+  )
+  expect_s3_class(ft, "flextable")
+})
+
+# ── Excel output ──────────────────────────────────────────────────────────
+
+test_that("table_apa writes excel file", {
+  skip_if_not_installed("openxlsx2")
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    output = "excel",
+    excel_path = tmp
+  )
+  expect_true(file.exists(tmp))
+})
+
+# ── assoc_measure = "none" ────────────────────────────────────────────────
+
+test_that("table_apa assoc_measure = 'none' returns NA for association", {
+  out <- table_apa(
+    sochealth,
+    "smoking",
+    "education",
+    assoc_measure = "none",
+    output = "long",
+    style = "raw"
+  )
+  assoc_col <- out[["Cramer's V"]]
+  expect_true(all(is.na(assoc_col)))
+})

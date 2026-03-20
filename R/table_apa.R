@@ -579,7 +579,8 @@ table_apa <- function(
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
     long_raw <- long_raw[
-      order(long_raw$variable, long_raw$level, long_raw$group), ,
+      order(long_raw$variable, long_raw$level, long_raw$group),
+      ,
       drop = FALSE
     ]
     long_raw$variable <- as.character(long_raw$variable)
@@ -622,7 +623,8 @@ table_apa <- function(
 
     for (k in seq_len(nrow(key))) {
       sv <- ldf[
-        ldf$variable == key$variable[k] & ldf$level == key$level[k], ,
+        ldf$variable == key$variable[k] & ldf$level == key$level[k],
+        ,
         drop = FALSE
       ]
       r <- as.list(setNames(rep(NA, length(cols)), cols))

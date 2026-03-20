@@ -224,3 +224,230 @@ test_that("cross_tab note uses new Chi-2(df) format", {
   res <- cross_tab(mtcars, cyl, gear, styled = FALSE)
   expect_true(grepl("Chi-2\\(\\d+\\) =", attr(res, "note")))
 })
+
+# ── Percentage modes ─────────────────────────────────────────────────────
+
+test_that("cross_tab row percent shows row percentages", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = FALSE)
+  expect_true("Values" %in% names(res))
+  expect_match(attr(res, "title"), "Row %")
+})
+
+test_that("cross_tab column percent shows column percentages", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = FALSE)
+  expect_match(attr(res, "title"), "Column %")
+})
+
+test_that("cross_tab styled row percent includes Total and N rows", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = TRUE)
+  expect_true("N" %in% names(res))
+  vals <- res$Values
+  expect_true("Total" %in% vals)
+})
+
+test_that("cross_tab styled column percent includes Total and N rows", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = TRUE)
+  vals <- res$Values
+  expect_true("Total" %in% vals)
+  expect_true("N" %in% vals)
+})
+
+test_that("cross_tab show_n = FALSE omits N row/column", {
+  res <- cross_tab(
+    mtcars,
+    cyl,
+    gear,
+    percent = "row",
+    show_n = FALSE,
+    styled = TRUE
+  )
+  expect_false("N" %in% names(res))
+  res2 <- cross_tab(
+    mtcars,
+    cyl,
+    gear,
+    percent = "column",
+    show_n = FALSE,
+    styled = TRUE
+  )
+  expect_false("N" %in% res2$Values)
+})
+
+# ── Association measures ────────────────────────────────────────────────
+
+test_that("cross_tab assoc_measure = 'phi' works", {
+  res <- cross_tab(mtcars, am, vs, assoc_measure = "phi", styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Phi")
+})
+
+test_that("cross_tab assoc_measure = 'gamma' works", {
+  mt <- mtcars
+  mt$cyl <- ordered(mt$cyl)
+  mt$gear <- ordered(mt$gear)
+  res <- cross_tab(mt, cyl, gear, assoc_measure = "gamma", styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Goodman-Kruskal Gamma")
+})
+
+test_that("cross_tab assoc_measure = 'tau_c' works", {
+  mt <- mtcars
+  mt$cyl <- ordered(mt$cyl)
+  mt$gear <- ordered(mt$gear)
+  res <- cross_tab(mt, cyl, gear, assoc_measure = "tau_c", styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Kendall's Tau-c")
+})
+
+test_that("cross_tab assoc_measure = 'somers_d' works", {
+  mt <- mtcars
+  mt$cyl <- ordered(mt$cyl)
+  mt$gear <- ordered(mt$gear)
+  res <- cross_tab(mt, cyl, gear, assoc_measure = "somers_d", styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Somers' D")
+})
+
+test_that("cross_tab assoc_measure = 'lambda' works", {
+  res <- cross_tab(mtcars, cyl, gear, assoc_measure = "lambda", styled = FALSE)
+  expect_equal(attr(res, "assoc_measure"), "Lambda")
+})
+
+# ── Weight note ──────────────────────────────────────────────────────────
+
+test_that("cross_tab adds weight note", {
+  res <- cross_tab(mtcars, cyl, gear, weights = mpg, styled = FALSE)
+  expect_match(attr(res, "note"), "Weight: mpg")
+})
+
+test_that("cross_tab adds rescaled note", {
+  res <- cross_tab(
+    mtcars,
+    cyl,
+    gear,
+    weights = mpg,
+    rescale = TRUE,
+    styled = FALSE
+  )
+  expect_match(attr(res, "note"), "rescaled")
+})
+
+# ── Small expected cells warning ─────────────────────────────────────────
+
+test_that("cross_tab warns about small expected cells", {
+  df <- data.frame(
+    x = c("A", "A", "A", "B", "B", "C"),
+    y = c("X", "X", "Y", "X", "Y", "Y")
+  )
+  res <- cross_tab(df, x, y, styled = FALSE)
+  expect_match(attr(res, "note"), "expected cell")
+})
+
+# ── Simulate p ───────────────────────────────────────────────────────────
+
+test_that("cross_tab simulate_p adds (simulated) to note", {
+  res <- cross_tab(mtcars, cyl, gear, simulate_p = TRUE, styled = FALSE)
+  expect_match(attr(res, "note"), "simulated")
+})
+
+# ── include_stats = FALSE ────────────────────────────────────────────────
+
+test_that("cross_tab include_stats = FALSE omits note", {
+  res <- cross_tab(mtcars, cyl, gear, include_stats = FALSE, styled = FALSE)
+  expect_null(attr(res, "note"))
+})
+
+# ── Validation ───────────────────────────────────────────────────────────
+
+test_that("cross_tab errors when data is missing", {
+  expect_error(cross_tab(), "must provide a dataset")
+})
+
+test_that("cross_tab errors when x is missing for data.frame", {
+  expect_error(cross_tab(mtcars), "must specify at least one variable")
+})
+
+test_that("cross_tab errors with non-numeric weights", {
+  expect_error(
+    cross_tab(mtcars, cyl, gear, weights = "a"),
+    "`weights` must be numeric"
+  )
+})
+
+test_that("cross_tab errors with negative weights", {
+  df <- data.frame(x = c("A", "B"), y = c("C", "D"), w = c(-1, 1))
+  expect_error(cross_tab(df, x, y, weights = w), "non-negative")
+})
+
+test_that("cross_tab errors with infinite weights", {
+  df <- data.frame(x = c("A", "B"), y = c("C", "D"), w = c(Inf, 1))
+  expect_error(cross_tab(df, x, y, weights = w), "finite")
+})
+
+# ── Print methods ────────────────────────────────────────────────────────
+
+test_that("print.spicy_cross_table produces output", {
+  res <- cross_tab(mtcars, cyl, gear)
+  expect_output(print(res))
+})
+
+test_that("print.spicy_cross_table_list produces output", {
+  res <- cross_tab(mtcars, cyl, gear, by = am)
+  expect_output(print(res))
+})
+
+# ── Vector input paths ──────────────────────────────────────────────────
+
+test_that("cross_tab vector input with by works", {
+  x <- c("A", "B", "A", "B")
+  y <- c("X", "Y", "X", "Y")
+  by <- c("G1", "G1", "G2", "G2")
+  res <- cross_tab(x, y, by = by, styled = FALSE)
+  expect_type(res, "list")
+  expect_length(res, 2)
+})
+
+test_that("cross_tab vector input by length mismatch errors", {
+  expect_error(
+    cross_tab(c("A", "B"), c("X", "Y"), by = c("G1"), styled = FALSE),
+    "same length"
+  )
+})
+
+test_that("cross_tab vector input x/y length mismatch errors", {
+  expect_error(
+    cross_tab(c("A", "B", "C"), c("X", "Y"), styled = FALSE),
+    "same length"
+  )
+})
+
+test_that("cross_tab rescale without weights warns", {
+  expect_warning(
+    cross_tab(mtcars, cyl, gear, rescale = TRUE, styled = FALSE),
+    "no effect"
+  )
+})
+
+test_that("cross_tab 1x1 table omits chi-2 note", {
+  df <- data.frame(x = c("A", "A"), y = c("X", "X"))
+  res <- cross_tab(df, x, y, styled = FALSE)
+  expect_null(attr(res, "note"))
+})
+
+test_that("cross_tab percent = 'none' shows N in title", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "none", styled = FALSE)
+  expect_match(attr(res, "title"), "(N)", fixed = TRUE)
+})
+
+test_that("cross_tab styled percent = 'none' with digits", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "none", styled = TRUE)
+  expect_output(print(res))
+})
+
+test_that("print.spicy_cross_table formats N row in column percent", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = TRUE)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("N", out)))
+})
+
+test_that("print.spicy_cross_table formats N column in row percent", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = TRUE)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("N", out)))
+})
