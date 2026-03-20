@@ -101,7 +101,10 @@ social-health survey with 1 200 respondents and 24 variables.</p>
 <p><code><a href="../reference/varlist.html">varlist()</a></code> (or its shortcut <code><a href="../reference/varlist.html">vl()</a></code>) gives a
 compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
-observations, and missing values.</p>
+observations, and missing values. In RStudio or Positron, calling
+<code><a href="../reference/varlist.html">varlist()</a></code> without arguments opens an interactive viewer —
+this is the most common usage in practice. Here we use
+<code>tbl = TRUE</code> to produce static output for the vignette:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 7</span></span></span>

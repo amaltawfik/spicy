@@ -17,7 +17,11 @@ with 1 200 respondents and 24 variables.
 [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)) gives
 a compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
-observations, and missing values.
+observations, and missing values. In RStudio or Positron, calling
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+without arguments opens an interactive viewer — this is the most common
+usage in practice. Here we use `tbl = TRUE` to produce static output for
+the vignette:
 
 ``` r
 varlist(sochealth, tbl = TRUE)
