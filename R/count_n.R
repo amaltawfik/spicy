@@ -246,9 +246,26 @@ base_count_n <- function(
     stop("You must specify either `count` or `special`.", call. = FALSE)
   }
 
-  if (!is.null(count) && length(count) == 1 && is.na(count)) {
-    stop(
-      "Use `special = \"NA\"` to count missing values, not `count = NA`.",
+  if (!is.null(count)) {
+    if (length(count) == 1L && is.na(count)) {
+      stop(
+        "Use `special = \"NA\"` to count missing values, not `count = NA`.",
+        call. = FALSE
+      )
+    }
+    has_na <- vapply(count, is.na, logical(1))
+    if (any(has_na)) {
+      warning(
+        "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.",
+        call. = FALSE
+      )
+      count <- count[!has_na]
+    }
+  }
+
+  if (!is.null(special) && !is.null(count)) {
+    warning(
+      "Both `special` and `count` supplied; `count` is ignored.",
       call. = FALSE
     )
   }
@@ -262,7 +279,10 @@ base_count_n <- function(
       special <- allowed
     }
     if (!all(special %in% allowed)) {
-      stop("Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.")
+      stop(
+        "Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.",
+        call. = FALSE
+      )
     }
 
     checkers <- list(
@@ -304,11 +324,15 @@ base_count_n <- function(
     }
 
     if (!allow_coercion) {
-      vapply(
-        seq_along(x),
-        function(i) any(mapply(identical, x[i], values)),
-        logical(1)
-      )
+      if (identical(class(x), class(values)) && !is.factor(x)) {
+        x %in% values
+      } else {
+        vapply(
+          seq_along(x),
+          function(i) any(vapply(values, identical, logical(1), x[i])),
+          logical(1)
+        )
+      }
     } else {
       x %in% values
     }
