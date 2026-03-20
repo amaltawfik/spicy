@@ -4,10 +4,11 @@
 library(spicy)
 ```
 
-spicy provides a full suite of association measures for contingency
-tables. This vignette explains which measure to use depending on the
-measurement level of your variables, and how to obtain confidence
-intervals and p-values.
+spicy provides a full suite of effect size and association measures for
+contingency tables, covering both nominal and ordinal variables. This
+vignette explains which measure to use depending on the measurement
+level of your variables, and how to obtain confidence intervals and
+p-values for chi-squared-based and rank-based statistics.
 
 ## Choosing the right measure
 

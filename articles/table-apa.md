@@ -5,10 +5,12 @@ library(spicy)
 ```
 
 [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-builds publication-ready cross-tabulation tables by crossing one
-grouping variable with one or many row variables. It handles p-values,
-association measures, confidence intervals, and multi-level headers
-automatically. This vignette walks through the main features.
+builds publication-ready cross-tabulation tables suitable for APA-style
+reporting in social science and data science research. It crosses one
+grouping variable with one or many row variables, handling chi-squared
+p-values, effect sizes, confidence intervals, and multi-level headers
+automatically. Export to gt, tinytable, flextable, Excel, or Word. This
+vignette walks through the main features.
 
 ## Basic usage
 
