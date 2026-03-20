@@ -287,3 +287,89 @@ test_that("digits argument in assoc_measures propagates to print", {
   out <- capture.output(print(res))
   expect_match(out[2], "\\.[0-9]{2}\\b")
 })
+
+# ── Validation errors ──────────────────────────────────────────────────────
+
+test_that("validation rejects non-2D table", {
+  t3d <- array(1:8, dim = c(2, 2, 2))
+  class(t3d) <- "table"
+  expect_error(cramer_v(t3d), "two-dimensional")
+})
+
+# ── conf_level = NULL returns without CI ───────────────────────────────────
+
+test_that("cramer_v detail with conf_level = NULL omits CI", {
+  tab <- tab_3x3()
+  res <- cramer_v(tab, detail = TRUE, conf_level = NULL)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true(!"ci_lower" %in% names(res))
+  expect_true("p_value" %in% names(res))
+})
+
+test_that("phi detail with conf_level = NULL omits CI", {
+  tab <- tab_2x2()
+  res <- phi(tab, detail = TRUE, conf_level = NULL)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true(!"ci_lower" %in% names(res))
+})
+
+test_that("contingency_coef detail with conf_level = NULL omits CI", {
+  tab <- tab_3x3()
+  res <- contingency_coef(tab, detail = TRUE, conf_level = NULL)
+  expect_s3_class(res, "spicy_assoc_detail")
+  expect_true(!"ci_lower" %in% names(res))
+})
+
+# ── Degenerate tables ─────────────────────────────────────────────────────
+
+test_that("cramer_v warns on degenerate table", {
+  tab <- matrix(0L, 2, 2)
+  class(tab) <- "table"
+  expect_warning(cramer_v(tab, detail = TRUE), "undefined")
+})
+
+test_that("yule_q warns when ad + bc = 0", {
+  tab <- matrix(c(0L, 0L, 0L, 5L), 2, 2)
+  class(tab) <- "table"
+  expect_warning(yule_q(tab), "undefined")
+})
+
+test_that("yule_q handles zero cells in detail mode", {
+  tab <- matrix(c(5L, 0L, 3L, 2L), 2, 2)
+  class(tab) <- "table"
+  res <- yule_q(tab, detail = TRUE)
+  expect_true(is.na(res[["p_value"]]))
+})
+
+test_that("gamma_gk warns when C + D = 0", {
+  tab <- matrix(c(5L, 0L, 3L, 0L), 2, 2)
+  class(tab) <- "table"
+  expect_warning(gamma_gk(tab), "No concordant")
+})
+
+test_that("kendall_tau_b warns on degenerate table", {
+  tab <- matrix(c(5L, 5L, 5L, 5L), 2, 2)
+  class(tab) <- "table"
+  res <- kendall_tau_b(tab)
+  expect_true(is.numeric(res))
+})
+
+test_that("kendall_tau_c warns on 1-row table", {
+  tab <- matrix(c(5L, 3L), nrow = 1)
+  class(tab) <- "table"
+  expect_error(kendall_tau_c(tab), "at least")
+})
+
+test_that("somers_d warns when denom = 0", {
+  tab <- matrix(c(5L, 0L, 3L, 0L), 2, 2)
+  class(tab) <- "table"
+  expect_warning(somers_d(tab, "column"), "undefined")
+})
+
+test_that("print.spicy_assoc_detail formats NA as --", {
+  tab <- matrix(c(5L, 0L, 3L, 2L), 2, 2)
+  class(tab) <- "table"
+  res <- yule_q(tab, detail = TRUE)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("--", out)))
+})

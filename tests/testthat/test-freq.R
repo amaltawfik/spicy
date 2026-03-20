@@ -239,3 +239,16 @@ test_that("freq() labelled with non-numeric na_val warns", {
 test_that("freq() styled cum output prints invisibly", {
   expect_invisible(freq(c("A", "B", "B"), cum = TRUE, styled = TRUE))
 })
+
+test_that("freq() errors when weight variable not found", {
+  df <- data.frame(x = c("A", "B", "C"))
+  expect_error(
+    freq(df, x, weights = nonexistent_var, styled = FALSE),
+    "not found"
+  )
+})
+
+test_that("freq() cum + valid styled prints invisibly", {
+  x <- c("A", "B", NA, "A")
+  expect_invisible(freq(x, cum = TRUE, valid = TRUE, styled = TRUE))
+})

@@ -451,3 +451,25 @@ test_that("print.spicy_cross_table formats N column in row percent", {
   out <- capture.output(print(res))
   expect_true(any(grepl("N", out)))
 })
+
+test_that("cross_tab vector mode errors when only one vector given", {
+  expect_error(
+    cross_tab(c("A", "B")),
+    "must provide both"
+  )
+})
+
+test_that("cross_tab vector mode with interaction by", {
+  x <- c("A", "B", "A", "B", "A", "B")
+  y <- c("X", "Y", "X", "Y", "X", "Y")
+  g1 <- c("M", "M", "F", "F", "M", "F")
+  g2 <- c("Y", "Y", "Y", "O", "O", "O")
+  res <- cross_tab(x, y, by = interaction(g1, g2), styled = FALSE)
+  expect_type(res, "list")
+})
+
+test_that("cross_tab with [[ extraction preserves var name", {
+  d <- data.frame(a = c("X", "Y", "X"), b = c("M", "F", "M"))
+  res <- cross_tab(d[["a"]], d[["b"]], styled = FALSE)
+  expect_s3_class(res, "data.frame")
+})
