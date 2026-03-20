@@ -119,6 +119,23 @@ sum_n <- function(
   regex = FALSE,
   verbose = FALSE
 ) {
+  if (!is.null(min_valid)) {
+    if (
+      !is.numeric(min_valid) ||
+        length(min_valid) != 1L ||
+        is.na(min_valid) ||
+        min_valid < 0
+    ) {
+      stop("`min_valid` must be a single non-negative number.", call. = FALSE)
+    }
+  }
+
+  if (!is.null(digits)) {
+    if (!is.numeric(digits) || length(digits) != 1L || digits < 0) {
+      stop("`digits` must be a single non-negative number.", call. = FALSE)
+    }
+  }
+
   if (is.matrix(data)) {
     data <- as.data.frame(data)
   }

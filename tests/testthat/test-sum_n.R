@@ -62,7 +62,7 @@ test_that("sum_n works on matrices", {
   expect_equal(sum_n(mat, min_valid = 2), c(3, 9, 24))
 })
 
-test_that("sum_n handles all NA rows correctly", {
+test_that("sum_n warns when no numeric columns are selected", {
   df <- tibble::tibble(
     a = c(NA, NA),
     b = c(NA, NA)
@@ -74,6 +74,14 @@ test_that("sum_n handles all NA rows correctly", {
     fixed = TRUE
   )
   expect_true(all(is.na(res)))
+})
+
+test_that("sum_n validates min_valid and digits", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4))
+  expect_error(sum_n(df, min_valid = -1), "non-negative")
+  expect_error(sum_n(df, min_valid = "a"), "non-negative")
+  expect_error(sum_n(df, digits = -1), "non-negative")
+  expect_error(sum_n(df, digits = "a"), "non-negative")
 })
 
 test_that("sum_n regex mode supports default select", {
