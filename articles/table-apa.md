@@ -282,7 +282,7 @@ table_apa(
 
 [TABLE]
 
-## Exporting to Excel or Word
+## Exporting to Excel, Word, or clipboard
 
 For Excel export, provide a file path:
 
@@ -309,7 +309,7 @@ table_apa(
 ```
 
 You can also copy directly to the clipboard for pasting into a
-spreadsheet:
+spreadsheet or a text editor:
 
 ``` r
 table_apa(
