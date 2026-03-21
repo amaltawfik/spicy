@@ -66,9 +66,13 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
-<ul><li><p><code><a href="../reference/kendall_tau_c.html">kendall_tau_c()</a></code> is now consistently named “Kendall’s Tau-c” throughout the package (previously “Stuart’s Tau-c” in some places).</p></li>
+<ul><li><p><code><a href="../reference/count_n.html">count_n()</a></code> now correctly counts <code>NA</code> values when <code>count = NA</code> and <code>strict = TRUE</code> are both used. List columns are now reported in verbose mode instead of causing silent errors.</p></li>
 <li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present (consistent with Stata behavior).</p></li>
+<li><p><code><a href="../reference/freq.html">freq()</a></code> now uses true <code>NA</code> consistently (instead of the <code>"&lt;NA&gt;"</code> string) in both weighted and unweighted paths. <code>cum_valid_prop</code> is now correctly <code>NA</code> for missing rows. Invalid <code>digits</code> and <code>sort</code> values are rejected with clear error messages.</p></li>
+<li><p><code><a href="../reference/kendall_tau_c.html">kendall_tau_c()</a></code> is now consistently named “Kendall’s Tau-c” throughout the package (previously “Stuart’s Tau-c” in some places).</p></li>
+<li><p><code><a href="../reference/mean_n.html">mean_n()</a></code> and <code><a href="../reference/sum_n.html">sum_n()</a></code> now validate <code>min_valid</code> and <code>digits</code> arguments, rejecting non-numeric, negative, or multi-element values.</p></li>
 <li><p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and <code><a href="../reference/count_n.html">count_n()</a></code> no longer trigger a tidyselect deprecation warning when <code>select</code> receives a character vector. Character vectors are now automatically wrapped with <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of()</a></code>.</p></li>
+<li><p><code><a href="../reference/table_apa.html">table_apa()</a></code> now preserves the original factor level order in row variables instead of sorting alphabetically. When <code>drop_na = FALSE</code>, the <code>(Missing)</code> category is placed at the bottom of each variable’s levels. <code>percent_digits</code>, <code>p_digits</code>, and <code>v_digits</code> are now validated.</p></li>
 <li><p><code><a href="../reference/table_apa.html">table_apa()</a></code> p-values no longer wrap across lines in <code>tinytable</code> HTML output.</p></li>
 </ul></div>
 <div class="section level3">
