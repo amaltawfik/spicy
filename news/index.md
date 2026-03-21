@@ -85,10 +85,6 @@
   for missing rows. Invalid `digits` and `sort` values are rejected with
   clear error messages.
 
-- [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
-  is now consistently named “Kendall’s Tau-c” throughout the package
-  (previously “Stuart’s Tau-c” in some places).
-
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
   and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
   now validate `min_valid` and `digits` arguments, rejecting
