@@ -85,7 +85,7 @@ varlist <- function(
   }
 
   if (length(selectors) == 0) {
-    warning("No columns selected.")
+    warning("No columns selected.", call. = FALSE)
     res <- tibble::tibble(
       Variable = character(),
       Label = character(),
@@ -257,7 +257,7 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
 
       unique_vals <- as.character(unique_vals)
 
-      # On filtre les "NA" ou "" déjà encodés
+      # Filter out "NA" or "" already encoded as text
       already_present <- unique_vals %in% c("NA", "", NA_character_)
       vals_chr_clean <- unique_vals[!already_present]
 
@@ -272,7 +272,7 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
         )
       }
 
-      # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
+      # Add NA or NaN if requested (based on flags computed above)
       extras <- c()
       if (include_na) {
         if (has_na) {
@@ -317,10 +317,10 @@ summarize_values_all <- function(col, include_na = FALSE) {
 
     vals_chr <- as.character(vals)
 
-    # Supprime les valeurs textuelles de NA déjà encodées
+    # Remove textual NA values already encoded
     vals_chr_clean <- vals_chr[!vals_chr %in% c("NA", "", NA_character_)]
 
-    # Ajouter NA ou NaN si demandé (basé sur les flags calculés en amont)
+    # Add NA or NaN if requested (based on flags computed above)
     extras <- c()
     if (include_na) {
       if (has_na) {

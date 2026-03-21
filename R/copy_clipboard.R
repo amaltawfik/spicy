@@ -73,7 +73,7 @@ copy_clipboard <- function(
   }
 
   if (!clipr::clipr_available()) {
-    stop("Clipboard is not available on this system.")
+    stop("Clipboard is not available on this system.", call. = FALSE)
   }
 
   is_df <- is.data.frame(x)
@@ -107,7 +107,8 @@ copy_clipboard <- function(
     }
   } else if (!identical(row.names.as.col, FALSE)) {
     stop(
-      "`row.names.as.col` must be either FALSE, TRUE, or a character string."
+      "`row.names.as.col` must be either FALSE, TRUE, or a character string.",
+      call. = FALSE
     )
   }
 

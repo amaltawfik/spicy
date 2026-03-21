@@ -43,3 +43,11 @@ test_that("label_from_names errors on non-data.frame input", {
     fixed = TRUE
   )
 })
+
+test_that("label_from_names validates sep parameter", {
+  df <- data.frame(x = 1)
+  expect_error(label_from_names(df, sep = ""), "sep")
+  expect_error(label_from_names(df, sep = NA_character_), "sep")
+  expect_error(label_from_names(df, sep = 1), "sep")
+  expect_error(label_from_names(df, sep = c(".", ",")), "sep")
+})
