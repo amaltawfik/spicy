@@ -20,11 +20,19 @@
 
 ## Bug fixes
 
-* `kendall_tau_c()` is now consistently named "Kendall's Tau-c" throughout the package (previously "Stuart's Tau-c" in some places).
+* `count_n()` now correctly counts `NA` values when `count = NA` and `strict = TRUE` are both used. List columns are now reported in verbose mode instead of causing silent errors.
 
 * `cross_tab()` rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present (consistent with Stata behavior).
 
+* `freq()` now uses true `NA` consistently (instead of the `"<NA>"` string) in both weighted and unweighted paths. `cum_valid_prop` is now correctly `NA` for missing rows. Invalid `digits` and `sort` values are rejected with clear error messages.
+
+* `kendall_tau_c()` is now consistently named "Kendall's Tau-c" throughout the package (previously "Stuart's Tau-c" in some places).
+
+* `mean_n()` and `sum_n()` now validate `min_valid` and `digits` arguments, rejecting non-numeric, negative, or multi-element values.
+
 * `mean_n()`, `sum_n()`, and `count_n()` no longer trigger a tidyselect deprecation warning when `select` receives a character vector. Character vectors are now automatically wrapped with `all_of()`.
+
+* `table_apa()` now preserves the original factor level order in row variables instead of sorting alphabetically. When `drop_na = FALSE`, the `(Missing)` category is placed at the bottom of each variable's levels. `percent_digits`, `p_digits`, and `v_digits` are now validated.
 
 * `table_apa()` p-values no longer wrap across lines in `tinytable` HTML output.
 

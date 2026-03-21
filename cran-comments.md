@@ -19,8 +19,12 @@ This is version 0.6.0 of the **spicy** package.
 
 ### Bug fixes
 
-* `cross_tab()` rescale logic now operates on complete cases only, so the weighted total N matches the unweighted N when missing values are present.
+* `count_n()` NA-in-count bug fixed; list columns reported in verbose mode.
+* `cross_tab()` rescale logic now operates on complete cases only.
+* `freq()` consistent NA representation, validated `digits`/`sort`, correct `cum_valid_prop` for missing rows.
+* `mean_n()`, `sum_n()` now validate `min_valid` and `digits` arguments.
 * `mean_n()`, `sum_n()`, `count_n()` no longer trigger a tidyselect deprecation warning with character vector input.
+* `table_apa()` preserves factor level order, places `(Missing)` at bottom, validates digit arguments.
 * `table_apa()` p-values no longer wrap across lines in `tinytable` HTML output.
 
 ### Testing environments
