@@ -70,10 +70,21 @@ the default separator is `". "`.
 
 ## Inspect variables with varlist()
 
+In RStudio or Positron, the main way to use
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-gives a compact summary of each variable, including its name, label,
-representative values, class, number of distinct values, number of valid
-observations, and missing values.
+is interactively. Calling it without `tbl = TRUE` opens a searchable,
+sortable variable overview in the Viewer, which makes it easy to scan
+labels, look for specific variables, filter what you want to inspect,
+and review the structure of a dataset before analysis.
+
+``` r
+varlist(sochealth)
+```
+
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+also gives a compact summary of each variable, including its name,
+label, representative values, class, number of distinct values, number
+of valid observations, and missing values.
 
 ``` r
 varlist(sochealth, tbl = TRUE)
@@ -107,6 +118,15 @@ varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 
 This is often enough to confirm that labels, factor levels, and missing
 values look correct before moving on to tabulations.
+
+If you prefer a shorter call in interactive work,
+[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) is a
+shortcut for
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
+
+``` r
+vl(sochealth)
+```
 
 ## Select subsets of variables
 
@@ -142,10 +162,8 @@ varlist(sochealth, where(is.numeric), tbl = TRUE)
 #> 10 weight                 Survey design w… 0.294… nume…        794    1200     0
 ```
 
-If you prefer a shorter call in interactive work,
-[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) is a
-shorthand for
-[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
+[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) also
+works with tidyselect in the same way:
 
 ``` r
 vl(sochealth, starts_with("bmi"), tbl = TRUE)
