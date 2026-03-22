@@ -47,12 +47,18 @@ Sort by frequency with `sort = "-"` (decreasing) or `sort = "+"`
 freq(sochealth, education, sort = "-")
 ```
 
+Sort alphabetically:
+
+```{r freq-sort-name}
+freq(sochealth, education, sort = "name+")
+```
+
 ### Cumulative percentages
 
 Add cumulative columns with `cum = TRUE`:
 
 ```{r freq-cum}
-freq(sochealth, education, cum = TRUE)
+freq(sochealth, smoking, cum = TRUE)
 ```
 
 ### Weighted frequencies
@@ -72,16 +78,26 @@ freq(sochealth, education, weights = weight, rescale = FALSE)
 
 ### Labelled variables
 
-When a variable has value labels (e.g., imported from SPSS or Stata),
-`freq()` shows them by default with the `[code] label` format. Control
-this with `labelled_levels`:
+When a variable has value labels (e.g., imported from SPSS or Stata
+with haven), `freq()` shows them by default with the `[code] label`
+format. Control this with `labelled_levels`:
 
 ```{r freq-labelled}
+# Create a labelled version of the smoking variable
+sh <- sochealth
+sh$smoking_lbl <- labelled::labelled(
+  ifelse(sh$smoking == "Yes", 1L, 0L),
+  labels = c("Non-smoker" = 0L, "Current smoker" = 1L)
+)
+
+# Default: [code] label
+freq(sh, smoking_lbl)
+
 # Labels only (no codes)
-freq(sochealth, sex, labelled_levels = "labels")
+freq(sh, smoking_lbl, labelled_levels = "labels")
 
 # Codes only (no labels)
-freq(sochealth, sex, labelled_levels = "values")
+freq(sh, smoking_lbl, labelled_levels = "values")
 ```
 
 ### Custom missing values
@@ -124,6 +140,13 @@ Stratify the table by a third variable:
 cross_tab(sochealth, smoking, education, by = sex)
 ```
 
+For more than one grouping variable, use `interaction()`:
+
+```{r cross-by-interaction}
+cross_tab(sochealth, smoking, education,
+          by = interaction(sex, age_group))
+```
+
 ### Ordinal variables
 
 When both variables are ordered factors, `cross_tab()` automatically
@@ -136,7 +159,7 @@ cross_tab(sochealth, self_rated_health, education)
 You can override the automatic selection with `assoc_measure`:
 
 ```{r cross-assoc}
-cross_tab(sochealth, smoking, education, assoc_measure = "lambda")
+cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 ```
 
 ### Confidence intervals for effect sizes
@@ -150,7 +173,15 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 
 ### Weighted cross-tabulations
 
-Weights work the same as in `freq()`:
+Weights work the same as in `freq()`. Without rescaling, the table
+shows raw weighted counts:
+
+```{r cross-weighted-raw}
+cross_tab(sochealth, smoking, education, weights = weight)
+```
+
+With `rescale = TRUE`, the weighted total matches the unweighted
+sample size:
 
 ```{r cross-weighted}
 cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
