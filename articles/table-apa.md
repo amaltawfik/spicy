@@ -1,4 +1,4 @@
-# Create APA-style tables in R
+# Create APA tables in R
 
 ``` r
 library(spicy)

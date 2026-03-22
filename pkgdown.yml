@@ -6,7 +6,8 @@ articles:
   frequency-tables: frequency-tables.html
   spicy: spicy.html
   table-apa: table-apa.html
-last_built: 2026-03-22T11:29Z
+  variable-exploration: variable-exploration.html
+last_built: 2026-03-22T13:05Z
 urls:
   reference: https://amaltawfik.github.io/spicy/reference
   article: https://amaltawfik.github.io/spicy/articles

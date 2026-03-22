@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>spicy: frequency tables, cross-tabulations, and APA reporting in R • spicy</title>
+<title>spicy: frequency tables, cross-tabulations, APA tables, and codebooks in R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -22,10 +22,10 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="spicy: frequency tables, cross-tabulations, and APA reporting in R">
-<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), and APA-style reporting tables. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="spicy: frequency tables, cross-tabulations, APA tables, and codebooks in R">
+<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), APA-style tables, and interactive codebooks. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
 ">
-<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), and APA-style reporting tables. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
+<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), APA-style tables, and interactive codebooks. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.png">
 </head>
@@ -56,6 +56,7 @@
     <li><a class="dropdown-item" href="articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
     <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
     <li><a class="dropdown-item" href="articles/table-apa.html">Create APA-style tables in R</a></li>
+    <li><a class="dropdown-item" href="articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -82,34 +83,51 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
-<img src="logo.png" class="logo" alt=""><h1 id="spicy-">spicy 
-<a class="anchor" aria-label="anchor" href="#spicy-"></a>
+<img src="logo.png" class="logo" alt=""><h1 id="spicy-frequency-tables-cross-tabulations-and-apa-tables-in-r-">spicy: frequency tables, cross-tabulations, and APA tables in R 
+<a class="anchor" aria-label="anchor" href="#spicy-frequency-tables-cross-tabulations-and-apa-tables-in-r-"></a>
 </h1>
 </div>
 <!-- badges: start -->
 
-<p>spicy brings polished, console-first data exploration to R for everyday analysis workflows.</p>
+<p>spicy is an R package for frequency tables, cross-tabulations, association measures, APA-style tables, and labelled survey data workflows.</p>
 <div class="section level2">
 <h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
 </h2>
-<p>spicy is an R package for descriptive statistics and data analysis, designed for data science and survey research workflows. It covers variable inspection, frequency tables, cross-tabulations with chi-squared tests and effect sizes, and publication-ready APA-style reporting — offering functionality similar to Stata or SPSS but within a tidyverse-friendly R environment. It helps you:</p>
+<p>spicy helps you explore categorical and labelled data in R with readable, console-first outputs. It is designed for survey research, descriptive statistics, and reporting workflows, with tools for frequency tables, cross-tabulations with chi-squared tests and effect sizes, APA-style tables, variable inspection, and codebooks.</p>
+<p>It helps you:</p>
 <ul>
 <li>
-<strong>Inspect variables</strong> with <code><a href="reference/varlist.html">varlist()</a></code> — names, labels, values, classes, missings. Similar to SPSS “Variable View” or Stata “Variables Manager”.</li>
+<strong>Inspect variables</strong> with <code><a href="reference/varlist.html">varlist()</a></code> and <code><a href="reference/varlist.html">vl()</a></code> for names, labels, values, classes, and missing data.</li>
 <li>
-<strong>Explore distributions</strong> with <code><a href="reference/freq.html">freq()</a></code> and associations with <code><a href="reference/cross_tab.html">cross_tab()</a></code>.</li>
+<strong>Create frequency tables in R</strong> with <code><a href="reference/freq.html">freq()</a></code>.</li>
 <li>
-<strong>Measure associations</strong> with <code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code>, and more — all with confidence intervals and p-values.</li>
+<strong>Create cross-tabulations in R</strong> with <code><a href="reference/cross_tab.html">cross_tab()</a></code>, including percentages, chi-squared tests, and effect sizes.</li>
 <li>
-<strong>Build APA tables</strong> with <code><a href="reference/table_apa.html">table_apa()</a></code> — export to gt, tinytable, flextable, Excel, Word, or clipboard.</li>
+<strong>Measure associations</strong> with <code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code>, and related functions.</li>
 <li>
-<strong>Compute row-wise summaries</strong> with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code>.</li>
+<strong>Build APA-style tables in R</strong> with <code><a href="reference/table_apa.html">table_apa()</a></code> for gt, tinytable, flextable, Excel, Word, or clipboard export.</li>
 <li>
-<strong>Generate codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> — interactive HTML with search, sort, and export.</li>
+<strong>Generate codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
 <li>
-<strong>Extract labels</strong> from column headers with <code><a href="reference/label_from_names.html">label_from_names()</a></code> — useful for LimeSurvey CSV exports.</li>
+<strong>Extract variable labels</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
 </ul>
 <p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types. See <code><a href="articles/spicy.html">vignette("spicy")</a></code> for a full tour.</p>
+</div>
+<div class="section level2">
+<h2 id="common-tasks">Common tasks<a class="anchor" aria-label="anchor" href="#common-tasks"></a>
+</h2>
+<p>If you are looking for a specific workflow, start here:</p>
+<ul>
+<li><a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-apa.html">Create APA-style tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/freq.html">Reference for <code>freq()</code></a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/cross_tab.html">Reference for <code>cross_tab()</code></a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/table_apa.html">Reference for <code>table_apa()</code></a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/varlist.html">Reference for <code>varlist()</code></a></li>
+</ul>
 <hr>
 </div>
 <div class="section level2">

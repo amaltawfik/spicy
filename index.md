@@ -1,51 +1,72 @@
-# spicy
+# spicy: frequency tables, cross-tabulations, and APA tables in R
 
-spicy brings polished, console-first data exploration to R for everyday
-analysis workflows.
+spicy is an R package for frequency tables, cross-tabulations,
+association measures, APA-style tables, and labelled survey data
+workflows.
 
 ## What is spicy?
 
-spicy is an R package for descriptive statistics and data analysis,
-designed for data science and survey research workflows. It covers
-variable inspection, frequency tables, cross-tabulations with
-chi-squared tests and effect sizes, and publication-ready APA-style
-reporting — offering functionality similar to Stata or SPSS but within a
-tidyverse-friendly R environment. It helps you:
+spicy helps you explore categorical and labelled data in R with
+readable, console-first outputs. It is designed for survey research,
+descriptive statistics, and reporting workflows, with tools for
+frequency tables, cross-tabulations with chi-squared tests and effect
+sizes, APA-style tables, variable inspection, and codebooks.
+
+It helps you:
 
 - **Inspect variables** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  — names, labels, values, classes, missings. Similar to SPSS “Variable
-  View” or Stata “Variables Manager”.
-- **Explore distributions** with
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
-  associations with
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+  and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  for names, labels, values, classes, and missing data.
+- **Create frequency tables in R** with
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+- **Create cross-tabulations in R** with
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  including percentages, chi-squared tests, and effect sizes.
 - **Measure associations** with
   [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
   [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
   [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
   [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
-  and more — all with confidence intervals and p-values.
-- **Build APA tables** with
+  and related functions.
+- **Build APA-style tables in R** with
   [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  — export to gt, tinytable, flextable, Excel, Word, or clipboard.
-- **Compute row-wise summaries** with
-  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
-  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
-  and
-  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
+  for gt, tinytable, flextable, Excel, Word, or clipboard export.
 - **Generate codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  — interactive HTML with search, sort, and export.
-- **Extract labels** from column headers with
-  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
-  — useful for LimeSurvey CSV exports.
+  for labelled and survey-style datasets.
+- **Extract variable labels** with
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
+  including LimeSurvey-style headers.
 
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
 common variable types. See
 [`vignette("spicy")`](https://amaltawfik.github.io/spicy/articles/spicy.md)
 for a full tour.
+
+## Common tasks
+
+If you are looking for a specific workflow, start here:
+
+- [Getting started with
+  spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+- [Frequency tables and cross-tabulations in
+  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
+- [Cramer’s V, Phi, and association measures in
+  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Create APA-style tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-apa.html)
+- [Reference for
+  `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
+- [Reference for
+  `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
+- [Reference for
+  `table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.html)
+- [Reference for
+  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
 
 ------------------------------------------------------------------------
 

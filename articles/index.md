@@ -5,10 +5,10 @@
 - [Getting started with
   spicy](https://amaltawfik.github.io/spicy/articles/spicy.md):
 
-  Get started with spicy, an R package for variable inspection,
-  frequency tables, cross-tabulations, association measures, and
-  APA-style reporting. A tidyverse-friendly alternative to SPSS Variable
-  View and Stata tabulation commands.
+  Get started with spicy for descriptive statistics, variable
+  inspection, frequency tables, cross-tabulations, association measures,
+  APA-style tables, and codebooks in R. A tidyverse-friendly alternative
+  to SPSS and Stata for survey and labelled data workflows.
 
 - [Frequency tables and cross-tabulations in
   R](https://amaltawfik.github.io/spicy/articles/frequency-tables.md):
@@ -24,9 +24,16 @@
   Somers’ D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 
-- [Create APA-style tables in
+- [Create APA tables in
   R](https://amaltawfik.github.io/spicy/articles/table-apa.md):
 
-  Build publication-ready APA-style cross-tabulation tables in R with
-  chi-squared p-values, effect sizes, and confidence intervals. Export
-  to gt, tinytable, flextable, Excel, or Word.
+  Create APA tables in R for cross-tabulations with chi-squared
+  p-values, effect sizes, and confidence intervals. Export to gt,
+  tinytable, flextable, Excel, or Word.
+
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
+
+  Explore variables, inspect labels, and build interactive codebooks in
+  R with spicy. Learn how to use varlist(), vl(), code_book(), and
+  label_from_names() for survey and labelled datasets.
