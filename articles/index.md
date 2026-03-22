@@ -17,6 +17,13 @@
   effect sizes, and weighted counts in R using the spicy package. Covers
   sorting, percentages, grouping, and labelled data.
 
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
+
+  Explore variables, inspect labels, and build interactive codebooks in
+  R with spicy. Learn how to use varlist(), vl(), code_book(), and
+  label_from_names() for survey and labelled datasets.
+
 - [Cramer's V, Phi, and association measures for contingency tables in
   R](https://amaltawfik.github.io/spicy/articles/association-measures.md):
 
@@ -30,10 +37,3 @@
   Create APA tables in R for cross-tabulations with chi-squared
   p-values, effect sizes, and confidence intervals. Export to gt,
   tinytable, flextable, Excel, or Word.
-
-- [Explore variables and build codebooks in
-  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
-
-  Explore variables, inspect labels, and build interactive codebooks in
-  R with spicy. Learn how to use varlist(), vl(), code_book(), and
-  label_from_names() for survey and labelled datasets.

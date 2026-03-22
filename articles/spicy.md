@@ -348,6 +348,9 @@ sochealth |>
 ## Learn more
 
 - See
+  [`?varlist`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  to inspect variables, labels, values, and missing data.
+- See
   [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   for the full list of arguments (weights, simulation, association
   measures).
