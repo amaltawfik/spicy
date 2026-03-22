@@ -43,10 +43,10 @@ navbar:
       menu:
         - text: Getting started with spicy
           href: articles/spicy.html
-        - text: Frequency tables and cross-tabulations in R
-          href: articles/frequency-tables.html
         - text: Explore variables and build codebooks in R
           href: articles/variable-exploration.html
+        - text: Frequency tables and cross-tabulations in R
+          href: articles/frequency-tables.html
         - text: "Cramer's V, Phi, and association measures in R"
           href: articles/association-measures.html
         - text: Create APA-style tables in R
@@ -61,8 +61,8 @@ articles:
     navbar: Articles
     contents:
       - spicy
-      - frequency-tables
       - variable-exploration
+      - frequency-tables
       - association-measures
       - table-apa
 
