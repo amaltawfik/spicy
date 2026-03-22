@@ -1,8 +1,12 @@
 ---
-title: "APA tables with table_apa()"
+title: "Create APA-style tables in R"
+description: >
+  Build publication-ready APA-style cross-tabulation tables in R with
+  chi-squared p-values, effect sizes, and confidence intervals. Export
+  to gt, tinytable, flextable, Excel, or Word.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{APA tables with table_apa()}
+  %\VignetteIndexEntry{Create APA-style tables in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

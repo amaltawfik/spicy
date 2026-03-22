@@ -1,0 +1,196 @@
+---
+title: "Frequency tables and cross-tabulations in R"
+description: >
+  Create frequency tables and cross-tabulations with chi-squared tests,
+  effect sizes, and weighted counts in R using the spicy package.
+  Covers sorting, percentages, grouping, and labelled data.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Frequency tables and cross-tabulations in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+`freq()` and `cross_tab()` are the core tabulation functions in spicy.
+They handle factors, labelled variables (from haven or labelled),
+weights, and missing values out of the box. This vignette covers the
+main options using the bundled `sochealth` dataset.
+
+## Frequency tables with freq()
+
+### Basic usage
+
+Pass a data frame and a variable name to get counts and percentages:
+
+```{r freq-basic}
+freq(sochealth, education)
+```
+
+### Sorting
+
+Sort by frequency with `sort = "-"` (decreasing) or `sort = "+"`
+(increasing). Sort alphabetically with `sort = "name+"` or
+`sort = "name-"`:
+
+```{r freq-sort}
+freq(sochealth, education, sort = "-")
+```
+
+### Cumulative percentages
+
+Add cumulative columns with `cum = TRUE`:
+
+```{r freq-cum}
+freq(sochealth, education, cum = TRUE)
+```
+
+### Weighted frequencies
+
+Supply a weight variable with `weights`. By default, `rescale = TRUE`
+adjusts the weighted total to match the unweighted sample size:
+
+```{r freq-weighted}
+freq(sochealth, education, weights = weight)
+```
+
+Set `rescale = FALSE` to keep the raw weighted counts:
+
+```{r freq-weighted-raw}
+freq(sochealth, education, weights = weight, rescale = FALSE)
+```
+
+### Labelled variables
+
+When a variable has value labels (e.g., imported from SPSS or Stata),
+`freq()` shows them by default with the `[code] label` format. Control
+this with `labelled_levels`:
+
+```{r freq-labelled}
+# Labels only (no codes)
+freq(sochealth, sex, labelled_levels = "labels")
+
+# Codes only (no labels)
+freq(sochealth, sex, labelled_levels = "values")
+```
+
+### Custom missing values
+
+Treat specific values as missing with `na_val`:
+
+```{r freq-naval}
+freq(sochealth, income_group, na_val = "High")
+```
+
+## Cross-tabulations with cross_tab()
+
+### Basic two-way table
+
+Cross two variables to get a contingency table with a chi-squared test
+and effect size:
+
+```{r cross-basic}
+cross_tab(sochealth, smoking, education)
+```
+
+### Row and column percentages
+
+Use `percent = "row"` or `percent = "col"` to display percentages
+instead of raw counts:
+
+```{r cross-col}
+cross_tab(sochealth, smoking, education, percent = "col")
+```
+
+```{r cross-row}
+cross_tab(sochealth, smoking, education, percent = "row")
+```
+
+### Grouping with by
+
+Stratify the table by a third variable:
+
+```{r cross-by}
+cross_tab(sochealth, smoking, education, by = sex)
+```
+
+### Ordinal variables
+
+When both variables are ordered factors, `cross_tab()` automatically
+switches from Cramer's V to Kendall's Tau-b:
+
+```{r cross-ordinal}
+cross_tab(sochealth, self_rated_health, education)
+```
+
+You can override the automatic selection with `assoc_measure`:
+
+```{r cross-assoc}
+cross_tab(sochealth, smoking, education, assoc_measure = "lambda")
+```
+
+### Confidence intervals for effect sizes
+
+Add a 95% confidence interval for the association measure with
+`assoc_ci = TRUE`:
+
+```{r cross-ci}
+cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
+```
+
+### Weighted cross-tabulations
+
+Weights work the same as in `freq()`:
+
+```{r cross-weighted}
+cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
+```
+
+### Monte Carlo simulation
+
+When expected cell counts are small, use simulated p-values:
+
+```{r cross-simulate}
+cross_tab(sochealth, smoking, education,
+          simulate_p = TRUE, simulate_B = 5000)
+```
+
+### Data frame output
+
+Set `styled = FALSE` to get a plain data frame for further processing:
+
+```{r cross-df}
+cross_tab(sochealth, smoking, education,
+          percent = "col", styled = FALSE)
+```
+
+## Setting global defaults
+
+You can set package-wide defaults with `options()` so you don't have to
+repeat arguments:
+
+```{r options, eval = FALSE}
+options(
+  spicy.percent   = "column",
+  spicy.simulate_p = TRUE,
+  spicy.rescale   = TRUE
+)
+```
+
+## Learn more
+
+- `vignette("association-measures")` — choosing the right effect size
+  for your contingency table.
+- `vignette("table-apa")` — building publication-ready APA-style
+  reporting tables.
+- `?freq` and `?cross_tab` for the full argument reference.
