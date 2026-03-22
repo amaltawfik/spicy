@@ -57,24 +57,43 @@ freq(sochealth, education, sort = "-")
 #> Data: sochealth
 ```
 
+Sort alphabetically:
+
+``` r
+freq(sochealth, education, sort = "name+")
+#> Frequency table: education
+#> 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    261     21.8 
+#>           │ Tertiary           400     33.3 
+#>           │ Upper secondary    539     44.9 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+```
+
 ### Cumulative percentages
 
 Add cumulative columns with `cum = TRUE`:
 
 ``` r
-freq(sochealth, education, cum = TRUE)
-#> Frequency table: education
+freq(sochealth, smoking, cum = TRUE)
+#> Frequency table: smoking
 #> 
-#>  Category │ Values           Freq.  Percent  Cum. Percent 
-#> ──────────┼───────────────────────────────────────────────
-#>  Valid    │ Lower secondary    261     21.8          21.8 
-#>           │ Upper secondary    539     44.9          66.7 
-#>           │ Tertiary           400     33.3         100.0 
-#> ──────────┼───────────────────────────────────────────────
-#>  Total    │                   1200    100.0         100.0 
+#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent 
+#> ──────────┼─────────────────────────────────────────────────────────────────────────
+#>  Valid    │ No        926     77.2           78.8          77.2                78.8 
+#>           │ Yes       249     20.8           21.2          97.9               100.0 
+#>  Missing  │ NA         25      2.1                        100.0                     
+#> ──────────┼─────────────────────────────────────────────────────────────────────────
+#>  Total    │          1200    100.0          100.0         100.0               100.0 
 #> 
-#> Label: Highest education level
-#> Class: ordered, factor
+#> Label: Current smoker
+#> Class: factor
 #> Data: sochealth
 ```
 
@@ -123,41 +142,63 @@ freq(sochealth, education, weights = weight, rescale = FALSE)
 
 ### Labelled variables
 
-When a variable has value labels (e.g., imported from SPSS or Stata),
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) shows
-them by default with the `[code] label` format. Control this with
+When a variable has value labels (e.g., imported from SPSS or Stata with
+haven), [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+shows them by default with the `[code] label` format. Control this with
 `labelled_levels`:
 
 ``` r
+# Create a labelled version of the smoking variable
+sh <- sochealth
+sh$smoking_lbl <- labelled::labelled(
+  ifelse(sh$smoking == "Yes", 1L, 0L),
+  labels = c("Non-smoker" = 0L, "Current smoker" = 1L)
+)
+
+# Default: [code] label
+freq(sh, smoking_lbl)
+#> Frequency table: smoking_lbl
+#> 
+#>  Category │ Values              Freq.  Percent  Valid Percent 
+#> ──────────┼───────────────────────────────────────────────────
+#>  Valid    │ [0] Non-smoker        926     77.2           78.8 
+#>           │ [1] Current smoker    249     20.8           21.2 
+#>  Missing  │ NA                     25      2.1                
+#> ──────────┼───────────────────────────────────────────────────
+#>  Total    │                      1200    100.0          100.0 
+#> 
+#> Class: haven_labelled, vctrs_vctr, integer
+#> Data: sh
+
 # Labels only (no codes)
-freq(sochealth, sex, labelled_levels = "labels")
-#> Frequency table: sex
+freq(sh, smoking_lbl, labelled_levels = "labels")
+#> Frequency table: smoking_lbl
 #> 
-#>  Category │ Values  Freq.  Percent 
-#> ──────────┼────────────────────────
-#>  Valid    │ Female    620     51.7 
-#>           │ Male      580     48.3 
-#> ──────────┼────────────────────────
-#>  Total    │          1200    100.0 
+#>  Category │ Values          Freq.  Percent  Valid Percent 
+#> ──────────┼───────────────────────────────────────────────
+#>  Valid    │ Non-smoker        926     77.2           78.8 
+#>           │ Current smoker    249     20.8           21.2 
+#>  Missing  │ NA                 25      2.1                
+#> ──────────┼───────────────────────────────────────────────
+#>  Total    │                  1200    100.0          100.0 
 #> 
-#> Label: Sex
-#> Class: factor
-#> Data: sochealth
+#> Class: haven_labelled, vctrs_vctr, integer
+#> Data: sh
 
 # Codes only (no labels)
-freq(sochealth, sex, labelled_levels = "values")
-#> Frequency table: sex
+freq(sh, smoking_lbl, labelled_levels = "values")
+#> Frequency table: smoking_lbl
 #> 
-#>  Category │ Values  Freq.  Percent 
-#> ──────────┼────────────────────────
-#>  Valid    │ Female    620     51.7 
-#>           │ Male      580     48.3 
-#> ──────────┼────────────────────────
-#>  Total    │          1200    100.0 
+#>  Category │ Values  Freq.  Percent  Valid Percent 
+#> ──────────┼───────────────────────────────────────
+#>  Valid    │ 0         926     77.2           78.8 
+#>           │ 1         249     20.8           21.2 
+#>  Missing  │ NA         25      2.1                
+#> ──────────┼───────────────────────────────────────
+#>  Total    │          1200    100.0          100.0 
 #> 
-#> Label: Sex
-#> Class: factor
-#> Data: sochealth
+#> Class: haven_labelled, vctrs_vctr, integer
+#> Data: sh
 ```
 
 ### Custom missing values
@@ -271,6 +312,109 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> Cramer's V = 0.17
 ```
 
+For more than one grouping variable, use
+[`interaction()`](https://rdrr.io/r/base/interaction.html):
+
+``` r
+cross_tab(sochealth, smoking, education,
+          by = interaction(sex, age_group))
+#> Crosstable: smoking x education (N) | sex x age_group = Female.25-34
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   23                    49             29 │        101 
+#>  Yes         │                    9                     9              7 │         25 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   32                    58             36 │        126 
+#> 
+#> Chi-2(2) = 2.1, p = 0.356
+#> Cramer's V = 0.13
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                    9                    42             32 │         83 
+#>  Yes         │                   11                    11              4 │         26 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   20                    53             36 │        109 
+#> 
+#> Chi-2(2) = 14.2, p < 0.001
+#> Cramer's V = 0.36
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   24                    73             48 │        145 
+#>  Yes         │                   10                    20              8 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   34                    93             56 │        183 
+#> 
+#> Chi-2(2) = 3.0, p = 0.223
+#> Cramer's V = 0.13
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   33                    59             60 │        152 
+#>  Yes         │                   14                    17              7 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   47                    76             67 │        190 
+#> 
+#> Chi-2(2) = 6.9, p = 0.032
+#> Cramer's V = 0.19
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   28                    63             45 │        136 
+#>  Yes         │                    8                    16              6 │         30 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   36                    79             51 │        166 
+#> 
+#> Chi-2(2) = 2.0, p = 0.360
+#> Cramer's V = 0.11
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   28                    58             42 │        128 
+#>  Yes         │                    8                    13              5 │         26 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   36                    71             47 │        154 
+#> 
+#> Chi-2(2) = 2.1, p = 0.343
+#> Cramer's V = 0.12
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   20                    35             38 │         93 
+#>  Yes         │                   11                    17             10 │         38 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   31                    52             48 │        131 
+#> 
+#> Chi-2(2) = 2.5, p = 0.282
+#> Cramer's V = 0.14
+#> 
+#> Crosstable: smoking x education (N) | sex x age_group = Male.65-75
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   14                    36             38 │         88 
+#>  Yes         │                    7                     9             12 │         28 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                   21                    45             50 │        116 
+#> 
+#> Chi-2(2) = 1.4, p = 0.499
+#> Cramer's V = 0.11
+```
+
 ### Ordinal variables
 
 When both variables are ordered factors,
@@ -297,18 +441,20 @@ cross_tab(sochealth, self_rated_health, education)
 You can override the automatic selection with `assoc_measure`:
 
 ``` r
-cross_tab(sochealth, smoking, education, assoc_measure = "lambda")
-#> Crosstable: smoking x education (N)
+cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
+#> Crosstable: self_rated_health x education (N)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                  179                   415            332 │        926 
-#>  Yes         │                   78                   112             59 │        249 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  257                   527            391 │       1175 
+#>  Values         │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Poor           │                   28                    28              5 │         61 
+#>  Fair           │                   86                   118             62 │        266 
+#>  Good           │                  102                   263            193 │        558 
+#>  Very good      │                   44                   118            133 │        295 
+#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total          │                  260                   527            393 │       1180 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
-#> Lambda = 0.00
+#> Chi-2(6) = 73.2, p < 0.001
+#> Goodman-Kruskal Gamma = 0.31
 ```
 
 ### Confidence intervals for effect sizes
@@ -334,7 +480,27 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 ### Weighted cross-tabulations
 
 Weights work the same as in
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md):
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+Without rescaling, the table shows raw weighted counts:
+
+``` r
+cross_tab(sochealth, smoking, education, weights = weight)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  176                   417            324 │        917 
+#>  Yes         │                   79                   114             60 │        253 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  255                   531            384 │       1170 
+#> 
+#> Chi-2(2) = 21.3, p < 0.001
+#> Cramer's V = 0.13
+#> Weight: weight
+```
+
+With `rescale = TRUE`, the weighted total matches the unweighted sample
+size:
 
 ``` r
 cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
