@@ -1,5 +1,5 @@
 
-# spicy <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="left" height="139" alt="spicy website" /></a>
+# spicy: frequency tables, cross-tabulations, and APA tables in R <a href="https://amaltawfik.github.io/spicy/"><img src="man/figures/logo.png" align="left" height="139" alt="spicy website" /></a>
 
 <!-- badges: start -->
 
@@ -18,37 +18,59 @@ License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 <!-- badges: end -->
 
-spicy brings polished, console-first data exploration to R for everyday
-analysis workflows.
+spicy is an R package for frequency tables, cross-tabulations,
+association measures, APA-style tables, and labelled survey data
+workflows.
 
 ## What is spicy?
 
-spicy is an R package for descriptive statistics and data analysis,
-designed for data science and survey research workflows. It covers
-variable inspection, frequency tables, cross-tabulations with
-chi-squared tests and effect sizes, and publication-ready APA-style
-reporting — offering functionality similar to Stata or SPSS but within a
-tidyverse-friendly R environment. It helps you:
+spicy helps you explore categorical and labelled data in R with
+readable, console-first outputs. It is designed for survey research,
+descriptive statistics, and reporting workflows, with tools for
+frequency tables, cross-tabulations with chi-squared tests and effect
+sizes, APA-style tables, variable inspection, and codebooks.
 
-- **Inspect variables** with `varlist()` — names, labels, values,
-  classes, missings. Similar to SPSS “Variable View” or Stata “Variables
-  Manager”.
-- **Explore distributions** with `freq()` and associations with
-  `cross_tab()`.
+It helps you:
+
+- **Inspect variables** with `varlist()` and `vl()` for names, labels,
+  values, classes, and missing data.
+- **Create frequency tables in R** with `freq()`.
+- **Create cross-tabulations in R** with `cross_tab()`, including
+  percentages, chi-squared tests, and effect sizes.
 - **Measure associations** with `cramer_v()`, `phi()`, `gamma_gk()`,
-  `kendall_tau_b()`, `somers_d()`, and more — all with confidence
-  intervals and p-values.
-- **Build APA tables** with `table_apa()` — export to gt, tinytable,
-  flextable, Excel, Word, or clipboard.
-- **Compute row-wise summaries** with `mean_n()`, `sum_n()`, and
-  `count_n()`.
-- **Generate codebooks** with `code_book()` — interactive HTML with
-  search, sort, and export.
-- **Extract labels** from column headers with `label_from_names()` —
-  useful for LimeSurvey CSV exports.
+  `kendall_tau_b()`, `somers_d()`, and related functions.
+- **Build APA-style tables in R** with `table_apa()` for gt, tinytable,
+  flextable, Excel, Word, or clipboard export.
+- **Generate codebooks** with `code_book()` for labelled and
+  survey-style datasets.
+- **Extract variable labels** with `label_from_names()`, including
+  LimeSurvey-style headers.
 
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
 common variable types. See `vignette("spicy")` for a full tour.
+
+## Common tasks
+
+If you are looking for a specific workflow, start here:
+
+- [Getting started with
+  spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+- [Frequency tables and cross-tabulations in
+  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
+- [Cramer’s V, Phi, and association measures in
+  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Create APA-style tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-apa.html)
+- [Reference for
+  `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
+- [Reference for
+  `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
+- [Reference for
+  `table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.html)
+- [Reference for
+  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
 
 ------------------------------------------------------------------------
 

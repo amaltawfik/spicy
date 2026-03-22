@@ -1,10 +1,11 @@
 ---
 title: "Getting started with spicy"
 description: >
-  Get started with spicy, an R package for variable inspection,
-  frequency tables, cross-tabulations, association measures, and
-  APA-style reporting. A tidyverse-friendly alternative to SPSS
-  Variable View and Stata tabulation commands.
+  Get started with spicy for descriptive statistics, variable
+  inspection, frequency tables, cross-tabulations, association
+  measures, APA-style tables, and codebooks in R. A tidyverse-friendly
+  alternative to SPSS and Stata for survey and labelled data
+  workflows.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Getting started with spicy}

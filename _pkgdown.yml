@@ -1,13 +1,13 @@
 url: https://amaltawfik.github.io/spicy/
 
 home:
-  title: "spicy: frequency tables, cross-tabulations, and APA reporting in R"
+  title: "spicy: frequency tables, cross-tabulations, APA tables, and codebooks in R"
   description: >
     R package for frequency tables, cross-tabulations with chi-squared
     tests and effect sizes, association measures (Cramer's V, Phi,
-    Gamma, Kendall's Tau-b, Somers' D), and APA-style reporting tables.
-    A tidyverse-friendly alternative to SPSS and Stata for survey and
-    social science data analysis.
+    Gamma, Kendall's Tau-b, Somers' D), APA-style tables, and
+    interactive codebooks. A tidyverse-friendly alternative to SPSS and
+    Stata for survey and social science data analysis.
 
 template:
   bootstrap: 5
@@ -49,6 +49,8 @@ navbar:
           href: articles/association-measures.html
         - text: Create APA-style tables in R
           href: articles/table-apa.html
+        - text: Explore variables and build codebooks in R
+          href: articles/variable-exploration.html
     github:
       icon: fa-github
       aria-label: GitHub repository
@@ -62,6 +64,7 @@ articles:
       - frequency-tables
       - association-measures
       - table-apa
+      - variable-exploration
 
 reference:
   - title: Variable Metadata

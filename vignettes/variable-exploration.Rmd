@@ -1,0 +1,146 @@
+---
+title: "Explore variables and build codebooks in R"
+description: >
+  Explore variables, inspect labels, and build interactive codebooks in R
+  with spicy. Learn how to use varlist(), vl(), code_book(), and
+  label_from_names() for survey and labelled datasets.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Explore variables and build codebooks in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+Before you build frequency tables or cross-tabulations, it is often worth
+checking how your variables are named, labelled, and coded.
+
+spicy provides a simple workflow for variable exploration and
+documentation in R. You can derive labels from imported column names,
+inspect variables with `varlist()` or `vl()`, and build an interactive
+codebook with `code_book()`.
+
+This vignette focuses on three common tasks:
+
+- clean imported column names and recover variable labels with
+  `label_from_names()`
+- inspect variables, labels, values, classes, and missing data with
+  `varlist()` and `vl()`
+- generate an interactive codebook for review or export with
+  `code_book()`
+
+These tools are especially useful for survey datasets, labelled data,
+and imported files where variable names and labels need to be checked
+before analysis.
+
+## Why inspect variables before analysis?
+
+Variable inspection helps catch common problems early: unclear names,
+missing labels, unexpected coding, and variables with many missing
+values. A quick review of your dataset also makes it easier to choose
+which variables to tabulate, summarize, or report later.
+
+## Recover labels from imported column names
+
+Some imported files store both a variable name and a variable label in
+the column header. `label_from_names()` splits names of the form
+`name<sep>label`, renames the columns, and stores the label as a proper
+variable label.
+
+```{r label-from-names}
+df <- tibble::tibble(
+  "age. Age of respondent" = c(25, 30, 41),
+  "edu. Highest education level" = c("Lower", "Upper", "Tertiary"),
+  "smoke. Current smoker" = c("No", "Yes", "No")
+)
+
+out <- label_from_names(df)
+labelled::var_label(out)
+```
+
+This is especially useful for LimeSurvey-style exports and similar files
+where labels arrive in the column names instead of the variable
+metadata.
+
+## Inspect variables with varlist()
+
+`varlist()` gives a compact summary of each variable, including its
+name, label, representative values, class, number of distinct values,
+number of valid observations, and missing values.
+
+```{r varlist-all}
+varlist(sochealth, tbl = TRUE)
+```
+
+For a focused inspection, select only the variables you want to review:
+
+```{r varlist-selected}
+varlist(sochealth, smoking, education, income_group, tbl = TRUE)
+```
+
+This is often enough to confirm that labels, factor levels, and missing
+values look correct before moving on to tabulations.
+
+## Select subsets of variables
+
+`varlist()` supports tidyselect, which makes it easy to inspect a subset
+of variables by name pattern or type.
+
+```{r varlist-tidyselect}
+varlist(sochealth, starts_with("life_sat"), tbl = TRUE)
+```
+
+```{r varlist-numeric}
+varlist(sochealth, where(is.numeric), tbl = TRUE)
+```
+
+If you prefer a shorter call in interactive work, `vl()` is a shorthand
+for `varlist()`:
+
+```{r vl-example}
+vl(sochealth, starts_with("bmi"), tbl = TRUE)
+```
+
+## Build an interactive codebook
+
+When you want a searchable and exportable overview of the whole dataset,
+`code_book()` builds an interactive codebook in the Viewer.
+
+```{r code-book-basic}
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(sochealth)
+}
+```
+
+You can also request a fuller display of values or include missing
+values explicitly in the summary:
+
+```{r code-book-values}
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(sochealth, values = TRUE, include_na = TRUE)
+}
+```
+
+This is useful when reviewing a dataset with collaborators or preparing
+documentation before analysis.
+
+## When to use varlist() and code_book()
+
+Use `varlist()` when you want a quick summary in a script or a tibble
+you can inspect directly.
+
+Use `vl()` when you want the same summary with a shorter call in
+interactive work.
+
+Use `code_book()` when you want a searchable, interactive codebook for
+review or export.
