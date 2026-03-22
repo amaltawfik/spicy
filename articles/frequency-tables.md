@@ -1,0 +1,409 @@
+# Frequency tables and cross-tabulations in R
+
+``` r
+library(spicy)
+```
+
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+are the core tabulation functions in spicy. They handle factors,
+labelled variables (from haven or labelled), weights, and missing values
+out of the box. This vignette covers the main options using the bundled
+`sochealth` dataset.
+
+## Frequency tables with freq()
+
+### Basic usage
+
+Pass a data frame and a variable name to get counts and percentages:
+
+``` r
+freq(sochealth, education)
+#> Frequency table: education
+#> 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    261     21.8 
+#>           │ Upper secondary    539     44.9 
+#>           │ Tertiary           400     33.3 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+```
+
+### Sorting
+
+Sort by frequency with `sort = "-"` (decreasing) or `sort = "+"`
+(increasing). Sort alphabetically with `sort = "name+"` or
+`sort = "name-"`:
+
+``` r
+freq(sochealth, education, sort = "-")
+#> Frequency table: education
+#> 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Upper secondary    539     44.9 
+#>           │ Tertiary           400     33.3 
+#>           │ Lower secondary    261     21.8 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+```
+
+### Cumulative percentages
+
+Add cumulative columns with `cum = TRUE`:
+
+``` r
+freq(sochealth, education, cum = TRUE)
+#> Frequency table: education
+#> 
+#>  Category │ Values           Freq.  Percent  Cum. Percent 
+#> ──────────┼───────────────────────────────────────────────
+#>  Valid    │ Lower secondary    261     21.8          21.8 
+#>           │ Upper secondary    539     44.9          66.7 
+#>           │ Tertiary           400     33.3         100.0 
+#> ──────────┼───────────────────────────────────────────────
+#>  Total    │                   1200    100.0         100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+```
+
+### Weighted frequencies
+
+Supply a weight variable with `weights`. By default, `rescale = TRUE`
+adjusts the weighted total to match the unweighted sample size:
+
+``` r
+freq(sochealth, education, weights = weight)
+#> Frequency table: education
+#> 
+#>  Category │ Values            Freq.  Percent 
+#> ──────────┼──────────────────────────────────
+#>  Valid    │ Lower secondary  258.62     21.6 
+#>           │ Upper secondary  546.40     45.5 
+#>           │ Tertiary         394.99     32.9 
+#> ──────────┼──────────────────────────────────
+#>  Total    │                    1200    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+#> Weight: weight (rescaled)
+```
+
+Set `rescale = FALSE` to keep the raw weighted counts:
+
+``` r
+freq(sochealth, education, weights = weight, rescale = FALSE)
+#> Frequency table: education
+#> 
+#>  Category │ Values             Freq.  Percent 
+#> ──────────┼───────────────────────────────────
+#>  Valid    │ Lower secondary   257.86     21.6 
+#>           │ Upper secondary   544.79     45.5 
+#>           │ Tertiary          393.82     32.9 
+#> ──────────┼───────────────────────────────────
+#>  Total    │                  1196.47    100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+#> Weight: weight
+```
+
+### Labelled variables
+
+When a variable has value labels (e.g., imported from SPSS or Stata),
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) shows
+them by default with the `[code] label` format. Control this with
+`labelled_levels`:
+
+``` r
+# Labels only (no codes)
+freq(sochealth, sex, labelled_levels = "labels")
+#> Frequency table: sex
+#> 
+#>  Category │ Values  Freq.  Percent 
+#> ──────────┼────────────────────────
+#>  Valid    │ Female    620     51.7 
+#>           │ Male      580     48.3 
+#> ──────────┼────────────────────────
+#>  Total    │          1200    100.0 
+#> 
+#> Label: Sex
+#> Class: factor
+#> Data: sochealth
+
+# Codes only (no labels)
+freq(sochealth, sex, labelled_levels = "values")
+#> Frequency table: sex
+#> 
+#>  Category │ Values  Freq.  Percent 
+#> ──────────┼────────────────────────
+#>  Valid    │ Female    620     51.7 
+#>           │ Male      580     48.3 
+#> ──────────┼────────────────────────
+#>  Total    │          1200    100.0 
+#> 
+#> Label: Sex
+#> Class: factor
+#> Data: sochealth
+```
+
+### Custom missing values
+
+Treat specific values as missing with `na_val`:
+
+``` r
+freq(sochealth, income_group, na_val = "High")
+#> Frequency table: income_group
+#> 
+#>  Category │ Values        Freq.  Percent  Valid Percent 
+#> ──────────┼─────────────────────────────────────────────
+#>  Valid    │ Low             247     20.6           25.6 
+#>           │ Lower middle    388     32.3           40.3 
+#>           │ Upper middle    328     27.3           34.1 
+#>  Missing  │ NA              237     19.8                
+#> ──────────┼─────────────────────────────────────────────
+#>  Total    │                1200    100.0          100.0 
+#> 
+#> Label: Household income group
+#> Class: ordered, factor
+#> Data: sochealth
+```
+
+## Cross-tabulations with cross_tab()
+
+### Basic two-way table
+
+Cross two variables to get a contingency table with a chi-squared test
+and effect size:
+
+``` r
+cross_tab(sochealth, smoking, education)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
+```
+
+### Row and column percentages
+
+Use `percent = "row"` or `percent = "col"` to display percentages
+instead of raw counts:
+
+``` r
+cross_tab(sochealth, smoking, education, percent = "col")
+#> Crosstable: smoking x education (Column %)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                 69.6                  78.7           84.9 │       78.8 
+#>  Yes         │                 30.4                  21.3           15.1 │       21.2 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                100.0                 100.0          100.0 │      100.0 
+#>  N           │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
+```
+
+``` r
+cross_tab(sochealth, smoking, education, percent = "row")
+#> Crosstable: smoking x education (Row %)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total          N 
+#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
+#>  No          │                 19.3                  44.8           35.9 │      100.0        926 
+#>  Yes         │                 31.3                  45.0           23.7 │      100.0        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼───────────────────────
+#>  Total       │                 21.9                  44.9           33.3 │      100.0       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14
+```
+
+### Grouping with by
+
+Stratify the table by a third variable:
+
+``` r
+cross_tab(sochealth, smoking, education, by = sex)
+#> Crosstable: smoking x education (N) | sex = Female
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   95                   220            160 │        475 
+#>  Yes         │                   38                    62             31 │        131 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  133                   282            191 │        606 
+#> 
+#> Chi-2(2) = 7.1, p = 0.029
+#> Cramer's V = 0.11
+#> 
+#> Crosstable: smoking x education (N) | sex = Male
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                   84                   195            172 │        451 
+#>  Yes         │                   40                    50             28 │        118 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  124                   245            200 │        569 
+#> 
+#> Chi-2(2) = 15.6, p < 0.001
+#> Cramer's V = 0.17
+```
+
+### Ordinal variables
+
+When both variables are ordered factors,
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+automatically switches from Cramer’s V to Kendall’s Tau-b:
+
+``` r
+cross_tab(sochealth, self_rated_health, education)
+#> Crosstable: self_rated_health x education (N)
+#> 
+#>  Values         │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Poor           │                   28                    28              5 │         61 
+#>  Fair           │                   86                   118             62 │        266 
+#>  Good           │                  102                   263            193 │        558 
+#>  Very good      │                   44                   118            133 │        295 
+#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total          │                  260                   527            393 │       1180 
+#> 
+#> Chi-2(6) = 73.2, p < 0.001
+#> Kendall's Tau-b = 0.20
+```
+
+You can override the automatic selection with `assoc_measure`:
+
+``` r
+cross_tab(sochealth, smoking, education, assoc_measure = "lambda")
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Lambda = 0.00
+```
+
+### Confidence intervals for effect sizes
+
+Add a 95% confidence interval for the association measure with
+`assoc_ci = TRUE`:
+
+``` r
+cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(2) = 21.6, p < 0.001
+#> Cramer's V = 0.14, 95% CI [0.08, 0.19]
+```
+
+### Weighted cross-tabulations
+
+Weights work the same as in
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md):
+
+``` r
+cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  176                   419            325 │        921 
+#>  Yes         │                   79                   115             60 │        254 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  255                   534            385 │       1175 
+#> 
+#> Chi-2(2) = 21.4, p < 0.001
+#> Cramer's V = 0.13
+#> Weight: weight (rescaled)
+```
+
+### Monte Carlo simulation
+
+When expected cell counts are small, use simulated p-values:
+
+``` r
+cross_tab(sochealth, smoking, education,
+          simulate_p = TRUE, simulate_B = 5000)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  No          │                  179                   415            332 │        926 
+#>  Yes         │                   78                   112             59 │        249 
+#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
+#>  Total       │                  257                   527            391 │       1175 
+#> 
+#> Chi-2(NA) = 21.6, p < 0.001 (simulated)
+#> Cramer's V = 0.14
+```
+
+### Data frame output
+
+Set `styled = FALSE` to get a plain data frame for further processing:
+
+``` r
+cross_tab(sochealth, smoking, education,
+          percent = "col", styled = FALSE)
+#>   Values Lower secondary Upper secondary Tertiary
+#> 1     No            69.6            78.7     84.9
+#> 2    Yes            30.4            21.3     15.1
+```
+
+## Setting global defaults
+
+You can set package-wide defaults with
+[`options()`](https://rdrr.io/r/base/options.html) so you don’t have to
+repeat arguments:
+
+``` r
+options(
+  spicy.percent   = "column",
+  spicy.simulate_p = TRUE,
+  spicy.rescale   = TRUE
+)
+```
+
+## Learn more
+
+- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+  — choosing the right effect size for your contingency table.
+- [`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)
+  — building publication-ready APA-style reporting tables.
+- [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  for the full argument reference.

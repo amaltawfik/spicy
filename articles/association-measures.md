@@ -1,4 +1,4 @@
-# Association measures for contingency tables
+# Cramer's V, Phi, and association measures for contingency tables in R
 
 ``` r
 library(spicy)
