@@ -45,12 +45,12 @@ navbar:
           href: articles/spicy.html
         - text: Frequency tables and cross-tabulations in R
           href: articles/frequency-tables.html
+        - text: Explore variables and build codebooks in R
+          href: articles/variable-exploration.html
         - text: "Cramer's V, Phi, and association measures in R"
           href: articles/association-measures.html
         - text: Create APA-style tables in R
           href: articles/table-apa.html
-        - text: Explore variables and build codebooks in R
-          href: articles/variable-exploration.html
     github:
       icon: fa-github
       aria-label: GitHub repository
@@ -62,9 +62,9 @@ articles:
     contents:
       - spicy
       - frequency-tables
+      - variable-exploration
       - association-measures
       - table-apa
-      - variable-exploration
 
 reference:
   - title: Variable Metadata

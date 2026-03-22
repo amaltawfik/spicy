@@ -176,6 +176,7 @@ sochealth |>
 
 ## Learn more
 
+- See `?varlist` to inspect variables, labels, values, and missing data.
 - See `?cross_tab` for the full list of arguments (weights, simulation,
   association measures).
 - See `?table_apa` for all output formats and customization options.
