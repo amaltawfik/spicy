@@ -70,9 +70,14 @@ the default separator is `". "`.
 
 ## Inspect variables with varlist()
 
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+gives a compact summary of each variable, including its name, label,
+representative values, class, number of distinct values, number of valid
+observations, and missing values.
+
 In RStudio or Positron, the main way to use
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-is interactively. Calling it without `tbl = TRUE` opens a searchable,
+is interactively. With its default behavior, it opens a searchable,
 sortable variable overview in the Viewer, which makes it easy to scan
 labels, look for specific variables, filter what you want to inspect,
 and review the structure of a dataset before analysis.
@@ -81,10 +86,16 @@ and review the structure of a dataset before analysis.
 varlist(sochealth)
 ```
 
-[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-also gives a compact summary of each variable, including its name,
-label, representative values, class, number of distinct values, number
-of valid observations, and missing values.
+If you prefer a shorter call in interactive work,
+[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) is a
+shortcut for
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
+
+``` r
+vl(sochealth)
+```
+
+If you want the same summary returned as a tibble, use `tbl = TRUE`:
 
 ``` r
 varlist(sochealth, tbl = TRUE)
@@ -104,6 +115,39 @@ varlist(sochealth, tbl = TRUE)
 #> # ℹ 14 more rows
 ```
 
+If you want the `Values` column to include explicit missing values, use
+`include_na = TRUE`:
+
+``` r
+head(subset(varlist(sochealth, include_na = TRUE, tbl = TRUE), NAs > 0))
+#> # A tibble: 6 × 7
+#>   Variable           Label                 Values Class N_distinct N_valid   NAs
+#>   <chr>              <chr>                 <chr>  <chr>      <int>   <int> <int>
+#> 1 income_group       Household income gro… Low, … orde…          4    1182    18
+#> 2 smoking            Current smoker        No, Y… fact…          2    1175    25
+#> 3 self_rated_health  Self-rated health     Poor,… orde…          4    1180    20
+#> 4 bmi                Body mass index       16, 1… nume…        177    1188    12
+#> 5 bmi_category       BMI category          Norma… orde…          3    1188    12
+#> 6 political_position Political position (… 0, 1,… nume…         11    1185    15
+```
+
+If you want to display all unique non-missing values in the `Values`
+column, use `values = TRUE`. This is especially useful for variables
+with a small number of distinct values:
+
+``` r
+head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
+#> # A tibble: 6 × 7
+#>   Variable          Label                  Values Class N_distinct N_valid   NAs
+#>   <chr>             <chr>                  <chr>  <chr>      <int>   <int> <int>
+#> 1 sex               Sex                    Femal… fact…          2    1200     0
+#> 2 age_group         Age group              25-34… orde…          4    1200     0
+#> 3 education         Highest education lev… Lower… orde…          3    1200     0
+#> 4 social_class      Subjective social cla… Lower… orde…          5    1200     0
+#> 5 employment_status Employment status      Emplo… fact…          4    1200     0
+#> 6 income_group      Household income group High,… orde…          4    1182    18
+```
+
 For a focused inspection, select only the variables you want to review:
 
 ``` r
@@ -118,15 +162,6 @@ varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 
 This is often enough to confirm that labels, factor levels, and missing
 values look correct before moving on to tabulations.
-
-If you prefer a shorter call in interactive work,
-[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md) is a
-shortcut for
-[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
-
-``` r
-vl(sochealth)
-```
 
 ## Select subsets of variables
 

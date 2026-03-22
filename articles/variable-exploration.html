@@ -165,17 +165,23 @@ is <code>". "</code>.</p>
 <div class="section level2">
 <h2 id="inspect-variables-with-varlist">Inspect variables with varlist()<a class="anchor" aria-label="anchor" href="#inspect-variables-with-varlist"></a>
 </h2>
-<p>In RStudio or Positron, the main way to use <code><a href="../reference/varlist.html">varlist()</a></code> is
-interactively. Calling it without <code>tbl = TRUE</code> opens a
-searchable, sortable variable overview in the Viewer, which makes it
-easy to scan labels, look for specific variables, filter what you want
-to inspect, and review the structure of a dataset before analysis.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/varlist.html">varlist()</a></code> also gives a compact summary of each variable,
+<p><code><a href="../reference/varlist.html">varlist()</a></code> gives a compact summary of each variable,
 including its name, label, representative values, class, number of
 distinct values, number of valid observations, and missing values.</p>
+<p>In RStudio or Positron, the main way to use <code><a href="../reference/varlist.html">varlist()</a></code> is
+interactively. With its default behavior, it opens a searchable,
+sortable variable overview in the Viewer, which makes it easy to scan
+labels, look for specific variables, filter what you want to inspect,
+and review the structure of a dataset before analysis.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></code></pre></div>
+<p>If you prefer a shorter call in interactive work, <code><a href="../reference/varlist.html">vl()</a></code>
+is a shortcut for <code><a href="../reference/varlist.html">varlist()</a></code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">vl</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></code></pre></div>
+<p>If you want the same summary returned as a tibble, use
+<code>tbl = TRUE</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 7</span></span></span>
 <span><span class="co">#&gt;    Variable          Label                 Values Class N_distinct N_valid   NAs</span></span>
@@ -191,9 +197,37 @@ distinct values, number of valid observations, and missing values.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+<p>If you want the <code>Values</code> column to include explicit
+missing values, use <code>include_na = TRUE</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, include_na <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">NAs</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
+<span><span class="co">#&gt;   Variable           Label                 Values Class N_distinct N_valid   NAs</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> income_group       Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> smoking            Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> self_rated_health  Self-rated health     Poor,… orde…          4    <span style="text-decoration: underline;">1</span>180    20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi                Body mass index       16, 1… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi_category       BMI category          Norma… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> political_position Political position (… 0, 1,… nume…         11    <span style="text-decoration: underline;">1</span>185    15</span></span></code></pre></div>
+<p>If you want to display all unique non-missing values in the
+<code>Values</code> column, use <code>values = TRUE</code>. This is
+especially useful for variables with a small number of distinct
+values:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">N_distinct</span> <span class="op">&lt;=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
+<span><span class="co">#&gt;   Variable          Label                  Values Class N_distinct N_valid   NAs</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sex               Sex                    Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> age_group         Age group              25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> education         Highest education lev… Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> social_class      Subjective social cla… Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> employment_status Employment status      Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> income_group      Household income group High,… orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span></code></pre></div>
 <p>For a focused inspection, select only the variables you want to
 review:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, <span class="va">income_group</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
 <span><span class="co">#&gt;   Variable     Label                   Values     Class N_distinct N_valid   NAs</span></span>
@@ -203,17 +237,13 @@ review:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income_group Household income group  Low, Lowe… orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span></code></pre></div>
 <p>This is often enough to confirm that labels, factor levels, and
 missing values look correct before moving on to tabulations.</p>
-<p>If you prefer a shorter call in interactive work, <code><a href="../reference/varlist.html">vl()</a></code>
-is a shortcut for <code><a href="../reference/varlist.html">varlist()</a></code>:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">vl</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="select-subsets-of-variables">Select subsets of variables<a class="anchor" aria-label="anchor" href="#select-subsets-of-variables"></a>
 </h2>
 <p><code><a href="../reference/varlist.html">varlist()</a></code> supports tidyselect, which makes it easy to
 inspect a subset of variables by name pattern or type.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 7</span></span></span>
 <span><span class="co">#&gt;   Variable               Label             Values Class N_distinct N_valid   NAs</span></span>
@@ -222,7 +252,7 @@ inspect a subset of variables by name pattern or type.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> life_sat_work          Satisfaction wit… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> life_sat_relationships Satisfaction wit… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> life_sat_standard      Satisfaction wit… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 7</span></span></span>
 <span><span class="co">#&gt;    Variable               Label            Values Class N_distinct N_valid   NAs</span></span>
@@ -238,7 +268,7 @@ inspect a subset of variables by name pattern or type.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> life_sat_standard      Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> weight                 Survey design w… 0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span></span></code></pre></div>
 <p><code><a href="../reference/varlist.html">vl()</a></code> also works with tidyselect in the same way:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">vl</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
 <span><span class="co">#&gt;   Variable     Label           Values             Class N_distinct N_valid   NAs</span></span>
@@ -252,14 +282,14 @@ inspect a subset of variables by name pattern or type.</p>
 <p>When you want a searchable and exportable overview of the whole
 dataset, <code><a href="../reference/code_book.html">code_book()</a></code> builds an interactive codebook in the
 Viewer.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"DT"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"caption":"<caption>Codebook<\/caption>","data":[["sex","age","age_group","education","social_class","region","employment_status","income_group","income","smoking","physical_activity","dentist_12m","self_rated_health","wellbeing_score","bmi","bmi_category","institutional_trust","political_position","life_sat_health","life_sat_work","life_sat_relationships","life_sat_standard","response_date","weight"],["Sex","Age (years)","Age group","Highest education level","Subjective social class","Region of residence","Employment status","Household income group","Monthly household income (CHF)","Current smoker","Regular physical activity","Dentist visit in last 12 months","Self-rated health","WHO-5 wellbeing index (0-100)","Body mass index","BMI category","Trust in institutions","Political position (0 = left, 10 = right)","Satisfaction with health (1-5)","Satisfaction with work (1-5)","Satisfaction with relationships (1-5)","Satisfaction with standard of living (1-5)","Survey response date","Survey design weight"],["Female, Male","25, 26, 27, ..., 75","25-34, 35-49, 50-64, 65-75","Lower secondary, Upper secondary, Tertiary","Lower, Working, Lower middle, ..., Upper middle","Central, East, North, ..., West","Employed, Student, Unemployed, Inactive","Low, Lower middle, Upper middle, High","1000, 1001, 1024, ..., 7388","No, Yes","No, Yes","No, Yes","Poor, Fair, Good, Very good","18.7, 19.6, 21.1, ..., 100","16, 16.6, 16.8, ..., 38.9","Normal weight, Overweight, Obesity","Very low, Low, High, Very high","0, 1, 2, ..., 10","1, 2, 3, ..., 5","1, 2, 3, ..., 5","1, 2, 3, ..., 5","1, 2, 3, ..., 5","2024-09-02 08:30:40, 2024-09-02 09:44:41, 2024-09-02 11:17:55, ..., 2024-11-30 03:26:27","0.294, 0.32, 0.325, ..., 3.447"],["factor","numeric","ordered, factor","ordered, factor","ordered, factor","factor","factor","ordered, factor","numeric","factor","factor","factor","ordered, factor","numeric","numeric","ordered, factor","ordered, factor","numeric","integer","integer","integer","integer","POSIXct, POSIXt","numeric"],[2,51,4,3,5,6,4,4,1052,2,2,2,4,517,177,3,4,11,5,5,5,5,1200,794],[1200,1200,1200,1200,1200,1200,1200,1182,1200,1175,1200,1200,1180,1200,1188,1188,1200,1185,1192,1192,1192,1192,1200,1200],[0,0,0,0,0,0,0,18,0,25,0,0,20,0,12,12,0,15,8,8,8,8,0,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Variable<\/th>\n      <th>Label<\/th>\n      <th>Values<\/th>\n      <th>Class<\/th>\n      <th>N_distinct<\/th>\n      <th>N_valid<\/th>\n      <th>NAs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bfrtip","autoWidth":true,"pageLength":10,"colReorder":true,"fixedHeader":true,"searchHighlight":true,"buttons":["copy","print",{"extend":"collection","text":"Download","buttons":[{"extend":"csv","title":null,"filename":"Codebook"},{"extend":"excel","title":null,"filename":"Codebook"},{"extend":"pdf","title":null,"filename":"Codebook"}]}],"columnDefs":[{"className":"dt-right","targets":[4,5,6]},{"name":"Variable","targets":0},{"name":"Label","targets":1},{"name":"Values","targets":2},{"name":"Class","targets":3},{"name":"N_distinct","targets":4},{"name":"N_valid","targets":5},{"name":"NAs","targets":6}],"order":[],"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>You can also request a fuller display of values or include missing
 values explicitly in the summary:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"DT"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, include_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
