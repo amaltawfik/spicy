@@ -156,9 +156,11 @@ stores the label as a proper variable label.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $smoke</span></span>
 <span><span class="co">#&gt; [1] "Current smoker"</span></span></code></pre></div>
-<p>This is especially useful for LimeSurvey-style exports and similar
-files where labels arrive in the column names instead of the variable
-metadata.</p>
+<p>This is especially useful for LimeSurvey CSV exports when using
+Export results -&gt; Export format: CSV -&gt; Headings: Question code
+&amp; question text, where column names look like
+<code>"code. question text"</code>. In this case the default separator
+is <code>". "</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="inspect-variables-with-varlist">Inspect variables with varlist()<a class="anchor" aria-label="anchor" href="#inspect-variables-with-varlist"></a>

@@ -63,9 +63,10 @@ labelled::var_label(out)
 #> [1] "Current smoker"
 ```
 
-This is especially useful for LimeSurvey-style exports and similar files
-where labels arrive in the column names instead of the variable
-metadata.
+This is especially useful for LimeSurvey CSV exports when using Export
+results -\> Export format: CSV -\> Headings: Question code & question
+text, where column names look like `"code. question text"`. In this case
+the default separator is `". "`.
 
 ## Inspect variables with varlist()
 
