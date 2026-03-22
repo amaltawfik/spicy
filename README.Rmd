@@ -86,7 +86,10 @@ Or from [r-universe](https://amaltawfik.r-universe.dev/spicy):
 install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
-Or the development version from GitHub:
+This installs the latest r-universe build, which may be newer than the
+current CRAN release.
+
+Or the development version from GitHub with `pak`:
 
 ```r
 # install.packages("pak")
