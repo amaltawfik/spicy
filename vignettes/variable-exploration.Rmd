@@ -75,7 +75,17 @@ In this case the default separator is `". "`.
 
 ## Inspect variables with varlist()
 
-`varlist()` gives a compact summary of each variable, including its
+In RStudio or Positron, the main way to use `varlist()` is
+interactively. Calling it without `tbl = TRUE` opens a searchable,
+sortable variable overview in the Viewer, which makes it easy to scan
+labels, look for specific variables, filter what you want to inspect,
+and review the structure of a dataset before analysis.
+
+```{r varlist-interactive, eval = FALSE}
+varlist(sochealth)
+```
+
+`varlist()` also gives a compact summary of each variable, including its
 name, label, representative values, class, number of distinct values,
 number of valid observations, and missing values.
 
@@ -92,6 +102,13 @@ varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 This is often enough to confirm that labels, factor levels, and missing
 values look correct before moving on to tabulations.
 
+If you prefer a shorter call in interactive work, `vl()` is a shortcut
+for `varlist()`:
+
+```{r vl-interactive, eval = FALSE}
+vl(sochealth)
+```
+
 ## Select subsets of variables
 
 `varlist()` supports tidyselect, which makes it easy to inspect a subset
@@ -105,8 +122,7 @@ varlist(sochealth, starts_with("life_sat"), tbl = TRUE)
 varlist(sochealth, where(is.numeric), tbl = TRUE)
 ```
 
-If you prefer a shorter call in interactive work, `vl()` is a shorthand
-for `varlist()`:
+`vl()` also works with tidyselect in the same way:
 
 ```{r vl-example}
 vl(sochealth, starts_with("bmi"), tbl = TRUE)
