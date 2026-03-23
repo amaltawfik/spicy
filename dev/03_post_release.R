@@ -1,11 +1,10 @@
 # ==================================================
 # 03_post_release.R
-# Post-CRAN tasks for the spicy package
+# Post-CRAN acceptance tasks for the spicy package
 # ==================================================
 
 library(usethis)
 library(devtools)
-library(pkgdown)
 library(sessioninfo)
 
 run_cmd <- function(cmd, args = character()) {
@@ -16,15 +15,16 @@ run_cmd <- function(cmd, args = character()) {
   invisible(status)
 }
 
-# 01 GITHUB TAG & RELEASE -------
-# Run only after CRAN acceptance
-usethis::use_github_tag() # Create Git tag (e.g., v0.4.2)
-usethis::use_github_release() # Publish GitHub release from NEWS.md
+# 01 CLEAN UP CRAN-SUBMISSION -------
+if (file.exists("CRAN-SUBMISSION")) file.remove("CRAN-SUBMISSION")
 
-# 02 UPDATE README + DOCS + PKGDOWN -------
+# 02 GITHUB TAG & RELEASE -------
+usethis::use_github_release() # Create tag + publish GitHub release from NEWS.md
+
+# 03 UPDATE README & DOCS -------
 devtools::build_readme()
 devtools::document()
-pkgdown::build_site()
+source("dev/build_pkgdown_site.R") # Build site + clean internal pages
 
 run_cmd("git", c("add", "README.md", "man", "NAMESPACE", "docs"))
 run_cmd(
@@ -33,13 +33,11 @@ run_cmd(
 )
 run_cmd("git", c("push"))
 
-# 03 BUMP TO DEVELOPMENT VERSION -------
-usethis::use_dev_version() # Move to next dev version (e.g., 0.4.2.9000)
+# 04 BUMP TO DEVELOPMENT VERSION -------
+usethis::use_dev_version()
 run_cmd("git", c("add", "DESCRIPTION", "NEWS.md"))
 run_cmd("git", c("commit", "-m", "chore: start next development version"))
 run_cmd("git", c("push"))
 
-# 04 SESSION INFO -------
+# 05 SESSION INFO -------
 sessioninfo::session_info()
-# Optionally save:
-# writeLines(capture.output(sessioninfo::session_info()), "dev/session-postrelease.log")

@@ -43,11 +43,4 @@ rhub::rhub_check(
 usethis::use_version("minor") # Increment version ("patch" for bugfix)
 devtools::release() # Interactive CRAN release process
 
-# 07 POST-ACCEPTANCE PREP -------
-usethis::use_github_release() # Prepare GitHub release
-usethis::use_dev_version(push = TRUE) # Bump to next dev version
-
-# 08 SESSION INFO -------
-sessioninfo::session_info() # Display environment details
-# Optionally, save to file:
-# writeLines(capture.output(sessioninfo::session_info()), "dev/session-release.log")
+# After CRAN acceptance, run dev/03_post_release.R

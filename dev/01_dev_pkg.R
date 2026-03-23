@@ -4,36 +4,30 @@
 # ==================================================
 
 library(devtools)
-library(styler)
-library(lintr)
-library(pkgdown)
 library(urlchecker)
 library(sessioninfo)
 
 # 00 LOAD PACKAGE -------
 devtools::load_all()
 
-# 01 STYLE & LINT -------
-styler::style_pkg() # Reformat all R code to tidy style
-lintr::lint_package() # Static code analysis (linting)
+# 01 FORMAT CODE -------
+# Run in terminal: air format .
 
 # 02 DOCUMENTATION & TESTS -------
-devtools::document() # Regenerate documentation and NAMESPACE
-devtools::test() # Run all unit tests
+devtools::document()
+devtools::test()
 # To test specific functions: devtools::test(filter = "function_name")
 
 # 03 LOCAL CHECKS -------
-devtools::check() # Standard local package checks
+devtools::check()
 
 # 04 README & WEBSITE -------
-devtools::build_readme() # Rebuild README from README.Rmd
-pkgdown::build_site() # Rebuild pkgdown website locally
+devtools::build_readme()
+source("dev/build_pkgdown_site.R") # Build site + clean internal pages
 
 # 05 URLS & SPELLING -------
-urlchecker::url_check() # Verify all URLs in documentation
-devtools::spell_check() # Spell-check documentation and comments
+urlchecker::url_check()
+devtools::spell_check()
 
 # 06 SESSION INFO -------
-sessioninfo::session_info() # Display R session information
-# Optionally, save to file:
-# writeLines(capture.output(sessioninfo::session_info()), "dev/session-dev.log")
+sessioninfo::session_info()
