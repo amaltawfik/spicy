@@ -2,6 +2,8 @@
 
 ## spicy 0.6.0
 
+CRAN release: 2026-03-23
+
 ### New features
 
 - New family of association measure functions for contingency tables:
