@@ -1,3 +1,5 @@
+# spicy (development version)
+
 # spicy 0.6.0
 
 ## New features
