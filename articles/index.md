@@ -32,9 +32,24 @@
   Somers’ D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 
-- [Create categorical tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-categorical.md):
+- [Categorical summary tables with
+  table_categorical()](https://amaltawfik.github.io/spicy/articles/table-categorical.md):
 
-  Create categorical tables in R for cross-tabulations with chi-squared
-  p-values, effect sizes, and confidence intervals. Export to gt,
-  tinytable, flextable, Excel, or Word.
+  Build categorical summary tables in R with table_categorical(),
+  including grouped cross-tabulations, effect sizes, confidence
+  intervals, and export to gt, tinytable, flextable, Excel, or Word.
+
+- [Continuous summary tables with
+  table_continuous()](https://amaltawfik.github.io/spicy/articles/table-continuous.md):
+
+  Build continuous summary tables in R with table_continuous(),
+  including grouped descriptives, group-comparison tests, effect sizes,
+  and export to console, gt, tinytable, flextable, Excel, or Word.
+
+- [Summary tables for APA-style
+  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
+
+  Learn when to use table_categorical() and table_continuous() for
+  APA-style reporting in R, how their shared arguments fit together, and
+  which output format to choose for console, Quarto, Word, or Excel
+  workflows.

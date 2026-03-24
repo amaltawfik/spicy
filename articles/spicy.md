@@ -235,12 +235,7 @@ cramer_v(tbl, detail = TRUE)
 ## Summary tables
 
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-builds a publication-ready cross-tabulation report by crossing one
-grouping variable with one or many selected variables. It supports
-multiple output formats.
-
-With `output = "tinytable"` you get a formatted table suitable for R
-Markdown or Quarto documents:
+covers grouped or one-way summary tables for categorical variables:
 
 ``` r
 table_categorical(
@@ -264,53 +259,6 @@ table_categorical(
 |      No           | 113             | 43.3 | 174             | 32.3 | 67       | 16.8 | 354   | 29.5 |         |            |
 |      Yes          | 148             | 56.7 | 365             | 67.7 | 333      | 83.2 | 846   | 70.5 |         |            |
 
-Use `assoc_ci = TRUE` to display the confidence interval inline:
-
-``` r
-table_categorical(
-  sochealth,
-  select = smoking,
-  by = education,
-  output = "tinytable",
-  assoc_ci = TRUE
-)
-```
-
-| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V       |
-|----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------------|
-|          | n               | %    | n               | %    | n        | %    | n     | %    |         |                  |
-| smoking  |                 |      |                 |      |          |      |       |      | \< .001 | .14 \[.08, .19\] |
-|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |                  |
-|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |                  |
-
-Other formats include `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-and `"word"`. The `"wide"` and `"long"` formats return data frames for
-further processing:
-
-``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  output = "wide"
-)
-#>            Variable Level Lower secondary n Lower secondary % Upper secondary n
-#> 1           smoking    No               179              69.6               415
-#> 2           smoking   Yes                78              30.4               112
-#> 3 physical_activity    No               177              67.8               310
-#> 4 physical_activity   Yes                84              32.2               229
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
-#> 1              78.7        332       84.9     926    78.8 2.012877e-05
-#> 2              21.3         59       15.1     249    21.2 2.012877e-05
-#> 3              57.5        163       40.8     650    54.2 8.333584e-12
-#> 4              42.5        237       59.2     550    45.8 8.333584e-12
-#>   Cramer's V
-#> 1  0.1356677
-#> 2  0.1356677
-#> 3  0.2061986
-#> 4  0.2061986
-```
-
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 summarizes continuous variables, either overall or by a categorical `by`
 variable, and can also add group-comparison tests:
@@ -333,6 +281,11 @@ table_continuous(
 #>                                      │ Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 
 #>                                      │ Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399
 ```
+
+For detailed guidance, see the dedicated articles on
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+and the final reporting overview for APA-style summary tables.
 
 ## Row-wise summaries
 

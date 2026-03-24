@@ -55,8 +55,10 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-categorical.html">Create categorical tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables with table_categorical()</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables with table_continuous()</a></li>
+    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -296,11 +298,8 @@ and p-value:</p>
 <div class="section level2">
 <h2 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
 </h2>
-<p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> builds a publication-ready
-cross-tabulation report by crossing one grouping variable with one or
-many selected variables. It supports multiple output formats.</p>
-<p>With <code>output = "tinytable"</code> you get a formatted table
-suitable for R Markdown or Quarto documents:</p>
+<p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> covers grouped or one-way summary
+tables for categorical variables:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -502,162 +501,10 @@ suitable for R Markdown or Quarto documents:</p>
 </table>
 </div>
 <!-- hack to avoid NA insertion in last line -->
-<p>Use <code>assoc_ci = TRUE</code> to display the confidence interval
-inline:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"tinytable"</span>,</span>
-<span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<!-- preamble start -->
-
-    <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
-      // Create table-specific functions using external factory
-      const tableFns_9dc94va645er44c0k8p3 = TinyTable.createTableFunctions("tinytable_9dc94va645er44c0k8p3");
-      // tinytable span after
-      window.addEventListener('load', function () {
-          var cellsToStyle = [
-            // tinytable style arrays after
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 } ], css_id: 'tinytable_css_n30w3ey1d5a61rptry8g',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '3', j: 10 }, { i: '0', j: 11 }, { i: '3', j: 11 } ], css_id: 'tinytable_css_nlop84sllwu67riupt9a',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_89eecxpavj13sbxk9hgi',}, 
-          { positions: [ { i: '3', j: 2 }, { i: '3', j: 3 }, { i: '3', j: 4 }, { i: '3', j: 5 }, { i: '3', j: 6 }, { i: '3', j: 7 }, { i: '3', j: 8 }, { i: '3', j: 9 } ], css_id: 'tinytable_css_iyyfbwqdbnr38i6fhyqp',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 } ], css_id: 'tinytable_css_rm6eduyxl0ztaa91o8a0',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_hqj4w0ioy0lc1w6vygmi',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_9svyad9jn7scmwhdtt7i',}, 
-          { positions: [ { i: '3', j: 1 } ], css_id: 'tinytable_css_j6k6qk1n4y3wmwlmimxg',}, 
-          { positions: [ { i: '2', j: 1 } ], css_id: 'tinytable_css_h34t7stsbnbucz7eq866',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_zqv0x2gd4b69pzpxj7ro',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_4olspg8l5gya08tpxs7f',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_avlpyuvwvoji80fl9572',}, 
-          ];
-
-          // Loop over the arrays to style the cells
-          cellsToStyle.forEach(function (group) {
-              group.positions.forEach(function (cell) {
-                  tableFns_9dc94va645er44c0k8p3.styleCell(cell.i, cell.j, group.css_id);
-              });
-          });
-      });
-    </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
-<style>
-    /* tinytable css entries after */
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_n30w3ey1d5a61rptry8g, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_n30w3ey1d5a61rptry8g { text-align: right; white-space: nowrap; }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_nlop84sllwu67riupt9a, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_nlop84sllwu67riupt9a {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right; white-space: nowrap; }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_89eecxpavj13sbxk9hgi, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_89eecxpavj13sbxk9hgi {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_iyyfbwqdbnr38i6fhyqp, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_iyyfbwqdbnr38i6fhyqp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_rm6eduyxl0ztaa91o8a0, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_rm6eduyxl0ztaa91o8a0 { text-align: right }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_hqj4w0ioy0lc1w6vygmi, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_hqj4w0ioy0lc1w6vygmi {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_9svyad9jn7scmwhdtt7i, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_9svyad9jn7scmwhdtt7i {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_j6k6qk1n4y3wmwlmimxg, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_j6k6qk1n4y3wmwlmimxg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_h34t7stsbnbucz7eq866, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_h34t7stsbnbucz7eq866 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_zqv0x2gd4b69pzpxj7ro, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_zqv0x2gd4b69pzpxj7ro { text-align: left }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_4olspg8l5gya08tpxs7f, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_4olspg8l5gya08tpxs7f {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_9dc94va645er44c0k8p3 td.tinytable_css_avlpyuvwvoji80fl9572, #tinytable_9dc94va645er44c0k8p3 th.tinytable_css_avlpyuvwvoji80fl9572 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    </style>
-<div class="container">
-      <table class="table tinytable" id="tinytable_9dc94va645er44c0k8p3" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<thead>
-<tr>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
-</tr>
-<tr>
-<th scope="col" data-row="0" data-col="1"></th>
-                <th scope="col" data-row="0" data-col="2">n</th>
-                <th scope="col" data-row="0" data-col="3">%</th>
-                <th scope="col" data-row="0" data-col="4">n</th>
-                <th scope="col" data-row="0" data-col="5">%</th>
-                <th scope="col" data-row="0" data-col="6">n</th>
-                <th scope="col" data-row="0" data-col="7">%</th>
-                <th scope="col" data-row="0" data-col="8">n</th>
-                <th scope="col" data-row="0" data-col="9">%</th>
-                <th scope="col" data-row="0" data-col="10"></th>
-                <th scope="col" data-row="0" data-col="11"></th>
-              </tr>
-</thead>
-<tbody>
-<tr>
-<td data-row="1" data-col="1">smoking</td>
-                  <td data-row="1" data-col="2"></td>
-                  <td data-row="1" data-col="3"></td>
-                  <td data-row="1" data-col="4"></td>
-                  <td data-row="1" data-col="5"></td>
-                  <td data-row="1" data-col="6"></td>
-                  <td data-row="1" data-col="7"></td>
-                  <td data-row="1" data-col="8"></td>
-                  <td data-row="1" data-col="9"></td>
-                  <td data-row="1" data-col="10">&lt; .001</td>
-                  <td data-row="1" data-col="11">.14 [.08, .19]</td>
-                </tr>
-<tr>
-<td data-row="2" data-col="1">      No</td>
-                  <td data-row="2" data-col="2">179</td>
-                  <td data-row="2" data-col="3">69.6</td>
-                  <td data-row="2" data-col="4">415</td>
-                  <td data-row="2" data-col="5">78.7</td>
-                  <td data-row="2" data-col="6">332</td>
-                  <td data-row="2" data-col="7">84.9</td>
-                  <td data-row="2" data-col="8">926</td>
-                  <td data-row="2" data-col="9">78.8</td>
-                  <td data-row="2" data-col="10"></td>
-                  <td data-row="2" data-col="11"></td>
-                </tr>
-<tr>
-<td data-row="3" data-col="1">      Yes</td>
-                  <td data-row="3" data-col="2">78</td>
-                  <td data-row="3" data-col="3">30.4</td>
-                  <td data-row="3" data-col="4">112</td>
-                  <td data-row="3" data-col="5">21.3</td>
-                  <td data-row="3" data-col="6">59</td>
-                  <td data-row="3" data-col="7">15.1</td>
-                  <td data-row="3" data-col="8">249</td>
-                  <td data-row="3" data-col="9">21.2</td>
-                  <td data-row="3" data-col="10"></td>
-                  <td data-row="3" data-col="11"></td>
-                </tr>
-</tbody>
-</table>
-</div>
-<!-- hack to avoid NA insertion in last line -->
-<p>Other formats include <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, and <code>"word"</code>.
-The <code>"wide"</code> and <code>"long"</code> formats return data
-frames for further processing:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"wide"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt;            Variable Level Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1           smoking    No               179              69.6               415</span></span>
-<span><span class="co">#&gt; 2           smoking   Yes                78              30.4               112</span></span>
-<span><span class="co">#&gt; 3 physical_activity    No               177              67.8               310</span></span>
-<span><span class="co">#&gt; 4 physical_activity   Yes                84              32.2               229</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
-<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 8.333584e-12</span></span>
-<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 8.333584e-12</span></span>
-<span><span class="co">#&gt;   Cramer's V</span></span>
-<span><span class="co">#&gt; 1  0.1356677</span></span>
-<span><span class="co">#&gt; 2  0.1356677</span></span>
-<span><span class="co">#&gt; 3  0.2061986</span></span>
-<span><span class="co">#&gt; 4  0.2061986</span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable, and can
 also add group-comparison tests:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -674,6 +521,9 @@ also add group-comparison tests:</p>
 <span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span> Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 </span></span>
 <span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 </span></span>
 <span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399</span></span></code></pre></div>
+<p>For detailed guidance, see the dedicated articles on
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and
+the final reporting overview for APA-style summary tables.</p>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -681,7 +531,7 @@ also add group-comparison tests:</p>
 <p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and
 <code><a href="../reference/count_n.html">count_n()</a></code> compute row-wise statistics across selected
 columns, with automatic handling of missing values.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>

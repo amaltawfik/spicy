@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Create categorical tables in R • spicy</title>
+<title>Categorical summary tables with table_categorical() • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -22,10 +22,10 @@
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Atkinson_Hyperlegible-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Create categorical tables in R">
-<meta name="description" content="Create categorical tables in R for cross-tabulations with chi-squared p-values, effect sizes, and confidence intervals. Export to gt, tinytable, flextable, Excel, or Word.
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Categorical summary tables with table_categorical()">
+<meta name="description" content="Build categorical summary tables in R with table_categorical(), including grouped cross-tabulations, effect sizes, confidence intervals, and export to gt, tinytable, flextable, Excel, or Word.
 ">
-<meta property="og:description" content="Create categorical tables in R for cross-tabulations with chi-squared p-values, effect sizes, and confidence intervals. Export to gt, tinytable, flextable, Excel, or Word.
+<meta property="og:description" content="Build categorical summary tables in R with table_categorical(), including grouped cross-tabulations, effect sizes, confidence intervals, and export to gt, tinytable, flextable, Excel, or Word.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.png">
 </head>
@@ -55,8 +55,10 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-categorical.html">Create categorical tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables with table_categorical()</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables with table_continuous()</a></li>
+    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -86,7 +88,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Create categorical tables in R</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Categorical summary tables with table_categorical()</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-categorical.Rmd" class="external-link"><code>vignettes/table-categorical.Rmd</code></a></small>
@@ -878,7 +880,7 @@ column spanners, and proper alignment:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <!-- preamble start -->
@@ -890,13 +892,13 @@ column spanners, and proper alignment:</p>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 } ], css_id: 'tinytable_css_5x1wg0rwyfubc70jyhde',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '6', j: 10 }, { i: '0', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_map65knyb99qx6crp18b',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_x9a7hlg4e4rbosrgwhmv',}, 
-          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_klkidrjok56654b7avfa',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 } ], css_id: 'tinytable_css_xmcup2gwkhqnxj4bmj3i',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_5ntl7d2hervnp7pfzwso',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_p18wfmevjq0o9uxijtdx',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 } ], css_id: 'tinytable_css_5x1wg0rwyfubc70jyhde',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '6', j: 8 }, { i: '0', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_map65knyb99qx6crp18b',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_x9a7hlg4e4rbosrgwhmv',}, 
+          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_klkidrjok56654b7avfa',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 } ], css_id: 'tinytable_css_xmcup2gwkhqnxj4bmj3i',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 } ], css_id: 'tinytable_css_5ntl7d2hervnp7pfzwso',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_p18wfmevjq0o9uxijtdx',}, 
           { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_8iosemua6rb2f7b16hpw',}, 
           { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_ks92zd14h3igmus9n8o9',}, 
           { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_3xhtibg9ckz0265qbaeh',}, 
@@ -932,12 +934,11 @@ column spanners, and proper alignment:</p>
 <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Female</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Male</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Total</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="8">p</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">Cramer's V</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
@@ -947,10 +948,8 @@ column spanners, and proper alignment:</p>
                 <th scope="col" data-row="0" data-col="5">%</th>
                 <th scope="col" data-row="0" data-col="6">n</th>
                 <th scope="col" data-row="0" data-col="7">%</th>
-                <th scope="col" data-row="0" data-col="8">n</th>
-                <th scope="col" data-row="0" data-col="9">%</th>
-                <th scope="col" data-row="0" data-col="10"></th>
-                <th scope="col" data-row="0" data-col="11"></th>
+                <th scope="col" data-row="0" data-col="8"></th>
+                <th scope="col" data-row="0" data-col="9"></th>
               </tr>
 </thead>
 <tbody>
@@ -962,36 +961,30 @@ column spanners, and proper alignment:</p>
                   <td data-row="1" data-col="5"></td>
                   <td data-row="1" data-col="6"></td>
                   <td data-row="1" data-col="7"></td>
-                  <td data-row="1" data-col="8"></td>
-                  <td data-row="1" data-col="9"></td>
-                  <td data-row="1" data-col="10">&lt; .001</td>
-                  <td data-row="1" data-col="11">.14</td>
+                  <td data-row="1" data-col="8">.713</td>
+                  <td data-row="1" data-col="9">.01</td>
                 </tr>
 <tr>
 <td data-row="2" data-col="1">      No</td>
-                  <td data-row="2" data-col="2">179</td>
-                  <td data-row="2" data-col="3">69.6</td>
-                  <td data-row="2" data-col="4">415</td>
-                  <td data-row="2" data-col="5">78.7</td>
-                  <td data-row="2" data-col="6">332</td>
-                  <td data-row="2" data-col="7">84.9</td>
-                  <td data-row="2" data-col="8">926</td>
-                  <td data-row="2" data-col="9">78.8</td>
-                  <td data-row="2" data-col="10"></td>
-                  <td data-row="2" data-col="11"></td>
+                  <td data-row="2" data-col="2">475</td>
+                  <td data-row="2" data-col="3">78.4</td>
+                  <td data-row="2" data-col="4">451</td>
+                  <td data-row="2" data-col="5">79.3</td>
+                  <td data-row="2" data-col="6">926</td>
+                  <td data-row="2" data-col="7">78.8</td>
+                  <td data-row="2" data-col="8"></td>
+                  <td data-row="2" data-col="9"></td>
                 </tr>
 <tr>
 <td data-row="3" data-col="1">      Yes</td>
-                  <td data-row="3" data-col="2">78</td>
-                  <td data-row="3" data-col="3">30.4</td>
-                  <td data-row="3" data-col="4">112</td>
-                  <td data-row="3" data-col="5">21.3</td>
-                  <td data-row="3" data-col="6">59</td>
-                  <td data-row="3" data-col="7">15.1</td>
-                  <td data-row="3" data-col="8">249</td>
-                  <td data-row="3" data-col="9">21.2</td>
-                  <td data-row="3" data-col="10"></td>
-                  <td data-row="3" data-col="11"></td>
+                  <td data-row="3" data-col="2">131</td>
+                  <td data-row="3" data-col="3">21.6</td>
+                  <td data-row="3" data-col="4">118</td>
+                  <td data-row="3" data-col="5">20.7</td>
+                  <td data-row="3" data-col="6">249</td>
+                  <td data-row="3" data-col="7">21.2</td>
+                  <td data-row="3" data-col="8"></td>
+                  <td data-row="3" data-col="9"></td>
                 </tr>
 <tr>
 <td data-row="4" data-col="1">physical_activity</td>
@@ -1001,36 +994,30 @@ column spanners, and proper alignment:</p>
                   <td data-row="4" data-col="5"></td>
                   <td data-row="4" data-col="6"></td>
                   <td data-row="4" data-col="7"></td>
-                  <td data-row="4" data-col="8"></td>
-                  <td data-row="4" data-col="9"></td>
-                  <td data-row="4" data-col="10">&lt; .001</td>
-                  <td data-row="4" data-col="11">.21</td>
+                  <td data-row="4" data-col="8">.832</td>
+                  <td data-row="4" data-col="9">.01</td>
                 </tr>
 <tr>
 <td data-row="5" data-col="1">      No</td>
-                  <td data-row="5" data-col="2">177</td>
-                  <td data-row="5" data-col="3">67.8</td>
-                  <td data-row="5" data-col="4">310</td>
-                  <td data-row="5" data-col="5">57.5</td>
-                  <td data-row="5" data-col="6">163</td>
-                  <td data-row="5" data-col="7">40.8</td>
-                  <td data-row="5" data-col="8">650</td>
-                  <td data-row="5" data-col="9">54.2</td>
-                  <td data-row="5" data-col="10"></td>
-                  <td data-row="5" data-col="11"></td>
+                  <td data-row="5" data-col="2">334</td>
+                  <td data-row="5" data-col="3">53.9</td>
+                  <td data-row="5" data-col="4">316</td>
+                  <td data-row="5" data-col="5">54.5</td>
+                  <td data-row="5" data-col="6">650</td>
+                  <td data-row="5" data-col="7">54.2</td>
+                  <td data-row="5" data-col="8"></td>
+                  <td data-row="5" data-col="9"></td>
                 </tr>
 <tr>
 <td data-row="6" data-col="1">      Yes</td>
-                  <td data-row="6" data-col="2">84</td>
-                  <td data-row="6" data-col="3">32.2</td>
-                  <td data-row="6" data-col="4">229</td>
-                  <td data-row="6" data-col="5">42.5</td>
-                  <td data-row="6" data-col="6">237</td>
-                  <td data-row="6" data-col="7">59.2</td>
-                  <td data-row="6" data-col="8">550</td>
-                  <td data-row="6" data-col="9">45.8</td>
-                  <td data-row="6" data-col="10"></td>
-                  <td data-row="6" data-col="11"></td>
+                  <td data-row="6" data-col="2">286</td>
+                  <td data-row="6" data-col="3">46.1</td>
+                  <td data-row="6" data-col="4">264</td>
+                  <td data-row="6" data-col="5">45.5</td>
+                  <td data-row="6" data-col="6">550</td>
+                  <td data-row="6" data-col="7">45.8</td>
+                  <td data-row="6" data-col="8"></td>
+                  <td data-row="6" data-col="9"></td>
                 </tr>
 </tbody>
 </table>
