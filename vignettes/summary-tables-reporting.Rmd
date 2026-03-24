@@ -144,7 +144,7 @@ If you want an object that fits naturally into Word and PowerPoint
 workflows but can also be rendered in HTML documents, `flextable` is a
 good choice:
 
-```{r output-flextable, eval = FALSE}
+```{r output-flextable}
 if (requireNamespace("flextable", quietly = TRUE)) {
   table_continuous(
     sochealth,
@@ -179,6 +179,17 @@ tab |>
   ) |>
   gt::tab_source_note(
     gt::md("*Percentages are computed within each education group.*")
+  ) |>
+  gt::opt_css(
+    css = paste(
+      ".gt_heading, .gt_col_headings, .gt_col_heading,",
+      ".gt_column_spanner_outer, .gt_column_spanner,",
+      ".gt_title, .gt_subtitle {",
+      "  background-color: transparent !important;",
+      "  color: currentColor !important;",
+      "}",
+      sep = "\n"
+    )
   )
 ```
 
@@ -207,18 +218,20 @@ tab |>
 Use `flextable::` functions when you want to keep working toward Office
 or HTML document output:
 
-```{r postprocess-flextable, eval = FALSE}
-tab <- table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score),
-  by = education,
-  output = "flextable"
-)
+```{r postprocess-flextable}
+if (requireNamespace("flextable", quietly = TRUE)) {
+  tab <- table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score),
+    by = education,
+    output = "flextable"
+  )
 
-tab |>
-  flextable::theme_booktabs() |>
-  flextable::autofit() |>
-  flextable::fontsize(size = 10, part = "all")
+  tab |>
+    flextable::theme_booktabs() |>
+    flextable::autofit() |>
+    flextable::fontsize(size = 10, part = "all")
+}
 ```
 
 ## Keep the detailed options in the function-specific articles
