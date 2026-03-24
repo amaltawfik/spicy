@@ -13,7 +13,7 @@ This is version 0.6.0 of the **spicy** package.
 
 * New family of association measure functions for contingency tables: `assoc_measures()`, `contingency_coef()`, `gamma_gk()`, `goodman_kruskal_tau()`, `kendall_tau_b()`, `kendall_tau_c()`, `lambda_gk()`, `phi()`, `somers_d()`, `uncertainty_coef()`, and `yule_q()`.
 * `cross_tab()` gains `assoc_measure` and `assoc_ci` arguments with automatic ordinal detection.
-* `table_apa()` gains `output = "gt"` and dynamic association measure labeling.
+* `table_categorical()` gains `output = "gt"` and dynamic association measure labeling.
 * New bundled dataset `sochealth` (simulated social-health survey, n = 1200, 24 variables).
 * `cramer_v()` gains a `detail` argument (breaking: returns a named vector when `detail = TRUE`).
 
@@ -24,8 +24,8 @@ This is version 0.6.0 of the **spicy** package.
 * `freq()` consistent NA representation, validated `digits`/`sort`, correct `cum_valid_prop` for missing rows.
 * `mean_n()`, `sum_n()` now validate `min_valid` and `digits` arguments.
 * `mean_n()`, `sum_n()`, `count_n()` no longer trigger a tidyselect deprecation warning with character vector input.
-* `table_apa()` preserves factor level order, places `(Missing)` at bottom, validates digit arguments.
-* `table_apa()` p-values no longer wrap across lines in `tinytable` HTML output.
+* `table_categorical()` preserves factor level order, places `(Missing)` at bottom, validates digit arguments.
+* `table_categorical()` p-values no longer wrap across lines in `tinytable` HTML output.
 
 ### Testing environments
 

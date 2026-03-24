@@ -1,17 +1,20 @@
-#' Build APA-Style Cross-Tabulation Tables
+#' Categorical summary table
 #'
-#' `table_apa()` builds a publication-ready table by crossing one grouping
-#' variable (`group_var`) with one or many row variables (`row_vars`), using
-#' `spicy::cross_tab()` internally.
+#' `table_categorical()` builds a publication-ready table for one or many
+#' selected categorical variables. With `by`, it produces grouped
+#' cross-tabulation summaries using `spicy::cross_tab()` internally. Without
+#' `by`, it produces one-way frequency-style summaries.
 #'
 #' It supports raw data outputs (`wide`, `long`) and report-oriented outputs
 #' (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with multi-level
 #' headers, p-values, and an association measure.
 #'
 #' @param data A data frame.
-#' @param row_vars Character vector of variable names to place in rows.
-#' @param group_var Single character variable name used for columns/groups.
-#' @param labels Optional character labels for `row_vars` (same length).
+#' @param select Columns to include as row variables. Supports tidyselect
+#'   syntax and character vectors of column names.
+#' @param by Optional grouping column used for columns/groups. Accepts an
+#'   unquoted column name or a single character column name.
+#' @param labels Optional character labels for `select` (same length).
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
@@ -47,11 +50,14 @@
 #'   is shown inline as `.14 [.08, .19]` in the association measure column.
 #'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
-#' @param output Output format: `"wide"` (the default), `"long"`,
-#'   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-#'   `"word"`.
+#' @param output Output format: `"wide"` (the default), `"default"` for an
+#'   ASCII console table, `"long"`, `"tinytable"`, `"gt"`, `"flextable"`,
+#'   `"excel"`, `"clipboard"`, `"word"`.
+#' @param styled Logical. Used only when `output = "default"`. If `TRUE` (the
+#'   default), prints a styled ASCII table and returns it invisibly. If
+#'   `FALSE`, returns the underlying wide raw `data.frame`.
 #' @param style `"auto"` (the default) to select by output type, `"raw"` for
-#'   machine-friendly outputs, `"report"` for formatted outputs.
+#'   plain outputs, `"report"` for formatted outputs.
 #' @param indent_text Prefix used for modality labels in report table building.
 #'   Defaults to `"  "` (two spaces).
 #' @param indent_text_excel_clipboard Stronger indentation used in Excel and
@@ -61,12 +67,15 @@
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
 #'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
 #' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
-#' @param excel_sheet Sheet name for Excel export. Defaults to `"APA"`.
+#' @param excel_sheet Sheet name for Excel export. Defaults to `"Categorical"`.
 #' @param clipboard_delim Delimiter for clipboard text export. Defaults to `"\t"`.
 #' @param word_path Path for `output = "word"` or optional save path when
 #'   `output = "flextable"`. Defaults to `NULL`.
 #'
 #' @return Depends on `output` and `style`:
+#' - `"default"` + `styled = TRUE`: prints a styled ASCII table and returns
+#'   the underlying data frame invisibly.
+#' - `"default"` + `styled = FALSE`: wide numeric data frame.
 #' - `"long"` + `"raw"`: long numeric data frame.
 #' - `"wide"` + `"raw"`: wide numeric data frame.
 #' - `"long"` + `"report"`: long formatted character data frame.
@@ -85,31 +94,46 @@
 #' - `clipr` for `output = "clipboard"`
 #'
 #' @examples
-#' # Raw long output (machine-friendly)
-#' table_apa(
+#' # Raw long output
+#' table_categorical(
 #'   data = sochealth,
-#'   row_vars = c("smoking", "physical_activity"),
-#'   group_var = "education",
+#'   select = c(smoking, physical_activity),
+#'   by = education,
 #'   labels = c("Current smoker", "Physical activity"),
 #'   output = "long",
 #'   style = "raw"
 #' )
 #'
-#' # Raw wide output
-#' table_apa(
+#' # ASCII console output
+#' table_categorical(
 #'   data = sochealth,
-#'   row_vars = c("smoking", "physical_activity"),
-#'   group_var = "education",
+#'   select = c(smoking, physical_activity),
+#'   by = sex,
+#'   output = "default"
+#' )
+#'
+#' # One-way frequency-style table
+#' table_categorical(
+#'   data = sochealth,
+#'   select = c(smoking, physical_activity),
+#'   output = "default"
+#' )
+#'
+#' # Raw wide output
+#' table_categorical(
+#'   data = sochealth,
+#'   select = c(smoking, physical_activity),
+#'   by = education,
 #'   labels = c("Current smoker", "Physical activity"),
 #'   output = "wide",
 #'   style = "raw"
 #' )
 #'
 #' # Weighted example
-#' table_apa(
+#' table_categorical(
 #'   data = sochealth,
-#'   row_vars = c("smoking", "physical_activity"),
-#'   group_var = "education",
+#'   select = c(smoking, physical_activity),
+#'   by = education,
 #'   labels = c("Current smoker", "Physical activity"),
 #'   weights = "weight",
 #'   rescale = TRUE,
@@ -121,10 +145,10 @@
 #' \donttest{
 #' # Optional output: tinytable
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
-#'   table_apa(
+#'   table_categorical(
 #'     data = sochealth,
-#'     row_vars = c("smoking", "physical_activity"),
-#'     group_var = "education",
+#'     select = c(smoking, physical_activity),
+#'     by = education,
 #'     labels = c("Current smoker", "Physical activity"),
 #'     output = "tinytable"
 #'   )
@@ -132,10 +156,10 @@
 #'
 #' # Optional output: Excel
 #' if (requireNamespace("openxlsx", quietly = TRUE)) {
-#'   table_apa(
+#'   table_categorical(
 #'     data = sochealth,
-#'     row_vars = c("smoking", "physical_activity"),
-#'     group_var = "education",
+#'     select = c(smoking, physical_activity),
+#'     by = education,
 #'     labels = c("Current smoker", "Physical activity"),
 #'     output = "excel",
 #'     excel_path = tempfile(fileext = ".xlsx")
@@ -143,10 +167,10 @@
 #' }
 #' }
 #' @export
-table_apa <- function(
+table_categorical <- function(
   data,
-  row_vars,
-  group_var,
+  select,
+  by = NULL,
   labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
@@ -164,6 +188,7 @@ table_apa <- function(
   decimal_mark = ".",
   output = c(
     "wide",
+    "default",
     "long",
     "tinytable",
     "gt",
@@ -172,18 +197,20 @@ table_apa <- function(
     "clipboard",
     "word"
   ),
+  styled = TRUE,
   style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0",
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
-  excel_sheet = "APA",
+  excel_sheet = "Categorical",
   clipboard_delim = "\t",
   word_path = NULL
 ) {
   output <- match.arg(output)
   style <- match.arg(style)
+  data_name <- deparse(substitute(data))
 
   if (style == "auto") {
     style <- if (output %in% c("wide", "long")) "raw" else "report"
@@ -192,24 +219,63 @@ table_apa <- function(
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
-  if (!is.character(row_vars) || length(row_vars) == 0) {
-    stop("`row_vars` must be non-empty character.", call. = FALSE)
+  by_quo <- rlang::enquo(by)
+  has_group <- !rlang::quo_is_null(by_quo)
+  by_name <- NULL
+  if (has_group) {
+    by_name <- tryCatch(
+      {
+        pos <- tidyselect::eval_select(by_quo, data)
+        names(pos)
+      },
+      error = function(e) {
+        by_val <- tryCatch(
+          rlang::eval_tidy(by_quo, env = rlang::quo_get_env(by_quo)),
+          error = function(e) NULL
+        )
+        if (
+          is.character(by_val) && length(by_val) == 1 && by_val %in% names(data)
+        ) {
+          by_val
+        } else {
+          stop("`by` must select exactly one column in `data`.", call. = FALSE)
+        }
+      }
+    )
+    if (length(by_name) != 1L) {
+      stop("`by` must select exactly one column in `data`.", call. = FALSE)
+    }
   }
-  if (!all(row_vars %in% names(data))) {
-    stop("Some `row_vars` are missing in `data`.", call. = FALSE)
+
+  select_quo <- rlang::enquo(select)
+  select_val <- tryCatch(
+    rlang::eval_tidy(select_quo, env = rlang::quo_get_env(select_quo)),
+    error = function(e) NULL
+  )
+  select_names <- if (is.character(select_val)) {
+    select_val
+  } else {
+    tryCatch(
+      names(tidyselect::eval_select(select_quo, data)),
+      error = function(e) {
+        stop(
+          "`select` must select at least one column in `data`.",
+          call. = FALSE
+        )
+      }
+    )
   }
-  if (
-    !is.character(group_var) ||
-      length(group_var) != 1 ||
-      !(group_var %in% names(data))
-  ) {
-    stop("`group_var` must be one valid column name in `data`.", call. = FALSE)
+  if (length(select_names) == 0) {
+    stop("`select` must select at least one column in `data`.", call. = FALSE)
+  }
+  if (!all(select_names %in% names(data))) {
+    stop("Some `select` columns are missing in `data`.", call. = FALSE)
   }
   if (is.null(labels)) {
-    labels <- row_vars
+    labels <- select_names
   }
-  if (length(labels) != length(row_vars)) {
-    stop("`labels` must have same length as `row_vars`.", call. = FALSE)
+  if (length(labels) != length(select_names)) {
+    stop("`labels` must have same length as `select`.", call. = FALSE)
   }
   labels <- as.character(labels)
 
@@ -273,6 +339,31 @@ table_apa <- function(
   p_digits <- as.integer(p_digits)
   v_digits <- as.integer(v_digits)
 
+  if (!has_group) {
+    if (!include_total) {
+      warning(
+        "`include_total` is ignored when `by` is not used.",
+        call. = FALSE
+      )
+    }
+    if (correct) {
+      warning("`correct` is ignored when `by` is not used.", call. = FALSE)
+    }
+    if (simulate_p) {
+      warning("`simulate_p` is ignored when `by` is not used.", call. = FALSE)
+    }
+    if (!identical(assoc_measure, "auto")) {
+      warning(
+        "`assoc_measure` is ignored when `by` is not used.",
+        call. = FALSE
+      )
+    }
+    if (assoc_ci) {
+      warning("`assoc_ci` is ignored when `by` is not used.", call. = FALSE)
+    }
+    include_total <- TRUE
+  }
+
   weights_vec <- NULL
   if (!is.null(weights)) {
     if (is.character(weights) && length(weights) == 1) {
@@ -305,7 +396,7 @@ table_apa <- function(
   }
 
   all_values <- unique(unlist(
-    lapply(c(row_vars, group_var), function(nm) as.character(data[[nm]])),
+    lapply(c(select_names, by_name), function(nm) as.character(data[[nm]])),
     use.names = FALSE
   ))
   missing_label <- "(Missing)"
@@ -443,7 +534,541 @@ table_apa <- function(
     x
   }
 
-  g0 <- data[[group_var]]
+  if (!has_group) {
+    rows <- list()
+    rr <- 1L
+    all_level_order <- character(0)
+
+    for (i in seq_along(select_names)) {
+      x <- data[[select_names[i]]]
+      w <- weights_vec
+
+      if (is.factor(x)) {
+        var_level_order <- levels(x)
+      } else {
+        var_level_order <- unique(as.character(x[!is.na(x)]))
+      }
+
+      keep <- if (drop_na) !is.na(x) else rep(TRUE, length(x))
+      x <- x[keep]
+      if (!is.null(w)) {
+        w <- w[keep]
+      }
+      if (!length(x)) {
+        next
+      }
+      if (!drop_na) {
+        x <- as.character(x)
+        x[is.na(x)] <- missing_label
+      }
+
+      ft <- if (is.null(w)) {
+        spicy::freq(
+          x,
+          rescale = rescale,
+          valid = FALSE,
+          styled = FALSE
+        )
+      } else {
+        spicy::freq(
+          x,
+          weights = w,
+          rescale = rescale,
+          valid = FALSE,
+          styled = FALSE
+        )
+      }
+      vals <- as.character(ft$value)
+      raw_levels <- vals[!is.na(vals)]
+
+      lv_use <- if (is.null(levels_keep)) {
+        known <- intersect(var_level_order, raw_levels)
+        extra <- setdiff(raw_levels, c(var_level_order, missing_label))
+        missing_end <- intersect(raw_levels, missing_label)
+        c(known, extra, missing_end)
+      } else {
+        intersect(as.character(levels_keep), raw_levels)
+      }
+      all_level_order <- c(all_level_order, lv_use)
+
+      for (lv in lv_use) {
+        idx <- match(lv, vals)
+        if (is.na(idx)) {
+          next
+        }
+        rows[[rr]] <- data.frame(
+          variable = labels[i],
+          level = lv,
+          n = suppressWarnings(as.numeric(ft$n[idx])),
+          pct = 100 * suppressWarnings(as.numeric(ft$prop[idx])),
+          stringsAsFactors = FALSE,
+          check.names = FALSE
+        )
+        rr <- rr + 1L
+      }
+    }
+
+    if (length(rows) == 0) {
+      long_raw <- data.frame(
+        variable = character(0),
+        level = character(0),
+        n = numeric(0),
+        pct = numeric(0),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+    } else {
+      long_raw <- do.call(rbind, rows)
+    }
+
+    if (nrow(long_raw) > 0) {
+      long_raw$variable <- factor(long_raw$variable, levels = labels)
+      if (!is.null(levels_keep)) {
+        long_raw$level <- factor(
+          long_raw$level,
+          levels = as.character(levels_keep)
+        )
+      } else {
+        long_raw$level <- factor(
+          long_raw$level,
+          levels = unique(all_level_order)
+        )
+      }
+      long_raw <- long_raw[
+        order(long_raw$variable, long_raw$level),
+        ,
+        drop = FALSE
+      ]
+      long_raw$variable <- as.character(long_raw$variable)
+      long_raw$level <- as.character(long_raw$level)
+      rownames(long_raw) <- NULL
+    }
+
+    if (output == "long" && style == "raw") {
+      return(long_raw)
+    }
+
+    wide_raw <- data.frame(
+      Variable = long_raw$variable,
+      Level = long_raw$level,
+      n = long_raw$n,
+      check.names = FALSE
+    )
+    wide_raw[["%"]] <- long_raw$pct
+
+    if (blank_na_wide && nrow(wide_raw) > 0) {
+      for (j in seq_len(ncol(wide_raw))) {
+        if (j > 2) {
+          wide_raw[[j]] <- ifelse(
+            is.na(wide_raw[[j]]),
+            "",
+            as.character(wide_raw[[j]])
+          )
+        }
+      }
+    }
+
+    if (output == "wide" && style == "raw") {
+      return(wide_raw)
+    }
+
+    if (output == "long" && style == "report") {
+      long_rep <- long_raw
+      long_rep$n <- fmt_n(long_rep$n)
+      long_rep$pct <- fmt_num(long_rep$pct, percent_digits)
+      return(long_rep)
+    }
+
+    report_cols <- c("Variable", "n", "%")
+    make_report_wide_oneway <- function(mode = c("char", "excel")) {
+      mode <- match.arg(mode)
+
+      if (nrow(long_raw) == 0) {
+        if (mode == "char") {
+          return(as.data.frame(
+            setNames(
+              replicate(length(report_cols), character(0), simplify = FALSE),
+              report_cols
+            ),
+            check.names = FALSE
+          ))
+        }
+        out <- as.data.frame(
+          setNames(
+            replicate(length(report_cols), numeric(0), simplify = FALSE),
+            report_cols
+          ),
+          check.names = FALSE
+        )
+        out$Variable <- character(0)
+        return(out[, report_cols, drop = FALSE])
+      }
+
+      out <- list()
+      z <- 1L
+      for (lab in labels) {
+        sv <- long_raw[long_raw$variable == lab, , drop = FALSE]
+        if (nrow(sv) == 0) {
+          next
+        }
+
+        lv_use <- if (is.null(levels_keep)) {
+          unique(sv$level)
+        } else {
+          intersect(as.character(levels_keep), unique(sv$level))
+        }
+
+        if (mode == "char") {
+          r0 <- as.list(setNames(rep("", length(report_cols)), report_cols))
+        } else {
+          r0 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
+        }
+        r0$Variable <- lab
+        out[[z]] <- as.data.frame(
+          r0,
+          stringsAsFactors = FALSE,
+          check.names = FALSE
+        )
+        z <- z + 1L
+
+        for (lv in lv_use) {
+          sl <- sv[sv$level == lv, , drop = FALSE]
+          if (mode == "char") {
+            r1 <- as.list(setNames(rep("", length(report_cols)), report_cols))
+            r1$n <- fmt_n(sl$n[1])
+            r1[["%"]] <- fmt_num(sl$pct[1], percent_digits)
+          } else {
+            r1 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
+            r1$n <- sl$n[1]
+            r1[["%"]] <- sl$pct[1]
+          }
+          r1$Variable <- paste0(indent_text, lv)
+          out[[z]] <- as.data.frame(
+            r1,
+            stringsAsFactors = FALSE,
+            check.names = FALSE
+          )
+          z <- z + 1L
+        }
+      }
+
+      do.call(rbind, out)
+    }
+
+    report_wide_char <- make_report_wide_oneway("char")
+    report_wide_excel <- make_report_wide_oneway("excel")
+
+    if (output == "default") {
+      if (!styled) {
+        return(wide_raw)
+      }
+      out <- wide_raw
+      attr(out, "display_df") <- report_wide_char
+      attr(out, "data_name") <- data_name
+      attr(out, "group_var") <- NULL
+      attr(out, "indent_text") <- indent_text
+      class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
+      print(out)
+      return(invisible(out))
+    }
+
+    if (output == "wide") {
+      return(report_wide_char)
+    }
+
+    if (output == "tinytable") {
+      if (!requireNamespace("tinytable", quietly = TRUE)) {
+        stop("Install package 'tinytable'.", call. = FALSE)
+      }
+      old_tt_opt <- getOption("tinytable_print_output")
+      options(tinytable_print_output = "html")
+      on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
+
+      dat_tt <- report_wide_char
+      mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
+      if (length(mod_rows)) {
+        dat_tt[[1]][mod_rows] <- paste0(
+          strrep("\u00A0", 4),
+          substring(dat_tt[[1]][mod_rows], nchar(indent_text) + 1L)
+        )
+      }
+      names(dat_tt) <- c("", "n", "%")
+
+      tt <- tinytable::tt(dat_tt, escape = FALSE)
+      tt <- tinytable::theme_empty(tt)
+      tt <- tinytable::style_tt(tt, j = 1, align = "l")
+      tt <- tinytable::style_tt(tt, j = 2:ncol(dat_tt), align = "r")
+      tt <- tinytable::style_tt(tt, i = 0, j = 2:ncol(dat_tt), align = "c")
+      if (length(mod_rows)) {
+        tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
+        tt <- tinytable::style_tt(
+          tt,
+          i = mod_rows,
+          j = 1,
+          html_css = "padding-left: 0.8em;"
+        )
+      }
+      tt <- tinytable::style_tt(
+        tt,
+        i = 0,
+        j = seq_len(ncol(dat_tt)),
+        line = "t",
+        line_width = 0.06
+      )
+      tt <- tinytable::style_tt(
+        tt,
+        i = 0,
+        j = seq_len(ncol(dat_tt)),
+        line = "b",
+        line_width = 0.06
+      )
+      tt <- tinytable::style_tt(
+        tt,
+        i = nrow(dat_tt),
+        j = seq_len(ncol(dat_tt)),
+        line = "b",
+        line_width = 0.06
+      )
+      return(tt)
+    }
+
+    if (output == "gt") {
+      if (!requireNamespace("gt", quietly = TRUE)) {
+        stop("Install package 'gt'.", call. = FALSE)
+      }
+      dat_gt <- report_wide_char
+      mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
+      if (length(mod_rows)) {
+        dat_gt[[1]][mod_rows] <- paste0(
+          strrep("\u00A0", 4),
+          substring(dat_gt[[1]][mod_rows], nchar(indent_text) + 1L)
+        )
+      }
+      names(dat_gt) <- c("Variable", "n", "pct")
+      tbl <- gt::gt(dat_gt)
+      tbl <- gt::cols_label(tbl, Variable = "", n = "n", pct = "%")
+      tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+      tbl <- gt::cols_align(tbl, align = "right", columns = c("n", "pct"))
+      rule <- gt::cell_borders(
+        sides = "bottom",
+        color = "currentColor",
+        weight = gt::px(1)
+      )
+      rule_top <- gt::cell_borders(
+        sides = "top",
+        color = "currentColor",
+        weight = gt::px(1)
+      )
+      tbl <- gt::tab_options(
+        tbl,
+        table.border.top.width = gt::px(0),
+        table.border.bottom.width = gt::px(0),
+        table_body.border.top.width = gt::px(0),
+        table_body.border.bottom.width = gt::px(0),
+        table_body.hlines.color = "transparent",
+        column_labels.border.top.width = gt::px(0),
+        column_labels.border.bottom.width = gt::px(0),
+        column_labels.border.lr.color = "transparent"
+      )
+      tbl <- gt::tab_style(
+        tbl,
+        style = rule_top,
+        locations = gt::cells_column_labels()
+      )
+      tbl <- gt::tab_style(
+        tbl,
+        style = rule,
+        locations = gt::cells_column_labels()
+      )
+      tbl <- gt::tab_style(
+        tbl,
+        style = rule,
+        locations = gt::cells_body(rows = nrow(dat_gt))
+      )
+      return(tbl)
+    }
+
+    build_flextable_oneway <- function(df) {
+      if (!requireNamespace("flextable", quietly = TRUE)) {
+        stop("Install package 'flextable'.", call. = FALSE)
+      }
+      if (!requireNamespace("officer", quietly = TRUE)) {
+        stop("Install package 'officer'.", call. = FALSE)
+      }
+
+      ft <- flextable::flextable(df)
+      map <- data.frame(
+        col_keys = names(df),
+        label = c("Variable", "n", "%"),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+      ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
+      bd <- officer::fp_border(color = "black", width = 1)
+      ft <- flextable::align(ft, j = 1, part = "all", align = "left")
+      ft <- flextable::align(ft, j = 2:ncol(df), part = "all", align = "right")
+      ft <- flextable::hline_top(ft, part = "header", border = bd)
+      ft <- flextable::hline_bottom(ft, part = "header", border = bd)
+      ft <- flextable::hline_bottom(ft, part = "body", border = bd)
+      id_mod <- which(startsWith(df[[1]], indent_text))
+      if (length(id_mod)) {
+        ft <- flextable::padding(
+          ft,
+          i = id_mod,
+          j = 1,
+          part = "body",
+          padding.left = 14
+        )
+      }
+      flextable::autofit(ft)
+    }
+
+    if (output == "flextable") {
+      ft <- build_flextable_oneway(report_wide_char)
+      if (!is.null(word_path) && nzchar(word_path)) {
+        flextable::save_as_docx(ft, path = word_path)
+      }
+      return(ft)
+    }
+
+    if (output == "word") {
+      if (is.null(word_path) || !nzchar(word_path)) {
+        stop("Provide `word_path` for output='word'.", call. = FALSE)
+      }
+      ft <- build_flextable_oneway(report_wide_char)
+      flextable::save_as_docx(ft, path = word_path)
+      return(invisible(word_path))
+    }
+
+    clip_body <- report_wide_char
+    clip_body$Variable <- make_stronger_indent(
+      clip_body$Variable,
+      indent_text,
+      indent_text_excel_clipboard
+    )
+    clip_mat <- rbind(matrix(names(clip_body), nrow = 1), as.matrix(clip_body))
+
+    if (output == "excel") {
+      if (is.null(excel_path) || !nzchar(excel_path)) {
+        stop("Provide `excel_path` for output='excel'.", call. = FALSE)
+      }
+      if (!requireNamespace("openxlsx", quietly = TRUE)) {
+        stop("Install package 'openxlsx'.", call. = FALSE)
+      }
+
+      body_xl <- report_wide_excel
+      body_xl$Variable <- make_stronger_indent(
+        body_xl$Variable,
+        indent_text,
+        indent_text_excel_clipboard
+      )
+
+      wb <- openxlsx::createWorkbook()
+      openxlsx::addWorksheet(wb, excel_sheet)
+      openxlsx::writeData(
+        wb,
+        excel_sheet,
+        x = body_xl,
+        startRow = 1,
+        colNames = TRUE,
+        rowNames = FALSE
+      )
+
+      nc <- ncol(body_xl)
+      last_row <- nrow(body_xl) + 1
+      st_left <- openxlsx::createStyle(halign = "left")
+      st_right <- openxlsx::createStyle(halign = "right")
+      st_top <- openxlsx::createStyle(border = "top", borderStyle = "thin")
+      st_bot <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
+      st_int <- openxlsx::createStyle(numFmt = "0")
+      st_pct <- openxlsx::createStyle(
+        numFmt = paste0("0.", paste(rep("0", percent_digits), collapse = ""))
+      )
+
+      openxlsx::addStyle(
+        wb,
+        excel_sheet,
+        st_top,
+        rows = 1,
+        cols = 1:nc,
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+      openxlsx::addStyle(
+        wb,
+        excel_sheet,
+        st_bot,
+        rows = 1,
+        cols = 1:nc,
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+      if (nrow(body_xl) > 0) {
+        openxlsx::addStyle(
+          wb,
+          excel_sheet,
+          st_left,
+          rows = 2:last_row,
+          cols = 1,
+          gridExpand = TRUE,
+          stack = TRUE
+        )
+        openxlsx::addStyle(
+          wb,
+          excel_sheet,
+          st_right,
+          rows = 2:last_row,
+          cols = 2:nc,
+          gridExpand = TRUE,
+          stack = TRUE
+        )
+        openxlsx::addStyle(
+          wb,
+          excel_sheet,
+          st_int,
+          rows = 2:last_row,
+          cols = 2,
+          gridExpand = TRUE,
+          stack = TRUE
+        )
+        openxlsx::addStyle(
+          wb,
+          excel_sheet,
+          st_pct,
+          rows = 2:last_row,
+          cols = 3,
+          gridExpand = TRUE,
+          stack = TRUE
+        )
+        openxlsx::addStyle(
+          wb,
+          excel_sheet,
+          st_bot,
+          rows = last_row,
+          cols = 1:nc,
+          gridExpand = TRUE,
+          stack = TRUE
+        )
+      }
+
+      openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
+      return(invisible(body_xl))
+    }
+
+    if (output == "clipboard") {
+      if (!requireNamespace("clipr", quietly = TRUE)) {
+        stop("Install package 'clipr'.", call. = FALSE)
+      }
+      lines <- apply(clip_mat, 1, function(x) {
+        paste(x, collapse = clipboard_delim)
+      })
+      txt <- paste(lines, collapse = "\n")
+      clipr::write_clip(txt)
+      return(invisible(txt))
+    }
+  }
+
+  g0 <- data[[by_name]]
   group_levels <- if (is.factor(g0)) {
     levels(g0)
   } else {
@@ -463,9 +1088,9 @@ table_apa <- function(
   measure_col <- NULL
   all_level_order <- character(0)
 
-  for (i in seq_along(row_vars)) {
-    x <- data[[row_vars[i]]]
-    g <- data[[group_var]]
+  for (i in seq_along(select_names)) {
+    x <- data[[select_names[i]]]
+    g <- data[[by_name]]
     w <- weights_vec
 
     # Capture original level order before any filtering/conversion
@@ -837,6 +1462,19 @@ table_apa <- function(
 
   report_wide_char <- make_report_wide(long_raw, mode = "char")
   report_wide_excel <- make_report_wide(long_raw, mode = "excel")
+  if (output == "default") {
+    if (!styled) {
+      return(wide_raw)
+    }
+    out <- wide_raw
+    attr(out, "display_df") <- report_wide_char
+    attr(out, "data_name") <- data_name
+    attr(out, "group_var") <- by_name
+    attr(out, "indent_text") <- indent_text
+    class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
+    print(out)
+    return(invisible(out))
+  }
   if (output == "wide") {
     return(report_wide_char)
   }
@@ -860,7 +1498,7 @@ table_apa <- function(
     df
   }
 
-  # Headers (base: without CI — used by rendered formats)
+  # Headers (base: without CI â€” used by rendered formats)
   top_header_span <- c(
     "Variable",
     rep(group_levels, each = 2),

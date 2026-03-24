@@ -220,8 +220,8 @@ options(
 
 ## Learn more
 
-- `vignette("association-measures")` — choosing the right effect size
+- `vignette("association-measures")` - choosing the right effect size
   for your contingency table.
-- `vignette("table-apa")` — building publication-ready APA-style
-  reporting tables.
+- `vignette("table-categorical")` - building publication-ready
+  categorical tables.
 - `?freq` and `?cross_tab` for the full argument reference.

@@ -3,9 +3,9 @@ title: "Getting started with spicy"
 description: >
   Get started with spicy for descriptive statistics, variable
   inspection, frequency tables, cross-tabulations, association
-  measures, APA-style tables, and codebooks in R. A tidyverse-friendly
-  alternative to SPSS and Stata for survey and labelled data
-  workflows.
+  measures, categorical and continuous summary tables, and codebooks in
+  R. A tidyverse-friendly alternative to SPSS and Stata for survey and
+  labelled data workflows.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Getting started with spicy}
@@ -27,10 +27,10 @@ library(spicy)
 spicy is an R package for descriptive statistics and data analysis,
 designed for data science and survey research workflows. It covers
 variable inspection, frequency tables, cross-tabulations with
-chi-squared tests and effect sizes, and publication-ready APA-style
-reporting — offering functionality similar to Stata or SPSS but within
-a tidyverse-friendly R environment. This vignette walks through the
-core workflow using the bundled `sochealth` dataset, a simulated
+chi-squared tests and effect sizes, and publication-ready summary
+tables, offering functionality similar to Stata or SPSS but within a
+tidyverse-friendly R environment. This vignette walks through the core
+workflow using the bundled `sochealth` dataset, a simulated
 social-health survey with 1 200 respondents and 24 variables.
 
 ## Inspect your data
@@ -39,8 +39,8 @@ social-health survey with 1 200 respondents and 24 variables.
 variable in a data frame: name, label, representative values, class,
 number of distinct values, valid observations, and missing values.
 In RStudio or Positron, calling `varlist()` without arguments opens an
-interactive viewer — this is the most common usage in practice. Here
-we use `tbl = TRUE` to produce static output for the vignette:
+interactive viewer - this is the most common usage in practice. Here we
+use `tbl = TRUE` to produce static output for the vignette:
 
 ```{r varlist}
 varlist(sochealth, tbl = TRUE)
@@ -114,31 +114,31 @@ the confidence interval and p-value:
 cramer_v(tbl, detail = TRUE)
 ```
 
-## APA tables
+## Summary tables
 
-`table_apa()` builds a publication-ready cross-tabulation report by
-crossing one grouping variable with one or many row variables. It
-supports multiple output formats.
+`table_categorical()` builds a publication-ready cross-tabulation
+report by crossing one grouping variable with one or many selected
+variables. It supports multiple output formats.
 
 With `output = "tinytable"` you get a formatted table suitable for
 R Markdown or Quarto documents:
 
-```{r table-apa-tt}
-table_apa(
+```{r table-categorical-tt}
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education",
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
   output = "tinytable"
 )
 ```
 
 Use `assoc_ci = TRUE` to display the confidence interval inline:
 
-```{r table-apa-ci}
-table_apa(
+```{r table-categorical-ci}
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   output = "tinytable",
   assoc_ci = TRUE
 )
@@ -148,12 +148,24 @@ Other formats include `"gt"`, `"flextable"`, `"excel"`,
 `"clipboard"`, and `"word"`. The `"wide"` and `"long"` formats return
 data frames for further processing:
 
-```{r table-apa-wide}
-table_apa(
+```{r table-categorical-wide}
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   output = "wide"
+)
+```
+
+`table_continuous()` summarizes continuous variables, either overall or
+by a categorical `by` variable, and can also add group-comparison
+tests:
+
+```{r table-continuous}
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health),
+  by = education
 )
 ```
 
@@ -179,6 +191,9 @@ sochealth |>
 - See `?varlist` to inspect variables, labels, values, and missing data.
 - See `?cross_tab` for the full list of arguments (weights, simulation,
   association measures).
-- See `?table_apa` for all output formats and customization options.
-- See `?assoc_measures` for the complete list of association statistics.
+- See `?table_categorical` for grouped or one-way categorical tables.
+- See `?table_continuous` for continuous summaries and group
+  comparisons.
+- See `?assoc_measures` for the complete list of association
+  statistics.
 - See `?code_book` to generate an interactive HTML codebook.

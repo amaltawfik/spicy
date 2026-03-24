@@ -1,18 +1,18 @@
-#' Print method for descriptive statistics tables
+#' Print method for continuous summary tables
 #'
 #' @description
-#' Formats and prints a `spicy_desc_table` object as a styled ASCII
+#' Formats and prints a `spicy_continuous_table` object as a styled ASCII
 #' table using [spicy_print_table()].
 #'
-#' @param x A `data.frame` of class `"spicy_desc_table"` as returned
-#'   by [table_desc()].
+#' @param x A `data.frame` of class `"spicy_continuous_table"` as returned
+#'   by [table_continuous()].
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return Invisibly returns `x`.
 #'
-#' @seealso [table_desc()], [spicy_print_table()]
+#' @seealso [table_continuous()], [spicy_print_table()]
 #' @export
-print.spicy_desc_table <- function(x, ...) {
+print.spicy_continuous_table <- function(x, ...) {
   digits <- attr(x, "digits") %||% 2L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
@@ -65,7 +65,7 @@ print.spicy_desc_table <- function(x, ...) {
   # Auto-select padding: use compact when normal would overflow console.
   # Each column in build_ascii_table uses: 1 (pad) + w[i] + 1 (pad) chars,
 
-  # plus 1 char for the │ separator after column 1.
+  # plus 1 char for the â”‚ separator after column 1.
   # "normal" adds 5 to each w[i]; "compact" uses raw w[i].
   padding <- "normal"
   col_widths <- vapply(

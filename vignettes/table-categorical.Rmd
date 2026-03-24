@@ -1,12 +1,12 @@
 ---
-title: "Create APA tables in R"
+title: "Create categorical tables in R"
 description: >
-  Create APA tables in R for cross-tabulations with chi-squared
+  Create categorical tables in R for cross-tabulations with chi-squared
   p-values, effect sizes, and confidence intervals. Export to gt,
   tinytable, flextable, Excel, or Word.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Create APA tables in R}
+  %\VignetteIndexEntry{Create categorical tables in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,37 +22,51 @@ knitr::opts_chunk$set(
 library(spicy)
 ```
 
-`table_apa()` builds publication-ready cross-tabulation tables suitable
-for APA-style reporting in social science and data science research. It
-crosses one grouping variable with one or many row variables, handling
-chi-squared p-values, effect sizes, confidence intervals, and
-multi-level headers automatically. Export to gt, tinytable, flextable,
-Excel, or Word. This vignette walks through the main features.
+`table_categorical()` builds publication-ready categorical tables suitable for
+APA-style reporting in social science and data science research. With
+`by`, it produces grouped cross-tabulation tables with chi-squared
+\(p\)-values, effect sizes, confidence intervals, and multi-level
+headers. Without `by`, it produces one-way frequency-style tables for
+the selected variables. Export to gt, tinytable, flextable, Excel, or
+Word. This vignette walks through the main features.
 
 ## Basic usage
 
-At minimum, provide a data frame, one or more row variables, and a
-grouping variable:
+For grouped tables, provide a data frame, one or more selected
+variables, and a grouping variable:
 
 ```{r basic}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education"
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education
 )
 ```
 
 The default output is `"wide"` with `style = "raw"`, which returns a
 data frame with numeric values suitable for further processing.
 
+## One-way tables
+
+Omit `by` to build a frequency-style table for the selected variables:
+
+```{r oneway}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  output = "default"
+)
+```
+
 ## Output formats
 
-`table_apa()` supports several output formats. The table below
+`table_categorical()` supports several output formats. The table below
 summarizes the options:
 
 | Format | Description |
 |---|---|
 | `"wide"` | Data frame, one row per modality (default) |
+| `"default"` | Styled ASCII table in the console |
 | `"long"` | Data frame, one row per modality x group |
 | `"gt"` | Formatted gt table |
 | `"tinytable"` | Formatted tinytable |
@@ -67,10 +81,10 @@ The `"gt"` format produces a table with APA-style borders, column
 spanners, and proper alignment:
 
 ```{r gt}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education",
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
   output = "gt"
 )
 ```
@@ -78,10 +92,10 @@ table_apa(
 ### tinytable output
 
 ```{r tinytable}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   output = "tinytable"
 )
 ```
@@ -93,25 +107,29 @@ character columns (ready for display), or `style = "raw"` for numeric
 values (ready for analysis):
 
 ```{r wide-report}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   output = "wide",
   style = "report"
 )
 ```
 
+Use `output = "default"` for a styled ASCII table in the console. Set
+`styled = FALSE` with `output = "default"` to recover the underlying
+wide raw `data.frame`.
+
 ## Custom labels
 
-By default, `table_apa()` uses variable names as row headers. Use the
+By default, `table_categorical()` uses variable names as row headers. Use the
 `labels` argument to provide human-readable labels:
 
 ```{r labels}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   labels = c("Smoking status", "Regular physical activity"),
   output = "gt"
 )
@@ -119,15 +137,15 @@ table_apa(
 
 ## Association measures and confidence intervals
 
-By default, `table_apa()` reports Cramer's V for nominal variables and
+By default, `table_categorical()` reports Cramer's V for nominal variables and
 automatically switches to Kendall's Tau-b when both variables are
 ordered factors. Override with `assoc_measure`:
 
 ```{r assoc-measure}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   assoc_measure = "phi",
   output = "tinytable"
 )
@@ -137,10 +155,10 @@ Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
 
 ```{r ci-rendered}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   assoc_ci = TRUE,
   output = "gt"
 )
@@ -150,10 +168,10 @@ In data formats (wide, long, excel, clipboard), separate `CI lower` and
 `CI upper` columns are added:
 
 ```{r ci-data}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   assoc_ci = TRUE,
   output = "wide",
   style = "report"
@@ -166,10 +184,10 @@ Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
 the total weighted N matches the unweighted N:
 
 ```{r weighted}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   weights = "weight",
   rescale = TRUE,
   output = "gt"
@@ -182,10 +200,10 @@ By default, rows with missing values are dropped (`drop_na = TRUE`).
 Set `drop_na = FALSE` to display them as a "(Missing)" category:
 
 ```{r missing}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "income_group",
-  group_var = "education",
+  select = income_group,
+  by = education,
   drop_na = FALSE,
   output = "gt"
 )
@@ -198,10 +216,10 @@ specify controls the display order, which is useful for placing
 "(Missing)" last:
 
 ```{r levels-keep}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "income_group",
-  group_var = "education",
+  select = income_group,
+  by = education,
   drop_na = FALSE,
   levels_keep = c("Low", "High", "(Missing)"),
   output = "gt"
@@ -214,10 +232,10 @@ Control the number of digits for percentages, p-values, and the
 association measure:
 
 ```{r formatting}
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   percent_digits = 2,
   p_digits = 4,
   v_digits = 3,
@@ -230,10 +248,10 @@ table_apa(
 For Excel export, provide a file path:
 
 ```r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education",
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
   output = "excel",
   excel_path = "my_table.xlsx"
 )
@@ -242,10 +260,10 @@ table_apa(
 For Word, use `output = "word"`:
 
 ```r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education",
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
   output = "word",
   word_path = "my_table.docx"
 )
@@ -255,10 +273,10 @@ You can also copy directly to the clipboard for pasting into a
 spreadsheet or a text editor:
 
 ```r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   output = "clipboard"
 )
 ```

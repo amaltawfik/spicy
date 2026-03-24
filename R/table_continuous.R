@@ -1,20 +1,19 @@
-#' Descriptive statistics table
+#' Continuous summary table
 #'
-#' Computes descriptive statistics (mean, standard deviation, minimum,
-#' maximum, confidence interval of the mean, and valid count) for numeric
-#' variables. Supports tidyselect column selection, optional grouping,
-#' optional group-comparison tests, and multiple output formats.
+#' `table_continuous()` computes descriptive statistics for continuous
+#' variables, with optional grouping by a categorical variable, optional
+#' group-comparison tests, and multiple output formats.
 #'
 #' @param data A `data.frame`.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax (default: `dplyr::everything()`). If `regex = TRUE`, provide
 #'   a regular expression pattern (character string).
+#' @param by An optional unquoted column name to group the descriptive
+#'   statistics by. The column does not need to be numeric.
 #' @param exclude Columns to exclude (default: `NULL`).
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect
 #'   helpers. If `TRUE`, the `select` argument is treated as a regular
 #'   expression.
-#' @param by An optional unquoted column name to group the descriptive
-#'   statistics by. The column does not need to be numeric.
 #' @param test Character. Statistical test to use when comparing groups.
 #'   One of `"welch"` (default), `"student"`, or `"nonparametric"`.
 #'   - `"welch"`: Welch *t*-test (2 groups) or Welch one-way ANOVA
@@ -37,13 +36,13 @@
 #'   used.
 #' @param effect_size Logical. If `TRUE` and `by` is used, adds an
 #'   effect-size column ("ES"). The measure is chosen automatically:
-#'   - Cohen's *d* — 2 groups, parametric (CI via Hedges & Olkin
+#'   - Cohen's *d* â€” 2 groups, parametric (CI via Hedges & Olkin
 #'     approximation).
-#'   - Eta-squared (\eqn{\eta^2}) — 3+ groups, parametric (CI via
+#'   - Eta-squared (\eqn{\eta^2}) â€” 3+ groups, parametric (CI via
 #'     noncentral *F* distribution).
-#'   - Rank-biserial *r* (`r_rb`) — 2 groups, nonparametric (CI via
+#'   - Rank-biserial *r* (`r_rb`) â€” 2 groups, nonparametric (CI via
 #'     Fisher *z*-transform).
-#'   - Epsilon-squared (\eqn{\varepsilon^2}) — 3+ groups,
+#'   - Epsilon-squared (\eqn{\varepsilon^2}) â€” 3+ groups,
 #'     nonparametric (CI via percentile bootstrap, 2 000 replicates).
 #'
 #'   Defaults to `FALSE`. Ignored when `by` is not used.
@@ -83,7 +82,7 @@
 #'
 #' @return
 #' When `styled = TRUE` (default), a `data.frame` with S3 class
-#' `"spicy_desc_table"` and a custom print method.
+#' `"spicy_continuous_table"` and a custom print method.
 #' When `styled = FALSE`, a plain `data.frame` with columns:
 #' `variable`, `label`, `group` (if `by` is used),
 #' `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`.
@@ -105,61 +104,61 @@
 #'
 #' @examples
 #' # Basic usage with all numeric columns
-#' table_desc(iris, styled = FALSE)
+#' table_continuous(iris, styled = FALSE)
 #'
 #' # Select specific columns with tidyselect
-#' table_desc(iris, select = c(Sepal.Length, Petal.Width), styled = FALSE)
+#' table_continuous(iris, select = c(Sepal.Length, Petal.Width), styled = FALSE)
 #'
 #' # Grouped descriptives
-#' table_desc(iris, select = c(Sepal.Length, Sepal.Width),
+#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 #'            by = Species, styled = FALSE)
 #'
 #' # Grouped descriptives with p-value
-#' table_desc(iris, select = c(Sepal.Length, Sepal.Width),
+#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 #'            by = Species, p_value = TRUE, styled = FALSE)
 #'
 #' # Grouped descriptives with test statistic only
-#' table_desc(iris, select = c(Sepal.Length, Sepal.Width),
+#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 #'            by = Species, statistic = TRUE, styled = FALSE)
 #'
 #' # Grouped descriptives with both p-value and test statistic
-#' table_desc(iris, select = c(Sepal.Length, Sepal.Width),
+#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 #'            by = Species, p_value = TRUE, statistic = TRUE,
 #'            styled = FALSE)
 #'
 #' # Student t-test / classic ANOVA (assumes equal variances)
-#' table_desc(iris, select = Sepal.Length, by = Species,
+#' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            test = "student", p_value = TRUE, styled = FALSE)
 #'
 #' # Nonparametric test (Kruskal-Wallis for 3+ groups)
-#' table_desc(iris, select = Sepal.Length, by = Species,
+#' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            test = "nonparametric", p_value = TRUE,
 #'            statistic = TRUE, styled = FALSE)
 #'
 #' # Effect size (eta-squared for 3 groups)
-#' table_desc(iris, select = Sepal.Length, by = Species,
+#' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            effect_size = TRUE, styled = FALSE)
 #'
 #' # Effect size with confidence interval
-#' table_desc(iris, select = Sepal.Length, by = Species,
+#' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            p_value = TRUE, effect_size_ci = TRUE,
 #'            styled = FALSE)
 #'
 #' # Nonparametric effect size (epsilon-squared with bootstrap CI)
-#' table_desc(iris, select = Sepal.Length, by = Species,
+#' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            test = "nonparametric", effect_size_ci = TRUE,
 #'            styled = FALSE)
 #'
 #' # Cohen's d for 2 groups
-#' table_desc(iris[iris$Species != "virginica", ],
+#' table_continuous(iris[iris$Species != "virginica", ],
 #'            select = Sepal.Length, by = Species,
 #'            effect_size_ci = TRUE, styled = FALSE)
 #'
 #' # Regex column selection
-#' table_desc(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
+#' table_continuous(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
 #'
 #' # Custom labels
-#' table_desc(iris,
+#' table_continuous(iris,
 #'            select = c(Sepal.Length, Petal.Length),
 #'            labels = c(Sepal.Length = "Sepal length (cm)",
 #'                       Petal.Length = "Petal length (cm)"),
@@ -167,44 +166,44 @@
 #'
 #' \donttest{
 #' # ASCII table (default)
-#' table_desc(iris, select = starts_with("Sepal"))
+#' table_continuous(iris, select = starts_with("Sepal"))
 #'
 #' # Grouped ASCII table
-#' table_desc(iris, select = starts_with("Sepal"), by = Species)
+#' table_continuous(iris, select = starts_with("Sepal"), by = Species)
 #'
 #' # tinytable output
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
-#'   table_desc(iris, output = "tinytable")
-#'   table_desc(iris, select = starts_with("Sepal"),
+#'   table_continuous(iris, output = "tinytable")
+#'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "tinytable")
 #' }
 #'
 #' # gt output
 #' if (requireNamespace("gt", quietly = TRUE)) {
-#'   table_desc(iris, output = "gt")
-#'   table_desc(iris, select = starts_with("Sepal"),
+#'   table_continuous(iris, output = "gt")
+#'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "gt")
 #' }
 #'
 #' # flextable output
 #' if (requireNamespace("flextable", quietly = TRUE)) {
-#'   table_desc(iris, output = "flextable")
-#'   table_desc(iris, by = Species, output = "flextable")
+#'   table_continuous(iris, output = "flextable")
+#'   table_continuous(iris, by = Species, output = "flextable")
 #' }
 #'
 #' # Word output
 #' if (requireNamespace("flextable", quietly = TRUE) &&
 #'     requireNamespace("officer", quietly = TRUE)) {
-#'   table_desc(iris, select = starts_with("Sepal"),
+#'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "word",
-#'              word_path = "table_desc.docx")
+#'              word_path = "table_continuous.docx")
 #' }
 #'
 #' # Excel output
 #' if (requireNamespace("openxlsx", quietly = TRUE)) {
-#'   table_desc(iris, select = starts_with("Sepal"),
+#'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "excel",
-#'              excel_path = "table_desc.xlsx")
+#'              excel_path = "table_continuous.xlsx")
 #' }
 #' }
 #'
@@ -213,12 +212,12 @@
 #' @importFrom dplyr select where all_of any_of
 #' @importFrom rlang enquo eval_tidy quo_get_env inform
 #' @export
-table_desc <- function(
+table_continuous <- function(
   data,
   select = dplyr::everything(),
+  by = NULL,
   exclude = NULL,
   regex = FALSE,
-  by = NULL,
   test = c("welch", "student", "nonparametric"),
   p_value = FALSE,
   statistic = FALSE,
@@ -375,7 +374,7 @@ table_desc <- function(
   if (verbose && length(ignored) > 0L) {
     rlang::inform(
       paste0(
-        "table_desc(): Ignored non-numeric columns: ",
+        "table_continuous(): Ignored non-numeric columns: ",
         paste(ignored, collapse = ", ")
       )
     )
@@ -594,7 +593,7 @@ table_desc <- function(
   }
 
   # --- styled / plain return ---
-  class(result) <- c("spicy_desc_table", "spicy_table", class(result))
+  class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
 
   if (!styled) {
     class(result) <- "data.frame"
