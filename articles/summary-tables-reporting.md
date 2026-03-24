@@ -154,6 +154,32 @@ Both functions support the same reporting formats:
 Pick the output based on where the table is going, not on the analysis
 itself. The underlying selection and grouping pattern stays the same.
 
+For Word-oriented reporting, `flextable` is often the easiest target:
+
+``` r
+if (requireNamespace("flextable", quietly = TRUE)) {
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    output = "flextable"
+  )
+}
+```
+
+| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   |
+|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|
+|                                |                 |       |       |       |        | LL     | UL    |     |
+| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 |
+|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |
+|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |
+| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 |
+|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |
+|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |
+| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 |
+|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
+|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
+
 ## Post-process the returned table object
 
 Both summary-table helpers return regular `gt` or `tinytable` objects,
@@ -162,16 +188,22 @@ so you can keep styling them with the native package API.
 Use `gt::` functions when you want to keep the `gt` workflow:
 
 ``` r
-table_categorical(
+tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  by = sex,
+  by = education,
+  labels = c("Smoking status", "Regular physical activity"),
   output = "gt"
-) |>
-  gt::tab_source_note(
-    gt::md("*Percentages are computed within each sex group.*")
+)
+
+tab |>
+  gt::tab_header(
+    title = "Health behaviors by education",
+    subtitle = "Categorical summary table"
   ) |>
-  gt::tab_options(table.font.size = gt::px(13))
+  gt::tab_source_note(
+    gt::md("*Percentages are computed within each education group.*")
+  )
 ```
 
 [TABLE]
@@ -205,23 +237,33 @@ Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
 ``` r
-table_continuous(
+tab <- table_categorical(
   sochealth,
-  select = c(bmi, wellbeing_score),
-  by = sex,
+  select = c(smoking, physical_activity),
+  by = education,
+  labels = c("Smoking status", "Regular physical activity"),
   output = "tinytable"
-) |>
-  tinytable::theme_striped() |>
-  tinytable::style_tt(i = 0, bold = TRUE)
+)
+
+tab |>
+  tinytable::style_tt(
+    i = 2:3,
+    j = 2:5,
+    background = "red",
+    color = "white",
+    bold = TRUE
+  )
 ```
 
-| Variable                      | Group  | M     | SD    | Min   | Max    | 95% CI |       | n   |
-|-------------------------------|--------|-------|-------|-------|--------|--------|-------|-----|
-|                               |        |       |       |       |        | LL     | UL    |     |
-| Body mass index               | Female | 25.69 | 3.78  | 16.00 | 38.90  | 25.39  | 25.98 | 616 |
-|                               | Male   | 26.20 | 3.64  | 16.00 | 37.70  | 25.90  | 26.50 | 572 |
-| WHO-5 wellbeing index (0-100) | Female | 67.16 | 14.80 | 19.60 | 100.00 | 65.99  | 68.33 | 620 |
-|                               | Male   | 71.05 | 16.23 | 18.70 | 100.00 | 69.73  | 72.37 | 580 |
+| Variable                  | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V |
+|---------------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
+|                           | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
+| Smoking status            |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
+|      No                   | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|      Yes                  | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
+| Regular physical activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
+|      No                   | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
+|      Yes                  | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
 
 ## Keep the detailed options in the function-specific articles
 

@@ -85,8 +85,8 @@
 
 
 
-
-<div class="row">
+<link href="summary-tables-reporting_files/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="summary-tables-reporting_files/tabwid-1.1.3/tabwid.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Summary tables for APA-style reporting</h1>
             
@@ -1898,6 +1898,141 @@ function that fits each variable type.</p>
 <p>Pick the output based on where the table is going, not on the
 analysis itself. The underlying selection and grouping pattern stays the
 same.</p>
+<p>For Word-oriented reporting, <code>flextable</code> is often the
+easiest target:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"flextable"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="tabwid">
+<style>.cl-e9ca20b2{}.cl-e9c16f80{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-e9c4c716{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-e9c4c72a{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-e9c4c72b{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-e9c501cc{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501d6{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501d7{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501e0{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501e1{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501ea{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501eb{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501ec{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501f4{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501f5{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501f6{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501f7{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501fe{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c501ff{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50200{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50208{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50209{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c5020a{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50212{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50213{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50214{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c5021c{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c5021d{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50226{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50227{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50228{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50230{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50231{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50232{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c50233{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c5023a{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e9c5023b{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-e9ca20b2">
+<thead>
+<tr style="overflow-wrap:break-word;">
+<th class="cl-e9c501cc"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Variable</span></p></th>
+<th class="cl-e9c501d6"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Group</span></p></th>
+<th class="cl-e9c501d7"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">M</span></p></th>
+<th class="cl-e9c501d7"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">SD</span></p></th>
+<th class="cl-e9c501d7"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">Min</span></p></th>
+<th class="cl-e9c501e0"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">Max</span></p></th>
+<th colspan="2" class="cl-e9c501e1"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">95% CI</span></p></th>
+<th class="cl-e9c501ea"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">n</span></p></th>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<th colspan="6" class="cl-e9c501eb"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></th>
+<th class="cl-e9c501f6"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">LL</span></p></th>
+<th class="cl-e9c501f6"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">UL</span></p></th>
+<th class="cl-e9c501f7"><p class="cl-e9c4c72b"><span class="cl-e9c16f80"></span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c501fe"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Body mass index</span></p></td>
+<td class="cl-e9c501ff"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Lower secondary</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">28.09</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.47</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">18.20</span></p></td>
+<td class="cl-e9c50208"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">38.90</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">27.66</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">28.51</span></p></td>
+<td class="cl-e9c50209"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">260</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c501fe"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c501ff"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Upper secondary</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">26.02</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.43</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">16.00</span></p></td>
+<td class="cl-e9c50208"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">37.10</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">25.73</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">26.31</span></p></td>
+<td class="cl-e9c50209"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">534</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c5020a"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c50212"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Tertiary</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">24.39</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.52</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">16.00</span></p></td>
+<td class="cl-e9c50214"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">33.00</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">24.04</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">24.74</span></p></td>
+<td class="cl-e9c5021c"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">394</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c5021d"><p class="cl-e9c4c716"><span class="cl-e9c16f80">WHO-5 wellbeing index (0-100)</span></p></td>
+<td class="cl-e9c50226"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Lower secondary</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">57.22</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">15.44</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">18.70</span></p></td>
+<td class="cl-e9c50228"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">97.90</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">55.33</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">59.10</span></p></td>
+<td class="cl-e9c50230"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">261</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c501fe"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c501ff"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Upper secondary</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">68.97</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">13.62</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">26.70</span></p></td>
+<td class="cl-e9c50208"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">100.00</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">67.82</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">70.12</span></p></td>
+<td class="cl-e9c50209"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">539</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c5020a"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c50212"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Tertiary</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">76.85</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">13.23</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">40.40</span></p></td>
+<td class="cl-e9c50214"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">100.00</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">75.55</span></p></td>
+<td class="cl-e9c50213"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">78.15</span></p></td>
+<td class="cl-e9c5021c"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">400</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c5021d"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Satisfaction with health (1-5)</span></p></td>
+<td class="cl-e9c50226"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Lower secondary</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">2.71</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.20</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.00</span></p></td>
+<td class="cl-e9c50228"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">5.00</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">2.57</span></p></td>
+<td class="cl-e9c50227"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">2.86</span></p></td>
+<td class="cl-e9c50230"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">259</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c501fe"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c501ff"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Upper secondary</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.53</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.19</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.00</span></p></td>
+<td class="cl-e9c50208"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">5.00</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.43</span></p></td>
+<td class="cl-e9c50200"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">3.63</span></p></td>
+<td class="cl-e9c50209"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">534</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-e9c50231"><p class="cl-e9c4c716"><span class="cl-e9c16f80"></span></p></td>
+<td class="cl-e9c50232"><p class="cl-e9c4c716"><span class="cl-e9c16f80">Tertiary</span></p></td>
+<td class="cl-e9c50233"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">4.11</span></p></td>
+<td class="cl-e9c50233"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.04</span></p></td>
+<td class="cl-e9c50233"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">1.00</span></p></td>
+<td class="cl-e9c5023a"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">5.00</span></p></td>
+<td class="cl-e9c50233"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">4.01</span></p></td>
+<td class="cl-e9c50233"><p class="cl-e9c4c72a"><span class="cl-e9c16f80">4.21</span></p></td>
+<td class="cl-e9c5023b"><p class="cl-e9c4c72b"><span class="cl-e9c16f80">399</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section level2">
 <h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>
@@ -1907,17 +2042,23 @@ same.</p>
 native package API.</p>
 <p>Use <code>gt::</code> functions when you want to keep the
 <code>gt</code> workflow:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_source_note.html" class="external-link">tab_source_note</a></span><span class="op">(</span></span>
-<span>    <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/md.html" class="external-link">md</a></span><span class="op">(</span><span class="st">"*Percentages are computed within each sex group.*"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tab</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html" class="external-link">tab_header</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Health behaviors by education"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Categorical summary table"</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_options.html" class="external-link">tab_options</a></span><span class="op">(</span>table.font.size <span class="op">=</span> <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/px.html" class="external-link">px</a></span><span class="op">(</span><span class="fl">13</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_source_note.html" class="external-link">tab_source_note</a></span><span class="op">(</span></span>
+<span>    <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/md.html" class="external-link">md</a></span><span class="op">(</span><span class="st">"*Percentages are computed within each education group.*"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <div id="ewpekaebia" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ewpekaebia table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1941,7 +2082,7 @@ native package API.</p>
   margin-left: auto;
   margin-right: auto;
   color: #333333;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: normal;
   font-style: normal;
   background-color: #FFFFFF;
@@ -2379,10 +2520,12 @@ native package API.</p>
   background-color: transparent !important;
 }
 
-.gt_table thead tr:last-child th[id="Female_n"],
-.gt_table thead tr:last-child th[id="Female_pct"],
-.gt_table thead tr:last-child th[id="Male_n"],
-.gt_table thead tr:last-child th[id="Male_pct"],
+.gt_table thead tr:last-child th[id="Lower secondary_n"],
+.gt_table thead tr:last-child th[id="Lower secondary_pct"],
+.gt_table thead tr:last-child th[id="Upper secondary_n"],
+.gt_table thead tr:last-child th[id="Upper secondary_pct"],
+.gt_table thead tr:last-child th[id="Tertiary_n"],
+.gt_table thead tr:last-child th[id="Tertiary_pct"],
 .gt_table thead tr:last-child th[id="Total_n"],
 .gt_table thead tr:last-child th[id="Total_pct"] {
   border-top: 1px solid currentColor !important;
@@ -2403,15 +2546,24 @@ native package API.</p>
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
+<tr class="gt_heading">
+<td colspan="11" class="gt_heading gt_title gt_font_normal" style>Health behaviors by education</td>
+    </tr>
+<tr class="gt_heading">
+<td colspan="11" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Categorical summary table</td>
+    </tr>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">
         <div class="gt_column_spanner">Variable</div>
       </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Female">
-        <div class="gt_column_spanner">Female</div>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Lower secondary">
+        <div class="gt_column_spanner">Lower secondary</div>
       </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Male">
-        <div class="gt_column_spanner">Male</div>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Upper secondary">
+        <div class="gt_column_spanner">Upper secondary</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Tertiary">
+        <div class="gt_column_spanner">Tertiary</div>
       </th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="Total">
         <div class="gt_column_spanner">Total</div>
@@ -2425,10 +2577,12 @@ native package API.</p>
     </tr>
 <tr class="gt_col_headings">
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Female_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Female_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Male_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Male_pct">%</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_n">n</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_pct">%</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_n">n</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_pct">%</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_n">n</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_pct">%</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_n">n</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_pct">%</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
@@ -2437,22 +2591,26 @@ native package API.</p>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking</td>
-<td headers="Female_n" class="gt_row gt_center"></td>
-<td headers="Female_pct" class="gt_row gt_center"></td>
-<td headers="Male_n" class="gt_row gt_center"></td>
-<td headers="Male_pct" class="gt_row gt_center"></td>
+<td headers="Variable" class="gt_row gt_left">Smoking status</td>
+<td headers="Lower secondary_n" class="gt_row gt_center"></td>
+<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
+<td headers="Upper secondary_n" class="gt_row gt_center"></td>
+<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
+<td headers="Tertiary_n" class="gt_row gt_center"></td>
+<td headers="Tertiary_pct" class="gt_row gt_center"></td>
 <td headers="Total_n" class="gt_row gt_center"></td>
 <td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">.713</td>
-<td headers="assoc_col" class="gt_row gt_right">.01</td>
+<td headers="p" class="gt_row gt_right">&lt; .001</td>
+<td headers="assoc_col" class="gt_row gt_right">.14</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Female_n" class="gt_row gt_center">475</td>
-<td headers="Female_pct" class="gt_row gt_center">78.4</td>
-<td headers="Male_n" class="gt_row gt_center">451</td>
-<td headers="Male_pct" class="gt_row gt_center">79.3</td>
+<td headers="Lower secondary_n" class="gt_row gt_center">179</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center">69.6</td>
+<td headers="Upper secondary_n" class="gt_row gt_center">415</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center">78.7</td>
+<td headers="Tertiary_n" class="gt_row gt_center">332</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">84.9</td>
 <td headers="Total_n" class="gt_row gt_center">926</td>
 <td headers="Total_pct" class="gt_row gt_center">78.8</td>
 <td headers="p" class="gt_row gt_right"></td>
@@ -2460,32 +2618,38 @@ native package API.</p>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">      Yes</td>
-<td headers="Female_n" class="gt_row gt_center">131</td>
-<td headers="Female_pct" class="gt_row gt_center">21.6</td>
-<td headers="Male_n" class="gt_row gt_center">118</td>
-<td headers="Male_pct" class="gt_row gt_center">20.7</td>
+<td headers="Lower secondary_n" class="gt_row gt_center">78</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center">30.4</td>
+<td headers="Upper secondary_n" class="gt_row gt_center">112</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center">21.3</td>
+<td headers="Tertiary_n" class="gt_row gt_center">59</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">15.1</td>
 <td headers="Total_n" class="gt_row gt_center">249</td>
 <td headers="Total_pct" class="gt_row gt_center">21.2</td>
 <td headers="p" class="gt_row gt_right"></td>
 <td headers="assoc_col" class="gt_row gt_right"></td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">physical_activity</td>
-<td headers="Female_n" class="gt_row gt_center"></td>
-<td headers="Female_pct" class="gt_row gt_center"></td>
-<td headers="Male_n" class="gt_row gt_center"></td>
-<td headers="Male_pct" class="gt_row gt_center"></td>
+<td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
+<td headers="Lower secondary_n" class="gt_row gt_center"></td>
+<td headers="Lower secondary_pct" class="gt_row gt_center"></td>
+<td headers="Upper secondary_n" class="gt_row gt_center"></td>
+<td headers="Upper secondary_pct" class="gt_row gt_center"></td>
+<td headers="Tertiary_n" class="gt_row gt_center"></td>
+<td headers="Tertiary_pct" class="gt_row gt_center"></td>
 <td headers="Total_n" class="gt_row gt_center"></td>
 <td headers="Total_pct" class="gt_row gt_center"></td>
-<td headers="p" class="gt_row gt_right">.832</td>
-<td headers="assoc_col" class="gt_row gt_right">.01</td>
+<td headers="p" class="gt_row gt_right">&lt; .001</td>
+<td headers="assoc_col" class="gt_row gt_right">.21</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">      No</td>
-<td headers="Female_n" class="gt_row gt_center">334</td>
-<td headers="Female_pct" class="gt_row gt_center">53.9</td>
-<td headers="Male_n" class="gt_row gt_center">316</td>
-<td headers="Male_pct" class="gt_row gt_center">54.5</td>
+<td headers="Lower secondary_n" class="gt_row gt_center">177</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center">67.8</td>
+<td headers="Upper secondary_n" class="gt_row gt_center">310</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center">57.5</td>
+<td headers="Tertiary_n" class="gt_row gt_center">163</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">40.8</td>
 <td headers="Total_n" class="gt_row gt_center">650</td>
 <td headers="Total_pct" class="gt_row gt_center">54.2</td>
 <td headers="p" class="gt_row gt_right"></td>
@@ -2493,10 +2657,12 @@ native package API.</p>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">      Yes</td>
-<td headers="Female_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">286</td>
-<td headers="Female_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">46.1</td>
-<td headers="Male_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">264</td>
-<td headers="Male_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">45.5</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">84</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">32.2</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">229</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">42.5</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">237</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">59.2</td>
 <td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">550</td>
 <td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">45.8</td>
 <td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
@@ -2504,14 +2670,14 @@ native package API.</p>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="9"><span class="gt_from_md"><em>Percentages are computed within each sex group.</em></span></td>
+<td class="gt_sourcenote" colspan="11"><span class="gt_from_md"><em>Percentages are computed within each education group.</em></span></td>
     </tr></tfoot>
 </table>
 </div>
 <p>If you are rendering the table inside a dark pkgdown theme, you can
 add an explicit CSS override after creating the <code>gt</code>
 object:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -3125,15 +3291,23 @@ object:</p>
 </div>
 <p>Use <code>tinytable::</code> functions when you want lightweight
 table-specific styling:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">tinytable</span><span class="fu">::</span><span class="fu"><a href="https://vincentarelbundock.github.io/tinytable/man/theme_striped.html" class="external-link">theme_striped</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">tinytable</span><span class="fu">::</span><span class="fu"><a href="https://vincentarelbundock.github.io/tinytable/man/style_tt.html" class="external-link">style_tt</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fl">0</span>, bold <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tab</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tinytable</span><span class="fu">::</span><span class="fu"><a href="https://vincentarelbundock.github.io/tinytable/man/style_tt.html" class="external-link">style_tt</a></span><span class="op">(</span></span>
+<span>    i <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>    j <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>    background <span class="op">=</span> <span class="st">"red"</span>,</span>
+<span>    color <span class="op">=</span> <span class="st">"white"</span>,</span>
+<span>    bold <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <!-- preamble start -->
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
@@ -3143,21 +3317,19 @@ table-specific styling:</p>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 9 } ], css_id: 'tinytable_css_5kvhi9ek6f5pg6du3m2y',}, 
-          { positions: [ { i: '2', j: 9 } ], css_id: 'tinytable_css_c6c098s7kgcy4rtdlq4f',}, 
-          { positions: [ { i: '1', j: 9 }, { i: '3', j: 9 } ], css_id: 'tinytable_css_fby73eetguw6g9g19xr8',}, 
-          { positions: [ { i: '0', j: 9 } ], css_id: 'tinytable_css_tffweepkjqn9zokrluga',}, 
-          { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_d3qsm915f78fv1dfuxtu',}, 
-          { positions: [ { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 } ], css_id: 'tinytable_css_mp1gq43u59uat0vhbt5w',}, 
-          { positions: [ { i: '2', j: 3 }, { i: '2', j: 4 }, { i: '2', j: 5 }, { i: '2', j: 6 }, { i: '2', j: 7 }, { i: '2', j: 8 } ], css_id: 'tinytable_css_z64xax4no65nxitpnxmq',}, 
-          { positions: [ { i: '1', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '3', j: 8 } ], css_id: 'tinytable_css_y3t558ozvqptep6lc6ti',}, 
-          { positions: [ { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 } ], css_id: 'tinytable_css_j3f7ykmkvqptisjfqu3e',}, 
-          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_4nm9x1vbskbyduda1j88',}, 
-          { positions: [ { i: '4', j: 1 }, { i: '4', j: 2 } ], css_id: 'tinytable_css_n1rjfsds6vww7up8s26t',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '2', j: 2 } ], css_id: 'tinytable_css_ab5nqymmkzjzaaos7evz',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '3', j: 1 }, { i: '1', j: 2 }, { i: '3', j: 2 } ], css_id: 'tinytable_css_ue1yo572qvocsjdmqew5',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '0', j: 2 } ], css_id: 'tinytable_css_2bibl5diu3n6bbzoshnb',}, 
-          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 } ], css_id: 'tinytable_css_n0ws8dilfgz1c09znmem',}, 
+          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 } ], css_id: 'tinytable_css_fby73eetguw6g9g19xr8',}, 
+          { positions: [ { i: '0', j: 10 }, { i: '6', j: 10 }, { i: '0', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_tffweepkjqn9zokrluga',}, 
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_d3qsm915f78fv1dfuxtu',}, 
+          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_mp1gq43u59uat0vhbt5w',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_z64xax4no65nxitpnxmq',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 } ], css_id: 'tinytable_css_y3t558ozvqptep6lc6ti',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_j3f7ykmkvqptisjfqu3e',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_4nm9x1vbskbyduda1j88',}, 
+          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_n1rjfsds6vww7up8s26t',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_ab5nqymmkzjzaaos7evz',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_ue1yo572qvocsjdmqew5',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_2bibl5diu3n6bbzoshnb',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_n0ws8dilfgz1c09znmem',}, 
           ];
 
           // Loop over the arrays to style the cells
@@ -3170,20 +3342,18 @@ table-specific styling:</p>
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_5kvhi9ek6f5pg6du3m2y, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_5kvhi9ek6f5pg6du3m2y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_c6c098s7kgcy4rtdlq4f, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_c6c098s7kgcy4rtdlq4f {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_fby73eetguw6g9g19xr8, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_fby73eetguw6g9g19xr8 { text-align: right; background-color: #ededed }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_tffweepkjqn9zokrluga, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_tffweepkjqn9zokrluga {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; font-weight: bold; text-align: right }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_d3qsm915f78fv1dfuxtu, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_d3qsm915f78fv1dfuxtu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_mp1gq43u59uat0vhbt5w, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_mp1gq43u59uat0vhbt5w {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_z64xax4no65nxitpnxmq, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_z64xax4no65nxitpnxmq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_y3t558ozvqptep6lc6ti, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_y3t558ozvqptep6lc6ti { text-align: center; background-color: #ededed }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_j3f7ykmkvqptisjfqu3e, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_j3f7ykmkvqptisjfqu3e {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; font-weight: bold; text-align: center }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_4nm9x1vbskbyduda1j88, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_4nm9x1vbskbyduda1j88 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_n1rjfsds6vww7up8s26t, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_n1rjfsds6vww7up8s26t {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_ab5nqymmkzjzaaos7evz, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_ab5nqymmkzjzaaos7evz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_ue1yo572qvocsjdmqew5, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_ue1yo572qvocsjdmqew5 { text-align: left; background-color: #ededed }
-    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_2bibl5diu3n6bbzoshnb, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_2bibl5diu3n6bbzoshnb {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; font-weight: bold; text-align: left }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_fby73eetguw6g9g19xr8, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_fby73eetguw6g9g19xr8 { text-align: right; white-space: nowrap; }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_tffweepkjqn9zokrluga, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_tffweepkjqn9zokrluga {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right; white-space: nowrap; }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_d3qsm915f78fv1dfuxtu, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_d3qsm915f78fv1dfuxtu {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_mp1gq43u59uat0vhbt5w, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_mp1gq43u59uat0vhbt5w {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_z64xax4no65nxitpnxmq, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_z64xax4no65nxitpnxmq { font-weight: bold; text-align: right; color: white; background-color: #FF0000 }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_y3t558ozvqptep6lc6ti, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_y3t558ozvqptep6lc6ti { text-align: right }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_j3f7ykmkvqptisjfqu3e, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_j3f7ykmkvqptisjfqu3e {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_4nm9x1vbskbyduda1j88, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_4nm9x1vbskbyduda1j88 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_n1rjfsds6vww7up8s26t, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_n1rjfsds6vww7up8s26t {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_ab5nqymmkzjzaaos7evz, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_ab5nqymmkzjzaaos7evz { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_ue1yo572qvocsjdmqew5, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_ue1yo572qvocsjdmqew5 { text-align: left }
+    #tinytable_op9ksz09od3p848lv7af td.tinytable_css_2bibl5diu3n6bbzoshnb, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_2bibl5diu3n6bbzoshnb {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     #tinytable_op9ksz09od3p848lv7af td.tinytable_css_n0ws8dilfgz1c09znmem, #tinytable_op9ksz09od3p848lv7af th.tinytable_css_n0ws8dilfgz1c09znmem {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
@@ -3191,70 +3361,105 @@ table-specific styling:</p>
 <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="2">Group</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="3">M</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="4">SD</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="5">Min</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="6">Max</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="7">95% CI</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">n</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
+<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
-                <th scope="col" data-row="0" data-col="2"></th>
-                <th scope="col" data-row="0" data-col="3"></th>
-                <th scope="col" data-row="0" data-col="4"></th>
-                <th scope="col" data-row="0" data-col="5"></th>
-                <th scope="col" data-row="0" data-col="6"></th>
-                <th scope="col" data-row="0" data-col="7">LL</th>
-                <th scope="col" data-row="0" data-col="8">UL</th>
-                <th scope="col" data-row="0" data-col="9"></th>
+                <th scope="col" data-row="0" data-col="2">n</th>
+                <th scope="col" data-row="0" data-col="3">%</th>
+                <th scope="col" data-row="0" data-col="4">n</th>
+                <th scope="col" data-row="0" data-col="5">%</th>
+                <th scope="col" data-row="0" data-col="6">n</th>
+                <th scope="col" data-row="0" data-col="7">%</th>
+                <th scope="col" data-row="0" data-col="8">n</th>
+                <th scope="col" data-row="0" data-col="9">%</th>
+                <th scope="col" data-row="0" data-col="10"></th>
+                <th scope="col" data-row="0" data-col="11"></th>
               </tr>
 </thead>
 <tbody>
 <tr>
-<td data-row="1" data-col="1">Body mass index</td>
-                  <td data-row="1" data-col="2">Female</td>
-                  <td data-row="1" data-col="3">25.69</td>
-                  <td data-row="1" data-col="4">3.78</td>
-                  <td data-row="1" data-col="5">16.00</td>
-                  <td data-row="1" data-col="6">38.90</td>
-                  <td data-row="1" data-col="7">25.39</td>
-                  <td data-row="1" data-col="8">25.98</td>
-                  <td data-row="1" data-col="9">616</td>
+<td data-row="1" data-col="1">Smoking status</td>
+                  <td data-row="1" data-col="2"></td>
+                  <td data-row="1" data-col="3"></td>
+                  <td data-row="1" data-col="4"></td>
+                  <td data-row="1" data-col="5"></td>
+                  <td data-row="1" data-col="6"></td>
+                  <td data-row="1" data-col="7"></td>
+                  <td data-row="1" data-col="8"></td>
+                  <td data-row="1" data-col="9"></td>
+                  <td data-row="1" data-col="10">&lt; .001</td>
+                  <td data-row="1" data-col="11">.14</td>
                 </tr>
 <tr>
-<td data-row="2" data-col="1"></td>
-                  <td data-row="2" data-col="2">Male</td>
-                  <td data-row="2" data-col="3">26.20</td>
-                  <td data-row="2" data-col="4">3.64</td>
-                  <td data-row="2" data-col="5">16.00</td>
-                  <td data-row="2" data-col="6">37.70</td>
-                  <td data-row="2" data-col="7">25.90</td>
-                  <td data-row="2" data-col="8">26.50</td>
-                  <td data-row="2" data-col="9">572</td>
+<td data-row="2" data-col="1">      No</td>
+                  <td data-row="2" data-col="2">179</td>
+                  <td data-row="2" data-col="3">69.6</td>
+                  <td data-row="2" data-col="4">415</td>
+                  <td data-row="2" data-col="5">78.7</td>
+                  <td data-row="2" data-col="6">332</td>
+                  <td data-row="2" data-col="7">84.9</td>
+                  <td data-row="2" data-col="8">926</td>
+                  <td data-row="2" data-col="9">78.8</td>
+                  <td data-row="2" data-col="10"></td>
+                  <td data-row="2" data-col="11"></td>
                 </tr>
 <tr>
-<td data-row="3" data-col="1">WHO-5 wellbeing index (0-100)</td>
-                  <td data-row="3" data-col="2">Female</td>
-                  <td data-row="3" data-col="3">67.16</td>
-                  <td data-row="3" data-col="4">14.80</td>
-                  <td data-row="3" data-col="5">19.60</td>
-                  <td data-row="3" data-col="6">100.00</td>
-                  <td data-row="3" data-col="7">65.99</td>
-                  <td data-row="3" data-col="8">68.33</td>
-                  <td data-row="3" data-col="9">620</td>
+<td data-row="3" data-col="1">      Yes</td>
+                  <td data-row="3" data-col="2">78</td>
+                  <td data-row="3" data-col="3">30.4</td>
+                  <td data-row="3" data-col="4">112</td>
+                  <td data-row="3" data-col="5">21.3</td>
+                  <td data-row="3" data-col="6">59</td>
+                  <td data-row="3" data-col="7">15.1</td>
+                  <td data-row="3" data-col="8">249</td>
+                  <td data-row="3" data-col="9">21.2</td>
+                  <td data-row="3" data-col="10"></td>
+                  <td data-row="3" data-col="11"></td>
                 </tr>
 <tr>
-<td data-row="4" data-col="1"></td>
-                  <td data-row="4" data-col="2">Male</td>
-                  <td data-row="4" data-col="3">71.05</td>
-                  <td data-row="4" data-col="4">16.23</td>
-                  <td data-row="4" data-col="5">18.70</td>
-                  <td data-row="4" data-col="6">100.00</td>
-                  <td data-row="4" data-col="7">69.73</td>
-                  <td data-row="4" data-col="8">72.37</td>
-                  <td data-row="4" data-col="9">580</td>
+<td data-row="4" data-col="1">Regular physical activity</td>
+                  <td data-row="4" data-col="2"></td>
+                  <td data-row="4" data-col="3"></td>
+                  <td data-row="4" data-col="4"></td>
+                  <td data-row="4" data-col="5"></td>
+                  <td data-row="4" data-col="6"></td>
+                  <td data-row="4" data-col="7"></td>
+                  <td data-row="4" data-col="8"></td>
+                  <td data-row="4" data-col="9"></td>
+                  <td data-row="4" data-col="10">&lt; .001</td>
+                  <td data-row="4" data-col="11">.21</td>
+                </tr>
+<tr>
+<td data-row="5" data-col="1">      No</td>
+                  <td data-row="5" data-col="2">177</td>
+                  <td data-row="5" data-col="3">67.8</td>
+                  <td data-row="5" data-col="4">310</td>
+                  <td data-row="5" data-col="5">57.5</td>
+                  <td data-row="5" data-col="6">163</td>
+                  <td data-row="5" data-col="7">40.8</td>
+                  <td data-row="5" data-col="8">650</td>
+                  <td data-row="5" data-col="9">54.2</td>
+                  <td data-row="5" data-col="10"></td>
+                  <td data-row="5" data-col="11"></td>
+                </tr>
+<tr>
+<td data-row="6" data-col="1">      Yes</td>
+                  <td data-row="6" data-col="2">84</td>
+                  <td data-row="6" data-col="3">32.2</td>
+                  <td data-row="6" data-col="4">229</td>
+                  <td data-row="6" data-col="5">42.5</td>
+                  <td data-row="6" data-col="6">237</td>
+                  <td data-row="6" data-col="7">59.2</td>
+                  <td data-row="6" data-col="8">550</td>
+                  <td data-row="6" data-col="9">45.8</td>
+                  <td data-row="6" data-col="10"></td>
+                  <td data-row="6" data-col="11"></td>
                 </tr>
 </tbody>
 </table>
