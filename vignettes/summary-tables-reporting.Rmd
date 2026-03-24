@@ -24,7 +24,7 @@ library(spicy)
 ```
 
 `table_categorical()` and `table_continuous()` are the two main summary
-table helpers in spicy. They share the same high-level grammar:
+table helpers in spicy. They share the same main interface:
 choose variables with `select`, optionally split the table with `by`,
 apply readable labels, and pick an output format that matches your
 reporting workflow. This vignette focuses on that shared logic rather
@@ -45,9 +45,9 @@ In practice:
 - use `table_continuous()` for BMI, income, or scale scores;
 - keep `by` for the grouping variable you want to compare across.
 
-## A shared reporting grammar
+## A shared interface
 
-Both functions follow the same core pattern:
+Both functions use the same core arguments:
 
 ```{r grammar-categorical}
 table_categorical(
@@ -73,7 +73,7 @@ table_continuous(
 )
 ```
 
-The same mental model works in both cases:
+The same argument pattern works in both cases:
 
 - `select` chooses the reported variables;
 - `by` defines the grouping structure;
@@ -139,6 +139,63 @@ Both functions support the same reporting formats:
 
 Pick the output based on where the table is going, not on the analysis
 itself. The underlying selection and grouping pattern stays the same.
+
+## Post-process the returned table object
+
+Both summary-table helpers return regular `gt` or `tinytable` objects,
+so you can keep styling them with the native package API.
+
+Use `gt::` functions when you want to keep the `gt` workflow:
+
+```{r postprocess-gt}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  output = "gt"
+) |>
+  gt::tab_source_note(
+    gt::md("*Percentages are computed within each sex group.*")
+  ) |>
+  gt::tab_options(table.font.size = gt::px(13))
+```
+
+If you are rendering the table inside a dark pkgdown theme, you can add
+an explicit CSS override after creating the `gt` object:
+
+```{r postprocess-gt-dark}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  output = "gt"
+) |>
+  gt::opt_css(
+    css = paste(
+      ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
+      ".gt_column_spanner_outer, .gt_column_spanner, .gt_table_body,",
+      ".gt_stub, .gt_row, .gt_table th, .gt_table td {",
+      "  background-color: transparent !important;",
+      "  color: currentColor !important;",
+      "}",
+      sep = "\n"
+    )
+  )
+```
+
+Use `tinytable::` functions when you want lightweight table-specific
+styling:
+
+```{r postprocess-tinytable}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  output = "tinytable"
+) |>
+  tinytable::theme_striped() |>
+  tinytable::style_tt(i = 0, bold = TRUE)
+```
 
 ## Keep the detailed options in the function-specific articles
 
