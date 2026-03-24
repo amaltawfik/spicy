@@ -1,0 +1,322 @@
+# Changelog
+
+## spicy (development version)
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  replaces `table_apa()` as the public name for categorical summary
+  tables. It uses `select` and `by`, supports grouped cross-tabulation
+  or one-way frequency-style tables when `by = NULL`, and gains
+  `output = "default"` plus `styled` for ASCII console output.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  replaces `table_desc()` as the public name for continuous summary
+  tables. It computes descriptive statistics (mean, SD, min, max,
+  confidence interval of the mean, n) for numeric variables, with
+  tidyselect column selection, optional grouping via `by`, and multiple
+  output formats (ASCII, tinytable, gt, flextable, Excel, clipboard,
+  Word).
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains `effect_size` and `effect_size_ci` arguments. When `by` is used,
+  `effect_size = TRUE` adds an “ES” column with the appropriate measure
+  (Cohen’s d, eta-squared, rank-biserial r_rb, or epsilon-squared)
+  chosen automatically based on the test method and number of groups.
+  `effect_size_ci = TRUE` appends the confidence interval in brackets
+  (e.g., `d = 0.45 [0.22, 0.68]`).
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`)
+  to choose the group-comparison method, along with independent
+  `p_value` and `statistic` display toggles. When `by` is used,
+  `p_value = TRUE` adds a p-value column and `statistic = TRUE` adds a
+  formatted test-statistic column; either or both can be enabled
+  independently.
+
+## spicy 0.6.0
+
+CRAN release: 2026-03-23
+
+### New features
+
+- New family of association measure functions for contingency tables:
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md),
+  [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md),
+  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
+  [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
+  [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md),
+  [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
+  [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
+  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
+  [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md),
+  and
+  [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md).
+  Each returns a numeric scalar by default; pass `detail = TRUE` for a
+  named vector with estimate, confidence interval, and p-value.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  gains `assoc_measure` and `assoc_ci` arguments. When both variables
+  are ordered factors, it automatically selects Kendall’s Tau-b instead
+  of Cramer’s V. The note format changes from `Chi-2: 18.0 (df = 4)` to
+  `Chi-2(4) = 18.0`. Numeric attributes (`chi2`, `df`, `p_value`,
+  `assoc_measure`, `assoc_value`, `assoc_result`) are now attached to
+  the output data frame.
+
+- `table_apa()` now dynamically labels the association measure column
+  based on the measure used, instead of always showing “Cramer’s V”. New
+  `assoc_measure` and `assoc_ci` arguments are passed through to
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+
+- `table_apa()` gains `output = "gt"` to produce a `gt_tbl` object with
+  APA-style formatting, column spanners, and alignment.
+
+- `table_apa()` now correctly centers spanner labels over their column
+  pairs in `tinytable` and `flextable` output.
+
+- All association measure functions and
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  gain a `digits` argument (default 3) that controls the number of
+  decimal places when printed. The p-value always uses 3 decimal places
+  or `< 0.001`.
+
+- `detail = TRUE` results now print with formatted output (aligned
+  columns, fixed decimal places) via a new
+  [`print.spicy_assoc_detail()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
+  method.
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  output uses a new
+  [`print.spicy_assoc_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
+  method with the same formatting.
+
+- New bundled dataset `sochealth`: a simulated social-health survey (n =
+  1200, 24 variables) with variable labels, ordered factors, survey
+  weights, and missing values. Includes four Likert-scaled life
+  satisfaction items (`life_sat_health`, `life_sat_work`,
+  `life_sat_relationships`, `life_sat_standard`) for demonstrating
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
+
+### Bug fixes
+
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  now correctly counts `NA` values when `count = NA` and `strict = TRUE`
+  are both used. List columns are now reported in verbose mode instead
+  of causing silent errors.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  rescale logic now operates on complete cases only, so the weighted
+  total N matches the unweighted N when missing values are present
+  (consistent with Stata behavior).
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  uses true `NA` consistently (instead of the `"<NA>"` string) in both
+  weighted and unweighted paths. `cum_valid_prop` is now correctly `NA`
+  for missing rows. Invalid `digits` and `sort` values are rejected with
+  clear error messages.
+
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  now validate `min_valid` and `digits` arguments, rejecting
+  non-numeric, negative, or multi-element values.
+
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  no longer trigger a tidyselect deprecation warning when `select`
+  receives a character vector. Character vectors are now automatically
+  wrapped with
+  [`all_of()`](https://tidyselect.r-lib.org/reference/all_of.html).
+
+- `table_apa()` now preserves the original factor level order in row
+  variables instead of sorting alphabetically. When `drop_na = FALSE`,
+  the `(Missing)` category is placed at the bottom of each variable’s
+  levels. `percent_digits`, `p_digits`, and `v_digits` are now
+  validated.
+
+- `table_apa()` p-values no longer wrap across lines in `tinytable` HTML
+  output.
+
+### Breaking changes
+
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  now accepts a `detail` argument. By default it returns a numeric
+  scalar (as before). Pass `detail = TRUE` to get a 4-element named
+  vector (`estimate`, `ci_lower`, `ci_upper`, `p_value`), or
+  `detail = TRUE, conf_level = NULL` for a 2-element vector (`estimate`,
+  `p_value`) without CI.
+
+## spicy 0.5.0
+
+CRAN release: 2026-03-14
+
+### New features
+
+- New `table_apa()` helper to build APA-ready cross-tab reports with
+  multiple output formats (`wide`, `long`, `tinytable`, `flextable`,
+  `excel`, `clipboard`, `word`).
+- `table_apa()` exposes key
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  controls for weighting and inference (`weights`, `rescale`, `correct`,
+  `simulate_p`, `simulate_B`) and now handles missing values explicitly
+  when `drop_na = FALSE`.
+
+### Bug fixes
+
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  no longer crashes when `special = "NaN"` is used with non-numeric
+  columns. Passing `count = NA` now errors with a message directing to
+  `special = "NA"`.
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  fixes a spurious rescale warning for explicit all-ones weights and
+  aligns the Cramer’s V formula with
+  [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md).
+- `table_apa()` no longer leaks global options on error. The
+  `simulate_p` default is aligned to `FALSE`.
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  title generation no longer crashes on unrecognizable expressions.
+
+### Minor improvements
+
+- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
+  parameter `message` renamed to `show_message`.
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  dispatches printing correctly via S3.
+- Removed unused `collapse` and `stringi` from `Imports`.
+
+## spicy 0.4.2
+
+CRAN release: 2026-03-06
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  hardening: improved vector-mode detection (including labelled
+  vectors), stricter weight validation, safer rescaling, and clearer
+  early errors (e.g., explicit `y = NULL`).
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  statistics are now computed on non-empty margins in grouped tables,
+  avoiding spurious `NA` results; internal core path refactored to
+  remove `dplyr`/`tibble` from computation while preserving user-facing
+  behavior.
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  errors clearly when `x` is missing for data.frame input and validates
+  rescaling when weight sums are zero/non-finite.
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  regex mode is hardened (`regex = TRUE` now validates/defaults `select`
+  safely).
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  now return `NA` (with warning) when no numeric columns are selected.
+- [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  now validates input type (`data.frame`/tibble required).
+- [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  now returns `NA` with warning for degenerate tables.
+- Dependency optimization: `DT` and `clipr` moved to `Suggests`;
+  optional runtime checks added in
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  and
+  [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md).
+- Tests expanded with regression coverage for all the above edge cases.
+
+## spicy 0.4.1
+
+CRAN release: 2025-12-21
+
+- Fixed CRAN incoming check notes by removing non-standard top-level
+  files.
+
+## spicy 0.4.0
+
+- Print methods have been fully redesigned to produce clean, aligned
+  ASCII tables inspired by Stata’s layout. The new implementation
+  improves formatting, adds optional color support, and provides more
+  consistent handling of totals and column spacing.
+
+- Output from
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  now benefits from the enhanced `print.spicy()` formatting, offering
+  clearer, more readable summary tables.
+
+- Documentation and internal tests were updated for clarity and
+  consistency.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  gains an explicit `correct` argument to control the use of Yates’
+  continuity correction for Chi-squared tests in 2x2 tables. The default
+  behavior remains unchanged.
+
+- The documentation of
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  was refined and harmonized, with a clearer high-level description,
+  improved parameter wording, and expanded examples.
+
+- Minor cosmetic improvements were made to
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  output: the title prefix now uses `vl:` instead of `VARLIST`, and the
+  column name `Ndist_val` was renamed to `N_distinct` for improved
+  readability and consistency.
+
+- Minor cosmetic improvement: ASCII table output no longer includes a
+  closing bottom rule by default.
+
+## spicy 0.3.0
+
+CRAN release: 2025-10-22
+
+- New function
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+  which generates a comprehensive variable codebook that can be viewed
+  interactively and exported to multiple formats (copy, print, CSV,
+  Excel, PDF).
+
+## spicy 0.2.1
+
+CRAN release: 2025-10-04
+
+- [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  now correctly handles edge cases when the separator appears in the
+  label or is missing.
+
+## spicy 0.2.0
+
+CRAN release: 2025-09-25
+
+- New function
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  to derive and assign variable labels from headers of the form
+  `"name<sep>label"` (e.g. `"name. label"`). Especially useful for
+  LimeSurvey CSV exports (*Export results* -\> *CSV* -\> *Headings:
+  Question code & question text*), where the default separator is
+  `". "`.
+
+## spicy 0.1.0
+
+CRAN release: 2025-05-05
+
+### Initial release
+
+- Introduces a collection of tools for variable inspection, descriptive
+  summaries, and data exploration.
+- Provides functions to:
+  - Extract variable metadata and display compact summaries
+    ([`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)).
+  - Compute frequency tables
+    ([`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)),
+    cross-tabulations
+    ([`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)),
+    and Cramer’s V for categorical associations
+    ([`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)).
+  - Generate descriptive statistics such as means
+    ([`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)),
+    sums
+    ([`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)),
+    and counts
+    ([`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md))
+    with automatic handling of missing data.
+  - Copy data
+    ([`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md))
+    directly to the clipboard for quick export.
