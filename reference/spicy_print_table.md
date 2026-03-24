@@ -90,6 +90,11 @@ spicy_print_table(
   Integer vector of column indices to center-align. Defaults to
   `integer(0)`.
 
+- group_sep_rows:
+
+  Integer vector of row indices before which a light dashed separator
+  line is drawn. Defaults to `integer(0)`.
+
 - ...:
 
   Additional arguments passed to

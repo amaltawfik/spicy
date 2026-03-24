@@ -77,6 +77,11 @@ build_ascii_table(
   `integer(0)` (no centered columns). Columns not in `align_left_cols`
   or `align_center_cols` are right-aligned.
 
+- group_sep_rows:
+
+  Integer vector of row indices before which a light dashed separator
+  line is drawn. Defaults to `integer(0)`.
+
 - ...:
 
   Additional arguments (currently ignored).
