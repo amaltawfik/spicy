@@ -140,6 +140,19 @@ Both functions support the same reporting formats:
 Pick the output based on where the table is going, not on the analysis
 itself. The underlying selection and grouping pattern stays the same.
 
+For Word-oriented reporting, `flextable` is often the easiest target:
+
+```{r output-flextable}
+if (requireNamespace("flextable", quietly = TRUE)) {
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    output = "flextable"
+  )
+}
+```
+
 ## Post-process the returned table object
 
 Both summary-table helpers return regular `gt` or `tinytable` objects,
@@ -148,16 +161,22 @@ so you can keep styling them with the native package API.
 Use `gt::` functions when you want to keep the `gt` workflow:
 
 ```{r postprocess-gt}
-table_categorical(
+tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  by = sex,
+  by = education,
+  labels = c("Smoking status", "Regular physical activity"),
   output = "gt"
-) |>
-  gt::tab_source_note(
-    gt::md("*Percentages are computed within each sex group.*")
+)
+
+tab |>
+  gt::tab_header(
+    title = "Health behaviors by education",
+    subtitle = "Categorical summary table"
   ) |>
-  gt::tab_options(table.font.size = gt::px(13))
+  gt::tab_source_note(
+    gt::md("*Percentages are computed within each education group.*")
+  )
 ```
 
 If you are rendering the table inside a dark pkgdown theme, you can add
@@ -187,14 +206,22 @@ Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
 ```{r postprocess-tinytable}
-table_continuous(
+tab <- table_categorical(
   sochealth,
-  select = c(bmi, wellbeing_score),
-  by = sex,
+  select = c(smoking, physical_activity),
+  by = education,
+  labels = c("Smoking status", "Regular physical activity"),
   output = "tinytable"
-) |>
-  tinytable::theme_striped() |>
-  tinytable::style_tt(i = 0, bold = TRUE)
+)
+
+tab |>
+  tinytable::style_tt(
+    i = 2:3,
+    j = 2:5,
+    background = "red",
+    color = "white",
+    bold = TRUE
+  )
 ```
 
 ## Keep the detailed options in the function-specific articles
