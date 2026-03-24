@@ -58,6 +58,9 @@ If \code{NULL} (the default), alignment is auto-detected based on \code{x}:
 \item{align_center_cols}{Integer vector of column indices to
 center-align. Defaults to \code{integer(0)}.}
 
+\item{group_sep_rows}{Integer vector of row indices before which a
+light dashed separator line is drawn. Defaults to \code{integer(0)}.}
+
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }
 \value{

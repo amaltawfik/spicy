@@ -50,6 +50,9 @@ center-align. Defaults to \code{integer(0)} (no centered columns).
 Columns not in \code{align_left_cols} or \code{align_center_cols} are
 right-aligned.}
 
+\item{group_sep_rows}{Integer vector of row indices before which a
+light dashed separator line is drawn. Defaults to \code{integer(0)}.}
+
 \item{...}{Additional arguments (currently ignored).}
 }
 \value{
