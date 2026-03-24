@@ -1,4 +1,4 @@
-# Create categorical tables in R
+# Categorical summary tables with table_categorical()
 
 ``` r
 library(spicy)
@@ -112,20 +112,20 @@ table_categorical(
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  by = education,
+  by = sex,
   output = "tinytable"
 )
 ```
 
-| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p       | Cramer's V |
-|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
-|                   | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
-| smoking           |                 |      |                 |      |          |      |       |      | \< .001 | .14        |
-|      No           | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
-|      Yes          | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
-| physical_activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
-|      No           | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
-|      Yes          | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
+| Variable          | Female |      | Male |      | Total |      | p    | Cramer's V |
+|-------------------|--------|------|------|------|-------|------|------|------------|
+|                   | n      | %    | n    | %    | n     | %    |      |            |
+| smoking           |        |      |      |      |       |      | .713 | .01        |
+|      No           | 475    | 78.4 | 451  | 79.3 | 926   | 78.8 |      |            |
+|      Yes          | 131    | 21.6 | 118  | 20.7 | 249   | 21.2 |      |            |
+| physical_activity |        |      |      |      |       |      | .832 | .01        |
+|      No           | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |            |
+|      Yes          | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |            |
 
 ### Data frame output
 

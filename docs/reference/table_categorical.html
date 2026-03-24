@@ -35,8 +35,10 @@ by, it produces one-way frequency-style summaries."><meta property="og:image" co
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-categorical.html">Create categorical tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables with table_categorical()</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables with table_continuous()</a></li>
+    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -349,6 +351,30 @@ headers, p-values, and an association measure.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No                   <span style="color: #9E9E9E;">│</span>      650       54.2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                  <span style="color: #9E9E9E;">│</span>      550       45.8 </span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Keep missing values as an explicit level</span></span></span>
+<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="va">income_group</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span></span>
+<span class="r-in"><span>  style <span class="op">=</span> <span class="st">"report"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Variable Female n Female % Male n Male % Total n Total %    p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   income_group                                                 .698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            Low      137     22.1    110   19.0     247    20.6     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   Lower middle      198     31.9    190   32.8     388    32.3     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Upper middle      162     26.1    166   28.6     328    27.3     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           High      114     18.4    105   18.1     219    18.2     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      (Missing)        9      1.5      9    1.6      18     1.5     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        .04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           </span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Raw wide output</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
@@ -427,28 +453,28 @@ headers, p-values, and an association measure.</p>
 <span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    by <span class="op">=</span> <span class="va">education</span>,</span></span>
+<span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable          | Lower secondary  | Upper secondary  | Tertiary   | Total      | p      | Cramer's V |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                   | n      | %       | n      | %       | n   | %    | n   | %    |        |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +===================+========+=========+========+=========+=====+======+=====+======+========+============+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Current smoker    |        |         |        |         |     |      |     |      | &lt; .001 | .14        |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 179    | 69.6    | 415    | 78.7    | 332 | 84.9 | 926 | 78.8 |        |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 78     | 30.4    | 112    | 21.3    | 59  | 15.1 | 249 | 21.2 |        |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Physical activity |        |         |        |         |     |      |     |      | &lt; .001 | .21        |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 177    | 67.8    | 310    | 57.5    | 163 | 40.8 | 650 | 54.2 |        |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 84     | 32.2    | 229    | 42.5    | 237 | 59.2 | 550 | 45.8 |        |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+--------+---------+--------+---------+-----+------+-----+------+--------+------------+ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable          | Female     | Male       | Total      | p    | Cramer's V |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                   | n   | %    | n   | %    | n   | %    |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +===================+=====+======+=====+======+=====+======+======+============+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Current smoker    |     |      |     |      |     |      | .713 | .01        |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Physical activity |     |      |     |      |     |      | .832 | .01        |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+ </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>

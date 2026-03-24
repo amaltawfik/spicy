@@ -1,0 +1,215 @@
+---
+title: "Continuous summary tables with table_continuous()"
+description: >
+  Build continuous summary tables in R with table_continuous(),
+  including grouped descriptives, group-comparison tests, effect sizes,
+  and export to console, gt, tinytable, flextable, Excel, or Word.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Continuous summary tables with table_continuous()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_continuous()` summarizes continuous variables either overall or
+by a categorical grouping variable. It is designed for readable summary
+tables in the console and for publication-ready outputs in rendered
+documents. When `by` is supplied, it can also add group-comparison
+tests, test statistics, and effect sizes.
+
+## Basic usage
+
+Use `select` to choose the continuous variables you want to summarize:
+
+```{r basic}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health)
+)
+```
+
+If you omit `select`, `table_continuous()` scans the data frame and
+keeps numeric columns:
+
+```{r default-select}
+table_continuous(sochealth)
+```
+
+## Grouped summaries
+
+Add `by` to summarize the same variables across categories:
+
+```{r grouped}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education
+)
+```
+
+This is the main pattern for reporting continuous variables across
+groups such as education, sex, treatment arm, or survey wave.
+
+## Add group-comparison results
+
+Grouped tables can include inferential results directly in the same
+table. The default test is Welch's test:
+
+```{r pvalue-effect}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  p_value = TRUE,
+  statistic = TRUE,
+  effect_size_ci = TRUE
+)
+```
+
+Use `test = "student"` for equal-variance parametric tests or
+`test = "nonparametric"` for rank-based comparisons:
+
+```{r nonparametric}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = education,
+  test = "nonparametric",
+  p_value = TRUE,
+  statistic = TRUE,
+  effect_size = TRUE
+)
+```
+
+When you need the underlying columns for further processing, set
+`styled = FALSE`:
+
+```{r raw-output}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = education,
+  p_value = TRUE,
+  statistic = TRUE,
+  effect_size = TRUE,
+  styled = FALSE
+)
+```
+
+## Selecting variables
+
+`select` supports tidyselect helpers:
+
+```{r tidyselect}
+table_continuous(
+  sochealth,
+  select = starts_with("life_sat"),
+  by = sex
+)
+```
+
+For more programmatic selection, set `regex = TRUE`:
+
+```{r regex}
+table_continuous(
+  sochealth,
+  select = "^life_sat",
+  regex = TRUE,
+  by = education,
+  styled = FALSE
+)
+```
+
+Use `exclude` when you want a broad selection with one or two explicit
+removals:
+
+```{r exclude}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health, life_sat_work),
+  exclude = "life_sat_work",
+  by = sex
+)
+```
+
+## Labels and output formats
+
+Use `labels` to replace technical variable names with reporting labels:
+
+```{r labels}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  labels = c(
+    bmi = "Body mass index",
+    wellbeing_score = "Well-being score",
+    life_sat_health = "Satisfaction with health"
+  ),
+  output = "gt"
+)
+```
+
+`table_continuous()` supports the same reporting-oriented outputs as
+`table_categorical()`:
+
+| `output` value | Returned object |
+|:--|:--|
+| `"default"` | Styled ASCII console table |
+| `"tinytable"` | Formatted tinytable |
+| `"gt"` | Formatted gt table |
+| `"flextable"` | Formatted flextable |
+| `"excel"` | Written `.xlsx` file |
+| `"clipboard"` | Copied text table |
+| `"word"` | Written `.docx` file |
+
+For example, `tinytable` works well in Quarto and R Markdown documents:
+
+```{r tinytable}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "tinytable"
+)
+```
+
+## Export to Excel or Word
+
+Use the same function to export the table directly:
+
+```{r export, eval = FALSE}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "excel",
+  excel_path = "table_continuous.xlsx"
+)
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "word",
+  word_path = "table_continuous.docx"
+)
+```
+
+## See also
+
+- See `vignette("table-categorical", package = "spicy")` for grouped
+  tables of categorical variables.
+- See `vignette("summary-tables-reporting", package = "spicy")` for a
+  cross-function reporting workflow using both summary-table helpers.

@@ -48,10 +48,14 @@ navbar:
           href: articles/variable-exploration.html
         - text: Frequency tables and cross-tabulations in R
           href: articles/frequency-tables.html
-        - text: "Cramer's V, Phi, and association measures in R"
+        - text: "Cramer's V, Phi, and association measures for contingency tables in R"
           href: articles/association-measures.html
-        - text: Create categorical tables in R
+        - text: Categorical summary tables with table_categorical()
           href: articles/table-categorical.html
+        - text: Continuous summary tables with table_continuous()
+          href: articles/table-continuous.html
+        - text: Summary tables for APA-style reporting
+          href: articles/summary-tables-reporting.html
     github:
       icon: fa-github
       aria-label: GitHub repository
@@ -66,6 +70,8 @@ articles:
       - frequency-tables
       - association-measures
       - table-categorical
+      - table-continuous
+      - summary-tables-reporting
 
 reference:
   - title: Variable Metadata

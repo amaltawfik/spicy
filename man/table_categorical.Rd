@@ -192,6 +192,16 @@ table_categorical(
   output = "default"
 )
 
+# Keep missing values as an explicit level
+table_categorical(
+  data = sochealth,
+  select = income_group,
+  by = sex,
+  drop_na = FALSE,
+  output = "wide",
+  style = "report"
+)
+
 # Raw wide output
 table_categorical(
   data = sochealth,
@@ -221,7 +231,7 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
   table_categorical(
     data = sochealth,
     select = c(smoking, physical_activity),
-    by = education,
+    by = sex,
     labels = c("Current smoker", "Physical activity"),
     output = "tinytable"
   )

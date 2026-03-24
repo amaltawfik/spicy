@@ -1,0 +1,153 @@
+---
+title: "Summary tables for APA-style reporting"
+description: >
+  Learn when to use table_categorical() and table_continuous() for
+  APA-style reporting in R, how their shared arguments fit together,
+  and which output format to choose for console, Quarto, Word, or
+  Excel workflows.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Summary tables for APA-style reporting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_categorical()` and `table_continuous()` are the two main summary
+table helpers in spicy. They share the same high-level grammar:
+choose variables with `select`, optionally split the table with `by`,
+apply readable labels, and pick an output format that matches your
+reporting workflow. This vignette focuses on that shared logic rather
+than repeating every function-specific option.
+
+## Choose the right function
+
+Use the function that matches the type of variables you want to report:
+
+| Function | Use for | Optional `by` | Typical additions |
+|:--|:--|:--|:--|
+| `table_categorical()` | Factors, labelled categorical variables, grouped frequency-style summaries | Yes | Chi-squared test, association measure, confidence interval |
+| `table_continuous()` | Numeric or continuous variables | Yes | Group-comparison test, statistic, effect size |
+
+In practice:
+
+- use `table_categorical()` for smoking status, education, or activity;
+- use `table_continuous()` for BMI, income, or scale scores;
+- keep `by` for the grouping variable you want to compare across.
+
+## A shared reporting grammar
+
+Both functions follow the same core pattern:
+
+```{r grammar-categorical}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  labels = c("Smoking status", "Regular physical activity"),
+  output = "tinytable"
+)
+```
+
+```{r grammar-continuous}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  labels = c(
+    bmi = "Body mass index",
+    wellbeing_score = "Well-being score",
+    life_sat_health = "Satisfaction with health"
+  ),
+  output = "tinytable"
+)
+```
+
+The same mental model works in both cases:
+
+- `select` chooses the reported variables;
+- `by` defines the grouping structure;
+- `labels` cleans up the row labels;
+- `output` decides how the result is rendered or exported.
+
+## A practical reporting sequence
+
+A common report contains both table types, often with the same grouping
+variable. For example, you might first summarize categorical health
+behaviors, then summarize continuous well-being indicators.
+
+### Categorical variables
+
+```{r report-categorical}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
+  labels = c(
+    "Smoking status",
+    "Regular physical activity",
+    "Visited a dentist in the last 12 months"
+  ),
+  output = "gt"
+)
+```
+
+### Continuous variables
+
+```{r report-continuous}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  labels = c(
+    bmi = "Body mass index",
+    wellbeing_score = "Well-being score",
+    life_sat_health = "Satisfaction with health"
+  ),
+  p_value = TRUE,
+  effect_size = TRUE,
+  output = "gt"
+)
+```
+
+This keeps the reporting structure consistent while still using the
+function that fits each variable type.
+
+## Choose the output format
+
+Both functions support the same reporting formats:
+
+| Output | Best use |
+|:--|:--|
+| `"default"` | Quick console review in plain ASCII |
+| `"tinytable"` | Quarto or R Markdown documents |
+| `"gt"` | HTML output with styled reporting tables |
+| `"flextable"` | Word-oriented workflows |
+| `"excel"` | Spreadsheet handoff or downstream editing |
+| `"word"` | Direct `.docx` export |
+| `"clipboard"` | Fast pasting into another application |
+
+Pick the output based on where the table is going, not on the analysis
+itself. The underlying selection and grouping pattern stays the same.
+
+## Keep the detailed options in the function-specific articles
+
+The dedicated articles go deeper into each function:
+
+- `table_categorical()` covers missing values, level filtering,
+  association measures, and one-way frequency-style tables.
+- `table_continuous()` covers grouped descriptive statistics,
+  parametric and nonparametric tests, and effect sizes.
+
+Use this vignette as the final reporting overview, then consult the
+function-specific articles when you need the detailed controls.

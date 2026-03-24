@@ -1,12 +1,12 @@
 ---
-title: "Create categorical tables in R"
+title: "Categorical summary tables with table_categorical()"
 description: >
-  Create categorical tables in R for cross-tabulations with chi-squared
-  p-values, effect sizes, and confidence intervals. Export to gt,
-  tinytable, flextable, Excel, or Word.
+  Build categorical summary tables in R with table_categorical(),
+  including grouped cross-tabulations, effect sizes, confidence
+  intervals, and export to gt, tinytable, flextable, Excel, or Word.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Create categorical tables in R}
+  %\VignetteIndexEntry{Categorical summary tables with table_categorical()}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -95,7 +95,7 @@ table_categorical(
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  by = education,
+  by = sex,
   output = "tinytable"
 )
 ```

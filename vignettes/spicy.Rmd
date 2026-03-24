@@ -116,12 +116,8 @@ cramer_v(tbl, detail = TRUE)
 
 ## Summary tables
 
-`table_categorical()` builds a publication-ready cross-tabulation
-report by crossing one grouping variable with one or many selected
-variables. It supports multiple output formats.
-
-With `output = "tinytable"` you get a formatted table suitable for
-R Markdown or Quarto documents:
+`table_categorical()` covers grouped or one-way summary tables for
+categorical variables:
 
 ```{r table-categorical-tt}
 table_categorical(
@@ -129,31 +125,6 @@ table_categorical(
   select = c(smoking, physical_activity, dentist_12m),
   by = education,
   output = "tinytable"
-)
-```
-
-Use `assoc_ci = TRUE` to display the confidence interval inline:
-
-```{r table-categorical-ci}
-table_categorical(
-  sochealth,
-  select = smoking,
-  by = education,
-  output = "tinytable",
-  assoc_ci = TRUE
-)
-```
-
-Other formats include `"gt"`, `"flextable"`, `"excel"`,
-`"clipboard"`, and `"word"`. The `"wide"` and `"long"` formats return
-data frames for further processing:
-
-```{r table-categorical-wide}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  output = "wide"
 )
 ```
 
@@ -168,6 +139,10 @@ table_continuous(
   by = education
 )
 ```
+
+For detailed guidance, see the dedicated articles on
+`table_categorical()`, `table_continuous()`, and the final reporting
+overview for APA-style summary tables.
 
 ## Row-wise summaries
 
