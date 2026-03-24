@@ -8,7 +8,7 @@ library(spicy)
 and
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 are the two main summary table helpers in spicy. They share the same
-high-level grammar: choose variables with `select`, optionally split the
+main interface: choose variables with `select`, optionally split the
 table with `by`, apply readable labels, and pick an output format that
 matches your reporting workflow. This vignette focuses on that shared
 logic rather than repeating every function-specific option.
@@ -32,9 +32,9 @@ In practice:
   for BMI, income, or scale scores;
 - keep `by` for the grouping variable you want to compare across.
 
-## A shared reporting grammar
+## A shared interface
 
-Both functions follow the same core pattern:
+Both functions use the same core arguments:
 
 ``` r
 table_categorical(
@@ -83,7 +83,7 @@ table_continuous(
 |                          | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
 |                          | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
 
-The same mental model works in both cases:
+The same argument pattern works in both cases:
 
 - `select` chooses the reported variables;
 - `by` defines the grouping structure;
@@ -153,6 +153,75 @@ Both functions support the same reporting formats:
 
 Pick the output based on where the table is going, not on the analysis
 itself. The underlying selection and grouping pattern stays the same.
+
+## Post-process the returned table object
+
+Both summary-table helpers return regular `gt` or `tinytable` objects,
+so you can keep styling them with the native package API.
+
+Use `gt::` functions when you want to keep the `gt` workflow:
+
+``` r
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  output = "gt"
+) |>
+  gt::tab_source_note(
+    gt::md("*Percentages are computed within each sex group.*")
+  ) |>
+  gt::tab_options(table.font.size = gt::px(13))
+```
+
+[TABLE]
+
+If you are rendering the table inside a dark pkgdown theme, you can add
+an explicit CSS override after creating the `gt` object:
+
+``` r
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  output = "gt"
+) |>
+  gt::opt_css(
+    css = paste(
+      ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
+      ".gt_column_spanner_outer, .gt_column_spanner, .gt_table_body,",
+      ".gt_stub, .gt_row, .gt_table th, .gt_table td {",
+      "  background-color: transparent !important;",
+      "  color: currentColor !important;",
+      "}",
+      sep = "\n"
+    )
+  )
+```
+
+[TABLE]
+
+Use `tinytable::` functions when you want lightweight table-specific
+styling:
+
+``` r
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  output = "tinytable"
+) |>
+  tinytable::theme_striped() |>
+  tinytable::style_tt(i = 0, bold = TRUE)
+```
+
+| Variable                      | Group  | M     | SD    | Min   | Max    | 95% CI |       | n   |
+|-------------------------------|--------|-------|-------|-------|--------|--------|-------|-----|
+|                               |        |       |       |       |        | LL     | UL    |     |
+| Body mass index               | Female | 25.69 | 3.78  | 16.00 | 38.90  | 25.39  | 25.98 | 616 |
+|                               | Male   | 26.20 | 3.64  | 16.00 | 37.70  | 25.90  | 26.50 | 572 |
+| WHO-5 wellbeing index (0-100) | Female | 67.16 | 14.80 | 19.60 | 100.00 | 65.99  | 68.33 | 620 |
+|                               | Male   | 71.05 | 16.23 | 18.70 | 100.00 | 69.73  | 72.37 | 580 |
 
 ## Keep the detailed options in the function-specific articles
 
