@@ -14,7 +14,7 @@
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   : Generate an interactive variable codebook
 
-## Descriptive Statistics
+## Tabulation
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table
@@ -27,8 +27,6 @@
   Row Sums with Optional Minimum Valid Values
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
-- [`table_desc()`](https://amaltawfik.github.io/spicy/reference/table_desc.md)
-  : Descriptive statistics table
 
 ## Measures of Association
 
@@ -57,10 +55,12 @@
 - [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
   : Somers' D
 
-## APA Tables
+## Summary tables
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  : Build APA-Style Cross-Tabulation Tables
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  : Continuous summary table
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  : Categorical summary table
 
 ## Export
 
@@ -79,6 +79,9 @@
 
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
   : Build a formatted ASCII table
+
+- [`print(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_table.md)
+  : Print method for categorical summary tables
 
 - [`print(`*`<spicy_cross_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
   : Print method for spicy_cross_table objects
@@ -100,8 +103,8 @@
 - [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
   : Print an association measures summary table
 
-- [`print(`*`<spicy_desc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_desc_table.md)
-  : Print method for descriptive statistics tables
+- [`print(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_table.md)
+  : Print method for continuous summary tables
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering

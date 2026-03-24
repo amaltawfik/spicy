@@ -8,7 +8,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/articles/frequency-tables.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/index.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/spicy.html</loc></url>
-<url><loc>https://amaltawfik.github.io/spicy/articles/table-apa.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/articles/table-categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/variable-exploration.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/authors.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/index.html</loc></url>
@@ -33,8 +33,9 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/phi.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.html</loc></url>
-<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_desc_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/sochealth.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/somers_d.html</loc></url>
@@ -42,8 +43,8 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/spicy_print_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/spicy_tables.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/sum_n.html</loc></url>
-<url><loc>https://amaltawfik.github.io/spicy/reference/table_apa.html</loc></url>
-<url><loc>https://amaltawfik.github.io/spicy/reference/table_desc.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_categorical.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/uncertainty_coef.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/varlist.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/yule_q.html</loc></url>

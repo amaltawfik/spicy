@@ -30,7 +30,7 @@
     <li><a class="dropdown-item" href="articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
     <li><a class="dropdown-item" href="articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
     <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-apa.html">Create APA-style tables in R</a></li>
+    <li><a class="dropdown-item" href="articles/table-categorical.html">Create categorical tables in R</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -58,17 +58,17 @@
 <div class="section level2">
 <h2 id="package-architecture">Package architecture<a class="anchor" aria-label="anchor" href="#package-architecture"></a></h2>
 <ul><li>
-<code>R/freq.R</code> / <code>R/cross_tab.R</code> — core tabulation functions</li>
+<code>R/freq.R</code> / <code>R/cross_tab.R</code> - core tabulation functions</li>
 <li>
-<code>R/tables_ascii.R</code> / <code>R/freq_print.R</code> — ASCII rendering and print methods</li>
+<code>R/tables_ascii.R</code> / <code>R/freq_print.R</code> - ASCII rendering and print methods</li>
 <li>
-<code>R/varlist.R</code> / <code>R/code_book.R</code> — variable inspection tools</li>
+<code>R/varlist.R</code> / <code>R/code_book.R</code> - variable inspection tools</li>
 <li>
-<code>R/mean_n.R</code>, <code>R/sum_n.R</code>, <code>R/count_n.R</code> — row-wise descriptive summaries</li>
+<code>R/mean_n.R</code>, <code>R/sum_n.R</code>, <code>R/count_n.R</code> - row-wise descriptive summaries</li>
 <li>
-<code>R/table_apa.R</code> — APA reporting (depends on <code>tinytable</code>/<code>flextable</code> via Suggests)</li>
+<code>R/table_categorical.R</code> / <code>R/table_continuous.R</code> - summary table helpers (depend on <code>tinytable</code>/<code>flextable</code> via Suggests)</li>
 <li>
-<code>R/globals.R</code> — package-level constants and globals</li>
+<code>R/globals.R</code> - package-level constants and globals</li>
 </ul><p>Optional dependencies (Suggests): <code>DT</code>, <code>clipr</code>, <code>tinytable</code>, <code>flextable</code>, <code>openxlsx2</code>, <code>officer</code>. Guard all usage with <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code> and a clear, actionable error.</p>
 </div>
 <div class="section level2">
@@ -96,84 +96,7 @@
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"testthat::test_file('tests/testthat/test-cross_tab.R')"</span></span>
 <span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a></span>
 <span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co"># Redocument the package</span></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"devtools::document()"</span></span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co"># Rebuild README after editing README.Rmd</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"devtools::build_readme()"</span></span>
-<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co"># Check pkgdown documentation</span></span>
-<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"pkgdown::check_pkgdown()"</span></span>
-<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co"># Rebuild the pkgdown site locally</span></span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"pkgdown::build_site()"</span></span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co"># Check URLs in docs</span></span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"urlchecker::url_check()"</span></span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co"># Spell-check docs</span></span>
-<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"devtools::spell_check()"</span></span>
-<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a></span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co"># R CMD check</span></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"devtools::check()"</span></span>
-<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a></span>
-<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co"># Format code</span></span>
-<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="ex">air</span> format .</span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="coding">Coding<a class="anchor" aria-label="anchor" href="#coding"></a></h2>
-<ul><li>Always run <code>air format .</code> after generating or editing R code.</li>
-<li>Use the base pipe <code>|&gt;</code>, never the magrittr pipe <code>%&gt;%</code>.</li>
-<li>R 4.1 compatibility is required. Do not use <code>_$x</code>, <code>_$[["x"]]</code>, or the <code>_</code> placeholder syntax — these require R 4.2+.</li>
-<li>Use <code>\(...) ...</code> for single-line anonymous functions; use <code>function(...) {}</code> otherwise.</li>
-<li>Preserve the console-first design: output must be readable in plain ASCII without color.</li>
-<li>Prefer minimal dependencies. Guard any suggested-package feature with <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code> and a clear, actionable error.</li>
-<li>Treat changes to table structure, attributes, or printed layout as behavioral changes, not cosmetic refactors.</li>
-<li>Follow existing file boundaries: core user-facing functions in <code>R/*.R</code>, print/ASCII helpers in printing-related files, package globals in <code>R/globals.R</code>.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
-<ul><li>Tests for <code>R/{name}.R</code> go in <code>tests/testthat/test-{name}.R</code>.</li>
-<li>All new code must have an accompanying test.</li>
-<li>Place new tests next to similar existing ones.</li>
-<li>Keep tests minimal and focused, with few comments.</li>
-<li>For tabulation and printing code, test returned objects with <code>styled = FALSE</code>; assert printed output only when formatting itself is the feature under test.</li>
-<li>Cover optional-dependency paths with guarded tests or explicit error-message expectations.</li>
-<li>When fixing a bug, add a regression test that would have failed before the fix.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h2>
-<ul><li>Every user-facing function must be exported with roxygen2 documentation.</li>
-<li>Internal functions should not have standalone roxygen2 topics.</li>
-<li>Wrap roxygen comments at 80 characters.</li>
-<li>Run <code>devtools::document()</code> after any roxygen change.</li>
-<li>Add every new user-facing topic to <code>_pkgdown.yml</code>; verify with <code><a href="https://pkgdown.r-lib.org/reference/check_pkgdown.html" class="external-link">pkgdown::check_pkgdown()</a></code>.</li>
-<li>Rebuild <code>README.md</code> with <code>devtools::build_readme()</code> after editing <code>README.Rmd</code>.</li>
-<li>Guard interactive or optional-dependency examples with <code>\donttest{}</code>, <code>\dontrun{}</code>, or <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code>.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="newsmd">NEWS.md<a class="anchor" aria-label="anchor" href="#newsmd"></a></h2>
-<ul><li>Add a bullet for every user-facing change; skip small doc changes and internal refactors.</li>
-<li>State the end-user impact; mention the affected function early.</li>
-<li>One paragraph per bullet, no manual line wrapping.</li>
-<li>Order bullets alphabetically by function name within a release block; general bullets first.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="repository-workflow">Repository workflow<a class="anchor" aria-label="anchor" href="#repository-workflow"></a></h2>
-<ul><li>The <code>dev/</code> scripts are the reference for local development, release prep, and post-release cleanup — keep them aligned when the workflow changes.</li>
-<li>CI covers <code>R CMD check</code>, <code>rhub</code>, <code>pkgdown</code>, and coverage. Do not rely on CI to catch documentation or test regressions that can be avoided locally.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="writing">Writing<a class="anchor" aria-label="anchor" href="#writing"></a></h2>
-<ul><li>Use sentence case for headings.</li>
-<li>Use US English.</li>
-<li>Keep error messages, warnings, and documentation direct and practical.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="proofreading">Proofreading<a class="anchor" aria-label="anchor" href="#proofreading"></a></h2>
-<p>When asked to proofread a file, act as an expert proofreader with a deep understanding of clear, engaging, and well-structured writing.</p>
-<p>Work paragraph by paragraph, starting with a TODO list that includes one item per top-level heading.</p>
-<p>Fix spelling, grammar, and minor issues without asking. Label unclear or ambiguous sentences with a <code>FIXME</code> comment.</p>
-<p>Report only what was changed.</p>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"devtools::document()"</span></span></code></pre></div>
 </div>
 </div>
 

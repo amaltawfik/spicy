@@ -7,8 +7,8 @@ library(spicy)
 spicy is an R package for descriptive statistics and data analysis,
 designed for data science and survey research workflows. It covers
 variable inspection, frequency tables, cross-tabulations with
-chi-squared tests and effect sizes, and publication-ready APA-style
-reporting — offering functionality similar to Stata or SPSS but within a
+chi-squared tests and effect sizes, and publication-ready summary
+tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
 workflow using the bundled `sochealth` dataset, a simulated
 social-health survey with 1 200 respondents and 24 variables.
@@ -22,7 +22,7 @@ a compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
 observations, and missing values. In RStudio or Positron, calling
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-without arguments opens an interactive viewer — this is the most common
+without arguments opens an interactive viewer - this is the most common
 usage in practice. Here we use `tbl = TRUE` to produce static output for
 the vignette:
 
@@ -232,21 +232,21 @@ cramer_v(tbl, detail = TRUE)
 #>    0.136     0.079     0.191  < 0.001
 ```
 
-## APA tables
+## Summary tables
 
-[`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 builds a publication-ready cross-tabulation report by crossing one
-grouping variable with one or many row variables. It supports multiple
-output formats.
+grouping variable with one or many selected variables. It supports
+multiple output formats.
 
 With `output = "tinytable"` you get a formatted table suitable for R
 Markdown or Quarto documents:
 
 ``` r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity", "dentist_12m"),
-  group_var = "education",
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
   output = "tinytable"
 )
 ```
@@ -267,10 +267,10 @@ table_apa(
 Use `assoc_ci = TRUE` to display the confidence interval inline:
 
 ``` r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = "smoking",
-  group_var = "education",
+  select = smoking,
+  by = education,
   output = "tinytable",
   assoc_ci = TRUE
 )
@@ -288,10 +288,10 @@ and `"word"`. The `"wide"` and `"long"` formats return data frames for
 further processing:
 
 ``` r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   output = "wide"
 )
 #>            Variable Level Lower secondary n Lower secondary % Upper secondary n
@@ -309,6 +309,29 @@ table_apa(
 #> 2  0.1356677
 #> 3  0.2061986
 #> 4  0.2061986
+```
+
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+summarizes continuous variables, either overall or by a categorical `by`
+variable, and can also add group-comparison tests:
+
+``` r
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health),
+  by = education
+)
+#> Descriptive statistics: sochealth
+#> 
+#>  Variable                            │ Group                     M          SD         Min         Max        95% CI LL       95% CI UL            n 
+#> ─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#>  Body mass index                     │ Lower secondary         28.09       3.47       18.20       38.90         27.66           28.51            260 
+#>                                      │ Upper secondary         26.02       3.43       16.00       37.10         25.73           26.31            534 
+#>                                      │ Tertiary                24.39       3.52       16.00       33.00         24.04           24.74            394 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5)      │ Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 
+#>                                      │ Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 
+#>                                      │ Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399
 ```
 
 ## Row-wise summaries
@@ -355,8 +378,11 @@ sochealth |>
   for the full list of arguments (weights, simulation, association
   measures).
 - See
-  [`?table_apa`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  for all output formats and customization options.
+  [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  for grouped or one-way categorical tables.
+- See
+  [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  for continuous summaries and group comparisons.
 - See
   [`?assoc_measures`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   for the complete list of association statistics.

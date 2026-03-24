@@ -7,8 +7,9 @@
 
   Get started with spicy for descriptive statistics, variable
   inspection, frequency tables, cross-tabulations, association measures,
-  APA-style tables, and codebooks in R. A tidyverse-friendly alternative
-  to SPSS and Stata for survey and labelled data workflows.
+  categorical and continuous summary tables, and codebooks in R. A
+  tidyverse-friendly alternative to SPSS and Stata for survey and
+  labelled data workflows.
 
 - [Explore variables and build codebooks in
   R](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
@@ -31,9 +32,9 @@
   Somers’ D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 
-- [Create APA tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-apa.md):
+- [Create categorical tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-categorical.md):
 
-  Create APA tables in R for cross-tabulations with chi-squared
+  Create categorical tables in R for cross-tabulations with chi-squared
   p-values, effect sizes, and confidence intervals. Export to gt,
   tinytable, flextable, Excel, or Word.

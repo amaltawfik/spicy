@@ -23,9 +23,9 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with spicy">
-<meta name="description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, APA-style tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
+<meta name="description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
 ">
-<meta property="og:description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, APA-style tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
+<meta property="og:description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.png">
 </head>
@@ -56,7 +56,7 @@
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-apa.html">Create APA-style tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Create categorical tables in R</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -100,8 +100,8 @@
 <p>spicy is an R package for descriptive statistics and data analysis,
 designed for data science and survey research workflows. It covers
 variable inspection, frequency tables, cross-tabulations with
-chi-squared tests and effect sizes, and publication-ready APA-style
-reporting — offering functionality similar to Stata or SPSS but within a
+chi-squared tests and effect sizes, and publication-ready summary
+tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
 workflow using the bundled <code>sochealth</code> dataset, a simulated
 social-health survey with 1 200 respondents and 24 variables.</p>
@@ -112,7 +112,7 @@ social-health survey with 1 200 respondents and 24 variables.</p>
 compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
 observations, and missing values. In RStudio or Positron, calling
-<code><a href="../reference/varlist.html">varlist()</a></code> without arguments opens an interactive viewer —
+<code><a href="../reference/varlist.html">varlist()</a></code> without arguments opens an interactive viewer -
 this is the most common usage in practice. Here we use
 <code>tbl = TRUE</code> to produce static output for the vignette:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -294,18 +294,18 @@ and p-value:</p>
 <span><span class="co">#&gt;    0.136     0.079     0.191  &lt; 0.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="apa-tables">APA tables<a class="anchor" aria-label="anchor" href="#apa-tables"></a>
+<h2 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
 </h2>
-<p><code><a href="../reference/table_apa.html">table_apa()</a></code> builds a publication-ready cross-tabulation
-report by crossing one grouping variable with one or many row variables.
-It supports multiple output formats.</p>
+<p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> builds a publication-ready
+cross-tabulation report by crossing one grouping variable with one or
+many selected variables. It supports multiple output formats.</p>
 <p>With <code>output = "tinytable"</code> you get a formatted table
 suitable for R Markdown or Quarto documents:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
-<span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span>, <span class="st">"dentist_12m"</span><span class="op">)</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <!-- preamble start -->
@@ -505,10 +505,10 @@ suitable for R Markdown or Quarto documents:</p>
 <p>Use <code>assoc_ci = TRUE</code> to display the confidence interval
 inline:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
-<span>  row_vars <span class="op">=</span> <span class="st">"smoking"</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -633,10 +633,10 @@ inline:</p>
 The <code>"wide"</code> and <code>"long"</code> formats return data
 frames for further processing:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_apa.html">table_apa</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
-<span>  row_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoking"</span>, <span class="st">"physical_activity"</span><span class="op">)</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="st">"education"</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"wide"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt;            Variable Level Lower secondary n Lower secondary % Upper secondary n</span></span>
@@ -654,6 +654,26 @@ frames for further processing:</p>
 <span><span class="co">#&gt; 2  0.1356677</span></span>
 <span><span class="co">#&gt; 3  0.2061986</span></span>
 <span><span class="co">#&gt; 4  0.2061986</span></span></code></pre></div>
+<p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
+either overall or by a categorical <code>by</code> variable, and can
+also add group-comparison tests:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                            <span style="color: #9E9E9E;">│</span> Group                     M          SD         Min         Max        95% CI LL       95% CI UL            n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                     <span style="color: #9E9E9E;">│</span> Lower secondary         28.09       3.47       18.20       38.90         27.66           28.51            260 </span></span>
+<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary         26.02       3.43       16.00       37.10         25.73           26.31            534 </span></span>
+<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                24.39       3.52       16.00       33.00         24.04           24.74            394 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span> Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 </span></span>
+<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 </span></span>
+<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -661,7 +681,7 @@ frames for further processing:</p>
 <p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and
 <code><a href="../reference/count_n.html">count_n()</a></code> compute row-wise statistics across selected
 columns, with automatic handling of missing values.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -694,8 +714,10 @@ columns, with automatic handling of missing values.</p>
 missing data.</li>
 <li>See <code><a href="../reference/cross_tab.html">?cross_tab</a></code> for the full list of arguments (weights,
 simulation, association measures).</li>
-<li>See <code><a href="../reference/table_apa.html">?table_apa</a></code> for all output formats and customization
-options.</li>
+<li>See <code><a href="../reference/table_categorical.html">?table_categorical</a></code> for grouped or one-way
+categorical tables.</li>
+<li>See <code><a href="../reference/table_continuous.html">?table_continuous</a></code> for continuous summaries and
+group comparisons.</li>
 <li>See <code><a href="../reference/assoc_measures.html">?assoc_measures</a></code> for the complete list of
 association statistics.</li>
 <li>See <code><a href="../reference/code_book.html">?code_book</a></code> to generate an interactive HTML

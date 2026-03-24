@@ -566,10 +566,10 @@ options(
 
 ## Learn more
 
-- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
-  — choosing the right effect size for your contingency table.
-- [`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)
-  — building publication-ready APA-style reporting tables.
+- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md) -
+  choosing the right effect size for your contingency table.
+- [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md) -
+  building publication-ready categorical tables.
 - [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   for the full argument reference.

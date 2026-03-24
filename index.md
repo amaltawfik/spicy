@@ -1,7 +1,7 @@
-# spicy: frequency tables, cross-tabulations, and APA tables in R
+# spicy: frequency tables, cross-tabulations, and summary tables in R
 
 spicy is an R package for frequency tables, cross-tabulations,
-association measures, APA-style tables, and labelled survey data
+association measures, summary tables, and labelled survey data
 workflows.
 
 ## What is spicy?
@@ -10,7 +10,8 @@ spicy helps you explore categorical and labelled data in R with
 readable, console-first outputs. It is designed for survey research,
 descriptive statistics, and reporting workflows, with tools for
 frequency tables, cross-tabulations with chi-squared tests and effect
-sizes, APA-style tables, variable inspection, and codebooks.
+sizes, categorical and continuous summary tables, variable inspection,
+and codebooks.
 
 It helps you:
 
@@ -30,9 +31,13 @@ It helps you:
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
   [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
   and related functions.
-- **Build APA-style tables in R** with
-  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
+- **Build categorical summary tables in R** with
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   for gt, tinytable, flextable, Excel, Word, or clipboard export.
+- **Build continuous summary tables in R** with
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  for console, gt, tinytable, flextable, Excel, Word, or clipboard
+  output.
 - **Generate codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   for labelled and survey-style datasets.
@@ -57,14 +62,16 @@ If you are looking for a specific workflow, start here:
   R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
 - [Cramer’s V, Phi, and association measures in
   R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
-- [Create APA-style tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-apa.html)
+- [Create categorical tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
 - [Reference for
   `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
 - [Reference for
   `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
 - [Reference for
-  `table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.html)
+  `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
+- [Reference for
+  `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
 - [Reference for
   `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
 
@@ -175,13 +182,13 @@ See
 [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
 for a guide on choosing the right measure.
 
-### APA tables
+### Summary tables
 
 ``` r
-table_apa(
+table_categorical(
   sochealth,
-  row_vars = c("smoking", "physical_activity"),
-  group_var = "education",
+  select = c(smoking, physical_activity),
+  by = education,
   labels = c("Current smoker", "Physical activity"),
   output = "wide",
   style = "report"
@@ -202,9 +209,30 @@ table_apa(
 #> 6              42.5        237       59.2     550    45.8
 ```
 
+``` r
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health),
+  by = education
+)
+#> Descriptive statistics: sochealth
+#> 
+#>  Variable                            │ Group                     M          SD         Min         Max        95% CI LL       95% CI UL            n 
+#> ─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#>  Body mass index                     │ Lower secondary         28.09       3.47       18.20       38.90         27.66           28.51            260 
+#>                                      │ Upper secondary         26.02       3.43       16.00       37.10         25.73           26.31            534 
+#>                                      │ Tertiary                24.39       3.52       16.00       33.00         24.04           24.74            394 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5)      │ Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 
+#>                                      │ Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 
+#>                                      │ Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399
+```
+
 See
-[`vignette("table-apa")`](https://amaltawfik.github.io/spicy/articles/table-apa.md)
-for all output formats, weights, CI, and export options.
+[`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+for grouped categorical tables, and
+[`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+for continuous summaries with optional group comparisons.
 
 ### Row-wise summaries
 

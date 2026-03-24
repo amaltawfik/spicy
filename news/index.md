@@ -2,13 +2,21 @@
 
 ## spicy (development version)
 
-- [`table_desc()`](https://amaltawfik.github.io/spicy/reference/table_desc.md)
-  computes descriptive statistics (mean, SD, min, max, confidence
-  interval of the mean, n) for numeric variables, with tidyselect column
-  selection, optional grouping via `by`, and multiple output formats
-  (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  replaces `table_apa()` as the public name for categorical summary
+  tables. It uses `select` and `by`, supports grouped cross-tabulation
+  or one-way frequency-style tables when `by = NULL`, and gains
+  `output = "default"` plus `styled` for ASCII console output.
 
-- [`table_desc()`](https://amaltawfik.github.io/spicy/reference/table_desc.md)
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  replaces `table_desc()` as the public name for continuous summary
+  tables. It computes descriptive statistics (mean, SD, min, max,
+  confidence interval of the mean, n) for numeric variables, with
+  tidyselect column selection, optional grouping via `by`, and multiple
+  output formats (ASCII, tinytable, gt, flextable, Excel, clipboard,
+  Word).
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `effect_size` and `effect_size_ci` arguments. When `by` is used,
   `effect_size = TRUE` adds an “ES” column with the appropriate measure
   (Cohen’s d, eta-squared, rank-biserial r_rb, or epsilon-squared)
@@ -16,7 +24,7 @@
   `effect_size_ci = TRUE` appends the confidence interval in brackets
   (e.g., `d = 0.45 [0.22, 0.68]`).
 
-- [`table_desc()`](https://amaltawfik.github.io/spicy/reference/table_desc.md)
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`)
   to choose the group-comparison method, along with independent
   `p_value` and `statistic` display toggles. When `by` is used,
@@ -54,19 +62,16 @@ CRAN release: 2026-03-23
   `assoc_measure`, `assoc_value`, `assoc_result`) are now attached to
   the output data frame.
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  now dynamically labels the association measure column based on the
-  measure used, instead of always showing “Cramer’s V”. New
+- `table_apa()` now dynamically labels the association measure column
+  based on the measure used, instead of always showing “Cramer’s V”. New
   `assoc_measure` and `assoc_ci` arguments are passed through to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  gains `output = "gt"` to produce a `gt_tbl` object with APA-style
-  formatting, column spanners, and alignment.
+- `table_apa()` gains `output = "gt"` to produce a `gt_tbl` object with
+  APA-style formatting, column spanners, and alignment.
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  now correctly centers spanner labels over their column pairs in
-  `tinytable` and `flextable` output.
+- `table_apa()` now correctly centers spanner labels over their column
+  pairs in `tinytable` and `flextable` output.
 
 - All association measure functions and
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
@@ -125,14 +130,14 @@ CRAN release: 2026-03-23
   wrapped with
   [`all_of()`](https://tidyselect.r-lib.org/reference/all_of.html).
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  now preserves the original factor level order in row variables instead
-  of sorting alphabetically. When `drop_na = FALSE`, the `(Missing)`
-  category is placed at the bottom of each variable’s levels.
-  `percent_digits`, `p_digits`, and `v_digits` are now validated.
+- `table_apa()` now preserves the original factor level order in row
+  variables instead of sorting alphabetically. When `drop_na = FALSE`,
+  the `(Missing)` category is placed at the bottom of each variable’s
+  levels. `percent_digits`, `p_digits`, and `v_digits` are now
+  validated.
 
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  p-values no longer wrap across lines in `tinytable` HTML output.
+- `table_apa()` p-values no longer wrap across lines in `tinytable` HTML
+  output.
 
 ### Breaking changes
 
@@ -149,13 +154,10 @@ CRAN release: 2026-03-14
 
 ### New features
 
-- New
-  [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  helper to build APA-ready cross-tab reports with multiple output
-  formats (`wide`, `long`, `tinytable`, `flextable`, `excel`,
-  `clipboard`, `word`).
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  exposes key
+- New `table_apa()` helper to build APA-ready cross-tab reports with
+  multiple output formats (`wide`, `long`, `tinytable`, `flextable`,
+  `excel`, `clipboard`, `word`).
+- `table_apa()` exposes key
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   controls for weighting and inference (`weights`, `rescale`, `correct`,
   `simulate_p`, `simulate_B`) and now handles missing values explicitly
@@ -171,9 +173,8 @@ CRAN release: 2026-03-14
   fixes a spurious rescale warning for explicit all-ones weights and
   aligns the Cramer’s V formula with
   [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md).
-- [`table_apa()`](https://amaltawfik.github.io/spicy/reference/table_apa.md)
-  no longer leaks global options on error. The `simulate_p` default is
-  aligned to `FALSE`.
+- `table_apa()` no longer leaks global options on error. The
+  `simulate_p` default is aligned to `FALSE`.
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   title generation no longer crashes on unrecognizable expressions.
 
