@@ -88,7 +88,9 @@ clean_search_index <- function(
   internal_pattern <- paste0("/(", internal_pages_pattern, ")\\.(html|md)$")
   legacy_pattern <- paste0(
     "^https://amaltawfik.github.io/spicy/",
-    "(", paste(legacy_pages, collapse = "|"), ")\\.(html|md)$"
+    "(",
+    paste(legacy_pages, collapse = "|"),
+    ")\\.(html|md)$"
   )
 
   keep_entry <- function(entry) {

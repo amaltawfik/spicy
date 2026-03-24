@@ -284,10 +284,7 @@ table_continuous <- function(
 
   if (has_group) {
     group_col_name <- tryCatch(
-      {
-        pos <- tidyselect::eval_select(group_quo, data)
-        names(pos)
-      },
+      resolve_single_column_selection(group_quo, data, "by"),
       error = function(e) {
         stop(
           "`by` must be a single column name in `data`.",
@@ -295,9 +292,6 @@ table_continuous <- function(
         )
       }
     )
-    if (length(group_col_name) != 1L) {
-      stop("`by` must select exactly one column.", call. = FALSE)
-    }
   }
 
   if ((p_value || statistic) && !has_group) {

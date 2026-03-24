@@ -1,3 +1,15 @@
+collect_warnings <- function(expr) {
+  warnings <- character()
+  value <- withCallingHandlers(
+    expr,
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  list(value = value, warnings = warnings)
+}
+
 test_that("table_categorical returns expected long raw structure", {
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
@@ -75,6 +87,45 @@ test_that("table_categorical accepts tidyselect-style select and unquoted by", {
   expect_true(all(c("v1", "v2") %in% out$Variable))
 })
 
+test_that("table_categorical accepts by as a character object", {
+  df <- data.frame(
+    grp = c("A", "A", "B", "B"),
+    v1 = c("Oui", "Non", "Oui", "Non")
+  )
+
+  by_col <- "grp"
+  expect_no_warning(
+    out <- table_categorical(
+      data = df,
+      select = "v1",
+      by = by_col,
+      output = "wide",
+      style = "raw"
+    )
+  )
+
+  expect_true("A n" %in% names(out))
+  expect_true("B %" %in% names(out))
+})
+
+test_that("table_categorical validates by and select branches", {
+  df <- data.frame(
+    grp = c("A", "A", "B", "B"),
+    v1 = c("Oui", "Non", "Oui", "Non"),
+    v2 = c("x", "y", "x", "y")
+  )
+
+  expect_error(
+    table_categorical(df, select = "v1", by = c(grp, v2)),
+    "by"
+  )
+
+  expect_error(
+    table_categorical(df, select = tidyselect::starts_with("zzz"), by = grp),
+    "select"
+  )
+})
+
 test_that("table_categorical works without by in long raw output", {
   df <- data.frame(
     v1 = c("Oui", "Non", "Oui", NA),
@@ -92,6 +143,107 @@ test_that("table_categorical works without by in long raw output", {
   expect_true(all(c("variable", "level", "n", "pct") %in% names(out)))
   expect_false("group" %in% names(out))
   expect_true(any(grepl("Missing", out$level)))
+})
+
+test_that("table_categorical renames generated missing labels when needed", {
+  df <- data.frame(v1 = c("(Missing)", NA, "Yes"))
+
+  out <- table_categorical(
+    data = df,
+    select = v1,
+    drop_na = FALSE,
+    output = "long",
+    style = "raw"
+  )
+
+  expect_true("(Missing)" %in% out$level)
+  expect_true("(Missing_1)" %in% out$level)
+})
+
+test_that("table_categorical handles one-way empty results after dropping missing", {
+  df <- data.frame(v1 = c(NA, NA))
+
+  out_long <- table_categorical(
+    data = df,
+    select = v1,
+    drop_na = TRUE,
+    output = "long",
+    style = "raw"
+  )
+  out_wide <- table_categorical(
+    data = df,
+    select = v1,
+    drop_na = TRUE,
+    output = "wide",
+    style = "report"
+  )
+
+  expect_equal(nrow(out_long), 0L)
+  expect_equal(nrow(out_wide), 0L)
+  expect_named(out_wide, c("Variable", "n", "%"))
+})
+
+test_that("table_categorical handles grouped empty results after dropping missing", {
+  df <- data.frame(
+    grp = c("A", "B"),
+    v1 = c(NA, NA)
+  )
+
+  out_long <- table_categorical(
+    data = df,
+    select = v1,
+    by = grp,
+    drop_na = TRUE,
+    output = "long",
+    style = "raw"
+  )
+  out_wide <- table_categorical(
+    data = df,
+    select = v1,
+    by = grp,
+    drop_na = TRUE,
+    output = "wide",
+    style = "report"
+  )
+  out_default <- table_categorical(
+    data = df,
+    select = v1,
+    by = grp,
+    drop_na = TRUE,
+    output = "default",
+    styled = FALSE
+  )
+
+  expect_equal(nrow(out_long), 0L)
+  expect_equal(nrow(out_wide), 0L)
+  expect_equal(nrow(out_default), 0L)
+  expect_true("Variable" %in% names(out_wide))
+  expect_true("Variable" %in% names(out_default))
+})
+
+test_that("table_categorical warns about ignored grouped options without by", {
+  df <- data.frame(v1 = c("Oui", "Non", "Oui"))
+
+  res <- collect_warnings(
+    table_categorical(
+      data = df,
+      select = "v1",
+      include_total = FALSE,
+      correct = TRUE,
+      simulate_p = TRUE,
+      assoc_measure = "phi",
+      assoc_ci = TRUE,
+      output = "long",
+      style = "raw"
+    )
+  )
+
+  expect_true(any(grepl("include_total", res$warnings)))
+  expect_true(any(grepl("correct", res$warnings)))
+  expect_true(any(grepl("simulate_p", res$warnings)))
+  expect_true(any(grepl("assoc_measure", res$warnings)))
+  expect_true(any(grepl("assoc_ci", res$warnings)))
+  expect_s3_class(res$value, "data.frame")
 })
 
 test_that("table_categorical default output prints ASCII and returns styled object", {
@@ -207,6 +359,92 @@ test_that("table_categorical returns tinytable object when requested", {
   )
 
   expect_true(methods::is(tt, "tinytable"))
+})
+
+test_that("table_categorical returns one-way rendered objects when requested", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("clipr")
+
+  tt <- table_categorical(
+    sochealth,
+    select = smoking,
+    output = "tinytable"
+  )
+  expect_true(methods::is(tt, "tinytable"))
+
+  gt_tbl <- table_categorical(
+    sochealth,
+    select = smoking,
+    output = "gt"
+  )
+  expect_s3_class(gt_tbl, "gt_tbl")
+
+  ft <- table_categorical(
+    sochealth,
+    select = smoking,
+    output = "flextable"
+  )
+  expect_s3_class(ft, "flextable")
+
+  tmp_xlsx <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp_xlsx), add = TRUE)
+  expect_invisible(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      output = "excel",
+      excel_path = tmp_xlsx
+    )
+  )
+  expect_true(file.exists(tmp_xlsx))
+
+  tmp_docx <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmp_docx), add = TRUE)
+  expect_identical(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      output = "word",
+      word_path = tmp_docx
+    ),
+    invisible(tmp_docx)
+  )
+  expect_true(file.exists(tmp_docx))
+
+  clip_text <- NULL
+  ns <- asNamespace("clipr")
+  old_write <- get("write_clip", envir = ns)
+  unlockBinding("write_clip", ns)
+  assign(
+    "write_clip",
+    function(x, ...) {
+      clip_text <<- x
+      invisible(NULL)
+    },
+    envir = ns
+  )
+  lockBinding("write_clip", ns)
+  on.exit(
+    {
+      unlockBinding("write_clip", ns)
+      assign("write_clip", old_write, envir = ns)
+      lockBinding("write_clip", ns)
+    },
+    add = TRUE
+  )
+
+  txt <- table_categorical(
+    sochealth,
+    select = smoking,
+    output = "clipboard"
+  )
+  expect_type(txt, "character")
+  expect_identical(txt, invisible(txt))
+  expect_match(clip_text, "Variable")
 })
 
 test_that("table_categorical returns gt object when requested", {
@@ -567,6 +805,72 @@ test_that("table_categorical returns flextable object when requested", {
     output = "flextable"
   )
   expect_s3_class(ft, "flextable")
+})
+
+test_that("table_categorical grouped word and clipboard outputs work", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("clipr")
+
+  tmp_docx <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmp_docx), add = TRUE)
+  path <- table_categorical(
+    sochealth,
+    "smoking",
+    "education",
+    output = "word",
+    word_path = tmp_docx
+  )
+  expect_identical(path, invisible(tmp_docx))
+  expect_true(file.exists(tmp_docx))
+
+  clip_text <- NULL
+  ns <- asNamespace("clipr")
+  old_write <- get("write_clip", envir = ns)
+  unlockBinding("write_clip", ns)
+  assign(
+    "write_clip",
+    function(x, ...) {
+      clip_text <<- x
+      invisible(NULL)
+    },
+    envir = ns
+  )
+  lockBinding("write_clip", ns)
+  on.exit(
+    {
+      unlockBinding("write_clip", ns)
+      assign("write_clip", old_write, envir = ns)
+      lockBinding("write_clip", ns)
+    },
+    add = TRUE
+  )
+
+  txt <- table_categorical(
+    sochealth,
+    "smoking",
+    "education",
+    output = "clipboard",
+    assoc_ci = TRUE
+  )
+  expect_type(txt, "character")
+  expect_match(clip_text, "Cramer's V")
+  expect_match(clip_text, "CI lower")
+})
+
+test_that("table_categorical requires file paths for word and excel outputs", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx")
+
+  expect_error(
+    table_categorical(sochealth, "smoking", output = "word"),
+    "word_path"
+  )
+  expect_error(
+    table_categorical(sochealth, "smoking", output = "excel"),
+    "excel_path"
+  )
 })
 
 # Ã¢â€â‚¬Ã¢â€â‚¬ Excel output Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬

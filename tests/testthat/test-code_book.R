@@ -57,3 +57,31 @@ test_that("code_book() passes values and include_na to varlist", {
   cb <- suppressMessages(code_book(df, values = TRUE, include_na = TRUE))
   expect_s3_class(cb, "datatables")
 })
+
+test_that("code_book() wraps varlist() errors", {
+  skip_if_not_installed("DT")
+
+  local_mocked_bindings(
+    varlist = function(...) stop("bad varlist"),
+    .package = "spicy"
+  )
+
+  expect_error(
+    code_book(mtcars),
+    "Error when calling varlist\\(\\): bad varlist"
+  )
+})
+
+test_that("code_book() errors when varlist() does not return a data frame", {
+  skip_if_not_installed("DT")
+
+  local_mocked_bindings(
+    varlist = function(...) list(x = 1),
+    .package = "spicy"
+  )
+
+  expect_error(
+    code_book(mtcars),
+    "`varlist\\(\\)` did not return a data frame"
+  )
+})

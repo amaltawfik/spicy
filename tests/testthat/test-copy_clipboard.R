@@ -1,3 +1,34 @@
+with_mocked_clipr <- function(
+  code,
+  clipr_available = function() TRUE,
+  write_clip = function(...) NULL
+) {
+  ns <- asNamespace("clipr")
+  old_available <- get("clipr_available", envir = ns)
+  old_write <- get("write_clip", envir = ns)
+
+  unlockBinding("clipr_available", ns)
+  unlockBinding("write_clip", ns)
+  assign("clipr_available", clipr_available, envir = ns)
+  assign("write_clip", write_clip, envir = ns)
+  lockBinding("clipr_available", ns)
+  lockBinding("write_clip", ns)
+
+  on.exit(
+    {
+      unlockBinding("clipr_available", ns)
+      unlockBinding("write_clip", ns)
+      assign("clipr_available", old_available, envir = ns)
+      assign("write_clip", old_write, envir = ns)
+      lockBinding("clipr_available", ns)
+      lockBinding("write_clip", ns)
+    },
+    add = TRUE
+  )
+
+  eval(substitute(code), envir = parent.frame())
+}
+
 test_that("copy_clipboard() works silently for different structures", {
   skip_if_not_installed("clipr")
   skip_if_not(clipr::clipr_available())
@@ -87,4 +118,154 @@ test_that("copy_clipboard() copies expected content", {
   copy_clipboard(vec_chr, quiet = TRUE)
   chr_clip <- clipr::read_clip()
   expect_equal(chr_clip, vec_chr)
+})
+
+test_that("copy_clipboard validates availability and row.names.as.col", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  with_mocked_clipr(
+    clipr_available = function() FALSE,
+    {
+      expect_error(
+        copy_clipboard(data.frame(x = 1)),
+        "Clipboard is not available on this system."
+      )
+    }
+  )
+
+  with_mocked_clipr({
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = 1),
+      "row.names.as.col"
+    )
+  })
+})
+
+test_that("copy_clipboard errors when clipr is unavailable", {
+  local_mocked_bindings(
+    requireNamespace = function(...) FALSE,
+    .package = "base"
+  )
+
+  expect_error(
+    copy_clipboard(data.frame(x = 1)),
+    "Package 'clipr' is required"
+  )
+})
+
+test_that("copy_clipboard captures write_clip messages and warnings", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  clip_payload <- NULL
+  out <- capture.output(
+    ret <- with_mocked_clipr(
+      {
+        copy_clipboard(
+          data.frame(x = 1:2),
+          show_message = TRUE,
+          quiet = FALSE
+        )
+      },
+      write_clip = function(x, ...) {
+        clip_payload <<- x
+        message("mock message")
+        warning("mock warning")
+        invisible(NULL)
+      }
+    )
+  )
+
+  expect_s3_class(ret, "data.frame")
+  expect_true(any(grepl("Data successfully copied to clipboard!", out)))
+  expect_true(any(grepl("Message: mock message", out)))
+  expect_true(any(grepl("Warning: mock warning", out)))
+  expect_equal(clip_payload$x, 1:2)
+})
+
+test_that("copy_clipboard warns when row.names.as.col is irrelevant", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  out <- capture.output(
+    with_mocked_clipr({
+      copy_clipboard(
+        c("a", "b"),
+        row.names.as.col = TRUE,
+        quiet = FALSE,
+        show_message = FALSE
+      )
+    })
+  )
+
+  expect_true(any(grepl("has no effect", out)))
+
+  out_chr <- capture.output(
+    with_mocked_clipr({
+      copy_clipboard(
+        table(c("a", "b")),
+        row.names.as.col = "id",
+        quiet = FALSE,
+        show_message = FALSE
+      )
+    })
+  )
+
+  expect_true(any(grepl("is ignored because", out_chr)))
+})
+
+test_that("copy_clipboard adds row names column for data frames and matrices", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  captured_df <- NULL
+  with_mocked_clipr(
+    {
+      df <- data.frame(value = c(10, 20), row.names = c("a", "b"))
+      copy_clipboard(df, row.names.as.col = TRUE, quiet = TRUE)
+    },
+    write_clip = function(x, ...) {
+      captured_df <<- x
+      invisible(NULL)
+    }
+  )
+
+  expect_equal(names(captured_df)[1], "rownames")
+  expect_equal(captured_df$rownames, c("a", "b"))
+
+  captured_mat <- NULL
+  with_mocked_clipr(
+    {
+      mat <- matrix(
+        1:4,
+        nrow = 2,
+        dimnames = list(c("r1", "r2"), c("c1", "c2"))
+      )
+      copy_clipboard(mat, row.names.as.col = "id", quiet = TRUE)
+    },
+    write_clip = function(x, ...) {
+      captured_mat <<- x
+      invisible(NULL)
+    }
+  )
+
+  expect_equal(names(captured_mat)[1], "id")
+  expect_equal(captured_mat$id, c("r1", "r2"))
 })

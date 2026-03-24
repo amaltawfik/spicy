@@ -233,28 +233,7 @@ table_categorical <- function(
   has_group <- !rlang::quo_is_null(by_quo)
   by_name <- NULL
   if (has_group) {
-    by_name <- tryCatch(
-      {
-        pos <- tidyselect::eval_select(by_quo, data)
-        names(pos)
-      },
-      error = function(e) {
-        by_val <- tryCatch(
-          rlang::eval_tidy(by_quo, env = rlang::quo_get_env(by_quo)),
-          error = function(e) NULL
-        )
-        if (
-          is.character(by_val) && length(by_val) == 1 && by_val %in% names(data)
-        ) {
-          by_val
-        } else {
-          stop("`by` must select exactly one column in `data`.", call. = FALSE)
-        }
-      }
-    )
-    if (length(by_name) != 1L) {
-      stop("`by` must select exactly one column in `data`.", call. = FALSE)
-    }
+    by_name <- resolve_single_column_selection(by_quo, data, "by")
   }
 
   select_quo <- rlang::enquo(select)

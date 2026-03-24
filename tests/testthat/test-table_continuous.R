@@ -46,6 +46,22 @@ test_that("table_continuous styled with group carries group_var attribute", {
   expect_equal(attr(out, "group_var"), "Species")
 })
 
+test_that("table_continuous accepts by as a character object without warnings", {
+  by_col <- "Species"
+
+  expect_no_warning(
+    out <- table_continuous(
+      iris,
+      select = Sepal.Length,
+      by = by_col,
+      styled = FALSE
+    )
+  )
+
+  expect_true("group" %in% names(out))
+  expect_true(all(out$group %in% unique(iris$Species)))
+})
+
 # ---- computation ----
 
 test_that("table_continuous computes correct values", {
@@ -943,6 +959,36 @@ test_that("table_continuous clipboard output works", {
   expect_s3_class(out, "data.frame")
 })
 
+test_that("table_continuous clipboard output can be exercised with a mocked writer", {
+  skip_if_not_installed("clipr")
+
+  captured <- NULL
+
+  local_mocked_bindings(
+    write_clip = function(text, ...) {
+      captured <<- text
+      invisible(text)
+    },
+    clipr_available = function(...) TRUE,
+    .package = "clipr"
+  )
+
+  expect_message(
+    out <- table_continuous(
+      iris,
+      select = c(Sepal.Length),
+      output = "clipboard",
+      clipboard_delim = ";"
+    ),
+    "copied to clipboard"
+  )
+
+  expect_s3_class(out, "data.frame")
+  expect_true(is.character(captured))
+  expect_match(captured, "Variable;M;SD")
+  expect_match(captured, "Sepal.Length")
+})
+
 # ---- grouped optional outputs ----
 
 test_that("table_continuous flextable with groups works", {
@@ -1061,10 +1107,7 @@ test_that("table_continuous tinytable grouped has correct number of rows", {
 
 test_that("table_continuous errors when by selects multiple columns", {
   df <- data.frame(a = 1:6, b = rep(1:2, 3), c = rep(1:3, 2), x = 11:16)
-  expect_error(
-    table_continuous(df, by = c(b, c), styled = FALSE),
-    "exactly one column"
-  )
+  expect_error(table_continuous(df, by = c(b, c), styled = FALSE))
 })
 
 
