@@ -13,6 +13,8 @@ build_ascii_table(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 )
 }
@@ -42,6 +44,11 @@ The color is applied only when ANSI color support is available
 
 \item{align_left_cols}{Integer vector of column indices to left-align.
 Defaults to \code{c(1, 2)} for frequency tables (Category + Values).}
+
+\item{align_center_cols}{Integer vector of column indices to
+center-align. Defaults to \code{integer(0)} (no centered columns).
+Columns not in \code{align_left_cols} or \code{align_center_cols} are
+right-aligned.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

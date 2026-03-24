@@ -80,6 +80,7 @@ reference:
       - mean_n
       - sum_n
       - count_n
+      - table_desc
   - title: Measures of Association
     contents:
       - assoc_measures
@@ -112,4 +113,5 @@ reference:
       - print.spicy_freq_table
       - print.spicy_assoc_detail
       - print.spicy_assoc_table
+      - print.spicy_desc_table
       - spicy_tables

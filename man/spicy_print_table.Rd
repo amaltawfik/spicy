@@ -15,6 +15,8 @@ spicy_print_table(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 )
 }
@@ -52,6 +54,9 @@ If \code{NULL} (the default), alignment is auto-detected based on \code{x}:
 \item For \code{freq} tables -> \code{c(1, 2)}
 \item For \code{cross} tables -> \code{1}
 }}
+
+\item{align_center_cols}{Integer vector of column indices to
+center-align. Defaults to \code{integer(0)}.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

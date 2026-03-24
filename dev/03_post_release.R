@@ -16,7 +16,9 @@ run_cmd <- function(cmd, args = character()) {
 }
 
 # 01 CLEAN UP CRAN-SUBMISSION -------
-if (file.exists("CRAN-SUBMISSION")) file.remove("CRAN-SUBMISSION")
+if (file.exists("CRAN-SUBMISSION")) {
+  file.remove("CRAN-SUBMISSION")
+}
 
 # 02 GITHUB TAG & RELEASE -------
 usethis::use_github_release() # Create tag + publish GitHub release from NEWS.md

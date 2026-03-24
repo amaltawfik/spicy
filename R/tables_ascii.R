@@ -36,6 +36,10 @@
 #'   (see [crayon::has_color()]).
 #' @param align_left_cols Integer vector of column indices to left-align.
 #'   Defaults to `c(1, 2)` for frequency tables (Category + Values).
+#' @param align_center_cols Integer vector of column indices to
+#'   center-align. Defaults to `integer(0)` (no centered columns).
+#'   Columns not in `align_left_cols` or `align_center_cols` are
+#'   right-aligned.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return
@@ -71,6 +75,8 @@ build_ascii_table <- function(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 ) {
   stopifnot(is.data.frame(x))
@@ -100,12 +106,9 @@ build_ascii_table <- function(
   }
 
   # Helper for cell alignment
-  pad_cell <- function(txt, width, left = FALSE) {
-    if (left) {
-      stringr::str_pad(txt, width, side = "right")
-    } else {
-      stringr::str_pad(txt, width, side = "left")
-    }
+  pad_cell <- function(txt, width, align = "right") {
+    side <- switch(align, left = "right", center = "both", "left")
+    stringr::str_pad(txt, width, side = side)
   }
 
   # Define where to place vertical bars
@@ -129,8 +132,15 @@ build_ascii_table <- function(
       pieces <- c(pieces, " ")
       pos <- pos + 1L
 
-      # Align Category + Values left, rest right (configurable)
-      cell <- pad_cell(values[i], widths[i], left = (i %in% align_left_cols))
+      # Alignment: left, center, or right (default)
+      col_align <- if (i %in% align_left_cols) {
+        "left"
+      } else if (i %in% align_center_cols) {
+        "center"
+      } else {
+        "right"
+      }
+      cell <- pad_cell(values[i], widths[i], align = col_align)
 
       pieces <- c(pieces, cell)
       pos <- pos + nchar(cell, type = "width")
@@ -183,6 +193,16 @@ build_ascii_table <- function(
   total_rule <- style(make_rule(full_width, bar_positions, "\u253c")) # line before Total
   bottom_rule <- style(make_rule(full_width, bar_positions, "\u2534"))
 
+  # Light dashed rule for group separators (U+254C = BOX DRAWINGS LIGHT DOUBLE DASH HORIZONTAL)
+  make_light_rule <- function(width, bars) {
+    chars <- rep("\u254c", width)
+    if (length(bars)) {
+      chars[bars] <- "\u253c"
+    }
+    paste0(chars, collapse = "")
+  }
+  light_rule <- style(make_light_rule(full_width, bar_positions))
+
   # --- Colorize vertical bars if supported
   if (crayon::has_color()) {
     header_txt <- gsub("\u2502", style("\u2502"), header_txt, fixed = TRUE)
@@ -194,15 +214,28 @@ build_ascii_table <- function(
   # --- Add header
   out <- c(out, header_txt, header_rule)
 
-  # --- Add rows, with horizontal line before Total
+  # --- Add rows, with horizontal line before Total and light separators
   total_idx <- grep("\\b(Total|Column_Total)\\b", rows_txt, perl = TRUE)
+  sep_set <- as.integer(group_sep_rows)
+  sep_set <- sep_set[sep_set >= 2L & sep_set <= length(rows_txt)]
+
   if (length(total_idx) == 1 && total_idx > 1) {
-    out <- c(
-      out,
-      rows_txt[seq_len(total_idx - 1)],
-      total_rule,
-      rows_txt[total_idx:length(rows_txt)]
-    )
+    # Insert light separators before total rule, then total
+    body_rows <- seq_len(total_idx - 1)
+    for (r in body_rows) {
+      if (r %in% sep_set) {
+        out <- c(out, light_rule)
+      }
+      out <- c(out, rows_txt[r])
+    }
+    out <- c(out, total_rule, rows_txt[total_idx:length(rows_txt)])
+  } else if (length(sep_set) > 0L && length(rows_txt) > 0L) {
+    for (r in seq_along(rows_txt)) {
+      if (r %in% sep_set) {
+        out <- c(out, light_rule)
+      }
+      out <- c(out, rows_txt[r])
+    }
   } else {
     if (length(rows_txt)) out <- c(out, rows_txt)
   }
@@ -262,6 +295,8 @@ build_ascii_table <- function(
 #'   If `NULL` (the default), alignment is auto-detected based on `x`:
 #'   * For `freq` tables -> `c(1, 2)`
 #'   * For `cross` tables -> `1`
+#' @param align_center_cols Integer vector of column indices to
+#'   center-align. Defaults to `integer(0)`.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -300,6 +335,8 @@ spicy_print_table <- function(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 ) {
   stopifnot(is.data.frame(x))
@@ -327,6 +364,8 @@ spicy_print_table <- function(
     bottom_line = bottom_line,
     lines_color = lines_color,
     align_left_cols = align_left_cols,
+    align_center_cols = align_center_cols,
+    group_sep_rows = group_sep_rows,
     ...
   )
 
