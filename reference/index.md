@@ -27,6 +27,8 @@
   Row Sums with Optional Minimum Valid Values
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
+- [`table_desc()`](https://amaltawfik.github.io/spicy/reference/table_desc.md)
+  : Descriptive statistics table
 
 ## Measures of Association
 
@@ -97,6 +99,9 @@
 
 - [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
   : Print an association measures summary table
+
+- [`print(`*`<spicy_desc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_desc_table.md)
+  : Print method for descriptive statistics tables
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering

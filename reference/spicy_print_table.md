@@ -26,6 +26,8 @@ spicy_print_table(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 )
 ```
@@ -82,6 +84,11 @@ spicy_print_table(
   - For `freq` tables -\> `c(1, 2)`
 
   - For `cross` tables -\> `1`
+
+- align_center_cols:
+
+  Integer vector of column indices to center-align. Defaults to
+  `integer(0)`.
 
 - ...:
 

@@ -21,6 +21,8 @@ build_ascii_table(
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
+  align_center_cols = integer(0),
+  group_sep_rows = integer(0),
   ...
 )
 ```
@@ -68,6 +70,12 @@ build_ascii_table(
 
   Integer vector of column indices to left-align. Defaults to `c(1, 2)`
   for frequency tables (Category + Values).
+
+- align_center_cols:
+
+  Integer vector of column indices to center-align. Defaults to
+  `integer(0)` (no centered columns). Columns not in `align_left_cols`
+  or `align_center_cols` are right-aligned.
 
 - ...:
 

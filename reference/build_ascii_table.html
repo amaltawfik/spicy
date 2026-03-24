@@ -84,6 +84,8 @@ This function is primarily used internally by higher-level wrappers such as
 <span>  bottom_line <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lines_color <span class="op">=</span> <span class="st">"darkgrey"</span>,</span>
 <span>  align_left_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span>,</span>
+<span>  align_center_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -128,6 +130,13 @@ The color is applied only when ANSI color support is available
 <dt id="arg-align-left-cols">align_left_cols<a class="anchor" aria-label="anchor" href="#arg-align-left-cols"></a></dt>
 <dd><p>Integer vector of column indices to left-align.
 Defaults to <code>c(1, 2)</code> for frequency tables (Category + Values).</p></dd>
+
+
+<dt id="arg-align-center-cols">align_center_cols<a class="anchor" aria-label="anchor" href="#arg-align-center-cols"></a></dt>
+<dd><p>Integer vector of column indices to
+center-align. Defaults to <code>integer(0)</code> (no centered columns).
+Columns not in <code>align_left_cols</code> or <code>align_center_cols</code> are
+right-aligned.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

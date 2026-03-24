@@ -89,6 +89,8 @@ of table.</p>
 <span>  bottom_line <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lines_color <span class="op">=</span> <span class="st">"darkgrey"</span>,</span>
 <span>  align_left_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  align_center_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -141,6 +143,11 @@ Only applied if the output supports ANSI colors (see <code><a href="http://r-lib
 If <code>NULL</code> (the default), alignment is auto-detected based on <code>x</code>:</p><ul><li><p>For <code>freq</code> tables -&gt; <code>c(1, 2)</code></p></li>
 <li><p>For <code>cross</code> tables -&gt; <code>1</code></p></li>
 </ul></dd>
+
+
+<dt id="arg-align-center-cols">align_center_cols<a class="anchor" aria-label="anchor" href="#arg-align-center-cols"></a></dt>
+<dd><p>Integer vector of column indices to
+center-align. Defaults to <code>integer(0)</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
