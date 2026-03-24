@@ -141,20 +141,22 @@ function that fits each variable type.
 
 Both functions support the same reporting formats:
 
-| Output        | Best use                                  |
-|:--------------|:------------------------------------------|
-| `"default"`   | Quick console review in plain ASCII       |
-| `"tinytable"` | Quarto or R Markdown documents            |
-| `"gt"`        | HTML output with styled reporting tables  |
-| `"flextable"` | Word-oriented workflows                   |
-| `"excel"`     | Spreadsheet handoff or downstream editing |
-| `"word"`      | Direct `.docx` export                     |
-| `"clipboard"` | Fast pasting into another application     |
+| Output        | Best use                                     |
+|:--------------|:---------------------------------------------|
+| `"default"`   | Quick console review in plain ASCII          |
+| `"tinytable"` | Quarto or R Markdown documents               |
+| `"gt"`        | HTML output with styled reporting tables     |
+| `"flextable"` | Office-first workflows; also renders in HTML |
+| `"excel"`     | Spreadsheet handoff or downstream editing    |
+| `"word"`      | Direct `.docx` export                        |
+| `"clipboard"` | Fast pasting into another application        |
 
 Pick the output based on where the table is going, not on the analysis
 itself. The underlying selection and grouping pattern stays the same.
 
-For Word-oriented reporting, `flextable` is often the easiest target:
+If you want an object that fits naturally into Word and PowerPoint
+workflows but can also be rendered in HTML documents, `flextable` is a
+good choice:
 
 ``` r
 if (requireNamespace("flextable", quietly = TRUE)) {
@@ -167,23 +169,11 @@ if (requireNamespace("flextable", quietly = TRUE)) {
 }
 ```
 
-| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   |
-|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|
-|                                |                 |       |       |       |        | LL     | UL    |     |
-| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 |
-|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |
-|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |
-| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 |
-|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |
-|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |
-| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 |
-|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
-|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
-
 ## Post-process the returned table object
 
-Both summary-table helpers return regular `gt` or `tinytable` objects,
-so you can keep styling them with the native package API.
+Both summary-table helpers return regular `gt`, `tinytable`, or
+`flextable` objects, so you can keep styling them with the native
+package API.
 
 Use `gt::` functions when you want to keep the `gt` workflow:
 
@@ -203,31 +193,6 @@ tab |>
   ) |>
   gt::tab_source_note(
     gt::md("*Percentages are computed within each education group.*")
-  )
-```
-
-[TABLE]
-
-If you are rendering the table inside a dark pkgdown theme, you can add
-an explicit CSS override after creating the `gt` object:
-
-``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = sex,
-  output = "gt"
-) |>
-  gt::opt_css(
-    css = paste(
-      ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
-      ".gt_column_spanner_outer, .gt_column_spanner, .gt_table_body,",
-      ".gt_stub, .gt_row, .gt_table th, .gt_table td {",
-      "  background-color: transparent !important;",
-      "  color: currentColor !important;",
-      "}",
-      sep = "\n"
-    )
   )
 ```
 
@@ -264,6 +229,23 @@ tab |>
 | Regular physical activity |                 |      |                 |      |          |      |       |      | \< .001 | .21        |
 |      No                   | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |         |            |
 |      Yes                  | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
+
+Use `flextable::` functions when you want to keep working toward Office
+or HTML document output:
+
+``` r
+tab <- table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = education,
+  output = "flextable"
+)
+
+tab |>
+  flextable::theme_booktabs() |>
+  flextable::autofit() |>
+  flextable::fontsize(size = 10, part = "all")
+```
 
 ## Keep the detailed options in the function-specific articles
 
