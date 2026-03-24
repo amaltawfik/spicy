@@ -8,6 +8,10 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 }
 
 internal_pages <- c("AGENTS", "CLAUDE")
+legacy_pages <- c(
+  "articles/table-apa",
+  "reference/table_apa"
+)
 
 internal_pages_pattern <- paste(internal_pages, collapse = "|")
 
@@ -27,8 +31,25 @@ remove_internal_files <- function(internal_pages, docs_dir = "docs") {
   invisible(existing_files)
 }
 
+remove_legacy_files <- function(legacy_pages, docs_dir = "docs") {
+  html_md_files <- as.vector(outer(
+    file.path(docs_dir, legacy_pages),
+    c(".html", ".md"),
+    paste0
+  ))
+
+  existing_files <- html_md_files[file.exists(html_md_files)]
+
+  if (length(existing_files) > 0) {
+    unlink(existing_files)
+  }
+
+  invisible(existing_files)
+}
+
 clean_sitemap <- function(
   internal_pages,
+  legacy_pages,
   sitemap = file.path("docs", "sitemap.xml")
 ) {
   if (!file.exists(sitemap)) {
@@ -36,10 +57,19 @@ clean_sitemap <- function(
   }
 
   lines <- readLines(sitemap, warn = FALSE, encoding = "UTF-8")
-  keep <- !grepl(
+  internal_keep <- !grepl(
     paste0("/(", internal_pages_pattern, ")\\.(html|md)</loc>"),
     lines
   )
+  legacy_keep <- !grepl(
+    paste0(
+      "/(",
+      paste(legacy_pages, collapse = "|"),
+      ")\\.(html|md)</loc>"
+    ),
+    lines
+  )
+  keep <- internal_keep & legacy_keep
 
   writeLines(lines[keep], sitemap, useBytes = TRUE)
   invisible(TRUE)
@@ -47,6 +77,7 @@ clean_sitemap <- function(
 
 clean_search_index <- function(
   internal_pages,
+  legacy_pages,
   search_index = file.path("docs", "search.json")
 ) {
   if (!file.exists(search_index)) {
@@ -54,7 +85,11 @@ clean_search_index <- function(
   }
 
   entries <- jsonlite::fromJSON(search_index, simplifyVector = FALSE)
-  pattern <- paste0("/(", internal_pages_pattern, ")\\.(html|md)$")
+  internal_pattern <- paste0("/(", internal_pages_pattern, ")\\.(html|md)$")
+  legacy_pattern <- paste0(
+    "^https://amaltawfik.github.io/spicy/",
+    "(", paste(legacy_pages, collapse = "|"), ")\\.(html|md)$"
+  )
 
   keep_entry <- function(entry) {
     path <- entry$path %||% NULL
@@ -63,7 +98,7 @@ clean_search_index <- function(
       return(TRUE)
     }
 
-    !grepl(pattern, path)
+    !grepl(internal_pattern, path) && !grepl(legacy_pattern, path)
   }
 
   filtered_entries <- Filter(keep_entry, entries)
@@ -111,11 +146,16 @@ fix_html_encoding_artifacts <- function(docs_dir = "docs") {
 pkgdown::build_site()
 
 removed_files <- remove_internal_files(internal_pages)
-clean_sitemap(internal_pages)
-clean_search_index(internal_pages)
+removed_legacy_files <- remove_legacy_files(legacy_pages)
+clean_sitemap(internal_pages, legacy_pages)
+clean_search_index(internal_pages, legacy_pages)
 fix_html_encoding_artifacts()
 
 message(
   "Removed internal pkgdown pages: ",
   paste(basename(removed_files), collapse = ", ")
+)
+message(
+  "Removed legacy pkgdown pages: ",
+  paste(basename(removed_legacy_files), collapse = ", ")
 )
