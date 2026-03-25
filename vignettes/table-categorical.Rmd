@@ -161,7 +161,7 @@ table_categorical(
   sochealth,
   select = smoking,
   by = education,
-  assoc_measure = "phi",
+  assoc_measure = "lambda",
   output = "tinytable"
 )
 ```
@@ -233,7 +233,7 @@ pkgdown_dark_gt(
 
 Use `levels_keep` to display only specific modalities. The order you
 specify controls the display order, which is useful for placing
-"(Missing)" last:
+"(Missing)" first to highlight missingness:
 
 ```{r levels-keep}
 pkgdown_dark_gt(
@@ -242,7 +242,7 @@ pkgdown_dark_gt(
     select = income_group,
     by = education,
     drop_na = FALSE,
-    levels_keep = c("Low", "High", "(Missing)"),
+    levels_keep = c("(Missing)", "Low", "High"),
     output = "gt"
   )
 )
