@@ -485,6 +485,31 @@ test_that("table_categorical default column is Cramer's V", {
   expect_true("Cramer's V" %in% names(out))
 })
 
+test_that("table_categorical drops association column when assoc_measure is none", {
+  out_long <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    assoc_measure = "none",
+    output = "long",
+    style = "raw"
+  )
+
+  out_wide <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    assoc_measure = "none",
+    output = "wide",
+    style = "report"
+  )
+
+  expect_false("Cramer's V" %in% names(out_long))
+  expect_false(any(grepl("Cramer's V", names(out_wide), fixed = TRUE)))
+  expect_true("p" %in% names(out_long))
+  expect_true("p" %in% names(out_wide))
+})
+
 test_that("table_categorical uses dynamic column name with assoc_measure = 'gamma'", {
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
@@ -891,7 +916,7 @@ test_that("table_categorical writes excel file", {
 
 # Ã¢â€â‚¬Ã¢â€â‚¬ assoc_measure = "none" Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-test_that("table_categorical assoc_measure = 'none' returns NA for association", {
+test_that("table_categorical assoc_measure = 'none' omits association column", {
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -900,8 +925,7 @@ test_that("table_categorical assoc_measure = 'none' returns NA for association",
     output = "long",
     style = "raw"
   )
-  assoc_col <- out[["Cramer's V"]]
-  expect_true(all(is.na(assoc_col)))
+  expect_false("Cramer's V" %in% names(out))
 })
 
 # Ã¢â€â‚¬Ã¢â€â‚¬ Report mode (no rendering dependency) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬

@@ -1059,6 +1059,10 @@ table_categorical <- function(
   }
 
   g0 <- data[[by_name]]
+  show_assoc <- !identical(assoc_measure, "none")
+  if (!show_assoc) {
+    assoc_ci <- FALSE
+  }
   group_levels <- if (is.factor(g0)) {
     levels(g0)
   } else {
@@ -1133,7 +1137,7 @@ table_categorical <- function(
       assoc_measure = "none"
     )
     st <- parse_stats(ct_pct)
-    if (is.null(measure_col)) {
+    if (show_assoc && is.null(measure_col)) {
       measure_col <- st$measure %||% "Cramer's V"
     }
 
@@ -1174,20 +1178,22 @@ table_categorical <- function(
           pct = suppressWarnings(as.numeric(ct_pct[in_p, gr])),
           p = st$p,
           p_op = st$p_op,
-          .assoc = st$v,
           ci_lower = st$ci_lower,
           ci_upper = st$ci_upper,
           stringsAsFactors = FALSE,
           check.names = FALSE
         )
-        names(row_df)[names(row_df) == ".assoc"] <- measure_col
+        if (show_assoc) {
+          row_df$.assoc <- st$v
+          names(row_df)[names(row_df) == ".assoc"] <- measure_col
+        }
         rows[[rr]] <- row_df
         rr <- rr + 1L
       }
     }
   }
 
-  if (is.null(measure_col)) {
+  if (show_assoc && is.null(measure_col)) {
     measure_col <- "Cramer's V"
   }
 
@@ -1206,7 +1212,11 @@ table_categorical <- function(
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
-    names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
+    if (show_assoc) {
+      names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
+    } else {
+      long_raw$.assoc <- NULL
+    }
   } else {
     long_raw <- do.call(rbind, rows)
   }
@@ -1239,7 +1249,7 @@ table_categorical <- function(
   if (output == "long" && style == "raw") {
     out <- long_raw
     out$p_op <- NULL
-    if (!assoc_ci) {
+    if (!show_assoc || !assoc_ci) {
       out$ci_lower <- NULL
       out$ci_upper <- NULL
     }
@@ -1252,10 +1262,12 @@ table_categorical <- function(
       "Variable",
       "Level",
       as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
-      "p",
-      measure_col
+      "p"
     )
-    if (assoc_ci) {
+    if (show_assoc) {
+      cols <- c(cols, measure_col)
+    }
+    if (show_assoc && assoc_ci) {
       cols <- c(cols, "CI lower", "CI upper")
     }
     if (nrow(ldf) == 0) {
@@ -1285,8 +1297,10 @@ table_categorical <- function(
       }
 
       r$p <- if (nrow(sv)) sv$p[1] else NA_real_
-      r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
-      if (assoc_ci) {
+      if (show_assoc) {
+        r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
+      }
+      if (show_assoc && assoc_ci) {
         r[["CI lower"]] <- if (nrow(sv)) sv$ci_lower[1] else NA_real_
         r[["CI upper"]] <- if (nrow(sv)) sv$ci_upper[1] else NA_real_
       }
@@ -1318,13 +1332,15 @@ table_categorical <- function(
     long_rep$n <- fmt_n(long_rep$n)
     long_rep$pct <- fmt_num(long_rep$pct, percent_digits)
     long_rep$p <- mapply(fmt_p, long_rep$p, long_rep$p_op, USE.NAMES = FALSE)
-    long_rep[[measure_col]] <- vapply(
-      long_rep[[measure_col]],
-      fmt_v,
-      character(1)
-    )
+    if (show_assoc) {
+      long_rep[[measure_col]] <- vapply(
+        long_rep[[measure_col]],
+        fmt_v,
+        character(1)
+      )
+    }
     long_rep$p_op <- NULL
-    if (assoc_ci) {
+    if (show_assoc && assoc_ci) {
       long_rep$ci_lower <- vapply(long_rep$ci_lower, fmt_v, character(1))
       long_rep$ci_upper <- vapply(long_rep$ci_upper, fmt_v, character(1))
     } else {
@@ -1338,10 +1354,12 @@ table_categorical <- function(
   report_cols <- c(
     "Variable",
     as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
-    "p",
-    measure_col
+    "p"
   )
-  if (assoc_ci) {
+  if (show_assoc) {
+    report_cols <- c(report_cols, measure_col)
+  }
+  if (show_assoc && assoc_ci) {
     report_cols <- c(report_cols, "CI lower", "CI upper")
   }
 
@@ -1367,7 +1385,6 @@ table_categorical <- function(
         )
         out$Variable <- character(0)
         out$p <- character(0)
-        out[[measure_col]] <- character(0)
         return(out[, report_cols, drop = FALSE])
       }
     }
@@ -1395,8 +1412,10 @@ table_categorical <- function(
       }
       r0$Variable <- lab
       r0$p <- fmt_p(sv$p[1], sv$p_op[1])
-      r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
-      if (assoc_ci) {
+      if (show_assoc) {
+        r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
+      }
+      if (show_assoc && assoc_ci) {
         if (mode == "char") {
           r0[["CI lower"]] <- fmt_v(sv$ci_lower[1])
           r0[["CI upper"]] <- fmt_v(sv$ci_upper[1])
@@ -1437,7 +1456,9 @@ table_categorical <- function(
         }
 
         r1$p <- ""
-        r1[[measure_col]] <- ""
+        if (show_assoc) {
+          r1[[measure_col]] <- ""
+        }
         out[[z]] <- as.data.frame(
           r1,
           stringsAsFactors = FALSE,
@@ -1471,7 +1492,7 @@ table_categorical <- function(
 
   # For rendered formats: merge CI inline into measure column, drop CI cols
   merge_ci_inline <- function(df) {
-    if (!assoc_ci || !("CI lower" %in% names(df))) {
+    if (!show_assoc || !assoc_ci || !("CI lower" %in% names(df))) {
       return(df)
     }
     has_val <- nzchar(df[[measure_col]]) & nzchar(df[["CI lower"]])
@@ -1492,16 +1513,19 @@ table_categorical <- function(
   top_header_span <- c(
     "Variable",
     rep(group_levels, each = 2),
-    "p",
-    measure_col
+    "p"
   )
   top_header_flat <- c(
     "Variable",
     as.vector(rbind(group_levels, rep("", length(group_levels)))),
-    "p",
-    measure_col
+    "p"
   )
-  bot_header <- c("", rep(c("n", "%"), times = length(group_levels)), "", "")
+  bot_header <- c("", rep(c("n", "%"), times = length(group_levels)), "")
+  if (show_assoc) {
+    top_header_span <- c(top_header_span, measure_col)
+    top_header_flat <- c(top_header_flat, measure_col)
+    bot_header <- c(bot_header, "")
+  }
   grp_j <- 2:(1 + 2 * length(group_levels))
 
   # ---------------- tinytable ----------------
@@ -1528,8 +1552,7 @@ table_categorical <- function(
     colnames(dat_tt) <- c(
       "",
       rep(c("n", "%"), times = length(group_levels)),
-      "",
-      ""
+      rep("", 1L + as.integer(show_assoc))
     )
 
     # Spanners
@@ -1539,8 +1562,11 @@ table_categorical <- function(
         lapply(seq_along(group_levels), function(i) c(2 * i, 2 * i + 1)),
         group_levels
       ),
-      setNames(list(ncol(dat_tt) - 1, ncol(dat_tt)), c("p", measure_col))
+      list("p" = ncol(dat_tt) - if (show_assoc) 1L else 0L)
     )
+    if (show_assoc) {
+      gspec[[measure_col]] <- ncol(dat_tt)
+    }
 
     tt <- tinytable::tt(dat_tt, escape = FALSE)
     tt <- tinytable::group_tt(tt, j = gspec)
@@ -1549,7 +1575,11 @@ table_categorical <- function(
     # Alignment
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
-    stat_j <- (ncol(dat_tt) - 1):ncol(dat_tt)
+    stat_j <- if (show_assoc) {
+      (ncol(dat_tt) - 1):ncol(dat_tt)
+    } else {
+      ncol(dat_tt)
+    }
     tt <- tinytable::style_tt(tt, j = c(data_j, stat_j), align = "r")
     # Centre n/% labels (row 0 = column labels row)
     tt <- tinytable::style_tt(tt, i = 0, j = data_j, align = "c")
@@ -1634,8 +1664,11 @@ table_categorical <- function(
       col_ids[2 * gi] <- paste0(group_levels[gi], "_n")
       col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
     }
-    col_ids[ncol(dat_gt) - 1] <- "p"
-    col_ids[ncol(dat_gt)] <- "assoc_col"
+    p_col_pos <- ncol(dat_gt) - if (show_assoc) 1L else 0L
+    col_ids[p_col_pos] <- "p"
+    if (show_assoc) {
+      col_ids[ncol(dat_gt)] <- "assoc_col"
+    }
     names(dat_gt) <- col_ids
 
     tbl <- gt::gt(dat_gt)
@@ -1648,7 +1681,9 @@ table_categorical <- function(
       label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
     }
     label_list[["p"]] <- ""
-    label_list[["assoc_col"]] <- ""
+    if (show_assoc) {
+      label_list[["assoc_col"]] <- ""
+    }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
     # Spanners: group names over n/% pairs, single-col for Variable/p/V
@@ -1674,12 +1709,14 @@ table_categorical <- function(
       columns = "p",
       id = "spn_p"
     )
-    tbl <- gt::tab_spanner(
-      tbl,
-      label = measure_col,
-      columns = "assoc_col",
-      id = "spn_v"
-    )
+    if (show_assoc) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = measure_col,
+        columns = "assoc_col",
+        id = "spn_v"
+      )
+    }
 
     # Alignment
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
@@ -1687,11 +1724,11 @@ table_categorical <- function(
       c(paste0(g, "_n"), paste0(g, "_pct"))
     }))
     tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
-    tbl <- gt::cols_align(
-      tbl,
-      align = "right",
-      columns = c("p", "assoc_col")
-    )
+    right_cols <- "p"
+    if (show_assoc) {
+      right_cols <- c(right_cols, "assoc_col")
+    }
+    tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
     # Left-align the Variable spanner label
     tbl <- gt::tab_style(
       tbl,
@@ -1827,7 +1864,7 @@ table_categorical <- function(
     # Centre n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
     # Right-align p and association measure in header
-    stat_j <- (ncol(df) - 1):ncol(df)
+    stat_j <- if (show_assoc) (ncol(df) - 1):ncol(df) else ncol(df)
     ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
@@ -1886,8 +1923,10 @@ table_categorical <- function(
   )
   to_excel_text <- function(x) ifelse(x == "", "", paste0("=\"", x, "\""))
   clip_body$p <- to_excel_text(clip_body$p)
-  clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
-  if (assoc_ci) {
+  if (show_assoc) {
+    clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
+  }
+  if (show_assoc && assoc_ci) {
     clip_body[["CI lower"]] <- to_excel_text(clip_body[["CI lower"]])
     clip_body[["CI upper"]] <- to_excel_text(clip_body[["CI upper"]])
   }
@@ -1928,8 +1967,10 @@ table_categorical <- function(
       indent_text_excel_clipboard
     )
     body_xl$p <- report_wide_char$p
-    body_xl[[measure_col]] <- report_wide_char[[measure_col]]
-    if (assoc_ci) {
+    if (show_assoc) {
+      body_xl[[measure_col]] <- report_wide_char[[measure_col]]
+    }
+    if (show_assoc && assoc_ci) {
       body_xl[["CI lower"]] <- report_wide_char[["CI lower"]]
       body_xl[["CI upper"]] <- report_wide_char[["CI upper"]]
     }
@@ -1988,7 +2029,13 @@ table_categorical <- function(
         gridExpand = TRUE,
         stack = TRUE
       )
-      text_cols <- if (assoc_ci) (nc - 3):nc else c(nc - 1, nc)
+      text_cols <- if (show_assoc && assoc_ci) {
+        (nc - 3):nc
+      } else if (show_assoc) {
+        c(nc - 1, nc)
+      } else {
+        nc
+      }
       openxlsx::addStyle(
         wb,
         excel_sheet,
