@@ -1,5 +1,7 @@
 # spicy (development version)
 
+* ASCII console tables now split oversized outputs into stacked horizontal panels, repeating the left-most identifier columns so wide `freq()`, `cross_tab()`, `table_categorical()`, and `table_continuous()` prints stay readable in narrow consoles.
+
 * `table_categorical()` replaces `table_apa()` as the public name for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and gains `output = "default"` plus `styled` for ASCII console output.
 
 * `table_continuous()` replaces `table_desc()` as the public name for continuous summary tables. It computes descriptive statistics (mean, SD, min, max, confidence interval of the mean, n) for numeric variables, with tidyselect column selection, optional grouping via `by`, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).

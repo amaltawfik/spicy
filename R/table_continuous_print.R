@@ -78,10 +78,7 @@ print.spicy_continuous_table <- function(x, ...) {
   console_w <- getOption("width", 80L)
   normal_width <- sum(col_widths + 5L + 2L) + 1L
   if (normal_width > console_w) {
-    compact_width <- sum(col_widths + 2L) + 1L
-    if (compact_width <= console_w) {
-      padding <- "compact"
-    }
+    padding <- "compact"
   }
 
   spicy_print_table(

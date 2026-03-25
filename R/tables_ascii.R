@@ -87,25 +87,7 @@ build_ascii_table <- function(
   df <- as.data.frame(x, check.names = FALSE)
   df[] <- lapply(df, as.character)
 
-  # Compute visible column widths
-  w <- vapply(
-    seq_along(df),
-    function(i) {
-      max(
-        crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"),
-        na.rm = TRUE
-      )
-    },
-    numeric(1)
-  )
-
-  # Adjust padding
-  if (padding == "normal") {
-    w <- w + 5L
-  }
-  if (padding == "wide") {
-    w <- w + 9L
-  }
+  w <- ascii_table_widths(df, padding)
 
   # Helper for cell alignment
   pad_cell <- function(txt, width, align = "right") {
@@ -113,16 +95,7 @@ build_ascii_table <- function(
     stringr::str_pad(txt, width, side = side)
   }
 
-  # Define where to place vertical bars
-  sep_after <- integer(0)
-  if (isTRUE(first_column_line) && ncol(df) > 1) {
-    sep_after <- c(sep_after, 1L)
-  }
-  if (isTRUE(row_total_line) && any(c("Row_Total", "Total") %in% names(df))) {
-    idx <- which(names(df) %in% c("Row_Total", "Total"))[1]
-    sep_after <- c(sep_after, idx - 1L)
-  }
-  sep_after <- sort(unique(sep_after[sep_after >= 1 & sep_after <= ncol(df)]))
+  sep_after <- ascii_table_separators(df, first_column_line, row_total_line)
 
   # Build line for header or data row
   build_line <- function(values, widths) {
@@ -250,6 +223,119 @@ build_ascii_table <- function(
   paste(out, collapse = "\n")
 }
 
+ascii_table_widths <- function(df, padding) {
+  widths <- vapply(
+    seq_along(df),
+    function(i) {
+      max(
+        crayon::col_nchar(c(df[[i]], colnames(df)[i]), type = "width"),
+        na.rm = TRUE
+      )
+    },
+    numeric(1)
+  )
+
+  if (identical(padding, "normal")) {
+    widths <- widths + 5L
+  }
+  if (identical(padding, "wide")) {
+    widths <- widths + 9L
+  }
+
+  widths
+}
+
+ascii_table_separators <- function(df, first_column_line, row_total_line) {
+  sep_after <- integer(0)
+
+  if (isTRUE(first_column_line) && ncol(df) > 1L) {
+    sep_after <- c(sep_after, 1L)
+  }
+
+  if (isTRUE(row_total_line) && any(c("Row_Total", "Total") %in% names(df))) {
+    idx <- which(names(df) %in% c("Row_Total", "Total"))[1]
+    sep_after <- c(sep_after, idx - 1L)
+  }
+
+  sort(unique(sep_after[sep_after >= 1L & sep_after <= ncol(df)]))
+}
+
+ascii_table_total_width <- function(
+  df,
+  padding,
+  first_column_line,
+  row_total_line
+) {
+  widths <- ascii_table_widths(df, padding)
+  separators <- ascii_table_separators(df, first_column_line, row_total_line)
+
+  sum(widths + 2L) + length(separators)
+}
+
+ascii_table_panels <- function(
+  df,
+  console_width,
+  padding,
+  first_column_line,
+  row_total_line,
+  sticky_cols
+) {
+  cols <- seq_len(ncol(df))
+  if (length(cols) <= 1L) {
+    return(list(cols))
+  }
+
+  sticky_cols <- sort(unique(as.integer(sticky_cols)))
+  sticky_cols <- sticky_cols[sticky_cols %in% cols]
+  if (!length(sticky_cols)) {
+    sticky_cols <- 1L
+  }
+
+  if (
+    ascii_table_total_width(
+      df,
+      padding = padding,
+      first_column_line = first_column_line,
+      row_total_line = row_total_line
+    ) <=
+      console_width
+  ) {
+    return(list(cols))
+  }
+
+  remaining_cols <- setdiff(cols, sticky_cols)
+  if (!length(remaining_cols)) {
+    return(list(cols))
+  }
+
+  panels <- list()
+  current <- sticky_cols
+
+  for (col in remaining_cols) {
+    candidate <- sort(c(current, col))
+    candidate_width <- ascii_table_total_width(
+      df[, candidate, drop = FALSE],
+      padding = padding,
+      first_column_line = first_column_line,
+      row_total_line = row_total_line
+    )
+
+    if (
+      candidate_width <= console_width ||
+        identical(sort(current), sort(sticky_cols))
+    ) {
+      current <- candidate
+      next
+    }
+
+    panels[[length(panels) + 1L]] <- current
+    current <- sort(c(sticky_cols, col))
+  }
+
+  panels[[length(panels) + 1L]] <- current
+  panels
+}
+
 
 #' Print a spicy-formatted ASCII table
 #'
@@ -274,6 +360,8 @@ build_ascii_table <- function(
 #' The function supports Unicode line-drawing characters and colored separators
 #' using the **crayon** package, with graceful fallback to monochrome output when
 #' color is not supported.
+#' If the table exceeds the console width, it is split into stacked horizontal
+#' panels while repeating the left-most identifier columns.
 #'
 #' @param x A `spicy_table` or `data.frame` to be printed.
 #' @param title Optional title displayed above the table. Defaults to the
@@ -359,18 +447,33 @@ spicy_print_table <- function(
     attr(x, "note") <- note
   }
 
-  txt <- build_ascii_table(
+  panel_cols <- ascii_table_panels(
     x,
+    console_width = getOption("width", 80L),
     padding = padding,
     first_column_line = first_column_line,
     row_total_line = row_total_line,
-    column_total_line = column_total_line,
-    bottom_line = bottom_line,
-    lines_color = lines_color,
-    align_left_cols = align_left_cols,
-    align_center_cols = align_center_cols,
-    group_sep_rows = group_sep_rows,
-    ...
+    sticky_cols = align_left_cols
+  )
+
+  txt <- vapply(
+    panel_cols,
+    function(cols) {
+      build_ascii_table(
+        x[, cols, drop = FALSE],
+        padding = padding,
+        first_column_line = first_column_line,
+        row_total_line = row_total_line,
+        column_total_line = column_total_line,
+        bottom_line = bottom_line,
+        lines_color = lines_color,
+        align_left_cols = which(cols %in% align_left_cols),
+        align_center_cols = which(cols %in% align_center_cols),
+        group_sep_rows = group_sep_rows,
+        ...
+      )
+    },
+    character(1)
   )
 
   style_grey <- if (crayon::has_color()) {
@@ -381,7 +484,12 @@ spicy_print_table <- function(
   if (!is.null(title)) {
     cat(style_grey(title), "\n\n", sep = "")
   }
-  cat(txt, "\n", sep = "")
+  cat(txt[1], "\n", sep = "")
+  if (length(txt) > 1L) {
+    for (i in 2:length(txt)) {
+      cat("\n", txt[i], "\n", sep = "")
+    }
+  }
   if (!is.null(note)) {
     cat("\n", style_grey(note), "\n", sep = "")
   }

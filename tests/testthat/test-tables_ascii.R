@@ -78,3 +78,28 @@ test_that("print.spicy_categorical_table uses grouped title and compact padding"
 
   expect_true(any(grepl("Categorical table by education: demo", output)))
 })
+
+test_that("spicy_print_table splits wide tables into stacked panels", {
+  withr::local_options(list(width = 26))
+
+  df <- data.frame(
+    Variable = c("Smoking", "Activity"),
+    Group = c("Women", "Men"),
+    Count = c("120", "98"),
+    Percent = c("52.3", "47.7"),
+    check.names = FALSE
+  )
+
+  output <- capture.output(
+    spicy_print_table(
+      df,
+      title = NULL,
+      padding = "compact",
+      align_left_cols = c(1L, 2L)
+    )
+  )
+
+  expect_gt(sum(grepl("Variable", output, fixed = TRUE)), 1L)
+  expect_true(any(grepl("Count", output, fixed = TRUE)))
+  expect_true(any(grepl("Percent", output, fixed = TRUE)))
+})

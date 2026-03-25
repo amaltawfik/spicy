@@ -89,6 +89,8 @@ are left-aligned.
 The function supports Unicode line-drawing characters and colored separators
 using the \strong{crayon} package, with graceful fallback to monochrome output when
 color is not supported.
+If the table exceeds the console width, it is split into stacked horizontal
+panels while repeating the left-most identifier columns.
 }
 \examples{
 # Simple demonstration
