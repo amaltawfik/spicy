@@ -53,7 +53,8 @@ table_continuous(
 
 - exclude:
 
-  Columns to exclude (default: `NULL`).
+  Columns to exclude. Supports tidyselect syntax and character vectors
+  of column names.
 
 - regex:
 
@@ -74,8 +75,8 @@ table_continuous(
   - `"nonparametric"`: Wilcoxon rank-sum / Mann–Whitney *U* (2 groups)
     or Kruskal–Wallis *H* (3+ groups).
 
-  Only used when `p_value = TRUE` or `statistic = TRUE` together with
-  `by`. Ignored otherwise.
+  Used when `by` is supplied together with `p_value = TRUE`,
+  `statistic = TRUE`, or `effect_size = TRUE`. Ignored otherwise.
 
 - p_value:
 
@@ -356,7 +357,6 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
            styled = FALSE)
-#> Warning: `test` is ignored when both `p_value` and `statistic` are FALSE.
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824

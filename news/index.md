@@ -41,6 +41,11 @@
   formatted test-statistic column; either or both can be enabled
   independently.
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  now accepts tidyselect syntax in `exclude` in addition to character
+  vectors, and no longer warns that `test` is ignored when it is still
+  needed to compute effect sizes.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
