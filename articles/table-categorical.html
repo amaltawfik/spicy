@@ -118,30 +118,52 @@ variables, and a grouping variable:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;            Variable Level Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1           smoking    No               179              69.6               415</span></span>
-<span><span class="co">#&gt; 2           smoking   Yes                78              30.4               112</span></span>
-<span><span class="co">#&gt; 3 physical_activity    No               177              67.8               310</span></span>
-<span><span class="co">#&gt; 4 physical_activity   Yes                84              32.2               229</span></span>
-<span><span class="co">#&gt; 5       dentist_12m    No               113              43.3               174</span></span>
-<span><span class="co">#&gt; 6       dentist_12m   Yes               148              56.7               365</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
-<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3              57.5        163       40.8     650    54.2 8.333584e-12</span></span>
-<span><span class="co">#&gt; 4              42.5        237       59.2     550    45.8 8.333584e-12</span></span>
-<span><span class="co">#&gt; 5              32.3         67       16.8     354    29.5 3.883413e-13</span></span>
-<span><span class="co">#&gt; 6              67.7        333       83.2     846    70.5 3.883413e-13</span></span>
-<span><span class="co">#&gt;   Cramer's V</span></span>
-<span><span class="co">#&gt; 1  0.1356677</span></span>
-<span><span class="co">#&gt; 2  0.1356677</span></span>
-<span><span class="co">#&gt; 3  0.2061986</span></span>
-<span><span class="co">#&gt; 4  0.2061986</span></span>
-<span><span class="co">#&gt; 5  0.2182388</span></span>
-<span><span class="co">#&gt; 6  0.2182388</span></span></code></pre></div>
-<p>The default output is <code>"wide"</code> with
-<code>style = "raw"</code>, which returns a data frame with numeric
-values suitable for further processing.</p>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>               179               69.6                415 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>                78               30.4                112 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>               177               67.8                310 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>                84               32.2                229 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>               113               43.3                174 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>               148               56.7                365 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>              78.7         332        84.9      926 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>              21.3          59        15.1      249 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>              57.5         163        40.8      650 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>              42.5         237        59.2      550 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>              32.3          67        16.8      354 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>              67.7         333        83.2      846 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %       p  Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt; .001         .14 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>    78.8                     </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>    21.2                     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt; .001         .21 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>    54.2                     </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>    45.8                     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt; .001         .22 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>    29.5                     </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>    70.5</span></span></code></pre></div>
+<p>The default output is <code>"default"</code>, which prints a styled
+ASCII table to the console. Use <code>output = "data.frame"</code> to
+get a plain numeric data frame suitable for further processing.</p>
 </div>
 <div class="section level2">
 <h2 id="one-way-tables">One-way tables<a class="anchor" aria-label="anchor" href="#one-way-tables"></a>
@@ -178,16 +200,16 @@ table below summarizes the options:</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>"wide"</code></td>
-<td>Data frame, one row per modality (default)</td>
+<td><code>"default"</code></td>
+<td>Styled ASCII table in the console (default)</td>
 </tr>
 <tr class="even">
-<td><code>"default"</code></td>
-<td>Styled ASCII table in the console</td>
+<td><code>"data.frame"</code></td>
+<td>Wide data frame, one row per modality</td>
 </tr>
 <tr class="odd">
 <td><code>"long"</code></td>
-<td>Data frame, one row per modality x group</td>
+<td>Long data frame, one row per modality x group</td>
 </tr>
 <tr class="even">
 <td><code>"gt"</code></td>
@@ -1036,30 +1058,25 @@ column spanners, and proper alignment:</p>
 <div class="section level3">
 <h3 id="data-frame-output">Data frame output<a class="anchor" aria-label="anchor" href="#data-frame-output"></a>
 </h3>
-<p>Use <code>style = "report"</code> with <code>"wide"</code> or
-<code>"long"</code> to get formatted character columns (ready for
-display), or <code>style = "raw"</code> for numeric values (ready for
-analysis):</p>
+<p>Use <code>output = "data.frame"</code> for a wide numeric data frame
+(one row per modality), or <code>output = "long"</code> for a long
+format (one row per modality x group):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span>
-<span>  style <span class="op">=</span> <span class="st">"report"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Variable Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1  smoking                                                      </span></span>
-<span><span class="co">#&gt; 2       No               179              69.6               415</span></span>
-<span><span class="co">#&gt; 3      Yes                78              30.4               112</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V</span></span>
-<span><span class="co">#&gt; 1                                                         &lt; .001        .14</span></span>
-<span><span class="co">#&gt; 2              78.7        332       84.9     926    78.8                  </span></span>
-<span><span class="co">#&gt; 3              21.3         59       15.1     249    21.2</span></span></code></pre></div>
-<p>Use <code>output = "default"</code> for a styled ASCII table in the
-console. Set <code>styled = FALSE</code> with
-<code>output = "default"</code> to recover the underlying wide raw
-<code>data.frame</code>.</p>
+<span><span class="co">#&gt;   Variable Level Lower secondary n Lower secondary % Upper secondary n</span></span>
+<span><span class="co">#&gt; 1  smoking    No               179              69.6               415</span></span>
+<span><span class="co">#&gt; 2  smoking   Yes                78              30.4               112</span></span>
+<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
+<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 2.012877e-05</span></span>
+<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 2.012877e-05</span></span>
+<span><span class="co">#&gt;   Cramer's V</span></span>
+<span><span class="co">#&gt; 1  0.1356677</span></span>
+<span><span class="co">#&gt; 2  0.1356677</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -2448,7 +2465,8 @@ rendered formats (gt, tinytable, flextable), the CI is shown inline:</p>
 </tbody>
 </table>
 </div>
-<p>In data formats (wide, long, excel, clipboard), separate
+<p>In data formats (<code>"data.frame"</code>, <code>"long"</code>,
+<code>"excel"</code>, <code>"clipboard"</code>), separate
 <code>CI lower</code> and <code>CI upper</code> columns are added:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
@@ -2456,21 +2474,17 @@ rendered formats (gt, tinytable, flextable), the CI is shown inline:</p>
 <span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span>
-<span>  style <span class="op">=</span> <span class="st">"report"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Variable Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1  smoking                                                      </span></span>
-<span><span class="co">#&gt; 2       No               179              69.6               415</span></span>
-<span><span class="co">#&gt; 3      Yes                78              30.4               112</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V</span></span>
-<span><span class="co">#&gt; 1                                                         &lt; .001        .14</span></span>
-<span><span class="co">#&gt; 2              78.7        332       84.9     926    78.8                  </span></span>
-<span><span class="co">#&gt; 3              21.3         59       15.1     249    21.2                  </span></span>
-<span><span class="co">#&gt;   CI lower CI upper</span></span>
-<span><span class="co">#&gt; 1      .08      .19</span></span>
-<span><span class="co">#&gt; 2                  </span></span>
-<span><span class="co">#&gt; 3</span></span></code></pre></div>
+<span><span class="co">#&gt;   Variable Level Lower secondary n Lower secondary % Upper secondary n</span></span>
+<span><span class="co">#&gt; 1  smoking    No               179              69.6               415</span></span>
+<span><span class="co">#&gt; 2  smoking   Yes                78              30.4               112</span></span>
+<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
+<span><span class="co">#&gt; 1              78.7        332       84.9     926    78.8 2.012877e-05</span></span>
+<span><span class="co">#&gt; 2              21.3         59       15.1     249    21.2 2.012877e-05</span></span>
+<span><span class="co">#&gt;   Cramer's V   CI lower  CI upper</span></span>
+<span><span class="co">#&gt; 1  0.1356677 0.07909264 0.1913716</span></span>
+<span><span class="co">#&gt; 2  0.1356677 0.07909264 0.1913716</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weighted-tables">Weighted tables<a class="anchor" aria-label="anchor" href="#weighted-tables"></a>

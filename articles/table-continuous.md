@@ -271,8 +271,8 @@ table_continuous(
 #>                                │ Tertiary
 ```
 
-When you need the underlying columns for further processing, set
-`styled = FALSE`:
+When you need the underlying columns for further processing, use
+`output = "data.frame"`:
 
 ``` r
 table_continuous(
@@ -282,7 +282,7 @@ table_continuous(
   p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE,
-  styled = FALSE
+  output = "data.frame"
 )
 #>          variable                         label           group     mean
 #> 1             bmi               Body mass index Lower secondary 28.08731
@@ -356,7 +356,7 @@ table_continuous(
   select = "^life_sat",
   regex = TRUE,
   by = education,
-  styled = FALSE
+  output = "data.frame"
 )
 #>                  variable                                      label
 #> 1         life_sat_health             Satisfaction with health (1-5)

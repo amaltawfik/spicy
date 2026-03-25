@@ -14,8 +14,8 @@
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   replaces `table_apa()` as the public name for categorical summary
   tables. It uses `select` and `by`, supports grouped cross-tabulation
-  or one-way frequency-style tables when `by = NULL`, and gains
-  `output = "default"` plus `styled` for ASCII console output.
+  or one-way frequency-style tables when `by = NULL`, and provides
+  multiple output formats via a single `output` argument.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   replaces `table_desc()` as the public name for continuous summary
@@ -24,6 +24,18 @@
   tidyselect column selection, optional grouping via `by`, and multiple
   output formats (ASCII, tinytable, gt, flextable, Excel, clipboard,
   Word).
+
+- **Breaking:**
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  simplify their output API. The `styled` and `style` parameters are
+  removed; use `output = "default"` for an ASCII table or
+  `output = "data.frame"` for a plain numeric data frame. In
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  `output = "wide"` is renamed to `output = "data.frame"` and
+  `style = "report"` paths are removed (use `"tinytable"`, `"gt"`, or
+  `"flextable"` for formatted output).
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `effect_size` and `effect_size_ci` arguments. When `by` is used,
