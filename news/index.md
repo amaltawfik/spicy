@@ -41,6 +41,13 @@
   formatted test-statistic column; either or both can be enabled
   independently.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  no longer require `officer` for `output = "flextable"` alone;
+  `officer` is now required only for Word export paths that actually
+  write `.docx` files.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   now accepts tidyselect syntax in `exclude` in addition to character
   vectors, and no longer warns that `test` is ignored when it is still

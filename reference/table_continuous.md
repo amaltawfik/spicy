@@ -97,16 +97,16 @@ table_continuous(
   Logical. If `TRUE` and `by` is used, adds an effect-size column
   ("ES"). The measure is chosen automatically:
 
-  - Hedges' *g* (bias-corrected) â€” 2 groups, parametric (CI via Hedges
-    & Olkin approximation).
+  - Hedges' *g* (bias-corrected) - 2 groups, parametric (CI via Hedges &
+    Olkin approximation).
 
-  - Eta-squared (\\\eta^2\\) â€” 3+ groups, parametric (CI via
-    noncentral *F* distribution).
+  - Eta-squared (\\\eta^2\\) - 3+ groups, parametric (CI via noncentral
+    *F* distribution).
 
-  - Rank-biserial *r* (`r_rb`) â€” 2 groups, nonparametric (CI via
-    Fisher *z*-transform).
+  - Rank-biserial *r* (`r_rb`) - 2 groups, nonparametric (CI via Fisher
+    *z*-transform).
 
-  - Epsilon-squared (\\\varepsilon^2\\) â€” 3+ groups, nonparametric (CI
+  - Epsilon-squared (\\\varepsilon^2\\) - 3+ groups, nonparametric (CI
     via percentile bootstrap, 2 000 replicates).
 
   Defaults to `FALSE`. Ignored when `by` is not used.
