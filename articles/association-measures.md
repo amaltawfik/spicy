@@ -240,12 +240,19 @@ factors, it picks Kendall’s Tau-b; otherwise it uses Cramer’s V.
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                  179                   415            332 │        926 
-#>  Yes         │                   78                   112             59 │        249 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                  257                   527            391 │       1175 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary 
+#> ─────────────┼───────────────────────────────────────────────────────────
+#>  No          │                  179                   415            332 
+#>  Yes         │                   78                   112             59 
+#> ─────────────┼───────────────────────────────────────────────────────────
+#>  Total       │                  257                   527            391 
+#> 
+#>  Values      │      Total 
+#> ─────────────┼────────────
+#>  No          │        926 
+#>  Yes         │        249 
+#> ─────────────┼────────────
+#>  Total       │       1175 
 #> 
 #> Chi-2(2) = 21.6, p < 0.001
 #> Cramer's V = 0.14
@@ -254,14 +261,23 @@ cross_tab(sochealth, smoking, education)
 cross_tab(sochealth, self_rated_health, education)
 #> Crosstable: self_rated_health x education (N)
 #> 
-#>  Values         │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Poor           │                   28                    28              5 │         61 
-#>  Fair           │                   86                   118             62 │        266 
-#>  Good           │                  102                   263            193 │        558 
-#>  Very good      │                   44                   118            133 │        295 
-#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total          │                  260                   527            393 │       1180 
+#>  Values         │      Lower secondary       Upper secondary       Tertiary 
+#> ────────────────┼───────────────────────────────────────────────────────────
+#>  Poor           │                   28                    28              5 
+#>  Fair           │                   86                   118             62 
+#>  Good           │                  102                   263            193 
+#>  Very good      │                   44                   118            133 
+#> ────────────────┼───────────────────────────────────────────────────────────
+#>  Total          │                  260                   527            393 
+#> 
+#>  Values         │      Total 
+#> ────────────────┼────────────
+#>  Poor           │         61 
+#>  Fair           │        266 
+#>  Good           │        558 
+#>  Very good      │        295 
+#> ────────────────┼────────────
+#>  Total          │       1180 
 #> 
 #> Chi-2(6) = 73.2, p < 0.001
 #> Kendall's Tau-b = 0.20
@@ -273,14 +289,23 @@ You can override the automatic choice:
 cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> Crosstable: self_rated_health x education (N)
 #> 
-#>  Values         │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Poor           │                   28                    28              5 │         61 
-#>  Fair           │                   86                   118             62 │        266 
-#>  Good           │                  102                   263            193 │        558 
-#>  Very good      │                   44                   118            133 │        295 
-#> ────────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total          │                  260                   527            393 │       1180 
+#>  Values         │      Lower secondary       Upper secondary       Tertiary 
+#> ────────────────┼───────────────────────────────────────────────────────────
+#>  Poor           │                   28                    28              5 
+#>  Fair           │                   86                   118             62 
+#>  Good           │                  102                   263            193 
+#>  Very good      │                   44                   118            133 
+#> ────────────────┼───────────────────────────────────────────────────────────
+#>  Total          │                  260                   527            393 
+#> 
+#>  Values         │      Total 
+#> ────────────────┼────────────
+#>  Poor           │         61 
+#>  Fair           │        266 
+#>  Good           │        558 
+#>  Very good      │        295 
+#> ────────────────┼────────────
+#>  Total          │       1180 
 #> 
 #> Chi-2(6) = 73.2, p < 0.001
 #> Goodman-Kruskal Gamma = 0.31

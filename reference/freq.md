@@ -243,14 +243,23 @@ freq(x_lbl, na_val = 1)
 freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 #> Frequency table: x_lbl
 #> 
-#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent 
-#> ──────────┼─────────────────────────────────────────────────────────────────────────
-#>  Valid    │ Low         3     33.3           37.5          33.3                37.5 
-#>           │ Medium      3     33.3           37.5          66.7                75.0 
-#>           │ High        2     22.2           25.0          88.9               100.0 
-#>  Missing  │ NA          1     11.1                        100.0                     
-#> ──────────┼─────────────────────────────────────────────────────────────────────────
-#>  Total    │             9    100.0          100.0         100.0               100.0 
+#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent 
+#> ──────────┼─────────────────────────────────────────────────────
+#>  Valid    │ Low         3     33.3           37.5          33.3 
+#>           │ Medium      3     33.3           37.5          66.7 
+#>           │ High        2     22.2           25.0          88.9 
+#>  Missing  │ NA          1     11.1                        100.0 
+#> ──────────┼─────────────────────────────────────────────────────
+#>  Total    │             9    100.0          100.0         100.0 
+#> 
+#>  Category │ Values  Cum. Valid Percent 
+#> ──────────┼────────────────────────────
+#>  Valid    │ Low                   37.5 
+#>           │ Medium                75.0 
+#>           │ High                 100.0 
+#>  Missing  │ NA                         
+#> ──────────┼────────────────────────────
+#>  Total    │                      100.0 
 #> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
@@ -315,13 +324,21 @@ freq(df, sexe, weights = poids, rescale = FALSE)
 freq(df$sexe, weights = df$poids, cum = TRUE)
 #> Frequency table: sexe
 #> 
-#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent  Cum. Valid Percent 
-#> ──────────┼─────────────────────────────────────────────────────────────────────────
-#>  Valid    │ Female   2.66     44.3           50.0          44.3                50.0 
-#>           │ Male     2.66     44.3           50.0          88.5               100.0 
-#>  Missing  │ NA       0.69     11.5                        100.0                     
-#> ──────────┼─────────────────────────────────────────────────────────────────────────
-#>  Total    │             6    100.0          100.0         100.0               100.0 
+#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent 
+#> ──────────┼─────────────────────────────────────────────────────
+#>  Valid    │ Female   2.66     44.3           50.0          44.3 
+#>           │ Male     2.66     44.3           50.0          88.5 
+#>  Missing  │ NA       0.69     11.5                        100.0 
+#> ──────────┼─────────────────────────────────────────────────────
+#>  Total    │             6    100.0          100.0         100.0 
+#> 
+#>  Category │ Values  Cum. Valid Percent 
+#> ──────────┼────────────────────────────
+#>  Valid    │ Female                50.0 
+#>           │ Male                 100.0 
+#>  Missing  │ NA                         
+#> ──────────┼────────────────────────────
+#>  Total    │                      100.0 
 #> 
 #> Class: factor
 #> Data: df

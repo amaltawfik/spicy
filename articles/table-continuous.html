@@ -116,29 +116,61 @@ to summarize:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                            <span style="color: #9E9E9E;">│</span>     M           SD         Min          Max        95% CI LL       95% CI UL             n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                     <span style="color: #9E9E9E;">│</span>   25.93        3.72       16.00        38.90         25.72           26.14            1188 </span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)       <span style="color: #9E9E9E;">│</span>   69.04       15.62       18.70       100.00         68.16           69.93            1200 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span>    3.55        1.25        1.00        5.00           3.48            3.62            1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> 25.93  3.72   16.00  38.90     25.72   </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16   </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> 3.55   1.25   1.00    5.00     3.48    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> 95% CI UL     n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>   26.14    1188 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>   69.93    1200 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>   3.62     1192</span></span></code></pre></div>
 <p>If you omit <code>select</code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>
 scans the data frame and keeps numeric columns:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                        <span style="color: #9E9E9E;">│</span>      M             SD           Min           Max         95% CI LL       95% CI UL             n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Age (years)                                     <span style="color: #9E9E9E;">│</span>    49.26         14.70         25.00         75.00          48.43           50.10            1200 </span></span>
-<span><span class="co">#&gt;  Monthly household income (CHF)                  <span style="color: #9E9E9E;">│</span>   3833.00       1394.58       1000.00       7388.00        3754.01         3911.98           1200 </span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)                   <span style="color: #9E9E9E;">│</span>    69.04         15.62         18.70         100.00         68.16           69.93            1200 </span></span>
-<span><span class="co">#&gt;  Body mass index                                 <span style="color: #9E9E9E;">│</span>    25.93          3.72         16.00         38.90          25.72           26.14            1188 </span></span>
-<span><span class="co">#&gt;  Political position (0 = left, 10 = right)       <span style="color: #9E9E9E;">│</span>     5.48          2.03          0.00         10.00           5.36            5.60            1185 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)                  <span style="color: #9E9E9E;">│</span>     3.55          1.25          1.00          5.00           3.48            3.62            1192 </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)                    <span style="color: #9E9E9E;">│</span>     3.38          1.18          1.00          5.00           3.31            3.45            1192 </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)           <span style="color: #9E9E9E;">│</span>     3.72          1.10          1.00          5.00           3.66            3.79            1192 </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5)      <span style="color: #9E9E9E;">│</span>     3.40          1.16          1.00          5.00           3.33            3.46            1192 </span></span>
-<span><span class="co">#&gt;  Survey design weight                            <span style="color: #9E9E9E;">│</span>     1.00          0.41          0.29          3.45           0.97            1.02            1200</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span>    M       SD       Min   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)                                <span style="color: #9E9E9E;">│</span>  49.26    14.70    25.00  </span></span>
+<span><span class="co">#&gt;  Monthly household income (CHF)             <span style="color: #9E9E9E;">│</span> 3833.00  1394.58  1000.00 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)              <span style="color: #9E9E9E;">│</span>  69.04    15.62    18.70  </span></span>
+<span><span class="co">#&gt;  Body mass index                            <span style="color: #9E9E9E;">│</span>  25.93    3.72     16.00  </span></span>
+<span><span class="co">#&gt;  Political position (0 = left, 10 = right)  <span style="color: #9E9E9E;">│</span>  5.48     2.03     0.00   </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>  3.55     1.25     1.00   </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>  3.38     1.18     1.00   </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>  3.72     1.10     1.00   </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>  3.40     1.16     1.00   </span></span>
+<span><span class="co">#&gt;  Survey design weight                       <span style="color: #9E9E9E;">│</span>  1.00     0.41     0.29   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span>   Max    95% CI LL  95% CI UL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)                                <span style="color: #9E9E9E;">│</span>  75.00     48.43      50.10   </span></span>
+<span><span class="co">#&gt;  Monthly household income (CHF)             <span style="color: #9E9E9E;">│</span> 7388.00   3754.01    3911.98  </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)              <span style="color: #9E9E9E;">│</span> 100.00     68.16      69.93   </span></span>
+<span><span class="co">#&gt;  Body mass index                            <span style="color: #9E9E9E;">│</span>  38.90     25.72      26.14   </span></span>
+<span><span class="co">#&gt;  Political position (0 = left, 10 = right)  <span style="color: #9E9E9E;">│</span>  10.00     5.36       5.60    </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>  5.00      3.48       3.62    </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>  5.00      3.31       3.45    </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>  5.00      3.66       3.79    </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>  5.00      3.33       3.46    </span></span>
+<span><span class="co">#&gt;  Survey design weight                       <span style="color: #9E9E9E;">│</span>  3.45      0.97       1.02    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span>    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────</span></span></span>
+<span><span class="co">#&gt;  Age (years)                                <span style="color: #9E9E9E;">│</span> 1200 </span></span>
+<span><span class="co">#&gt;  Monthly household income (CHF)             <span style="color: #9E9E9E;">│</span> 1200 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)              <span style="color: #9E9E9E;">│</span> 1200 </span></span>
+<span><span class="co">#&gt;  Body mass index                            <span style="color: #9E9E9E;">│</span> 1188 </span></span>
+<span><span class="co">#&gt;  Political position (0 = left, 10 = right)  <span style="color: #9E9E9E;">│</span> 1185 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> 1192 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> 1192 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> 1192 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> 1192 </span></span>
+<span><span class="co">#&gt;  Survey design weight                       <span style="color: #9E9E9E;">│</span> 1200</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="grouped-summaries">Grouped summaries<a class="anchor" aria-label="anchor" href="#grouped-summaries"></a>
@@ -153,19 +185,33 @@ categories:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                            <span style="color: #9E9E9E;">│</span> Group                     M           SD         Min          Max        95% CI LL       95% CI UL            n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                     <span style="color: #9E9E9E;">│</span> Lower secondary         28.09        3.47       18.20        38.90         27.66           28.51            260 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary         26.02        3.43       16.00        37.10         25.73           26.31            534 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                24.39        3.52       16.00        33.00         24.04           24.74            394 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)       <span style="color: #9E9E9E;">│</span> Lower secondary         57.22       15.44       18.70        97.90         55.33           59.10            261 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary         68.97       13.62       26.70       100.00         67.82           70.12            539 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                76.85       13.23       40.40       100.00         75.55           78.15            400 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span> Lower secondary          2.71        1.20        1.00        5.00           2.57            2.86            259 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary          3.53        1.19        1.00        5.00           3.43            3.63            534 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                 4.11        1.04        1.00        5.00           4.01            4.21            399</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  28.09  3.47   18.20  38.90  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  26.02  3.43   16.00  37.10  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         24.39  3.52   16.00  33.00  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70  97.90  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  2.71   1.20   1.00    5.00  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  3.53   1.19   1.00    5.00  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         4.11   1.04   1.00    5.00  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary    27.66      28.51    260 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    25.73      26.31    534 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           24.04      24.74    394 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary    2.57       2.86     259 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    3.43       3.63     534 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399</span></span></code></pre></div>
 <p>This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave.</p>
 </div>
@@ -186,19 +232,75 @@ table. The default test is Welch’s test:</p>
 <span><span class="co">#&gt; Warning: `effect_size_ci` implies `effect_size = TRUE`.</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                            <span style="color: #9E9E9E;">│</span> Group                     M           SD         Min          Max        95% CI LL       95% CI UL            n             Test                       p              ES              </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                     <span style="color: #9E9E9E;">│</span> Lower secondary         28.09        3.47       18.20        38.90         27.66           28.51            260     F(2, 654.48) = 87.96          &lt; .001    η² = 0.13 [0.10, 0.17]    </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary         26.02        3.43       16.00        37.10         25.73           26.31            534                                                                       </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                24.39        3.52       16.00        33.00         24.04           24.74            394                                                                       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)       <span style="color: #9E9E9E;">│</span> Lower secondary         57.22       15.44       18.70        97.90         55.33           59.10            261    F(2, 638.59) = 144.35          &lt; .001    η² = 0.21 [0.17, 0.25]    </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary         68.97       13.62       26.70       100.00         67.82           70.12            539                                                                       </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                76.85       13.23       40.40       100.00         75.55           78.15            400                                                                       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span> Lower secondary          2.71        1.20        1.00        5.00           2.57            2.86            259    F(2, 652.08) = 118.74          &lt; .001    η² = 0.16 [0.13, 0.20]    </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Upper secondary          3.53        1.19        1.00        5.00           3.43            3.63            534                                                                       </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Tertiary                 4.11        1.04        1.00        5.00           4.01            4.21            399</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  28.09  3.47   18.20  38.90  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  26.02  3.43   16.00  37.10  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         24.39  3.52   16.00  33.00  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70  97.90  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  2.71   1.20   1.00    5.00  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary  3.53   1.19   1.00    5.00  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary         4.11   1.04   1.00    5.00  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary    27.66      28.51    260 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    25.73      26.31    534 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           24.04      24.74    394 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary    2.57       2.86     259 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    3.43       3.63     534 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group                    Test          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 654.48) = 87.96  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                        </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 638.59) = 144.35 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                        </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 652.08) = 118.74 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                        </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group                 p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group                      ES           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.13 [0.10, 0.17] </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.21 [0.17, 0.25] </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.16 [0.13, 0.20] </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
 <p>Use <code>test = "student"</code> for equal-variance parametric tests
 or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -213,15 +315,45 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                           <span style="color: #9E9E9E;">│</span> Group                     M           SD         Min          Max        95% CI LL       95% CI UL            n         Test                   p        ES       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                    <span style="color: #9E9E9E;">│</span> Lower secondary         28.09        3.47       18.20        38.90         27.66           28.51            260    H(2) = 144.63          &lt; .001    ε² = 0.12    </span></span>
-<span><span class="co">#&gt;                                     <span style="color: #9E9E9E;">│</span> Upper secondary         26.02        3.43       16.00        37.10         25.73           26.31            534                                                  </span></span>
-<span><span class="co">#&gt;                                     <span style="color: #9E9E9E;">│</span> Tertiary                24.39        3.52       16.00        33.00         24.04           24.74            394                                                  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)      <span style="color: #9E9E9E;">│</span> Lower secondary         57.22       15.44       18.70        97.90         55.33           59.10            261    H(2) = 233.53          &lt; .001    ε² = 0.19    </span></span>
-<span><span class="co">#&gt;                                     <span style="color: #9E9E9E;">│</span> Upper secondary         68.97       13.62       26.70       100.00         67.82           70.12            539                                                  </span></span>
-<span><span class="co">#&gt;                                     <span style="color: #9E9E9E;">│</span> Tertiary                76.85       13.23       40.40       100.00         75.55           78.15            400</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  28.09  3.47   18.20  38.90  </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary  26.02  3.43   16.00  37.10  </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary         24.39  3.52   16.00  33.00  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70  97.90  </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary    27.66      28.51    260 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary    25.73      26.31    534 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary           24.04      24.74    394 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group                Test            p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  H(2) = 144.63  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary                        </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary                               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  H(2) = 233.53  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary                        </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary                               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group               ES     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  ε² = 0.12 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  ε² = 0.19 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
 <p>When you need the underlying columns for further processing, set
 <code>styled = FALSE</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -268,19 +400,33 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                        <span style="color: #9E9E9E;">│</span> Group            M         SD         Min        Max       95% CI LL       95% CI UL            n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)                  <span style="color: #9E9E9E;">│</span> Female         3.51       1.25       1.00       5.00          3.41            3.61            616 </span></span>
-<span><span class="co">#&gt;                                                  <span style="color: #9E9E9E;">│</span> Male           3.59       1.25       1.00       5.00          3.49            3.69            576 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)                    <span style="color: #9E9E9E;">│</span> Female         3.32       1.17       1.00       5.00          3.23            3.41            615 </span></span>
-<span><span class="co">#&gt;                                                  <span style="color: #9E9E9E;">│</span> Male           3.44       1.20       1.00       5.00          3.34            3.54            577 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)           <span style="color: #9E9E9E;">│</span> Female         3.71       1.09       1.00       5.00          3.62            3.79            615 </span></span>
-<span><span class="co">#&gt;                                                  <span style="color: #9E9E9E;">│</span> Male           3.74       1.10       1.00       5.00          3.65            3.83            577 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5)      <span style="color: #9E9E9E;">│</span> Female         3.37       1.16       1.00       5.00          3.28            3.46            615 </span></span>
-<span><span class="co">#&gt;                                                  <span style="color: #9E9E9E;">│</span> Male           3.42       1.17       1.00       5.00          3.33            3.52            577</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group    M     SD   Min   Max  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> Female  3.51  1.25  1.00  5.00 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male    3.59  1.25  1.00  5.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> Female  3.32  1.17  1.00  5.00 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male    3.44  1.20  1.00  5.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> Female  3.71  1.09  1.00  5.00 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male    3.74  1.10  1.00  5.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  3.37  1.16  1.00  5.00 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male    3.42  1.17  1.00  5.00 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group   95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> Female    3.41       3.61     616 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.49       3.69     576 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> Female    3.23       3.41     615 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.34       3.54     577 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> Female    3.62       3.79     615 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.65       3.83     577 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female    3.28       3.46     615 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.33       3.52     577</span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
@@ -327,16 +473,27 @@ two explicit removals:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics: sochealth</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                            <span style="color: #9E9E9E;">│</span> Group            M           SD         Min          Max        95% CI LL       95% CI UL            n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                     <span style="color: #9E9E9E;">│</span> Female         25.69        3.78       16.00        38.90         25.39           25.98            616 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Male           26.20        3.64       16.00        37.70         25.90           26.50            572 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)       <span style="color: #9E9E9E;">│</span> Female         67.16       14.80       19.60       100.00         65.99           68.33            620 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Male           71.05       16.23       18.70       100.00         69.73           72.37            580 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)      <span style="color: #9E9E9E;">│</span> Female          3.51        1.25        1.00        5.00           3.41            3.61            616 </span></span>
-<span><span class="co">#&gt;                                      <span style="color: #9E9E9E;">│</span> Male            3.59        1.25        1.00        5.00           3.49            3.69            576</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Female  25.69  3.78   16.00  38.90  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male    26.20  3.64   16.00  37.70  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female  3.51   1.25   1.00    5.00  </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male    3.59   1.25   1.00    5.00  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group   95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼───────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Female    25.39      25.98    616 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      25.90      26.50    572 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female    65.99      68.33    620 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      69.73      72.37    580 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female    3.41       3.61     616 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      3.49       3.69     576</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="labels-and-output-formats">Labels and output formats<a class="anchor" aria-label="anchor" href="#labels-and-output-formats"></a>
