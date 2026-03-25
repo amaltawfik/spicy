@@ -96,11 +96,13 @@ The `"gt"` format produces a table with APA-style borders, column
 spanners, and proper alignment:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    by = education,
+    output = "gt"
+  )
 )
 ```
 
@@ -163,12 +165,14 @@ uses variable names as row headers. Use the `labels` argument to provide
 human-readable labels:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Smoking status", "Regular physical activity"),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    labels = c("Smoking status", "Regular physical activity"),
+    output = "gt"
+  )
 )
 ```
 
@@ -203,12 +207,14 @@ Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  assoc_ci = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    assoc_ci = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -246,13 +252,15 @@ Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
 the total weighted N matches the unweighted N:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  weights = "weight",
-  rescale = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    weights = "weight",
+    rescale = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -264,12 +272,14 @@ By default, rows with missing values are dropped (`drop_na = TRUE`). Set
 `drop_na = FALSE` to display them as a “(Missing)” category:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = income_group,
-  by = education,
-  drop_na = FALSE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = income_group,
+    by = education,
+    drop_na = FALSE,
+    output = "gt"
+  )
 )
 ```
 

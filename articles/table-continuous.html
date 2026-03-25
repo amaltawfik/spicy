@@ -344,16 +344,18 @@ two explicit removals:</p>
 <p>Use <code>labels</code> to replace technical variable names with
 reporting labels:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    bmi <span class="op">=</span> <span class="st">"Body mass index"</span>,</span>
-<span>    wellbeing_score <span class="op">=</span> <span class="st">"Well-being score"</span>,</span>
-<span>    life_sat_health <span class="op">=</span> <span class="st">"Satisfaction with health"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>      bmi <span class="op">=</span> <span class="st">"Body mass index"</span>,</span>
+<span>      wellbeing_score <span class="op">=</span> <span class="st">"Well-being score"</span>,</span>
+<span>      life_sat_health <span class="op">=</span> <span class="st">"Satisfaction with health"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="kbfrcvpubu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#kbfrcvpubu table {
@@ -832,6 +834,13 @@ reporting labels:</p>
 .gt_table tbody tr {
   border-top-style: none !important;
   border-bottom-style: none !important;
+}
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
 }
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">

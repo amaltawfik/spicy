@@ -191,13 +191,13 @@ package API.
 Use `gt::` functions when you want to keep the `gt` workflow:
 
 ``` r
-tab <- table_categorical(
+tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Smoking status", "Regular physical activity"),
   output = "gt"
-)
+))
 
 tab |>
   gt::tab_header(
@@ -206,17 +206,6 @@ tab |>
   ) |>
   gt::tab_source_note(
     gt::md("*Percentages are computed within each education group.*")
-  ) |>
-  gt::opt_css(
-    css = paste(
-      ".gt_heading, .gt_col_headings, .gt_col_heading,",
-      ".gt_column_spanner_outer, .gt_column_spanner,",
-      ".gt_title, .gt_subtitle {",
-      "  background-color: transparent !important;",
-      "  color: currentColor !important;",
-      "}",
-      sep = "\n"
-    )
   )
 ```
 
@@ -255,7 +244,9 @@ tab |>
 |      Yes                  | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |         |            |
 
 Use `flextable::` functions when you want to keep working toward Office
-or HTML document output:
+or HTML document output. The example is shown as code here because the
+dark pkgdown theme is not a reliable preview of the final `flextable`
+HTML rendering:
 
 ``` r
 if (requireNamespace("flextable", quietly = TRUE)) {
@@ -272,16 +263,6 @@ if (requireNamespace("flextable", quietly = TRUE)) {
     flextable::fontsize(size = 10, part = "all")
 }
 ```
-
-| Variable                      | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   |
-|-------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|
-|                               |                 |       |       |       |        | LL     | UL    |     |
-| Body mass index               | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 |
-|                               | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |
-|                               | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |
-| WHO-5 wellbeing index (0-100) | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 |
-|                               | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |
-|                               | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |
 
 ## Keep the detailed options in the function-specific articles
 

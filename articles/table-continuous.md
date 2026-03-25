@@ -269,16 +269,18 @@ table_continuous(
 Use `labels` to replace technical variable names with reporting labels:
 
 ``` r
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  labels = c(
-    bmi = "Body mass index",
-    wellbeing_score = "Well-being score",
-    life_sat_health = "Satisfaction with health"
-  ),
-  output = "gt"
+pkgdown_dark_gt(
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    labels = c(
+      bmi = "Body mass index",
+      wellbeing_score = "Well-being score",
+      life_sat_health = "Satisfaction with health"
+    ),
+    output = "gt"
+  )
 )
 ```
 
