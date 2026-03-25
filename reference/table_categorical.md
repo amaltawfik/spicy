@@ -82,7 +82,8 @@ table_categorical(
 - weights:
 
   Optional weights. Either `NULL` (the default), a numeric vector of
-  length `nrow(data)`, or a single column name in `data`.
+  length `nrow(data)`, or a single column in `data` supplied as an
+  unquoted name or a character string.
 
 - rescale:
 
