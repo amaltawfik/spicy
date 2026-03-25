@@ -10,8 +10,10 @@ variable inspection, frequency tables, cross-tabulations with
 chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
-workflow using the bundled `sochealth` dataset, a simulated
-social-health survey with 1 200 respondents and 24 variables.
+workflow using the bundled
+[`sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md)
+dataset, a simulated social-health survey with 1200 respondents and 24
+variables.
 
 ## Inspect your data
 

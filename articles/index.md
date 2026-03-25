@@ -32,15 +32,15 @@
   Somers’ D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 
-- [Categorical summary tables with
-  table_categorical()](https://amaltawfik.github.io/spicy/articles/table-categorical.md):
+- [Categorical summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-categorical.md):
 
   Build categorical summary tables in R with table_categorical(),
   including grouped cross-tabulations, effect sizes, confidence
   intervals, and export to gt, tinytable, flextable, Excel, or Word.
 
-- [Continuous summary tables with
-  table_continuous()](https://amaltawfik.github.io/spicy/articles/table-continuous.md):
+- [Continuous summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-continuous.md):
 
   Build continuous summary tables in R with table_continuous(),
   including grouped descriptives, group-comparison tests, effect sizes,

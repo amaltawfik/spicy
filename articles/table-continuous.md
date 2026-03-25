@@ -1,4 +1,4 @@
-# Continuous summary tables with table_continuous()
+# Continuous summary tables in R
 
 ``` r
 library(spicy)
