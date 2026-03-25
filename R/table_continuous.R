@@ -10,7 +10,8 @@
 #'   a regular expression pattern (character string).
 #' @param by An optional unquoted column name to group the descriptive
 #'   statistics by. The column does not need to be numeric.
-#' @param exclude Columns to exclude (default: `NULL`).
+#' @param exclude Columns to exclude. Supports tidyselect syntax and
+#'   character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect
 #'   helpers. If `TRUE`, the `select` argument is treated as a regular
 #'   expression.
@@ -23,8 +24,8 @@
 #'   - `"nonparametric"`: Wilcoxon rank-sum / Mann--Whitney *U*
 #'     (2 groups) or Kruskal--Wallis *H* (3+ groups).
 #'
-#'   Only used when `p_value = TRUE` or `statistic = TRUE` together
-#'   with `by`. Ignored otherwise.
+#'   Used when `by` is supplied together with `p_value = TRUE`,
+#'   `statistic = TRUE`, or `effect_size = TRUE`. Ignored otherwise.
 #' @param p_value Logical. If `TRUE` and `by` is used, adds a *p*-value
 #'   column from the test specified by `test`. Defaults to `FALSE`.
 #'   Ignored when `by` is not used.
@@ -274,8 +275,13 @@ table_continuous <- function(
     stop("`labels` must be a named character vector.", call. = FALSE)
   }
   for (.lname in c(
-    "p_value", "statistic", "effect_size", "effect_size_ci",
-    "regex", "styled", "verbose"
+    "p_value",
+    "statistic",
+    "effect_size",
+    "effect_size_ci",
+    "regex",
+    "styled",
+    "verbose"
   )) {
     .lval <- get(.lname)
     if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
@@ -311,7 +317,9 @@ table_continuous <- function(
       call. = FALSE
     )
   }
-  if (test_explicit && !p_value && !statistic) {
+  if (
+    test_explicit && !p_value && !statistic && !effect_size && !effect_size_ci
+  ) {
     warning(
       "`test` is ignored when both `p_value` and `statistic` are FALSE.",
       call. = FALSE
@@ -369,7 +377,9 @@ table_continuous <- function(
     }
   }
 
-  work <- dplyr::select(work, -dplyr::any_of(exclude))
+  exclude_quo <- rlang::enquo(exclude)
+  exclude_names <- resolve_multi_column_selection(exclude_quo, work, "exclude")
+  work <- dplyr::select(work, -dplyr::any_of(exclude_names))
 
   all_cols <- names(work)
   work <- dplyr::select(work, dplyr::where(is.numeric))

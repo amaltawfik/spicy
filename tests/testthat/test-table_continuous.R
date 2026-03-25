@@ -192,6 +192,30 @@ test_that("table_continuous exclude works", {
   expect_false("Sepal.Width" %in% out$variable)
 })
 
+test_that("table_continuous exclude works with an unquoted column name", {
+  out <- table_continuous(
+    iris,
+    select = c(Sepal.Length, Sepal.Width, Petal.Length),
+    exclude = Sepal.Width,
+    styled = FALSE
+  )
+  expect_equal(nrow(out), 2L)
+  expect_false("Sepal.Width" %in% out$variable)
+})
+
+test_that("table_continuous exclude works with tidyselect syntax", {
+  out <- table_continuous(
+    iris,
+    select = everything(),
+    exclude = c(Sepal.Width, Petal.Width),
+    styled = FALSE
+  )
+  expect_equal(
+    out$variable,
+    c("Sepal.Length", "Petal.Length")
+  )
+})
+
 test_that("table_continuous regex selection works", {
   out <- table_continuous(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
   expect_equal(nrow(out), 2L)
@@ -1435,6 +1459,24 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
   expect_true("ES" %in% names(display))
   expect_false("Test" %in% names(display))
   expect_false("p" %in% names(display))
+})
+
+test_that("table_continuous does not warn about test when effect_size uses it", {
+  expect_no_warning(
+    out <- table_continuous(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      test = "student",
+      effect_size = TRUE,
+      p_value = FALSE,
+      statistic = FALSE,
+      styled = FALSE
+    )
+  )
+
+  expect_equal(out$es_type[1], "eta_sq")
+  expect_equal(out$test_type[1], "anova")
 })
 
 # ---- effect size: student test ----

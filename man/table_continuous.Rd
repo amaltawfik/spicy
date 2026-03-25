@@ -38,7 +38,8 @@ a regular expression pattern (character string).}
 \item{by}{An optional unquoted column name to group the descriptive
 statistics by. The column does not need to be numeric.}
 
-\item{exclude}{Columns to exclude (default: \code{NULL}).}
+\item{exclude}{Columns to exclude. Supports tidyselect syntax and
+character vectors of column names.}
 
 \item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect
 helpers. If \code{TRUE}, the \code{select} argument is treated as a regular
@@ -55,8 +56,8 @@ ANOVA (3+ groups). Assumes equal variances.
 (2 groups) or Kruskal--Wallis \emph{H} (3+ groups).
 }
 
-Only used when \code{p_value = TRUE} or \code{statistic = TRUE} together
-with \code{by}. Ignored otherwise.}
+Used when \code{by} is supplied together with \code{p_value = TRUE},
+\code{statistic = TRUE}, or \code{effect_size = TRUE}. Ignored otherwise.}
 
 \item{p_value}{Logical. If \code{TRUE} and \code{by} is used, adds a \emph{p}-value
 column from the test specified by \code{test}. Defaults to \code{FALSE}.

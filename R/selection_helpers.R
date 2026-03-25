@@ -38,3 +38,40 @@ resolve_single_column_selection <- function(quo, data, arg) {
 
   names(pos)
 }
+
+# Resolve a multi-column argument that may be provided as:
+# - an unquoted selection (`exclude = c(x, y)`)
+# - a character vector (`exclude = c("x", "y")`)
+# - a character vector stored in an external object
+# - a tidyselect helper (`exclude = starts_with("Sepal")`)
+resolve_multi_column_selection <- function(quo, data, arg) {
+  if (rlang::quo_is_null(quo)) {
+    return(character())
+  }
+
+  sentinel <- new.env(parent = emptyenv())
+  val <- tryCatch(
+    rlang::eval_tidy(quo, env = rlang::quo_get_env(quo)),
+    error = function(e) sentinel
+  )
+
+  if (is.null(val)) {
+    return(character())
+  }
+
+  if (is.character(val)) {
+    return(val)
+  }
+
+  pos <- tryCatch(
+    tidyselect::eval_select(quo, data),
+    error = function(e) {
+      stop(
+        sprintf("`%s` must select columns in `data`.", arg),
+        call. = FALSE
+      )
+    }
+  )
+
+  names(pos)
+}

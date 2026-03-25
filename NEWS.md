@@ -10,6 +10,8 @@
 
 * `table_continuous()` gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`) to choose the group-comparison method, along with independent `p_value` and `statistic` display toggles. When `by` is used, `p_value = TRUE` adds a p-value column and `statistic = TRUE` adds a formatted test-statistic column; either or both can be enabled independently.
 
+* `table_continuous()` now accepts tidyselect syntax in `exclude` in addition to character vectors, and no longer warns that `test` is ignored when it is still needed to compute effect sizes.
+
 * `table_categorical()` and `table_continuous()` now print shorter ASCII titles without appending the input data frame name.
 
 # spicy 0.6.0
