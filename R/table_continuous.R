@@ -37,13 +37,13 @@
 #'   used.
 #' @param effect_size Logical. If `TRUE` and `by` is used, adds an
 #'   effect-size column ("ES"). The measure is chosen automatically:
-#'   - Hedges' *g* (bias-corrected) â€” 2 groups, parametric (CI via
+#'   - Hedges' *g* (bias-corrected) - 2 groups, parametric (CI via
 #'     Hedges & Olkin approximation).
-#'   - Eta-squared (\eqn{\eta^2}) â€” 3+ groups, parametric (CI via
+#'   - Eta-squared (\eqn{\eta^2}) - 3+ groups, parametric (CI via
 #'     noncentral *F* distribution).
-#'   - Rank-biserial *r* (`r_rb`) â€” 2 groups, nonparametric (CI via
+#'   - Rank-biserial *r* (`r_rb`) - 2 groups, nonparametric (CI via
 #'     Fisher *z*-transform).
-#'   - Epsilon-squared (\eqn{\varepsilon^2}) â€” 3+ groups,
+#'   - Epsilon-squared (\eqn{\varepsilon^2}) - 3+ groups,
 #'     nonparametric (CI via percentile bootstrap, 2 000 replicates).
 #'
 #'   Defaults to `FALSE`. Ignored when `by` is not used.
@@ -1431,7 +1431,7 @@ export_desc_table <- function(
       # nocov start
       stop("Install package 'flextable'.", call. = FALSE)
     } # nocov end
-    if (!requireNamespace("officer", quietly = TRUE)) {
+    if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
       # nocov start
       stop("Install package 'officer'.", call. = FALSE)
     } # nocov end
@@ -1452,8 +1452,8 @@ export_desc_table <- function(
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
     ft <- flextable::merge_h(ft, part = "header")
 
-    bd <- officer::fp_border(color = "black", width = 1)
-    bd_light <- officer::fp_border(color = "#cccccc", width = 0.5)
+    bd <- spicy_fp_border(color = "black", width = 1)
+    bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
 
     ci_j <- which(col_keys %in% c("LL", "UL"))
     left_j <- if (has_group) 1:2 else 1L

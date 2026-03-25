@@ -1605,7 +1605,6 @@ test_that("table_continuous tinytable with effect_size works", {
 
 test_that("table_continuous flextable with effect_size works", {
   skip_if_not_installed("flextable")
-  skip_if_not_installed("officer")
   out <- table_continuous(
     iris,
     select = Sepal.Length,

@@ -73,13 +73,13 @@ used.}
 \item{effect_size}{Logical. If \code{TRUE} and \code{by} is used, adds an
 effect-size column ("ES"). The measure is chosen automatically:
 \itemize{
-\item Hedges' \emph{g} (bias-corrected) â€” 2 groups, parametric (CI via
+\item Hedges' \emph{g} (bias-corrected) - 2 groups, parametric (CI via
 Hedges & Olkin approximation).
-\item Eta-squared (\eqn{\eta^2}) â€” 3+ groups, parametric (CI via
+\item Eta-squared (\eqn{\eta^2}) - 3+ groups, parametric (CI via
 noncentral \emph{F} distribution).
-\item Rank-biserial \emph{r} (\code{r_rb}) â€” 2 groups, nonparametric (CI via
+\item Rank-biserial \emph{r} (\code{r_rb}) - 2 groups, nonparametric (CI via
 Fisher \emph{z}-transform).
-\item Epsilon-squared (\eqn{\varepsilon^2}) â€” 3+ groups,
+\item Epsilon-squared (\eqn{\varepsilon^2}) - 3+ groups,
 nonparametric (CI via percentile bootstrap, 2 000 replicates).
 }
 

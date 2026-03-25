@@ -882,9 +882,6 @@ table_categorical <- function(
       if (!requireNamespace("flextable", quietly = TRUE)) {
         stop("Install package 'flextable'.", call. = FALSE)
       }
-      if (!requireNamespace("officer", quietly = TRUE)) {
-        stop("Install package 'officer'.", call. = FALSE)
-      }
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
@@ -893,7 +890,7 @@ table_categorical <- function(
         check.names = FALSE
       )
       ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
-      bd <- officer::fp_border(color = "black", width = 1)
+      bd <- spicy_fp_border(color = "black", width = 1)
       ft <- flextable::align(ft, j = 1, part = "all", align = "left")
       ft <- flextable::align(ft, j = 2:ncol(df), part = "all", align = "right")
       ft <- flextable::hline_top(ft, part = "header", border = bd)
@@ -915,6 +912,9 @@ table_categorical <- function(
     if (output == "flextable") {
       ft <- build_flextable_oneway(report_wide_char)
       if (!is.null(word_path) && nzchar(word_path)) {
+        if (!requireNamespace("officer", quietly = TRUE)) {
+          stop("Install package 'officer'.", call. = FALSE)
+        }
         flextable::save_as_docx(ft, path = word_path)
       }
       return(ft)
@@ -1842,9 +1842,6 @@ table_categorical <- function(
     if (!requireNamespace("flextable", quietly = TRUE)) {
       stop("Install package 'flextable'.", call. = FALSE)
     }
-    if (!requireNamespace("officer", quietly = TRUE)) {
-      stop("Install package 'officer'.", call. = FALSE)
-    }
     ft <- flextable::flextable(df)
 
     map <- data.frame(
@@ -1857,7 +1854,7 @@ table_categorical <- function(
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
     ft <- flextable::merge_h(ft, part = "header")
 
-    bd <- officer::fp_border(color = "black", width = 1)
+    bd <- spicy_fp_border(color = "black", width = 1)
 
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
     ft <- flextable::align(ft, j = 2:ncol(df), part = "body", align = "right")
@@ -1889,6 +1886,9 @@ table_categorical <- function(
   if (output == "flextable") {
     ft <- build_flextable(merge_ci_inline(report_wide_char))
     if (!is.null(word_path) && nzchar(word_path)) {
+      if (!requireNamespace("officer", quietly = TRUE)) {
+        stop("Install package 'officer'.", call. = FALSE)
+      }
       flextable::save_as_docx(ft, path = word_path)
     }
     return(ft)
