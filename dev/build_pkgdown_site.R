@@ -12,6 +12,10 @@ legacy_pages <- c(
   "articles/table-apa",
   "reference/table_apa"
 )
+generated_reference_artifacts <- c(
+  "reference/table_continuous.docx",
+  "reference/table_continuous.xlsx"
+)
 
 internal_pages_pattern <- paste(internal_pages, collapse = "|")
 
@@ -39,6 +43,20 @@ remove_legacy_files <- function(legacy_pages, docs_dir = "docs") {
   ))
 
   existing_files <- html_md_files[file.exists(html_md_files)]
+
+  if (length(existing_files) > 0) {
+    unlink(existing_files)
+  }
+
+  invisible(existing_files)
+}
+
+remove_generated_reference_artifacts <- function(
+  generated_reference_artifacts,
+  docs_dir = "docs"
+) {
+  files <- file.path(docs_dir, generated_reference_artifacts)
+  existing_files <- files[file.exists(files)]
 
   if (length(existing_files) > 0) {
     unlink(existing_files)
@@ -149,6 +167,9 @@ pkgdown::build_site()
 
 removed_files <- remove_internal_files(internal_pages)
 removed_legacy_files <- remove_legacy_files(legacy_pages)
+removed_reference_artifacts <- remove_generated_reference_artifacts(
+  generated_reference_artifacts
+)
 clean_sitemap(internal_pages, legacy_pages)
 clean_search_index(internal_pages, legacy_pages)
 fix_html_encoding_artifacts()
@@ -160,4 +181,8 @@ message(
 message(
   "Removed legacy pkgdown pages: ",
   paste(basename(removed_legacy_files), collapse = ", ")
+)
+message(
+  "Removed generated reference artifacts: ",
+  paste(basename(removed_reference_artifacts), collapse = ", ")
 )

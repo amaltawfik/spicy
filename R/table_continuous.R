@@ -196,14 +196,14 @@
 #'     requireNamespace("officer", quietly = TRUE)) {
 #'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "word",
-#'              word_path = "table_continuous.docx")
+#'              word_path = tempfile(fileext = ".docx"))
 #' }
 #'
 #' # Excel output
 #' if (requireNamespace("openxlsx", quietly = TRUE)) {
 #'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "excel",
-#'              excel_path = "table_continuous.xlsx")
+#'              excel_path = tempfile(fileext = ".xlsx"))
 #' }
 #' }
 #'
