@@ -1,10 +1,17 @@
 # Categorical summary table
 
-`table_categorical()` builds a publication-ready table for one or many
-selected categorical variables. With `by`, it produces grouped
-cross-tabulation summaries using
-[`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-internally. Without `by`, it produces one-way frequency-style summaries.
+Builds a publication-ready frequency or cross-tabulation table for one
+or many categorical variables selected with tidyselect syntax.
+
+With `by`, produces grouped cross-tabulation summaries (using
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+internally) with Chi-squared *p*-values and optional association
+measures. Without `by`, produces one-way frequency-style summaries.
+
+Multiple output formats are available via `output`: a printed ASCII
+table (`"default"`), a wide or long numeric `data.frame`
+(`"data.frame"`, `"long"`), or publication-ready tables (`"tinytable"`,
+`"gt"`, `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
 
 ## Usage
 
@@ -28,10 +35,8 @@ table_categorical(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
-  output = c("wide", "default", "long", "tinytable", "gt", "flextable", "excel",
+  output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
-  styled = TRUE,
-  style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep(" ", 6),
   add_multilevel_header = TRUE,
@@ -61,7 +66,9 @@ table_categorical(
 
 - labels:
 
-  Optional character labels for `select` (same length).
+  An optional character vector of display labels for the variables named
+  in `select` (must be the same length and in the same order). When
+  `NULL` (the default), column names are used as-is.
 
 - levels_keep:
 
@@ -133,11 +140,11 @@ table_categorical(
 
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  If `TRUE`, includes the confidence interval. In data/export formats
-  (`wide`, `long`, `excel`, `clipboard`), two extra columns `CI lower`
-  and `CI upper` are added. In rendered formats (`gt`, `tinytable`,
-  `flextable`, `word`), the CI is shown inline as `.14 [.08, .19]` in
-  the association measure column. Defaults to `FALSE`.
+  If `TRUE`, includes the confidence interval of the association
+  measure. In data formats (`"data.frame"`, `"long"`, `"excel"`,
+  `"clipboard"`), two extra columns `CI lower` and `CI upper` are added.
+  In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`),
+  the CI is shown inline (e.g., `.14 [.08, .19]`). Defaults to `FALSE`.
 
 - decimal_mark:
 
@@ -145,20 +152,25 @@ table_categorical(
 
 - output:
 
-  Output format: `"wide"` (the default), `"default"` for an ASCII
-  console table, `"long"`, `"tinytable"`, `"gt"`, `"flextable"`,
-  `"excel"`, `"clipboard"`, `"word"`.
+  Output format. One of:
 
-- styled:
+  - `"default"` (a printed ASCII table, returned invisibly)
 
-  Logical. Used only when `output = "default"`. If `TRUE` (the default),
-  prints a styled ASCII table and returns it invisibly. If `FALSE`,
-  returns the underlying wide raw `data.frame`.
+  - `"data.frame"` (a wide numeric `data.frame`)
 
-- style:
+  - `"long"` (a long numeric `data.frame`)
 
-  `"auto"` (the default) to select by output type, `"raw"` for plain
-  outputs, `"report"` for formatted outputs.
+  - `"tinytable"` (requires `tinytable`)
+
+  - `"gt"` (requires `gt`)
+
+  - `"flextable"` (requires `flextable`)
+
+  - `"excel"` (requires `openxlsx`)
+
+  - `"clipboard"` (requires `clipr`)
+
+  - `"word"` (requires `flextable` and `officer`)
 
 - indent_text:
 
@@ -198,20 +210,21 @@ table_categorical(
 
 ## Value
 
-Depends on `output` and `style`:
+Depends on `output`:
 
-- `"default"` + `styled = TRUE`: prints a styled ASCII table and returns
-  the underlying data frame invisibly.
+- `"default"`: prints a styled ASCII table and returns the underlying
+  `data.frame` invisibly (S3 class `"spicy_categorical_table"`).
 
-- `"default"` + `styled = FALSE`: wide numeric data frame.
+- `"data.frame"`: a wide `data.frame` with one row per variable–level
+  combination. When `by` is used, the columns are `Variable`, `Level`,
+  and one pair of `n` / `\%` columns per group level (plus `Total` when
+  `include_total = TRUE`), followed by `Chi2`, `df`, `p`, and the
+  association measure column. When `by = NULL`, the columns are
+  `Variable`, `Level`, `n`, `\%`.
 
-- `"long"` + `"raw"`: long numeric data frame.
-
-- `"wide"` + `"raw"`: wide numeric data frame.
-
-- `"long"` + `"report"`: long formatted character data frame.
-
-- `"wide"` + `"report"`: wide formatted character data frame.
+- `"long"`: a long `data.frame` with columns `variable`, `level`,
+  `group`, `n`, `percent` (and `chi2`, `df`, `p`, association measure
+  columns when `by` is used).
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -222,41 +235,50 @@ Depends on `output` and `style`:
 - `"excel"` / `"word"`: writes to disk and returns the file path
   invisibly.
 
-- `"clipboard"`: copies the table and returns the text invisibly.
+- `"clipboard"`: copies the table and returns the display `data.frame`
+  invisibly.
 
 ## Details
 
-It supports raw data outputs (`wide`, `long`) and report-oriented
-outputs (`default`, `tinytable`, `gt`, `flextable`, `excel`,
-`clipboard`, `word`) with multi-level headers and, when `by` is used,
-p-values and optional association measures for publication tables and
-APA-style reporting workflows.
+When `by` is used, each selected variable is cross-tabulated against the
+grouping variable with
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+Chi-squared statistics, *p*-values, and the chosen association measure
+are reported for each variable.
 
 Optional output engines require suggested packages:
 
-- `tinytable` for `output = "tinytable"`
+- tinytable for `output = "tinytable"`
 
-- `gt` for `output = "gt"`
+- gt for `output = "gt"`
 
-- `flextable` for `output = "flextable"`
+- flextable for `output = "flextable"`
 
-- `flextable` + `officer` for `output = "word"`
+- flextable + officer for `output = "word"`
 
-- `openxlsx` for `output = "excel"`
+- openxlsx2 for `output = "excel"`
 
-- `clipr` for `output = "clipboard"`
+- clipr for `output = "clipboard"`
+
+## See also
+
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+for continuous variables;
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+for two-way cross-tabulations;
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) for
+one-way frequency tables.
 
 ## Examples
 
 ``` r
-# Raw long output
+# Long numeric output
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Current smoker", "Physical activity"),
-  output = "long",
-  style = "raw"
+  output = "long"
 )
 #>             variable level           group   n  pct            p Cramer's V
 #> 1     Current smoker    No Lower secondary 179 69.6 2.012877e-05  0.1356677
@@ -276,12 +298,11 @@ table_categorical(
 #> 15 Physical activity   Yes        Tertiary 237 59.2 8.333584e-12  0.2061986
 #> 16 Physical activity   Yes           Total 550 45.8 8.333584e-12  0.2061986
 
-# ASCII console output
+# ASCII console output (default)
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
-  by = sex,
-  output = "default"
+  by = sex
 )
 #> Categorical table by sex
 #> 
@@ -308,8 +329,7 @@ table_categorical(
 # One-way frequency-style table
 table_categorical(
   data = sochealth,
-  select = c(smoking, physical_activity),
-  output = "default"
+  select = c(smoking, physical_activity)
 )
 #> Categorical table
 #> 
@@ -323,38 +343,13 @@ table_categorical(
 #>    No                   │      650       54.2 
 #>    Yes                  │      550       45.8 
 
-# Keep missing values as an explicit level
-table_categorical(
-  data = sochealth,
-  select = income_group,
-  by = sex,
-  drop_na = FALSE,
-  output = "wide",
-  style = "report"
-)
-#>         Variable Female n Female % Male n Male % Total n Total %    p
-#> 1   income_group                                                 .698
-#> 2            Low      137     22.1    110   19.0     247    20.6     
-#> 3   Lower middle      198     31.9    190   32.8     388    32.3     
-#> 4   Upper middle      162     26.1    166   28.6     328    27.3     
-#> 5           High      114     18.4    105   18.1     219    18.2     
-#> 6      (Missing)        9      1.5      9    1.6      18     1.5     
-#>   Cramer's V
-#> 1        .04
-#> 2           
-#> 3           
-#> 4           
-#> 5           
-#> 6           
-
-# Raw wide output
+# Wide numeric data.frame
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Current smoker", "Physical activity"),
-  output = "wide",
-  style = "raw"
+  output = "data.frame"
 )
 #>            Variable Level Lower secondary n Lower secondary % Upper secondary n
 #> 1    Current smoker    No               179              69.6               415
@@ -381,8 +376,7 @@ table_categorical(
   weights = "weight",
   rescale = TRUE,
   simulate_p = FALSE,
-  output = "long",
-  style = "raw"
+  output = "long"
 )
 #>             variable level           group        n  pct            p
 #> 1     Current smoker    No Lower secondary 176.0000 69.0 2.306438e-05

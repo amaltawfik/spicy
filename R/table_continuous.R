@@ -1,13 +1,19 @@
 #' Continuous summary table
 #'
-#' `table_continuous()` builds a publication-ready table for one or many
-#' selected continuous variables. With `by`, it produces grouped descriptive
-#' summaries with optional group-comparison tests and effect sizes. Without
-#' `by`, it produces one-way descriptive summaries.
+#' @description
+#' Computes descriptive statistics (mean, SD, min, max, confidence interval
+#' of the mean, *n*) for one or many continuous variables selected with
+#' tidyselect syntax.
 #'
-#' It supports raw data outputs and report-oriented outputs (`default`,
-#' `tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`) for
-#' publication tables and APA-style reporting workflows.
+#' With `by`, produces grouped summaries with optional group-comparison
+#' tests (`test`), *p*-values (`p_value`), test statistics (`statistic`),
+#' and effect sizes (`effect_size` / `effect_size_ci`).
+#' Without `by`, produces one-way descriptive summaries.
+#'
+#' Multiple output formats are available via `output`: a printed ASCII
+#' table (`"default"`), a plain numeric `data.frame` (`"data.frame"`), or
+#' publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
+#' `"excel"`, `"clipboard"`, `"word"`).
 #'
 #' @param data A `data.frame`.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
@@ -69,16 +75,14 @@
 #' @param decimal_mark Character used as decimal separator.
 #'   Either `"."` (default) or `","`.
 #' @param output Output format. One of:
-#'   - `"default"` (a printed ASCII table)
+#'   - `"default"` (a printed ASCII table, returned invisibly)
+#'   - `"data.frame"` (a plain numeric `data.frame`)
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
 #'   - `"excel"` (requires `openxlsx`)
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
-#' @param styled Logical. If `TRUE` (the default), returns an S3 object
-#'   with a custom print method. If `FALSE`, returns a plain
-#'   `data.frame`.
 #' @param excel_path File path for `output = "excel"`.
 #' @param excel_sheet Sheet name for `output = "excel"`
 #'   (default: `"Descriptives"`).
@@ -88,91 +92,118 @@
 #' @param verbose Logical. If `TRUE`, prints messages about excluded
 #'   non-numeric columns (default: `FALSE`).
 #'
-#' @return
-#' When `styled = TRUE` (default) and `output = "default"`, prints a
-#' styled ASCII table and returns the underlying `data.frame` invisibly
-#' (with S3 class `"spicy_continuous_table"`).
-#' When `styled = FALSE`, returns a plain `data.frame` with columns:
-#' `variable`, `label`, `group` (if `by` is used),
-#' `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`.
-#' When `by` is used together with `p_value = TRUE`,
-#' `statistic = TRUE`, or `effect_size = TRUE`, columns `test_type`,
-#' `statistic`, `df1`, `df2`, and `p.value` are appended (populated on
-#' the first row of each variable block only). `test_type` records the
-#' test that was run (e.g., `"welch_t"`, `"welch_anova"`, `"student_t"`,
-#' `"anova"`, `"wilcoxon"`, `"kruskal"`).
-#' When `effect_size = TRUE` and `by` is used, columns `es_type`,
-#' `es_value`, `es_ci_lower`, and `es_ci_upper` are appended
-#' (populated on the first row of each variable block only).
-#' `es_type` records the measure used (`"hedges_g"`, `"eta_sq"`,
-#' `"r_rb"`, or `"epsilon_sq"`).
+#' @return Depends on `output`:
+#' \itemize{
+#'   \item `"default"`: prints a styled ASCII table and returns the
+#'     underlying `data.frame` invisibly (S3 class
+#'     `"spicy_continuous_table"`).
+#'   \item `"data.frame"`: a plain `data.frame` with columns
+#'     `variable`, `label`, `group` (when `by` is used), `mean`, `sd`,
+#'     `min`, `max`, `ci_lower`, `ci_upper`, `n`.
+#'     When `by` is used together with `p_value = TRUE`,
+#'     `statistic = TRUE`, or `effect_size = TRUE`, additional columns
+#'     are appended (populated on the first row of each variable block
+#'     only):
+#'     \itemize{
+#'       \item `test_type` -- test identifier (e.g., `"welch_t"`,
+#'         `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
+#'         `"kruskal"`).
+#'       \item `statistic`, `df1`, `df2`, `p.value` -- test results.
+#'       \item `es_type` -- effect-size identifier (`"hedges_g"`,
+#'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), when
+#'         `effect_size = TRUE`.
+#'       \item `es_value`, `es_ci_lower`, `es_ci_upper` -- effect-size
+#'         estimate and confidence interval bounds.
+#'     }
+#'   \item `"tinytable"`: a `tinytable` object.
+#'   \item `"gt"`: a `gt_tbl` object.
+#'   \item `"flextable"`: a `flextable` object.
+#'   \item `"excel"` / `"word"`: writes to disk and returns the file
+#'     path invisibly.
+#'   \item `"clipboard"`: copies the table and returns the display
+#'     `data.frame` invisibly.
+#' }
 #'
-#' For other `output` values: `"tinytable"`, `"gt"`, and `"flextable"`
-#' return their respective table objects. `"excel"` and `"word"` write
-#' to disk and return the file path invisibly. `"clipboard"` copies the
-#' table and returns the display `data.frame` invisibly.
+#' @details
+#' Non-numeric columns are silently dropped (set `verbose = TRUE` to see
+#' which columns were excluded). When a single constant column is passed,
+#' SD and CI are shown as `"--"` in the ASCII table.
+#'
+#' Optional output engines require suggested packages:
+#' \itemize{
+#'   \item \pkg{tinytable} for `output = "tinytable"`
+#'   \item \pkg{gt} for `output = "gt"`
+#'   \item \pkg{flextable} for `output = "flextable"`
+#'   \item \pkg{flextable} + \pkg{officer} for `output = "word"`
+#'   \item \pkg{openxlsx2} for `output = "excel"`
+#'   \item \pkg{clipr} for `output = "clipboard"`
+#' }
+#'
+#' @seealso [table_categorical()] for categorical variables;
+#'   [freq()] for one-way frequency tables; [cross_tab()] for two-way
+#'   cross-tabulations.
 #'
 #' @examples
 #' # Basic usage with all numeric columns
-#' table_continuous(iris, styled = FALSE)
+#' table_continuous(iris, output = "data.frame")
 #'
 #' # Select specific columns with tidyselect
-#' table_continuous(iris, select = c(Sepal.Length, Petal.Width), styled = FALSE)
+#' table_continuous(iris, select = c(Sepal.Length, Petal.Width), output = "data.frame")
 #'
 #' # Grouped descriptives
 #' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, styled = FALSE)
+#'            by = Species, output = "data.frame")
 #'
 #' # Grouped descriptives with p-value
 #' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, p_value = TRUE, styled = FALSE)
+#'            by = Species, p_value = TRUE, output = "data.frame")
 #'
 #' # Grouped descriptives with test statistic only
 #' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, statistic = TRUE, styled = FALSE)
+#'            by = Species, statistic = TRUE, output = "data.frame")
 #'
 #' # Grouped descriptives with both p-value and test statistic
 #' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 #'            by = Species, p_value = TRUE, statistic = TRUE,
-#'            styled = FALSE)
+#'            output = "data.frame")
 #'
 #' # Student t-test / classic ANOVA (assumes equal variances)
 #' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            test = "student", p_value = TRUE, styled = FALSE)
+#'            test = "student", p_value = TRUE, output = "data.frame")
 #'
 #' # Nonparametric test (Kruskal-Wallis for 3+ groups)
 #' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            test = "nonparametric", p_value = TRUE,
-#'            statistic = TRUE, styled = FALSE)
+#'            statistic = TRUE, output = "data.frame")
 #'
 #' # Effect size (eta-squared for 3 groups)
 #' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            effect_size = TRUE, styled = FALSE)
+#'            effect_size = TRUE, output = "data.frame")
 #'
 #' # Effect size with confidence interval
 #' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            p_value = TRUE, effect_size_ci = TRUE,
-#'            styled = FALSE)
+#'            output = "data.frame")
 #'
 #' # Nonparametric effect size (epsilon-squared with bootstrap CI)
 #' table_continuous(iris, select = Sepal.Length, by = Species,
 #'            test = "nonparametric", effect_size_ci = TRUE,
-#'            styled = FALSE)
+#'            output = "data.frame")
 #'
 #' # Hedges' g for 2 groups
 #' table_continuous(iris[iris$Species != "virginica", ],
 #'            select = Sepal.Length, by = Species,
-#'            effect_size_ci = TRUE, styled = FALSE)
+#'            effect_size_ci = TRUE, output = "data.frame")
 #'
 #' # Regex column selection
-#' table_continuous(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
+#' table_continuous(iris, select = "^Sepal", regex = TRUE, output = "data.frame")
 #'
 #' # Custom labels
 #' table_continuous(iris,
 #'            select = c(Sepal.Length, Petal.Length),
 #'            labels = c(Sepal.Length = "Sepal length (cm)",
 #'                       Petal.Length = "Petal length (cm)"),
-#'            styled = FALSE)
+#'            output = "data.frame")
 #'
 #' \donttest{
 #' # ASCII table (default)
@@ -239,6 +270,7 @@ table_continuous <- function(
   decimal_mark = ".",
   output = c(
     "default",
+    "data.frame",
     "tinytable",
     "gt",
     "flextable",
@@ -246,7 +278,6 @@ table_continuous <- function(
     "clipboard",
     "word"
   ),
-  styled = TRUE,
   excel_path = NULL,
   excel_sheet = "Descriptives",
   clipboard_delim = "\t",
@@ -287,7 +318,6 @@ table_continuous <- function(
     "effect_size",
     "effect_size_ci",
     "regex",
-    "styled",
     "verbose"
   )) {
     .lval <- get(.lname)
@@ -298,8 +328,6 @@ table_continuous <- function(
   output <- match.arg(output)
   test_explicit <- !missing(test)
   test <- match.arg(test)
-
-  data_name <- deparse(substitute(data))
 
   # --- by (grouping) handling ---
   group_quo <- rlang::enquo(by)
@@ -590,13 +618,17 @@ table_continuous <- function(
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
   attr(result, "decimal_mark") <- decimal_mark
-  attr(result, "data_name") <- data_name
   attr(result, "group_var") <- group_col_name
   attr(result, "test") <- if (do_test) test else NA_character_
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
   attr(result, "show_effect_size") <- effect_size && has_group
   attr(result, "show_effect_size_ci") <- effect_size_ci && has_group
+
+  # --- plain data.frame return ---
+  if (output == "data.frame") {
+    return(result)
+  }
 
   # --- raw return for non-default outputs ---
   if (output != "default") {
@@ -625,14 +657,8 @@ table_continuous <- function(
     )
   }
 
-  # --- styled / plain return ---
+  # --- return ---
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
-
-  if (!styled) {
-    class(result) <- "data.frame"
-    return(result)
-  }
-
   print(result)
   invisible(result)
 }

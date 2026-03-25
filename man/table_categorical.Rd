@@ -23,10 +23,8 @@ table_categorical(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
-  output = c("wide", "default", "long", "tinytable", "gt", "flextable", "excel",
+  output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
-  styled = TRUE,
-  style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep(" ", 6),
   add_multilevel_header = TRUE,
@@ -46,7 +44,9 @@ syntax and character vectors of column names.}
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name.}
 
-\item{labels}{Optional character labels for \code{select} (same length).}
+\item{labels}{An optional character vector of display labels for the
+variables named in \code{select} (must be the same length and in the same
+order). When \code{NULL} (the default), column names are used as-is.}
 
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept.}
@@ -90,24 +90,27 @@ to report (\code{"auto"}, \code{"cramer_v"}, \code{"phi"}, \code{"gamma"}, \code
 \code{"tau_c"}, \code{"somers_d"}, \code{"lambda"}, \code{"none"}). Defaults to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
-confidence interval. In data/export formats (\code{wide}, \code{long}, \code{excel},
-\code{clipboard}), two extra columns \verb{CI lower} and \verb{CI upper} are added.
-In rendered formats (\code{gt}, \code{tinytable}, \code{flextable}, \code{word}), the CI
-is shown inline as \code{.14 [.08, .19]} in the association measure column.
+confidence interval of the association measure. In data formats
+(\code{"data.frame"}, \code{"long"}, \code{"excel"}, \code{"clipboard"}), two extra
+columns \verb{CI lower} and \verb{CI upper} are added.
+In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}),
+the CI is shown inline (e.g., \code{.14 [.08, .19]}).
 Defaults to \code{FALSE}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
-\item{output}{Output format: \code{"wide"} (the default), \code{"default"} for an
-ASCII console table, \code{"long"}, \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}.}
-
-\item{styled}{Logical. Used only when \code{output = "default"}. If \code{TRUE} (the
-default), prints a styled ASCII table and returns it invisibly. If
-\code{FALSE}, returns the underlying wide raw \code{data.frame}.}
-
-\item{style}{\code{"auto"} (the default) to select by output type, \code{"raw"} for
-plain outputs, \code{"report"} for formatted outputs.}
+\item{output}{Output format. One of:
+\itemize{
+\item \code{"default"} (a printed ASCII table, returned invisibly)
+\item \code{"data.frame"} (a wide numeric \code{data.frame})
+\item \code{"long"} (a long numeric \code{data.frame})
+\item \code{"tinytable"} (requires \code{tinytable})
+\item \code{"gt"} (requires \code{gt})
+\item \code{"flextable"} (requires \code{flextable})
+\item \code{"excel"} (requires \code{openxlsx})
+\item \code{"clipboard"} (requires \code{clipr})
+\item \code{"word"} (requires \code{flextable} and \code{officer})
+}}
 
 \item{indent_text}{Prefix used for modality labels in report table building.
 Defaults to \code{"  "} (two spaces).}
@@ -131,89 +134,91 @@ as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 \code{output = "flextable"}. Defaults to \code{NULL}.}
 }
 \value{
-Depends on \code{output} and \code{style}:
+Depends on \code{output}:
 \itemize{
-\item \code{"default"} + \code{styled = TRUE}: prints a styled ASCII table and returns
-the underlying data frame invisibly.
-\item \code{"default"} + \code{styled = FALSE}: wide numeric data frame.
-\item \code{"long"} + \code{"raw"}: long numeric data frame.
-\item \code{"wide"} + \code{"raw"}: wide numeric data frame.
-\item \code{"long"} + \code{"report"}: long formatted character data frame.
-\item \code{"wide"} + \code{"report"}: wide formatted character data frame.
+\item \code{"default"}: prints a styled ASCII table and returns the
+underlying \code{data.frame} invisibly (S3 class
+\code{"spicy_categorical_table"}).
+\item \code{"data.frame"}: a wide \code{data.frame} with one row per
+variable--level combination.
+When \code{by} is used, the columns are \code{Variable}, \code{Level}, and one
+pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
+\code{include_total = TRUE}), followed by \code{Chi2}, \code{df}, \code{p}, and the
+association measure column.
+When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
+\item \code{"long"}: a long \code{data.frame} with columns \code{variable},
+\code{level}, \code{group}, \code{n}, \code{percent} (and \code{chi2}, \code{df}, \code{p},
+association measure columns when \code{by} is used).
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
-\item \code{"excel"} / \code{"word"}: writes to disk and returns the file path invisibly.
-\item \code{"clipboard"}: copies the table and returns the text invisibly.
+\item \code{"excel"} / \code{"word"}: writes to disk and returns the file
+path invisibly.
+\item \code{"clipboard"}: copies the table and returns the display
+\code{data.frame} invisibly.
 }
 }
 \description{
-\code{table_categorical()} builds a publication-ready table for one or many
-selected categorical variables. With \code{by}, it produces grouped
-cross-tabulation summaries using \code{spicy::cross_tab()} internally. Without
-\code{by}, it produces one-way frequency-style summaries.
+Builds a publication-ready frequency or cross-tabulation table for one
+or many categorical variables selected with tidyselect syntax.
+
+With \code{by}, produces grouped cross-tabulation summaries (using
+\code{\link[=cross_tab]{cross_tab()}} internally) with Chi-squared \emph{p}-values and optional
+association measures.
+Without \code{by}, produces one-way frequency-style summaries.
+
+Multiple output formats are available via \code{output}: a printed ASCII
+table (\code{"default"}), a wide or long numeric \code{data.frame}
+(\code{"data.frame"}, \code{"long"}), or publication-ready tables
+(\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, \code{"excel"}, \code{"clipboard"},
+\code{"word"}).
 }
 \details{
-It supports raw data outputs (\code{wide}, \code{long}) and report-oriented outputs
-(\code{default}, \code{tinytable}, \code{gt}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word})
-with multi-level headers and, when \code{by} is used, p-values and optional
-association measures for publication tables and APA-style reporting
-workflows.
+When \code{by} is used, each selected variable is cross-tabulated against
+the grouping variable with \code{\link[=cross_tab]{cross_tab()}}. Chi-squared statistics,
+\emph{p}-values, and the chosen association measure are reported for each
+variable.
 
 Optional output engines require suggested packages:
 \itemize{
-\item \code{tinytable} for \code{output = "tinytable"}
-\item \code{gt} for \code{output = "gt"}
-\item \code{flextable} for \code{output = "flextable"}
-\item \code{flextable} + \code{officer} for \code{output = "word"}
-\item \code{openxlsx} for \code{output = "excel"}
-\item \code{clipr} for \code{output = "clipboard"}
+\item \pkg{tinytable} for \code{output = "tinytable"}
+\item \pkg{gt} for \code{output = "gt"}
+\item \pkg{flextable} for \code{output = "flextable"}
+\item \pkg{flextable} + \pkg{officer} for \code{output = "word"}
+\item \pkg{openxlsx2} for \code{output = "excel"}
+\item \pkg{clipr} for \code{output = "clipboard"}
 }
 }
 \examples{
-# Raw long output
+# Long numeric output
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Current smoker", "Physical activity"),
-  output = "long",
-  style = "raw"
+  output = "long"
 )
 
-# ASCII console output
+# ASCII console output (default)
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
-  by = sex,
-  output = "default"
+  by = sex
 )
 
 # One-way frequency-style table
 table_categorical(
   data = sochealth,
-  select = c(smoking, physical_activity),
-  output = "default"
+  select = c(smoking, physical_activity)
 )
 
-# Keep missing values as an explicit level
-table_categorical(
-  data = sochealth,
-  select = income_group,
-  by = sex,
-  drop_na = FALSE,
-  output = "wide",
-  style = "report"
-)
-
-# Raw wide output
+# Wide numeric data.frame
 table_categorical(
   data = sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Current smoker", "Physical activity"),
-  output = "wide",
-  style = "raw"
+  output = "data.frame"
 )
 
 # Weighted example
@@ -225,8 +230,7 @@ table_categorical(
   weights = "weight",
   rescale = TRUE,
   simulate_p = FALSE,
-  output = "long",
-  style = "raw"
+  output = "long"
 )
 
 \donttest{
@@ -253,4 +257,10 @@ if (requireNamespace("openxlsx", quietly = TRUE)) {
   )
 }
 }
+
+}
+\seealso{
+\code{\link[=table_continuous]{table_continuous()}} for continuous variables;
+\code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations; \code{\link[=freq]{freq()}} for one-way
+frequency tables.
 }

@@ -107,8 +107,8 @@ table_continuous(
 )
 ```
 
-When you need the underlying columns for further processing, set
-`styled = FALSE`:
+When you need the underlying columns for further processing, use
+`output = "data.frame"`:
 
 ```{r raw-output}
 table_continuous(
@@ -118,7 +118,7 @@ table_continuous(
   p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE,
-  styled = FALSE
+  output = "data.frame"
 )
 ```
 
@@ -142,7 +142,7 @@ table_continuous(
   select = "^life_sat",
   regex = TRUE,
   by = education,
-  styled = FALSE
+  output = "data.frame"
 )
 ```
 

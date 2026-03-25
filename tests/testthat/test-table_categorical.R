@@ -24,8 +24,7 @@ test_that("table_categorical returns expected long raw structure", {
     labels = c("Var 1", "Var 2"),
     include_total = TRUE,
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_s3_class(out, "data.frame")
@@ -50,8 +49,7 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
     labels = "Var 1",
     weights = "w",
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   out_vec <- table_categorical(
@@ -61,8 +59,7 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
     labels = "Var 1",
     weights = df$w,
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_equal(out_col$n, out_vec$n)
@@ -84,8 +81,7 @@ test_that("table_categorical accepts weights as an unquoted column name", {
       labels = "Var 1",
       weights = w,
       simulate_p = FALSE,
-      output = "long",
-      style = "raw"
+      output = "long"
     )
   )
 
@@ -96,8 +92,7 @@ test_that("table_categorical accepts weights as an unquoted column name", {
     labels = "Var 1",
     weights = "w",
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_equal(out_bare$n, out_char$n)
@@ -115,8 +110,7 @@ test_that("table_categorical accepts tidyselect-style select and unquoted by", {
     data = df,
     select = tidyselect::starts_with("v"),
     by = grp,
-    output = "wide",
-    style = "raw"
+    output = "data.frame"
   )
 
   expect_true(all(c("v1", "v2") %in% out$Variable))
@@ -134,8 +128,7 @@ test_that("table_categorical accepts by as a character object", {
       data = df,
       select = "v1",
       by = by_col,
-      output = "wide",
-      style = "raw"
+      output = "data.frame"
     )
   )
 
@@ -171,8 +164,7 @@ test_that("table_categorical works without by in long raw output", {
     data = df,
     select = c(v1, v2),
     drop_na = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_true(all(c("variable", "level", "n", "pct") %in% names(out)))
@@ -187,8 +179,7 @@ test_that("table_categorical renames generated missing labels when needed", {
     data = df,
     select = v1,
     drop_na = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_true("(Missing)" %in% out$level)
@@ -202,20 +193,18 @@ test_that("table_categorical handles one-way empty results after dropping missin
     data = df,
     select = v1,
     drop_na = TRUE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   out_wide <- table_categorical(
     data = df,
     select = v1,
     drop_na = TRUE,
-    output = "wide",
-    style = "report"
+    output = "data.frame"
   )
 
   expect_equal(nrow(out_long), 0L)
   expect_equal(nrow(out_wide), 0L)
-  expect_named(out_wide, c("Variable", "n", "%"))
+  expect_named(out_wide, c("Variable", "Level", "n", "%"))
 })
 
 test_that("table_categorical handles grouped empty results after dropping missing", {
@@ -229,24 +218,21 @@ test_that("table_categorical handles grouped empty results after dropping missin
     select = v1,
     by = grp,
     drop_na = TRUE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   out_wide <- table_categorical(
     data = df,
     select = v1,
     by = grp,
     drop_na = TRUE,
-    output = "wide",
-    style = "report"
+    output = "data.frame"
   )
   out_default <- table_categorical(
     data = df,
     select = v1,
     by = grp,
     drop_na = TRUE,
-    output = "default",
-    styled = FALSE
+    output = "data.frame"
   )
 
   expect_equal(nrow(out_long), 0L)
@@ -268,8 +254,7 @@ test_that("table_categorical warns about ignored grouped options without by", {
       simulate_p = TRUE,
       assoc_measure = "phi",
       assoc_ci = TRUE,
-      output = "long",
-      style = "raw"
+      output = "long"
     )
   )
 
@@ -294,12 +279,11 @@ test_that("table_categorical default output prints ASCII and returns styled obje
   expect_s3_class(out, "spicy_categorical_table")
 })
 
-test_that("table_categorical default output with styled = FALSE returns wide raw data", {
+test_that("table_categorical default output with output = 'data.frame' returns wide raw data", {
   out <- table_categorical(
     sochealth,
     select = smoking,
-    output = "default",
-    styled = FALSE
+    output = "data.frame"
   )
 
   expect_s3_class(out, "data.frame")
@@ -319,8 +303,7 @@ test_that("table_categorical validates weights and simulate_B", {
       by = "grp",
       labels = "Var 1",
       weights = c(1, 2),
-      output = "long",
-      style = "raw"
+      output = "long"
     ),
     "Numeric `weights` must have length `nrow(data)`.",
     fixed = TRUE
@@ -333,8 +316,7 @@ test_that("table_categorical validates weights and simulate_B", {
       by = "grp",
       labels = "Var 1",
       simulate_B = 0,
-      output = "long",
-      style = "raw"
+      output = "long"
     ),
     "`simulate_B` must be a positive integer.",
     fixed = TRUE
@@ -355,8 +337,7 @@ test_that("table_categorical keeps missing values as explicit levels when drop_n
     labels = "Var 1",
     drop_na = FALSE,
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   out_drop <- table_categorical(
@@ -366,8 +347,7 @@ test_that("table_categorical keeps missing values as explicit levels when drop_n
     labels = "Var 1",
     drop_na = TRUE,
     simulate_p = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   expect_true(any(grepl("^\\(Missing", out_keep$level)))
@@ -514,8 +494,7 @@ test_that("table_categorical default column is Cramer's V", {
     "v1",
     "grp",
     labels = "Var 1",
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_true("Cramer's V" %in% names(out))
 })
@@ -526,8 +505,7 @@ test_that("table_categorical drops association column when assoc_measure is none
     select = smoking,
     by = education,
     assoc_measure = "none",
-    output = "long",
-    style = "raw"
+    output = "long"
   )
 
   out_wide <- table_categorical(
@@ -535,8 +513,7 @@ test_that("table_categorical drops association column when assoc_measure is none
     select = smoking,
     by = education,
     assoc_measure = "none",
-    output = "wide",
-    style = "report"
+    output = "data.frame"
   )
 
   expect_false("Cramer's V" %in% names(out_long))
@@ -556,28 +533,10 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     "grp",
     labels = "Var 1",
     assoc_measure = "gamma",
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_true("Goodman-Kruskal Gamma" %in% names(out))
   expect_false("Cramer's V" %in% names(out))
-})
-
-test_that("table_categorical wide report has dynamic column name", {
-  df <- data.frame(
-    grp = factor(c("A", "A", "B", "B", "A", "B")),
-    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
-  )
-  out <- table_categorical(
-    df,
-    "v1",
-    "grp",
-    labels = "Var 1",
-    assoc_measure = "tau_b",
-    output = "wide",
-    style = "report"
-  )
-  expect_true("Kendall's Tau-b" %in% names(out))
 })
 
 test_that("assoc_ci adds CI columns in wide raw output", {
@@ -585,8 +544,7 @@ test_that("assoc_ci adds CI columns in wide raw output", {
     sochealth,
     "smoking",
     "education",
-    output = "wide",
-    style = "raw",
+    output = "data.frame",
     assoc_ci = TRUE
   )
   expect_true("CI lower" %in% names(out))
@@ -600,8 +558,7 @@ test_that("assoc_ci = FALSE omits CI columns in wide raw output", {
     sochealth,
     "smoking",
     "education",
-    output = "wide",
-    style = "raw",
+    output = "data.frame",
     assoc_ci = FALSE
   )
   expect_false("CI lower" %in% names(out))
@@ -614,7 +571,6 @@ test_that("assoc_ci adds CI columns in long raw output", {
     "smoking",
     "education",
     output = "long",
-    style = "raw",
     assoc_ci = TRUE
   )
   expect_true("ci_lower" %in% names(out))
@@ -635,36 +591,6 @@ test_that("assoc_ci shows inline CI in rendered formats", {
   expect_match(dat$assoc_col[1], "\\[")
   expect_false("CI lower" %in% names(dat))
 })
-
-test_that("assoc_ci adds formatted CI columns in wide report", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    output = "wide",
-    style = "report",
-    assoc_ci = TRUE
-  )
-  expect_true("CI lower" %in% names(out))
-  expect_true("CI upper" %in% names(out))
-  expect_match(out[["CI lower"]][1], "^\\.")
-})
-
-# Ã¢â€â‚¬Ã¢â€â‚¬ Long report output Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-
-test_that("table_categorical long report returns formatted character columns", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    output = "long",
-    style = "report"
-  )
-  expect_s3_class(out, "data.frame")
-  expect_type(out$n, "character")
-  expect_type(out$pct, "character")
-})
-
 # Ã¢â€â‚¬Ã¢â€â‚¬ levels_keep Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 test_that("table_categorical levels_keep filters and reorders levels", {
@@ -673,8 +599,7 @@ test_that("table_categorical levels_keep filters and reorders levels", {
     "smoking",
     "education",
     levels_keep = c("Yes"),
-    output = "wide",
-    style = "raw"
+    output = "data.frame"
   )
   expect_true(all(out$Level == "Yes", na.rm = TRUE))
 })
@@ -686,29 +611,11 @@ test_that("table_categorical levels_keep with (Missing)", {
     "education",
     drop_na = FALSE,
     levels_keep = c("Low", "High", "(Missing)"),
-    output = "wide",
-    style = "raw"
+    output = "data.frame"
   )
   lvls <- out$Level[!is.na(out$Level) & out$Level != ""]
   expect_equal(lvls, c("Low", "High", "(Missing)"))
 })
-
-# Ã¢â€â‚¬Ã¢â€â‚¬ decimal_mark Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-
-test_that("table_categorical decimal_mark = ',' uses comma separator", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    decimal_mark = ",",
-    output = "wide",
-    style = "report"
-  )
-  pct_col <- out[[grep("%$", names(out))[1]]]
-  pct_vals <- pct_col[!is.na(pct_col) & pct_col != ""]
-  expect_true(any(grepl(",", pct_vals)))
-})
-
 # Ã¢â€â‚¬Ã¢â€â‚¬ blank_na_wide Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 test_that("table_categorical blank_na_wide replaces NA with empty strings", {
@@ -716,8 +623,7 @@ test_that("table_categorical blank_na_wide replaces NA with empty strings", {
     sochealth,
     "smoking",
     "education",
-    output = "wide",
-    style = "raw",
+    output = "data.frame",
     blank_na_wide = TRUE
   )
   chr_cols <- vapply(out, is.character, logical(1))
@@ -822,7 +728,7 @@ test_that("table_categorical validates weights column name", {
 test_that("table_categorical warns when rescale = TRUE without weights", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_warning(
-    table_categorical(df, "v", "g", rescale = TRUE, output = "wide"),
+    table_categorical(df, "v", "g", rescale = TRUE, output = "data.frame"),
     "rescale = TRUE.*no effect"
   )
 })
@@ -834,8 +740,7 @@ test_that("table_categorical handles multiple select in wide output", {
     sochealth,
     c(smoking, physical_activity),
     education,
-    output = "wide",
-    style = "raw"
+    output = "data.frame"
   )
   expect_true(all(c("smoking", "physical_activity") %in% out$Variable))
 })
@@ -848,8 +753,7 @@ test_that("table_categorical include_total = FALSE omits Total column", {
     "smoking",
     "education",
     include_total = FALSE,
-    output = "wide",
-    style = "raw"
+    output = "data.frame"
   )
   expect_false(any(grepl("^Total", names(out))))
 })
@@ -957,63 +861,19 @@ test_that("table_categorical assoc_measure = 'none' omits association column", {
     "smoking",
     "education",
     assoc_measure = "none",
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_false("Cramer's V" %in% names(out))
 })
-
-# Ã¢â€â‚¬Ã¢â€â‚¬ Report mode (no rendering dependency) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-
-test_that("table_categorical long report has formatted values", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    output = "long",
-    style = "report"
-  )
-  expect_s3_class(out, "data.frame")
-  expect_true("variable" %in% names(out))
-  expect_true(is.character(out$pct))
-})
-
 test_that("table_categorical with assoc_ci includes CI columns in raw long", {
   out <- table_categorical(
     sochealth,
     "smoking",
     "education",
     assoc_ci = TRUE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_true("CI lower" %in% names(out) || "ci_lower" %in% names(out))
-})
-
-test_that("table_categorical fmt_p formats small p-values", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    output = "long",
-    style = "report"
-  )
-  p_col <- out$p
-  p_vals <- p_col[p_col != "" & !is.na(p_col)]
-  expect_true(length(p_vals) > 0)
-})
-
-test_that("table_categorical decimal_mark comma in long report output", {
-  out <- table_categorical(
-    sochealth,
-    "smoking",
-    "education",
-    decimal_mark = ",",
-    output = "long",
-    style = "report"
-  )
-  pct_vals <- out$pct[out$pct != "" & !is.na(out$pct)]
-  expect_true(any(grepl(",", pct_vals)))
 })
 
 test_that("table_categorical simulate_p works in long output", {
@@ -1022,8 +882,7 @@ test_that("table_categorical simulate_p works in long output", {
     "smoking",
     "education",
     simulate_p = TRUE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_s3_class(out, "data.frame")
   expect_true(nrow(out) > 0)
@@ -1037,8 +896,7 @@ test_that("table_categorical with drop_na = FALSE includes Missing level", {
     "smoking",
     "education",
     drop_na = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   expect_true(any(grepl("Missing", out$level)))
 })
@@ -1080,8 +938,7 @@ test_that("table_categorical preserves factor level order in row variables", {
     "v1",
     "grp",
     include_total = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   lvs <- unique(out$level)
   expect_equal(lvs, c("Low", "Medium", "High"))
@@ -1101,8 +958,7 @@ test_that("table_categorical places (Missing) at end when drop_na = FALSE", {
     "grp",
     drop_na = FALSE,
     include_total = FALSE,
-    output = "long",
-    style = "raw"
+    output = "long"
   )
   lvs <- unique(out$level)
   expect_equal(lvs, c("Yes", "No", "(Missing)"))
@@ -1119,8 +975,7 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
       "v1",
       "grp",
       rescale = TRUE,
-      output = "long",
-      style = "raw"
+      output = "long"
     ),
     warning = function(w) w
   )
@@ -1136,7 +991,7 @@ test_that("grouped table with empty data returns character(0) columns", {
     g = factor(levels = c("A", "B")),
     stringsAsFactors = FALSE
   )
-  out <- table_categorical(df, select = "x", by = "g", styled = FALSE)
+  out <- table_categorical(df, select = "x", by = "g", output = "data.frame")
   # All columns should be character, not logical
   col_types <- vapply(out, typeof, character(1))
   expect_true(all(col_types == "character"))
@@ -1160,4 +1015,483 @@ test_that("table_categorical gt output omits association header when assoc_measu
   expect_false(any(boxhead$var == "assoc_col"))
   expect_false(any(spanners$spanner_id == "spn_assoc"))
   expect_false(any(spanners$spanner_label == "Cramer's V"))
+})
+
+# --- Coverage tests: uncovered paths ---
+
+test_that("table_categorical errors when select matches no columns", {
+  df <- data.frame(a = 1:3, b = 4:6)
+  expect_error(
+    table_categorical(df, select = c(nonexistent_col)),
+    "select"
+  )
+})
+
+test_that("table_categorical one-way with weights", {
+  df <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    w = c(2, 1, 3, 1, 2)
+  )
+  out <- table_categorical(df, select = x, weights = w, output = "data.frame")
+  expect_s3_class(out, "data.frame")
+  expect_true(all(c("Variable", "Level", "n", "%") %in% names(out)))
+  # Weighted n should reflect weights
+  expect_equal(sum(out$n), sum(df$w))
+})
+
+test_that("table_categorical one-way with levels_keep filters levels", {
+  df <- data.frame(
+    x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
+  )
+  out <- table_categorical(
+    df, select = x, levels_keep = c("B", "A"), output = "data.frame"
+  )
+  expect_equal(as.character(out$Level), c("B", "A"))
+})
+
+test_that("table_categorical one-way with levels_keep and long output", {
+  df <- data.frame(
+    x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
+  )
+  out <- table_categorical(
+    df, select = x, levels_keep = c("B", "C"), output = "long"
+  )
+  expect_true(all(out$level %in% c("B", "C")))
+})
+
+test_that("table_categorical one-way with decimal_mark comma", {
+  df <- data.frame(x = factor(c("A", "B", "A", "B", "A")))
+  out <- table_categorical(
+    df, select = x, decimal_mark = ",", output = "default"
+  )
+  disp <- attr(out, "display_df")
+  # Percentages should use comma as decimal separator
+  pct_col <- disp[["%"]]
+  expect_true(any(grepl(",", pct_col)))
+})
+
+test_that("table_categorical one-way with blank_na_wide", {
+  df <- data.frame(
+    x = factor(c("A", NA, "B", NA)),
+    y = factor(c("C", "D", NA, NA))
+  )
+  out <- table_categorical(
+    df, select = c(x, y), drop_na = TRUE,
+    blank_na_wide = TRUE, output = "data.frame"
+  )
+  expect_s3_class(out, "data.frame")
+})
+
+test_that("table_categorical one-way empty after dropping NA produces 0-row data.frame", {
+  df <- data.frame(x = factor(c(NA, NA, NA)))
+  out_wide <- table_categorical(df, select = x, drop_na = TRUE, output = "data.frame")
+  expect_equal(nrow(out_wide), 0L)
+  out_long <- table_categorical(df, select = x, drop_na = TRUE, output = "long")
+  expect_equal(nrow(out_long), 0L)
+})
+
+test_that("table_categorical grouped default output prints and returns invisibly", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex
+  )
+  expect_s3_class(out, "spicy_categorical_table")
+  expect_equal(attr(out, "group_var"), "sex")
+})
+
+test_that("table_categorical grouped with levels_keep filters levels", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    levels_keep = c("Yes"),
+    output = "data.frame"
+  )
+  out_long <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    levels_keep = c("Yes"),
+    output = "long"
+  )
+  expect_true(all(out_long$level == "Yes"))
+})
+
+test_that("table_categorical grouped with assoc_measure = none", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    assoc_measure = "none",
+    output = "long"
+  )
+  # No association measure column
+  expect_false("Cramer's V" %in% names(out))
+})
+
+test_that("table_categorical grouped empty after dropping NA", {
+  df <- data.frame(
+    grp = factor(c("A", "B")),
+    v = factor(c(NA, NA))
+  )
+  out_wide <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "data.frame")
+  expect_equal(nrow(out_wide), 0L)
+  out_long <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "long")
+  expect_equal(nrow(out_long), 0L)
+})
+
+test_that("table_categorical one-way weighted with rescale", {
+  df <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    w = c(10, 5, 10, 5, 10)
+  )
+  out <- table_categorical(
+    df, select = x, weights = w, rescale = TRUE, output = "data.frame"
+  )
+  # After rescaling, total n should equal nrow(df)
+  expect_equal(sum(out$n), nrow(df), tolerance = 0.01)
+})
+
+test_that("table_categorical handles Missing_ label collision", {
+  df <- data.frame(
+    x = factor(c("(Missing)", "(Missing_1)", NA, "B")),
+    stringsAsFactors = FALSE
+  )
+  out <- table_categorical(df, select = x, drop_na = FALSE, output = "long")
+  expect_true(any(grepl("Missing", out$level)))
+  # Should not have duplicate level names
+  expect_equal(length(unique(out$level)), nrow(out))
+})
+
+test_that("table_categorical grouped with levels_keep and default output", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    levels_keep = c("Yes")
+  )
+  expect_s3_class(out, "spicy_categorical_table")
+  disp <- attr(out, "display_df")
+  # Only "Yes" level should appear in indented rows
+  indented <- disp$Variable[startsWith(disp$Variable, "  ")]
+  expect_true(all(trimws(indented) == "Yes"))
+})
+
+test_that("table_categorical grouped empty via levels_keep with non-matching levels", {
+  df <- data.frame(
+    grp = factor(c("A", "B", "A", "B")),
+    v = factor(c("x", "y", "x", "y"))
+  )
+  out <- table_categorical(
+    df, select = v, by = grp,
+    levels_keep = c("nonexistent"),
+    output = "data.frame"
+  )
+  expect_equal(nrow(out), 0L)
+  out_long <- table_categorical(
+    df, select = v, by = grp,
+    levels_keep = c("nonexistent"),
+    output = "long"
+  )
+  expect_equal(nrow(out_long), 0L)
+  # Also with assoc_measure = "none" to cover L1196
+  out_none <- table_categorical(
+    df, select = v, by = grp,
+    levels_keep = c("nonexistent"),
+    assoc_measure = "none",
+    output = "long"
+  )
+  expect_equal(nrow(out_none), 0L)
+})
+
+test_that("table_categorical grouped with assoc_measure = none and default output", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    assoc_measure = "none"
+  )
+  expect_s3_class(out, "spicy_categorical_table")
+})
+
+test_that("table_categorical one-way with levels_keep that filters some levels", {
+  df <- data.frame(
+    x = factor(c("A", "B", "C", "D"), levels = c("A", "B", "C", "D")),
+    y = factor(c("P", "Q", "P", "Q"))
+  )
+  out <- table_categorical(
+    df, select = c(x, y), levels_keep = c("A", "C", "P"),
+    output = "data.frame"
+  )
+  # Should only have matching levels
+  expect_true(all(out$Level %in% c("A", "C", "P")))
+})
+
+test_that("table_categorical grouped with decimal_mark comma and default output", {
+  out <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    decimal_mark = ","
+  )
+  expect_s3_class(out, "spicy_categorical_table")
+  disp <- attr(out, "display_df")
+  # p-value and percentage columns should use comma
+  p_col <- disp$p
+  non_empty_p <- p_col[nzchar(p_col)]
+  if (length(non_empty_p) > 0) {
+    expect_true(any(grepl(",", non_empty_p)) || any(grepl("<", non_empty_p)))
+  }
+})
+
+test_that("table_categorical grouped tinytable with assoc_measure = none", {
+  skip_if_not_installed("tinytable")
+  tt <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    assoc_measure = "none",
+    output = "tinytable"
+  )
+  expect_true(inherits(tt, "tinytable"))
+})
+
+test_that("table_categorical grouped excel with assoc_ci", {
+  skip_if_not_installed("openxlsx")
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  path <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    assoc_ci = TRUE,
+    output = "excel",
+    excel_path = tmp
+  )
+  expect_true(file.exists(path))
+})
+
+test_that("table_categorical grouped excel with assoc_measure = none", {
+  skip_if_not_installed("openxlsx")
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  path <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    assoc_measure = "none",
+    output = "excel",
+    excel_path = tmp
+  )
+  expect_true(file.exists(path))
+})
+
+test_that("table_categorical one-way all-NA renders empty default table", {
+  df <- data.frame(x = factor(c(NA, NA, NA)))
+  out <- table_categorical(df, select = x, drop_na = TRUE, output = "default")
+  expect_s3_class(out, "spicy_categorical_table")
+  expect_equal(nrow(out), 0L)
+})
+
+test_that("table_categorical grouped all-NA renders empty default table", {
+  df <- data.frame(
+    grp = factor(c("A", "B", "A")),
+    v = factor(c(NA, NA, NA))
+  )
+  out <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "default")
+  expect_s3_class(out, "spicy_categorical_table")
+})
+
+test_that("table_categorical one-way levels_keep with no match returns empty", {
+  df <- data.frame(x = factor(c("A", "B"), levels = c("A", "B", "C")))
+  out <- table_categorical(
+    df, select = x, levels_keep = c("nonexistent"),
+    output = "data.frame"
+  )
+  expect_equal(nrow(out), 0L)
+  # levels_keep includes "C" which exists in factor levels but has 0 obs
+  # → covers the `next` at match(lv, vals) returning NA
+  out2 <- table_categorical(
+    df, select = x, levels_keep = c("A", "C"),
+    output = "data.frame"
+  )
+  expect_equal(nrow(out2), 1L)
+  expect_equal(as.character(out2$Level), "A")
+  # Also test default output path (covers make_report_wide_oneway empty path)
+  out3 <- table_categorical(
+    df, select = x, levels_keep = c("nonexistent"),
+    output = "default"
+  )
+  expect_s3_class(out3, "spicy_categorical_table")
+})
+
+test_that("table_categorical errors for missing tinytable package", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "tinytable") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, output = "tinytable"),
+    "tinytable"
+  )
+})
+
+test_that("table_categorical errors for missing gt package", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "gt") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, output = "gt"),
+    "gt"
+  )
+})
+
+test_that("table_categorical errors for missing flextable package", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "flextable") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, output = "flextable"),
+    "flextable"
+  )
+})
+
+test_that("table_categorical errors for missing openxlsx package", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "openxlsx") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(
+      sochealth, select = smoking, output = "excel",
+      excel_path = tempfile(fileext = ".xlsx")
+    ),
+    "openxlsx"
+  )
+})
+
+test_that("table_categorical errors for missing clipr package", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "clipr") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, output = "clipboard"),
+    "clipr"
+  )
+})
+
+test_that("table_categorical one-way word output errors for missing officer package", {
+  skip("Cannot mock officer requireNamespace without recursion")
+})
+
+test_that("table_categorical word output errors when word_path is missing", {
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, output = "word"),
+    "word_path"
+  )
+})
+
+test_that("table_categorical excel output errors when excel_path is missing", {
+  expect_error(
+    table_categorical(
+      sochealth, select = smoking, by = sex, output = "excel"
+    ),
+    "excel_path"
+  )
+})
+
+test_that("table_categorical grouped errors for missing tinytable", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "tinytable") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, output = "tinytable"),
+    "tinytable"
+  )
+})
+
+test_that("table_categorical grouped errors for missing gt", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "gt") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, output = "gt"),
+    "gt"
+  )
+})
+
+test_that("table_categorical grouped errors for missing flextable", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "flextable") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, output = "flextable"),
+    "flextable"
+  )
+})
+
+test_that("table_categorical grouped errors for missing openxlsx", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "openxlsx") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(
+      sochealth, select = smoking, by = sex, output = "excel",
+      excel_path = tempfile(fileext = ".xlsx")
+    ),
+    "openxlsx"
+  )
+})
+
+test_that("table_categorical grouped errors for missing clipr", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, ...) {
+      if (pkg == "clipr") return(FALSE)
+      base::requireNamespace(pkg, ...)
+    },
+    .package = "base"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, output = "clipboard"),
+    "clipr"
+  )
+})
+
+test_that("table_categorical grouped word errors for missing officer", {
+  skip("Cannot mock officer requireNamespace without recursion")
 })

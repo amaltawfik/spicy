@@ -19,8 +19,8 @@ table_continuous(
   ci_level = 0.95,
   digits = 2,
   decimal_mark = ".",
-  output = c("default", "tinytable", "gt", "flextable", "excel", "clipboard", "word"),
-  styled = TRUE,
+  output = c("default", "data.frame", "tinytable", "gt", "flextable", "excel",
+    "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = "Descriptives",
   clipboard_delim = "\\t",
@@ -108,7 +108,8 @@ Either \code{"."} (default) or \code{","}.}
 
 \item{output}{Output format. One of:
 \itemize{
-\item \code{"default"} (a printed ASCII table)
+\item \code{"default"} (a printed ASCII table, returned invisibly)
+\item \code{"data.frame"} (a plain numeric \code{data.frame})
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
@@ -116,10 +117,6 @@ Either \code{"."} (default) or \code{","}.}
 \item \code{"clipboard"} (requires \code{clipr})
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
-
-\item{styled}{Logical. If \code{TRUE} (the default), returns an S3 object
-with a custom print method. If \code{FALSE}, returns a plain
-\code{data.frame}.}
 
 \item{excel_path}{File path for \code{output = "excel"}.}
 
@@ -135,101 +132,129 @@ with a custom print method. If \code{FALSE}, returns a plain
 non-numeric columns (default: \code{FALSE}).}
 }
 \value{
-When \code{styled = TRUE} (default) and \code{output = "default"}, prints a
-styled ASCII table and returns the underlying \code{data.frame} invisibly
-(with S3 class \code{"spicy_continuous_table"}).
-When \code{styled = FALSE}, returns a plain \code{data.frame} with columns:
-\code{variable}, \code{label}, \code{group} (if \code{by} is used),
-\code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}.
+Depends on \code{output}:
+\itemize{
+\item \code{"default"}: prints a styled ASCII table and returns the
+underlying \code{data.frame} invisibly (S3 class
+\code{"spicy_continuous_table"}).
+\item \code{"data.frame"}: a plain \code{data.frame} with columns
+\code{variable}, \code{label}, \code{group} (when \code{by} is used), \code{mean}, \code{sd},
+\code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}.
 When \code{by} is used together with \code{p_value = TRUE},
-\code{statistic = TRUE}, or \code{effect_size = TRUE}, columns \code{test_type},
-\code{statistic}, \code{df1}, \code{df2}, and \code{p.value} are appended (populated on
-the first row of each variable block only). \code{test_type} records the
-test that was run (e.g., \code{"welch_t"}, \code{"welch_anova"}, \code{"student_t"},
-\code{"anova"}, \code{"wilcoxon"}, \code{"kruskal"}).
-When \code{effect_size = TRUE} and \code{by} is used, columns \code{es_type},
-\code{es_value}, \code{es_ci_lower}, and \code{es_ci_upper} are appended
-(populated on the first row of each variable block only).
-\code{es_type} records the measure used (\code{"hedges_g"}, \code{"eta_sq"},
-\code{"r_rb"}, or \code{"epsilon_sq"}).
-
-For other \code{output} values: \code{"tinytable"}, \code{"gt"}, and \code{"flextable"}
-return their respective table objects. \code{"excel"} and \code{"word"} write
-to disk and return the file path invisibly. \code{"clipboard"} copies the
-table and returns the display \code{data.frame} invisibly.
+\code{statistic = TRUE}, or \code{effect_size = TRUE}, additional columns
+are appended (populated on the first row of each variable block
+only):
+\itemize{
+\item \code{test_type} -- test identifier (e.g., \code{"welch_t"},
+\code{"welch_anova"}, \code{"student_t"}, \code{"anova"}, \code{"wilcoxon"},
+\code{"kruskal"}).
+\item \code{statistic}, \code{df1}, \code{df2}, \code{p.value} -- test results.
+\item \code{es_type} -- effect-size identifier (\code{"hedges_g"},
+\code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), when
+\code{effect_size = TRUE}.
+\item \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} -- effect-size
+estimate and confidence interval bounds.
+}
+\item \code{"tinytable"}: a \code{tinytable} object.
+\item \code{"gt"}: a \code{gt_tbl} object.
+\item \code{"flextable"}: a \code{flextable} object.
+\item \code{"excel"} / \code{"word"}: writes to disk and returns the file
+path invisibly.
+\item \code{"clipboard"}: copies the table and returns the display
+\code{data.frame} invisibly.
+}
 }
 \description{
-\code{table_continuous()} builds a publication-ready table for one or many
-selected continuous variables. With \code{by}, it produces grouped descriptive
-summaries with optional group-comparison tests and effect sizes. Without
-\code{by}, it produces one-way descriptive summaries.
+Computes descriptive statistics (mean, SD, min, max, confidence interval
+of the mean, \emph{n}) for one or many continuous variables selected with
+tidyselect syntax.
+
+With \code{by}, produces grouped summaries with optional group-comparison
+tests (\code{test}), \emph{p}-values (\code{p_value}), test statistics (\code{statistic}),
+and effect sizes (\code{effect_size} / \code{effect_size_ci}).
+Without \code{by}, produces one-way descriptive summaries.
+
+Multiple output formats are available via \code{output}: a printed ASCII
+table (\code{"default"}), a plain numeric \code{data.frame} (\code{"data.frame"}), or
+publication-ready tables (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
+\code{"excel"}, \code{"clipboard"}, \code{"word"}).
 }
 \details{
-It supports raw data outputs and report-oriented outputs (\code{default},
-\code{tinytable}, \code{gt}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word}) for
-publication tables and APA-style reporting workflows.
+Non-numeric columns are silently dropped (set \code{verbose = TRUE} to see
+which columns were excluded). When a single constant column is passed,
+SD and CI are shown as \code{"--"} in the ASCII table.
+
+Optional output engines require suggested packages:
+\itemize{
+\item \pkg{tinytable} for \code{output = "tinytable"}
+\item \pkg{gt} for \code{output = "gt"}
+\item \pkg{flextable} for \code{output = "flextable"}
+\item \pkg{flextable} + \pkg{officer} for \code{output = "word"}
+\item \pkg{openxlsx2} for \code{output = "excel"}
+\item \pkg{clipr} for \code{output = "clipboard"}
+}
 }
 \examples{
 # Basic usage with all numeric columns
-table_continuous(iris, styled = FALSE)
+table_continuous(iris, output = "data.frame")
 
 # Select specific columns with tidyselect
-table_continuous(iris, select = c(Sepal.Length, Petal.Width), styled = FALSE)
+table_continuous(iris, select = c(Sepal.Length, Petal.Width), output = "data.frame")
 
 # Grouped descriptives
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, styled = FALSE)
+           by = Species, output = "data.frame")
 
 # Grouped descriptives with p-value
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, p_value = TRUE, styled = FALSE)
+           by = Species, p_value = TRUE, output = "data.frame")
 
 # Grouped descriptives with test statistic only
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, statistic = TRUE, styled = FALSE)
+           by = Species, statistic = TRUE, output = "data.frame")
 
 # Grouped descriptives with both p-value and test statistic
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
            by = Species, p_value = TRUE, statistic = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 
 # Student t-test / classic ANOVA (assumes equal variances)
 table_continuous(iris, select = Sepal.Length, by = Species,
-           test = "student", p_value = TRUE, styled = FALSE)
+           test = "student", p_value = TRUE, output = "data.frame")
 
 # Nonparametric test (Kruskal-Wallis for 3+ groups)
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", p_value = TRUE,
-           statistic = TRUE, styled = FALSE)
+           statistic = TRUE, output = "data.frame")
 
 # Effect size (eta-squared for 3 groups)
 table_continuous(iris, select = Sepal.Length, by = Species,
-           effect_size = TRUE, styled = FALSE)
+           effect_size = TRUE, output = "data.frame")
 
 # Effect size with confidence interval
 table_continuous(iris, select = Sepal.Length, by = Species,
            p_value = TRUE, effect_size_ci = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 
 # Nonparametric effect size (epsilon-squared with bootstrap CI)
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 
 # Hedges' g for 2 groups
 table_continuous(iris[iris$Species != "virginica", ],
            select = Sepal.Length, by = Species,
-           effect_size_ci = TRUE, styled = FALSE)
+           effect_size_ci = TRUE, output = "data.frame")
 
 # Regex column selection
-table_continuous(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
+table_continuous(iris, select = "^Sepal", regex = TRUE, output = "data.frame")
 
 # Custom labels
 table_continuous(iris,
            select = c(Sepal.Length, Petal.Length),
            labels = c(Sepal.Length = "Sepal length (cm)",
                       Petal.Length = "Petal length (cm)"),
-           styled = FALSE)
+           output = "data.frame")
 
 \donttest{
 # ASCII table (default)
@@ -274,4 +299,9 @@ if (requireNamespace("openxlsx", quietly = TRUE)) {
 }
 }
 
+}
+\seealso{
+\code{\link[=table_categorical]{table_categorical()}} for categorical variables;
+\code{\link[=freq]{freq()}} for one-way frequency tables; \code{\link[=cross_tab]{cross_tab()}} for two-way
+cross-tabulations.
 }

@@ -2,9 +2,11 @@
 
 * ASCII console tables now split oversized outputs into stacked horizontal panels, repeating the left-most identifier columns so wide `freq()`, `cross_tab()`, `table_categorical()`, and `table_continuous()` prints stay readable in narrow consoles.
 
-* `table_categorical()` replaces `table_apa()` as the public name for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and gains `output = "default"` plus `styled` for ASCII console output.
+* `table_categorical()` replaces `table_apa()` as the public name for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and provides multiple output formats via a single `output` argument.
 
 * `table_continuous()` replaces `table_desc()` as the public name for continuous summary tables. It computes descriptive statistics (mean, SD, min, max, confidence interval of the mean, n) for numeric variables, with tidyselect column selection, optional grouping via `by`, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
+
+* **Breaking:** `table_categorical()` and `table_continuous()` simplify their output API. The `styled` and `style` parameters are removed; use `output = "default"` for an ASCII table or `output = "data.frame"` for a plain numeric data frame. In `table_categorical()`, `output = "wide"` is renamed to `output = "data.frame"` and `style = "report"` paths are removed (use `"tinytable"`, `"gt"`, or `"flextable"` for formatted output).
 
 * `table_continuous()` gains `effect_size` and `effect_size_ci` arguments. When `by` is used, `effect_size = TRUE` adds an "ES" column with the appropriate measure (Hedges' g, eta-squared, rank-biserial r_rb, or epsilon-squared) chosen automatically based on the test method and number of groups. `effect_size_ci = TRUE` appends the confidence interval in brackets (e.g., `g = 0.45 [0.22, 0.68]`).
 

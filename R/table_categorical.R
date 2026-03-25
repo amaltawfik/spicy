@@ -1,22 +1,28 @@
 #' Categorical summary table
 #'
-#' `table_categorical()` builds a publication-ready table for one or many
-#' selected categorical variables. With `by`, it produces grouped
-#' cross-tabulation summaries using `spicy::cross_tab()` internally. Without
-#' `by`, it produces one-way frequency-style summaries.
+#' @description
+#' Builds a publication-ready frequency or cross-tabulation table for one
+#' or many categorical variables selected with tidyselect syntax.
 #'
-#' It supports raw data outputs (`wide`, `long`) and report-oriented outputs
-#' (`default`, `tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`)
-#' with multi-level headers and, when `by` is used, p-values and optional
-#' association measures for publication tables and APA-style reporting
-#' workflows.
+#' With `by`, produces grouped cross-tabulation summaries (using
+#' [cross_tab()] internally) with Chi-squared *p*-values and optional
+#' association measures.
+#' Without `by`, produces one-way frequency-style summaries.
+#'
+#' Multiple output formats are available via `output`: a printed ASCII
+#' table (`"default"`), a wide or long numeric `data.frame`
+#' (`"data.frame"`, `"long"`), or publication-ready tables
+#' (`"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
+#' `"word"`).
 #'
 #' @param data A data frame.
 #' @param select Columns to include as row variables. Supports tidyselect
 #'   syntax and character vectors of column names.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name.
-#' @param labels Optional character labels for `select` (same length).
+#' @param labels An optional character vector of display labels for the
+#'   variables named in `select` (must be the same length and in the same
+#'   order). When `NULL` (the default), column names are used as-is.
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
@@ -47,20 +53,23 @@
 #'   to report (`"auto"`, `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`,
 #'   `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`). Defaults to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
-#'   confidence interval. In data/export formats (`wide`, `long`, `excel`,
-#'   `clipboard`), two extra columns `CI lower` and `CI upper` are added.
-#'   In rendered formats (`gt`, `tinytable`, `flextable`, `word`), the CI
-#'   is shown inline as `.14 [.08, .19]` in the association measure column.
+#'   confidence interval of the association measure. In data formats
+#'   (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`), two extra
+#'   columns `CI lower` and `CI upper` are added.
+#'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`),
+#'   the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
-#' @param output Output format: `"wide"` (the default), `"default"` for an
-#'   ASCII console table, `"long"`, `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`.
-#' @param styled Logical. Used only when `output = "default"`. If `TRUE` (the
-#'   default), prints a styled ASCII table and returns it invisibly. If
-#'   `FALSE`, returns the underlying wide raw `data.frame`.
-#' @param style `"auto"` (the default) to select by output type, `"raw"` for
-#'   plain outputs, `"report"` for formatted outputs.
+#' @param output Output format. One of:
+#'   - `"default"` (a printed ASCII table, returned invisibly)
+#'   - `"data.frame"` (a wide numeric `data.frame`)
+#'   - `"long"` (a long numeric `data.frame`)
+#'   - `"tinytable"` (requires `tinytable`)
+#'   - `"gt"` (requires `gt`)
+#'   - `"flextable"` (requires `flextable`)
+#'   - `"excel"` (requires `openxlsx`)
+#'   - `"clipboard"` (requires `clipr`)
+#'   - `"word"` (requires `flextable` and `officer`)
 #' @param indent_text Prefix used for modality labels in report table building.
 #'   Defaults to `"  "` (two spaces).
 #' @param indent_text_excel_clipboard Stronger indentation used in Excel and
@@ -75,72 +84,80 @@
 #' @param word_path Path for `output = "word"` or optional save path when
 #'   `output = "flextable"`. Defaults to `NULL`.
 #'
-#' @return Depends on `output` and `style`:
-#' - `"default"` + `styled = TRUE`: prints a styled ASCII table and returns
-#'   the underlying data frame invisibly.
-#' - `"default"` + `styled = FALSE`: wide numeric data frame.
-#' - `"long"` + `"raw"`: long numeric data frame.
-#' - `"wide"` + `"raw"`: wide numeric data frame.
-#' - `"long"` + `"report"`: long formatted character data frame.
-#' - `"wide"` + `"report"`: wide formatted character data frame.
-#' - `"tinytable"`: a `tinytable` object.
-#' - `"gt"`: a `gt_tbl` object.
-#' - `"flextable"`: a `flextable` object.
-#' - `"excel"` / `"word"`: writes to disk and returns the file path invisibly.
-#' - `"clipboard"`: copies the table and returns the text invisibly.
+#' @return Depends on `output`:
+#' \itemize{
+#'   \item `"default"`: prints a styled ASCII table and returns the
+#'     underlying `data.frame` invisibly (S3 class
+#'     `"spicy_categorical_table"`).
+#'   \item `"data.frame"`: a wide `data.frame` with one row per
+#'     variable--level combination.
+#'     When `by` is used, the columns are `Variable`, `Level`, and one
+#'     pair of `n` / `\%` columns per group level (plus `Total` when
+#'     `include_total = TRUE`), followed by `Chi2`, `df`, `p`, and the
+#'     association measure column.
+#'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
+#'   \item `"long"`: a long `data.frame` with columns `variable`,
+#'     `level`, `group`, `n`, `percent` (and `chi2`, `df`, `p`,
+#'     association measure columns when `by` is used).
+#'   \item `"tinytable"`: a `tinytable` object.
+#'   \item `"gt"`: a `gt_tbl` object.
+#'   \item `"flextable"`: a `flextable` object.
+#'   \item `"excel"` / `"word"`: writes to disk and returns the file
+#'     path invisibly.
+#'   \item `"clipboard"`: copies the table and returns the display
+#'     `data.frame` invisibly.
+#' }
 #'
-#' @details Optional output engines require suggested packages:
-#' - `tinytable` for `output = "tinytable"`
-#' - `gt` for `output = "gt"`
-#' - `flextable` for `output = "flextable"`
-#' - `flextable` + `officer` for `output = "word"`
-#' - `openxlsx` for `output = "excel"`
-#' - `clipr` for `output = "clipboard"`
+#' @details
+#' When `by` is used, each selected variable is cross-tabulated against
+#' the grouping variable with [cross_tab()]. Chi-squared statistics,
+#' *p*-values, and the chosen association measure are reported for each
+#' variable.
+#'
+#' Optional output engines require suggested packages:
+#' \itemize{
+#'   \item \pkg{tinytable} for `output = "tinytable"`
+#'   \item \pkg{gt} for `output = "gt"`
+#'   \item \pkg{flextable} for `output = "flextable"`
+#'   \item \pkg{flextable} + \pkg{officer} for `output = "word"`
+#'   \item \pkg{openxlsx2} for `output = "excel"`
+#'   \item \pkg{clipr} for `output = "clipboard"`
+#' }
+#'
+#' @seealso [table_continuous()] for continuous variables;
+#'   [cross_tab()] for two-way cross-tabulations; [freq()] for one-way
+#'   frequency tables.
 #'
 #' @examples
-#' # Raw long output
+#' # Long numeric output
 #' table_categorical(
 #'   data = sochealth,
 #'   select = c(smoking, physical_activity),
 #'   by = education,
 #'   labels = c("Current smoker", "Physical activity"),
-#'   output = "long",
-#'   style = "raw"
+#'   output = "long"
 #' )
 #'
-#' # ASCII console output
+#' # ASCII console output (default)
 #' table_categorical(
 #'   data = sochealth,
 #'   select = c(smoking, physical_activity),
-#'   by = sex,
-#'   output = "default"
+#'   by = sex
 #' )
 #'
 #' # One-way frequency-style table
 #' table_categorical(
 #'   data = sochealth,
-#'   select = c(smoking, physical_activity),
-#'   output = "default"
+#'   select = c(smoking, physical_activity)
 #' )
 #'
-#' # Keep missing values as an explicit level
-#' table_categorical(
-#'   data = sochealth,
-#'   select = income_group,
-#'   by = sex,
-#'   drop_na = FALSE,
-#'   output = "wide",
-#'   style = "report"
-#' )
-#'
-#' # Raw wide output
+#' # Wide numeric data.frame
 #' table_categorical(
 #'   data = sochealth,
 #'   select = c(smoking, physical_activity),
 #'   by = education,
 #'   labels = c("Current smoker", "Physical activity"),
-#'   output = "wide",
-#'   style = "raw"
+#'   output = "data.frame"
 #' )
 #'
 #' # Weighted example
@@ -152,8 +169,7 @@
 #'   weights = "weight",
 #'   rescale = TRUE,
 #'   simulate_p = FALSE,
-#'   output = "long",
-#'   style = "raw"
+#'   output = "long"
 #' )
 #'
 #' \donttest{
@@ -180,6 +196,8 @@
 #'   )
 #' }
 #' }
+#'
+#' @importFrom rlang enquo eval_tidy quo_get_env quo_is_null
 #' @export
 table_categorical <- function(
   data,
@@ -201,8 +219,8 @@ table_categorical <- function(
   assoc_ci = FALSE,
   decimal_mark = ".",
   output = c(
-    "wide",
     "default",
+    "data.frame",
     "long",
     "tinytable",
     "gt",
@@ -211,8 +229,6 @@ table_categorical <- function(
     "clipboard",
     "word"
   ),
-  styled = TRUE,
-  style = c("auto", "raw", "report"),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
   add_multilevel_header = TRUE,
@@ -223,12 +239,6 @@ table_categorical <- function(
   word_path = NULL
 ) {
   output <- match.arg(output)
-  style <- match.arg(style)
-  data_name <- deparse(substitute(data))
-
-  if (style == "auto") {
-    style <- if (output %in% c("wide", "long")) "raw" else "report"
-  }
 
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
@@ -617,7 +627,7 @@ table_categorical <- function(
       rownames(long_raw) <- NULL
     }
 
-    if (output == "long" && style == "raw") {
+    if (output == "long") {
       return(long_raw)
     }
 
@@ -641,15 +651,8 @@ table_categorical <- function(
       }
     }
 
-    if (output == "wide" && style == "raw") {
+    if (output == "data.frame") {
       return(wide_raw)
-    }
-
-    if (output == "long" && style == "report") {
-      long_rep <- long_raw
-      long_rep$n <- fmt_n(long_rep$n)
-      long_rep$pct <- fmt_num(long_rep$pct, percent_digits)
-      return(long_rep)
     }
 
     report_cols <- c("Variable", "n", "%")
@@ -732,21 +735,13 @@ table_categorical <- function(
     report_wide_excel <- make_report_wide_oneway("excel")
 
     if (output == "default") {
-      if (!styled) {
-        return(wide_raw)
-      }
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
-      attr(out, "data_name") <- data_name
       attr(out, "group_var") <- NULL
       attr(out, "indent_text") <- indent_text
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
       print(out)
       return(invisible(out))
-    }
-
-    if (output == "wide") {
-      return(report_wide_char)
     }
 
     if (output == "tinytable") {
@@ -1229,7 +1224,7 @@ table_categorical <- function(
     rownames(long_raw) <- NULL
   }
 
-  if (output == "long" && style == "raw") {
+  if (output == "long") {
     out <- long_raw
     out$p_op <- NULL
     if (!show_assoc || !assoc_ci) {
@@ -1306,31 +1301,8 @@ table_categorical <- function(
   }
 
   wide_raw <- make_wide_raw(long_raw)
-  if (output == "wide" && style == "raw") {
+  if (output == "data.frame") {
     return(wide_raw)
-  }
-
-  if (output == "long" && style == "report") {
-    long_rep <- long_raw
-    long_rep$n <- fmt_n(long_rep$n)
-    long_rep$pct <- fmt_num(long_rep$pct, percent_digits)
-    long_rep$p <- mapply(fmt_p, long_rep$p, long_rep$p_op, USE.NAMES = FALSE)
-    if (show_assoc) {
-      long_rep[[measure_col]] <- vapply(
-        long_rep[[measure_col]],
-        fmt_v,
-        character(1)
-      )
-    }
-    long_rep$p_op <- NULL
-    if (show_assoc && assoc_ci) {
-      long_rep$ci_lower <- vapply(long_rep$ci_lower, fmt_v, character(1))
-      long_rep$ci_upper <- vapply(long_rep$ci_upper, fmt_v, character(1))
-    } else {
-      long_rep$ci_lower <- NULL
-      long_rep$ci_upper <- NULL
-    }
-    return(long_rep)
   }
 
   # ---------------- REPORT WIDE ----------------
@@ -1457,20 +1429,13 @@ table_categorical <- function(
   report_wide_char <- make_report_wide(long_raw, mode = "char")
   report_wide_excel <- make_report_wide(long_raw, mode = "excel")
   if (output == "default") {
-    if (!styled) {
-      return(wide_raw)
-    }
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
-    attr(out, "data_name") <- data_name
     attr(out, "group_var") <- by_name
     attr(out, "indent_text") <- indent_text
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
     print(out)
     return(invisible(out))
-  }
-  if (output == "wide") {
-    return(report_wide_char)
   }
 
   # For rendered formats: merge CI inline into measure column, drop CI cols

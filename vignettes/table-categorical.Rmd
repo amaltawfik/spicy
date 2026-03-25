@@ -58,8 +58,9 @@ table_categorical(
 )
 ```
 
-The default output is `"wide"` with `style = "raw"`, which returns a
-data frame with numeric values suitable for further processing.
+The default output is `"default"`, which prints a styled ASCII table to
+the console. Use `output = "data.frame"` to get a plain numeric
+data frame suitable for further processing.
 
 ## One-way tables
 
@@ -80,9 +81,9 @@ summarizes the options:
 
 | Format | Description |
 |---|---|
-| `"wide"` | Data frame, one row per modality (default) |
-| `"default"` | Styled ASCII table in the console |
-| `"long"` | Data frame, one row per modality x group |
+| `"default"` | Styled ASCII table in the console (default) |
+| `"data.frame"` | Wide data frame, one row per modality |
+| `"long"` | Long data frame, one row per modality x group |
 | `"gt"` | Formatted gt table |
 | `"tinytable"` | Formatted tinytable |
 | `"flextable"` | Formatted flextable |
@@ -119,23 +120,18 @@ table_categorical(
 
 ### Data frame output
 
-Use `style = "report"` with `"wide"` or `"long"` to get formatted
-character columns (ready for display), or `style = "raw"` for numeric
-values (ready for analysis):
+Use `output = "data.frame"` for a wide numeric data frame (one row per
+modality), or `output = "long"` for a long format (one row per
+modality x group):
 
-```{r wide-report}
+```{r data-frame}
 table_categorical(
   sochealth,
   select = smoking,
   by = education,
-  output = "wide",
-  style = "report"
+  output = "data.frame"
 )
 ```
-
-Use `output = "default"` for a styled ASCII table in the console. Set
-`styled = FALSE` with `output = "default"` to recover the underlying
-wide raw `data.frame`.
 
 ## Custom labels
 
@@ -185,8 +181,8 @@ pkgdown_dark_gt(
 )
 ```
 
-In data formats (wide, long, excel, clipboard), separate `CI lower` and
-`CI upper` columns are added:
+In data formats (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`),
+separate `CI lower` and `CI upper` columns are added:
 
 ```{r ci-data}
 table_categorical(
@@ -194,8 +190,7 @@ table_categorical(
   select = smoking,
   by = education,
   assoc_ci = TRUE,
-  output = "wide",
-  style = "report"
+  output = "data.frame"
 )
 ```
 

@@ -24,31 +24,54 @@ table_categorical(
   select = c(smoking, physical_activity, dentist_12m),
   by = education
 )
-#>            Variable Level Lower secondary n Lower secondary % Upper secondary n
-#> 1           smoking    No               179              69.6               415
-#> 2           smoking   Yes                78              30.4               112
-#> 3 physical_activity    No               177              67.8               310
-#> 4 physical_activity   Yes                84              32.2               229
-#> 5       dentist_12m    No               113              43.3               174
-#> 6       dentist_12m   Yes               148              56.7               365
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
-#> 1              78.7        332       84.9     926    78.8 2.012877e-05
-#> 2              21.3         59       15.1     249    21.2 2.012877e-05
-#> 3              57.5        163       40.8     650    54.2 8.333584e-12
-#> 4              42.5        237       59.2     550    45.8 8.333584e-12
-#> 5              32.3         67       16.8     354    29.5 3.883413e-13
-#> 6              67.7        333       83.2     846    70.5 3.883413e-13
-#>   Cramer's V
-#> 1  0.1356677
-#> 2  0.1356677
-#> 3  0.2061986
-#> 4  0.2061986
-#> 5  0.2182388
-#> 6  0.2182388
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │               179               69.6                415 
+#>    Yes             │                78               30.4                112 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                         
+#>    No              │               177               67.8                310 
+#>    Yes             │                84               32.2                229 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                         
+#>    No              │               113               43.3                174 
+#>    Yes             │               148               56.7                365 
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │              78.7         332        84.9      926 
+#>    Yes             │              21.3          59        15.1      249 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                    
+#>    No              │              57.5         163        40.8      650 
+#>    Yes             │              42.5         237        59.2      550 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                    
+#>    No              │              32.3          67        16.8      354 
+#>    Yes             │              67.7         333        83.2      846 
+#> 
+#>  Variable          │ Total %       p  Cramer's V 
+#> ───────────────────┼─────────────────────────────
+#>  smoking           │          < .001         .14 
+#>    No              │    78.8                     
+#>    Yes             │    21.2                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          < .001         .21 
+#>    No              │    54.2                     
+#>    Yes             │    45.8                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │          < .001         .22 
+#>    No              │    29.5                     
+#>    Yes             │    70.5
 ```
 
-The default output is `"wide"` with `style = "raw"`, which returns a
-data frame with numeric values suitable for further processing.
+The default output is `"default"`, which prints a styled ASCII table to
+the console. Use `output = "data.frame"` to get a plain numeric data
+frame suitable for further processing.
 
 ## One-way tables
 
@@ -78,17 +101,17 @@ table_categorical(
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 supports several output formats. The table below summarizes the options:
 
-| Format        | Description                                |
-|---------------|--------------------------------------------|
-| `"wide"`      | Data frame, one row per modality (default) |
-| `"default"`   | Styled ASCII table in the console          |
-| `"long"`      | Data frame, one row per modality x group   |
-| `"gt"`        | Formatted gt table                         |
-| `"tinytable"` | Formatted tinytable                        |
-| `"flextable"` | Formatted flextable                        |
-| `"excel"`     | Excel file (requires `excel_path`)         |
-| `"clipboard"` | Copy to clipboard                          |
-| `"word"`      | Word document (requires `word_path`)       |
+| Format         | Description                                   |
+|----------------|-----------------------------------------------|
+| `"default"`    | Styled ASCII table in the console (default)   |
+| `"data.frame"` | Wide data frame, one row per modality         |
+| `"long"`       | Long data frame, one row per modality x group |
+| `"gt"`         | Formatted gt table                            |
+| `"tinytable"`  | Formatted tinytable                           |
+| `"flextable"`  | Formatted flextable                           |
+| `"excel"`      | Excel file (requires `excel_path`)            |
+| `"clipboard"`  | Copy to clipboard                             |
+| `"word"`       | Word document (requires `word_path`)          |
 
 ### gt output
 
@@ -131,31 +154,27 @@ table_categorical(
 
 ### Data frame output
 
-Use `style = "report"` with `"wide"` or `"long"` to get formatted
-character columns (ready for display), or `style = "raw"` for numeric
-values (ready for analysis):
+Use `output = "data.frame"` for a wide numeric data frame (one row per
+modality), or `output = "long"` for a long format (one row per modality
+x group):
 
 ``` r
 table_categorical(
   sochealth,
   select = smoking,
   by = education,
-  output = "wide",
-  style = "report"
+  output = "data.frame"
 )
-#>   Variable Lower secondary n Lower secondary % Upper secondary n
-#> 1  smoking                                                      
-#> 2       No               179              69.6               415
-#> 3      Yes                78              30.4               112
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V
-#> 1                                                         < .001        .14
-#> 2              78.7        332       84.9     926    78.8                  
-#> 3              21.3         59       15.1     249    21.2
+#>   Variable Level Lower secondary n Lower secondary % Upper secondary n
+#> 1  smoking    No               179              69.6               415
+#> 2  smoking   Yes                78              30.4               112
+#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
+#> 1              78.7        332       84.9     926    78.8 2.012877e-05
+#> 2              21.3         59       15.1     249    21.2 2.012877e-05
+#>   Cramer's V
+#> 1  0.1356677
+#> 2  0.1356677
 ```
-
-Use `output = "default"` for a styled ASCII table in the console. Set
-`styled = FALSE` with `output = "default"` to recover the underlying
-wide raw `data.frame`.
 
 ## Custom labels
 
@@ -220,8 +239,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-In data formats (wide, long, excel, clipboard), separate `CI lower` and
-`CI upper` columns are added:
+In data formats (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`),
+separate `CI lower` and `CI upper` columns are added:
 
 ``` r
 table_categorical(
@@ -229,21 +248,17 @@ table_categorical(
   select = smoking,
   by = education,
   assoc_ci = TRUE,
-  output = "wide",
-  style = "report"
+  output = "data.frame"
 )
-#>   Variable Lower secondary n Lower secondary % Upper secondary n
-#> 1  smoking                                                      
-#> 2       No               179              69.6               415
-#> 3      Yes                78              30.4               112
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V
-#> 1                                                         < .001        .14
-#> 2              78.7        332       84.9     926    78.8                  
-#> 3              21.3         59       15.1     249    21.2                  
-#>   CI lower CI upper
-#> 1      .08      .19
-#> 2                  
-#> 3
+#>   Variable Level Lower secondary n Lower secondary % Upper secondary n
+#> 1  smoking    No               179              69.6               415
+#> 2  smoking   Yes                78              30.4               112
+#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
+#> 1              78.7        332       84.9     926    78.8 2.012877e-05
+#> 2              21.3         59       15.1     249    21.2 2.012877e-05
+#>   Cramer's V   CI lower  CI upper
+#> 1  0.1356677 0.07909264 0.1913716
+#> 2  0.1356677 0.07909264 0.1913716
 ```
 
 ## Weighted tables

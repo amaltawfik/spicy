@@ -1,9 +1,18 @@
 # Continuous summary table
 
-`table_continuous()` builds a publication-ready table for one or many
-selected continuous variables. With `by`, it produces grouped
-descriptive summaries with optional group-comparison tests and effect
-sizes. Without `by`, it produces one-way descriptive summaries.
+Computes descriptive statistics (mean, SD, min, max, confidence interval
+of the mean, *n*) for one or many continuous variables selected with
+tidyselect syntax.
+
+With `by`, produces grouped summaries with optional group-comparison
+tests (`test`), *p*-values (`p_value`), test statistics (`statistic`),
+and effect sizes (`effect_size` / `effect_size_ci`). Without `by`,
+produces one-way descriptive summaries.
+
+Multiple output formats are available via `output`: a printed ASCII
+table (`"default"`), a plain numeric `data.frame` (`"data.frame"`), or
+publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
+`"excel"`, `"clipboard"`, `"word"`).
 
 ## Usage
 
@@ -23,8 +32,8 @@ table_continuous(
   ci_level = 0.95,
   digits = 2,
   decimal_mark = ".",
-  output = c("default", "tinytable", "gt", "flextable", "excel", "clipboard", "word"),
-  styled = TRUE,
+  output = c("default", "data.frame", "tinytable", "gt", "flextable", "excel",
+    "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = "Descriptives",
   clipboard_delim = "\t",
@@ -142,7 +151,9 @@ table_continuous(
 
   Output format. One of:
 
-  - `"default"` (a printed ASCII table)
+  - `"default"` (a printed ASCII table, returned invisibly)
+
+  - `"data.frame"` (a plain numeric `data.frame`)
 
   - `"tinytable"` (requires `tinytable`)
 
@@ -155,11 +166,6 @@ table_continuous(
   - `"clipboard"` (requires `clipr`)
 
   - `"word"` (requires `flextable` and `officer`)
-
-- styled:
-
-  Logical. If `TRUE` (the default), returns an S3 object with a custom
-  print method. If `FALSE`, returns a plain `data.frame`.
 
 - excel_path:
 
@@ -184,38 +190,74 @@ table_continuous(
 
 ## Value
 
-When `styled = TRUE` (default) and `output = "default"`, prints a styled
-ASCII table and returns the underlying `data.frame` invisibly (with S3
-class `"spicy_continuous_table"`). When `styled = FALSE`, returns a
-plain `data.frame` with columns: `variable`, `label`, `group` (if `by`
-is used), `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`. When
-`by` is used together with `p_value = TRUE`, `statistic = TRUE`, or
-`effect_size = TRUE`, columns `test_type`, `statistic`, `df1`, `df2`,
-and `p.value` are appended (populated on the first row of each variable
-block only). `test_type` records the test that was run (e.g.,
-`"welch_t"`, `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
-`"kruskal"`). When `effect_size = TRUE` and `by` is used, columns
-`es_type`, `es_value`, `es_ci_lower`, and `es_ci_upper` are appended
-(populated on the first row of each variable block only). `es_type`
-records the measure used (`"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
-`"epsilon_sq"`).
+Depends on `output`:
 
-For other `output` values: `"tinytable"`, `"gt"`, and `"flextable"`
-return their respective table objects. `"excel"` and `"word"` write to
-disk and return the file path invisibly. `"clipboard"` copies the table
-and returns the display `data.frame` invisibly.
+- `"default"`: prints a styled ASCII table and returns the underlying
+  `data.frame` invisibly (S3 class `"spicy_continuous_table"`).
+
+- `"data.frame"`: a plain `data.frame` with columns `variable`, `label`,
+  `group` (when `by` is used), `mean`, `sd`, `min`, `max`, `ci_lower`,
+  `ci_upper`, `n`. When `by` is used together with `p_value = TRUE`,
+  `statistic = TRUE`, or `effect_size = TRUE`, additional columns are
+  appended (populated on the first row of each variable block only):
+
+  - `test_type` – test identifier (e.g., `"welch_t"`, `"welch_anova"`,
+    `"student_t"`, `"anova"`, `"wilcoxon"`, `"kruskal"`).
+
+  - `statistic`, `df1`, `df2`, `p.value` – test results.
+
+  - `es_type` – effect-size identifier (`"hedges_g"`, `"eta_sq"`,
+    `"r_rb"`, or `"epsilon_sq"`), when `effect_size = TRUE`.
+
+  - `es_value`, `es_ci_lower`, `es_ci_upper` – effect-size estimate and
+    confidence interval bounds.
+
+- `"tinytable"`: a `tinytable` object.
+
+- `"gt"`: a `gt_tbl` object.
+
+- `"flextable"`: a `flextable` object.
+
+- `"excel"` / `"word"`: writes to disk and returns the file path
+  invisibly.
+
+- `"clipboard"`: copies the table and returns the display `data.frame`
+  invisibly.
 
 ## Details
 
-It supports raw data outputs and report-oriented outputs (`default`,
-`tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`) for
-publication tables and APA-style reporting workflows.
+Non-numeric columns are silently dropped (set `verbose = TRUE` to see
+which columns were excluded). When a single constant column is passed,
+SD and CI are shown as `"--"` in the ASCII table.
+
+Optional output engines require suggested packages:
+
+- tinytable for `output = "tinytable"`
+
+- gt for `output = "gt"`
+
+- flextable for `output = "flextable"`
+
+- flextable + officer for `output = "word"`
+
+- openxlsx2 for `output = "excel"`
+
+- clipr for `output = "clipboard"`
+
+## See also
+
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+for categorical variables;
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) for
+one-way frequency tables;
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+for two-way cross-tabulations.
 
 ## Examples
 
 ``` r
 # Basic usage with all numeric columns
-table_continuous(iris, styled = FALSE)
+table_continuous(iris, output = "data.frame")
 #>       variable        label     mean        sd min max ci_lower ci_upper   n
 #> 1 Sepal.Length Sepal.Length 5.843333 0.8280661 4.3 7.9 5.709732 5.976934 150
 #> 2  Sepal.Width  Sepal.Width 3.057333 0.4358663 2.0 4.4 2.987010 3.127656 150
@@ -223,14 +265,14 @@ table_continuous(iris, styled = FALSE)
 #> 4  Petal.Width  Petal.Width 1.199333 0.7622377 0.1 2.5 1.076353 1.322313 150
 
 # Select specific columns with tidyselect
-table_continuous(iris, select = c(Sepal.Length, Petal.Width), styled = FALSE)
+table_continuous(iris, select = c(Sepal.Length, Petal.Width), output = "data.frame")
 #>       variable        label     mean        sd min max ci_lower ci_upper   n
 #> 1 Sepal.Length Sepal.Length 5.843333 0.8280661 4.3 7.9 5.709732 5.976934 150
 #> 2  Petal.Width  Petal.Width 1.199333 0.7622377 0.1 2.5 1.076353 1.322313 150
 
 # Grouped descriptives
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, styled = FALSE)
+           by = Species, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -248,7 +290,7 @@ table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 
 # Grouped descriptives with p-value
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, p_value = TRUE, styled = FALSE)
+           by = Species, p_value = TRUE, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -266,7 +308,7 @@ table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 
 # Grouped descriptives with test statistic only
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-           by = Species, statistic = TRUE, styled = FALSE)
+           by = Species, statistic = TRUE, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -285,7 +327,7 @@ table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 # Grouped descriptives with both p-value and test statistic
 table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
            by = Species, p_value = TRUE, statistic = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -303,7 +345,7 @@ table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
 
 # Student t-test / classic ANOVA (assumes equal variances)
 table_continuous(iris, select = Sepal.Length, by = Species,
-           test = "student", p_value = TRUE, styled = FALSE)
+           test = "student", p_value = TRUE, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -316,7 +358,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 # Nonparametric test (Kruskal-Wallis for 3+ groups)
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", p_value = TRUE,
-           statistic = TRUE, styled = FALSE)
+           statistic = TRUE, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -328,7 +370,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 
 # Effect size (eta-squared for 3 groups)
 table_continuous(iris, select = Sepal.Length, by = Species,
-           effect_size = TRUE, styled = FALSE)
+           effect_size = TRUE, output = "data.frame")
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
@@ -345,7 +387,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 # Effect size with confidence interval
 table_continuous(iris, select = Sepal.Length, by = Species,
            p_value = TRUE, effect_size_ci = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
@@ -363,7 +405,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 # Nonparametric effect size (epsilon-squared with bootstrap CI)
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
-           styled = FALSE)
+           output = "data.frame")
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
@@ -381,7 +423,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 # Hedges' g for 2 groups
 table_continuous(iris[iris$Species != "virginica", ],
            select = Sepal.Length, by = Species,
-           effect_size_ci = TRUE, styled = FALSE)
+           effect_size_ci = TRUE, output = "data.frame")
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
@@ -397,7 +439,7 @@ table_continuous(iris[iris$Species != "virginica", ],
 #> 3          NA          NA
 
 # Regex column selection
-table_continuous(iris, select = "^Sepal", regex = TRUE, styled = FALSE)
+table_continuous(iris, select = "^Sepal", regex = TRUE, output = "data.frame")
 #>       variable        label     mean        sd min max ci_lower ci_upper   n
 #> 1 Sepal.Length Sepal.Length 5.843333 0.8280661 4.3 7.9 5.709732 5.976934 150
 #> 2  Sepal.Width  Sepal.Width 3.057333 0.4358663 2.0 4.4 2.987010 3.127656 150
@@ -407,7 +449,7 @@ table_continuous(iris,
            select = c(Sepal.Length, Petal.Length),
            labels = c(Sepal.Length = "Sepal length (cm)",
                       Petal.Length = "Petal length (cm)"),
-           styled = FALSE)
+           output = "data.frame")
 #>       variable             label     mean        sd min max ci_lower ci_upper
 #> 1 Sepal.Length Sepal length (cm) 5.843333 0.8280661 4.3 7.9 5.709732 5.976934
 #> 2 Petal.Length Petal length (cm) 3.758000 1.7652982 1.0 6.9 3.473185 4.042815
