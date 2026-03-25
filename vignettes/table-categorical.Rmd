@@ -16,6 +16,21 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+pkgdown_dark_gt <- function(tab) {
+  tab |>
+    gt::opt_css(
+      css = paste(
+        ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
+        ".gt_column_spanner_outer, .gt_column_spanner, .gt_title,",
+        ".gt_subtitle, .gt_sourcenotes, .gt_sourcenote {",
+        "  background-color: transparent !important;",
+        "  color: currentColor !important;",
+        "}",
+        sep = "\n"
+      )
+    )
+}
 ```
 
 ```{r setup}
@@ -81,11 +96,13 @@ The `"gt"` format produces a table with APA-style borders, column
 spanners, and proper alignment:
 
 ```{r gt}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    by = education,
+    output = "gt"
+  )
 )
 ```
 
@@ -126,12 +143,14 @@ By default, `table_categorical()` uses variable names as row headers. Use the
 `labels` argument to provide human-readable labels:
 
 ```{r labels}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Smoking status", "Regular physical activity"),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    labels = c("Smoking status", "Regular physical activity"),
+    output = "gt"
+  )
 )
 ```
 
@@ -155,12 +174,14 @@ Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
 
 ```{r ci-rendered}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  assoc_ci = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    assoc_ci = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -184,13 +205,15 @@ Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
 the total weighted N matches the unweighted N:
 
 ```{r weighted}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  weights = "weight",
-  rescale = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    weights = "weight",
+    rescale = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -200,12 +223,14 @@ By default, rows with missing values are dropped (`drop_na = TRUE`).
 Set `drop_na = FALSE` to display them as a "(Missing)" category:
 
 ```{r missing}
-table_categorical(
-  sochealth,
-  select = income_group,
-  by = education,
-  drop_na = FALSE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = income_group,
+    by = education,
+    drop_na = FALSE,
+    output = "gt"
+  )
 )
 ```
 

@@ -221,11 +221,13 @@ table below summarizes the options:</p>
 <p>The <code>"gt"</code> format produces a table with APA-style borders,
 column spanners, and proper alignment:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#mwlefoodfi table {
@@ -711,6 +713,13 @@ column spanners, and proper alignment:</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -1060,12 +1069,14 @@ console. Set <code>styled = FALSE</code> with
 row headers. Use the <code>labels</code> argument to provide
 human-readable labels:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="bufjgfcdcf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#bufjgfcdcf table {
@@ -1551,6 +1562,13 @@ human-readable labels:</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -1808,12 +1826,14 @@ both variables are ordered factors. Override with
 <p>Add confidence intervals with <code>assoc_ci = TRUE</code>. In
 rendered formats (gt, tinytable, flextable), the CI is shown inline:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    assoc_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="gkewpekaeb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#gkewpekaeb table {
@@ -2299,6 +2319,13 @@ rendered formats (gt, tinytable, flextable), the CI is shown inline:</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -2452,13 +2479,15 @@ rendered formats (gt, tinytable, flextable), the CI is shown inline:</p>
 <code>rescale = TRUE</code> so the total weighted N matches the
 unweighted N:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  weights <span class="op">=</span> <span class="st">"weight"</span>,</span>
-<span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    weights <span class="op">=</span> <span class="st">"weight"</span>,</span>
+<span>    rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="iahsqzrdzh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#iahsqzrdzh table {
@@ -2944,6 +2973,13 @@ unweighted N:</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -3074,12 +3110,14 @@ unweighted N:</p>
 (<code>drop_na = TRUE</code>). Set <code>drop_na = FALSE</code> to
 display them as a “(Missing)” category:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">income_group</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="va">income_group</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="pgdurwwzha" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#pgdurwwzha table {
@@ -3564,6 +3602,13 @@ display them as a “(Missing)” category:</p>
 .gt_table tbody tr {
   border-top-style: none !important;
   border-bottom-style: none !important;
+}
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
 }
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">

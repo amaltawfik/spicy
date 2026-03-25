@@ -17,6 +17,21 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+pkgdown_dark_gt <- function(tab) {
+  tab |>
+    gt::opt_css(
+      css = paste(
+        ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
+        ".gt_column_spanner_outer, .gt_column_spanner, .gt_title,",
+        ".gt_subtitle, .gt_sourcenotes, .gt_sourcenote {",
+        "  background-color: transparent !important;",
+        "  color: currentColor !important;",
+        "}",
+        sep = "\n"
+      )
+    )
+}
 ```
 
 ```{r setup}
@@ -164,13 +179,13 @@ package API.
 Use `gt::` functions when you want to keep the `gt` workflow:
 
 ```{r postprocess-gt}
-tab <- table_categorical(
+tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
   labels = c("Smoking status", "Regular physical activity"),
   output = "gt"
-)
+))
 
 tab |>
   gt::tab_header(
@@ -179,17 +194,6 @@ tab |>
   ) |>
   gt::tab_source_note(
     gt::md("*Percentages are computed within each education group.*")
-  ) |>
-  gt::opt_css(
-    css = paste(
-      ".gt_heading, .gt_col_headings, .gt_col_heading,",
-      ".gt_column_spanner_outer, .gt_column_spanner,",
-      ".gt_title, .gt_subtitle {",
-      "  background-color: transparent !important;",
-      "  color: currentColor !important;",
-      "}",
-      sep = "\n"
-    )
   )
 ```
 
@@ -216,9 +220,11 @@ tab |>
 ```
 
 Use `flextable::` functions when you want to keep working toward Office
-or HTML document output:
+or HTML document output. The example is shown as code here because the
+dark pkgdown theme is not a reliable preview of the final `flextable`
+HTML rendering:
 
-```{r postprocess-flextable}
+```{r postprocess-flextable, eval = FALSE}
 if (requireNamespace("flextable", quietly = TRUE)) {
   tab <- table_continuous(
     sochealth,
