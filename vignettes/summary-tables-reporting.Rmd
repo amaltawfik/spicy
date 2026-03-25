@@ -104,34 +104,38 @@ behaviors, then summarize continuous well-being indicators.
 ### Categorical variables
 
 ```{r report-categorical}
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  labels = c(
-    "Smoking status",
-    "Regular physical activity",
-    "Visited a dentist in the last 12 months"
-  ),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    by = education,
+    labels = c(
+      "Smoking status",
+      "Regular physical activity",
+      "Visited a dentist in the last 12 months"
+    ),
+    output = "gt"
+  )
 )
 ```
 
 ### Continuous variables
 
 ```{r report-continuous}
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  labels = c(
-    bmi = "Body mass index",
-    wellbeing_score = "Well-being score",
-    life_sat_health = "Satisfaction with health"
-  ),
-  p_value = TRUE,
-  effect_size = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    labels = c(
+      bmi = "Body mass index",
+      wellbeing_score = "Well-being score",
+      life_sat_health = "Satisfaction with health"
+    ),
+    p_value = TRUE,
+    effect_size = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -159,7 +163,7 @@ If you want an object that fits naturally into Word and PowerPoint
 workflows but can also be rendered in HTML documents, `flextable` is a
 good choice:
 
-```{r output-flextable}
+```{r output-flextable, eval = FALSE}
 if (requireNamespace("flextable", quietly = TRUE)) {
   table_continuous(
     sochealth,

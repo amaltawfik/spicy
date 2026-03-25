@@ -60,7 +60,7 @@ table_categorical(
   select = c(smoking, physical_activity),
   output = "default"
 )
-#> Categorical table: sochealth
+#> Categorical table
 #> 
 #>  Variable               │        n          % 
 #> ────────────────────────┼─────────────────────
@@ -123,11 +123,11 @@ table_categorical(
 |-------------------|--------|------|------|------|-------|------|------|------------|
 |                   | n      | %    | n    | %    | n     | %    |      |            |
 | smoking           |        |      |      |      |       |      | .713 | .01        |
-|      No           | 475    | 78.4 | 451  | 79.3 | 926   | 78.8 |      |            |
-|      Yes          | 131    | 21.6 | 118  | 20.7 | 249   | 21.2 |      |            |
+|     No            | 475    | 78.4 | 451  | 79.3 | 926   | 78.8 |      |            |
+|     Yes           | 131    | 21.6 | 118  | 20.7 | 249   | 21.2 |      |            |
 | physical_activity |        |      |      |      |       |      | .832 | .01        |
-|      No           | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |            |
-|      Yes          | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |            |
+|     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |            |
+|     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |            |
 
 ### Data frame output
 
@@ -200,8 +200,8 @@ table_categorical(
 |----------|-----------------|------|-----------------|------|----------|------|-------|------|---------|------------|
 |          | n               | %    | n               | %    | n        | %    | n     | %    |         |            |
 | smoking  |                 |      |                 |      |          |      |       |      | \< .001 |            |
-|      No  | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
-|      Yes | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
+|     No   | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |         |            |
+|     Yes  | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |         |            |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
@@ -292,13 +292,15 @@ specify controls the display order, which is useful for placing
 “(Missing)” last:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = income_group,
-  by = education,
-  drop_na = FALSE,
-  levels_keep = c("Low", "High", "(Missing)"),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = income_group,
+    by = education,
+    drop_na = FALSE,
+    levels_keep = c("Low", "High", "(Missing)"),
+    output = "gt"
+  )
 )
 ```
 
@@ -310,14 +312,16 @@ Control the number of digits for percentages, p-values, and the
 association measure:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = smoking,
-  by = education,
-  percent_digits = 2,
-  p_digits = 4,
-  v_digits = 3,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    percent_digits = 2,
+    p_digits = 4,
+    v_digits = 3,
+    output = "gt"
+  )
 )
 ```
 

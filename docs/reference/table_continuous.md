@@ -1,8 +1,9 @@
 # Continuous summary table
 
-`table_continuous()` computes descriptive statistics for continuous
-variables, with optional grouping by a categorical variable, optional
-group-comparison tests, and multiple output formats.
+`table_continuous()` builds a publication-ready table for one or many
+selected continuous variables. With `by`, it produces grouped
+descriptive summaries with optional group-comparison tests and effect
+sizes. Without `by`, it produces one-way descriptive summaries.
 
 ## Usage
 
@@ -40,20 +41,21 @@ table_continuous(
 
 - select:
 
-  Columns to include. If `regex = FALSE`, use tidyselect syntax
-  (default:
+  Columns to include. If `regex = FALSE`, use tidyselect syntax or a
+  character vector of column names (default:
   [`dplyr::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
   string).
 
 - by:
 
-  An optional unquoted column name to group the descriptive statistics
-  by. The column does not need to be numeric.
+  Optional grouping column. Accepts an unquoted column name or a single
+  character column name. The column does not need to be numeric.
 
 - exclude:
 
-  Columns to exclude (default: `NULL`).
+  Columns to exclude. Supports tidyselect syntax and character vectors
+  of column names.
 
 - regex:
 
@@ -74,8 +76,8 @@ table_continuous(
   - `"nonparametric"`: Wilcoxon rank-sum / Mann–Whitney *U* (2 groups)
     or Kruskal–Wallis *H* (3+ groups).
 
-  Only used when `p_value = TRUE` or `statistic = TRUE` together with
-  `by`. Ignored otherwise.
+  Used when `by` is supplied together with `p_value = TRUE`,
+  `statistic = TRUE`, or `effect_size = TRUE`. Ignored otherwise.
 
 - p_value:
 
@@ -96,16 +98,16 @@ table_continuous(
   Logical. If `TRUE` and `by` is used, adds an effect-size column
   ("ES"). The measure is chosen automatically:
 
-  - Cohen's *d* â€” 2 groups, parametric (CI via Hedges & Olkin
-    approximation).
+  - Hedges' *g* (bias-corrected) - 2 groups, parametric (CI via Hedges &
+    Olkin approximation).
 
-  - Eta-squared (\\\eta^2\\) â€” 3+ groups, parametric (CI via
-    noncentral *F* distribution).
+  - Eta-squared (\\\eta^2\\) - 3+ groups, parametric (CI via noncentral
+    *F* distribution).
 
-  - Rank-biserial *r* (`r_rb`) â€” 2 groups, nonparametric (CI via
-    Fisher *z*-transform).
+  - Rank-biserial *r* (`r_rb`) - 2 groups, nonparametric (CI via Fisher
+    *z*-transform).
 
-  - Epsilon-squared (\\\varepsilon^2\\) â€” 3+ groups, nonparametric (CI
+  - Epsilon-squared (\\\varepsilon^2\\) - 3+ groups, nonparametric (CI
     via percentile bootstrap, 2 000 replicates).
 
   Defaults to `FALSE`. Ignored when `by` is not used.
@@ -113,7 +115,7 @@ table_continuous(
 - effect_size_ci:
 
   Logical. If `TRUE`, appends the confidence interval of the effect size
-  in brackets (e.g., `d = 0.45 [0.22, 0.68]`). Implies
+  in brackets (e.g., `g = 0.45 [0.22, 0.68]`). Implies
   `effect_size = TRUE`. Defaults to `FALSE`.
 
 - labels:
@@ -182,24 +184,32 @@ table_continuous(
 
 ## Value
 
-When `styled = TRUE` (default), a `data.frame` with S3 class
-`"spicy_continuous_table"` and a custom print method. When
-`styled = FALSE`, a plain `data.frame` with columns: `variable`,
-`label`, `group` (if `by` is used), `mean`, `sd`, `min`, `max`,
-`ci_lower`, `ci_upper`, `n`. When `by` is used together with
-`p_value = TRUE` or `statistic = TRUE`, columns `test_type`,
-`statistic`, `df1`, `df2`, and `p.value` are appended (populated on the
-first row of each variable block only). `test_type` records the test
-that was run (e.g., `"welch_t"`, `"welch_anova"`, `"student_t"`,
-`"anova"`, `"wilcoxon"`, `"kruskal"`). When `effect_size = TRUE` and
-`by` is used, columns `es_type`, `es_value`, `es_ci_lower`, and
-`es_ci_upper` are appended (populated on the first row of each variable
-block only). `es_type` records the measure used (`"cohens_d"`,
-`"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`).
+When `styled = TRUE` (default) and `output = "default"`, prints a styled
+ASCII table and returns the underlying `data.frame` invisibly (with S3
+class `"spicy_continuous_table"`). When `styled = FALSE`, returns a
+plain `data.frame` with columns: `variable`, `label`, `group` (if `by`
+is used), `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`. When
+`by` is used together with `p_value = TRUE`, `statistic = TRUE`, or
+`effect_size = TRUE`, columns `test_type`, `statistic`, `df1`, `df2`,
+and `p.value` are appended (populated on the first row of each variable
+block only). `test_type` records the test that was run (e.g.,
+`"welch_t"`, `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
+`"kruskal"`). When `effect_size = TRUE` and `by` is used, columns
+`es_type`, `es_value`, `es_ci_lower`, and `es_ci_upper` are appended
+(populated on the first row of each variable block only). `es_type`
+records the measure used (`"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
+`"epsilon_sq"`).
 
-For other `output` values, the return type depends on the format (e.g.,
-a `tinytable`, `gt`, or `flextable` object; an invisible file path for
-`"excel"` and `"word"`).
+For other `output` values: `"tinytable"`, `"gt"`, and `"flextable"`
+return their respective table objects. `"excel"` and `"word"` write to
+disk and return the file path invisibly. `"clipboard"` copies the table
+and returns the display `data.frame` invisibly.
+
+## Details
+
+It supports raw data outputs and report-oriented outputs (`default`,
+`tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`) for
+publication tables and APA-style reporting workflows.
 
 ## Examples
 
@@ -354,7 +364,6 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
            styled = FALSE)
-#> Warning: `test` is ignored when both `p_value` and `statistic` are FALSE.
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
 #>       variable        label      group  mean        sd min max ci_lower
 #> 1 Sepal.Length Sepal.Length     setosa 5.006 0.3524897 4.3 5.8 4.905824
@@ -365,11 +374,11 @@ table_continuous(iris, select = Sepal.Length, by = Species,
 #> 2 6.082694 50      <NA>        NA  NA  NA           NA       <NA>        NA
 #> 3 6.768715 50      <NA>        NA  NA  NA           NA       <NA>        NA
 #>   es_ci_lower es_ci_upper
-#> 1   0.5468351   0.7314979
+#> 1   0.5462008   0.7279627
 #> 2          NA          NA
 #> 3          NA          NA
 
-# Cohen's d for 2 groups
+# Hedges' g for 2 groups
 table_continuous(iris[iris$Species != "virginica", ],
            select = Sepal.Length, by = Species,
            effect_size_ci = TRUE, styled = FALSE)
@@ -379,11 +388,11 @@ table_continuous(iris[iris$Species != "virginica", ],
 #> 2 Sepal.Length Sepal.Length versicolor 5.936 0.5161711 4.9 7.0 5.789306
 #> 3 Sepal.Length Sepal.Length  virginica    NA        NA  NA  NA       NA
 #>   ci_upper  n test_type statistic    df1 df2      p.value  es_type  es_value
-#> 1 5.106176 50   welch_t -10.52099 86.538  NA 3.746743e-17 cohens_d -2.104197
+#> 1 5.106176 50   welch_t -10.52099 86.538  NA 3.746743e-17 hedges_g -2.088053
 #> 2 6.082694 50      <NA>        NA     NA  NA           NA     <NA>        NA
 #> 3       NA  0      <NA>        NA     NA  NA           NA     <NA>        NA
 #>   es_ci_lower es_ci_upper
-#> 1   -2.592768   -1.615626
+#> 1   -2.575291   -1.600814
 #> 2          NA          NA
 #> 3          NA          NA
 
@@ -409,7 +418,7 @@ table_continuous(iris,
 # \donttest{
 # ASCII table (default)
 table_continuous(iris, select = starts_with("Sepal"))
-#> Descriptive statistics: iris
+#> Descriptive statistics
 #> 
 #>  Variable     │  M     SD   Min   Max   95% CI LL  95% CI UL    n 
 #> ──────────────┼───────────────────────────────────────────────────
@@ -418,7 +427,7 @@ table_continuous(iris, select = starts_with("Sepal"))
 
 # Grouped ASCII table
 table_continuous(iris, select = starts_with("Sepal"), by = Species)
-#> Descriptive statistics: iris
+#> Descriptive statistics
 #> 
 #>  Variable     │ Group        M     SD   Min   Max   95% CI LL  95% CI UL   n 
 #> ──────────────┼──────────────────────────────────────────────────────────────

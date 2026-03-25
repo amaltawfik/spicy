@@ -33,7 +33,7 @@ table_categorical(
   styled = TRUE,
   style = c("auto", "raw", "report"),
   indent_text = "  ",
-  indent_text_excel_clipboard = "      ",
+  indent_text_excel_clipboard = strrep(" ", 6),
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
@@ -218,14 +218,18 @@ Depends on `output` and `style`:
 
 - `"flextable"`: a `flextable` object.
 
-- `"excel"` / `"clipboard"` / `"word"`: invisibly returns written
-  object/path.
+- `"excel"` / `"word"`: writes to disk and returns the file path
+  invisibly.
+
+- `"clipboard"`: copies the table and returns the text invisibly.
 
 ## Details
 
 It supports raw data outputs (`wide`, `long`) and report-oriented
-outputs (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with
-multi-level headers, p-values, and an association measure.
+outputs (`default`, `tinytable`, `gt`, `flextable`, `excel`,
+`clipboard`, `word`) with multi-level headers and, when `by` is used,
+p-values and optional association measures for publication tables and
+APA-style reporting workflows.
 
 Optional output engines require suggested packages:
 
@@ -233,7 +237,9 @@ Optional output engines require suggested packages:
 
 - `gt` for `output = "gt"`
 
-- `flextable` + `officer` for `output = "flextable"`/`"word"`
+- `flextable` for `output = "flextable"`
+
+- `flextable` + `officer` for `output = "word"`
 
 - `openxlsx` for `output = "excel"`
 
@@ -276,17 +282,27 @@ table_categorical(
   by = sex,
   output = "default"
 )
-#> Categorical table by sex: sochealth
+#> Categorical table by sex
 #> 
-#>  Variable               │      Female n       Female %       Male n       Male %       Total n       Total %          p       Cramer's V 
-#> ────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#>  smoking                │                                                                                          .713              .01 
-#>    No                   │           475           78.4          451         79.3           926          78.8                             
-#>    Yes                  │           131           21.6          118         20.7           249          21.2                             
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity      │                                                                                          .832              .01 
-#>    No                   │           334           53.9          316         54.5           650          54.2                             
-#>    Yes                  │           286           46.1          264         45.5           550          45.8                             
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %     p 
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │      475      78.4     451    79.3      926     78.8       
+#>    Yes             │      131      21.6     118    20.7      249     21.2       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .832 
+#>    No              │      334      53.9     316    54.5      650     54.2       
+#>    Yes             │      286      46.1     264    45.5      550     45.8       
+#> 
+#>  Variable          │ Cramer's V 
+#> ───────────────────┼────────────
+#>  smoking           │        .01 
+#>    No              │            
+#>    Yes             │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │        .01 
+#>    No              │            
+#>    Yes             │            
 
 # One-way frequency-style table
 table_categorical(
@@ -294,7 +310,7 @@ table_categorical(
   select = c(smoking, physical_activity),
   output = "default"
 )
-#> Categorical table: sochealth
+#> Categorical table
 #> 
 #>  Variable               │        n          % 
 #> ────────────────────────┼─────────────────────
@@ -420,15 +436,15 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 #> +===================+=====+======+=====+======+=====+======+======+============+
 #> | Current smoker    |     |      |     |      |     |      | .713 | .01        |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        No         | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |
+#> |      No           | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        Yes        | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |
+#> |      Yes          | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
 #> | Physical activity |     |      |     |      |     |      | .832 | .01        |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        No         | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |
+#> |      No           | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        Yes        | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |
+#> |      Yes          | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+ 
 
 # Optional output: Excel

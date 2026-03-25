@@ -229,12 +229,19 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                  179                   415            332 <span style="color: #9E9E9E;">│</span>        926 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   78                   112             59 <span style="color: #9E9E9E;">│</span>        249 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  257                   527            391 <span style="color: #9E9E9E;">│</span>       1175 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                  179                   415            332 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   78                   112             59 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  257                   527            391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        926 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>        249 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
@@ -243,13 +250,21 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (Column %)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                 69.6                  78.7           84.9 <span style="color: #9E9E9E;">│</span>       78.8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                 30.4                  21.3           15.1 <span style="color: #9E9E9E;">│</span>       21.2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                100.0                 100.0          100.0 <span style="color: #9E9E9E;">│</span>      100.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>                  257                   527            391 <span style="color: #9E9E9E;">│</span>       1175 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                 69.6                  78.7           84.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                 30.4                  21.3           15.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                100.0                 100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>                  257                   527            391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>       78.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>       21.2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
@@ -258,12 +273,19 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                  176                   419            325 <span style="color: #9E9E9E;">│</span>        921 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   79                   115             60 <span style="color: #9E9E9E;">│</span>        254 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  255                   534            385 <span style="color: #9E9E9E;">│</span>       1175 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                  176                   419            325 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   79                   115             60 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  255                   534            385 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        921 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>        254 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
@@ -273,24 +295,38 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Female</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   95                   220            160 <span style="color: #9E9E9E;">│</span>        475 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   38                    62             31 <span style="color: #9E9E9E;">│</span>        131 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  133                   282            191 <span style="color: #9E9E9E;">│</span>        606 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   95                   220            160 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   38                    62             31 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  133                   282            191 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        475 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>        131 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        606 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = 0.029</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   84                   195            172 <span style="color: #9E9E9E;">│</span>        451 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   40                    50             28 <span style="color: #9E9E9E;">│</span>        118 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  124                   245            200 <span style="color: #9E9E9E;">│</span>        569 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   84                   195            172 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   40                    50             28 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                  124                   245            200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        451 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>        118 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        569 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.17</span></span>
@@ -299,96 +335,152 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">age_group</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.25-34</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   23                    49             29 <span style="color: #9E9E9E;">│</span>        101 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    9                     9              7 <span style="color: #9E9E9E;">│</span>         25 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   32                    58             36 <span style="color: #9E9E9E;">│</span>        126 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   23                    49             29 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    9                     9              7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   32                    58             36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        101 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         25 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        126 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = 0.356</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                    9                    42             32 <span style="color: #9E9E9E;">│</span>         83 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   11                    11              4 <span style="color: #9E9E9E;">│</span>         26 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   20                    53             36 <span style="color: #9E9E9E;">│</span>        109 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                    9                    42             32 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   11                    11              4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   20                    53             36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>         83 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         26 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        109 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.36</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   24                    73             48 <span style="color: #9E9E9E;">│</span>        145 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   10                    20              8 <span style="color: #9E9E9E;">│</span>         38 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   34                    93             56 <span style="color: #9E9E9E;">│</span>        183 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   24                    73             48 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   10                    20              8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   34                    93             56 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        145 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         38 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = 0.223</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   33                    59             60 <span style="color: #9E9E9E;">│</span>        152 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   14                    17              7 <span style="color: #9E9E9E;">│</span>         38 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   47                    76             67 <span style="color: #9E9E9E;">│</span>        190 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   33                    59             60 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   14                    17              7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   47                    76             67 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        152 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         38 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        190 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = 0.032</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   28                    63             45 <span style="color: #9E9E9E;">│</span>        136 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    8                    16              6 <span style="color: #9E9E9E;">│</span>         30 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   36                    79             51 <span style="color: #9E9E9E;">│</span>        166 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   28                    63             45 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    8                    16              6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   36                    79             51 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        136 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         30 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        166 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = 0.360</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   28                    58             42 <span style="color: #9E9E9E;">│</span>        128 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    8                    13              5 <span style="color: #9E9E9E;">│</span>         26 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   36                    71             47 <span style="color: #9E9E9E;">│</span>        154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   28                    58             42 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    8                    13              5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   36                    71             47 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>        128 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         26 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        154 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = 0.343</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.12</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   20                    35             38 <span style="color: #9E9E9E;">│</span>         93 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   11                    17             10 <span style="color: #9E9E9E;">│</span>         38 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   31                    52             48 <span style="color: #9E9E9E;">│</span>        131 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   20                    35             38 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                   11                    17             10 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   31                    52             48 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>         93 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         38 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        131 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.5, p = 0.282</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   14                    36             38 <span style="color: #9E9E9E;">│</span>         88 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    7                     9             12 <span style="color: #9E9E9E;">│</span>         28 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   21                    45             50 <span style="color: #9E9E9E;">│</span>        116 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Lower secondary       Upper secondary       Tertiary </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>                   14                    36             38 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>                    7                     9             12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>                   21                    45             50 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values      <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No          <span style="color: #9E9E9E;">│</span>         88 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes         <span style="color: #9E9E9E;">│</span>         28 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        116 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = 0.499</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
@@ -397,13 +489,21 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, <span class="va">self_rated_health</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: education x self_rated_health (N)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values               <span style="color: #9E9E9E;">│</span>      Poor       Fair       Good       Very good <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary      <span style="color: #9E9E9E;">│</span>        28         86        102              44 <span style="color: #9E9E9E;">│</span>        260 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary      <span style="color: #9E9E9E;">│</span>        28        118        263             118 <span style="color: #9E9E9E;">│</span>        527 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary             <span style="color: #9E9E9E;">│</span>         5         62        193             133 <span style="color: #9E9E9E;">│</span>        393 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>        61        266        558             295 <span style="color: #9E9E9E;">│</span>       1180 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values               <span style="color: #9E9E9E;">│</span>      Poor       Fair       Good       Very good </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary      <span style="color: #9E9E9E;">│</span>        28         86        102              44 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary      <span style="color: #9E9E9E;">│</span>        28        118        263             118 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary             <span style="color: #9E9E9E;">│</span>         5         62        193             133 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>        61        266        558             295 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values               <span style="color: #9E9E9E;">│</span>      Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary      <span style="color: #9E9E9E;">│</span>        260 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary      <span style="color: #9E9E9E;">│</span>        527 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary             <span style="color: #9E9E9E;">│</span>        393 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>       1180 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt; 0.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Kendall's Tau-b = 0.20</span></span>

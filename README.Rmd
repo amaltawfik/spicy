@@ -69,6 +69,8 @@ If you are looking for a specific workflow, start here:
 - [Frequency tables and cross-tabulations in R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
 - [Cramer's V, Phi, and association measures in R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 - [Create categorical tables in R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+- [Create continuous summary tables in R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+- [Summary tables for APA-style reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 - [Reference for `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
 - [Reference for `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
 - [Reference for `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
