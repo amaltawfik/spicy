@@ -28,7 +28,7 @@ table_categorical(
   styled = TRUE,
   style = c("auto", "raw", "report"),
   indent_text = "  ",
-  indent_text_excel_clipboard = "      ",
+  indent_text_excel_clipboard = strrep(" ", 6),
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
@@ -154,8 +154,10 @@ cross-tabulation summaries using \code{spicy::cross_tab()} internally. Without
 }
 \details{
 It supports raw data outputs (\code{wide}, \code{long}) and report-oriented outputs
-(\code{tinytable}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word}) with multi-level
-headers, p-values, and an association measure.
+(\code{default}, \code{tinytable}, \code{gt}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word})
+with multi-level headers and, when \code{by} is used, p-values and optional
+association measures for publication tables and APA-style reporting
+workflows.
 
 Optional output engines require suggested packages:
 \itemize{

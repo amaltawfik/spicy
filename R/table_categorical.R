@@ -6,8 +6,10 @@
 #' `by`, it produces one-way frequency-style summaries.
 #'
 #' It supports raw data outputs (`wide`, `long`) and report-oriented outputs
-#' (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with multi-level
-#' headers, p-values, and an association measure.
+#' (`default`, `tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`)
+#' with multi-level headers and, when `by` is used, p-values and optional
+#' association measures for publication tables and APA-style reporting
+#' workflows.
 #'
 #' @param data A data frame.
 #' @param select Columns to include as row variables. Supports tidyselect
@@ -211,7 +213,7 @@ table_categorical <- function(
   styled = TRUE,
   style = c("auto", "raw", "report"),
   indent_text = "  ",
-  indent_text_excel_clipboard = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0",
+  indent_text_excel_clipboard = strrep("\u00A0", 6),
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
@@ -1509,7 +1511,7 @@ table_categorical <- function(
     df
   }
 
-  # Headers (base: without CI â€” used by rendered formats)
+  # Headers (base: without CI; used by rendered formats)
   top_header_span <- c(
     "Variable",
     rep(group_levels, each = 2),

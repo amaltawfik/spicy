@@ -1414,7 +1414,7 @@ test_that("table_continuous es values only on first row of each variable block",
     effect_size = TRUE,
     styled = FALSE
   )
-  # 3 groups Ã— 1 var = 3 rows; es_value only on first row
+  # 3 groups x 1 var = 3 rows; es_value only on first row
   expect_false(is.na(out$es_value[1]))
   expect_true(is.na(out$es_value[2]))
   expect_true(is.na(out$es_value[3]))

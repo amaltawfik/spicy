@@ -1106,3 +1106,23 @@ test_that("grouped table with empty data returns character(0) columns", {
   col_types <- vapply(out, typeof, character(1))
   expect_true(all(col_types == "character"))
 })
+
+test_that("table_categorical gt output omits association header when assoc_measure = 'none'", {
+  skip_if_not_installed("gt")
+
+  gt_tbl <- table_categorical(
+    sochealth,
+    "smoking",
+    "education",
+    assoc_measure = "none",
+    output = "gt"
+  )
+
+  boxhead <- gt_tbl[["_boxhead"]]
+  spanners <- gt_tbl[["_spanners"]]
+
+  expect_false(any(boxhead$column_label == "Cramer's V"))
+  expect_false(any(boxhead$var == "assoc_col"))
+  expect_false(any(spanners$spanner_id == "spn_assoc"))
+  expect_false(any(spanners$spanner_label == "Cramer's V"))
+})

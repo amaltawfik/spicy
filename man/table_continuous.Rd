@@ -32,11 +32,13 @@ table_continuous(
 \item{data}{A \code{data.frame}.}
 
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect
-syntax (default: \code{dplyr::everything()}). If \code{regex = TRUE}, provide
-a regular expression pattern (character string).}
+syntax or a character vector of column names (default:
+\code{dplyr::everything()}). If \code{regex = TRUE}, provide a regular
+expression pattern (character string).}
 
-\item{by}{An optional unquoted column name to group the descriptive
-statistics by. The column does not need to be numeric.}
+\item{by}{Optional grouping column. Accepts an unquoted column name or
+a single character column name. The column does not need to be
+numeric.}
 
 \item{exclude}{Columns to exclude. Supports tidyselect syntax and
 character vectors of column names.}
@@ -157,9 +159,15 @@ to disk and return the file path invisibly. \code{"clipboard"} copies the
 table and returns the display \code{data.frame} invisibly.
 }
 \description{
-\code{table_continuous()} computes descriptive statistics for continuous
-variables, with optional grouping by a categorical variable, optional
-group-comparison tests, and multiple output formats.
+\code{table_continuous()} builds a publication-ready table for one or many
+selected continuous variables. With \code{by}, it produces grouped descriptive
+summaries with optional group-comparison tests and effect sizes. Without
+\code{by}, it produces one-way descriptive summaries.
+}
+\details{
+It supports raw data outputs and report-oriented outputs (\code{default},
+\code{tinytable}, \code{gt}, \code{flextable}, \code{excel}, \code{clipboard}, \code{word}) for
+publication tables and APA-style reporting workflows.
 }
 \examples{
 # Basic usage with all numeric columns
