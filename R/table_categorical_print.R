@@ -14,7 +14,6 @@
 #' @export
 print.spicy_categorical_table <- function(x, ...) {
   display_df <- attr(x, "display_df")
-  data_name <- attr(x, "data_name") %||% ""
   group_var <- attr(x, "group_var")
   indent_text <- attr(x, "indent_text") %||% "  "
 
@@ -50,9 +49,9 @@ print.spicy_categorical_table <- function(x, ...) {
   }
 
   title <- if (is.null(group_var)) {
-    paste0("Categorical table: ", data_name)
+    "Categorical table"
   } else {
-    paste0("Categorical table by ", group_var, ": ", data_name)
+    paste0("Categorical table by ", group_var)
   }
 
   spicy_print_table(

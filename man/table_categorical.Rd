@@ -142,8 +142,8 @@ the underlying data frame invisibly.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
-\item \code{"excel"} / \code{"clipboard"} / \code{"word"}: invisibly returns written
-object/path.
+\item \code{"excel"} / \code{"word"}: writes to disk and returns the file path invisibly.
+\item \code{"clipboard"}: copies the table and returns the text invisibly.
 }
 }
 \description{
@@ -161,7 +161,8 @@ Optional output engines require suggested packages:
 \itemize{
 \item \code{tinytable} for \code{output = "tinytable"}
 \item \code{gt} for \code{output = "gt"}
-\item \code{flextable} + \code{officer} for \code{output = "flextable"}/\code{"word"}
+\item \code{flextable} for \code{output = "flextable"}
+\item \code{flextable} + \code{officer} for \code{output = "word"}
 \item \code{openxlsx} for \code{output = "excel"}
 \item \code{clipr} for \code{output = "clipboard"}
 }

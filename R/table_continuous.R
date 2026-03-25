@@ -36,8 +36,8 @@
 #'   used.
 #' @param effect_size Logical. If `TRUE` and `by` is used, adds an
 #'   effect-size column ("ES"). The measure is chosen automatically:
-#'   - Cohen's *d* â€” 2 groups, parametric (CI via Hedges & Olkin
-#'     approximation).
+#'   - Hedges' *g* (bias-corrected) â€” 2 groups, parametric (CI via
+#'     Hedges & Olkin approximation).
 #'   - Eta-squared (\eqn{\eta^2}) â€” 3+ groups, parametric (CI via
 #'     noncentral *F* distribution).
 #'   - Rank-biserial *r* (`r_rb`) â€” 2 groups, nonparametric (CI via
@@ -48,7 +48,7 @@
 #'   Defaults to `FALSE`. Ignored when `by` is not used.
 #' @param effect_size_ci Logical. If `TRUE`, appends the confidence
 #'   interval of the effect size in brackets (e.g.,
-#'   `d = 0.45 [0.22, 0.68]`). Implies `effect_size = TRUE`.
+#'   `g = 0.45 [0.22, 0.68]`). Implies `effect_size = TRUE`.
 #'   Defaults to `FALSE`.
 #' @param labels An optional named character vector of variable labels.
 #'   Names must match column names in `data`. When `NULL` (the default),
@@ -81,26 +81,28 @@
 #'   non-numeric columns (default: `FALSE`).
 #'
 #' @return
-#' When `styled = TRUE` (default), a `data.frame` with S3 class
-#' `"spicy_continuous_table"` and a custom print method.
-#' When `styled = FALSE`, a plain `data.frame` with columns:
+#' When `styled = TRUE` (default) and `output = "default"`, prints a
+#' styled ASCII table and returns the underlying `data.frame` invisibly
+#' (with S3 class `"spicy_continuous_table"`).
+#' When `styled = FALSE`, returns a plain `data.frame` with columns:
 #' `variable`, `label`, `group` (if `by` is used),
 #' `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`.
-#' When `by` is used together with `p_value = TRUE` or
-#' `statistic = TRUE`, columns `test_type`, `statistic`, `df1`,
-#' `df2`, and `p.value` are appended (populated on the first row of
-#' each variable block only). `test_type` records the test that was
-#' run (e.g., `"welch_t"`, `"welch_anova"`, `"student_t"`,
+#' When `by` is used together with `p_value = TRUE`,
+#' `statistic = TRUE`, or `effect_size = TRUE`, columns `test_type`,
+#' `statistic`, `df1`, `df2`, and `p.value` are appended (populated on
+#' the first row of each variable block only). `test_type` records the
+#' test that was run (e.g., `"welch_t"`, `"welch_anova"`, `"student_t"`,
 #' `"anova"`, `"wilcoxon"`, `"kruskal"`).
 #' When `effect_size = TRUE` and `by` is used, columns `es_type`,
 #' `es_value`, `es_ci_lower`, and `es_ci_upper` are appended
 #' (populated on the first row of each variable block only).
-#' `es_type` records the measure used (`"cohens_d"`, `"eta_sq"`,
+#' `es_type` records the measure used (`"hedges_g"`, `"eta_sq"`,
 #' `"r_rb"`, or `"epsilon_sq"`).
 #'
-#' For other `output` values, the return type depends on the format
-#' (e.g., a `tinytable`, `gt`, or `flextable` object; an invisible file
-#' path for `"excel"` and `"word"`).
+#' For other `output` values: `"tinytable"`, `"gt"`, and `"flextable"`
+#' return their respective table objects. `"excel"` and `"word"` write
+#' to disk and return the file path invisibly. `"clipboard"` copies the
+#' table and returns the display `data.frame` invisibly.
 #'
 #' @examples
 #' # Basic usage with all numeric columns
@@ -149,7 +151,7 @@
 #'            test = "nonparametric", effect_size_ci = TRUE,
 #'            styled = FALSE)
 #'
-#' # Cohen's d for 2 groups
+#' # Hedges' g for 2 groups
 #' table_continuous(iris[iris$Species != "virginica", ],
 #'            select = Sepal.Length, by = Species,
 #'            effect_size_ci = TRUE, styled = FALSE)
@@ -270,6 +272,15 @@ table_continuous <- function(
   }
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
     stop("`labels` must be a named character vector.", call. = FALSE)
+  }
+  for (.lname in c(
+    "p_value", "statistic", "effect_size", "effect_size_ci",
+    "regex", "styled", "verbose"
+  )) {
+    .lval <- get(.lname)
+    if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
+      stop(sprintf("`%s` must be TRUE/FALSE.", .lname), call. = FALSE)
+    }
   }
   output <- match.arg(output)
   test_explicit <- !missing(test)
@@ -428,10 +439,21 @@ table_continuous <- function(
 
   if (has_group) {
     groups <- data[[group_col_name]]
+    n_na_groups <- sum(is.na(groups))
+    if (n_na_groups > 0L) {
+      warning(
+        sprintf(
+          "%d observation(s) with NA in `%s` were excluded.",
+          n_na_groups,
+          group_col_name
+        ),
+        call. = FALSE
+      )
+    }
     group_levels <- if (is.factor(groups)) {
       levels(groups)
     } else {
-      sort(unique(groups))
+      sort(unique(groups[!is.na(groups)]))
     }
     n_groups <- length(group_levels)
     rows <- list()
@@ -459,7 +481,7 @@ table_continuous <- function(
         n_valid_groups <- length(unique(gvec))
         # Need at least 2 groups with >=2 obs each for a test
         grp_n <- table(gvec)
-        testable <- n_valid_groups >= 2L && all(grp_n[grp_n > 0] >= 2L)
+        testable <- n_valid_groups >= 2L && all(grp_n >= 2L)
         if (testable) {
           test_row <- run_group_test(xvec, gvec, n_valid_groups, test)
         }
@@ -681,7 +703,7 @@ compute_effect_size <- function(xvec, gvec, n_groups, method, ci_level) {
       h <- unname(kt$statistic)
       n_total <- length(xvec)
       row$es_type <- "epsilon_sq"
-      row$es_value <- (h - n_groups + 1) / (n_total - n_groups)
+      row$es_value <- max(0, (h - n_groups + 1) / (n_total - n_groups))
       # Bootstrap CI for epsilon-squared
       ci <- epsilon_sq_boot_ci(xvec, gvec, n_groups, ci_level)
       row$es_ci_lower <- ci[1]
@@ -689,7 +711,7 @@ compute_effect_size <- function(xvec, gvec, n_groups, method, ci_level) {
     }
   } else {
     if (n_groups == 2L) {
-      # Cohen's d
+      # Hedges' g (bias-corrected standardised mean difference)
       grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
       x1 <- xvec[gvec == grp_levels[1]]
       x2 <- xvec[gvec == grp_levels[2]]
@@ -699,13 +721,15 @@ compute_effect_size <- function(xvec, gvec, n_groups, method, ci_level) {
         ((n1 - 1) * stats::var(x1) + (n2 - 1) * stats::var(x2)) / (n1 + n2 - 2)
       )
       d <- (mean(x1) - mean(x2)) / s_pooled
-      row$es_type <- "cohens_d"
-      row$es_value <- d
+      # Hedges' correction factor (J)
+      g <- d * (1 - 3 / (4 * (n1 + n2 - 2) - 1))
+      row$es_type <- "hedges_g"
+      row$es_value <- g
       # Hedges & Olkin approximation for SE
-      se_d <- sqrt(1 / n1 + 1 / n2 + d^2 / (2 * (n1 + n2)))
+      se_g <- sqrt(1 / n1 + 1 / n2 + g^2 / (2 * (n1 + n2)))
       z_crit <- stats::qnorm(1 - alpha / 2)
-      row$es_ci_lower <- d - z_crit * se_d
-      row$es_ci_upper <- d + z_crit * se_d
+      row$es_ci_lower <- g - z_crit * se_g
+      row$es_ci_upper <- g + z_crit * se_g
     } else {
       # Eta-squared from one-way ANOVA (SS_between / SS_total)
       grand_mean <- mean(xvec)
@@ -797,10 +821,9 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
 
   compute_eps <- function(x, g, k) {
     h <- unname(stats::kruskal.test(x ~ g)$statistic)
-    (h - k + 1) / (length(x) - k)
+    max(0, (h - k + 1) / (length(x) - k))
   }
 
-  set.seed(42L)
   boot_vals <- vapply(
     seq_len(n_boot),
     function(i) {
@@ -848,7 +871,7 @@ build_display_df <- function(
       return("")
     }
     if (p < 0.001) {
-      return(if (decimal_mark == ".") "< .001" else "< ,001")
+      return(if (decimal_mark == ".") "<\u00A0.001" else "<\u00A0,001")
     }
     s <- formatC(p, format = "f", digits = 3L)
     s <- sub("^0\\.", ".", s)
@@ -890,7 +913,7 @@ build_display_df <- function(
   }
 
   es_labels <- c(
-    cohens_d = "d",
+    hedges_g = "g",
     eta_sq = "\u03b7\u00b2",
     r_rb = "r_rb",
     epsilon_sq = "\u03b5\u00b2"
@@ -1402,7 +1425,6 @@ export_desc_table <- function(
       # nocov start
       stop("Install package 'officer'.", call. = FALSE)
     } # nocov end
-
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)

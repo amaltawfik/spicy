@@ -6,9 +6,11 @@
 
 * `table_continuous()` replaces `table_desc()` as the public name for continuous summary tables. It computes descriptive statistics (mean, SD, min, max, confidence interval of the mean, n) for numeric variables, with tidyselect column selection, optional grouping via `by`, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
 
-* `table_continuous()` gains `effect_size` and `effect_size_ci` arguments. When `by` is used, `effect_size = TRUE` adds an "ES" column with the appropriate measure (Cohen's d, eta-squared, rank-biserial r_rb, or epsilon-squared) chosen automatically based on the test method and number of groups. `effect_size_ci = TRUE` appends the confidence interval in brackets (e.g., `d = 0.45 [0.22, 0.68]`).
+* `table_continuous()` gains `effect_size` and `effect_size_ci` arguments. When `by` is used, `effect_size = TRUE` adds an "ES" column with the appropriate measure (Hedges' g, eta-squared, rank-biserial r_rb, or epsilon-squared) chosen automatically based on the test method and number of groups. `effect_size_ci = TRUE` appends the confidence interval in brackets (e.g., `g = 0.45 [0.22, 0.68]`).
 
 * `table_continuous()` gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`) to choose the group-comparison method, along with independent `p_value` and `statistic` display toggles. When `by` is used, `p_value = TRUE` adds a p-value column and `statistic = TRUE` adds a formatted test-statistic column; either or both can be enabled independently.
+
+* `table_categorical()` and `table_continuous()` now print shorter ASCII titles without appending the input data frame name.
 
 # spicy 0.6.0
 

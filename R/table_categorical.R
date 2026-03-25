@@ -83,13 +83,14 @@
 #' - `"tinytable"`: a `tinytable` object.
 #' - `"gt"`: a `gt_tbl` object.
 #' - `"flextable"`: a `flextable` object.
-#' - `"excel"` / `"clipboard"` / `"word"`: invisibly returns written
-#'   object/path.
+#' - `"excel"` / `"word"`: writes to disk and returns the file path invisibly.
+#' - `"clipboard"`: copies the table and returns the text invisibly.
 #'
 #' @details Optional output engines require suggested packages:
 #' - `tinytable` for `output = "tinytable"`
 #' - `gt` for `output = "gt"`
-#' - `flextable` + `officer` for `output = "flextable"`/`"word"`
+#' - `flextable` for `output = "flextable"`
+#' - `flextable` + `officer` for `output = "word"`
 #' - `openxlsx` for `output = "excel"`
 #' - `clipr` for `output = "clipboard"`
 #'
@@ -884,7 +885,6 @@ table_categorical <- function(
       if (!requireNamespace("officer", quietly = TRUE)) {
         stop("Install package 'officer'.", call. = FALSE)
       }
-
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
@@ -922,7 +922,7 @@ table_categorical <- function(
 
     if (output == "word") {
       if (is.null(word_path) || !nzchar(word_path)) {
-        stop("Provide `word_path` for output='word'.", call. = FALSE)
+        stop("Provide `word_path` for output = 'word'.", call. = FALSE)
       }
       ft <- build_flextable_oneway(report_wide_char)
       flextable::save_as_docx(ft, path = word_path)
@@ -939,7 +939,7 @@ table_categorical <- function(
 
     if (output == "excel") {
       if (is.null(excel_path) || !nzchar(excel_path)) {
-        stop("Provide `excel_path` for output='excel'.", call. = FALSE)
+        stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
       }
       if (!requireNamespace("openxlsx", quietly = TRUE)) {
         stop("Install package 'openxlsx'.", call. = FALSE)
@@ -1041,7 +1041,7 @@ table_categorical <- function(
       }
 
       openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
-      return(invisible(body_xl))
+      return(invisible(excel_path))
     }
 
     if (output == "clipboard") {
@@ -1053,6 +1053,7 @@ table_categorical <- function(
       })
       txt <- paste(lines, collapse = "\n")
       clipr::write_clip(txt)
+      message("Categorical table copied to clipboard.")
       return(invisible(txt))
     }
   }
@@ -1259,7 +1260,7 @@ table_categorical <- function(
     }
     if (nrow(ldf) == 0) {
       return(as.data.frame(
-        setNames(replicate(length(cols), logical(0), simplify = FALSE), cols),
+        setNames(replicate(length(cols), character(0), simplify = FALSE), cols),
         check.names = FALSE
       ))
     }
@@ -1516,15 +1517,11 @@ table_categorical <- function(
     dat_tt <- merge_ci_inline(report_wide_char)
 
     # Detect modality rows before header rename
-    mod_rows <- which(
-      dat_tt[[ncol(dat_tt) - 1]] == "" &
-        dat_tt[[ncol(dat_tt)]] == "" &
-        nzchar(dat_tt[[1]])
-    )
+    mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
     if (length(mod_rows)) {
       dat_tt[[1]][mod_rows] <- paste0(
         strrep("\u00A0", 4),
-        dat_tt[[1]][mod_rows]
+        substring(dat_tt[[1]][mod_rows], nchar(indent_text) + 1L)
       )
     }
 
@@ -1622,15 +1619,11 @@ table_categorical <- function(
     dat_gt <- merge_ci_inline(report_wide_char)
 
     # Indent modality rows with non-breaking spaces
-    mod_rows <- which(
-      dat_gt[["p"]] == "" &
-        dat_gt[[measure_col]] == "" &
-        nzchar(dat_gt[[1]])
-    )
+    mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
     if (length(mod_rows)) {
       dat_gt[[1]][mod_rows] <- paste0(
         strrep("\u00A0", 4),
-        dat_gt[[1]][mod_rows]
+        substring(dat_gt[[1]][mod_rows], nchar(indent_text) + 1L)
       )
     }
 
@@ -1815,7 +1808,6 @@ table_categorical <- function(
     if (!requireNamespace("officer", quietly = TRUE)) {
       stop("Install package 'officer'.", call. = FALSE)
     }
-
     ft <- flextable::flextable(df)
 
     map <- data.frame(
@@ -1843,7 +1835,7 @@ table_categorical <- function(
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
 
-    id_mod <- which(df$p == "" & df[[measure_col]] == "" & nzchar(df[[1]]))
+    id_mod <- which(startsWith(df[[1]], indent_text))
     if (length(id_mod)) {
       ft <- flextable::padding(
         ft,
@@ -1867,7 +1859,7 @@ table_categorical <- function(
 
   if (output == "word") {
     if (is.null(word_path) || !nzchar(word_path)) {
-      stop("Provide `word_path` for output='word'.", call. = FALSE)
+      stop("Provide `word_path` for output = 'word'.", call. = FALSE)
     }
     ft <- build_flextable(merge_ci_inline(report_wide_char))
     flextable::save_as_docx(ft, path = word_path)
@@ -1905,7 +1897,7 @@ table_categorical <- function(
   # ---------------- excel ----------------
   if (output == "excel") {
     if (is.null(excel_path) || !nzchar(excel_path)) {
-      stop("Provide `excel_path` for output='excel'.", call. = FALSE)
+      stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
     }
     if (!requireNamespace("openxlsx", quietly = TRUE)) {
       stop("Install package 'openxlsx'.", call. = FALSE)
@@ -1966,7 +1958,6 @@ table_categorical <- function(
     st_left <- openxlsx::createStyle(halign = "left")
     st_text <- openxlsx::createStyle(numFmt = "@")
     st_top <- openxlsx::createStyle(border = "top", borderStyle = "thin")
-    st_mid <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
     st_bot <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
 
     openxlsx::addStyle(
@@ -2021,7 +2012,7 @@ table_categorical <- function(
     openxlsx::addStyle(
       wb,
       excel_sheet,
-      st_mid,
+      st_bot,
       rows = 1,
       cols = grp_j,
       gridExpand = TRUE,
@@ -2077,7 +2068,7 @@ table_categorical <- function(
     }
 
     openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
-    return(invisible(body_xl))
+    return(invisible(excel_path))
   }
 
   # ---------------- clipboard ----------------
@@ -2090,6 +2081,7 @@ table_categorical <- function(
     })
     txt <- paste(lines, collapse = "\n")
     clipr::write_clip(txt)
+    message("Categorical table copied to clipboard.")
     return(invisible(txt))
   }
 }

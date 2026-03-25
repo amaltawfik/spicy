@@ -763,6 +763,56 @@ test_that("table_continuous validates regex select", {
   )
 })
 
+test_that("table_continuous validates logical parameters", {
+  df <- data.frame(x = 1:5)
+  expect_error(table_continuous(df, p_value = "yes"), "p_value")
+  expect_error(table_continuous(df, statistic = 1), "statistic")
+  expect_error(table_continuous(df, effect_size = NA), "effect_size")
+  expect_error(table_continuous(df, effect_size_ci = NULL), "effect_size_ci")
+  expect_error(table_continuous(df, regex = "TRUE"), "regex")
+  expect_error(table_continuous(df, styled = c(TRUE, FALSE)), "styled")
+  expect_error(table_continuous(df, verbose = NA), "verbose")
+})
+
+test_that("table_continuous warns when NA present in by column", {
+  df <- data.frame(
+    x = 1:6,
+    g = c("A", "A", "B", "B", NA, NA)
+  )
+  expect_warning(
+    table_continuous(df, select = "x", by = "g", styled = FALSE),
+    "2 observation.*excluded"
+  )
+  out <- suppressWarnings(
+    table_continuous(df, select = "x", by = "g", styled = FALSE)
+  )
+  # Only A and B groups should be present
+  expect_equal(sort(unique(out$group)), c("A", "B"))
+})
+
+test_that("fmt_p uses non-breaking space in display", {
+  set.seed(1)
+  df <- data.frame(
+    x = c(rnorm(30, 0), rnorm(30, 10)),
+    g = rep(c("A", "B"), each = 30)
+  )
+  out <- table_continuous(df, select = "x", by = "g", p_value = TRUE)
+  # build_display_df is used by the print method; call it directly
+  display <- spicy:::build_display_df(
+    out,
+    digits = attr(out, "digits"),
+    decimal_mark = attr(out, "decimal_mark"),
+    ci_level = attr(out, "ci_level"),
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE
+  )
+  p_col <- display[["p"]][nzchar(display[["p"]])]
+  # p should be very small -> "<\u00A0.001" with non-breaking space
+  expect_true(any(grepl("<\u00A0", p_col)))
+})
+
 test_that("table_continuous warns on no numeric columns", {
   df <- data.frame(x = letters[1:5])
   expect_warning(table_continuous(df, styled = FALSE), "No numeric")
@@ -1164,11 +1214,11 @@ test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)",
   expect_true("es_value" %in% names(out))
   expect_true("es_ci_lower" %in% names(out))
   expect_true("es_ci_upper" %in% names(out))
-  expect_equal(out$es_type[1], "cohens_d")
+  expect_equal(out$es_type[1], "hedges_g")
   expect_false(is.na(out$es_value[1]))
 })
 
-test_that("table_continuous Cohen's d matches manual calculation", {
+test_that("table_continuous Hedges' g matches manual calculation", {
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -1185,8 +1235,9 @@ test_that("table_continuous Cohen's d matches manual calculation", {
   s_pooled <- sqrt(
     ((n1 - 1) * var(x1) + (n2 - 1) * var(x2)) / (n1 + n2 - 2)
   )
-  d_manual <- (mean(x1) - mean(x2)) / s_pooled
-  expect_equal(out$es_value[1], d_manual)
+  d <- (mean(x1) - mean(x2)) / s_pooled
+  g_manual <- d * (1 - 3 / (4 * (n1 + n2 - 2) - 1))
+  expect_equal(out$es_value[1], g_manual)
 })
 
 test_that("table_continuous eta-squared for 3+ groups (welch)", {
@@ -1388,7 +1439,7 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
 
 # ---- effect size: student test ----
 
-test_that("table_continuous effect_size with test='student' 2 groups gives cohens_d", {
+test_that("table_continuous effect_size with test='student' 2 groups gives hedges_g", {
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -1399,7 +1450,7 @@ test_that("table_continuous effect_size with test='student' 2 groups gives cohen
     effect_size = TRUE,
     styled = FALSE
   )
-  expect_equal(out$es_type[1], "cohens_d")
+  expect_equal(out$es_type[1], "hedges_g")
   expect_equal(out$test_type[1], "student_t")
 })
 
@@ -1598,6 +1649,35 @@ test_that("epsilon_sq_boot_ci returns NA when too few valid resamples", {
   expect_length(ci, 2L)
   expect_true(is.na(ci[1]))
   expect_true(is.na(ci[2]))
+})
+
+test_that("epsilon_sq_boot_ci does not alter user RNG state", {
+  set.seed(123)
+  before <- .Random.seed
+  x <- c(rnorm(30, 0), rnorm(30, 1), rnorm(30, 2))
+  g <- rep(c("A", "B", "C"), each = 30)
+  set.seed(99)
+  rng_before <- .Random.seed
+  spicy:::epsilon_sq_boot_ci(x, g, 3L, 0.95)
+  rng_after <- .Random.seed
+  # RNG should have advanced (not been reset to a fixed seed)
+  expect_false(identical(rng_before, rng_after))
+})
+
+test_that("epsilon squared is clamped to 0 when H is small", {
+  # Create data where groups are nearly identical -> H ≈ 0 -> raw ε² < 0
+  set.seed(1)
+  x <- rnorm(90, mean = 5, sd = 10)
+  g <- rep(c("A", "B", "C"), each = 30)
+  out <- table_continuous(
+    data.frame(x = x, g = g),
+    select = "x",
+    by = "g",
+    test = "nonparametric",
+    effect_size = TRUE
+  )
+  eps_vals <- out$es_value[!is.na(out$es_value)]
+  expect_true(all(eps_vals >= 0))
 })
 
 test_that("eta_sq_ci returns lower = 0 for very small F", {

@@ -72,8 +72,8 @@ used.}
 \item{effect_size}{Logical. If \code{TRUE} and \code{by} is used, adds an
 effect-size column ("ES"). The measure is chosen automatically:
 \itemize{
-\item Cohen's \emph{d} â€” 2 groups, parametric (CI via Hedges & Olkin
-approximation).
+\item Hedges' \emph{g} (bias-corrected) â€” 2 groups, parametric (CI via
+Hedges & Olkin approximation).
 \item Eta-squared (\eqn{\eta^2}) â€” 3+ groups, parametric (CI via
 noncentral \emph{F} distribution).
 \item Rank-biserial \emph{r} (\code{r_rb}) â€” 2 groups, nonparametric (CI via
@@ -86,7 +86,7 @@ Defaults to \code{FALSE}. Ignored when \code{by} is not used.}
 
 \item{effect_size_ci}{Logical. If \code{TRUE}, appends the confidence
 interval of the effect size in brackets (e.g.,
-\code{d = 0.45 [0.22, 0.68]}). Implies \code{effect_size = TRUE}.
+\code{g = 0.45 [0.22, 0.68]}). Implies \code{effect_size = TRUE}.
 Defaults to \code{FALSE}.}
 
 \item{labels}{An optional named character vector of variable labels.
@@ -132,26 +132,28 @@ with a custom print method. If \code{FALSE}, returns a plain
 non-numeric columns (default: \code{FALSE}).}
 }
 \value{
-When \code{styled = TRUE} (default), a \code{data.frame} with S3 class
-\code{"spicy_continuous_table"} and a custom print method.
-When \code{styled = FALSE}, a plain \code{data.frame} with columns:
+When \code{styled = TRUE} (default) and \code{output = "default"}, prints a
+styled ASCII table and returns the underlying \code{data.frame} invisibly
+(with S3 class \code{"spicy_continuous_table"}).
+When \code{styled = FALSE}, returns a plain \code{data.frame} with columns:
 \code{variable}, \code{label}, \code{group} (if \code{by} is used),
 \code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}.
-When \code{by} is used together with \code{p_value = TRUE} or
-\code{statistic = TRUE}, columns \code{test_type}, \code{statistic}, \code{df1},
-\code{df2}, and \code{p.value} are appended (populated on the first row of
-each variable block only). \code{test_type} records the test that was
-run (e.g., \code{"welch_t"}, \code{"welch_anova"}, \code{"student_t"},
+When \code{by} is used together with \code{p_value = TRUE},
+\code{statistic = TRUE}, or \code{effect_size = TRUE}, columns \code{test_type},
+\code{statistic}, \code{df1}, \code{df2}, and \code{p.value} are appended (populated on
+the first row of each variable block only). \code{test_type} records the
+test that was run (e.g., \code{"welch_t"}, \code{"welch_anova"}, \code{"student_t"},
 \code{"anova"}, \code{"wilcoxon"}, \code{"kruskal"}).
 When \code{effect_size = TRUE} and \code{by} is used, columns \code{es_type},
 \code{es_value}, \code{es_ci_lower}, and \code{es_ci_upper} are appended
 (populated on the first row of each variable block only).
-\code{es_type} records the measure used (\code{"cohens_d"}, \code{"eta_sq"},
+\code{es_type} records the measure used (\code{"hedges_g"}, \code{"eta_sq"},
 \code{"r_rb"}, or \code{"epsilon_sq"}).
 
-For other \code{output} values, the return type depends on the format
-(e.g., a \code{tinytable}, \code{gt}, or \code{flextable} object; an invisible file
-path for \code{"excel"} and \code{"word"}).
+For other \code{output} values: \code{"tinytable"}, \code{"gt"}, and \code{"flextable"}
+return their respective table objects. \code{"excel"} and \code{"word"} write
+to disk and return the file path invisibly. \code{"clipboard"} copies the
+table and returns the display \code{data.frame} invisibly.
 }
 \description{
 \code{table_continuous()} computes descriptive statistics for continuous
@@ -205,7 +207,7 @@ table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
            styled = FALSE)
 
-# Cohen's d for 2 groups
+# Hedges' g for 2 groups
 table_continuous(iris[iris$Species != "virginica", ],
            select = Sepal.Length, by = Species,
            effect_size_ci = TRUE, styled = FALSE)

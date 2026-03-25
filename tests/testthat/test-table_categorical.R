@@ -1068,3 +1068,17 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
   expect_s3_class(w, "simpleWarning")
   expect_null(w$call)
 })
+
+# ---- grouped empty data returns character columns, not logical ----
+
+test_that("grouped table with empty data returns character(0) columns", {
+  df <- data.frame(
+    x = factor(levels = c("a", "b")),
+    g = factor(levels = c("A", "B")),
+    stringsAsFactors = FALSE
+  )
+  out <- table_categorical(df, select = "x", by = "g", styled = FALSE)
+  # All columns should be character, not logical
+  col_types <- vapply(out, typeof, character(1))
+  expect_true(all(col_types == "character"))
+})

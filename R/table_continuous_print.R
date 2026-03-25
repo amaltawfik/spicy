@@ -16,7 +16,6 @@ print.spicy_continuous_table <- function(x, ...) {
   digits <- attr(x, "digits") %||% 2L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
-  data_name <- attr(x, "data_name") %||% ""
   group_var <- attr(x, "group_var")
 
   show_p <- isTRUE(attr(x, "show_p"))
@@ -60,12 +59,12 @@ print.spicy_continuous_table <- function(x, ...) {
     }
   }
 
-  title <- paste0("Descriptive statistics: ", data_name)
+  title <- "Descriptive statistics"
 
   # Auto-select padding: use compact when normal would overflow console.
   # Each column in build_ascii_table uses: 1 (pad) + w[i] + 1 (pad) chars,
 
-  # plus 1 char for the â”‚ separator after column 1.
+  # plus 1 char for the vertical separator after column 1.
   # "normal" adds 5 to each w[i]; "compact" uses raw w[i].
   padding <- "normal"
   col_widths <- vapply(
