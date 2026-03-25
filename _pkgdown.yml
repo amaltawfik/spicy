@@ -50,9 +50,9 @@ navbar:
           href: articles/frequency-tables.html
         - text: "Cramer's V, Phi, and association measures for contingency tables in R"
           href: articles/association-measures.html
-        - text: Categorical summary tables with table_categorical()
+        - text: Categorical summary tables in R
           href: articles/table-categorical.html
-        - text: Continuous summary tables with table_continuous()
+        - text: Continuous summary tables in R
           href: articles/table-continuous.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html

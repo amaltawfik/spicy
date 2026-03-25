@@ -1,12 +1,12 @@
 ---
-title: "Categorical summary tables with table_categorical()"
+title: "Categorical summary tables in R"
 description: >
   Build categorical summary tables in R with table_categorical(),
   including grouped cross-tabulations, effect sizes, confidence
   intervals, and export to gt, tinytable, flextable, Excel, or Word.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Categorical summary tables with table_categorical()}
+  %\VignetteIndexEntry{Categorical summary tables in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

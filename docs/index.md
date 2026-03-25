@@ -13,7 +13,7 @@ frequency tables, cross-tabulations with chi-squared tests and effect
 sizes, categorical and continuous summary tables, variable inspection,
 and codebooks.
 
-It helps you:
+With spicy, you can:
 
 - **Inspect variables** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
@@ -62,9 +62,9 @@ If you are looking for a specific workflow, start here:
   R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
 - [Cramer’s V, Phi, and association measures in
   R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
-- [Create categorical tables in
+- [Categorical summary tables in
   R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
-- [Create continuous summary tables in
+- [Continuous summary tables in
   R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)

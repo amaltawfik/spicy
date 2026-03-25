@@ -1,4 +1,4 @@
-# Categorical summary tables with table_categorical()
+# Categorical summary tables in R
 
 ``` r
 library(spicy)

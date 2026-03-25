@@ -1,12 +1,12 @@
 ---
-title: "Continuous summary tables with table_continuous()"
+title: "Continuous summary tables in R"
 description: >
   Build continuous summary tables in R with table_continuous(),
   including grouped descriptives, group-comparison tests, effect sizes,
   and export to console, gt, tinytable, flextable, Excel, or Word.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Continuous summary tables with table_continuous()}
+  %\VignetteIndexEntry{Continuous summary tables in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
