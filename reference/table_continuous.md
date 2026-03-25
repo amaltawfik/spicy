@@ -1,8 +1,9 @@
 # Continuous summary table
 
-`table_continuous()` computes descriptive statistics for continuous
-variables, with optional grouping by a categorical variable, optional
-group-comparison tests, and multiple output formats.
+`table_continuous()` builds a publication-ready table for one or many
+selected continuous variables. With `by`, it produces grouped
+descriptive summaries with optional group-comparison tests and effect
+sizes. Without `by`, it produces one-way descriptive summaries.
 
 ## Usage
 
@@ -40,16 +41,16 @@ table_continuous(
 
 - select:
 
-  Columns to include. If `regex = FALSE`, use tidyselect syntax
-  (default:
+  Columns to include. If `regex = FALSE`, use tidyselect syntax or a
+  character vector of column names (default:
   [`dplyr::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
   string).
 
 - by:
 
-  An optional unquoted column name to group the descriptive statistics
-  by. The column does not need to be numeric.
+  Optional grouping column. Accepts an unquoted column name or a single
+  character column name. The column does not need to be numeric.
 
 - exclude:
 
@@ -203,6 +204,12 @@ For other `output` values: `"tinytable"`, `"gt"`, and `"flextable"`
 return their respective table objects. `"excel"` and `"word"` write to
 disk and return the file path invisibly. `"clipboard"` copies the table
 and returns the display `data.frame` invisibly.
+
+## Details
+
+It supports raw data outputs and report-oriented outputs (`default`,
+`tinytable`, `gt`, `flextable`, `excel`, `clipboard`, `word`) for
+publication tables and APA-style reporting workflows.
 
 ## Examples
 

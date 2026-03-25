@@ -33,7 +33,7 @@ table_categorical(
   styled = TRUE,
   style = c("auto", "raw", "report"),
   indent_text = "  ",
-  indent_text_excel_clipboard = "      ",
+  indent_text_excel_clipboard = strrep(" ", 6),
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
@@ -226,8 +226,10 @@ Depends on `output` and `style`:
 ## Details
 
 It supports raw data outputs (`wide`, `long`) and report-oriented
-outputs (`tinytable`, `flextable`, `excel`, `clipboard`, `word`) with
-multi-level headers, p-values, and an association measure.
+outputs (`default`, `tinytable`, `gt`, `flextable`, `excel`,
+`clipboard`, `word`) with multi-level headers and, when `by` is used,
+p-values and optional association measures for publication tables and
+APA-style reporting workflows.
 
 Optional output engines require suggested packages:
 
