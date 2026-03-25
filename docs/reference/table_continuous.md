@@ -615,10 +615,12 @@ quietly = TRUE) &&
 [requireNamespace](https://rdrr.io/r/base/ns-load.html)("officer",
 quietly = TRUE)) { table_continuous(iris, select =
 [starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("Sepal"),
-by = Species, output = "word", word_path = "table_continuous.docx") } \#
-Excel output if
+by = Species, output = "word", word_path =
+[tempfile](https://rdrr.io/r/base/tempfile.html)(fileext = ".docx")) }
+\# Excel output if
 ([requireNamespace](https://rdrr.io/r/base/ns-load.html)("openxlsx",
 quietly = TRUE)) { table_continuous(iris, select =
 [starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("Sepal"),
-by = Species, output = "excel", excel_path = "table_continuous.xlsx") }
+by = Species, output = "excel", excel_path =
+[tempfile](https://rdrr.io/r/base/tempfile.html)(fileext = ".xlsx")) }
 \# }
