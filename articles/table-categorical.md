@@ -292,13 +292,15 @@ specify controls the display order, which is useful for placing
 “(Missing)” last:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = income_group,
-  by = education,
-  drop_na = FALSE,
-  levels_keep = c("Low", "High", "(Missing)"),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = income_group,
+    by = education,
+    drop_na = FALSE,
+    levels_keep = c("Low", "High", "(Missing)"),
+    output = "gt"
+  )
 )
 ```
 
@@ -310,14 +312,16 @@ Control the number of digits for percentages, p-values, and the
 association measure:
 
 ``` r
-table_categorical(
-  sochealth,
-  select = smoking,
-  by = education,
-  percent_digits = 2,
-  p_digits = 4,
-  v_digits = 3,
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    percent_digits = 2,
+    p_digits = 4,
+    v_digits = 3,
+    output = "gt"
+  )
 )
 ```
 

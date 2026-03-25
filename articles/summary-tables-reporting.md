@@ -99,16 +99,18 @@ behaviors, then summarize continuous well-being indicators.
 ### Categorical variables
 
 ``` r
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  labels = c(
-    "Smoking status",
-    "Regular physical activity",
-    "Visited a dentist in the last 12 months"
-  ),
-  output = "gt"
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    by = education,
+    labels = c(
+      "Smoking status",
+      "Regular physical activity",
+      "Visited a dentist in the last 12 months"
+    ),
+    output = "gt"
+  )
 )
 ```
 
@@ -117,18 +119,20 @@ table_categorical(
 ### Continuous variables
 
 ``` r
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  labels = c(
-    bmi = "Body mass index",
-    wellbeing_score = "Well-being score",
-    life_sat_health = "Satisfaction with health"
-  ),
-  p_value = TRUE,
-  effect_size = TRUE,
-  output = "gt"
+pkgdown_dark_gt(
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    labels = c(
+      bmi = "Body mass index",
+      wellbeing_score = "Well-being score",
+      life_sat_health = "Satisfaction with health"
+    ),
+    p_value = TRUE,
+    effect_size = TRUE,
+    output = "gt"
+  )
 )
 ```
 
@@ -168,19 +172,6 @@ if (requireNamespace("flextable", quietly = TRUE)) {
   )
 }
 ```
-
-| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   |
-|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|
-|                                |                 |       |       |       |        | LL     | UL    |     |
-| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 |
-|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |
-|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |
-| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 |
-|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |
-|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |
-| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 |
-|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
-|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
 
 ## Post-process the returned table object
 

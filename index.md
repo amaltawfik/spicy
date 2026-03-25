@@ -64,6 +64,10 @@ If you are looking for a specific workflow, start here:
   R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 - [Create categorical tables in
   R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+- [Create continuous summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+- [Summary tables for APA-style
+  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 - [Reference for
   `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
 - [Reference for
@@ -151,13 +155,21 @@ freq(sochealth, income_group)
 cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary │      Total 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  No          │                 69.6                  78.7           84.9 │       78.8 
-#>  Yes         │                 30.4                  21.3           15.1 │       21.2 
-#> ─────────────┼───────────────────────────────────────────────────────────┼────────────
-#>  Total       │                100.0                 100.0          100.0 │      100.0 
-#>  N           │                  257                   527            391 │       1175 
+#>  Values      │      Lower secondary       Upper secondary       Tertiary 
+#> ─────────────┼───────────────────────────────────────────────────────────
+#>  No          │                 69.6                  78.7           84.9 
+#>  Yes         │                 30.4                  21.3           15.1 
+#> ─────────────┼───────────────────────────────────────────────────────────
+#>  Total       │                100.0                 100.0          100.0 
+#>  N           │                  257                   527            391 
+#> 
+#>  Values      │      Total 
+#> ─────────────┼────────────
+#>  No          │       78.8 
+#>  Yes         │       21.2 
+#> ─────────────┼────────────
+#>  Total       │      100.0 
+#>  N           │       1175 
 #> 
 #> Chi-2(2) = 21.6, p < 0.001
 #> Cramer's V = 0.14
@@ -215,17 +227,27 @@ table_continuous(
   select = c(bmi, life_sat_health),
   by = education
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
-#>  Variable                            │ Group                     M          SD         Min         Max        95% CI LL       95% CI UL            n 
-#> ─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#>  Body mass index                     │ Lower secondary         28.09       3.47       18.20       38.90         27.66           28.51            260 
-#>                                      │ Upper secondary         26.02       3.43       16.00       37.10         25.73           26.31            534 
-#>                                      │ Tertiary                24.39       3.52       16.00       33.00         24.04           24.74            394 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5)      │ Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 
-#>                                      │ Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 
-#>                                      │ Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399
+#>  Variable                       │ Group              M     SD    Min    Max  
+#> ────────────────────────────────┼────────────────────────────────────────────
+#>  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 
+#>                                 │ Upper secondary  26.02  3.43  16.00  37.10 
+#>                                 │ Tertiary         24.39  3.52  16.00  33.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Lower secondary  2.71   1.20  1.00   5.00  
+#>                                 │ Upper secondary  3.53   1.19  1.00   5.00  
+#>                                 │ Tertiary         4.11   1.04  1.00   5.00  
+#> 
+#>  Variable                       │ Group            95% CI LL  95% CI UL    n 
+#> ────────────────────────────────┼────────────────────────────────────────────
+#>  Body mass index                │ Lower secondary    27.66      28.51    260 
+#>                                 │ Upper secondary    25.73      26.31    534 
+#>                                 │ Tertiary           24.04      24.74    394 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 
+#>                                 │ Upper secondary    3.43       3.63     534 
+#>                                 │ Tertiary           4.01       4.21     399
 ```
 
 See

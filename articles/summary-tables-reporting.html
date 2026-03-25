@@ -85,8 +85,8 @@
 
 
 
-<link href="summary-tables-reporting_files/tabwid-1.1.3/tabwid.css" rel="stylesheet">
-<script src="summary-tables-reporting_files/tabwid-1.1.3/tabwid.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Summary tables for APA-style reporting</h1>
             
@@ -529,16 +529,18 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <h3 id="categorical-variables">Categorical variables<a class="anchor" aria-label="anchor" href="#categorical-variables"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Smoking status"</span>,</span>
-<span>    <span class="st">"Regular physical activity"</span>,</span>
-<span>    <span class="st">"Visited a dentist in the last 12 months"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>      <span class="st">"Smoking status"</span>,</span>
+<span>      <span class="st">"Regular physical activity"</span>,</span>
+<span>      <span class="st">"Visited a dentist in the last 12 months"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="afymiqnfjf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#afymiqnfjf table {
@@ -1024,6 +1026,13 @@ health behaviors, then summarize continuous well-being indicators.</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -1190,18 +1199,20 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <h3 id="continuous-variables">Continuous variables<a class="anchor" aria-label="anchor" href="#continuous-variables"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    bmi <span class="op">=</span> <span class="st">"Body mass index"</span>,</span>
-<span>    wellbeing_score <span class="op">=</span> <span class="st">"Well-being score"</span>,</span>
-<span>    life_sat_health <span class="op">=</span> <span class="st">"Satisfaction with health"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>      bmi <span class="op">=</span> <span class="st">"Body mass index"</span>,</span>
+<span>      wellbeing_score <span class="op">=</span> <span class="st">"Well-being score"</span>,</span>
+<span>      life_sat_health <span class="op">=</span> <span class="st">"Satisfaction with health"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    effect_size <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="ikzdxllwgk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ikzdxllwgk table {
@@ -1681,6 +1692,13 @@ health behaviors, then summarize continuous well-being indicators.</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -1910,130 +1928,6 @@ workflows but can also be rendered in HTML documents,
 <span>    output <span class="op">=</span> <span class="st">"flextable"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="tabwid">
-<style>.cl-02d1038e{}.cl-02c82bb0{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-02cb9912{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-02cb991c{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-02cb9926{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-02cbd21a{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd224{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd225{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd22e{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd22f{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd238{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd239{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd23a{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd242{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd243{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd24c{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd24d{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd24e{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd256{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd260{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd261{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd262{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd26a{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd26b{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd274{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd275{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd276{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(204, 204, 204, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd27e{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd27f{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd280{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd288{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd289{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(204, 204, 204, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd28a{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd292{width:1.588in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd293{width:0.723in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd294{width:0.82in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02cbd295{width:0.577in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-02d1038e">
-<thead>
-<tr style="overflow-wrap:break-word;">
-<th class="cl-02cbd21a"><p class="cl-02cb9912"><span class="cl-02c82bb0">Variable</span></p></th>
-<th class="cl-02cbd224"><p class="cl-02cb9912"><span class="cl-02c82bb0">Group</span></p></th>
-<th class="cl-02cbd225"><p class="cl-02cb991c"><span class="cl-02c82bb0">M</span></p></th>
-<th class="cl-02cbd225"><p class="cl-02cb991c"><span class="cl-02c82bb0">SD</span></p></th>
-<th class="cl-02cbd225"><p class="cl-02cb991c"><span class="cl-02c82bb0">Min</span></p></th>
-<th class="cl-02cbd22e"><p class="cl-02cb991c"><span class="cl-02c82bb0">Max</span></p></th>
-<th colspan="2" class="cl-02cbd22f"><p class="cl-02cb991c"><span class="cl-02c82bb0">95% CI</span></p></th>
-<th class="cl-02cbd238"><p class="cl-02cb9926"><span class="cl-02c82bb0">n</span></p></th>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<th colspan="6" class="cl-02cbd239"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></th>
-<th class="cl-02cbd24c"><p class="cl-02cb991c"><span class="cl-02c82bb0">LL</span></p></th>
-<th class="cl-02cbd24c"><p class="cl-02cb991c"><span class="cl-02c82bb0">UL</span></p></th>
-<th class="cl-02cbd24d"><p class="cl-02cb9926"><span class="cl-02c82bb0"></span></p></th>
-</tr>
-</thead>
-<tbody>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd24e"><p class="cl-02cb9912"><span class="cl-02c82bb0">Body mass index</span></p></td>
-<td class="cl-02cbd256"><p class="cl-02cb9912"><span class="cl-02c82bb0">Lower secondary</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">28.09</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.47</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">18.20</span></p></td>
-<td class="cl-02cbd261"><p class="cl-02cb991c"><span class="cl-02c82bb0">38.90</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">27.66</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">28.51</span></p></td>
-<td class="cl-02cbd262"><p class="cl-02cb9926"><span class="cl-02c82bb0">260</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd24e"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd256"><p class="cl-02cb9912"><span class="cl-02c82bb0">Upper secondary</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">26.02</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.43</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">16.00</span></p></td>
-<td class="cl-02cbd261"><p class="cl-02cb991c"><span class="cl-02c82bb0">37.10</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">25.73</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">26.31</span></p></td>
-<td class="cl-02cbd262"><p class="cl-02cb9926"><span class="cl-02c82bb0">534</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd26a"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd26b"><p class="cl-02cb9912"><span class="cl-02c82bb0">Tertiary</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">24.39</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.52</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">16.00</span></p></td>
-<td class="cl-02cbd275"><p class="cl-02cb991c"><span class="cl-02c82bb0">33.00</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">24.04</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">24.74</span></p></td>
-<td class="cl-02cbd276"><p class="cl-02cb9926"><span class="cl-02c82bb0">394</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd27e"><p class="cl-02cb9912"><span class="cl-02c82bb0">WHO-5 wellbeing index (0-100)</span></p></td>
-<td class="cl-02cbd27f"><p class="cl-02cb9912"><span class="cl-02c82bb0">Lower secondary</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">57.22</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">15.44</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">18.70</span></p></td>
-<td class="cl-02cbd288"><p class="cl-02cb991c"><span class="cl-02c82bb0">97.90</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">55.33</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">59.10</span></p></td>
-<td class="cl-02cbd289"><p class="cl-02cb9926"><span class="cl-02c82bb0">261</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd24e"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd256"><p class="cl-02cb9912"><span class="cl-02c82bb0">Upper secondary</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">68.97</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">13.62</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">26.70</span></p></td>
-<td class="cl-02cbd261"><p class="cl-02cb991c"><span class="cl-02c82bb0">100.00</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">67.82</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">70.12</span></p></td>
-<td class="cl-02cbd262"><p class="cl-02cb9926"><span class="cl-02c82bb0">539</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd26a"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd26b"><p class="cl-02cb9912"><span class="cl-02c82bb0">Tertiary</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">76.85</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">13.23</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">40.40</span></p></td>
-<td class="cl-02cbd275"><p class="cl-02cb991c"><span class="cl-02c82bb0">100.00</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">75.55</span></p></td>
-<td class="cl-02cbd274"><p class="cl-02cb991c"><span class="cl-02c82bb0">78.15</span></p></td>
-<td class="cl-02cbd276"><p class="cl-02cb9926"><span class="cl-02c82bb0">400</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd27e"><p class="cl-02cb9912"><span class="cl-02c82bb0">Satisfaction with health (1-5)</span></p></td>
-<td class="cl-02cbd27f"><p class="cl-02cb9912"><span class="cl-02c82bb0">Lower secondary</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">2.71</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.20</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.00</span></p></td>
-<td class="cl-02cbd288"><p class="cl-02cb991c"><span class="cl-02c82bb0">5.00</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">2.57</span></p></td>
-<td class="cl-02cbd280"><p class="cl-02cb991c"><span class="cl-02c82bb0">2.86</span></p></td>
-<td class="cl-02cbd289"><p class="cl-02cb9926"><span class="cl-02c82bb0">259</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd24e"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd256"><p class="cl-02cb9912"><span class="cl-02c82bb0">Upper secondary</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.53</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.19</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.00</span></p></td>
-<td class="cl-02cbd261"><p class="cl-02cb991c"><span class="cl-02c82bb0">5.00</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.43</span></p></td>
-<td class="cl-02cbd260"><p class="cl-02cb991c"><span class="cl-02c82bb0">3.63</span></p></td>
-<td class="cl-02cbd262"><p class="cl-02cb9926"><span class="cl-02c82bb0">534</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-02cbd28a"><p class="cl-02cb9912"><span class="cl-02c82bb0"></span></p></td>
-<td class="cl-02cbd292"><p class="cl-02cb9912"><span class="cl-02c82bb0">Tertiary</span></p></td>
-<td class="cl-02cbd293"><p class="cl-02cb991c"><span class="cl-02c82bb0">4.11</span></p></td>
-<td class="cl-02cbd293"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.04</span></p></td>
-<td class="cl-02cbd293"><p class="cl-02cb991c"><span class="cl-02c82bb0">1.00</span></p></td>
-<td class="cl-02cbd294"><p class="cl-02cb991c"><span class="cl-02c82bb0">5.00</span></p></td>
-<td class="cl-02cbd293"><p class="cl-02cb991c"><span class="cl-02c82bb0">4.01</span></p></td>
-<td class="cl-02cbd293"><p class="cl-02cb991c"><span class="cl-02c82bb0">4.21</span></p></td>
-<td class="cl-02cbd295"><p class="cl-02cb9926"><span class="cl-02c82bb0">399</span></p></td>
-</tr>
-</tbody>
-</table>
-</div>
 </div>
 <div class="section level2">
 <h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>

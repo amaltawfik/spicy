@@ -127,6 +127,8 @@
 <li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Create categorical tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Create continuous summary tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/freq.html">Reference for <code>freq()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/cross_tab.html">Reference for <code>cross_tab()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html">Reference for <code>table_categorical()</code></a></li>
@@ -199,13 +201,21 @@
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: smoking x education (Column %)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │                 69.6                  78.7           84.9 │       78.8 </span></span>
-<span><span class="co">#&gt;  Yes         │                 30.4                  21.3           15.1 │       21.2 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │                100.0                 100.0          100.0 │      100.0 </span></span>
-<span><span class="co">#&gt;  N           │                  257                   527            391 │       1175 </span></span>
+<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  No          │                 69.6                  78.7           84.9 </span></span>
+<span><span class="co">#&gt;  Yes         │                 30.4                  21.3           15.1 </span></span>
+<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Total       │                100.0                 100.0          100.0 </span></span>
+<span><span class="co">#&gt;  N           │                  257                   527            391 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      │      Total </span></span>
+<span><span class="co">#&gt; ─────────────┼────────────</span></span>
+<span><span class="co">#&gt;  No          │       78.8 </span></span>
+<span><span class="co">#&gt;  Yes         │       21.2 </span></span>
+<span><span class="co">#&gt; ─────────────┼────────────</span></span>
+<span><span class="co">#&gt;  Total       │      100.0 </span></span>
+<span><span class="co">#&gt;  N           │       1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; 0.001</span></span>
 <span><span class="co">#&gt; Cramer's V = 0.14</span></span></code></pre></div>
@@ -258,17 +268,27 @@
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Descriptive statistics: sochealth</span></span>
+<span><span class="co">#&gt; Descriptive statistics</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                            │ Group                     M          SD         Min         Max        95% CI LL       95% CI UL            n </span></span>
-<span><span class="co">#&gt; ─────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Body mass index                     │ Lower secondary         28.09       3.47       18.20       38.90         27.66           28.51            260 </span></span>
-<span><span class="co">#&gt;                                      │ Upper secondary         26.02       3.43       16.00       37.10         25.73           26.31            534 </span></span>
-<span><span class="co">#&gt;                                      │ Tertiary                24.39       3.52       16.00       33.00         24.04           24.74            394 </span></span>
-<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)      │ Lower secondary          2.71       1.20        1.00        5.00          2.57            2.86            259 </span></span>
-<span><span class="co">#&gt;                                      │ Upper secondary          3.53       1.19        1.00        5.00          3.43            3.63            534 </span></span>
-<span><span class="co">#&gt;                                      │ Tertiary                 4.11       1.04        1.00        5.00          4.01            4.21            399</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                       │ Group              M     SD    Min    Max  </span></span>
+<span><span class="co">#&gt; ────────────────────────────────┼────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary  26.02  3.43  16.00  37.10 </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary         24.39  3.52  16.00  33.00 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary  2.71   1.20  1.00   5.00  </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary  3.53   1.19  1.00   5.00  </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary         4.11   1.04  1.00   5.00  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       │ Group            95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt; ────────────────────────────────┼────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Body mass index                │ Lower secondary    27.66      28.51    260 </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary    25.73      26.31    534 </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary           24.04      24.74    394 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary    3.43       3.63     534 </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary           4.01       4.21     399</span></span></code></pre></div>
 <p>See <code><a href="articles/table-categorical.html">vignette("table-categorical")</a></code> for grouped categorical tables, and <code><a href="reference/table_continuous.html">?table_continuous</a></code> for continuous summaries with optional group comparisons.</p>
 </div>
 <div class="section level3">

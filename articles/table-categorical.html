@@ -3740,13 +3740,15 @@ display them as a “(Missing)” category:</p>
 order you specify controls the display order, which is useful for
 placing “(Missing)” last:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">income_group</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  levels_keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low"</span>, <span class="st">"High"</span>, <span class="st">"(Missing)"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="va">income_group</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    levels_keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low"</span>, <span class="st">"High"</span>, <span class="st">"(Missing)"</span><span class="op">)</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="pbdafnvrvk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#pbdafnvrvk table {
@@ -4232,6 +4234,13 @@ placing “(Missing)” last:</p>
   border-top-style: none !important;
   border-bottom-style: none !important;
 }
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
@@ -4335,14 +4344,16 @@ placing “(Missing)” last:</p>
 <p>Control the number of digits for percentages, p-values, and the
 association measure:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  percent_digits <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  p_digits <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  v_digits <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="va">smoking</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    percent_digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>    p_digits <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>    v_digits <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="qcbzolnajc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#qcbzolnajc table {
@@ -4827,6 +4838,13 @@ association measure:</p>
 .gt_table tbody tr {
   border-top-style: none !important;
   border-bottom-style: none !important;
+}
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
 }
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
