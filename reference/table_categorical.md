@@ -218,8 +218,10 @@ Depends on `output` and `style`:
 
 - `"flextable"`: a `flextable` object.
 
-- `"excel"` / `"clipboard"` / `"word"`: invisibly returns written
-  object/path.
+- `"excel"` / `"word"`: writes to disk and returns the file path
+  invisibly.
+
+- `"clipboard"`: copies the table and returns the text invisibly.
 
 ## Details
 
@@ -233,7 +235,9 @@ Optional output engines require suggested packages:
 
 - `gt` for `output = "gt"`
 
-- `flextable` + `officer` for `output = "flextable"`/`"word"`
+- `flextable` for `output = "flextable"`
+
+- `flextable` + `officer` for `output = "word"`
 
 - `openxlsx` for `output = "excel"`
 
@@ -276,7 +280,7 @@ table_categorical(
   by = sex,
   output = "default"
 )
-#> Categorical table by sex: sochealth
+#> Categorical table by sex
 #> 
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %     p 
 #> ───────────────────┼────────────────────────────────────────────────────────────
@@ -304,7 +308,7 @@ table_categorical(
   select = c(smoking, physical_activity),
   output = "default"
 )
-#> Categorical table: sochealth
+#> Categorical table
 #> 
 #>  Variable               │        n          % 
 #> ────────────────────────┼─────────────────────
@@ -430,15 +434,15 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 #> +===================+=====+======+=====+======+=====+======+======+============+
 #> | Current smoker    |     |      |     |      |     |      | .713 | .01        |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        No         | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |
+#> |      No           | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        Yes        | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |
+#> |      Yes          | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
 #> | Physical activity |     |      |     |      |     |      | .832 | .01        |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        No         | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |
+#> |      No           | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |        Yes        | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |
+#> |      Yes          | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+ 
 
 # Optional output: Excel

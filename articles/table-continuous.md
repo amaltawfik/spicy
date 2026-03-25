@@ -20,7 +20,7 @@ table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health)
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                       │   M     SD     Min    Max    95% CI LL 
 #> ────────────────────────────────┼────────────────────────────────────────
@@ -41,7 +41,7 @@ scans the data frame and keeps numeric columns:
 
 ``` r
 table_continuous(sochealth)
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                                   │    M       SD       Min   
 #> ────────────────────────────────────────────┼───────────────────────────
@@ -93,7 +93,7 @@ table_continuous(
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                       │ Group              M     SD     Min    Max   
 #> ────────────────────────────────┼──────────────────────────────────────────────
@@ -142,7 +142,7 @@ table_continuous(
   effect_size_ci = TRUE
 )
 #> Warning: `effect_size_ci` implies `effect_size = TRUE`.
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                       │ Group              M     SD     Min    Max   
 #> ────────────────────────────────┼──────────────────────────────────────────────
@@ -188,15 +188,15 @@ table_continuous(
 #> 
 #>  Variable                       │ Group                 p 
 #> ────────────────────────────────┼─────────────────────────
-#>  Body mass index                │ Lower secondary  < .001 
+#>  Body mass index                │ Lower secondary  < .001 
 #>                                 │ Upper secondary         
 #>                                 │ Tertiary                
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100)  │ Lower secondary  < .001 
+#>  WHO-5 wellbeing index (0-100)  │ Lower secondary  < .001 
 #>                                 │ Upper secondary         
 #>                                 │ Tertiary                
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary  < .001 
+#>  Satisfaction with health (1-5) │ Lower secondary  < .001 
 #>                                 │ Upper secondary         
 #>                                 │ Tertiary                
 #> 
@@ -228,7 +228,7 @@ table_continuous(
   statistic = TRUE,
   effect_size = TRUE
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
@@ -252,11 +252,11 @@ table_continuous(
 #> 
 #>  Variable                      │ Group                Test            p 
 #> ───────────────────────────────┼────────────────────────────────────────
-#>  Body mass index               │ Lower secondary  H(2) = 144.63  < .001 
+#>  Body mass index               │ Lower secondary  H(2) = 144.63  < .001 
 #>                                │ Upper secondary                        
 #>                                │ Tertiary                               
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  H(2) = 233.53  < .001 
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary  H(2) = 233.53  < .001 
 #>                                │ Upper secondary                        
 #>                                │ Tertiary                               
 #> 
@@ -317,7 +317,7 @@ table_continuous(
   select = starts_with("life_sat"),
   by = sex
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                                   │ Group    M     SD   Min   Max  
 #> ────────────────────────────────────────────┼────────────────────────────────
@@ -396,7 +396,7 @@ table_continuous(
   exclude = "life_sat_work",
   by = sex
 )
-#> Descriptive statistics: sochealth
+#> Descriptive statistics
 #> 
 #>  Variable                       │ Group     M     SD     Min    Max   
 #> ────────────────────────────────┼─────────────────────────────────────

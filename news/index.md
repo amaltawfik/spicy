@@ -28,10 +28,10 @@
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `effect_size` and `effect_size_ci` arguments. When `by` is used,
   `effect_size = TRUE` adds an “ES” column with the appropriate measure
-  (Cohen’s d, eta-squared, rank-biserial r_rb, or epsilon-squared)
+  (Hedges’ g, eta-squared, rank-biserial r_rb, or epsilon-squared)
   chosen automatically based on the test method and number of groups.
   `effect_size_ci = TRUE` appends the confidence interval in brackets
-  (e.g., `d = 0.45 [0.22, 0.68]`).
+  (e.g., `g = 0.45 [0.22, 0.68]`).
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`)
@@ -40,6 +40,12 @@
   `p_value = TRUE` adds a p-value column and `statistic = TRUE` adds a
   formatted test-statistic column; either or both can be enabled
   independently.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  now print shorter ASCII titles without appending the input data frame
+  name.
 
 ## spicy 0.6.0
 

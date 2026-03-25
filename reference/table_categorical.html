@@ -270,8 +270,8 @@ the underlying data frame invisibly.</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
 <li><p><code>"gt"</code>: a <code>gt_tbl</code> object.</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
-<li><p><code>"excel"</code> / <code>"clipboard"</code> / <code>"word"</code>: invisibly returns written
-object/path.</p></li>
+<li><p><code>"excel"</code> / <code>"word"</code>: writes to disk and returns the file path invisibly.</p></li>
+<li><p><code>"clipboard"</code>: copies the table and returns the text invisibly.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -280,7 +280,8 @@ object/path.</p></li>
 headers, p-values, and an association measure.</p>
 <p>Optional output engines require suggested packages:</p><ul><li><p><code>tinytable</code> for <code>output = "tinytable"</code></p></li>
 <li><p><code>gt</code> for <code>output = "gt"</code></p></li>
-<li><p><code>flextable</code> + <code>officer</code> for <code>output = "flextable"</code>/<code>"word"</code></p></li>
+<li><p><code>flextable</code> for <code>output = "flextable"</code></p></li>
+<li><p><code>flextable</code> + <code>officer</code> for <code>output = "word"</code></p></li>
 <li><p><code>openxlsx</code> for <code>output = "excel"</code></p></li>
 <li><p><code>clipr</code> for <code>output = "clipboard"</code></p></li>
 </ul></div>
@@ -321,7 +322,7 @@ headers, p-values, and an association measure.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"default"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by sex: sochealth</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %     p </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span>
@@ -349,7 +350,7 @@ headers, p-values, and an association measure.</p>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"default"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table: sochealth</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span>        n          % </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼─────────────────────</span></span>
@@ -475,15 +476,15 @@ headers, p-values, and an association measure.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +===================+=====+======+=====+======+=====+======+======+============+</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> | Current smoker    |     |      |     |      |     |      | .713 | .01        |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |      No           | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |      Yes          | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> | Physical activity |     |      |     |      |     |      | .832 | .01        |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        No         | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |      No           | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |        Yes        | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |      Yes          | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+ </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
