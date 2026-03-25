@@ -59,7 +59,8 @@ row/group variable before each cross-tabulation. If \code{FALSE}, missing values
 are displayed as a dedicated \code{"(Missing)"} level.}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
-of length \code{nrow(data)}, or a single column name in \code{data}.}
+of length \code{nrow(data)}, or a single column in \code{data} supplied as an
+unquoted name or a character string.}
 
 \item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.

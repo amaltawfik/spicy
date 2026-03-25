@@ -25,7 +25,8 @@
 #'   row/group variable before each cross-tabulation. If `FALSE`, missing values
 #'   are displayed as a dedicated `"(Missing)"` level.
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
-#'   of length `nrow(data)`, or a single column name in `data`.
+#'   of length `nrow(data)`, or a single column in `data` supplied as an
+#'   unquoted name or a character string.
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
 #'   Passed to `spicy::cross_tab()`.
@@ -356,28 +357,8 @@ table_categorical <- function(
     include_total <- TRUE
   }
 
-  weights_vec <- NULL
-  if (!is.null(weights)) {
-    if (is.character(weights) && length(weights) == 1) {
-      if (!(weights %in% names(data))) {
-        stop(
-          "When character, `weights` must be a column name in `data`.",
-          call. = FALSE
-        )
-      }
-      weights_vec <- data[[weights]]
-    } else if (is.numeric(weights)) {
-      if (length(weights) != nrow(data)) {
-        stop("Numeric `weights` must have length `nrow(data)`.", call. = FALSE)
-      }
-      weights_vec <- weights
-    } else {
-      stop(
-        "`weights` must be NULL, numeric vector, or a single column name.",
-        call. = FALSE
-      )
-    }
-  }
+  weights_quo <- rlang::enquo(weights)
+  weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
     warning(

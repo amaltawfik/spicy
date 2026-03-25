@@ -69,6 +69,41 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
   expect_equal(out_col$pct, out_vec$pct)
 })
 
+test_that("table_categorical accepts weights as an unquoted column name", {
+  df <- data.frame(
+    grp = c("A", "A", "B", "B", "A", "B"),
+    v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non"),
+    w = c(1, 2, 1, 3, 2, 1)
+  )
+
+  expect_no_warning(
+    out_bare <- table_categorical(
+      data = df,
+      select = "v1",
+      by = "grp",
+      labels = "Var 1",
+      weights = w,
+      simulate_p = FALSE,
+      output = "long",
+      style = "raw"
+    )
+  )
+
+  out_char <- table_categorical(
+    data = df,
+    select = "v1",
+    by = "grp",
+    labels = "Var 1",
+    weights = "w",
+    simulate_p = FALSE,
+    output = "long",
+    style = "raw"
+  )
+
+  expect_equal(out_bare$n, out_char$n)
+  expect_equal(out_bare$pct, out_char$pct)
+})
+
 test_that("table_categorical accepts tidyselect-style select and unquoted by", {
   df <- data.frame(
     grp = c("A", "A", "B", "B"),
