@@ -11,8 +11,9 @@
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   prints stay readable in narrow consoles.
 
-- Package citation metadata now uses the current package title, so
-  `citation("spicy")` matches `DESCRIPTION`.
+- Package citation metadata now uses the current package title and CRAN
+  DOI, so `citation("spicy")` matches `DESCRIPTION` and points to the
+  package DOI.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   replaces `table_apa()` as the public name for categorical summary

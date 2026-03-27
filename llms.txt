@@ -351,7 +351,7 @@ If you are looking for a specific workflow, start here:
 If you use spicy in a publication or teaching material:
 
 - Use `citation("spicy")` for the BibTeX entry.
-- The archival DOI is: <https://doi.org/10.5281/zenodo.15397865>.
+- The package DOI is: <https://doi.org/10.32614/CRAN.package.spicy>.
 - Source citation file:
   <https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
