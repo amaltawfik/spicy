@@ -2,7 +2,7 @@ citHeader("To cite the spicy package in publications, use:")
 
 bibentry(
   bibtype = "Manual",
-  title = "spicy: Tools for Data Management and Variable Exploration",
+  title = "spicy: Descriptive Statistics, Summary Tables, and Data Management Tools",
   author = person(given = "Amal", family = "Tawfik"),
   year = "2025",
   note = paste0(
