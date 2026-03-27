@@ -2,7 +2,7 @@
 
 * ASCII console tables now split oversized outputs into stacked horizontal panels, repeating the left-most identifier columns so wide `freq()`, `cross_tab()`, `table_categorical()`, and `table_continuous()` prints stay readable in narrow consoles.
 
-* Package citation metadata now uses the current package title, so `citation("spicy")` matches `DESCRIPTION`.
+* Package citation metadata now uses the current package title and CRAN DOI, so `citation("spicy")` matches `DESCRIPTION` and points to the package DOI.
 
 * `table_categorical()` replaces `table_apa()` as the public name for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and provides multiple output formats via a single `output` argument.
 

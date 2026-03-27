@@ -13,7 +13,7 @@ status](https://www.r-pkg.org/badges/version-ago/spicy)](https://CRAN.R-project.
 Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT
 License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/947229863.svg)](https://doi.org/10.5281/zenodo.15397865)
+[![DOI](https://img.shields.io/badge/DOI-10.32614%2FCRAN.package.spicy-blue)](https://doi.org/10.32614/CRAN.package.spicy)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 <!-- badges: end -->
@@ -348,7 +348,7 @@ If you are looking for a specific workflow, start here:
 If you use spicy in a publication or teaching material:
 
 - Use `citation("spicy")` for the BibTeX entry.
-- The archival DOI is: <https://doi.org/10.5281/zenodo.15397865>.
+- The package DOI is: <https://doi.org/10.32614/CRAN.package.spicy>.
 - Source citation file:
   <https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
