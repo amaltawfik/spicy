@@ -46,28 +46,27 @@ With spicy, you can:
   including LimeSurvey-style headers.
 
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
-common variable types. See
-[`vignette("spicy")`](https://amaltawfik.github.io/spicy/articles/spicy.md)
-for a full tour.
+common variable types. For a full introduction, see [Getting started
+with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 
 ## Installation
 
-Install the stable version from CRAN:
+Install the current CRAN release:
 
 ``` r
 install.packages("spicy")
 ```
 
-Or from [r-universe](https://amaltawfik.r-universe.dev/spicy):
+Install the latest build from
+[r-universe](https://amaltawfik.r-universe.dev/spicy):
 
 ``` r
 install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
-This installs the latest r-universe build, which may be newer than the
-current CRAN release.
+This may be newer than the current CRAN release.
 
-Or the development version from GitHub with `pak`:
+Install the development version from GitHub with `pak`:
 
 ``` r
 # install.packages("pak")
@@ -77,6 +76,8 @@ pak::pak("amaltawfik/spicy")
 ------------------------------------------------------------------------
 
 ## Quick tour
+
+The examples below use the bundled `sochealth` dataset.
 
 ### Inspect variables
 
@@ -100,6 +101,13 @@ varlist(sochealth, tbl = TRUE)
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
 #> # ℹ 14 more rows
 ```
+
+See [Explore variables and build codebooks in
+R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+for more on
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+[`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
 
 ### Frequency tables and cross-tabulations
 
@@ -144,6 +152,12 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #> Cramer's V = 0.14
 ```
 
+See [Frequency tables and cross-tabulations in
+R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
+for [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+percentages, weights, and tests.
+
 ### Association measures
 
 ``` r
@@ -159,8 +173,8 @@ cramer_v(tbl, detail = TRUE)
 #>    0.176     0.120     0.231  < 0.001
 ```
 
-See
-[`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+See [Cramer’s V, Phi, and association measures in
+R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 for a guide on choosing the right measure.
 
 ### Summary tables
@@ -271,13 +285,14 @@ table_continuous(
 #>                                 │ Tertiary           4.01       4.21     399
 ```
 
-See
-[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-for an overview of summary tables,
-[`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
-for categorical summaries, and
-[`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
-for continuous summaries and group comparisons.
+See [Categorical summary tables in
+R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+for categorical summaries, [Continuous summary tables in
+R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+for continuous summaries and group comparisons, and [Summary tables for
+APA-style
+reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
+for an overview of summary tables.
 
 ### Row-wise summaries
 
@@ -296,6 +311,13 @@ count_n(df, special = "NA")
 #> [1] 1 2 0 1 0
 ```
 
+See [Getting started with
+spicy](https://amaltawfik.github.io/spicy/articles/spicy.html) for a
+longer workflow using
+[`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+[`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md), and
+[`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
+
 ### Label extraction
 
 ``` r
@@ -313,11 +335,19 @@ labelled::var_label(out)
 #> [1] "Total score"
 ```
 
+See [Explore variables and build codebooks in
+R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+for more on
+[`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+and
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
+
 ------------------------------------------------------------------------
 
 ## Learn by task
 
-If you are looking for a specific workflow, start here:
+If you are looking for a specific workflow, start with these vignettes:
 
 - [Getting started with
   spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
@@ -333,25 +363,40 @@ If you are looking for a specific workflow, start here:
   R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
+
+Key reference pages:
+
+- [Reference for
+  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
+- [Reference for
+  `code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.html)
+- [Reference for
+  `label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.html)
 - [Reference for
   `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
 - [Reference for
   `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
 - [Reference for
+  `cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.html)
+- [Reference for
   `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
 - [Reference for
   `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
 - [Reference for
-  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
+  `mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.html)
+- [Reference for
+  `sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.html)
+- [Reference for
+  `count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.html)
 
 ------------------------------------------------------------------------
 
 ## Citation
 
-If you use spicy in a publication or teaching material:
+To cite spicy in a publication or teaching material:
 
-- Use `citation("spicy")` for the BibTeX entry.
-- The package DOI is: <https://doi.org/10.32614/CRAN.package.spicy>.
+- Use `citation("spicy")` to generate the current BibTeX entry.
+- Package DOI: <https://doi.org/10.32614/CRAN.package.spicy>.
 - Source citation file:
   <https://github.com/amaltawfik/spicy/blob/main/inst/CITATION>
 
