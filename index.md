@@ -109,6 +109,21 @@ pak::pak("amaltawfik/spicy")
 
 ## Quick tour
 
+Related vignettes:
+
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+- [Frequency tables and cross-tabulations in
+  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
+- [Cramer’s V, Phi, and association measures in
+  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Categorical summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+- [Continuous summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+- [Summary tables for APA-style
+  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
+
 ### Inspect variables
 
 ![varlist demo with labelled
@@ -200,25 +215,77 @@ for a guide on choosing the right measure.
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Current smoker", "Physical activity"),
-  output = "wide",
-  style = "report"
+  labels = c("Current smoker", "Physical activity")
 )
-#>            Variable Lower secondary n Lower secondary % Upper secondary n
-#> 1    Current smoker                                                      
-#> 2                No               179              69.6               415
-#> 3               Yes                78              30.4               112
-#> 4 Physical activity                                                      
-#> 5                No               177              67.8               310
-#> 6               Yes                84              32.2               229
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V
-#> 1                                                         < .001        .14
-#> 2              78.7        332       84.9     926    78.8                  
-#> 3              21.3         59       15.1     249    21.2                  
-#> 4                                                         < .001        .21
-#> 5              57.5        163       40.8     650    54.2                  
-#> 6              42.5        237       59.2     550    45.8
+#> Categorical table
+#> 
+#>  Variable               │        n          % 
+#> ────────────────────────┼─────────────────────
+#>  Current smoker         │                     
+#>    No                   │      926       78.8 
+#>    Yes                  │      249       21.2 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity      │                     
+#>    No                   │      650       54.2 
+#>    Yes                  │      550       45.8
+```
+
+``` r
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  labels = c("Current smoker", "Physical activity")
+)
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  Current smoker    │                                                         
+#>    No              │               179               69.6                415 
+#>    Yes             │                78               30.4                112 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │                                                         
+#>    No              │               177               67.8                310 
+#>    Yes             │                84               32.2                229 
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  Current smoker    │                                                    
+#>    No              │              78.7         332        84.9      926 
+#>    Yes             │              21.3          59        15.1      249 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │                                                    
+#>    No              │              57.5         163        40.8      650 
+#>    Yes             │              42.5         237        59.2      550 
+#> 
+#>  Variable          │ Total %       p  Cramer's V 
+#> ───────────────────┼─────────────────────────────
+#>  Current smoker    │          < .001         .14 
+#>    No              │    78.8                     
+#>    Yes             │    21.2                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │          < .001         .21 
+#>    No              │    54.2                     
+#>    Yes             │    45.8
+```
+
+``` r
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health)
+)
+#> Descriptive statistics
+#> 
+#>  Variable                       │   M     SD    Min    Max   95% CI LL 
+#> ────────────────────────────────┼──────────────────────────────────────
+#>  Body mass index                │ 25.93  3.72  16.00  38.90    25.72   
+#>  Satisfaction with health (1-5) │ 3.55   1.25  1.00   5.00     3.48    
+#> 
+#>  Variable                       │ 95% CI UL     n 
+#> ────────────────────────────────┼─────────────────
+#>  Body mass index                │   26.14    1188 
+#>  Satisfaction with health (1-5) │   3.62     1192
 ```
 
 ``` r
@@ -251,10 +318,12 @@ table_continuous(
 ```
 
 See
+[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+for an overview of summary tables,
 [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
-for grouped categorical tables, and
-[`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-for continuous summaries with optional group comparisons.
+for categorical summaries, and
+[`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+for continuous summaries and group comparisons.
 
 ### Row-wise summaries
 

@@ -11,6 +11,9 @@
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   prints stay readable in narrow consoles.
 
+- Package citation metadata now uses the current package title, so
+  `citation("spicy")` matches `DESCRIPTION`.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   replaces `table_apa()` as the public name for categorical summary
   tables. It uses `select` and `by`, supports grouped cross-tabulation

@@ -156,6 +156,15 @@
 <div class="section level2">
 <h2 id="quick-tour">Quick tour<a class="anchor" aria-label="anchor" href="#quick-tour"></a>
 </h2>
+<p>Related vignettes:</p>
+<ul>
+<li><a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
+</ul>
 <div class="section level3">
 <h3 id="inspect-variables">Inspect variables<a class="anchor" aria-label="anchor" href="#inspect-variables"></a>
 </h3>
@@ -243,26 +252,74 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"wide"</span>,</span>
-<span>  style <span class="op">=</span> <span class="st">"report"</span></span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;            Variable Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1    Current smoker                                                      </span></span>
-<span><span class="co">#&gt; 2                No               179              69.6               415</span></span>
-<span><span class="co">#&gt; 3               Yes                78              30.4               112</span></span>
-<span><span class="co">#&gt; 4 Physical activity                                                      </span></span>
-<span><span class="co">#&gt; 5                No               177              67.8               310</span></span>
-<span><span class="co">#&gt; 6               Yes                84              32.2               229</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %      p Cramer's V</span></span>
-<span><span class="co">#&gt; 1                                                         &lt; .001        .14</span></span>
-<span><span class="co">#&gt; 2              78.7        332       84.9     926    78.8                  </span></span>
-<span><span class="co">#&gt; 3              21.3         59       15.1     249    21.2                  </span></span>
-<span><span class="co">#&gt; 4                                                         &lt; .001        .21</span></span>
-<span><span class="co">#&gt; 5              57.5        163       40.8     650    54.2                  </span></span>
-<span><span class="co">#&gt; 6              42.5        237       59.2     550    45.8</span></span></code></pre></div>
+<span><span class="co">#&gt; Categorical table</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable               │        n          % </span></span>
+<span><span class="co">#&gt; ────────────────────────┼─────────────────────</span></span>
+<span><span class="co">#&gt;  Current smoker         │                     </span></span>
+<span><span class="co">#&gt;    No                   │      926       78.8 </span></span>
+<span><span class="co">#&gt;    Yes                  │      249       21.2 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity      │                     </span></span>
+<span><span class="co">#&gt;    No                   │      650       54.2 </span></span>
+<span><span class="co">#&gt;    Yes                  │      550       45.8</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Categorical table by education</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; ───────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Current smoker    │                                                         </span></span>
+<span><span class="co">#&gt;    No              │               179               69.6                415 </span></span>
+<span><span class="co">#&gt;    Yes             │                78               30.4                112 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity │                                                         </span></span>
+<span><span class="co">#&gt;    No              │               177               67.8                310 </span></span>
+<span><span class="co">#&gt;    Yes             │                84               32.2                229 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
+<span><span class="co">#&gt; ───────────────────┼────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Current smoker    │                                                    </span></span>
+<span><span class="co">#&gt;    No              │              78.7         332        84.9      926 </span></span>
+<span><span class="co">#&gt;    Yes             │              21.3          59        15.1      249 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity │                                                    </span></span>
+<span><span class="co">#&gt;    No              │              57.5         163        40.8      650 </span></span>
+<span><span class="co">#&gt;    Yes             │              42.5         237        59.2      550 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          │ Total %       p  Cramer's V </span></span>
+<span><span class="co">#&gt; ───────────────────┼─────────────────────────────</span></span>
+<span><span class="co">#&gt;  Current smoker    │          &lt; .001         .14 </span></span>
+<span><span class="co">#&gt;    No              │    78.8                     </span></span>
+<span><span class="co">#&gt;    Yes             │    21.2                     </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity │          &lt; .001         .21 </span></span>
+<span><span class="co">#&gt;    No              │    54.2                     </span></span>
+<span><span class="co">#&gt;    Yes             │    45.8</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Descriptive statistics</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       │   M     SD    Min    Max   95% CI LL </span></span>
+<span><span class="co">#&gt; ────────────────────────────────┼──────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Body mass index                │ 25.93  3.72  16.00  38.90    25.72   </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │ 3.55   1.25  1.00   5.00     3.48    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       │ 95% CI UL     n </span></span>
+<span><span class="co">#&gt; ────────────────────────────────┼─────────────────</span></span>
+<span><span class="co">#&gt;  Body mass index                │   26.14    1188 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │   3.62     1192</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -289,12 +346,12 @@
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary    3.43       3.63     534 </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary           4.01       4.21     399</span></span></code></pre></div>
-<p>See <code><a href="articles/table-categorical.html">vignette("table-categorical")</a></code> for grouped categorical tables, and <code><a href="reference/table_continuous.html">?table_continuous</a></code> for continuous summaries with optional group comparisons.</p>
+<p>See <code><a href="articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code> for an overview of summary tables, <code><a href="articles/table-categorical.html">vignette("table-categorical")</a></code> for categorical summaries, and <code><a href="articles/table-continuous.html">vignette("table-continuous")</a></code> for continuous summaries and group comparisons.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
@@ -311,7 +368,7 @@
 <div class="section level3">
 <h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
