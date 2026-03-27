@@ -45,7 +45,7 @@ jobs:
         if: matrix.config.r == 'devel'
         with:
           extra-packages: any::rcmdcheck
-          dependencies: hard
+          dependencies: '"hard"'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         if: matrix.config.r != 'devel'
