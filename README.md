@@ -52,37 +52,6 @@ With spicy, you can:
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
 common variable types. See `vignette("spicy")` for a full tour.
 
-## Common tasks
-
-If you are looking for a specific workflow, start here:
-
-- [Getting started with
-  spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
-- [Explore variables and build codebooks in
-  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
-- [Frequency tables and cross-tabulations in
-  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
-- [Cramer’s V, Phi, and association measures in
-  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
-- [Categorical summary tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
-- [Continuous summary tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
-- [Summary tables for APA-style
-  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
-- [Reference for
-  `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
-- [Reference for
-  `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
-- [Reference for
-  `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
-- [Reference for
-  `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
-- [Reference for
-  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
-
-------------------------------------------------------------------------
-
 ## Installation
 
 Install the stable version from CRAN:
@@ -110,21 +79,6 @@ pak::pak("amaltawfik/spicy")
 ------------------------------------------------------------------------
 
 ## Quick tour
-
-Related vignettes:
-
-- [Explore variables and build codebooks in
-  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
-- [Frequency tables and cross-tabulations in
-  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
-- [Cramer’s V, Phi, and association measures in
-  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
-- [Categorical summary tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
-- [Continuous summary tables in
-  R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
-- [Summary tables for APA-style
-  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
 ### Inspect variables
 
@@ -355,6 +309,37 @@ labelled::var_label(out)
 #> $score
 #> [1] "Total score"
 ```
+
+------------------------------------------------------------------------
+
+## Learn by task
+
+If you are looking for a specific workflow, start here:
+
+- [Getting started with
+  spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
+- [Explore variables and build codebooks in
+  R](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
+- [Frequency tables and cross-tabulations in
+  R](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
+- [Cramer’s V, Phi, and association measures in
+  R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Categorical summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+- [Continuous summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+- [Summary tables for APA-style
+  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
+- [Reference for
+  `freq()`](https://amaltawfik.github.io/spicy/reference/freq.html)
+- [Reference for
+  `cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.html)
+- [Reference for
+  `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
+- [Reference for
+  `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
+- [Reference for
+  `varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.html)
 
 ------------------------------------------------------------------------
 
