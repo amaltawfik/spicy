@@ -41,12 +41,11 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install hard dependencies for R-devel
+      - uses: r-lib/actions/setup-r-dependencies@v2
         if: matrix.config.r == 'devel'
-        run: |
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = NA)
-        shell: Rscript {0}
+        with:
+          extra-packages: any::rcmdcheck
+          dependencies: '"hard"'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         if: matrix.config.r != 'devel'
