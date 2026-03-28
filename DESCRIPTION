@@ -39,7 +39,7 @@ Suggests:
     gt,
     knitr,
     officer,
-    openxlsx,
+    openxlsx2,
     rmarkdown,
     testthat (>= 3.0.0),
     tinytable,

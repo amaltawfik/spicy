@@ -67,7 +67,7 @@
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
-#'   - `"excel"` (requires `openxlsx`)
+#'   - `"excel"` (requires `openxlsx2`)
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
 #' @param indent_text Prefix used for modality labels in report table building.
@@ -185,7 +185,7 @@
 #' }
 #'
 #' # Optional output: Excel
-#' if (requireNamespace("openxlsx", quietly = TRUE)) {
+#' if (requireNamespace("openxlsx2", quietly = TRUE)) {
 #'   table_categorical(
 #'     data = sochealth,
 #'     select = c(smoking, physical_activity),
@@ -919,8 +919,8 @@ table_categorical <- function(
       if (is.null(excel_path) || !nzchar(excel_path)) {
         stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
       }
-      if (!requireNamespace("openxlsx", quietly = TRUE)) {
-        stop("Install package 'openxlsx'.", call. = FALSE)
+      if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+        stop("Install package 'openxlsx2'.", call. = FALSE)
       }
 
       body_xl <- report_wide_excel
@@ -930,95 +930,59 @@ table_categorical <- function(
         indent_text_excel_clipboard
       )
 
-      wb <- openxlsx::createWorkbook()
-      openxlsx::addWorksheet(wb, excel_sheet)
-      openxlsx::writeData(
+      wb <- openxlsx2::wb_workbook()
+      wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
+      wb <- openxlsx2::wb_add_data(
         wb,
-        excel_sheet,
         x = body_xl,
-        startRow = 1,
-        colNames = TRUE,
-        rowNames = FALSE
+        start_row = 1,
+        col_names = TRUE,
+        row_names = FALSE
       )
 
       nc <- ncol(body_xl)
       last_row <- nrow(body_xl) + 1
-      st_left <- openxlsx::createStyle(halign = "left")
-      st_right <- openxlsx::createStyle(halign = "right")
-      st_top <- openxlsx::createStyle(border = "top", borderStyle = "thin")
-      st_bot <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
-      st_int <- openxlsx::createStyle(numFmt = "0")
-      st_pct <- openxlsx::createStyle(
-        numFmt = paste0("0.", paste(rep("0", percent_digits), collapse = ""))
-      )
+      pct_fmt <- paste0("0.", paste(rep("0", percent_digits), collapse = ""))
 
-      openxlsx::addStyle(
+      # Header borders (top + bottom on row 1)
+      wb <- openxlsx2::wb_add_border(
         wb,
-        excel_sheet,
-        st_top,
-        rows = 1,
-        cols = 1:nc,
-        gridExpand = TRUE,
-        stack = TRUE
-      )
-      openxlsx::addStyle(
-        wb,
-        excel_sheet,
-        st_bot,
-        rows = 1,
-        cols = 1:nc,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+        top_border = "thin",
+        bottom_border = "thin"
       )
       if (nrow(body_xl) > 0) {
-        openxlsx::addStyle(
+        # Body alignment
+        wb <- openxlsx2::wb_add_cell_style(
           wb,
-          excel_sheet,
-          st_left,
-          rows = 2:last_row,
-          cols = 1,
-          gridExpand = TRUE,
-          stack = TRUE
+          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 1),
+          horizontal = "left"
         )
-        openxlsx::addStyle(
+        wb <- openxlsx2::wb_add_cell_style(
           wb,
-          excel_sheet,
-          st_right,
-          rows = 2:last_row,
-          cols = 2:nc,
-          gridExpand = TRUE,
-          stack = TRUE
+          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 2:nc),
+          horizontal = "right"
         )
-        openxlsx::addStyle(
+        # Number formats: integers (col 2), percentages (col 3)
+        wb <- openxlsx2::wb_add_numfmt(
           wb,
-          excel_sheet,
-          st_int,
-          rows = 2:last_row,
-          cols = 2,
-          gridExpand = TRUE,
-          stack = TRUE
+          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 2),
+          numfmt = "0"
         )
-        openxlsx::addStyle(
+        wb <- openxlsx2::wb_add_numfmt(
           wb,
-          excel_sheet,
-          st_pct,
-          rows = 2:last_row,
-          cols = 3,
-          gridExpand = TRUE,
-          stack = TRUE
+          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 3),
+          numfmt = pct_fmt
         )
-        openxlsx::addStyle(
+        # Bottom border on last row
+        wb <- openxlsx2::wb_add_border(
           wb,
-          excel_sheet,
-          st_bot,
-          rows = last_row,
-          cols = 1:nc,
-          gridExpand = TRUE,
-          stack = TRUE
+          dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
+          bottom_border = "thin"
         )
       }
 
-      openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
+      openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
       return(invisible(excel_path))
     }
 
@@ -1886,26 +1850,24 @@ table_categorical <- function(
     if (is.null(excel_path) || !nzchar(excel_path)) {
       stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
     }
-    if (!requireNamespace("openxlsx", quietly = TRUE)) {
-      stop("Install package 'openxlsx'.", call. = FALSE)
+    if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+      stop("Install package 'openxlsx2'.", call. = FALSE)
     }
 
-    wb <- openxlsx::createWorkbook()
-    openxlsx::addWorksheet(wb, excel_sheet)
+    wb <- openxlsx2::wb_workbook()
+    wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = as.data.frame(t(top_header_flat_ex), stringsAsFactors = FALSE),
-      startRow = 1,
-      colNames = FALSE
+      start_row = 1,
+      col_names = FALSE
     )
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = as.data.frame(t(bot_header_ex), stringsAsFactors = FALSE),
-      startRow = 2,
-      colNames = FALSE
+      start_row = 2,
+      col_names = FALSE
     )
 
     body_xl <- report_wide_excel
@@ -1923,60 +1885,48 @@ table_categorical <- function(
       body_xl[["CI upper"]] <- report_wide_char[["CI upper"]]
     }
 
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = body_xl,
-      startRow = 3,
-      colNames = FALSE,
-      rowNames = FALSE
+      start_row = 3,
+      col_names = FALSE,
+      row_names = FALSE
     )
 
     nc <- ncol(body_xl)
     last_row <- 2 + nrow(body_xl)
+    pct_fmt <- paste0("0.", paste(rep("0", percent_digits), collapse = ""))
 
     if (add_multilevel_header) {
       for (i in seq_along(group_levels)) {
         c1 <- 2 + (i - 1) * 2
-        openxlsx::mergeCells(wb, excel_sheet, cols = c(c1, c1 + 1), rows = 1)
+        wb <- openxlsx2::wb_merge_cells(
+          wb,
+          dims = openxlsx2::wb_dims(rows = 1, cols = c1:(c1 + 1))
+        )
       }
     }
 
-    st_center <- openxlsx::createStyle(halign = "center", valign = "center")
-    st_right <- openxlsx::createStyle(halign = "right")
-    st_left <- openxlsx::createStyle(halign = "left")
-    st_text <- openxlsx::createStyle(numFmt = "@")
-    st_top <- openxlsx::createStyle(border = "top", borderStyle = "thin")
-    st_bot <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
-
-    openxlsx::addStyle(
+    # Header alignment (center, vertically centered)
+    wb <- openxlsx2::wb_add_cell_style(
       wb,
-      excel_sheet,
-      st_center,
-      rows = 1:2,
-      cols = 1:nc,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 1:2, cols = 1:nc),
+      horizontal = "center",
+      vertical = "center"
     )
     if (nrow(body_xl) > 0) {
-      openxlsx::addStyle(
+      # Body alignment
+      wb <- openxlsx2::wb_add_cell_style(
         wb,
-        excel_sheet,
-        st_left,
-        rows = 3:last_row,
-        cols = 1,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 1),
+        horizontal = "left"
       )
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_cell_style(
         wb,
-        excel_sheet,
-        st_right,
-        rows = 3:last_row,
-        cols = 2:nc,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 2:nc),
+        horizontal = "right"
       )
+      # Text columns (p, assoc, CI) — force text format
       text_cols <- if (show_assoc && assoc_ci) {
         (nc - 3):nc
       } else if (show_assoc) {
@@ -1984,85 +1934,55 @@ table_categorical <- function(
       } else {
         nc
       }
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_numfmt(
         wb,
-        excel_sheet,
-        st_text,
-        rows = 3:last_row,
-        cols = text_cols,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = text_cols),
+        numfmt = "@"
       )
     }
 
-    openxlsx::addStyle(
+    # APA borders
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_top,
-      rows = 1,
-      cols = 1:nc,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+      top_border = "thin"
     )
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_bot,
-      rows = 1,
-      cols = grp_j,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 1, cols = grp_j),
+      bottom_border = "thin"
     )
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_bot,
-      rows = 2,
-      cols = 1:nc,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
+      bottom_border = "thin"
     )
     if (nrow(body_xl) > 0) {
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_border(
         wb,
-        excel_sheet,
-        st_bot,
-        rows = last_row,
-        cols = 1:nc,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
+        bottom_border = "thin"
       )
     }
 
+    # Number formats for n / % columns
     n_cols <- seq(2, 1 + 2 * length(group_levels), by = 2)
     p_cols <- n_cols + 1
-    st_int <- openxlsx::createStyle(numFmt = "0")
-    st_pct <- openxlsx::createStyle(
-      numFmt = paste0("0.", paste(rep("0", percent_digits), collapse = ""))
-    )
 
     if (nrow(body_xl) > 0) {
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_numfmt(
         wb,
-        excel_sheet,
-        st_int,
-        rows = 3:last_row,
-        cols = n_cols,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = n_cols),
+        numfmt = "0"
       )
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_numfmt(
         wb,
-        excel_sheet,
-        st_pct,
-        rows = 3:last_row,
-        cols = p_cols,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = p_cols),
+        numfmt = pct_fmt
       )
     }
 
-    openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
+    openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
     return(invisible(excel_path))
   }
 

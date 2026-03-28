@@ -7,25 +7,14 @@
 
 ## Comments
 
-This is version 0.6.0 of the **spicy** package.
+This is version 0.7.0 of the **spicy** package.
 
 ### Main changes
 
-* New family of association measure functions for contingency tables: `assoc_measures()`, `contingency_coef()`, `gamma_gk()`, `goodman_kruskal_tau()`, `kendall_tau_b()`, `kendall_tau_c()`, `lambda_gk()`, `phi()`, `somers_d()`, `uncertainty_coef()`, and `yule_q()`.
-* `cross_tab()` gains `assoc_measure` and `assoc_ci` arguments with automatic ordinal detection.
-* `table_categorical()` gains `output = "gt"` and dynamic association measure labeling.
-* New bundled dataset `sochealth` (simulated social-health survey, n = 1200, 24 variables).
-* `cramer_v()` gains a `detail` argument (breaking: returns a named vector when `detail = TRUE`).
-
-### Bug fixes
-
-* `count_n()` NA-in-count bug fixed; list columns reported in verbose mode.
-* `cross_tab()` rescale logic now operates on complete cases only.
-* `freq()` consistent NA representation, validated `digits`/`sort`, correct `cum_valid_prop` for missing rows.
-* `mean_n()`, `sum_n()` now validate `min_valid` and `digits` arguments.
-* `mean_n()`, `sum_n()`, `count_n()` no longer trigger a tidyselect deprecation warning with character vector input.
-* `table_categorical()` preserves factor level order, places `(Missing)` at bottom, validates digit arguments.
-* `table_categorical()` p-values no longer wrap across lines in `tinytable` HTML output.
+* `table_categorical()` replaces `table_apa()` as the public helper for categorical summary tables, with `select`/`by` interface, one-way frequency support, and consolidated `output` argument. **Breaking:** migrate `table_apa()` calls to `table_categorical()`.
+* New `table_continuous()` helper for continuous summary tables with descriptive statistics, tidyselect column selection, grouping via `by`, group-comparison tests (`test`), effect sizes, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
+* ASCII console tables now split oversized outputs into stacked horizontal panels for narrow consoles.
+* Excel export now uses `openxlsx2` (replacing `openxlsx`) for a lighter dependency footprint.
 
 ### Testing environments
 

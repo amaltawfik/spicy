@@ -80,7 +80,7 @@
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
-#'   - `"excel"` (requires `openxlsx`)
+#'   - `"excel"` (requires `openxlsx2`)
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
 #' @param excel_path File path for `output = "excel"`.
@@ -243,7 +243,7 @@
 #' }
 #'
 #' # Excel output
-#' if (requireNamespace("openxlsx", quietly = TRUE)) {
+#' if (requireNamespace("openxlsx2", quietly = TRUE)) {
 #'   table_continuous(iris, select = starts_with("Sepal"),
 #'              by = Species, output = "excel",
 #'              excel_path = tempfile(fileext = ".xlsx"))
@@ -1539,9 +1539,9 @@ export_desc_table <- function(
 
   # ---- excel ----
   if (output == "excel") {
-    if (!requireNamespace("openxlsx", quietly = TRUE)) {
+    if (!requireNamespace("openxlsx2", quietly = TRUE)) {
       # nocov start
-      stop("Install package 'openxlsx'.", call. = FALSE)
+      stop("Install package 'openxlsx2'.", call. = FALSE)
     } # nocov end
     if (is.null(excel_path) || !nzchar(excel_path)) {
       stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
@@ -1553,42 +1553,36 @@ export_desc_table <- function(
     hdrs <- build_header_rows(col_keys, ci_pct)
     ci_j <- which(col_keys %in% c("LL", "UL"))
 
-    wb <- openxlsx::createWorkbook()
-    openxlsx::addWorksheet(wb, excel_sheet)
+    wb <- openxlsx2::wb_workbook()
+    wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = as.data.frame(t(hdrs$top), stringsAsFactors = FALSE),
-      startRow = 1,
-      colNames = FALSE
+      start_row = 1,
+      col_names = FALSE
     )
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
-      startRow = 2,
-      colNames = FALSE
+      start_row = 2,
+      col_names = FALSE
     )
-    openxlsx::writeData(
+    wb <- openxlsx2::wb_add_data(
       wb,
-      excel_sheet,
       x = display_df,
-      startRow = 3,
-      colNames = FALSE,
-      rowNames = FALSE
+      start_row = 3,
+      col_names = FALSE,
+      row_names = FALSE
     )
 
-    openxlsx::mergeCells(wb, excel_sheet, cols = ci_j, rows = 1)
+    wb <- openxlsx2::wb_merge_cells(
+      wb,
+      dims = openxlsx2::wb_dims(rows = 1, cols = ci_j)
+    )
     last_row <- 2 + nrow(display_df)
 
-    # Styles
-    st_center <- openxlsx::createStyle(halign = "center", valign = "center")
-    st_right <- openxlsx::createStyle(halign = "right")
-    st_left <- openxlsx::createStyle(halign = "left")
-    st_top <- openxlsx::createStyle(border = "top", borderStyle = "thin")
-    st_bot <- openxlsx::createStyle(border = "bottom", borderStyle = "thin")
-
+    # Alignment
     left_cols <- if (has_group) 1:2 else 1L
     right_cols <- which(col_keys == "n")
     if (has_p) {
@@ -1597,94 +1591,59 @@ export_desc_table <- function(
     center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
     all_rows <- 1:last_row
 
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_cell_style(
       wb,
-      excel_sheet,
-      st_left,
-      rows = all_rows,
-      cols = left_cols,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = all_rows, cols = left_cols),
+      horizontal = "left"
     )
     if (length(center_cols) > 0L) {
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_cell_style(
         wb,
-        excel_sheet,
-        st_center,
-        rows = all_rows,
-        cols = center_cols,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = all_rows, cols = center_cols),
+        horizontal = "center",
+        vertical = "center"
       )
     }
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_cell_style(
       wb,
-      excel_sheet,
-      st_right,
-      rows = all_rows,
-      cols = right_cols,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = all_rows, cols = right_cols),
+      horizontal = "right"
     )
 
     # APA borders
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_top,
-      rows = 1,
-      cols = 1:nc,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+      top_border = "thin"
     )
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_bot,
-      rows = 1,
-      cols = ci_j,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
+      bottom_border = "thin"
     )
-    openxlsx::addStyle(
+    wb <- openxlsx2::wb_add_border(
       wb,
-      excel_sheet,
-      st_bot,
-      rows = 2,
-      cols = 1:nc,
-      gridExpand = TRUE,
-      stack = TRUE
+      dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
+      bottom_border = "thin"
     )
     if (nrow(display_df) > 0) {
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_border(
         wb,
-        excel_sheet,
-        st_bot,
-        rows = last_row,
-        cols = 1:nc,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
+        bottom_border = "thin"
       )
     }
 
     # Light separators between variable blocks
-    st_light <- openxlsx::createStyle(
-      border = "bottom",
-      borderStyle = "hair"
-    )
     for (sr in sep_rows) {
-      openxlsx::addStyle(
+      wb <- openxlsx2::wb_add_border(
         wb,
-        excel_sheet,
-        st_light,
-        rows = sr - 1L + 2L,
-        cols = 1:nc,
-        gridExpand = TRUE,
-        stack = TRUE
+        dims = openxlsx2::wb_dims(rows = sr - 1L + 2L, cols = 1:nc),
+        bottom_border = "hair"
       )
     }
 
-    openxlsx::saveWorkbook(wb, excel_path, overwrite = TRUE)
+    openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
     return(invisible(excel_path))
   }
 

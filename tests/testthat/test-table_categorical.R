@@ -381,7 +381,7 @@ test_that("table_categorical returns one-way rendered objects when requested", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   skip_if_not_installed("clipr")
 
   tt <- table_categorical(
@@ -825,7 +825,7 @@ test_that("table_categorical grouped word and clipboard outputs work", {
 test_that("table_categorical requires file paths for word and excel outputs", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
 
   expect_error(
     table_categorical(sochealth, "smoking", output = "word"),
@@ -840,7 +840,7 @@ test_that("table_categorical requires file paths for word and excel outputs", {
 # Ã¢â€â‚¬Ã¢â€â‚¬ Excel output Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 test_that("table_categorical writes excel file", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   table_categorical(
@@ -1299,7 +1299,7 @@ test_that("table_categorical grouped tinytable with assoc_measure = none", {
 })
 
 test_that("table_categorical grouped excel with assoc_ci", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   path <- table_categorical(
@@ -1314,7 +1314,7 @@ test_that("table_categorical grouped excel with assoc_ci", {
 })
 
 test_that("table_categorical grouped excel with assoc_measure = none", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   path <- table_categorical(
@@ -1427,10 +1427,10 @@ test_that("table_categorical errors for missing flextable package", {
   )
 })
 
-test_that("table_categorical errors for missing openxlsx package", {
+test_that("table_categorical errors for missing openxlsx2 package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "openxlsx") {
+      if (pkg == "openxlsx2") {
         return(FALSE)
       }
       base::requireNamespace(pkg, ...)
@@ -1444,7 +1444,7 @@ test_that("table_categorical errors for missing openxlsx package", {
       output = "excel",
       excel_path = tempfile(fileext = ".xlsx")
     ),
-    "openxlsx"
+    "openxlsx2"
   )
 })
 
@@ -1545,10 +1545,10 @@ test_that("table_categorical grouped errors for missing flextable", {
   )
 })
 
-test_that("table_categorical grouped errors for missing openxlsx", {
+test_that("table_categorical grouped errors for missing openxlsx2", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "openxlsx") {
+      if (pkg == "openxlsx2") {
         return(FALSE)
       }
       base::requireNamespace(pkg, ...)
@@ -1563,7 +1563,7 @@ test_that("table_categorical grouped errors for missing openxlsx", {
       output = "excel",
       excel_path = tempfile(fileext = ".xlsx")
     ),
-    "openxlsx"
+    "openxlsx2"
   )
 })
 

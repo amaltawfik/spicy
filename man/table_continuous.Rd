@@ -113,7 +113,7 @@ Either \code{"."} (default) or \code{","}.}
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
-\item \code{"excel"} (requires \code{openxlsx})
+\item \code{"excel"} (requires \code{openxlsx2})
 \item \code{"clipboard"} (requires \code{clipr})
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
@@ -294,7 +294,7 @@ if (requireNamespace("flextable", quietly = TRUE) &&
 }
 
 # Excel output
-if (requireNamespace("openxlsx", quietly = TRUE)) {
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
   table_continuous(iris, select = starts_with("Sepal"),
              by = Species, output = "excel",
              excel_path = tempfile(fileext = ".xlsx"))

@@ -958,7 +958,7 @@ test_that("table_continuous flextable has 2-row header with CI spanner", {
 # ---- optional outputs: excel ----
 
 test_that("table_continuous excel output works", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   out <- table_continuous(
@@ -1085,7 +1085,7 @@ test_that("table_continuous flextable with groups works", {
 })
 
 test_that("table_continuous excel with groups works", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   out <- table_continuous(
@@ -1619,7 +1619,7 @@ test_that("table_continuous flextable with effect_size works", {
 })
 
 test_that("table_continuous excel with effect_size works", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   out <- table_continuous(
@@ -1847,7 +1847,7 @@ test_that("table_continuous flextable with multiple variables has separator rows
 })
 
 test_that("table_continuous excel with multiple variables has separator rows", {
-  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   out <- table_continuous(

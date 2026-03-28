@@ -107,7 +107,7 @@ Defaults to \code{FALSE}.}
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
-\item \code{"excel"} (requires \code{openxlsx})
+\item \code{"excel"} (requires \code{openxlsx2})
 \item \code{"clipboard"} (requires \code{clipr})
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
@@ -246,7 +246,7 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 }
 
 # Optional output: Excel
-if (requireNamespace("openxlsx", quietly = TRUE)) {
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
   table_categorical(
     data = sochealth,
     select = c(smoking, physical_activity),
