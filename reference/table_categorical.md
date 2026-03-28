@@ -166,7 +166,7 @@ table_categorical(
 
   - `"flextable"` (requires `flextable`)
 
-  - `"excel"` (requires `openxlsx`)
+  - `"excel"` (requires `openxlsx2`)
 
   - `"clipboard"` (requires `clipr`)
 
@@ -443,7 +443,7 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 #> +-------------------+-----+------+-----+------+-----+------+------+------------+ 
 
 # Optional output: Excel
-if (requireNamespace("openxlsx", quietly = TRUE)) {
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
   table_categorical(
     data = sochealth,
     select = c(smoking, physical_activity),

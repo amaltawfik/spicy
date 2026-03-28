@@ -234,7 +234,7 @@ Defaults to <code>FALSE</code>.</p></dd>
 <li><p><code>"tinytable"</code> (requires <code>tinytable</code>)</p></li>
 <li><p><code>"gt"</code> (requires <code>gt</code>)</p></li>
 <li><p><code>"flextable"</code> (requires <code>flextable</code>)</p></li>
-<li><p><code>"excel"</code> (requires <code>openxlsx</code>)</p></li>
+<li><p><code>"excel"</code> (requires <code>openxlsx2</code>)</p></li>
 <li><p><code>"clipboard"</code> (requires <code>clipr</code>)</p></li>
 <li><p><code>"word"</code> (requires <code>flextable</code> and <code>officer</code>)</p></li>
 </ul></dd>
@@ -493,7 +493,7 @@ frequency tables.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+ </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>

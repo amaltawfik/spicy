@@ -161,7 +161,7 @@ table_continuous(
 
   - `"flextable"` (requires `flextable`)
 
-  - `"excel"` (requires `openxlsx`)
+  - `"excel"` (requires `openxlsx2`)
 
   - `"clipboard"` (requires `clipr`)
 
@@ -671,7 +671,7 @@ quietly = TRUE)) { table_continuous(iris, select =
 by = Species, output = "word", word_path =
 [tempfile](https://rdrr.io/r/base/tempfile.html)(fileext = ".docx")) }
 \# Excel output if
-([requireNamespace](https://rdrr.io/r/base/ns-load.html)("openxlsx",
+([requireNamespace](https://rdrr.io/r/base/ns-load.html)("openxlsx2",
 quietly = TRUE)) { table_continuous(iris, select =
 [starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("Sepal"),
 by = Species, output = "excel", excel_path =
