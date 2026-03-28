@@ -175,7 +175,11 @@ test_that("table_continuous select works with character vector", {
 })
 
 test_that("table_continuous select works with tidyselect helpers", {
-  out <- table_continuous(iris, select = starts_with("Sepal"), output = "data.frame")
+  out <- table_continuous(
+    iris,
+    select = starts_with("Sepal"),
+    output = "data.frame"
+  )
   expect_equal(nrow(out), 2L)
   expect_true(all(grepl("^Sepal", out$variable)))
 })
@@ -216,7 +220,12 @@ test_that("table_continuous exclude works with tidyselect syntax", {
 })
 
 test_that("table_continuous regex selection works", {
-  out <- table_continuous(iris, select = "^Sepal", regex = TRUE, output = "data.frame")
+  out <- table_continuous(
+    iris,
+    select = "^Sepal",
+    regex = TRUE,
+    output = "data.frame"
+  )
   expect_equal(nrow(out), 2L)
   expect_true(all(grepl("^Sepal", out$variable)))
 })

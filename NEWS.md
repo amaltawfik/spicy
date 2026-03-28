@@ -1,23 +1,20 @@
-# spicy (development version)
+# spicy 0.7.0
 
 * ASCII console tables now split oversized outputs into stacked horizontal panels, repeating the left-most identifier columns so wide `freq()`, `cross_tab()`, `table_categorical()`, and `table_continuous()` prints stay readable in narrow consoles.
 
 * Package citation metadata now uses the current package title and CRAN DOI, so `citation("spicy")` matches `DESCRIPTION` and points to the package DOI.
 
-* `table_categorical()` replaces `table_apa()` as the public name for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and provides multiple output formats via a single `output` argument.
+* `table_categorical()` replaces `table_apa()` as the public helper for categorical summary tables. It uses `select` and `by`, supports grouped cross-tabulation or one-way frequency-style tables when `by = NULL`, and consolidates output formats under a single `output` argument. **Breaking:** migrate existing `table_apa()` calls to `table_categorical()`, use `output = "default"` for ASCII tables and `output = "data.frame"` for plain data frames, and replace former `output = "wide"` / `style = "report"` paths with the formatted output engines.
 
-* `table_continuous()` replaces `table_desc()` as the public name for continuous summary tables. It computes descriptive statistics (mean, SD, min, max, confidence interval of the mean, n) for numeric variables, with tidyselect column selection, optional grouping via `by`, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
+* `table_categorical()` and `table_continuous()` now print shorter ASCII titles without appending the input data frame name, and no longer require `officer` for `output = "flextable"` alone; `officer` is now required only for Word export paths that actually write `.docx` files.
 
-* **Breaking:** `table_categorical()` and `table_continuous()` simplify their output API. The `styled` and `style` parameters are removed; use `output = "default"` for an ASCII table or `output = "data.frame"` for a plain numeric data frame. In `table_categorical()`, `output = "wide"` is renamed to `output = "data.frame"` and `style = "report"` paths are removed (use `"tinytable"`, `"gt"`, or `"flextable"` for formatted output).
+* `table_continuous()` is a new helper for continuous summary tables. It computes descriptive statistics (mean, SD, min, max, confidence interval of the mean, and n) for numeric variables, with tidyselect column selection, optional grouping via `by`, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, and Word).
 
-* `table_continuous()` gains `effect_size` and `effect_size_ci` arguments. When `by` is used, `effect_size = TRUE` adds an "ES" column with the appropriate measure (Hedges' g, eta-squared, rank-biserial r_rb, or epsilon-squared) chosen automatically based on the test method and number of groups. `effect_size_ci = TRUE` appends the confidence interval in brackets (e.g., `g = 0.45 [0.22, 0.68]`).
+* `table_continuous()` gains `effect_size` and `effect_size_ci` arguments. When `by` is used, `effect_size = TRUE` adds an "ES" column with the appropriate measure (Hedges' g, eta-squared, rank-biserial `r_rb`, or epsilon-squared) chosen automatically based on the test method and number of groups, and `effect_size_ci = TRUE` appends the confidence interval in brackets.
 
-* `table_continuous()` gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`) to choose the group-comparison method, along with independent `p_value` and `statistic` display toggles. When `by` is used, `p_value = TRUE` adds a p-value column and `statistic = TRUE` adds a formatted test-statistic column; either or both can be enabled independently.
-
-* `table_categorical()` and `table_continuous()` no longer require `officer` for `output = "flextable"` alone; `officer` is now required only for Word export paths that actually write `.docx` files.
+* `table_continuous()` gains a `test` argument (`"welch"`, `"student"`, or `"nonparametric"`) to choose the group-comparison method, along with independent `p_value` and `statistic` display toggles so users can request either or both outputs when `by` is used.
 
 * `table_continuous()` now accepts tidyselect syntax in `exclude` in addition to character vectors, and no longer warns that `test` is ignored when it is still needed to compute effect sizes.
-* `table_categorical()` and `table_continuous()` now print shorter ASCII titles without appending the input data frame name.
 
 # spicy 0.6.0
 

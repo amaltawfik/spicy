@@ -237,9 +237,11 @@ table_continuous(iris, select = Sepal.Length, by = Species,
            output = "data.frame")
 
 # Nonparametric effect size (epsilon-squared with bootstrap CI)
+\donttest{
 table_continuous(iris, select = Sepal.Length, by = Species,
            test = "nonparametric", effect_size_ci = TRUE,
            output = "data.frame")
+}
 
 # Hedges' g for 2 groups
 table_continuous(iris[iris$Species != "virginica", ],

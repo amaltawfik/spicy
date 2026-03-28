@@ -1044,7 +1044,10 @@ test_that("table_categorical one-way with levels_keep filters levels", {
     x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
   )
   out <- table_categorical(
-    df, select = x, levels_keep = c("B", "A"), output = "data.frame"
+    df,
+    select = x,
+    levels_keep = c("B", "A"),
+    output = "data.frame"
   )
   expect_equal(as.character(out$Level), c("B", "A"))
 })
@@ -1054,7 +1057,10 @@ test_that("table_categorical one-way with levels_keep and long output", {
     x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
   )
   out <- table_categorical(
-    df, select = x, levels_keep = c("B", "C"), output = "long"
+    df,
+    select = x,
+    levels_keep = c("B", "C"),
+    output = "long"
   )
   expect_true(all(out$level %in% c("B", "C")))
 })
@@ -1062,7 +1068,10 @@ test_that("table_categorical one-way with levels_keep and long output", {
 test_that("table_categorical one-way with decimal_mark comma", {
   df <- data.frame(x = factor(c("A", "B", "A", "B", "A")))
   out <- table_categorical(
-    df, select = x, decimal_mark = ",", output = "default"
+    df,
+    select = x,
+    decimal_mark = ",",
+    output = "default"
   )
   disp <- attr(out, "display_df")
   # Percentages should use comma as decimal separator
@@ -1076,15 +1085,23 @@ test_that("table_categorical one-way with blank_na_wide", {
     y = factor(c("C", "D", NA, NA))
   )
   out <- table_categorical(
-    df, select = c(x, y), drop_na = TRUE,
-    blank_na_wide = TRUE, output = "data.frame"
+    df,
+    select = c(x, y),
+    drop_na = TRUE,
+    blank_na_wide = TRUE,
+    output = "data.frame"
   )
   expect_s3_class(out, "data.frame")
 })
 
 test_that("table_categorical one-way empty after dropping NA produces 0-row data.frame", {
   df <- data.frame(x = factor(c(NA, NA, NA)))
-  out_wide <- table_categorical(df, select = x, drop_na = TRUE, output = "data.frame")
+  out_wide <- table_categorical(
+    df,
+    select = x,
+    drop_na = TRUE,
+    output = "data.frame"
+  )
   expect_equal(nrow(out_wide), 0L)
   out_long <- table_categorical(df, select = x, drop_na = TRUE, output = "long")
   expect_equal(nrow(out_long), 0L)
@@ -1135,9 +1152,21 @@ test_that("table_categorical grouped empty after dropping NA", {
     grp = factor(c("A", "B")),
     v = factor(c(NA, NA))
   )
-  out_wide <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "data.frame")
+  out_wide <- table_categorical(
+    df,
+    select = v,
+    by = grp,
+    drop_na = TRUE,
+    output = "data.frame"
+  )
   expect_equal(nrow(out_wide), 0L)
-  out_long <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "long")
+  out_long <- table_categorical(
+    df,
+    select = v,
+    by = grp,
+    drop_na = TRUE,
+    output = "long"
+  )
   expect_equal(nrow(out_long), 0L)
 })
 
@@ -1147,7 +1176,11 @@ test_that("table_categorical one-way weighted with rescale", {
     w = c(10, 5, 10, 5, 10)
   )
   out <- table_categorical(
-    df, select = x, weights = w, rescale = TRUE, output = "data.frame"
+    df,
+    select = x,
+    weights = w,
+    rescale = TRUE,
+    output = "data.frame"
   )
   # After rescaling, total n should equal nrow(df)
   expect_equal(sum(out$n), nrow(df), tolerance = 0.01)
@@ -1184,20 +1217,26 @@ test_that("table_categorical grouped empty via levels_keep with non-matching lev
     v = factor(c("x", "y", "x", "y"))
   )
   out <- table_categorical(
-    df, select = v, by = grp,
+    df,
+    select = v,
+    by = grp,
     levels_keep = c("nonexistent"),
     output = "data.frame"
   )
   expect_equal(nrow(out), 0L)
   out_long <- table_categorical(
-    df, select = v, by = grp,
+    df,
+    select = v,
+    by = grp,
     levels_keep = c("nonexistent"),
     output = "long"
   )
   expect_equal(nrow(out_long), 0L)
   # Also with assoc_measure = "none" to cover L1196
   out_none <- table_categorical(
-    df, select = v, by = grp,
+    df,
+    select = v,
+    by = grp,
     levels_keep = c("nonexistent"),
     assoc_measure = "none",
     output = "long"
@@ -1221,7 +1260,9 @@ test_that("table_categorical one-way with levels_keep that filters some levels",
     y = factor(c("P", "Q", "P", "Q"))
   )
   out <- table_categorical(
-    df, select = c(x, y), levels_keep = c("A", "C", "P"),
+    df,
+    select = c(x, y),
+    levels_keep = c("A", "C", "P"),
     output = "data.frame"
   )
   # Should only have matching levels
@@ -1299,28 +1340,40 @@ test_that("table_categorical grouped all-NA renders empty default table", {
     grp = factor(c("A", "B", "A")),
     v = factor(c(NA, NA, NA))
   )
-  out <- table_categorical(df, select = v, by = grp, drop_na = TRUE, output = "default")
+  out <- table_categorical(
+    df,
+    select = v,
+    by = grp,
+    drop_na = TRUE,
+    output = "default"
+  )
   expect_s3_class(out, "spicy_categorical_table")
 })
 
 test_that("table_categorical one-way levels_keep with no match returns empty", {
   df <- data.frame(x = factor(c("A", "B"), levels = c("A", "B", "C")))
   out <- table_categorical(
-    df, select = x, levels_keep = c("nonexistent"),
+    df,
+    select = x,
+    levels_keep = c("nonexistent"),
     output = "data.frame"
   )
   expect_equal(nrow(out), 0L)
   # levels_keep includes "C" which exists in factor levels but has 0 obs
   # → covers the `next` at match(lv, vals) returning NA
   out2 <- table_categorical(
-    df, select = x, levels_keep = c("A", "C"),
+    df,
+    select = x,
+    levels_keep = c("A", "C"),
     output = "data.frame"
   )
   expect_equal(nrow(out2), 1L)
   expect_equal(as.character(out2$Level), "A")
   # Also test default output path (covers make_report_wide_oneway empty path)
   out3 <- table_categorical(
-    df, select = x, levels_keep = c("nonexistent"),
+    df,
+    select = x,
+    levels_keep = c("nonexistent"),
     output = "default"
   )
   expect_s3_class(out3, "spicy_categorical_table")
@@ -1329,7 +1382,9 @@ test_that("table_categorical one-way levels_keep with no match returns empty", {
 test_that("table_categorical errors for missing tinytable package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "tinytable") return(FALSE)
+      if (pkg == "tinytable") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
@@ -1343,7 +1398,9 @@ test_that("table_categorical errors for missing tinytable package", {
 test_that("table_categorical errors for missing gt package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "gt") return(FALSE)
+      if (pkg == "gt") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
@@ -1357,7 +1414,9 @@ test_that("table_categorical errors for missing gt package", {
 test_that("table_categorical errors for missing flextable package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "flextable") return(FALSE)
+      if (pkg == "flextable") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
@@ -1371,14 +1430,18 @@ test_that("table_categorical errors for missing flextable package", {
 test_that("table_categorical errors for missing openxlsx package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "openxlsx") return(FALSE)
+      if (pkg == "openxlsx") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
   )
   expect_error(
     table_categorical(
-      sochealth, select = smoking, output = "excel",
+      sochealth,
+      select = smoking,
+      output = "excel",
       excel_path = tempfile(fileext = ".xlsx")
     ),
     "openxlsx"
@@ -1388,7 +1451,9 @@ test_that("table_categorical errors for missing openxlsx package", {
 test_that("table_categorical errors for missing clipr package", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "clipr") return(FALSE)
+      if (pkg == "clipr") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
@@ -1413,7 +1478,10 @@ test_that("table_categorical word output errors when word_path is missing", {
 test_that("table_categorical excel output errors when excel_path is missing", {
   expect_error(
     table_categorical(
-      sochealth, select = smoking, by = sex, output = "excel"
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "excel"
     ),
     "excel_path"
   )
@@ -1422,13 +1490,20 @@ test_that("table_categorical excel output errors when excel_path is missing", {
 test_that("table_categorical grouped errors for missing tinytable", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "tinytable") return(FALSE)
+      if (pkg == "tinytable") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
   )
   expect_error(
-    table_categorical(sochealth, select = smoking, by = sex, output = "tinytable"),
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "tinytable"
+    ),
     "tinytable"
   )
 })
@@ -1436,7 +1511,9 @@ test_that("table_categorical grouped errors for missing tinytable", {
 test_that("table_categorical grouped errors for missing gt", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "gt") return(FALSE)
+      if (pkg == "gt") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
@@ -1450,13 +1527,20 @@ test_that("table_categorical grouped errors for missing gt", {
 test_that("table_categorical grouped errors for missing flextable", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "flextable") return(FALSE)
+      if (pkg == "flextable") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
   )
   expect_error(
-    table_categorical(sochealth, select = smoking, by = sex, output = "flextable"),
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "flextable"
+    ),
     "flextable"
   )
 })
@@ -1464,14 +1548,19 @@ test_that("table_categorical grouped errors for missing flextable", {
 test_that("table_categorical grouped errors for missing openxlsx", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "openxlsx") return(FALSE)
+      if (pkg == "openxlsx") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
   )
   expect_error(
     table_categorical(
-      sochealth, select = smoking, by = sex, output = "excel",
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "excel",
       excel_path = tempfile(fileext = ".xlsx")
     ),
     "openxlsx"
@@ -1481,13 +1570,20 @@ test_that("table_categorical grouped errors for missing openxlsx", {
 test_that("table_categorical grouped errors for missing clipr", {
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
-      if (pkg == "clipr") return(FALSE)
+      if (pkg == "clipr") {
+        return(FALSE)
+      }
       base::requireNamespace(pkg, ...)
     },
     .package = "base"
   )
   expect_error(
-    table_categorical(sochealth, select = smoking, by = sex, output = "clipboard"),
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "clipboard"
+    ),
     "clipr"
   )
 })

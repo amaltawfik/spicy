@@ -76,7 +76,11 @@ test_that("print.spicy_categorical_table uses grouped title and compact padding"
 
   output <- capture.output(print(x))
 
-  expect_true(any(grepl("Categorical table by education", output, fixed = TRUE)))
+  expect_true(any(grepl(
+    "Categorical table by education",
+    output,
+    fixed = TRUE
+  )))
 })
 
 test_that("spicy_print_table splits wide tables into stacked panels", {
