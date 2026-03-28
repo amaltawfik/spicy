@@ -2,37 +2,7 @@
 
 ## spicy 0.7.0
 
-- ASCII console tables now split oversized outputs into stacked
-  horizontal panels, repeating the left-most identifier columns so wide
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  and
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  prints stay readable in narrow consoles.
-
-- Package citation metadata now uses the current package title and CRAN
-  DOI, so `citation("spicy")` matches `DESCRIPTION` and points to the
-  package DOI.
-
-- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  replaces `table_apa()` as the public helper for categorical summary
-  tables. It uses `select` and `by`, supports grouped cross-tabulation
-  or one-way frequency-style tables when `by = NULL`, and consolidates
-  output formats under a single `output` argument. **Breaking:** migrate
-  existing `table_apa()` calls to
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  use `output = "default"` for ASCII tables and `output = "data.frame"`
-  for plain data frames, and replace former `output = "wide"` /
-  `style = "report"` paths with the formatted output engines.
-
-- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  and
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  now print shorter ASCII titles without appending the input data frame
-  name, and no longer require `officer` for `output = "flextable"`
-  alone; `officer` is now required only for Word export paths that
-  actually write `.docx` files.
+### New features
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   is a new helper for continuous summary tables. It computes descriptive
@@ -54,6 +24,45 @@
   to choose the group-comparison method, along with independent
   `p_value` and `statistic` display toggles so users can request either
   or both outputs when `by` is used.
+
+- ASCII console tables now split oversized outputs into stacked
+  horizontal panels, repeating the left-most identifier columns so wide
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  prints stay readable in narrow consoles.
+
+### Breaking changes
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  replaces `table_apa()` as the public helper for categorical summary
+  tables. It uses `select` and `by`, supports grouped cross-tabulation
+  or one-way frequency-style tables when `by = NULL`, and consolidates
+  output formats under a single `output` argument. Migrate existing
+  `table_apa()` calls to
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  use `output = "default"` for ASCII tables and `output = "data.frame"`
+  for plain data frames, and replace former `output = "wide"` /
+  `style = "report"` paths with the formatted output engines.
+
+- Excel export now uses `openxlsx2` instead of `openxlsx` for a lighter
+  dependency footprint (no Rcpp compilation required).
+
+### Minor improvements
+
+- Package citation metadata now uses the current package title and CRAN
+  DOI, so `citation("spicy")` matches `DESCRIPTION` and points to the
+  package DOI.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  now print shorter ASCII titles without appending the input data frame
+  name, and no longer require `officer` for `output = "flextable"`
+  alone; `officer` is now required only for Word export paths that
+  actually write `.docx` files.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   now accepts tidyselect syntax in `exclude` in addition to character
