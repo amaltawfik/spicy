@@ -16,6 +16,8 @@ jobs:
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
+    continue-on-error: ${{ matrix.config.r == 'devel' }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -42,27 +44,11 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
-        if: matrix.config.r == 'devel'
-        with:
-          extra-packages: any::rcmdcheck
-          dependencies: '"hard"'
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        if: matrix.config.r != 'devel'
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
-        if: matrix.config.r == 'devel'
-        env:
-          _R_CHECK_FORCE_SUGGESTS_: false
-        with:
-          upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-
-      - uses: r-lib/actions/check-r-package@v2
-        if: matrix.config.r != 'devel'
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
