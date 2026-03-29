@@ -14,19 +14,19 @@ p-values for chi-squared-based and rank-based statistics.
 
 The table below summarizes the recommended measures by variable type.
 
-| Variable types                  | Recommended measure     | Function                                                                                       |
-|---------------------------------|-------------------------|------------------------------------------------------------------------------------------------|
-| Nominal x Nominal               | Cramer’s V              | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)                       |
-| Nominal x Nominal               | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)       |
-| Nominal x Nominal (2x2)         | Phi                     | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md)                                 |
-| Ordinal x Ordinal               | Kendall’s Tau-b         | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)             |
-| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c         | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)             |
-| Ordinal x Ordinal               | Goodman-Kruskal Gamma   | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)                       |
-| Ordinal x Ordinal (asymmetric)  | Somers’ D               | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)                       |
-| Nominal (asymmetric, PRE)       | Lambda                  | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)                     |
-| Nominal (asymmetric, PRE)       | Goodman-Kruskal Tau     | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
-| Nominal (asymmetric, PRE)       | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)       |
-| 2x2 table                       | Yule’s Q                | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)                           |
+| Variable types | Recommended measure | Function |
+|----|----|----|
+| Nominal x Nominal | Cramer’s V | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md) |
+| Nominal x Nominal | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md) |
+| Nominal x Nominal (2x2) | Phi | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) |
+| Ordinal x Ordinal | Kendall’s Tau-b | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md) |
+| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md) |
+| Ordinal x Ordinal | Goodman-Kruskal Gamma | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md) |
+| Ordinal x Ordinal (asymmetric) | Somers’ D | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md) |
+| Nominal (asymmetric, PRE) | Lambda | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md) |
+| Nominal (asymmetric, PRE) | Goodman-Kruskal Tau | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
+| Nominal (asymmetric, PRE) | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md) |
+| 2x2 table | Yule’s Q | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md) |
 
 PRE = Proportional Reduction in Error. These measures quantify how much
 knowing one variable reduces prediction error for the other.

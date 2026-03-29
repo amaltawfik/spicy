@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Categorical summary tables in R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
-<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
@@ -37,7 +37,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1721,7 +1721,7 @@ both variables are ordered factors. Override with
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  assoc_measure <span class="op">=</span> <span class="st">"phi"</span>,</span>
+<span>  assoc_measure <span class="op">=</span> <span class="st">"lambda"</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <!-- preamble start -->
@@ -1780,7 +1780,7 @@ both variables are ordered factors. Override with
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Lambda</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
@@ -1808,7 +1808,7 @@ both variables are ordered factors. Override with
                   <td data-row="1" data-col="8"></td>
                   <td data-row="1" data-col="9"></td>
                   <td data-row="1" data-col="10">&lt; .001</td>
-                  <td data-row="1" data-col="11"></td>
+                  <td data-row="1" data-col="11">.00</td>
                 </tr>
 <tr>
 <td data-row="2" data-col="1">    No</td>
@@ -3752,7 +3752,7 @@ display them as a “(Missing)” category:</p>
 </h2>
 <p>Use <code>levels_keep</code> to display only specific modalities. The
 order you specify controls the display order, which is useful for
-placing “(Missing)” last:</p>
+placing “(Missing)” first to highlight missingness:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
@@ -3760,7 +3760,7 @@ placing “(Missing)” last:</p>
 <span>    select <span class="op">=</span> <span class="va">income_group</span>,</span>
 <span>    by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>    drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>    levels_keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low"</span>, <span class="st">"High"</span>, <span class="st">"(Missing)"</span><span class="op">)</span>,</span>
+<span>    levels_keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"(Missing)"</span>, <span class="st">"Low"</span>, <span class="st">"High"</span><span class="op">)</span>,</span>
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -4310,6 +4310,19 @@ placing “(Missing)” last:</p>
 <td headers="assoc_col" class="gt_row gt_right">.18</td>
 </tr>
 <tr>
+<td headers="Variable" class="gt_row gt_left">    (Missing)</td>
+<td headers="Lower secondary_n" class="gt_row gt_center">3</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center">1.1</td>
+<td headers="Upper secondary_n" class="gt_row gt_center">9</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center">1.7</td>
+<td headers="Tertiary_n" class="gt_row gt_center">6</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">1.5</td>
+<td headers="Total_n" class="gt_row gt_center">18</td>
+<td headers="Total_pct" class="gt_row gt_center">1.5</td>
+<td headers="p" class="gt_row gt_right"></td>
+<td headers="assoc_col" class="gt_row gt_right"></td>
+</tr>
+<tr>
 <td headers="Variable" class="gt_row gt_left">    Low</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">87</td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">33.3</td>
@@ -4323,28 +4336,15 @@ placing “(Missing)” last:</p>
 <td headers="assoc_col" class="gt_row gt_right"></td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    High</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">21</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">8.0</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">94</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">17.4</td>
-<td headers="Tertiary_n" class="gt_row gt_center">104</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">26.0</td>
-<td headers="Total_n" class="gt_row gt_center">219</td>
-<td headers="Total_pct" class="gt_row gt_center">18.2</td>
-<td headers="p" class="gt_row gt_right"></td>
-<td headers="assoc_col" class="gt_row gt_right"></td>
-</tr>
-<tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">    (Missing)</td>
-<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.1</td>
-<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">9</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.7</td>
-<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">6</td>
-<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.5</td>
-<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">18</td>
-<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.5</td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">    High</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">21</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">8.0</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">94</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">17.4</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">104</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">26.0</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">219</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">18.2</td>
 <td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
 <td headers="assoc_col" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
 </tr>

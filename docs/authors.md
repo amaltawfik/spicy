@@ -10,15 +10,15 @@
 Source:
 [`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/HEAD/inst/CITATION)
 
-Tawfik A (2025). *spicy: Tools for Data Management and Variable
-Exploration*. R package version 0.6.0.9000. CRAN:
-https://CRAN.R-project.org/package=spicy. DOI: 10.5281/zenodo.15397865,
-<https://CRAN.R-project.org/package=spicy>.
+Tawfik A (2026). *spicy: Descriptive Statistics, Summary Tables, and
+Data Management Tools*. R package version 0.7.0. CRAN:
+https://CRAN.R-project.org/package=spicy. DOI:
+10.32614/CRAN.package.spicy, <https://CRAN.R-project.org/package=spicy>.
 
     @Manual{,
-      title = {spicy: Tools for Data Management and Variable Exploration},
+      title = {spicy: Descriptive Statistics, Summary Tables, and Data Management Tools},
       author = {Amal Tawfik},
-      year = {2025},
-      note = {R package version 0.6.0.9000. CRAN: https://CRAN.R-project.org/package=spicy. DOI: 10.5281/zenodo.15397865},
+      year = {2026},
+      note = {R package version 0.7.0. CRAN: https://CRAN.R-project.org/package=spicy. DOI: 10.32614/CRAN.package.spicy},
       url = {https://CRAN.R-project.org/package=spicy},
     }

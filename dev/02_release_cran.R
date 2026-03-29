@@ -22,7 +22,10 @@ devtools::check(remote = TRUE, manual = TRUE) # Comprehensive local check
 # 03 QUALITY ASSURANCE -------
 urlchecker::url_check() # Validate URLs
 devtools::spell_check() # Spell-check documentation
-tools::package_dependencies("spicy", reverse = TRUE) # Check if other CRAN packages depend on spicy
+tools::package_dependencies(
+  "spicy",
+  reverse = TRUE
+) # Check if other CRAN packages depend on spicy
 
 # 04 WINDOWS CHECKS (WINBUILDER) -------
 devtools::check_win_release() # Current stable R
