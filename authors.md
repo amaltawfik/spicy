@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/v0.7.0/inst/CITATION)
 
 Tawfik A (2026). *spicy: Descriptive Statistics, Summary Tables, and
 Data Management Tools*. R package version 0.7.0. CRAN:

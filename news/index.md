@@ -2,6 +2,8 @@
 
 ## spicy 0.7.0
 
+CRAN release: 2026-03-30
+
 ### New features
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
