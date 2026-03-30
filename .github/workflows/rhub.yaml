@@ -13,8 +13,8 @@ on:
       config:
         description: 'A comma separated list of R-hub platforms to use.'
         type: string
-        # ⛔ macOS disabled on GitHub Actions (macos-13 retired)
-        default: 'linux,windows'
+        # ⛔ macOS and Windows disabled (infra instability on R-hub)
+        default: 'linux'
       name:
         description: 'Run name. You can leave this empty now.'
         type: string
@@ -35,7 +35,7 @@ jobs:
       - uses: r-hub/actions/setup@v1
         with:
           # Defensive fallback if workflow_dispatch input is empty.
-          config: ${{ github.event.inputs.config || 'linux,windows' }}
+          config: ${{ github.event.inputs.config || 'linux' }}
         id: rhub-setup
 
   linux-containers:
