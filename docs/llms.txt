@@ -6,12 +6,13 @@ workflows.
 
 ## What is spicy?
 
-spicy helps you explore categorical and labelled data in R with
-readable, console-first outputs. It is designed for survey research,
-descriptive statistics, and reporting workflows, with tools for
-frequency tables, cross-tabulations with chi-squared tests and effect
-sizes, categorical and continuous summary tables, variable inspection,
-and codebooks.
+spicy helps you explore categorical, quantitative, and numeric data in
+R, with tools for labelled variables, frequency tables,
+cross-tabulations, and summary tables. It provides readable,
+console-first outputs. It is designed for survey research, descriptive
+statistics, and reporting workflows, with tools for frequency tables,
+cross-tabulations with chi-squared tests and effect sizes, categorical
+and continuous summary tables, variable inspection, and codebooks.
 
 With spicy, you can:
 
