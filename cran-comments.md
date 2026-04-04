@@ -7,14 +7,11 @@
 
 ## Comments
 
-This is version 0.7.0 of the **spicy** package.
+This is version 0.7.1 of the **spicy** package.
 
 ### Main changes
 
-* `table_categorical()` replaces `table_apa()` as the public helper for categorical summary tables, with `select`/`by` interface, one-way frequency support, and consolidated `output` argument. **Breaking:** migrate `table_apa()` calls to `table_categorical()`.
-* New `table_continuous()` helper for continuous summary tables with descriptive statistics, tidyselect column selection, grouping via `by`, group-comparison tests (`test`), effect sizes, and multiple output formats (ASCII, tinytable, gt, flextable, Excel, clipboard, Word).
-* ASCII console tables now split oversized outputs into stacked horizontal panels for narrow consoles.
-* Excel export now uses `openxlsx2` (replacing `openxlsx`) for a lighter dependency footprint.
+* Installed package vignettes now avoid embedding heavy HTML table and codebook widgets during CRAN builds, which reduces installed size and resolves the previous installed-package-size NOTE while preserving rich pkgdown article rendering.
 
 ### Testing environments
 
