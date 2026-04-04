@@ -522,3 +522,158 @@ if (requireNamespace("gt", quietly = TRUE)) {
         Variable
       
 ```
+
+Group
+
+M
+
+SD
+
+Min
+
+Max
+
+95% CI
+
+n
+
+LL
+
+UL
+
+Sepal.Length
+
+setosa
+
+5.01
+
+0.35
+
+4.30
+
+5.80
+
+4.91
+
+5.11
+
+50
+
+versicolor
+
+5.94
+
+0.52
+
+4.90
+
+7.00
+
+5.79
+
+6.08
+
+50
+
+virginica
+
+6.59
+
+0.64
+
+4.90
+
+7.90
+
+6.41
+
+6.77
+
+50
+
+Sepal.Width
+
+setosa
+
+3.43
+
+0.38
+
+2.30
+
+4.40
+
+3.32
+
+3.54
+
+50
+
+versicolor
+
+2.77
+
+0.31
+
+2.00
+
+3.40
+
+2.68
+
+2.86
+
+50
+
+virginica
+
+2.97
+
+0.32
+
+2.20
+
+3.80
+
+2.88
+
+3.07
+
+50
+
+\# flextable output if
+([requireNamespace](https://rdrr.io/r/base/ns-load.html)("flextable",
+quietly = TRUE)) { table_continuous(iris, output = "flextable")
+table_continuous(iris, by = Species, output = "flextable") }
+
+| Variable     | Group      | M    | SD   | Min  | Max  | 95% CI |      | n   |
+|--------------|------------|------|------|------|------|--------|------|-----|
+|              |            |      |      |      |      | LL     | UL   |     |
+| Sepal.Length | setosa     | 5.01 | 0.35 | 4.30 | 5.80 | 4.91   | 5.11 | 50  |
+|              | versicolor | 5.94 | 0.52 | 4.90 | 7.00 | 5.79   | 6.08 | 50  |
+|              | virginica  | 6.59 | 0.64 | 4.90 | 7.90 | 6.41   | 6.77 | 50  |
+| Sepal.Width  | setosa     | 3.43 | 0.38 | 2.30 | 4.40 | 3.32   | 3.54 | 50  |
+|              | versicolor | 2.77 | 0.31 | 2.00 | 3.40 | 2.68   | 2.86 | 50  |
+|              | virginica  | 2.97 | 0.32 | 2.20 | 3.80 | 2.88   | 3.07 | 50  |
+| Petal.Length | setosa     | 1.46 | 0.17 | 1.00 | 1.90 | 1.41   | 1.51 | 50  |
+|              | versicolor | 4.26 | 0.47 | 3.00 | 5.10 | 4.13   | 4.39 | 50  |
+|              | virginica  | 5.55 | 0.55 | 4.50 | 6.90 | 5.40   | 5.71 | 50  |
+| Petal.Width  | setosa     | 0.25 | 0.11 | 0.10 | 0.60 | 0.22   | 0.28 | 50  |
+|              | versicolor | 1.33 | 0.20 | 1.00 | 1.80 | 1.27   | 1.38 | 50  |
+|              | virginica  | 2.03 | 0.27 | 1.40 | 2.50 | 1.95   | 2.10 | 50  |
+
+\# Word output if
+([requireNamespace](https://rdrr.io/r/base/ns-load.html)("flextable",
+quietly = TRUE) &&
+[requireNamespace](https://rdrr.io/r/base/ns-load.html)("officer",
+quietly = TRUE)) { table_continuous(iris, select =
+[starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("Sepal"),
+by = Species, output = "word", word_path =
+[tempfile](https://rdrr.io/r/base/tempfile.html)(fileext = ".docx")) }
+\# Excel output if
+([requireNamespace](https://rdrr.io/r/base/ns-load.html)("openxlsx2",
+quietly = TRUE)) { table_continuous(iris, select =
+[starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("Sepal"),
+by = Species, output = "excel", excel_path =
+[tempfile](https://rdrr.io/r/base/tempfile.html)(fileext = ".xlsx")) }
+\# }

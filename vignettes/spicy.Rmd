@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
 ```
 
 ```{r setup}
@@ -120,7 +122,7 @@ cramer_v(tbl, detail = TRUE)
 `table_categorical()` covers grouped or one-way summary tables for
 categorical variables:
 
-```{r table-categorical-tt}
+```{r table-categorical-tt, eval = build_rich_tables}
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),

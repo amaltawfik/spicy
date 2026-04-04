@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
 pkgdown_dark_gt <- function(tab) {
   tab |>
     gt::opt_css(
@@ -96,7 +98,7 @@ summarizes the options:
 The `"gt"` format produces a table with APA-style borders, column
 spanners, and proper alignment:
 
-```{r gt}
+```{r gt, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -109,7 +111,7 @@ pkgdown_dark_gt(
 
 ### tinytable output
 
-```{r tinytable}
+```{r tinytable, eval = build_rich_tables}
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -138,7 +140,7 @@ table_categorical(
 By default, `table_categorical()` uses variable names as row headers. Use the
 `labels` argument to provide human-readable labels:
 
-```{r labels}
+```{r labels, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -156,7 +158,7 @@ By default, `table_categorical()` reports Cramer's V for nominal variables and
 automatically switches to Kendall's Tau-b when both variables are
 ordered factors. Override with `assoc_measure`:
 
-```{r assoc-measure}
+```{r assoc-measure, eval = build_rich_tables}
 table_categorical(
   sochealth,
   select = smoking,
@@ -169,7 +171,7 @@ table_categorical(
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
 
-```{r ci-rendered}
+```{r ci-rendered, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -199,7 +201,7 @@ table_categorical(
 Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
 the total weighted N matches the unweighted N:
 
-```{r weighted}
+```{r weighted, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -217,7 +219,7 @@ pkgdown_dark_gt(
 By default, rows with missing values are dropped (`drop_na = TRUE`).
 Set `drop_na = FALSE` to display them as a "(Missing)" category:
 
-```{r missing}
+```{r missing, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -235,7 +237,7 @@ Use `levels_keep` to display only specific modalities. The order you
 specify controls the display order, which is useful for placing
 "(Missing)" first to highlight missingness:
 
-```{r levels-keep}
+```{r levels-keep, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -253,7 +255,7 @@ pkgdown_dark_gt(
 Control the number of digits for percentages, p-values, and the
 association measure:
 
-```{r formatting}
+```{r formatting, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,

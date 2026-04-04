@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
 pkgdown_dark_gt <- function(tab) {
   tab |>
     gt::opt_css(
@@ -103,7 +105,7 @@ behaviors, then summarize continuous well-being indicators.
 
 ### Categorical variables
 
-```{r report-categorical}
+```{r report-categorical, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -121,7 +123,7 @@ pkgdown_dark_gt(
 
 ### Continuous variables
 
-```{r report-continuous}
+```{r report-continuous, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_continuous(
     sochealth,
@@ -182,7 +184,7 @@ package API.
 
 Use `gt::` functions when you want to keep the `gt` workflow:
 
-```{r postprocess-gt}
+```{r postprocess-gt, eval = build_rich_tables}
 tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -204,7 +206,7 @@ tab |>
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
-```{r postprocess-tinytable}
+```{r postprocess-tinytable, eval = build_rich_tables}
 tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),

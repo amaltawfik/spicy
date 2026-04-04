@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
 ```
 
 ```{r setup}
@@ -150,7 +152,7 @@ vl(sochealth, starts_with("bmi"), tbl = TRUE)
 When you want a searchable and exportable overview of the whole dataset,
 `code_book()` builds an interactive codebook in the Viewer.
 
-```{r code-book-basic}
+```{r code-book-basic, eval = build_rich_tables}
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
 }
@@ -159,7 +161,7 @@ if (requireNamespace("DT", quietly = TRUE)) {
 You can also request a fuller display of values or include missing
 values explicitly in the summary:
 
-```{r code-book-values}
+```{r code-book-values, eval = build_rich_tables}
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth, values = TRUE, include_na = TRUE)
 }

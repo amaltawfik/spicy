@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
 pkgdown_dark_gt <- function(tab) {
   tab |>
     gt::opt_css(
@@ -162,7 +164,7 @@ table_continuous(
 
 Use `labels` to replace technical variable names with reporting labels:
 
-```{r labels}
+```{r labels, eval = build_rich_tables}
 pkgdown_dark_gt(
   table_continuous(
     sochealth,
@@ -193,7 +195,7 @@ pkgdown_dark_gt(
 
 For example, `tinytable` works well in Quarto and R Markdown documents:
 
-```{r tinytable}
+```{r tinytable, eval = build_rich_tables}
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
