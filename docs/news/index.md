@@ -1,5 +1,13 @@
 # Changelog
 
+## spicy 0.7.1
+
+### Minor improvements
+
+- Installed package vignettes now avoid embedding heavy HTML table and
+  codebook widgets during CRAN builds, reducing package size while
+  preserving rich pkgdown article rendering.
+
 ## spicy 0.7.0
 
 CRAN release: 2026-03-30
