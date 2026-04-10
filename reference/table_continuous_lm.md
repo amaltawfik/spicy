@@ -246,7 +246,7 @@ full complex-survey design workflow.
 
 For dichotomous categorical predictors, the wide outputs report means in
 reference-level order and labels the contrast column explicitly as
-`Δ (level2 - level1)`. For categorical predictors with more than two
+`Delta (level2 - level1)`. For categorical predictors with more than two
 levels, no single contrast or contrast confidence interval is shown in
 the wide outputs; instead, the table reports level-specific means plus
 the overall `F` test when `statistic = TRUE` (or `F(df1, df2)` when the
