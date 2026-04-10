@@ -42,8 +42,11 @@
 #'   wide and rendered outputs. Defaults to `FALSE`.
 #' @param p_value Logical. If `TRUE`, includes a `p` column in the wide and
 #'   rendered outputs. Defaults to `TRUE`.
-#' @param show_n Logical. If `TRUE`, includes an `n` column in the wide and
-#'   rendered outputs. Defaults to `TRUE`.
+#' @param show_n Logical. If `TRUE`, includes an unweighted `n` column in the
+#'   wide and rendered outputs. Defaults to `TRUE`.
+#' @param show_weighted_n Logical. If `TRUE` and `weights` is supplied,
+#'   includes a `Weighted n` column equal to the sum of case weights in the
+#'   analytic sample. Defaults to `FALSE`.
 #' @param effect_size Character. Effect-size column to include in the wide and
 #'   rendered outputs. One of `"none"` (the default) or `"f2"`.
 #' @param r2 Character. Fit statistic to include in the wide and rendered
@@ -125,6 +128,11 @@
 #' analyses and weighted article tables, but it is not a substitute for a
 #' full complex-survey design workflow.
 #'
+#' In wide and rendered outputs, `n` always reports the unweighted analytic
+#' sample size used for each outcome. When `show_weighted_n = TRUE`, an
+#' additional `Weighted n` column reports the sum of case weights for the same
+#' analytic sample.
+#'
 #' For dichotomous categorical predictors, the wide outputs report means in
 #' reference-level order and labels the contrast column explicitly as
 #' `Delta (level2 - level1)`. For categorical predictors with more than two
@@ -173,7 +181,8 @@
 #'   by = sex,
 #'   weights = weight,
 #'   statistic = TRUE,
-#'   effect_size = "f2"
+#'   effect_size = "f2",
+#'   show_weighted_n = TRUE
 #' )
 #'
 #' \donttest{
@@ -218,6 +227,7 @@ table_continuous_lm <- function(
   statistic = FALSE,
   p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = c("none", "f2"),
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -292,7 +302,15 @@ table_continuous_lm <- function(
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
     stop("`labels` must be a named character vector.", call. = FALSE)
   }
-  for (.arg in c("regex", "verbose", "statistic", "p_value", "show_n", "ci")) {
+  for (.arg in c(
+    "regex",
+    "verbose",
+    "statistic",
+    "p_value",
+    "show_n",
+    "show_weighted_n",
+    "ci"
+  )) {
     .val <- get(.arg)
     if (!is.logical(.val) || length(.val) != 1L || is.na(.val)) {
       stop(sprintf("`%s` must be TRUE/FALSE.", .arg), call. = FALSE)
@@ -328,6 +346,13 @@ table_continuous_lm <- function(
     if (all(is.na(weights_vec) | weights_vec == 0)) {
       stop("`weights` must contain at least one positive value.", call. = FALSE)
     }
+  }
+  if (isTRUE(show_weighted_n) && is.null(weights_vec)) {
+    warning(
+      "`show_weighted_n` is ignored when `weights` is not supplied.",
+      call. = FALSE
+    )
+    show_weighted_n <- FALSE
   }
 
   available_names <- names(data)
@@ -432,6 +457,7 @@ table_continuous_lm <- function(
   attr(result, "show_statistic") <- statistic
   attr(result, "show_p_value") <- p_value
   attr(result, "show_n") <- show_n
+  attr(result, "show_weighted_n") <- show_weighted_n
   attr(result, "effect_size") <- effect_size
   attr(result, "r2_type") <- r2
   attr(result, "show_ci") <- ci
@@ -445,6 +471,7 @@ table_continuous_lm <- function(
     show_statistic = statistic,
     show_p_value = p_value,
     show_n = show_n,
+    show_weighted_n = show_weighted_n,
     effect_size = effect_size,
     r2_type = r2,
     ci = ci
@@ -463,6 +490,7 @@ table_continuous_lm <- function(
     show_statistic = statistic,
     show_p_value = p_value,
     show_n = show_n,
+    show_weighted_n = show_weighted_n,
     effect_size = effect_size,
     r2_type = r2,
     ci = ci
@@ -852,6 +880,7 @@ build_wide_raw_continuous_lm <- function(
   show_statistic = TRUE,
   show_p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = "none",
   r2_type = "r2",
   ci = TRUE
@@ -907,6 +936,9 @@ build_wide_raw_continuous_lm <- function(
   if (show_n) {
     out$n <- NA_real_
   }
+  if (show_weighted_n) {
+    out[["Weighted n"]] <- NA_real_
+  }
 
   for (i in seq_along(vars)) {
     block <- x[x$variable == vars[i], , drop = FALSE]
@@ -947,6 +979,9 @@ build_wide_raw_continuous_lm <- function(
     if (show_n) {
       out$n[i] <- block$n[1]
     }
+    if (show_weighted_n) {
+      out[["Weighted n"]][i] <- block$sum_w[1]
+    }
   }
 
   out
@@ -960,6 +995,7 @@ build_display_df_continuous_lm <- function(
   show_statistic = TRUE,
   show_p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = "none",
   r2_type = "r2",
   ci = TRUE,
@@ -1020,6 +1056,9 @@ build_display_df_continuous_lm <- function(
     if (show_n) {
       rows$n <- rep("", nrow(block))
     }
+    if (show_weighted_n) {
+      rows[["Weighted n"]] <- rep("", nrow(block))
+    }
 
     rows$Variable[1] <- block$label[1]
     test_row <- get_test_row_index_lm(block)
@@ -1052,6 +1091,13 @@ build_display_df_continuous_lm <- function(
         ""
       } else {
         as.character(as.integer(block$n[1]))
+      }
+    }
+    if (show_weighted_n) {
+      rows[["Weighted n"]][1] <- if (is.na(block$sum_w[1])) {
+        ""
+      } else {
+        format_number_lm(block$sum_w[1], digits, decimal_mark)
       }
     }
 
@@ -1113,6 +1159,7 @@ build_wide_display_df_continuous_lm <- function(
   show_statistic = TRUE,
   show_p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = "none",
   r2_type = "r2",
   ci = TRUE,
@@ -1172,6 +1219,9 @@ build_wide_display_df_continuous_lm <- function(
   }
   if (show_n) {
     out$n <- ""
+  }
+  if (show_weighted_n) {
+    out[["Weighted n"]] <- ""
   }
 
   for (i in seq_along(vars)) {
@@ -1252,6 +1302,13 @@ build_wide_display_df_continuous_lm <- function(
         as.character(as.integer(block$n[1]))
       }
     }
+    if (show_weighted_n) {
+      out[["Weighted n"]][i] <- if (is.na(block$sum_w[1])) {
+        ""
+      } else {
+        format_number_lm(block$sum_w[1], digits, decimal_mark)
+      }
+    }
   }
 
   out
@@ -1308,7 +1365,7 @@ export_continuous_lm_table <- function(
     tt <- tinytable::theme_empty(tt)
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     if (ncol(display_df) > 1L) {
-      right_j <- which(col_keys %in% c("n", "p"))
+      right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
       center_j <- setdiff(seq_len(nc), c(1L, right_j))
       if (length(center_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = center_j, align = "c")
@@ -1405,7 +1462,7 @@ export_continuous_lm_table <- function(
     if (length(center_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
     }
-    right_cols <- intersect(c("n", "p"), col_keys)
+    right_cols <- intersect(c("n", "Weighted n", "p"), col_keys)
     if (length(right_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
     }
@@ -1549,7 +1606,7 @@ export_continuous_lm_table <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
     ci_j <- which(col_keys %in% c("LL", "UL"))
     left_j <- 1L
-    right_j <- which(col_keys %in% c("n", "p"))
+    right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
     center_j <- setdiff(seq_along(col_keys), c(left_j, right_j))
 
     ft <- flextable::align(ft, j = left_j, part = "header", align = "left")
@@ -1647,7 +1704,7 @@ export_continuous_lm_table <- function(
     last_row <- 2 + nrow(display_df)
 
     left_cols <- 1L
-    right_cols <- which(col_keys %in% c("n", "p"))
+    right_cols <- which(col_keys %in% c("n", "Weighted n", "p"))
     center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
     header_rows <- 1:2
     body_rows <- if (last_row >= 3) 3:last_row else integer(0)

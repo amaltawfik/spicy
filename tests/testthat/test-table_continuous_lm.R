@@ -152,6 +152,43 @@ test_that("table_continuous_lm weights accept column names", {
   )
 })
 
+test_that("table_continuous_lm can display weighted n separately from n", {
+  df <- data.frame(
+    y = c(1, 2, 3, 10),
+    g = factor(c("A", "A", "B", "B")),
+    w = c(1, 1, 1, 5)
+  )
+
+  out <- table_continuous_lm(
+    df,
+    select = y,
+    by = g,
+    weights = w,
+    show_weighted_n = TRUE,
+    output = "data.frame"
+  )
+
+  expect_true(all(c("n", "Weighted n") %in% names(out)))
+  expect_equal(out$n[1], 4)
+  expect_equal(out$`Weighted n`[1], sum(df$w))
+  expect_lt(match("n", names(out)), match("Weighted n", names(out)))
+})
+
+test_that("table_continuous_lm ignores weighted n when weights are absent", {
+  expect_warning(
+    out <- table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      show_weighted_n = TRUE,
+      output = "data.frame"
+    ),
+    "show_weighted_n"
+  )
+
+  expect_false("Weighted n" %in% names(out))
+})
+
 test_that("table_continuous_lm HC3 changes standard errors on heteroskedastic data", {
   df <- data.frame(
     y = c(1.0, 1.2, 1.1, 5.0, 7.5, 10.0),
@@ -673,6 +710,7 @@ test_that("table_continuous_lm internal builders cover numeric displays", {
     c("B", "95% CI LL", "95% CI UL", "p", "Adj. R²", "f²", "n") %in%
       names(wide_raw)
   ))
+  expect_lt(match("Adj. R²", names(wide_raw)), match("f²", names(wide_raw)))
   expect_true(any(grepl("^t", names(wide_raw))))
   expect_true(all(
     c(
@@ -682,16 +720,20 @@ test_that("table_continuous_lm internal builders cover numeric displays", {
       "95% CI UL",
       "t",
       "p",
-      "f²",
       "Adj. R²",
+      "f²",
       "n"
     ) %in%
       names(display)
   ))
   expect_true(all(
-    c("Variable", "B", "95% CI LL", "95% CI UL", "p", "f²", "Adj. R²", "n") %in%
+    c("Variable", "B", "95% CI LL", "95% CI UL", "p", "Adj. R²", "f²", "n") %in%
       names(wide_display)
   ))
+  expect_lt(
+    match("Adj. R²", names(wide_display)),
+    match("f²", names(wide_display))
+  )
   expect_true(any(grepl("^t", names(wide_display))))
 })
 

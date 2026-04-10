@@ -23,6 +23,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   show_statistic <- attr(x, "show_statistic") %||% FALSE
   show_p_value <- attr(x, "show_p_value") %||% TRUE
   show_n <- attr(x, "show_n") %||% TRUE
+  show_weighted_n <- attr(x, "show_weighted_n") %||% FALSE
   effect_size <- attr(x, "effect_size") %||% "none"
   r2_type <- attr(x, "r2_type") %||% "r2"
   show_ci <- attr(x, "show_ci") %||% TRUE
@@ -37,13 +38,14 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     show_statistic = show_statistic,
     show_p_value = show_p_value,
     show_n = show_n,
+    show_weighted_n = show_weighted_n,
     effect_size = effect_size,
     r2_type = r2_type,
     ci = show_ci
   )
 
   align_left <- 1L
-  right_cols <- which(names(display_df) %in% c("n", "p"))
+  right_cols <- which(names(display_df) %in% c("n", "Weighted n", "p"))
   align_center <- setdiff(seq_len(ncol(display_df)), c(align_left, right_cols))
 
   padding <- "normal"

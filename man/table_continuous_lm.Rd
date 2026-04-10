@@ -16,6 +16,7 @@ table_continuous_lm(
   statistic = FALSE,
   p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = c("none", "f2"),
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -73,8 +74,12 @@ wide and rendered outputs. Defaults to \code{FALSE}.}
 \item{p_value}{Logical. If \code{TRUE}, includes a \code{p} column in the wide and
 rendered outputs. Defaults to \code{TRUE}.}
 
-\item{show_n}{Logical. If \code{TRUE}, includes an \code{n} column in the wide and
-rendered outputs. Defaults to \code{TRUE}.}
+\item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column in the
+wide and rendered outputs. Defaults to \code{TRUE}.}
+
+\item{show_weighted_n}{Logical. If \code{TRUE} and \code{weights} is supplied,
+includes a \verb{Weighted n} column equal to the sum of case weights in the
+analytic sample. Defaults to \code{FALSE}.}
 
 \item{effect_size}{Character. Effect-size column to include in the wide and
 rendered outputs. One of \code{"none"} (the default) or \code{"f2"}.}
@@ -190,6 +195,11 @@ means or slopes accordingly. This is appropriate for case-weighted
 analyses and weighted article tables, but it is not a substitute for a
 full complex-survey design workflow.
 
+In wide and rendered outputs, \code{n} always reports the unweighted analytic
+sample size used for each outcome. When \code{show_weighted_n = TRUE}, an
+additional \verb{Weighted n} column reports the sum of case weights for the same
+analytic sample.
+
 For dichotomous categorical predictors, the wide outputs report means in
 reference-level order and labels the contrast column explicitly as
 \code{Delta (level2 - level1)}. For categorical predictors with more than two
@@ -236,7 +246,8 @@ table_continuous_lm(
   by = sex,
   weights = weight,
   statistic = TRUE,
-  effect_size = "f2"
+  effect_size = "f2",
+  show_weighted_n = TRUE
 )
 
 \donttest{
