@@ -224,21 +224,10 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-in"><span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="cn">NA</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2"</span>, <span class="st">"2"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">df</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       x     y z    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1     2 2    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2     2 2    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     2    <span style="color: #BB0000;">NA</span> 2    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>     3     3 3    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>    <span style="color: #BB0000;">NA</span>     2 2    </span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3 2 0 2</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2 1 0 1</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"2"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3 2 0 2</span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>num_twos <span class="op">=</span> <span class="fu">count_n</span><span class="op">(</span>count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       x     y z     num_twos</span>
@@ -258,48 +247,18 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-in"><span>  lab   <span class="op">=</span> <span class="fu"><a href="https://haven.tidyverse.org/reference/labelled.html" class="external-link">labelled</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="cn">NA</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>No <span class="op">=</span> <span class="fl">1</span>, Yes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  logic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">df</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 6</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     num char  fact  date       lab       logic</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl+lbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1 a     a     2023-01-01  1<span style="color: #949494;"> [No]</span>   TRUE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2 B     b     2023-01-01  2<span style="color: #949494;"> [Yes]</span>  FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>    <span style="color: #BB0000;">NA</span> b     b     <span style="color: #BB0000;">NA</span>          1<span style="color: #949494;"> [No]</span>   <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  -<span style="color: #BB0000;">Inf</span> a     a     2023-01-02  2<span style="color: #949494;"> [Yes]</span>  TRUE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>   <span style="color: #BB0000;">NaN</span> <span style="color: #BB0000;">NA</span>    c     2023-01-01 <span style="color: #BB0000;">NA</span>        FALSE</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 2 0 1 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 0 0 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 2 0 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 2 2 0 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"a"</span>, select <span class="op">=</span> <span class="va">fact</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 0 0 1 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span>, select <span class="op">=</span> <span class="va">date</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 0 0 1</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="cn">TRUE</span>, select <span class="op">=</span> <span class="va">logic</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 0 0 1 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span>, select <span class="op">=</span> <span class="va">lab</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 0 1 0</span>
-<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>lab_chr <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/as_factor.html" class="external-link">as_factor</a></span><span class="op">(</span><span class="va">lab</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"Yes"</span>, select <span class="op">=</span> <span class="va">lab_chr</span>, allow_coercion <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 0 1 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"Yes"</span>, select <span class="op">=</span> <span class="va">lab_chr</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 0 0 0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Count special values</span></span></span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 3 0 4</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"NaN"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 0 0 1</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"-Inf"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 0 1 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"NaN"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 3 0 4</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, special <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 3 1 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 3 0 3</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Column selection strategies</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
@@ -308,25 +267,12 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-in"><span>  score_lang    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2"</span>, <span class="st">"2"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"2"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  name          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Jean"</span>, <span class="st">"Marie"</span>, <span class="st">"Ali"</span>, <span class="st">"Zoe"</span>, <span class="st">"Nina"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">df</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   score_math score_science score_lang name </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>          1             2 2          Jean </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>          2             2 2          Marie</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>          2            <span style="color: #BB0000;">NA</span> 2          Ali  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>          3             3 3          Zoe  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>         <span style="color: #BB0000;">NA</span>             2 2          Nina </span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">score_math</span>, <span class="va">score_science</span><span class="op">)</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2 1 0 1</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"score_"</span><span class="op">)</span>, exclude <span class="op">=</span> <span class="st">"score_lang"</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2 1 0 1</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, exclude <span class="op">=</span> <span class="st">"name"</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3 2 0 2</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="st">"^score_"</span>, regex <span class="op">=</span> <span class="cn">TRUE</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3 2 0 2</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="st">"lang"</span>, regex <span class="op">=</span> <span class="cn">TRUE</span>, count <span class="op">=</span> <span class="st">"2"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 1 0 1</span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>nb_two <span class="op">=</span> <span class="fu">count_n</span><span class="op">(</span>count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   score_math score_science score_lang name  nb_two</span>
@@ -336,33 +282,12 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>          2            <span style="color: #BB0000;">NA</span> 2          Ali        2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>          3             3 3          Zoe        0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>         <span style="color: #BB0000;">NA</span>             2 2          Nina       2</span>
-<span class="r-in"><span><span class="va">df</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">score_math</span>, <span class="va">score_science</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>nb_two <span class="op">=</span> <span class="fu">count_n</span><span class="op">(</span>count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   score_math score_science nb_two</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>          1             2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>          2             2      2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>          2            <span style="color: #BB0000;">NA</span>      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>          3             3      0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>         <span style="color: #BB0000;">NA</span>             2      1</span>
-<span class="r-in"><span><span class="va">df</span><span class="op">$</span><span class="va">nb_two</span> <span class="op">&lt;-</span> <span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"score_"</span><span class="op">)</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">df</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="op">]</span> <span class="op">|&gt;</span> <span class="fu">count_n</span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"score_"</span><span class="op">)</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3 2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Strict type-safe matching with factor columns</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"B"</span>, <span class="st">"a"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">df</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   x     y    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> a     b    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> b     B    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> c     a    </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Coercion: character "b" matches both x and y</span></span></span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span><span class="op">)</span></span></span>
@@ -375,16 +300,6 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-in"><span><span class="co"># Strict match with factor value: works only where levels match</span></span></span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="st">"b"</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 0</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Using a value from the data: guarantees type and levels match for column x</span></span></span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="va">df</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, allow_coercion <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 1 0</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Case-insensitive match (factors are converted to character internally)</span></span></span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2 0</span>
-<span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"B"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2 0</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
