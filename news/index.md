@@ -2,11 +2,7 @@
 
 ## spicy 0.8.0
 
-### Minor improvements
-
-- Installed package vignettes now avoid embedding heavy HTML table and
-  codebook widgets during CRAN builds, reducing package size while
-  preserving rich pkgdown article rendering.
+### New features
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   adds APA-style bivariate linear-model tables for continuous outcomes.
@@ -19,6 +15,12 @@
   `output = "long"` for the analytic long table, and configurable
   display of tests, confidence intervals, fit statistics, and effect
   sizes.
+
+### Minor improvements
+
+- Installed package vignettes now avoid embedding heavy HTML table and
+  codebook widgets during CRAN builds, reducing package size while
+  preserving rich pkgdown article rendering.
 
 - Website and vignette coverage now includes
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
