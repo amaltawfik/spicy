@@ -19,7 +19,6 @@
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   : Row-wise Count of Specific or Special Values
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table
