@@ -141,24 +141,24 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 
 # With weighting
 df <- data.frame(
-  sexe = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
-  poids = c(12, 8, 10, 15, 7, 9)
+  sex = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
+  weight = c(12, 8, 10, 15, 7, 9)
 )
 
 # Weighted frequencies (normalized)
-freq(df, sexe, weights = poids, rescale = TRUE)
+freq(df, sex, weights = weight, rescale = TRUE)
 
 # Weighted frequencies (without rescaling)
-freq(df, sexe, weights = poids, rescale = FALSE)
+freq(df, sex, weights = weight, rescale = FALSE)
 
 # Base R style, with weights and cumulative percentages
-freq(df$sexe, weights = df$poids, cum = TRUE)
+freq(df$sex, weights = df$weight, cum = TRUE)
 
 # Piped version (tidy syntax) and sort alphabetically descending ("name-")
-df |> freq(sexe, sort = "name-")
+df |> freq(sex, sort = "name-")
 
 # Non-styled return (for programmatic use)
-f <- freq(df, sexe, styled = FALSE)
+f <- freq(df, sex, styled = FALSE)
 head(f)
 
 }

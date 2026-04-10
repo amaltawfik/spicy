@@ -145,108 +145,187 @@
 #'
 #' @examples
 #' # Basic usage with all numeric columns
-#' table_continuous(iris, output = "data.frame")
+#' table_continuous(sochealth, output = "data.frame")
 #'
 #' # Select specific columns with tidyselect
-#' table_continuous(iris, select = c(Sepal.Length, Petal.Width), output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   output = "data.frame"
+#' )
 #'
 #' # Grouped descriptives
-#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   by = education,
+#'   output = "data.frame"
+#' )
 #'
 #' # Grouped descriptives with p-value
-#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, p_value = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   by = education,
+#'   p_value = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Grouped descriptives with test statistic only
-#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, statistic = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   by = education,
+#'   statistic = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Grouped descriptives with both p-value and test statistic
-#' table_continuous(iris, select = c(Sepal.Length, Sepal.Width),
-#'            by = Species, p_value = TRUE, statistic = TRUE,
-#'            output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   by = education,
+#'   p_value = TRUE,
+#'   statistic = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Student t-test / classic ANOVA (assumes equal variances)
-#' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            test = "student", p_value = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = education,
+#'   test = "student",
+#'   p_value = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Nonparametric test (Kruskal-Wallis for 3+ groups)
-#' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            test = "nonparametric", p_value = TRUE,
-#'            statistic = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = education,
+#'   test = "nonparametric",
+#'   p_value = TRUE,
+#'   statistic = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Effect size (eta-squared for 3 groups)
-#' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            effect_size = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = education,
+#'   effect_size = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Effect size with confidence interval
-#' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            p_value = TRUE, effect_size_ci = TRUE,
-#'            output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = education,
+#'   p_value = TRUE,
+#'   effect_size_ci = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Nonparametric effect size (epsilon-squared with bootstrap CI)
 #' \donttest{
-#' table_continuous(iris, select = Sepal.Length, by = Species,
-#'            test = "nonparametric", effect_size_ci = TRUE,
-#'            output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = education,
+#'   test = "nonparametric",
+#'   effect_size_ci = TRUE,
+#'   output = "data.frame"
+#' )
 #' }
 #'
 #' # Hedges' g for 2 groups
-#' table_continuous(iris[iris$Species != "virginica", ],
-#'            select = Sepal.Length, by = Species,
-#'            effect_size_ci = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = sex,
+#'   effect_size_ci = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Regex column selection
-#' table_continuous(iris, select = "^Sepal", regex = TRUE, output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = "^life_sat",
+#'   regex = TRUE,
+#'   output = "data.frame"
+#' )
 #'
 #' # Custom labels
-#' table_continuous(iris,
-#'            select = c(Sepal.Length, Petal.Length),
-#'            labels = c(Sepal.Length = "Sepal length (cm)",
-#'                       Petal.Length = "Petal length (cm)"),
-#'            output = "data.frame")
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, life_sat_health),
+#'   labels = c(
+#'     bmi = "Body mass index",
+#'     life_sat_health = "Satisfaction with health"
+#'   ),
+#'   output = "data.frame"
+#' )
 #'
 #' \donttest{
 #' # ASCII table (default)
-#' table_continuous(iris, select = starts_with("Sepal"))
+#' table_continuous(sochealth, select = starts_with("life_sat"))
 #'
 #' # Grouped ASCII table
-#' table_continuous(iris, select = starts_with("Sepal"), by = Species)
+#' table_continuous(sochealth, select = starts_with("life_sat"), by = education)
 #'
 #' # tinytable output
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
-#'   table_continuous(iris, output = "tinytable")
-#'   table_continuous(iris, select = starts_with("Sepal"),
-#'              by = Species, output = "tinytable")
+#'   table_continuous(sochealth, output = "tinytable")
+#'   table_continuous(
+#'     sochealth,
+#'     select = starts_with("life_sat"),
+#'     by = education,
+#'     output = "tinytable"
+#'   )
 #' }
 #'
 #' # gt output
 #' if (requireNamespace("gt", quietly = TRUE)) {
-#'   table_continuous(iris, output = "gt")
-#'   table_continuous(iris, select = starts_with("Sepal"),
-#'              by = Species, output = "gt")
+#'   table_continuous(sochealth, output = "gt")
+#'   table_continuous(
+#'     sochealth,
+#'     select = starts_with("life_sat"),
+#'     by = education,
+#'     output = "gt"
+#'   )
 #' }
 #'
 #' # flextable output
 #' if (requireNamespace("flextable", quietly = TRUE)) {
-#'   table_continuous(iris, output = "flextable")
-#'   table_continuous(iris, by = Species, output = "flextable")
+#'   table_continuous(sochealth, output = "flextable")
+#'   table_continuous(sochealth, by = education, output = "flextable")
 #' }
 #'
 #' # Word output
 #' if (requireNamespace("flextable", quietly = TRUE) &&
 #'     requireNamespace("officer", quietly = TRUE)) {
-#'   table_continuous(iris, select = starts_with("Sepal"),
-#'              by = Species, output = "word",
-#'              word_path = tempfile(fileext = ".docx"))
+#'   table_continuous(
+#'     sochealth,
+#'     select = starts_with("life_sat"),
+#'     by = education,
+#'     output = "word",
+#'     word_path = tempfile(fileext = ".docx")
+#'   )
 #' }
 #'
 #' # Excel output
 #' if (requireNamespace("openxlsx2", quietly = TRUE)) {
-#'   table_continuous(iris, select = starts_with("Sepal"),
-#'              by = Species, output = "excel",
-#'              excel_path = tempfile(fileext = ".xlsx"))
+#'   table_continuous(
+#'     sochealth,
+#'     select = starts_with("life_sat"),
+#'     by = education,
+#'     output = "excel",
+#'     excel_path = tempfile(fileext = ".xlsx")
+#'   )
 #' }
 #' }
 #'
