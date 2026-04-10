@@ -15,6 +15,7 @@
 #' @export
 print.spicy_continuous_table <- function(x, ...) {
   digits <- attr(x, "digits") %||% 2L
+  effect_size_digits <- attr(x, "effect_size_digits") %||% 2L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
   group_var <- attr(x, "group_var")
@@ -26,9 +27,10 @@ print.spicy_continuous_table <- function(x, ...) {
 
   display_df <- build_display_df(
     x,
-    digits,
-    decimal_mark,
-    ci_level,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
     show_p = show_p,
     show_statistic = show_statistic,
     show_effect_size = show_effect_size,

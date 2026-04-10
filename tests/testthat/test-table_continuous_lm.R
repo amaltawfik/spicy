@@ -261,6 +261,38 @@ test_that("table_continuous_lm display builder formats level blocks", {
   expect_false("f²" %in% names(display))
 })
 
+test_that("table_continuous_lm uses dedicated digits for fit and effect size", {
+  out <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "f2",
+    digits = 1,
+    fit_digits = 4,
+    effect_size_digits = 3
+  )
+
+  display <- spicy:::build_wide_display_df_continuous_lm(
+    out,
+    digits = 1L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "f2",
+    r2_type = "r2",
+    ci = TRUE,
+    fit_digits = 4L,
+    effect_size_digits = 3L
+  )
+
+  expect_equal(attr(out, "fit_digits"), 4L)
+  expect_equal(attr(out, "effect_size_digits"), 3L)
+  expect_match(display$`R²`[1], "^0\\.[0-9]{4}$")
+  expect_match(display$`f²`[1], "^[0-9]+\\.[0-9]{3}$")
+})
+
 test_that("table_continuous_lm rejects deprecated contrast value", {
   expect_error(
     table_continuous_lm(
@@ -419,6 +451,26 @@ test_that("table_continuous_lm validates core user arguments", {
   expect_error(
     table_continuous_lm(df, select = y, by = x, digits = -1, output = "long"),
     "digits"
+  )
+  expect_error(
+    table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      fit_digits = -1,
+      output = "long"
+    ),
+    "fit_digits"
+  )
+  expect_error(
+    table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      effect_size_digits = -1,
+      output = "long"
+    ),
+    "effect_size_digits"
   )
   expect_error(
     table_continuous_lm(

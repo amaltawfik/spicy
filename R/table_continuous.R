@@ -70,8 +70,10 @@
 #'   labels); if none are found, the column name is used.
 #' @param ci_level Confidence level for the mean confidence interval
 #'   (default: `0.95`). Must be between 0 and 1 exclusive.
-#' @param digits Number of decimal places for numeric output
-#'   (default: `2`).
+#' @param digits Number of decimal places for descriptive values and test
+#'   statistics (default: `2`).
+#' @param effect_size_digits Number of decimal places for effect-size values
+#'   in formatted displays (default: `2`).
 #' @param decimal_mark Character used as decimal separator.
 #'   Either `"."` (default) or `","`.
 #' @param output Output format. One of:
@@ -348,6 +350,7 @@ table_continuous <- function(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c(
     "default",
@@ -387,6 +390,18 @@ table_continuous <- function(
     stop("`digits` must be a single non-negative number.", call. = FALSE)
   }
   digits <- as.integer(digits)
+  if (
+    !is.numeric(effect_size_digits) ||
+      length(effect_size_digits) != 1L ||
+      is.na(effect_size_digits) ||
+      effect_size_digits < 0
+  ) {
+    stop(
+      "`effect_size_digits` must be a single non-negative number.",
+      call. = FALSE
+    )
+  }
+  effect_size_digits <- as.integer(effect_size_digits)
   if (!decimal_mark %in% c(".", ",")) {
     stop('`decimal_mark` must be "." or ","', call. = FALSE)
   }
@@ -698,6 +713,7 @@ table_continuous <- function(
   # --- attributes & class ---
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
+  attr(result, "effect_size_digits") <- effect_size_digits
   attr(result, "decimal_mark") <- decimal_mark
   attr(result, "group_var") <- group_col_name
   attr(result, "test") <- if (do_test) test else NA_character_
@@ -715,9 +731,10 @@ table_continuous <- function(
   if (output != "default") {
     display_df <- build_display_df(
       result,
-      digits,
-      decimal_mark,
-      ci_level,
+      digits = digits,
+      effect_size_digits = effect_size_digits,
+      decimal_mark = decimal_mark,
+      ci_level = ci_level,
       show_p = attr(result, "show_p"),
       show_statistic = attr(result, "show_statistic"),
       show_effect_size = attr(result, "show_effect_size"),
@@ -980,7 +997,8 @@ build_display_df <- function(
   show_p = FALSE,
   show_statistic = FALSE,
   show_effect_size = FALSE,
-  show_effect_size_ci = FALSE
+  show_effect_size_ci = FALSE,
+  effect_size_digits = 2L
 ) {
   fmt <- function(v, d = digits) {
     out <- formatC(v, format = "f", digits = d)
@@ -1048,14 +1066,14 @@ build_display_df <- function(
       return("")
     }
     label <- es_labels[[es_type]]
-    v <- formatC(es_value, format = "f", digits = 2L)
+    v <- formatC(es_value, format = "f", digits = effect_size_digits)
     if (decimal_mark != ".") {
       v <- sub("\\.", decimal_mark, v)
     }
     s <- paste0(label, " = ", v)
     if (show_ci && !is.na(ci_lower) && !is.na(ci_upper)) {
-      lo <- formatC(ci_lower, format = "f", digits = 2L)
-      hi <- formatC(ci_upper, format = "f", digits = 2L)
+      lo <- formatC(ci_lower, format = "f", digits = effect_size_digits)
+      hi <- formatC(ci_upper, format = "f", digits = effect_size_digits)
       if (decimal_mark != ".") {
         lo <- sub("\\.", decimal_mark, lo)
         hi <- sub("\\.", decimal_mark, hi)

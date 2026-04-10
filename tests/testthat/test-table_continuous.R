@@ -726,6 +726,32 @@ test_that("table_continuous digits parameter controls precision", {
   expect_match(d4$M[1], "\\.[0-9]{4}$")
 })
 
+test_that("table_continuous uses dedicated digits for effect sizes", {
+  out <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = TRUE,
+    effect_size_ci = TRUE,
+    digits = 1,
+    effect_size_digits = 3
+  )
+  display <- spicy:::build_display_df(
+    out,
+    1L,
+    ".",
+    0.95,
+    show_effect_size = TRUE,
+    show_effect_size_ci = TRUE,
+    effect_size_digits = 3L
+  )
+
+  expect_equal(attr(out, "effect_size_digits"), 3L)
+  expect_match(display$M[1], "\\.[0-9]{1}$")
+  expect_match(display$ES[1], "= [0-9]+\\.[0-9]{3}")
+  expect_match(display$ES[1], "\\[[0-9]+\\.[0-9]{3}, [0-9]+\\.[0-9]{3}\\]")
+})
+
 # ---- printing ----
 
 test_that("print.spicy_continuous_table produces output", {
@@ -765,6 +791,18 @@ test_that("table_continuous validates digits", {
   expect_error(table_continuous(df, digits = -1), "digits")
   expect_error(table_continuous(df, digits = "a"), "digits")
   expect_error(table_continuous(df, digits = NA), "digits")
+  expect_error(
+    table_continuous(df, effect_size_digits = -1),
+    "effect_size_digits"
+  )
+  expect_error(
+    table_continuous(df, effect_size_digits = "a"),
+    "effect_size_digits"
+  )
+  expect_error(
+    table_continuous(df, effect_size_digits = NA),
+    "effect_size_digits"
+  )
 })
 
 test_that("table_continuous validates decimal_mark", {

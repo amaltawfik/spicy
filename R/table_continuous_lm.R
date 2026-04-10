@@ -57,7 +57,12 @@
 #'   is used.
 #' @param ci_level Confidence level for coefficient and estimated-mean
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
-#' @param digits Number of decimal places for numeric output (default: `2`).
+#' @param digits Number of decimal places for descriptive values, regression
+#'   coefficients, and test statistics (default: `2`).
+#' @param fit_digits Number of decimal places for model-fit columns (`R2` or
+#'   adjusted `R2`) in wide and rendered outputs (default: `2`).
+#' @param effect_size_digits Number of decimal places for effect-size columns
+#'   (`f2`) in wide and rendered outputs (default: `2`).
 #' @param decimal_mark Character used as decimal separator. Either `"."`
 #'   (default) or `","`.
 #' @param output Output format. One of:
@@ -194,6 +199,8 @@ table_continuous_lm <- function(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  fit_digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c(
     "default",
@@ -233,6 +240,27 @@ table_continuous_lm <- function(
     stop("`digits` must be a single non-negative number.", call. = FALSE)
   }
   digits <- as.integer(digits)
+  if (
+    !is.numeric(fit_digits) ||
+      length(fit_digits) != 1L ||
+      is.na(fit_digits) ||
+      fit_digits < 0
+  ) {
+    stop("`fit_digits` must be a single non-negative number.", call. = FALSE)
+  }
+  fit_digits <- as.integer(fit_digits)
+  if (
+    !is.numeric(effect_size_digits) ||
+      length(effect_size_digits) != 1L ||
+      is.na(effect_size_digits) ||
+      effect_size_digits < 0
+  ) {
+    stop(
+      "`effect_size_digits` must be a single non-negative number.",
+      call. = FALSE
+    )
+  }
+  effect_size_digits <- as.integer(effect_size_digits)
   if (!decimal_mark %in% c(".", ",")) {
     stop('`decimal_mark` must be "." or ",".', call. = FALSE)
   }
@@ -368,6 +396,8 @@ table_continuous_lm <- function(
 
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
+  attr(result, "fit_digits") <- fit_digits
+  attr(result, "effect_size_digits") <- effect_size_digits
   attr(result, "decimal_mark") <- decimal_mark
   attr(result, "by_var") <- by_name
   attr(result, "by_label") <- by_label
@@ -401,6 +431,8 @@ table_continuous_lm <- function(
   wide_df <- build_wide_display_df_continuous_lm(
     result,
     digits = digits,
+    fit_digits = fit_digits,
+    effect_size_digits = effect_size_digits,
     decimal_mark = decimal_mark,
     ci_level = ci_level,
     show_statistic = statistic,
@@ -905,7 +937,9 @@ build_display_df_continuous_lm <- function(
   show_n = TRUE,
   effect_size = "none",
   r2_type = "r2",
-  ci = TRUE
+  ci = TRUE,
+  fit_digits = 2L,
+  effect_size_digits = 2L
 ) {
   vars <- unique(x$variable)
   out <- vector("list", length(vars))
@@ -977,14 +1011,14 @@ build_display_df_continuous_lm <- function(
     if (include_es) {
       rows[[format_effect_size_header_lm(effect_size)]][1] <- format_number_lm(
         block$es_value[1],
-        digits,
+        effect_size_digits,
         decimal_mark
       )
     }
     if (include_r2) {
       rows[[r2_header]][1] <- format_number_lm(
         get_r2_value_lm(block, r2_type),
-        digits,
+        fit_digits,
         decimal_mark
       )
     }
@@ -1056,7 +1090,9 @@ build_wide_display_df_continuous_lm <- function(
   show_n = TRUE,
   effect_size = "none",
   r2_type = "r2",
-  ci = TRUE
+  ci = TRUE,
+  fit_digits = 2L,
+  effect_size_digits = 2L
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
@@ -1173,14 +1209,14 @@ build_wide_display_df_continuous_lm <- function(
     if (include_es) {
       out[[format_effect_size_header_lm(effect_size)]][i] <- format_number_lm(
         block$es_value[1],
-        digits,
+        effect_size_digits,
         decimal_mark
       )
     }
     if (include_r2) {
       out[[r2_header]][i] <- format_number_lm(
         get_r2_value_lm(block, r2_type),
-        digits,
+        fit_digits,
         decimal_mark
       )
     }

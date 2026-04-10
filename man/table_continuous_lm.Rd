@@ -22,6 +22,8 @@ table_continuous_lm(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  fit_digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
@@ -92,7 +94,14 @@ is used.}
 \item{ci_level}{Confidence level for coefficient and estimated-mean
 intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
-\item{digits}{Number of decimal places for numeric output (default: \code{2}).}
+\item{digits}{Number of decimal places for descriptive values, regression
+coefficients, and test statistics (default: \code{2}).}
+
+\item{fit_digits}{Number of decimal places for model-fit columns (\code{R2} or
+adjusted \code{R2}) in wide and rendered outputs (default: \code{2}).}
+
+\item{effect_size_digits}{Number of decimal places for effect-size columns
+(\code{f2}) in wide and rendered outputs (default: \code{2}).}
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}

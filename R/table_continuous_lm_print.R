@@ -15,6 +15,8 @@
 #' @export
 print.spicy_continuous_lm_table <- function(x, ...) {
   digits <- attr(x, "digits") %||% 2L
+  fit_digits <- attr(x, "fit_digits") %||% 2L
+  effect_size_digits <- attr(x, "effect_size_digits") %||% 2L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
   by_label <- attr(x, "by_label") %||% "Predictor"
@@ -28,6 +30,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   display_df <- build_wide_display_df_continuous_lm(
     x,
     digits = digits,
+    fit_digits = fit_digits,
+    effect_size_digits = effect_size_digits,
     decimal_mark = decimal_mark,
     ci_level = ci_level,
     show_statistic = show_statistic,

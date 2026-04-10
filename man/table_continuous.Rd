@@ -18,6 +18,7 @@ table_continuous(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c("default", "data.frame", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
@@ -100,8 +101,11 @@ labels); if none are found, the column name is used.}
 \item{ci_level}{Confidence level for the mean confidence interval
 (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
-\item{digits}{Number of decimal places for numeric output
-(default: \code{2}).}
+\item{digits}{Number of decimal places for descriptive values and test
+statistics (default: \code{2}).}
+
+\item{effect_size_digits}{Number of decimal places for effect-size values
+in formatted displays (default: \code{2}).}
 
 \item{decimal_mark}{Character used as decimal separator.
 Either \code{"."} (default) or \code{","}.}
