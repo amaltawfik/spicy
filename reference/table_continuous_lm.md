@@ -5,10 +5,10 @@ for one or many continuous outcomes selected with tidyselect syntax.
 
 A single predictor is supplied with `by`, and each selected numeric
 outcome is fit as `lm(outcome ~ by, ...)`. When `by` is categorical, the
-function returns a model-based mean-comparison table with estimated
-marginal means by level, plus an optional single difference for
-dichotomous predictors. When `by` is numeric, the table reports the
-slope and its confidence interval.
+function returns a model-based mean-comparison table with fitted means
+by level derived from the linear model, plus an optional single
+difference for dichotomous predictors. When `by` is numeric, the table
+reports the slope and its confidence interval.
 
 Multiple output formats are available via `output`: a printed ASCII
 table (`"default"`), a plain wide `data.frame` (`"data.frame"`), a raw
@@ -147,7 +147,7 @@ table_continuous_lm(
 
 - ci_level:
 
-  Confidence level for coefficient and estimated-mean intervals
+  Confidence level for coefficient and model-based mean intervals
   (default: `0.95`). Must be between 0 and 1 exclusive.
 
 - digits:
@@ -244,6 +244,10 @@ reporting: a single predictor supplied with `by`, and one simple model
 per selected continuous outcome. The model fit is always
 `lm(outcome ~ by, ...)`.
 
+For categorical predictors, the reported means are model-based fitted
+means for each level of `by`, and the reported contrasts are derived
+from the same fitted linear model.
+
 Compared with
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 this function is the model-based companion for users who want to report
@@ -259,7 +263,7 @@ consistent estimator, while `R2` and adjusted `R2` remain the ordinary
 least-squares fit statistics.
 
 When `weights` is supplied, `table_continuous_lm()` fits weighted linear
-models using `lm(..., weights = ...)` and reports weighted estimated
+models using `lm(..., weights = ...)` and reports weighted model-based
 means or slopes accordingly. This is appropriate for case-weighted
 analyses and weighted article tables, but it is not a substitute for a
 full complex-survey design workflow.
