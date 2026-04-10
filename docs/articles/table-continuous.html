@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Continuous summary tables in R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
@@ -58,6 +58,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -214,13 +215,32 @@ categories:</p>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399</span></span></code></pre></div>
 <p>This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave.</p>
+<p>If you want the same outcomes reported in a linear-model workflow,
+with heteroskedasticity-consistent standard errors or case weights, use
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> instead:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;                                       Variable M (Lower secondary)</span></span>
+<span><span class="co">#&gt; bmi                            Body mass index           26.165526</span></span>
+<span><span class="co">#&gt; wellbeing_score  WHO-5 wellbeing index (0-100)           67.679137</span></span>
+<span><span class="co">#&gt; life_sat_health Satisfaction with health (1-5)            3.452756</span></span>
+<span><span class="co">#&gt;                 M (Upper secondary) M (Tertiary)            p        R²    n</span></span>
+<span><span class="co">#&gt; bmi                        23.55139    26.345088 2.869126e-36 0.1307679 1188</span></span>
+<span><span class="co">#&gt; wellbeing_score            81.56445    66.099136 8.955089e-57 0.2081970 1200</span></span>
+<span><span class="co">#&gt; life_sat_health             4.43987     3.353612 1.215094e-47 0.1645622 1192</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="add-group-comparison-results">Add group-comparison results<a class="anchor" aria-label="anchor" href="#add-group-comparison-results"></a>
 </h2>
 <p>Grouped tables can include inferential results directly in the same
 table. The default test is Welch’s test:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -303,7 +323,7 @@ table. The default test is Welch’s test:</p>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
 <p>Use <code>test = "student"</code> for equal-variance parametric tests
 or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -356,7 +376,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
 <p>When you need the underlying columns for further processing, use
 <code>output = "data.frame"</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -392,7 +412,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <h2 id="selecting-variables">Selecting variables<a class="anchor" aria-label="anchor" href="#selecting-variables"></a>
 </h2>
 <p><code>select</code> supports tidyselect helpers:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>,</span>
@@ -428,7 +448,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female    3.28       3.46     615 </span></span>
 <span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.33       3.52     577</span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="st">"^life_sat"</span>,</span>
@@ -464,7 +484,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399</span></span></code></pre></div>
 <p>Use <code>exclude</code> when you want a broad selection with one or
 two explicit removals:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span>, <span class="va">life_sat_work</span><span class="op">)</span>,</span>
@@ -500,7 +520,7 @@ two explicit removals:</p>
 </h2>
 <p>Use <code>labels</code> to replace technical variable names with
 reporting labels:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1184,7 +1204,7 @@ outputs as <code><a href="../reference/table_categorical.html">table_categorical
 </table>
 <p>For example, <code>tinytable</code> works well in Quarto and R
 Markdown documents:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1371,7 +1391,7 @@ Markdown documents:</p>
 <h2 id="export-to-excel-or-word">Export to Excel or Word<a class="anchor" aria-label="anchor" href="#export-to-excel-or-word"></a>
 </h2>
 <p>Use the same function to export the table directly:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1394,6 +1414,9 @@ Markdown documents:</p>
 <ul>
 <li>See <code><a href="../articles/table-categorical.html">vignette("table-categorical", package = "spicy")</a></code>
 for grouped tables of categorical variables.</li>
+<li>See <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm", package = "spicy")</a></code>
+for model-based continuous summary tables with robust standard errors or
+case weights.</li>
 <li>See
 <code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting", package = "spicy")</a></code> for
 a cross-function reporting workflow using both summary-table

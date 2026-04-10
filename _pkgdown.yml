@@ -54,6 +54,8 @@ navbar:
           href: articles/table-categorical.html
         - text: Continuous summary tables in R
           href: articles/table-continuous.html
+        - text: Model-based continuous summary tables in R
+          href: articles/table-continuous-lm.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html
     github:
@@ -71,6 +73,7 @@ articles:
       - association-measures
       - table-categorical
       - table-continuous
+      - table-continuous-lm
       - summary-tables-reporting
 
 reference:
@@ -104,6 +107,7 @@ reference:
   - title: Summary tables
     contents:
       - table_continuous
+      - table_continuous_lm
       - table_categorical
   - title: Export
     contents:
@@ -122,4 +126,5 @@ reference:
       - print.spicy_assoc_detail
       - print.spicy_assoc_table
       - print.spicy_continuous_table
+      - print.spicy_continuous_lm_table
       - spicy_tables

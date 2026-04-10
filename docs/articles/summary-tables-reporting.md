@@ -4,23 +4,25 @@
 library(spicy)
 ```
 
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 and
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-are the two main summary table helpers in spicy. They share the same
-main interface: choose variables with `select`, optionally split the
-table with `by`, apply readable labels, and pick an output format that
-matches your reporting workflow. This vignette focuses on that shared
-logic rather than repeating every function-specific option.
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+share the same reporting grammar: choose variables with `select`,
+optionally split the table with `by`, apply readable labels, and pick an
+output format that matches your reporting workflow. This vignette
+focuses on that shared logic rather than repeating every
+function-specific option.
 
 ## Choose the right function
 
 Use the function that matches the type of variables you want to report:
 
-| Function                                                                                   | Use for                                                                    | Optional `by` | Typical additions                                          |
-|:-------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------|:--------------|:-----------------------------------------------------------|
-| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Factors, labelled categorical variables, grouped frequency-style summaries | Yes           | Chi-squared test, association measure, confidence interval |
-| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)   | Numeric or continuous variables                                            | Yes           | Group-comparison test, statistic, effect size              |
+| Function                                                                                       | Use for                                                                    | Optional `by`                   | Typical additions                                          |
+|:-----------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------|:--------------------------------|:-----------------------------------------------------------|
+| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)     | Factors, labelled categorical variables, grouped frequency-style summaries | Yes                             | Chi-squared test, association measure, confidence interval |
+| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)       | Numeric or continuous variables                                            | Yes                             | Group-comparison test, statistic, effect size              |
+| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework                            | No, requires a single predictor | Robust `HC*` standard errors, model fit, case weights      |
 
 In practice:
 
@@ -30,6 +32,10 @@ In practice:
 - use
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for BMI, income, or scale scores;
+- use
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  when the same outcomes should be reported through simple weighted or
+  robust linear models;
 - keep `by` for the grouping variable you want to compare across.
 
 ## A shared interface
@@ -83,12 +89,33 @@ table_continuous(
 |                          | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
 |                          | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
 
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  weights = weight,
+  output = "data.frame"
+)
+#>                                       Variable M (Lower secondary)
+#> bmi                            Body mass index           25.956113
+#> wellbeing_score  WHO-5 wellbeing index (0-100)           67.550436
+#> life_sat_health Satisfaction with health (1-5)            3.446374
+#>                 M (Upper secondary) M (Tertiary)            p        R²    n
+#> bmi                        23.39124    26.158338 1.455685e-35 0.1266195 1188
+#> wellbeing_score            80.87817    66.519125 2.919348e-56 0.1923742 1200
+#> life_sat_health             4.39300     3.385878 4.864079e-43 0.1511599 1192
+```
+
 The same argument pattern works in both cases:
 
 - `select` chooses the reported variables;
 - `by` defines the grouping structure;
 - `labels` cleans up the row labels;
 - `output` decides how the result is rendered or exported.
+
+For model-based continuous tables, the same pattern applies, but `by`
+must be a single predictor because one linear model is fit per outcome.
 
 ## A practical reporting sequence
 
@@ -141,9 +168,30 @@ pkgdown_dark_gt(
 This keeps the reporting structure consistent while still using the
 function that fits each variable type.
 
+### Model-based continuous variables
+
+``` r
+pkgdown_dark_gt(
+  table_continuous_lm(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = sex,
+    vcov = "HC3",
+    statistic = TRUE,
+    output = "gt"
+  )
+)
+```
+
+[TABLE]
+
+This is the better summary-table path when the article is already
+organized around simple linear models, weighted analyses, or robust
+standard errors.
+
 ## Choose the output format
 
-Both functions support the same reporting formats:
+All three functions support the same reporting formats:
 
 | Output        | Best use                                     |
 |:--------------|:---------------------------------------------|
@@ -265,6 +313,9 @@ The dedicated articles go deeper into each function:
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   covers grouped descriptive statistics, parametric and nonparametric
   tests, and effect sizes.
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  covers estimated means or slopes from simple linear models, robust
+  standard errors, and case weights.
 
 Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.

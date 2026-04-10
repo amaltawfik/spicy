@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>spicy: frequency tables, cross-tabulations, and summary tables in R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" sizes="any" href="favicon.ico">
 <link rel="manifest" href="site.webmanifest">
@@ -58,6 +58,7 @@
     <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
     <li><a class="dropdown-item" href="articles/table-categorical.html">Categorical summary tables in R</a></li>
     <li><a class="dropdown-item" href="articles/table-continuous.html">Continuous summary tables in R</a></li>
+    <li><a class="dropdown-item" href="articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
     <li><a class="dropdown-item" href="articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -320,12 +321,29 @@
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary    3.43       3.63     534 </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary           4.01       4.21     399</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;                                      Variable M (Female) M (Male)</span></span>
+<span><span class="co">#&gt; wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879</span></span>
+<span><span class="co">#&gt; bmi                           Body mass index   25.68506 26.19685</span></span>
+<span><span class="co">#&gt;                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²</span></span>
+<span><span class="co">#&gt; wellbeing_score         3.8868576 2.12265210 5.6510631 1.670572e-05 0.015475137</span></span>
+<span><span class="co">#&gt; bmi                     0.5117882 0.08904596 0.9345305 1.769614e-02 0.004728908</span></span>
+<span><span class="co">#&gt;                    n</span></span>
+<span><span class="co">#&gt; wellbeing_score 1200</span></span>
+<span><span class="co">#&gt; bmi             1188</span></span></code></pre></div>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
@@ -343,7 +361,7 @@
 <div class="section level3">
 <h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
@@ -371,6 +389,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
 </ul>
 <p>Key reference pages:</p>
@@ -383,6 +402,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/reference/cramer_v.html">Reference for <code>cramer_v()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html">Reference for <code>table_categorical()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous.html">Reference for <code>table_continuous()</code></a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html">Reference for <code>table_continuous_lm()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/mean_n.html">Reference for <code>mean_n()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/sum_n.html">Reference for <code>sum_n()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/count_n.html">Reference for <code>count_n()</code></a></li>

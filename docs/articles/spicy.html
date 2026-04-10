@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting started with spicy • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
@@ -58,6 +58,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -570,9 +571,30 @@ also add group-comparison tests:</p>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary    2.57       2.86     259 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    3.43       3.63     534 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399</span></span></code></pre></div>
+<p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers the same reporting
+territory when you want to stay in a linear-model framework, for example
+with robust standard errors or case weights:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;                                      Variable M (Female) M (Male)</span></span>
+<span><span class="co">#&gt; wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879</span></span>
+<span><span class="co">#&gt; bmi                           Body mass index   25.68506 26.19685</span></span>
+<span><span class="co">#&gt;                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²</span></span>
+<span><span class="co">#&gt; wellbeing_score         3.8868576 2.12265210 5.6510631 1.670572e-05 0.015475137</span></span>
+<span><span class="co">#&gt; bmi                     0.5117882 0.08904596 0.9345305 1.769614e-02 0.004728908</span></span>
+<span><span class="co">#&gt;                    n</span></span>
+<span><span class="co">#&gt; wellbeing_score 1200</span></span>
+<span><span class="co">#&gt; bmi             1188</span></span></code></pre></div>
 <p>For detailed guidance, see the dedicated articles on
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and
-the final reporting overview for APA-style summary tables.</p>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview for
+APA-style summary tables.</p>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -580,7 +602,7 @@ the final reporting overview for APA-style summary tables.</p>
 <p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and
 <code><a href="../reference/count_n.html">count_n()</a></code> compute row-wise statistics across selected
 columns, with automatic handling of missing values.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -617,6 +639,8 @@ simulation, association measures).</li>
 categorical tables.</li>
 <li>See <code><a href="../reference/table_continuous.html">?table_continuous</a></code> for continuous summaries and
 group comparisons.</li>
+<li>See <code><a href="../reference/table_continuous_lm.html">?table_continuous_lm</a></code> for model-based
+mean-comparison tables with robust standard errors or case weights.</li>
 <li>See <code><a href="../reference/assoc_measures.html">?assoc_measures</a></code> for the complete list of
 association statistics.</li>
 <li>See <code><a href="../reference/code_book.html">?code_book</a></code> to generate an interactive HTML

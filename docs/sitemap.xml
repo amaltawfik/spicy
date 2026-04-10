@@ -1,14 +1,17 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://amaltawfik.github.io/spicy/404.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/AGENTS.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/association-measures.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/frequency-tables.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/index.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/spicy.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-categorical.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/variable-exploration.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/authors.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/CLAUDE.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/index.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/LICENSE-text.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/LICENSE.html</loc></url>
@@ -34,6 +37,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.html</loc></url>
@@ -45,6 +49,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/sum_n.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/uncertainty_coef.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/varlist.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/yule_q.html</loc></url>

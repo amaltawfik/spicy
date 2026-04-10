@@ -143,9 +143,23 @@ table_continuous(
 )
 ```
 
+`table_continuous_lm()` covers the same reporting territory when you
+want to stay in a linear-model framework, for example with robust
+standard errors or case weights:
+
+```{r table-continuous-lm}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  vcov = "HC3",
+  output = "data.frame"
+)
+```
+
 For detailed guidance, see the dedicated articles on
-`table_categorical()`, `table_continuous()`, and the final reporting
-overview for APA-style summary tables.
+`table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+and the final reporting overview for APA-style summary tables.
 
 ## Row-wise summaries
 
@@ -172,6 +186,8 @@ sochealth |>
 - See `?table_categorical` for grouped or one-way categorical tables.
 - See `?table_continuous` for continuous summaries and group
   comparisons.
+- See `?table_continuous_lm` for model-based mean-comparison tables
+  with robust standard errors or case weights.
 - See `?assoc_measures` for the complete list of association
   statistics.
 - See `?code_book` to generate an interactive HTML codebook.

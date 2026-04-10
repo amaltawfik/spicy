@@ -7,11 +7,15 @@
 
 ## Comments
 
-This is version 0.7.1 of the **spicy** package.
+This is version 0.8.0 of the **spicy** package.
 
 ### Main changes
 
+* `table_continuous_lm()` is a new helper for article-style bivariate linear-model tables for continuous outcomes. It complements `table_continuous()` with a model-based workflow for estimated mean comparisons or slopes, optional case weights, and classical or HC0-HC5 variance estimators.
+
 * Installed package vignettes now avoid embedding heavy HTML table and codebook widgets during CRAN builds, which reduces installed size and resolves the previous installed-package-size NOTE while preserving rich pkgdown article rendering.
+
+* The website and vignettes now document `table_continuous_lm()` directly, with a dedicated article and consistent `sochealth` examples across the summary-table documentation.
 
 ### Testing environments
 

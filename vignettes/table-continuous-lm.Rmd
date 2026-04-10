@@ -1,0 +1,139 @@
+---
+title: "Model-based continuous summary tables in R"
+description: >
+  Build model-based summary tables for continuous outcomes in R with
+  table_continuous_lm(), including estimated means, robust standard
+  errors, case weights, and APA-style output formats.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model-based continuous summary tables in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
+pkgdown_dark_gt <- function(tab) {
+  tab |>
+    gt::opt_css(
+      css = paste(
+        ".gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,",
+        ".gt_column_spanner_outer, .gt_column_spanner, .gt_title,",
+        ".gt_subtitle, .gt_sourcenotes, .gt_sourcenote {",
+        "  background-color: transparent !important;",
+        "  color: currentColor !important;",
+        "}",
+        sep = "\n"
+      )
+    )
+}
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_continuous_lm()` is the model-based companion to
+`table_continuous()`. It fits one linear model per selected continuous
+outcome using `lm(outcome ~ by, ...)`, then returns a compact reporting
+table. This makes it the better choice when you want to stay in a
+linear-model workflow, add heteroskedasticity-consistent standard
+errors, or apply case weights.
+
+## Basic usage
+
+Use `select` for one or more continuous outcomes and `by` for the
+single predictor:
+
+```{r basic}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi, life_sat_health),
+  by = sex
+)
+```
+
+For categorical predictors, the table reports estimated means by level.
+When the predictor is dichotomous, it can also show a single mean
+difference and confidence interval.
+
+## Robust standard errors
+
+Use `vcov = "HC*"` when you want heteroskedasticity-consistent standard
+errors and tests:
+
+```{r robust}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  vcov = "HC3",
+  statistic = TRUE,
+  output = "data.frame"
+)
+```
+
+## Case weights
+
+Use `weights` when you want weighted estimated means or slopes in the
+same model-based table:
+
+```{r weights}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = education,
+  weights = weight,
+  output = "data.frame"
+)
+```
+
+This is often the most natural summary-table function when your
+reporting workflow already relies on weighted linear models.
+
+## Numeric predictors
+
+If `by` is numeric, `table_continuous_lm()` reports the slope rather
+than group means:
+
+```{r numeric-by}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = age,
+  vcov = "HC3",
+  output = "long"
+)
+```
+
+## Publication-ready output
+
+The function supports the same output formats as the other summary-table
+helpers, including `tinytable`, `gt`, `flextable`, `excel`, `word`, and
+`clipboard`.
+
+```{r gt-output, eval = build_rich_tables}
+pkgdown_dark_gt(
+  table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi, life_sat_health),
+    by = sex,
+    vcov = "HC3",
+    statistic = TRUE,
+    output = "gt"
+  )
+)
+```
+
+## See also
+
+- See `vignette("table-continuous", package = "spicy")` for descriptive
+  continuous summary tables with classical group-comparison tests.
+- See `vignette("summary-tables-reporting", package = "spicy")` for a
+  cross-function reporting workflow using the summary-table helpers.

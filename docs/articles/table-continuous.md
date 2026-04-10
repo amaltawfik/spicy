@@ -127,6 +127,29 @@ table_continuous(
 This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave.
 
+If you want the same outcomes reported in a linear-model workflow, with
+heteroskedasticity-consistent standard errors or case weights, use
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+instead:
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  vcov = "HC3",
+  output = "data.frame"
+)
+#>                                       Variable M (Lower secondary)
+#> bmi                            Body mass index           26.165526
+#> wellbeing_score  WHO-5 wellbeing index (0-100)           67.679137
+#> life_sat_health Satisfaction with health (1-5)            3.452756
+#>                 M (Upper secondary) M (Tertiary)            p        R²    n
+#> bmi                        23.55139    26.345088 2.869126e-36 0.1307679 1188
+#> wellbeing_score            81.56445    66.099136 8.955089e-57 0.2081970 1200
+#> life_sat_health             4.43987     3.353612 1.215094e-47 0.1645622 1192
+```
+
 ## Add group-comparison results
 
 Grouped tables can include inferential results directly in the same
@@ -508,6 +531,10 @@ table_continuous(
 - See
   [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for grouped tables of categorical variables.
+- See
+  [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+  for model-based continuous summary tables with robust standard errors
+  or case weights.
 - See
   [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow using both summary-table

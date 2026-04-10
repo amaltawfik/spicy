@@ -172,11 +172,24 @@ table_continuous(
 )
 ```
 
+```{r eval=TRUE}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  vcov = "HC3",
+  output = "data.frame"
+)
+```
+
 See [Categorical summary tables in
 R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
 for categorical summaries, [Continuous summary tables in
 R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
-for continuous summaries and group comparisons, and [Summary tables for
+for continuous summaries and group comparisons, [Model-based continuous
+summary tables in
+R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
+for weighted or robust linear-model reporting, and [Summary tables for
 APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
@@ -227,6 +240,7 @@ If you are looking for a specific workflow, start with these vignettes:
 - [Cramer's V, Phi, and association measures in R](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 - [Categorical summary tables in R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
 - [Continuous summary tables in R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
+- [Model-based continuous summary tables in R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
 - [Summary tables for APA-style reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
 Key reference pages:
@@ -239,6 +253,7 @@ Key reference pages:
 - [Reference for `cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.html)
 - [Reference for `table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.html)
 - [Reference for `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
+- [Reference for `table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html)
 - [Reference for `mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.html)
 - [Reference for `sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.html)
 - [Reference for `count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.html)

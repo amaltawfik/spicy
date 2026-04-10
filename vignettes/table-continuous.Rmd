@@ -78,6 +78,20 @@ table_continuous(
 This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave.
 
+If you want the same outcomes reported in a linear-model workflow, with
+heteroskedasticity-consistent standard errors or case weights, use
+`table_continuous_lm()` instead:
+
+```{r lm-companion}
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  vcov = "HC3",
+  output = "data.frame"
+)
+```
+
 ## Add group-comparison results
 
 Grouped tables can include inferential results directly in the same
@@ -230,5 +244,8 @@ table_continuous(
 
 - See `vignette("table-categorical", package = "spicy")` for grouped
   tables of categorical variables.
+- See `vignette("table-continuous-lm", package = "spicy")` for
+  model-based continuous summary tables with robust standard errors or
+  case weights.
 - See `vignette("summary-tables-reporting", package = "spicy")` for a
   cross-function reporting workflow using both summary-table helpers.

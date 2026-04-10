@@ -1,10 +1,10 @@
 ---
 title: "Summary tables for APA-style reporting"
 description: >
-  Learn when to use table_categorical() and table_continuous() for
-  APA-style reporting in R, how their shared arguments fit together,
-  and which output format to choose for console, Quarto, Word, or
-  Excel workflows.
+  Learn when to use table_categorical(), table_continuous(), and
+  table_continuous_lm() for APA-style reporting in R, how their shared
+  arguments fit together, and which output format to choose for
+  console, Quarto, Word, or Excel workflows.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Summary tables for APA-style reporting}
@@ -40,12 +40,12 @@ pkgdown_dark_gt <- function(tab) {
 library(spicy)
 ```
 
-`table_categorical()` and `table_continuous()` are the two main summary
-table helpers in spicy. They share the same main interface:
-choose variables with `select`, optionally split the table with `by`,
-apply readable labels, and pick an output format that matches your
-reporting workflow. This vignette focuses on that shared logic rather
-than repeating every function-specific option.
+`table_categorical()`, `table_continuous()`, and
+`table_continuous_lm()` share the same reporting grammar: choose
+variables with `select`, optionally split the table with `by`, apply
+readable labels, and pick an output format that matches your reporting
+workflow. This vignette focuses on that shared logic rather than
+repeating every function-specific option.
 
 ## Choose the right function
 
@@ -55,11 +55,14 @@ Use the function that matches the type of variables you want to report:
 |:--|:--|:--|:--|
 | `table_categorical()` | Factors, labelled categorical variables, grouped frequency-style summaries | Yes | Chi-squared test, association measure, confidence interval |
 | `table_continuous()` | Numeric or continuous variables | Yes | Group-comparison test, statistic, effect size |
+| `table_continuous_lm()` | Continuous outcomes in a linear-model framework | No, requires a single predictor | Robust `HC*` standard errors, model fit, case weights |
 
 In practice:
 
 - use `table_categorical()` for smoking status, education, or activity;
 - use `table_continuous()` for BMI, income, or scale scores;
+- use `table_continuous_lm()` when the same outcomes should be reported
+  through simple weighted or robust linear models;
 - keep `by` for the grouping variable you want to compare across.
 
 ## A shared interface
@@ -90,12 +93,25 @@ table_continuous(
 )
 ```
 
+```{r grammar-continuous-lm}
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  weights = weight,
+  output = "data.frame"
+)
+```
+
 The same argument pattern works in both cases:
 
 - `select` chooses the reported variables;
 - `by` defines the grouping structure;
 - `labels` cleans up the row labels;
 - `output` decides how the result is rendered or exported.
+
+For model-based continuous tables, the same pattern applies, but `by`
+must be a single predictor because one linear model is fit per outcome.
 
 ## A practical reporting sequence
 
@@ -144,9 +160,28 @@ pkgdown_dark_gt(
 This keeps the reporting structure consistent while still using the
 function that fits each variable type.
 
+### Model-based continuous variables
+
+```{r report-continuous-lm, eval = build_rich_tables}
+pkgdown_dark_gt(
+  table_continuous_lm(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = sex,
+    vcov = "HC3",
+    statistic = TRUE,
+    output = "gt"
+  )
+)
+```
+
+This is the better summary-table path when the article is already
+organized around simple linear models, weighted analyses, or robust
+standard errors.
+
 ## Choose the output format
 
-Both functions support the same reporting formats:
+All three functions support the same reporting formats:
 
 | Output | Best use |
 |:--|:--|
@@ -254,6 +289,8 @@ The dedicated articles go deeper into each function:
   association measures, and one-way frequency-style tables.
 - `table_continuous()` covers grouped descriptive statistics,
   parametric and nonparametric tests, and effect sizes.
+- `table_continuous_lm()` covers estimated means or slopes from simple
+  linear models, robust standard errors, and case weights.
 
 Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.

@@ -8,6 +8,18 @@
   codebook widgets during CRAN builds, reducing package size while
   preserving rich pkgdown article rendering.
 
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  adds APA-style bivariate linear-model tables for continuous outcomes.
+  It acts as the model-based companion to
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  for reporting estimated mean comparisons or slopes in an `lm`
+  framework, with one predictor per model, estimated marginal means for
+  categorical predictors, optional case weights, classical or HC0-HC5
+  variance estimators, `output = "data.frame"` for the wide raw table,
+  `output = "long"` for the analytic long table, and configurable
+  display of tests, confidence intervals, fit statistics, and effect
+  sizes.
+
 ## spicy 0.7.0
 
 CRAN release: 2026-03-30
