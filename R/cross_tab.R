@@ -746,8 +746,20 @@ cross_tab <- function(
 }
 
 
-#' @rdname cross_tab
+#' Internal print method for lists of cross-tab tables
+#'
+#' @description
+#' Prints each element of a `spicy_cross_table_list` object on its own,
+#' inserting a blank line between tables.
+#'
+#' @name print.spicy_cross_table_list
+#'
+#' @param x A `spicy_cross_table_list` object.
 #' @param ... Additional arguments passed to individual print methods.
+#'
+#' @return Invisibly returns `x`.
+#'
+#' @keywords internal
 #' @export
 print.spicy_cross_table_list <- function(x, ...) {
   n <- length(x)

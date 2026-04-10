@@ -2,7 +2,6 @@
 % Please edit documentation in R/cross_tab.R
 \name{cross_tab}
 \alias{cross_tab}
-\alias{print.spicy_cross_table_list}
 \title{Cross-tabulation}
 \usage{
 cross_tab(
@@ -24,8 +23,6 @@ cross_tab(
   styled = TRUE,
   show_n = TRUE
 )
-
-\method{print}{spicy_cross_table_list}(x, ...)
 }
 \arguments{
 \item{data}{A data frame. Alternatively, a vector when using the
@@ -74,8 +71,6 @@ Defaults to \code{2000}.}
 
 \item{show_n}{Logical. If \code{TRUE} (the default), adds marginal N totals when
 \code{percent != "none"}.}
-
-\item{...}{Additional arguments passed to individual print methods.}
 }
 \value{
 A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.

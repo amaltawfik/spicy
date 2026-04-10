@@ -35,9 +35,6 @@ cross_tab(
   styled = TRUE,
   show_n = TRUE
 )
-
-# S3 method for class 'spicy_cross_table_list'
-print(x, ...)
 ```
 
 ## Arguments
@@ -120,10 +117,6 @@ print(x, ...)
 
   Logical. If `TRUE` (the default), adds marginal N totals when
   `percent != "none"`.
-
-- ...:
-
-  Additional arguments passed to individual print methods.
 
 ## Value
 
