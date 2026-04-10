@@ -122,7 +122,7 @@
 #'
 #' For dichotomous categorical predictors, the wide outputs report means in
 #' reference-level order and labels the contrast column explicitly as
-#' `Δ (level2 - level1)`. For categorical predictors with more than two
+#' `Delta (level2 - level1)`. For categorical predictors with more than two
 #' levels, no single contrast or contrast confidence interval is shown in the
 #' wide outputs; instead, the table reports level-specific means plus the
 #' overall `F` test when `statistic = TRUE` (or `F(df1, df2)` when the degrees
@@ -498,8 +498,7 @@ fit_numeric_predictor_lm_rows <- function(
   fit <- if (is.null(weights)) {
     stats::lm(y ~ x, data = model_df)
   } else {
-    model_df$w <- weights
-    stats::lm(y ~ x, data = model_df, weights = w)
+    stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
   vc <- compute_lm_vcov(fit, vcov_type)
@@ -570,8 +569,7 @@ fit_categorical_predictor_lm_rows <- function(
   fit <- if (is.null(weights)) {
     stats::lm(y ~ x, data = model_df)
   } else {
-    model_df$w <- weights
-    stats::lm(y ~ x, data = model_df, weights = w)
+    stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
   vc <- compute_lm_vcov(fit, vcov_type)
@@ -1696,7 +1694,7 @@ build_header_rows_lm <- function(col_keys, ci_pct) {
 }
 
 get_delta_label_lm <- function(block) {
-  paste0("Δ (", block$level[2], " - ", block$level[1], ")")
+  paste0("\u0394 (", block$level[2], " - ", block$level[1], ")")
 }
 
 get_test_row_index_lm <- function(block) {
@@ -1749,7 +1747,7 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
 format_effect_size_header_lm <- function(effect_size = "f2") {
   switch(
     effect_size,
-    f2 = "f²",
+    f2 = "f\u00B2",
     effect_size
   )
 }
@@ -1757,8 +1755,8 @@ format_effect_size_header_lm <- function(effect_size = "f2") {
 format_r2_header_lm <- function(r2_type = "r2") {
   switch(
     r2_type,
-    r2 = "R²",
-    adj_r2 = "Adj. R²",
+    r2 = "R\u00B2",
+    adj_r2 = "Adj. R\u00B2",
     r2_type
   )
 }
