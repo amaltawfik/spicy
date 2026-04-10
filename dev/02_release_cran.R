@@ -42,8 +42,14 @@ rhub::rhub_check(
   platforms = c("windows", "macos", "ubuntu-release")
 )
 
-# 06 CRAN SUBMISSION -------
-usethis::use_version("minor") # Increment version ("patch" for bugfix)
-devtools::release() # Interactive CRAN release process
+# 06 RELEASE PREPARATION -------
+# If needed, bump the version before submission:
+# usethis::use_version("patch")  # or "minor" / "major"
+usethis::use_release_issue() # Optional GitHub release checklist
+
+# 07 CRAN SUBMISSION -------
+# Submit manually on CRAN:
+# https://cran.r-project.org/submit.html
+# After submission, a local CRAN-SUBMISSION file may be created.
 
 # After CRAN acceptance, run dev/03_post_release.R
