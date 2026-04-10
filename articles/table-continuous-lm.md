@@ -54,18 +54,19 @@ table_continuous_lm(
   select = c(wellbeing_score, bmi),
   by = sex,
   vcov = "HC3",
-  statistic = TRUE,
-  output = "data.frame"
+  statistic = TRUE
 )
-#>                                      Variable M (Female) M (Male)
-#> wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879
-#> bmi                           Body mass index   25.68506 26.19685
-#>                 Δ (Male - Female)  95% CI LL 95% CI UL        t            p
-#> wellbeing_score         3.8868576 2.12265210 5.6510631 4.322515 1.670572e-05
-#> bmi                     0.5117882 0.08904596 0.9345305 2.375233 1.769614e-02
-#>                          R²    n
-#> wellbeing_score 0.015475137 1200
-#> bmi             0.004728908 1188
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
+#>  Body mass index               │   25.69      26.20          0.51        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL   t        p   R²      n 
+#> ───────────────────────────────┼───────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.12       5.65     4.32  <.001  0.02  1200 
+#>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188
 ```
 
 ## Case weights
@@ -78,15 +79,19 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = education,
-  weights = weight,
-  output = "data.frame"
+  weights = weight
 )
-#>                                      Variable M (Lower secondary)
-#> wellbeing_score WHO-5 wellbeing index (0-100)            67.55044
-#> bmi                           Body mass index            25.95611
-#>                 M (Upper secondary) M (Tertiary)            p        R²    n
-#> wellbeing_score            80.87817     66.51913 2.919348e-56 0.1923742 1200
-#> bmi                        23.39124     26.15834 1.455685e-35 0.1266195 1188
+#> Continuous outcomes by Highest education level
+#> 
+#>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
+#> ───────────────────────────────┼──────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │        67.55                80.88        
+#>  Body mass index               │        25.96                23.39        
+#> 
+#>  Variable                      │ M (Tertiary)      p   R²      n 
+#> ───────────────────────────────┼─────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │    66.52      <.001  0.19  1200 
+#>  Body mass index               │    26.16      <.001  0.13  1188
 ```
 
 This is often the most natural summary-table function when your
@@ -122,6 +127,10 @@ table_continuous_lm(
 #> 1 0.0006839677 1200    NA
 #> 2 0.0184179236 1188    NA
 ```
+
+When you need the underlying returned data for further processing, use
+`output = "data.frame"` for the wide raw table or `output = "long"` for
+the analytic long table.
 
 ## Publication-ready output
 

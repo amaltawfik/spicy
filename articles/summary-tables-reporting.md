@@ -94,17 +94,21 @@ table_continuous_lm(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
-  weights = weight,
-  output = "data.frame"
+  weights = weight
 )
-#>                                       Variable M (Lower secondary)
-#> bmi                            Body mass index           25.956113
-#> wellbeing_score  WHO-5 wellbeing index (0-100)           67.550436
-#> life_sat_health Satisfaction with health (1-5)            3.446374
-#>                 M (Upper secondary) M (Tertiary)            p        R²    n
-#> bmi                        23.39124    26.158338 1.455685e-35 0.1266195 1188
-#> wellbeing_score            80.87817    66.519125 2.919348e-56 0.1923742 1200
-#> life_sat_health             4.39300     3.385878 4.864079e-43 0.1511599 1192
+#> Continuous outcomes by Highest education level
+#> 
+#>  Variable                       │ M (Lower secondary)  M (Upper secondary) 
+#> ────────────────────────────────┼──────────────────────────────────────────
+#>  Body mass index                │        25.96                23.39        
+#>  WHO-5 wellbeing index (0-100)  │        67.55                80.88        
+#>  Satisfaction with health (1-5) │        3.45                 4.39         
+#> 
+#>  Variable                       │ M (Tertiary)      p   R²      n 
+#> ────────────────────────────────┼─────────────────────────────────
+#>  Body mass index                │    26.16      <.001  0.13  1188 
+#>  WHO-5 wellbeing index (0-100)  │    66.52      <.001  0.19  1200 
+#>  Satisfaction with health (1-5) │     3.39      <.001  0.15  1192
 ```
 
 The same argument pattern works in both cases:

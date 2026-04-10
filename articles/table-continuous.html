@@ -223,17 +223,21 @@ with heteroskedasticity-consistent standard errors or case weights, use
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                       Variable M (Lower secondary)</span></span>
-<span><span class="co">#&gt; bmi                            Body mass index           26.165526</span></span>
-<span><span class="co">#&gt; wellbeing_score  WHO-5 wellbeing index (0-100)           67.679137</span></span>
-<span><span class="co">#&gt; life_sat_health Satisfaction with health (1-5)            3.452756</span></span>
-<span><span class="co">#&gt;                 M (Upper secondary) M (Tertiary)            p        R²    n</span></span>
-<span><span class="co">#&gt; bmi                        23.55139    26.345088 2.869126e-36 0.1307679 1188</span></span>
-<span><span class="co">#&gt; wellbeing_score            81.56445    66.099136 8.955089e-57 0.2081970 1200</span></span>
-<span><span class="co">#&gt; life_sat_health             4.43987     3.353612 1.215094e-47 0.1645622 1192</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Highest education level</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>        26.17                23.55        </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>        67.68                81.56        </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>        3.45                 4.44         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²      n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>    26.35      &lt;.001  0.13  1188 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    66.10      &lt;.001  0.21  1200 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     3.35      &lt;.001  0.16  1192</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="add-group-comparison-results">Add group-comparison results<a class="anchor" aria-label="anchor" href="#add-group-comparison-results"></a>

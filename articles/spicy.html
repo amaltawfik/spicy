@@ -579,18 +579,19 @@ with robust standard errors or case weights:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                      Variable M (Female) M (Male)</span></span>
-<span><span class="co">#&gt; wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879</span></span>
-<span><span class="co">#&gt; bmi                           Body mass index   25.68506 26.19685</span></span>
-<span><span class="co">#&gt;                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²</span></span>
-<span><span class="co">#&gt; wellbeing_score         3.8868576 2.12265210 5.6510631 1.670572e-05 0.015475137</span></span>
-<span><span class="co">#&gt; bmi                     0.5117882 0.08904596 0.9345305 1.769614e-02 0.004728908</span></span>
-<span><span class="co">#&gt;                    n</span></span>
-<span><span class="co">#&gt; wellbeing_score 1200</span></span>
-<span><span class="co">#&gt; bmi             1188</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²      n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  1188</span></span></code></pre></div>
 <p>For detailed guidance, see the dedicated articles on
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview for

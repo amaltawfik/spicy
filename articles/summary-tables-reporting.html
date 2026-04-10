@@ -520,17 +520,21 @@ across.</li>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                       Variable M (Lower secondary)</span></span>
-<span><span class="co">#&gt; bmi                            Body mass index           25.956113</span></span>
-<span><span class="co">#&gt; wellbeing_score  WHO-5 wellbeing index (0-100)           67.550436</span></span>
-<span><span class="co">#&gt; life_sat_health Satisfaction with health (1-5)            3.446374</span></span>
-<span><span class="co">#&gt;                 M (Upper secondary) M (Tertiary)            p        R²    n</span></span>
-<span><span class="co">#&gt; bmi                        23.39124    26.158338 1.455685e-35 0.1266195 1188</span></span>
-<span><span class="co">#&gt; wellbeing_score            80.87817    66.519125 2.919348e-56 0.1923742 1200</span></span>
-<span><span class="co">#&gt; life_sat_health             4.39300     3.385878 4.864079e-43 0.1511599 1192</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Highest education level</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>        25.96                23.39        </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>        67.55                80.88        </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>        3.45                 4.39         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²      n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>    26.16      &lt;.001  0.13  1188 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    66.52      &lt;.001  0.19  1200 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     3.39      &lt;.001  0.15  1192</span></span></code></pre></div>
 <p>The same argument pattern works in both cases:</p>
 <ul>
 <li>

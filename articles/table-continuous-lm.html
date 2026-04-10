@@ -146,18 +146,19 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
-<span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                      Variable M (Female) M (Male)</span></span>
-<span><span class="co">#&gt; wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879</span></span>
-<span><span class="co">#&gt; bmi                           Body mass index   25.68506 26.19685</span></span>
-<span><span class="co">#&gt;                 Δ (Male - Female)  95% CI LL 95% CI UL        t            p</span></span>
-<span><span class="co">#&gt; wellbeing_score         3.8868576 2.12265210 5.6510631 4.322515 1.670572e-05</span></span>
-<span><span class="co">#&gt; bmi                     0.5117882 0.08904596 0.9345305 2.375233 1.769614e-02</span></span>
-<span><span class="co">#&gt;                          R²    n</span></span>
-<span><span class="co">#&gt; wellbeing_score 0.015475137 1200</span></span>
-<span><span class="co">#&gt; bmi             0.004728908 1188</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t        p   R²      n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     4.32  &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="case-weights">Case weights<a class="anchor" aria-label="anchor" href="#case-weights"></a>
@@ -169,15 +170,19 @@ slopes in the same model-based table:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                      Variable M (Lower secondary)</span></span>
-<span><span class="co">#&gt; wellbeing_score WHO-5 wellbeing index (0-100)            67.55044</span></span>
-<span><span class="co">#&gt; bmi                           Body mass index            25.95611</span></span>
-<span><span class="co">#&gt;                 M (Upper secondary) M (Tertiary)            p        R²    n</span></span>
-<span><span class="co">#&gt; wellbeing_score            80.87817     66.51913 2.919348e-56 0.1923742 1200</span></span>
-<span><span class="co">#&gt; bmi                        23.39124     26.15834 1.455685e-35 0.1266195 1188</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Highest education level</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        67.55                80.88        </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>        25.96                23.39        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²      n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.52      &lt;.001  0.19  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    26.16      &lt;.001  0.13  1188</span></span></code></pre></div>
 <p>This is often the most natural summary-table function when your
 reporting workflow already relies on weighted linear models.</p>
 </div>
@@ -209,6 +214,9 @@ reports the slope rather than group means:</p>
 <span><span class="co">#&gt;         adj_r2    n sum_w</span></span>
 <span><span class="co">#&gt; 1 0.0006839677 1200    NA</span></span>
 <span><span class="co">#&gt; 2 0.0184179236 1188    NA</span></span></code></pre></div>
+<p>When you need the underlying returned data for further processing,
+use <code>output = "data.frame"</code> for the wide raw table or
+<code>output = "long"</code> for the analytic long table.</p>
 </div>
 <div class="section level2">
 <h2 id="publication-ready-output">Publication-ready output<a class="anchor" aria-label="anchor" href="#publication-ready-output"></a>
