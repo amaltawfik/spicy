@@ -176,13 +176,6 @@
 #'   effect_size = "f2"
 #' )
 #'
-#' table_continuous_lm(
-#'   sochealth,
-#'   select = c(wellbeing_score, bmi),
-#'   by = sex,
-#'   output = "long"
-#' )
-#'
 #' \donttest{
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
 #'   table_continuous_lm(
@@ -1018,11 +1011,11 @@ build_display_df_continuous_lm <- function(
     if (show_p_value) {
       rows$p <- rep("", nrow(block))
     }
-    if (include_es) {
-      rows[[format_effect_size_header_lm(effect_size)]] <- rep("", nrow(block))
-    }
     if (include_r2) {
       rows[[r2_header]] <- rep("", nrow(block))
+    }
+    if (include_es) {
+      rows[[format_effect_size_header_lm(effect_size)]] <- rep("", nrow(block))
     }
     if (show_n) {
       rows$n <- rep("", nrow(block))
@@ -1171,11 +1164,11 @@ build_wide_display_df_continuous_lm <- function(
   if (show_p_value) {
     out$p <- ""
   }
-  if (include_es) {
-    out[[format_effect_size_header_lm(effect_size)]] <- ""
-  }
   if (include_r2) {
     out[[r2_header]] <- ""
+  }
+  if (include_es) {
+    out[[format_effect_size_header_lm(effect_size)]] <- ""
   }
   if (show_n) {
     out$n <- ""

@@ -239,13 +239,6 @@ table_continuous_lm(
   effect_size = "f2"
 )
 
-table_continuous_lm(
-  sochealth,
-  select = c(wellbeing_score, bmi),
-  by = sex,
-  output = "long"
-)
-
 \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {
   table_continuous_lm(
