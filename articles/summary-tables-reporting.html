@@ -23,9 +23,9 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Summary tables for APA-style reporting">
-<meta name="description" content="Learn when to use table_categorical() and table_continuous() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
+<meta name="description" content="Learn when to use table_categorical(), table_continuous(), and table_continuous_lm() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
 ">
-<meta property="og:description" content="Learn when to use table_categorical() and table_continuous() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
+<meta property="og:description" content="Learn when to use table_categorical(), table_continuous(), and table_continuous_lm() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -37,7 +37,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -99,13 +100,12 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code>
-are the two main summary table helpers in spicy. They share the same
-main interface: choose variables with <code>select</code>, optionally
-split the table with <code>by</code>, apply readable labels, and pick an
-output format that matches your reporting workflow. This vignette
-focuses on that shared logic rather than repeating every
-function-specific option.</p>
+<p><code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> share the same reporting grammar:
+choose variables with <code>select</code>, optionally split the table
+with <code>by</code>, apply readable labels, and pick an output format
+that matches your reporting workflow. This vignette focuses on that
+shared logic rather than repeating every function-specific option.</p>
 <div class="section level2">
 <h2 id="choose-the-right-function">Choose the right function<a class="anchor" aria-label="anchor" href="#choose-the-right-function"></a>
 </h2>
@@ -140,6 +140,13 @@ interval</td>
 <td align="left">Yes</td>
 <td align="left">Group-comparison test, statistic, effect size</td>
 </tr>
+<tr class="odd">
+<td align="left"><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code></td>
+<td align="left">Continuous outcomes in a linear-model framework</td>
+<td align="left">No, requires a single predictor</td>
+<td align="left">Robust <code>HC*</code> standard errors, model fit,
+case weights</td>
+</tr>
 </tbody>
 </table>
 <p>In practice:</p>
@@ -148,6 +155,8 @@ interval</td>
 or activity;</li>
 <li>use <code><a href="../reference/table_continuous.html">table_continuous()</a></code> for BMI, income, or scale
 scores;</li>
+<li>use <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> when the same outcomes should
+be reported through simple weighted or robust linear models;</li>
 <li>keep <code>by</code> for the grouping variable you want to compare
 across.</li>
 </ul>
@@ -506,6 +515,22 @@ across.</li>
 </table>
 </div>
 <!-- hack to avoid NA insertion in last line -->
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;                                       Variable M (Lower secondary)</span></span>
+<span><span class="co">#&gt; bmi                            Body mass index           25.956113</span></span>
+<span><span class="co">#&gt; wellbeing_score  WHO-5 wellbeing index (0-100)           67.550436</span></span>
+<span><span class="co">#&gt; life_sat_health Satisfaction with health (1-5)            3.446374</span></span>
+<span><span class="co">#&gt;                 M (Upper secondary) M (Tertiary)            p        R²    n</span></span>
+<span><span class="co">#&gt; bmi                        23.39124    26.158338 1.455685e-35 0.1266195 1188</span></span>
+<span><span class="co">#&gt; wellbeing_score            80.87817    66.519125 2.919348e-56 0.1923742 1200</span></span>
+<span><span class="co">#&gt; life_sat_health             4.39300     3.385878 4.864079e-43 0.1511599 1192</span></span></code></pre></div>
 <p>The same argument pattern works in both cases:</p>
 <ul>
 <li>
@@ -518,6 +543,9 @@ across.</li>
 <code>output</code> decides how the result is rendered or
 exported.</li>
 </ul>
+<p>For model-based continuous tables, the same pattern applies, but
+<code>by</code> must be a single predictor because one linear model is
+fit per outcome.</p>
 </div>
 <div class="section level2">
 <h2 id="a-practical-reporting-sequence">A practical reporting sequence<a class="anchor" aria-label="anchor" href="#a-practical-reporting-sequence"></a>
@@ -528,7 +556,7 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <div class="section level3">
 <h3 id="categorical-variables">Categorical variables<a class="anchor" aria-label="anchor" href="#categorical-variables"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1198,7 +1226,7 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <div class="section level3">
 <h3 id="continuous-variables">Continuous variables<a class="anchor" aria-label="anchor" href="#continuous-variables"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1872,88 +1900,20 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <p>This keeps the reporting structure consistent while still using the
 function that fits each variable type.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="choose-the-output-format">Choose the output format<a class="anchor" aria-label="anchor" href="#choose-the-output-format"></a>
-</h2>
-<p>Both functions support the same reporting formats:</p>
-<table class="table">
-<thead><tr class="header">
-<th align="left">Output</th>
-<th align="left">Best use</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left"><code>"default"</code></td>
-<td align="left">Quick console review in plain ASCII</td>
-</tr>
-<tr class="even">
-<td align="left"><code>"tinytable"</code></td>
-<td align="left">Quarto or R Markdown documents</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>"gt"</code></td>
-<td align="left">HTML output with styled reporting tables</td>
-</tr>
-<tr class="even">
-<td align="left"><code>"flextable"</code></td>
-<td align="left">Office-first workflows; also renders in HTML</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>"excel"</code></td>
-<td align="left">Spreadsheet handoff or downstream editing</td>
-</tr>
-<tr class="even">
-<td align="left"><code>"word"</code></td>
-<td align="left">Direct <code>.docx</code> export</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>"clipboard"</code></td>
-<td align="left">Fast pasting into another application</td>
-</tr>
-</tbody>
-</table>
-<p>Pick the output based on where the table is going, not on the
-analysis itself. The underlying selection and grouping pattern stays the
-same.</p>
-<p>If you want an object that fits naturally into Word and PowerPoint
-workflows but can also be rendered in HTML documents,
-<code>flextable</code> is a good choice:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<div class="section level3">
+<h3 id="model-based-continuous-variables">Model-based continuous variables<a class="anchor" aria-label="anchor" href="#model-based-continuous-variables"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
 <span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
-<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>    output <span class="op">=</span> <span class="st">"flextable"</span></span>
+<span>    by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>    vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
+<span>    statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>
-</h2>
-<p>Both summary-table helpers return regular <code>gt</code>,
-<code>tinytable</code>, or <code>flextable</code> objects, so you can
-keep styling them with the native package API.</p>
-<p>Use <code>gt::</code> functions when you want to keep the
-<code>gt</code> workflow:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
-<span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">tab</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html" class="external-link">tab_header</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Health behaviors by education"</span>,</span>
-<span>    subtitle <span class="op">=</span> <span class="st">"Categorical summary table"</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_source_note.html" class="external-link">tab_source_note</a></span><span class="op">(</span></span>
-<span>    <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/md.html" class="external-link">md</a></span><span class="op">(</span><span class="st">"*Percentages are computed within each education group.*"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div id="ewpekaebia" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ewpekaebia table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -2415,6 +2375,670 @@ keep styling them with the native package API.</p>
   background-color: transparent !important;
 }
 
+.gt_table thead tr:last-child th[id="LL"],
+.gt_table thead tr:last-child th[id="UL"] {
+  border-top: 1px solid currentColor !important;
+}
+
+.gt_table thead tr:last-child {
+  border-bottom: 1px solid currentColor !important;
+}
+
+.gt_table tbody tr:last-child {
+  border-bottom: 1px solid currentColor !important;
+}
+
+.gt_table tbody tr {
+  border-top-style: none !important;
+  border-bottom-style: none !important;
+}
+
+.gt_table .gt_col_heading, .gt_table .gt_spanner {
+  white-space: nowrap !important;
+}
+
+.gt_table .gt_row .gt_right, .gt_table .gt_row .gt_center {
+  white-space: nowrap !important;
+}
+
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
+.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
+  background-color: transparent !important;
+  color: currentColor !important;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings gt_spanner_row">
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: left;" scope="col" id="spn_Variable">
+        <div class="gt_column_spanner">Variable</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Female.">
+        <div class="gt_column_spanner">M (Female)</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Male.">
+        <div class="gt_column_spanner">M (Male)</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Δ..Male...Female.">
+        <div class="gt_column_spanner">Δ (Male - Female)</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="95% CI">
+        <div class="gt_column_spanner">95% CI</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_t">
+        <div class="gt_column_spanner">t</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
+        <div class="gt_column_spanner">p</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_R.">
+        <div class="gt_column_spanner">R²</div>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
+        <div class="gt_column_spanner">n</div>
+      </th>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: left;" scope="col" id="Variable"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Female)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">LL</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="UL">UL</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="t"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="p"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="R²"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="n"></th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Variable" class="gt_row gt_left">Body mass index</td>
+<td headers="M (Female)" class="gt_row gt_center">25.69</td>
+<td headers="M (Male)" class="gt_row gt_center">26.20</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center">0.51</td>
+<td headers="LL" class="gt_row gt_center">0.09</td>
+<td headers="UL" class="gt_row gt_center">0.93</td>
+<td headers="t" class="gt_row gt_center">2.38</td>
+<td headers="p" class="gt_row gt_right">.018</td>
+<td headers="R²" class="gt_row gt_center">0.00</td>
+<td headers="n" class="gt_row gt_right">1188</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">WHO-5 wellbeing index (0-100)</td>
+<td headers="M (Female)" class="gt_row gt_center">67.16</td>
+<td headers="M (Male)" class="gt_row gt_center">71.05</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center">3.89</td>
+<td headers="LL" class="gt_row gt_center">2.12</td>
+<td headers="UL" class="gt_row gt_center">5.65</td>
+<td headers="t" class="gt_row gt_center">4.32</td>
+<td headers="p" class="gt_row gt_right">&lt;.001</td>
+<td headers="R²" class="gt_row gt_center">0.02</td>
+<td headers="n" class="gt_row gt_right">1200</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">Satisfaction with health (1-5)</td>
+<td headers="M (Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.51</td>
+<td headers="M (Male)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.59</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.08</td>
+<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">-0.06</td>
+<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.22</td>
+<td headers="t" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.11</td>
+<td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">.267</td>
+<td headers="R²" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.00</td>
+<td headers="n" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1192</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This is the better summary-table path when the article is already
+organized around simple linear models, weighted analyses, or robust
+standard errors.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="choose-the-output-format">Choose the output format<a class="anchor" aria-label="anchor" href="#choose-the-output-format"></a>
+</h2>
+<p>All three functions support the same reporting formats:</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Output</th>
+<th align="left">Best use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>"default"</code></td>
+<td align="left">Quick console review in plain ASCII</td>
+</tr>
+<tr class="even">
+<td align="left"><code>"tinytable"</code></td>
+<td align="left">Quarto or R Markdown documents</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>"gt"</code></td>
+<td align="left">HTML output with styled reporting tables</td>
+</tr>
+<tr class="even">
+<td align="left"><code>"flextable"</code></td>
+<td align="left">Office-first workflows; also renders in HTML</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>"excel"</code></td>
+<td align="left">Spreadsheet handoff or downstream editing</td>
+</tr>
+<tr class="even">
+<td align="left"><code>"word"</code></td>
+<td align="left">Direct <code>.docx</code> export</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>"clipboard"</code></td>
+<td align="left">Fast pasting into another application</td>
+</tr>
+</tbody>
+</table>
+<p>Pick the output based on where the table is going, not on the
+analysis itself. The underlying selection and grouping pattern stays the
+same.</p>
+<p>If you want an object that fits naturally into Word and PowerPoint
+workflows but can also be rendered in HTML documents,
+<code>flextable</code> is a good choice:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>    output <span class="op">=</span> <span class="st">"flextable"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>
+</h2>
+<p>Both summary-table helpers return regular <code>gt</code>,
+<code>tinytable</code>, or <code>flextable</code> objects, so you can
+keep styling them with the native package API.</p>
+<p>Use <code>gt::</code> functions when you want to keep the
+<code>gt</code> workflow:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tab</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html" class="external-link">tab_header</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Health behaviors by education"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Categorical summary table"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/tab_source_note.html" class="external-link">tab_source_note</a></span><span class="op">(</span></span>
+<span>    <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/md.html" class="external-link">md</a></span><span class="op">(</span><span class="st">"*Percentages are computed within each education group.*"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<div id="hsqzrdzhpg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hsqzrdzhpg table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#hsqzrdzhpg thead, #hsqzrdzhpg tbody, #hsqzrdzhpg tfoot, #hsqzrdzhpg tr, #hsqzrdzhpg td, #hsqzrdzhpg th {
+  border-style: none;
+}
+
+#hsqzrdzhpg p {
+  margin: 0;
+  padding: 0;
+}
+
+#hsqzrdzhpg .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 0px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 0px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#hsqzrdzhpg .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#hsqzrdzhpg .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#hsqzrdzhpg .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 0px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 0px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: rgba(255, 255, 255, 0);
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: rgba(255, 255, 255, 0);
+}
+
+#hsqzrdzhpg .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#hsqzrdzhpg .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#hsqzrdzhpg .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#hsqzrdzhpg .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#hsqzrdzhpg .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 0px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#hsqzrdzhpg .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#hsqzrdzhpg .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#hsqzrdzhpg .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#hsqzrdzhpg .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#hsqzrdzhpg .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#hsqzrdzhpg .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: rgba(255, 255, 255, 0);
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#hsqzrdzhpg .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hsqzrdzhpg .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#hsqzrdzhpg .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#hsqzrdzhpg .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#hsqzrdzhpg .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hsqzrdzhpg .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#hsqzrdzhpg .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hsqzrdzhpg .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#hsqzrdzhpg .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 0px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 0px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hsqzrdzhpg .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hsqzrdzhpg .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hsqzrdzhpg .gt_left {
+  text-align: left;
+}
+
+#hsqzrdzhpg .gt_center {
+  text-align: center;
+}
+
+#hsqzrdzhpg .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#hsqzrdzhpg .gt_font_normal {
+  font-weight: normal;
+}
+
+#hsqzrdzhpg .gt_font_bold {
+  font-weight: bold;
+}
+
+#hsqzrdzhpg .gt_font_italic {
+  font-style: italic;
+}
+
+#hsqzrdzhpg .gt_super {
+  font-size: 65%;
+}
+
+#hsqzrdzhpg .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#hsqzrdzhpg .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#hsqzrdzhpg .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#hsqzrdzhpg .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#hsqzrdzhpg .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#hsqzrdzhpg .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#hsqzrdzhpg .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#hsqzrdzhpg .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#hsqzrdzhpg div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+
+.gt_table thead tr:first-child {
+  border-top: 1px solid currentColor !important;
+}
+
+.gt_table thead tr.gt_spanner_row {
+  border-bottom-style: none !important;
+}
+
+.gt_table thead th, .gt_table thead td {
+  background-color: transparent !important;
+}
+
 .gt_table thead tr:last-child th[id="Lower secondary_n"],
 .gt_table thead tr:last-child th[id="Lower secondary_pct"],
 .gt_table thead tr:last-child th[id="Upper secondary_n"],
@@ -2578,7 +3202,7 @@ keep styling them with the native package API.</p>
 </div>
 <p>Use <code>tinytable::</code> functions when you want lightweight
 table-specific styling:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -2599,52 +3223,52 @@ table-specific styling:</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_urewyc2eop9ksz09od3p = TinyTable.createTableFunctions("tinytable_urewyc2eop9ksz09od3p");
+      const tableFns_9ksz09od3p848lv7afn0 = TinyTable.createTableFunctions("tinytable_9ksz09od3p848lv7afn0");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 } ], css_id: 'tinytable_css_zokrlugafby73eetguw6',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '6', j: 10 }, { i: '0', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_v1dfuxtutffweepkjqn9',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_t0vhbt5wd3qsm915f78f',}, 
-          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_xitpnxmqmp1gq43u59ua',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_ep6lc6tiz64xax4no65n',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 } ], css_id: 'tinytable_css_isjfqu3ey3t558ozvqpt',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_duda1j88j3f7ykmkvqpt',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_7up8s26t4nm9x1vbskby',}, 
-          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_aaos7evzn1rjfsds6vww',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_sjdmqew5ab5nqymmkzjz',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_bbzoshnbue1yo572qvoc',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_c09znmem2bibl5diu3n6',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_848lv7afn0ws8dilfgz1',}, 
+          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 } ], css_id: 'tinytable_css_y73eetguw6g9g19xr8c6',}, 
+          { positions: [ { i: '0', j: 10 }, { i: '6', j: 10 }, { i: '0', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_fweepkjqn9zokrlugafb',}, 
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_qsm915f78fv1dfuxtutf',}, 
+          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_1gq43u59uat0vhbt5wd3',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_4xax4no65nxitpnxmqmp',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 } ], css_id: 'tinytable_css_t558ozvqptep6lc6tiz6',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 }, { i: '0', j: 5 }, { i: '0', j: 6 }, { i: '0', j: 7 }, { i: '0', j: 8 }, { i: '0', j: 9 } ], css_id: 'tinytable_css_f7ykmkvqptisjfqu3ey3',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_m9x1vbskbyduda1j88j3',}, 
+          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_rjfsds6vww7up8s26t4n',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_5nqymmkzjzaaos7evzn1',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_1yo572qvocsjdmqew5ab',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_ibl5diu3n6bbzoshnbue',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_ws8dilfgz1c09znmem2b',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_urewyc2eop9ksz09od3p.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_9ksz09od3p848lv7afn0.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_zokrlugafby73eetguw6, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_zokrlugafby73eetguw6 { text-align: right; white-space: nowrap; }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_v1dfuxtutffweepkjqn9, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_v1dfuxtutffweepkjqn9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right; white-space: nowrap; }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_t0vhbt5wd3qsm915f78f, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_t0vhbt5wd3qsm915f78f {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_xitpnxmqmp1gq43u59ua, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_xitpnxmqmp1gq43u59ua {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_ep6lc6tiz64xax4no65n, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_ep6lc6tiz64xax4no65n { font-weight: bold; text-align: right; color: white; background-color: #FF0000 }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_isjfqu3ey3t558ozvqpt, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_isjfqu3ey3t558ozvqpt { text-align: right }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_duda1j88j3f7ykmkvqpt, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_duda1j88j3f7ykmkvqpt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_7up8s26t4nm9x1vbskby, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_7up8s26t4nm9x1vbskby {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_aaos7evzn1rjfsds6vww, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_aaos7evzn1rjfsds6vww {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_sjdmqew5ab5nqymmkzjz, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_sjdmqew5ab5nqymmkzjz { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_bbzoshnbue1yo572qvoc, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_bbzoshnbue1yo572qvoc { text-align: left }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_c09znmem2bibl5diu3n6, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_c09znmem2bibl5diu3n6 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_urewyc2eop9ksz09od3p td.tinytable_css_848lv7afn0ws8dilfgz1, #tinytable_urewyc2eop9ksz09od3p th.tinytable_css_848lv7afn0ws8dilfgz1 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_y73eetguw6g9g19xr8c6, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_y73eetguw6g9g19xr8c6 { text-align: right; white-space: nowrap; }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_fweepkjqn9zokrlugafb, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_fweepkjqn9zokrlugafb {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right; white-space: nowrap; }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_qsm915f78fv1dfuxtutf, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_qsm915f78fv1dfuxtutf {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_1gq43u59uat0vhbt5wd3, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_1gq43u59uat0vhbt5wd3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: right }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_4xax4no65nxitpnxmqmp, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_4xax4no65nxitpnxmqmp { font-weight: bold; text-align: right; color: white; background-color: #FF0000 }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_t558ozvqptep6lc6tiz6, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_t558ozvqptep6lc6tiz6 { text-align: right }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_f7ykmkvqptisjfqu3ey3, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_f7ykmkvqptisjfqu3ey3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_m9x1vbskbyduda1j88j3, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_m9x1vbskbyduda1j88j3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_rjfsds6vww7up8s26t4n, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_rjfsds6vww7up8s26t4n {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_5nqymmkzjzaaos7evzn1, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_5nqymmkzjzaaos7evzn1 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_1yo572qvocsjdmqew5ab, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_1yo572qvocsjdmqew5ab { text-align: left }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_ibl5diu3n6bbzoshnbue, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_ibl5diu3n6bbzoshnbue {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9ksz09od3p848lv7afn0 td.tinytable_css_ws8dilfgz1c09znmem2b, #tinytable_9ksz09od3p848lv7afn0 th.tinytable_css_ws8dilfgz1c09znmem2b {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_urewyc2eop9ksz09od3p" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_9ksz09od3p848lv7afn0" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
@@ -2756,7 +3380,7 @@ table-specific styling:</p>
 toward Office or HTML document output. The example is shown as code here
 because the dark pkgdown theme is not a reliable preview of the final
 <code>flextable</code> HTML rendering:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -2783,6 +3407,10 @@ tables.</li>
 <li>
 <code><a href="../reference/table_continuous.html">table_continuous()</a></code> covers grouped descriptive
 statistics, parametric and nonparametric tests, and effect sizes.</li>
+<li>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers estimated means or slopes
+from simple linear models, robust standard errors, and case
+weights.</li>
 </ul>
 <p>Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.</p>

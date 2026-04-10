@@ -59,6 +59,8 @@
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   : Continuous summary table
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  : Continuous-outcome linear-model table
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   : Categorical summary table
 
@@ -105,6 +107,9 @@
 
 - [`print(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_table.md)
   : Print method for continuous summary tables
+
+- [`print(`*`<spicy_continuous_lm_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_lm_table.md)
+  : Print method for bivariate linear-model tables
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy Table Engine: Frequency and Cross-tabulation Rendering

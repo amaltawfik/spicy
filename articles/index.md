@@ -46,10 +46,17 @@
   including grouped descriptives, group-comparison tests, effect sizes,
   and export to console, gt, tinytable, flextable, Excel, or Word.
 
+- [Model-based continuous summary tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md):
+
+  Build model-based summary tables for continuous outcomes in R with
+  table_continuous_lm(), including estimated means, robust standard
+  errors, case weights, and APA-style output formats.
+
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 
-  Learn when to use table_categorical() and table_continuous() for
-  APA-style reporting in R, how their shared arguments fit together, and
-  which output format to choose for console, Quarto, Word, or Excel
-  workflows.
+  Learn when to use table_categorical(), table_continuous(), and
+  table_continuous_lm() for APA-style reporting in R, how their shared
+  arguments fit together, and which output format to choose for console,
+  Quarto, Word, or Excel workflows.

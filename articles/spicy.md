@@ -332,9 +332,34 @@ table_continuous(
 #>                                 │ Tertiary           4.01       4.21     399
 ```
 
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+covers the same reporting territory when you want to stay in a
+linear-model framework, for example with robust standard errors or case
+weights:
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  vcov = "HC3",
+  output = "data.frame"
+)
+#>                                      Variable M (Female) M (Male)
+#> wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879
+#> bmi                           Body mass index   25.68506 26.19685
+#>                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²
+#> wellbeing_score         3.8868576 2.12265210 5.6510631 1.670572e-05 0.015475137
+#> bmi                     0.5117882 0.08904596 0.9345305 1.769614e-02 0.004728908
+#>                    n
+#> wellbeing_score 1200
+#> bmi             1188
+```
+
 For detailed guidance, see the dedicated articles on
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 and the final reporting overview for APA-style summary tables.
 
 ## Row-wise summaries
@@ -386,6 +411,10 @@ sochealth |>
 - See
   [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for continuous summaries and group comparisons.
+- See
+  [`?table_continuous_lm`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  for model-based mean-comparison tables with robust standard errors or
+  case weights.
 - See
   [`?assoc_measures`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   for the complete list of association statistics.
