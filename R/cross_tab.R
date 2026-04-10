@@ -768,6 +768,7 @@ print.spicy_cross_table_list <- function(x, ...) {
 #'   Defaults to the value stored in the object.
 #' @param ... Additional arguments passed to internal formatting functions.
 #'
+#' @keywords internal
 #' @export
 print.spicy_cross_table <- function(x, digits = NULL, ...) {
   title <- attr(x, "title")

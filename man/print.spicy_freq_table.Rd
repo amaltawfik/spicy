@@ -75,3 +75,4 @@ print(df) # dispatches to print.spicy_freq_table()
 \code{\link[=freq]{freq()}} for the main frequency table generator.
 \code{\link[=spicy_print_table]{spicy_print_table()}} for the generic ASCII table renderer.
 }
+\keyword{internal}

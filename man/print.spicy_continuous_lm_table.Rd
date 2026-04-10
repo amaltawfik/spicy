@@ -22,3 +22,4 @@ ASCII table using \code{\link[=spicy_print_table]{spicy_print_table()}}.
 \seealso{
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=spicy_print_table]{spicy_print_table()}}
 }
+\keyword{internal}

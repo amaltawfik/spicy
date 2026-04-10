@@ -22,3 +22,4 @@ Formats and prints a \code{spicy_categorical_table} object as a styled ASCII tab
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=spicy_print_table]{spicy_print_table()}}
 }
+\keyword{internal}

@@ -47,5 +47,6 @@ when the terminal allows ANSI color output (via the \strong{crayon} package).
 \concept{spicy tables}
 \keyword{descriptive}
 \keyword{frequency}
+\keyword{internal}
 \keyword{spicy}
 \keyword{tables}

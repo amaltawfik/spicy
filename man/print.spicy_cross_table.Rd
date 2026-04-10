@@ -17,3 +17,4 @@ Defaults to the value stored in the object.}
 \description{
 Prints a formatted SPSS-like crosstable created by \code{\link[=cross_tab]{cross_tab()}}.
 }
+\keyword{internal}

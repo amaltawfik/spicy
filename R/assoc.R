@@ -87,6 +87,7 @@
 #'
 #' @seealso [cramer_v()], [assoc_measures()]
 #'
+#' @keywords internal
 #' @export
 print.spicy_assoc_detail <- function(
   x,
@@ -1502,6 +1503,7 @@ assoc_measures <- function(
 #'
 #' @seealso [assoc_measures()]
 #'
+#' @keywords internal
 #' @export
 print.spicy_assoc_table <- function(
   x,

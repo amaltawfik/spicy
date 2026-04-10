@@ -79,52 +79,53 @@ articles:
 reference:
   - title: Variable Metadata
     contents:
+      - code_book
+      - label_from_names
       - varlist
       - vl
-      - label_from_names
-      - code_book
   - title: Tabulation
     contents:
-      - freq
+      - count_n
       - cross_tab
+      - freq
       - mean_n
       - sum_n
-      - count_n
   - title: Measures of Association
     contents:
       - assoc_measures
-      - cramer_v
-      - phi
       - contingency_coef
-      - lambda_gk
-      - goodman_kruskal_tau
-      - uncertainty_coef
-      - yule_q
+      - cramer_v
       - gamma_gk
+      - goodman_kruskal_tau
       - kendall_tau_b
       - kendall_tau_c
+      - lambda_gk
+      - phi
       - somers_d
+      - uncertainty_coef
+      - yule_q
   - title: Summary tables
     contents:
+      - table_categorical
       - table_continuous
       - table_continuous_lm
-      - table_categorical
   - title: Export
     contents:
       - copy_clipboard
   - title: Data
     contents:
       - sochealth
-  - title: Printing
+  - title: ASCII helpers
     contents:
-      - spicy_print_table
       - build_ascii_table
-      - print.spicy_categorical_table
-      - print.spicy_cross_table
-      - print.spicy_cross_table_list
-      - print.spicy_freq_table
+      - spicy_print_table
+  - title: Advanced S3 methods
+    contents:
       - print.spicy_assoc_detail
       - print.spicy_assoc_table
-      - print.spicy_continuous_table
+      - print.spicy_categorical_table
       - print.spicy_continuous_lm_table
+      - print.spicy_continuous_table
+      - print.spicy_cross_table
+      - print.spicy_freq_table
       - spicy_tables

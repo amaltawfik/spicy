@@ -26,3 +26,4 @@ functions with \code{detail = TRUE}) with fixed decimal places and
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 }
+\keyword{internal}

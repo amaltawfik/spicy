@@ -33,5 +33,6 @@
 #'
 #' @family spicy tables
 #' @keywords tables descriptive frequency spicy
+#' @keywords internal
 #' @name spicy_tables
 NULL

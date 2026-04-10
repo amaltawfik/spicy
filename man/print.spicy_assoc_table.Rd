@@ -26,3 +26,4 @@ and \verb{< 0.001} notation for small p-values.
 \seealso{
 \code{\link[=assoc_measures]{assoc_measures()}}
 }
+\keyword{internal}

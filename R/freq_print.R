@@ -62,6 +62,7 @@
 #'
 #' @importFrom stats na.omit
 #'
+#' @keywords internal
 #' @export
 print.spicy_freq_table <- function(x, ...) {
   df <- x

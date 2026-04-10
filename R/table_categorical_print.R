@@ -11,6 +11,7 @@
 #' @return Invisibly returns `x`.
 #'
 #' @seealso [table_categorical()], [spicy_print_table()]
+#' @keywords internal
 #' @export
 print.spicy_categorical_table <- function(x, ...) {
   display_df <- attr(x, "display_df")

@@ -210,21 +210,10 @@ df <- tibble(
   y = c(2, 2, NA, 3, 2),
   z = c("2", "2", "2", "3", "2")
 )
-df
-#> # A tibble: 5 × 3
-#>       x     y z    
-#>   <dbl> <dbl> <chr>
-#> 1     1     2 2    
-#> 2     2     2 2    
-#> 3     2    NA 2    
-#> 4     3     3 3    
-#> 5    NA     2 2    
 count_n(df, count = 2)
 #> [1] 2 3 2 0 2
 count_n(df, count = 2, allow_coercion = FALSE)
 #> [1] 1 2 1 0 1
-count_n(df, count = "2", ignore_case = TRUE)
-#> [1] 2 3 2 0 2
 df |> mutate(num_twos = count_n(count = 2))
 #> # A tibble: 5 × 4
 #>       x     y z     num_twos
@@ -244,48 +233,18 @@ df <- tibble(
   lab   = labelled(c(1, 2, 1, 2, NA), labels = c(No = 1, Yes = 2)),
   logic = c(TRUE, FALSE, NA, TRUE, FALSE)
 )
-df
-#> # A tibble: 5 × 6
-#>     num char  fact  date       lab       logic
-#>   <dbl> <chr> <fct> <date>     <dbl+lbl> <lgl>
-#> 1     1 a     a     2023-01-01  1 [No]   TRUE 
-#> 2     2 B     b     2023-01-01  2 [Yes]  FALSE
-#> 3    NA b     b     NA          1 [No]   NA   
-#> 4  -Inf a     a     2023-01-02  2 [Yes]  TRUE 
-#> 5   NaN NA    c     2023-01-01 NA        FALSE
 count_n(df, count = 2)
 #> [1] 0 2 0 1 0
-count_n(df, count = 2, allow_coercion = FALSE)
-#> [1] 0 1 0 0 0
-count_n(df, count = "b", ignore_case = FALSE)
-#> [1] 0 1 2 0 0
 count_n(df, count = "b", ignore_case = TRUE)
 #> [1] 0 2 2 0 0
 count_n(df, count = "a", select = fact)
 #> [1] 1 0 0 1 0
 count_n(df, count = as.Date("2023-01-01"), select = date)
 #> [1] 1 1 0 0 1
-count_n(df, count = TRUE, select = logic)
-#> [1] 1 0 0 1 0
-count_n(df, count = 2, select = lab)
-#> [1] 0 1 0 1 0
-df <- df |> mutate(lab_chr = as_factor(lab))
-count_n(df, count = "Yes", select = lab_chr, allow_coercion = TRUE)
-#> [1] 0 1 0 1 0
-count_n(df, count = "Yes", select = lab_chr, allow_coercion = FALSE)
-#> [1] 0 0 0 0 0
 
 # Count special values
 count_n(df, special = "NA")
-#> [1] 0 0 3 0 4
-count_n(df, special = "NaN")
-#> [1] 0 0 0 0 1
-count_n(df, special = "-Inf")
-#> [1] 0 0 0 1 0
-count_n(df, special = c("NA", "NaN"))
-#> [1] 0 0 3 0 4
-count_n(df, special = "all")
-#> [1] 0 0 3 1 4
+#> [1] 0 0 3 0 3
 
 # Column selection strategies
 df <- tibble(
@@ -294,25 +253,12 @@ df <- tibble(
   score_lang    = c("2", "2", "2", "3", "2"),
   name          = c("Jean", "Marie", "Ali", "Zoe", "Nina")
 )
-df
-#> # A tibble: 5 × 4
-#>   score_math score_science score_lang name 
-#>        <dbl>         <dbl> <chr>      <chr>
-#> 1          1             2 2          Jean 
-#> 2          2             2 2          Marie
-#> 3          2            NA 2          Ali  
-#> 4          3             3 3          Zoe  
-#> 5         NA             2 2          Nina 
 count_n(df, select = c(score_math, score_science), count = 2)
 #> [1] 1 2 1 0 1
 count_n(df, select = starts_with("score_"), exclude = "score_lang", count = 2)
 #> [1] 1 2 1 0 1
-count_n(df, select = everything(), exclude = "name", count = 2)
-#> [1] 2 3 2 0 2
 count_n(df, select = "^score_", regex = TRUE, count = 2)
 #> [1] 2 3 2 0 2
-count_n(df, select = "lang", regex = TRUE, count = "2")
-#> [1] 1 1 1 0 1
 df |> mutate(nb_two = count_n(count = 2))
 #> # A tibble: 5 × 5
 #>   score_math score_science score_lang name  nb_two
@@ -322,33 +268,12 @@ df |> mutate(nb_two = count_n(count = 2))
 #> 3          2            NA 2          Ali        2
 #> 4          3             3 3          Zoe        0
 #> 5         NA             2 2          Nina       2
-df |>
-  select(score_math, score_science) |>
-  mutate(nb_two = count_n(count = 2))
-#> # A tibble: 5 × 3
-#>   score_math score_science nb_two
-#>        <dbl>         <dbl>  <dbl>
-#> 1          1             2      1
-#> 2          2             2      2
-#> 3          2            NA      1
-#> 4          3             3      0
-#> 5         NA             2      1
-df$nb_two <- count_n(df, select = starts_with("score_"), count = 2)
-df[1:3, ] |> count_n(select = starts_with("score_"), count = 2)
-#> [1] 2 3 2
 
 # Strict type-safe matching with factor columns
 df <- tibble(
   x = factor(c("a", "b", "c")),
   y = factor(c("b", "B", "a"))
 )
-df
-#> # A tibble: 3 × 2
-#>   x     y    
-#>   <fct> <fct>
-#> 1 a     b    
-#> 2 b     B    
-#> 3 c     a    
 
 # Coercion: character "b" matches both x and y
 count_n(df, count = "b")
@@ -361,14 +286,4 @@ count_n(df, count = "b", allow_coercion = FALSE)
 # Strict match with factor value: works only where levels match
 count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
 #> [1] 0 1 0
-
-# Using a value from the data: guarantees type and levels match for column x
-count_n(df, count = df$x[2], allow_coercion = FALSE)
-#> [1] 0 1 0
-
-# Case-insensitive match (factors are converted to character internally)
-count_n(df, count = "b", ignore_case = TRUE)
-#> [1] 1 2 0
-count_n(df, count = "B", ignore_case = TRUE)
-#> [1] 1 2 0
 ```

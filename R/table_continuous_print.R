@@ -11,6 +11,7 @@
 #' @return Invisibly returns `x`.
 #'
 #' @seealso [table_continuous()], [spicy_print_table()]
+#' @keywords internal
 #' @export
 print.spicy_continuous_table <- function(x, ...) {
   digits <- attr(x, "digits") %||% 2L
