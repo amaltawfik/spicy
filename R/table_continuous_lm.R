@@ -149,8 +149,13 @@
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
+#'   by = sex
+#' )
+#'
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
 #'   by = sex,
-#'   statistic = TRUE,
 #'   output = "data.frame"
 #' )
 #'
@@ -159,16 +164,34 @@
 #'   select = c(wellbeing_score, bmi),
 #'   by = age,
 #'   vcov = "HC3",
-#'   ci = FALSE,
+#'   ci = FALSE
+#' )
+#'
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
+#'   weights = weight,
+#'   statistic = TRUE,
+#'   effect_size = "f2"
+#' )
+#'
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
 #'   output = "long"
 #' )
 #'
 #' \donttest{
-#' table_continuous_lm(
-#'   sochealth,
-#'   select = c(wellbeing_score, bmi),
-#'   by = sex
-#' )
+#' if (requireNamespace("tinytable", quietly = TRUE)) {
+#'   table_continuous_lm(
+#'     sochealth,
+#'     select = c(wellbeing_score, bmi),
+#'     by = sex,
+#'     output = "tinytable"
+#'   )
+#' }
 #'
 #' if (requireNamespace("gt", quietly = TRUE)) {
 #'   table_continuous_lm(
@@ -176,6 +199,15 @@
 #'     select = c(wellbeing_score, bmi),
 #'     by = sex,
 #'     output = "gt"
+#'   )
+#' }
+#'
+#' if (requireNamespace("flextable", quietly = TRUE)) {
+#'   table_continuous_lm(
+#'     sochealth,
+#'     select = c(wellbeing_score, bmi),
+#'     by = sex,
+#'     output = "flextable"
 #'   )
 #' }
 #' }

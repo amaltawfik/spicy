@@ -199,142 +199,63 @@ Optional output engines require suggested packages:
 }
 }
 \examples{
-# Basic usage with all numeric columns
-table_continuous(sochealth, output = "data.frame")
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score)
+)
 
-# Select specific columns with tidyselect
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   output = "data.frame"
 )
 
-# Grouped descriptives
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
-  by = education,
-  output = "data.frame"
+  by = education
 )
 
-# Grouped descriptives with p-value
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score),
-  by = education,
-  p_value = TRUE,
-  output = "data.frame"
-)
-
-# Grouped descriptives with test statistic only
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score),
-  by = education,
-  statistic = TRUE,
-  output = "data.frame"
-)
-
-# Grouped descriptives with both p-value and test statistic
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education,
   p_value = TRUE,
-  statistic = TRUE,
-  output = "data.frame"
+  statistic = TRUE
 )
 
-# Student t-test / classic ANOVA (assumes equal variances)
 table_continuous(
   sochealth,
   select = wellbeing_score,
   by = education,
-  test = "student",
-  p_value = TRUE,
-  output = "data.frame"
-)
-
-# Nonparametric test (Kruskal-Wallis for 3+ groups)
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = education,
-  test = "nonparametric",
-  p_value = TRUE,
-  statistic = TRUE,
-  output = "data.frame"
-)
-
-# Effect size (eta-squared for 3 groups)
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = education,
-  effect_size = TRUE,
-  output = "data.frame"
-)
-
-# Effect size with confidence interval
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = education,
-  p_value = TRUE,
   effect_size_ci = TRUE,
-  output = "data.frame"
+  effect_size_digits = 3
 )
 
-# Nonparametric effect size (epsilon-squared with bootstrap CI)
-\donttest{
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = education,
-  test = "nonparametric",
-  effect_size_ci = TRUE,
-  output = "data.frame"
-)
-}
-
-# Hedges' g for 2 groups
 table_continuous(
   sochealth,
   select = wellbeing_score,
   by = sex,
-  effect_size_ci = TRUE,
-  output = "data.frame"
+  effect_size_ci = TRUE
 )
 
-# Regex column selection
 table_continuous(
   sochealth,
   select = "^life_sat",
-  regex = TRUE,
-  output = "data.frame"
+  regex = TRUE
 )
 
-# Custom labels
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health),
   labels = c(
     bmi = "Body mass index",
     life_sat_health = "Satisfaction with health"
-  ),
-  output = "data.frame"
+  )
 )
 
 \donttest{
-# ASCII table (default)
-table_continuous(sochealth, select = starts_with("life_sat"))
-
-# Grouped ASCII table
-table_continuous(sochealth, select = starts_with("life_sat"), by = education)
-
-# tinytable output
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_continuous(sochealth, output = "tinytable")
   table_continuous(
     sochealth,
     select = starts_with("life_sat"),
@@ -343,9 +264,7 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
   )
 }
 
-# gt output
 if (requireNamespace("gt", quietly = TRUE)) {
-  table_continuous(sochealth, output = "gt")
   table_continuous(
     sochealth,
     select = starts_with("life_sat"),
@@ -354,32 +273,12 @@ if (requireNamespace("gt", quietly = TRUE)) {
   )
 }
 
-# flextable output
 if (requireNamespace("flextable", quietly = TRUE)) {
-  table_continuous(sochealth, output = "flextable")
-  table_continuous(sochealth, by = education, output = "flextable")
-}
-
-# Word output
-if (requireNamespace("flextable", quietly = TRUE) &&
-    requireNamespace("officer", quietly = TRUE)) {
   table_continuous(
     sochealth,
     select = starts_with("life_sat"),
     by = education,
-    output = "word",
-    word_path = tempfile(fileext = ".docx")
-  )
-}
-
-# Excel output
-if (requireNamespace("openxlsx2", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
-    output = "excel",
-    excel_path = tempfile(fileext = ".xlsx")
+    output = "flextable"
   )
 }
 }
