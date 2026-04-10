@@ -36,6 +36,8 @@ table_continuous_lm(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  fit_digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
@@ -143,7 +145,18 @@ table_continuous_lm(
 
 - digits:
 
-  Number of decimal places for numeric output (default: `2`).
+  Number of decimal places for descriptive values, regression
+  coefficients, and test statistics (default: `2`).
+
+- fit_digits:
+
+  Number of decimal places for model-fit columns (`R2` or adjusted `R2`)
+  in wide and rendered outputs (default: `2`).
+
+- effect_size_digits:
+
+  Number of decimal places for effect-size columns (`f2`) in wide and
+  rendered outputs (default: `2`).
 
 - decimal_mark:
 

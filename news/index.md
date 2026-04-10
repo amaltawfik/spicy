@@ -23,6 +23,15 @@
   codebook widgets during CRAN builds, reducing package size while
   preserving rich pkgdown article rendering.
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now support dedicated display precision for effect-size columns, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  also supports separate precision for `R²` columns, so model fit and
+  effect sizes can be formatted independently from descriptive values
+  and test statistics.
+
 - Website and vignette coverage now includes
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   using the bundled `sochealth` data throughout and adding a dedicated

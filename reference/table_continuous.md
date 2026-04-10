@@ -31,6 +31,7 @@ table_continuous(
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
+  effect_size_digits = 2,
   decimal_mark = ".",
   output = c("default", "data.frame", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
@@ -141,7 +142,13 @@ table_continuous(
 
 - digits:
 
-  Number of decimal places for numeric output (default: `2`).
+  Number of decimal places for descriptive values and test statistics
+  (default: `2`).
+
+- effect_size_digits:
+
+  Number of decimal places for effect-size values in formatted displays
+  (default: `2`).
 
 - decimal_mark:
 
