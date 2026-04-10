@@ -23,6 +23,11 @@
   codebook widgets during CRAN builds, reducing package size while
   preserving rich pkgdown article rendering.
 
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now keeps `n` as the unweighted analytic sample size in wide and
+  rendered outputs, and can optionally add a separate `Weighted n`
+  column reporting the sum of case weights.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)

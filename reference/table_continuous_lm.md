@@ -30,6 +30,7 @@ table_continuous_lm(
   statistic = FALSE,
   p_value = TRUE,
   show_n = TRUE,
+  show_weighted_n = FALSE,
   effect_size = c("none", "f2"),
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -112,8 +113,14 @@ table_continuous_lm(
 
 - show_n:
 
-  Logical. If `TRUE`, includes an `n` column in the wide and rendered
-  outputs. Defaults to `TRUE`.
+  Logical. If `TRUE`, includes an unweighted `n` column in the wide and
+  rendered outputs. Defaults to `TRUE`.
+
+- show_weighted_n:
+
+  Logical. If `TRUE` and `weights` is supplied, includes a `Weighted n`
+  column equal to the sum of case weights in the analytic sample.
+  Defaults to `FALSE`.
 
 - effect_size:
 
@@ -257,6 +264,11 @@ means or slopes accordingly. This is appropriate for case-weighted
 analyses and weighted article tables, but it is not a substitute for a
 full complex-survey design workflow.
 
+In wide and rendered outputs, `n` always reports the unweighted analytic
+sample size used for each outcome. When `show_weighted_n = TRUE`, an
+additional `Weighted n` column reports the sum of case weights for the
+same analytic sample.
+
 For dichotomous categorical predictors, the wide outputs report means in
 reference-level order and labels the contrast column explicitly as
 `Delta (level2 - level1)`. For categorical predictors with more than two
@@ -340,7 +352,8 @@ table_continuous_lm(
   by = sex,
   weights = weight,
   statistic = TRUE,
-  effect_size = "f2"
+  effect_size = "f2",
+  show_weighted_n = TRUE
 )
 #> Continuous outcomes by Sex
 #> 
@@ -354,10 +367,10 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   2.11       5.62     4.33  <.001  0.02  0.02 
 #>  Body mass index               │   0.05       0.89     2.18   .030  0.00  0.00 
 #> 
-#>  Variable                      │    n 
-#> ───────────────────────────────┼──────
-#>  WHO-5 wellbeing index (0-100) │ 1200 
-#>  Body mass index               │ 1188 
+#>  Variable                      │    n  Weighted n 
+#> ───────────────────────────────┼──────────────────
+#>  WHO-5 wellbeing index (0-100) │ 1200     1196.47 
+#>  Body mass index               │ 1188     1183.32 
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {
