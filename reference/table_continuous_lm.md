@@ -349,7 +349,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.01      70.88          3.87        
 #>  Body mass index               │   25.51      25.98          0.47        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL   t        p   f²    R²  
+#>  Variable                      │ 95% CI LL  95% CI UL   t        p   R²    f²  
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.11       5.62     4.33  <.001  0.02  0.02 
 #>  Body mass index               │   0.05       0.89     2.18   .030  0.00  0.00 
@@ -358,38 +358,6 @@ table_continuous_lm(
 #> ───────────────────────────────┼──────
 #>  WHO-5 wellbeing index (0-100) │ 1200 
 #>  Body mass index               │ 1188 
-
-table_continuous_lm(
-  sochealth,
-  select = c(wellbeing_score, bmi),
-  by = sex,
-  output = "long"
-)
-#>          variable                         label predictor_type predictor_label
-#> 1 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
-#> 2 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
-#> 3             bmi               Body mass index    categorical             Sex
-#> 4             bmi               Body mass index    categorical             Sex
-#>    level reference estimate_type   emmean emmean_se emmean_ci_lower
-#> 1 Female    Female          <NA> 67.16194 0.6227155        65.94020
-#> 2   Male    Female    difference 71.04879 0.6438305        69.78563
-#> 3 Female    Female          <NA> 25.68506 0.1495988        25.39156
-#> 4   Male    Female    difference 26.19685 0.1552460        25.89227
-#>   emmean_ci_upper  estimate estimate_se estimate_ci_lower estimate_ci_upper
-#> 1        68.38367        NA          NA                NA                NA
-#> 2        72.31195 3.8868576   0.8957077        2.12952733         5.6441879
-#> 3        25.97857        NA          NA                NA                NA
-#> 4        26.50144 0.5117882   0.2155948        0.08879857         0.9347778
-#>   test_type statistic df1  df2      p.value es_type    es_value          r2
-#> 1         F 18.830621   1 1198 1.548898e-05      f2 0.015718381 0.015475137
-#> 2         t  4.339426   1 1198 1.548898e-05    <NA>          NA          NA
-#> 3         F  5.635133   1 1186 1.776254e-02      f2 0.004751377 0.004728908
-#> 4         t  2.373843   1 1186 1.776254e-02    <NA>          NA          NA
-#>        adj_r2    n sum_w
-#> 1 0.014653330 1200    NA
-#> 2          NA 1200    NA
-#> 3 0.003889725 1188    NA
-#> 4          NA 1188    NA
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {
