@@ -6,8 +6,8 @@
 #'
 #' A single predictor is supplied with `by`, and each selected numeric
 #' outcome is fit as `lm(outcome ~ by, ...)`. When `by` is categorical, the
-#' function returns a model-based mean-comparison table with estimated
-#' marginal means by level, plus an optional single difference for
+#' function returns a model-based mean-comparison table with fitted means by
+#' level derived from the linear model, plus an optional single difference for
 #' dichotomous predictors. When `by` is numeric, the table reports the slope
 #' and its confidence interval.
 #'
@@ -58,7 +58,7 @@
 #'   must match column names in `data`. When `NULL` (the default), labels are
 #'   auto-detected from variable attributes; if none are found, the column name
 #'   is used.
-#' @param ci_level Confidence level for coefficient and estimated-mean
+#' @param ci_level Confidence level for coefficient and model-based mean
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values, regression
 #'   coefficients, and test statistics (default: `2`).
@@ -110,6 +110,10 @@
 #' a single predictor supplied with `by`, and one simple model per selected
 #' continuous outcome. The model fit is always `lm(outcome ~ by, ...)`.
 #'
+#' For categorical predictors, the reported means are model-based fitted means
+#' for each level of `by`, and the reported contrasts are derived from the same
+#' fitted linear model.
+#'
 #' Compared with [table_continuous()], this function is the model-based
 #' companion for users who want to report bivariate mean comparisons in a
 #' linear-model framework. In practice, it is the better choice when you
@@ -123,7 +127,7 @@
 #' least-squares fit statistics.
 #'
 #' When `weights` is supplied, `table_continuous_lm()` fits weighted linear
-#' models using `lm(..., weights = ...)` and reports weighted estimated
+#' models using `lm(..., weights = ...)` and reports weighted model-based
 #' means or slopes accordingly. This is appropriate for case-weighted
 #' analyses and weighted article tables, but it is not a substitute for a
 #' full complex-survey design workflow.

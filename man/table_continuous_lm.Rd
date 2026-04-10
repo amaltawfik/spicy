@@ -96,7 +96,7 @@ must match column names in \code{data}. When \code{NULL} (the default), labels a
 auto-detected from variable attributes; if none are found, the column name
 is used.}
 
-\item{ci_level}{Confidence level for coefficient and estimated-mean
+\item{ci_level}{Confidence level for coefficient and model-based mean
 intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
 \item{digits}{Number of decimal places for descriptive values, regression
@@ -162,8 +162,8 @@ one or many continuous outcomes selected with tidyselect syntax.
 
 A single predictor is supplied with \code{by}, and each selected numeric
 outcome is fit as \code{lm(outcome ~ by, ...)}. When \code{by} is categorical, the
-function returns a model-based mean-comparison table with estimated
-marginal means by level, plus an optional single difference for
+function returns a model-based mean-comparison table with fitted means by
+level derived from the linear model, plus an optional single difference for
 dichotomous predictors. When \code{by} is numeric, the table reports the slope
 and its confidence interval.
 
@@ -176,6 +176,10 @@ Multiple output formats are available via \code{output}: a printed ASCII table
 \code{table_continuous_lm()} is designed for article-style bivariate reporting:
 a single predictor supplied with \code{by}, and one simple model per selected
 continuous outcome. The model fit is always \code{lm(outcome ~ by, ...)}.
+
+For categorical predictors, the reported means are model-based fitted means
+for each level of \code{by}, and the reported contrasts are derived from the same
+fitted linear model.
 
 Compared with \code{\link[=table_continuous]{table_continuous()}}, this function is the model-based
 companion for users who want to report bivariate mean comparisons in a
@@ -190,7 +194,7 @@ consistent estimator, while \code{R2} and adjusted \code{R2} remain the ordinary
 least-squares fit statistics.
 
 When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted linear
-models using \code{lm(..., weights = ...)} and reports weighted estimated
+models using \code{lm(..., weights = ...)} and reports weighted model-based
 means or slopes accordingly. This is appropriate for case-weighted
 analyses and weighted article tables, but it is not a substitute for a
 full complex-survey design workflow.
