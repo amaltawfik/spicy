@@ -284,13 +284,13 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 
 # With weighting
 df <- data.frame(
-  sexe = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
-  poids = c(12, 8, 10, 15, 7, 9)
+  sex = factor(c("Male", "Female", "Female", "Male", NA, "Female")),
+  weight = c(12, 8, 10, 15, 7, 9)
 )
 
 # Weighted frequencies (normalized)
-freq(df, sexe, weights = poids, rescale = TRUE)
-#> Frequency table: sexe
+freq(df, sex, weights = weight, rescale = TRUE)
+#> Frequency table: sex
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
@@ -302,11 +302,11 @@ freq(df, sexe, weights = poids, rescale = TRUE)
 #> 
 #> Class: factor
 #> Data: df
-#> Weight: poids (rescaled)
+#> Weight: weight (rescaled)
 
 # Weighted frequencies (without rescaling)
-freq(df, sexe, weights = poids, rescale = FALSE)
-#> Frequency table: sexe
+freq(df, sex, weights = weight, rescale = FALSE)
+#> Frequency table: sex
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
@@ -318,11 +318,11 @@ freq(df, sexe, weights = poids, rescale = FALSE)
 #> 
 #> Class: factor
 #> Data: df
-#> Weight: poids
+#> Weight: weight
 
 # Base R style, with weights and cumulative percentages
-freq(df$sexe, weights = df$poids, cum = TRUE)
-#> Frequency table: sexe
+freq(df$sex, weights = df$weight, cum = TRUE)
+#> Frequency table: sex
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent 
 #> ──────────┼─────────────────────────────────────────────────────
@@ -342,11 +342,11 @@ freq(df$sexe, weights = df$poids, cum = TRUE)
 #> 
 #> Class: factor
 #> Data: df
-#> Weight: poids (rescaled)
+#> Weight: weight (rescaled)
 
 # Piped version (tidy syntax) and sort alphabetically descending ("name-")
-df |> freq(sexe, sort = "name-")
-#> Frequency table: sexe
+df |> freq(sex, sort = "name-")
+#> Frequency table: sex
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
@@ -360,7 +360,7 @@ df |> freq(sexe, sort = "name-")
 #> Data: df
 
 # Non-styled return (for programmatic use)
-f <- freq(df, sexe, styled = FALSE)
+f <- freq(df, sex, styled = FALSE)
 head(f)
 #>    value n      prop valid_prop
 #> 1 Female 3 0.5000000        0.6
