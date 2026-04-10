@@ -45,6 +45,10 @@ With spicy, you can:
   for gt, tinytable, flextable, Excel, Word, or clipboard export.
 - **Build continuous summary tables in R** with `table_continuous()` for
   console, gt, tinytable, flextable, Excel, Word, or clipboard output.
+- **Build model-based continuous summary tables in R** with
+  `table_continuous_lm()` for linear regression reporting, robust
+  standard errors, weighted mean comparisons, and console, gt,
+  tinytable, flextable, Excel, Word, or clipboard output.
 - **Generate codebooks** with `code_book()` for labelled and
   survey-style datasets.
 - **Extract variable labels** with `label_from_names()`, including

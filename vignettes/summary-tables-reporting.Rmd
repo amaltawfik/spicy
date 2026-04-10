@@ -98,8 +98,7 @@ table_continuous_lm(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
-  weights = weight,
-  output = "data.frame"
+  weights = weight
 )
 ```
 

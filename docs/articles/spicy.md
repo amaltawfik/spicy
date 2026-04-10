@@ -342,18 +342,19 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  vcov = "HC3",
-  output = "data.frame"
+  vcov = "HC3"
 )
-#>                                      Variable M (Female) M (Male)
-#> wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879
-#> bmi                           Body mass index   25.68506 26.19685
-#>                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²
-#> wellbeing_score         3.8868576 2.12265210 5.6510631 1.670572e-05 0.015475137
-#> bmi                     0.5117882 0.08904596 0.9345305 1.769614e-02 0.004728908
-#>                    n
-#> wellbeing_score 1200
-#> bmi             1188
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
+#>  Body mass index               │   25.69      26.20          0.51        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL      p   R²      n 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.12       5.65     <.001  0.02  1200 
+#>  Body mass index               │   0.09       0.93      .018  0.00  1188
 ```
 
 For detailed guidance, see the dedicated articles on

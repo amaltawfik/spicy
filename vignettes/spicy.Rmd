@@ -152,8 +152,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  vcov = "HC3",
-  output = "data.frame"
+  vcov = "HC3"
 )
 ```
 

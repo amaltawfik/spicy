@@ -87,8 +87,7 @@ table_continuous_lm(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
-  vcov = "HC3",
-  output = "data.frame"
+  vcov = "HC3"
 )
 ```
 

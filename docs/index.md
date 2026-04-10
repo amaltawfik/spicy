@@ -39,6 +39,11 @@ With spicy, you can:
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for console, gt, tinytable, flextable, Excel, Word, or clipboard
   output.
+- **Build model-based continuous summary tables in R** with
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  for linear regression reporting, robust standard errors, weighted mean
+  comparisons, and console, gt, tinytable, flextable, Excel, Word, or
+  clipboard output.
 - **Generate codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   for labelled and survey-style datasets.

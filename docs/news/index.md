@@ -1,6 +1,6 @@
 # Changelog
 
-## spicy 0.7.1
+## spicy 0.8.0
 
 ### Minor improvements
 
@@ -19,6 +19,11 @@
   `output = "long"` for the analytic long table, and configurable
   display of tests, confidence intervals, fit statistics, and effect
   sizes.
+
+- Website and vignette coverage now includes
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  using the bundled `sochealth` data throughout and adding a dedicated
+  article for model-based continuous summary tables.
 
 ## spicy 0.7.0
 

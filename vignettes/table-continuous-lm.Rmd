@@ -74,8 +74,7 @@ table_continuous_lm(
   select = c(wellbeing_score, bmi),
   by = sex,
   vcov = "HC3",
-  statistic = TRUE,
-  output = "data.frame"
+  statistic = TRUE
 )
 ```
 
@@ -89,8 +88,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = education,
-  weights = weight,
-  output = "data.frame"
+  weights = weight
 )
 ```
 
@@ -111,6 +109,10 @@ table_continuous_lm(
   output = "long"
 )
 ```
+
+When you need the underlying returned data for further processing, use
+`output = "data.frame"` for the wide raw table or `output = "long"` for
+the analytic long table.
 
 ## Publication-ready output
 
