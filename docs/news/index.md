@@ -8,14 +8,14 @@
   adds APA-style bivariate linear-model tables for continuous outcomes.
   It acts as the model-based companion to
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  for reporting estimated mean comparisons or slopes in an `lm`
-  framework, with one predictor per model, estimated marginal means for
-  categorical predictors, optional case weights, classical or HC0-HC5
-  variance estimators, multiple output formats (ASCII, tinytable, gt,
-  flextable, Excel, clipboard, and Word), `output = "data.frame"` for
-  the wide raw table, `output = "long"` for the analytic long table, and
-  configurable display of tests, confidence intervals, fit statistics,
-  and effect sizes.
+  for reporting fitted mean comparisons or slopes in an `lm` framework,
+  with one predictor per model, model-based means for categorical
+  predictors, optional case weights, classical or HC0-HC5 variance
+  estimators, multiple output formats (ASCII, tinytable, gt, flextable,
+  Excel, clipboard, and Word), `output = "data.frame"` for the wide raw
+  table, `output = "long"` for the analytic long table, and configurable
+  display of tests, confidence intervals, fit statistics, and effect
+  sizes.
 
 ### Minor improvements
 
@@ -27,6 +27,20 @@
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   using the bundled `sochealth` data throughout and adding a dedicated
   article for model-based continuous summary tables.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now support dedicated display precision for effect-size columns, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  also supports separate precision for `R²` columns, so model fit and
+  effect sizes can be formatted independently from descriptive values
+  and test statistics.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now keeps `n` as the unweighted analytic sample size in wide and
+  rendered outputs, and can optionally add a separate `Weighted n`
+  column reporting the sum of case weights.
 
 ## spicy 0.7.0
 

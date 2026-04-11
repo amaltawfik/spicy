@@ -1,0 +1,19 @@
+body,
+.navbar,
+.dropdown-menu,
+table,
+.table,
+.gt_table,
+.tinytable,
+.ft_table {
+  font-feature-settings: "zero" 1;
+}
+
+code,
+pre,
+kbd,
+samp,
+.sourceCode,
+.inline-codex {
+  font-feature-settings: "zero" 1, "tnum" 1;
+}
