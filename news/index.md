@@ -2,6 +2,8 @@
 
 ## spicy 0.8.0
 
+CRAN release: 2026-04-10
+
 ### New features
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
