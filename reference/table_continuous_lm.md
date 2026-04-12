@@ -237,6 +237,11 @@ Depends on `output`:
 
 - `"clipboard"`: copies the wide table and returns it invisibly.
 
+If no numeric outcome columns remain after applying `select`, `exclude`,
+and `regex`, the function emits a warning and returns an empty
+[`data.frame()`](https://rdrr.io/r/base/data.frame.html) regardless of
+`output`.
+
 ## Details
 
 `table_continuous_lm()` is designed for article-style bivariate
