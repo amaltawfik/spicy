@@ -251,7 +251,15 @@ per selected continuous outcome. The model fit is always
 
 For categorical predictors, the reported means are model-based fitted
 means for each level of `by`, and the reported contrasts are derived
-from the same fitted linear model.
+from the same fitted linear model. For an unweighted `lm(y ~ factor)`
+with classical variance, these fitted means coincide numerically with
+the empirical subgroup means; the "model-based" qualifier matters
+because (a) under `weights`, the means become weighted least-squares
+estimates, (b) their confidence intervals are derived from the model
+`vcov` (classical or `HC*`) rather than from a separate empirical
+standard error, and (c) the reported tests, `p`-values, and effect sizes
+all come from the same fitted model, so means, contrasts, and inference
+stay internally consistent.
 
 Compared with
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
