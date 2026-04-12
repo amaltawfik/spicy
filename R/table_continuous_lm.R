@@ -105,6 +105,10 @@
 #'   \item `"clipboard"`: copies the wide table and returns it invisibly.
 #' }
 #'
+#' If no numeric outcome columns remain after applying `select`, `exclude`,
+#' and `regex`, the function emits a warning and returns an empty
+#' `data.frame()` regardless of `output`.
+#'
 #' @details
 #' `table_continuous_lm()` is designed for article-style bivariate reporting:
 #' a single predictor supplied with `by`, and one simple model per selected
@@ -837,7 +841,16 @@ compute_lm_vcov <- function(fit, type = "classical") {
   xw <- x * sqrt(w)
   xtwx_inv <- tryCatch(
     solve(crossprod(xw)),
-    error = function(e2) stats::vcov(fit)
+    error = function(e2) {
+      warning(
+        "Robust `vcov = \"",
+        type,
+        "\"` could not be computed (model matrix is singular); ",
+        "falling back to the classical OLS variance, which may contain NA.",
+        call. = FALSE
+      )
+      stats::vcov(fit)
+    }
   )
   hat <- rowSums((xw %*% xtwx_inv) * xw)
   n <- nrow(x)
@@ -989,170 +1002,6 @@ build_wide_raw_continuous_lm <- function(
   }
 
   out
-}
-
-build_display_df_continuous_lm <- function(
-  x,
-  digits = 2L,
-  decimal_mark = ".",
-  ci_level = 0.95,
-  show_statistic = TRUE,
-  show_p_value = TRUE,
-  show_n = TRUE,
-  show_weighted_n = FALSE,
-  effect_size = "none",
-  r2_type = "r2",
-  ci = TRUE,
-  fit_digits = 2L,
-  effect_size_digits = 2L
-) {
-  vars <- unique(x$variable)
-  out <- vector("list", length(vars))
-  ci_ll_name <- paste0(round(ci_level * 100), "% CI LL")
-  ci_ul_name <- paste0(round(ci_level * 100), "% CI UL")
-  include_es <- !identical(effect_size, "none")
-  test_header_global <- get_test_header_lm(x, show_statistic, exact = FALSE)
-  include_r2 <- !identical(r2_type, "none")
-  r2_header <- format_r2_header_lm(r2_type)
-
-  for (i in seq_along(vars)) {
-    block <- x[x$variable == vars[i], , drop = FALSE]
-    predictor_type <- unique(block$predictor_type)[1]
-    is_binary_cat <- identical(predictor_type, "categorical") &&
-      nrow(block) == 2L
-    test_header <- test_header_global
-
-    rows <- data.frame(
-      Variable = rep("", nrow(block)),
-      Level = rep("", nrow(block)),
-      M = rep("", nrow(block)),
-      check.names = FALSE,
-      stringsAsFactors = FALSE
-    )
-
-    if (identical(predictor_type, "continuous")) {
-      rows$B <- rep("", nrow(block))
-      if (isTRUE(ci)) {
-        rows[[ci_ll_name]] <- rep("", nrow(block))
-        rows[[ci_ul_name]] <- rep("", nrow(block))
-      }
-    } else if (is_binary_cat) {
-      delta_name <- get_delta_label_lm(block)
-      rows[[delta_name]] <- rep("", nrow(block))
-      if (isTRUE(ci)) {
-        rows[[ci_ll_name]] <- rep("", nrow(block))
-        rows[[ci_ul_name]] <- rep("", nrow(block))
-      }
-    }
-
-    if (!is.null(test_header)) {
-      rows[[test_header]] <- rep("", nrow(block))
-    }
-    if (show_p_value) {
-      rows$p <- rep("", nrow(block))
-    }
-    if (include_r2) {
-      rows[[r2_header]] <- rep("", nrow(block))
-    }
-    if (include_es) {
-      rows[[format_effect_size_header_lm(effect_size)]] <- rep("", nrow(block))
-    }
-    if (show_n) {
-      rows$n <- rep("", nrow(block))
-    }
-    if (show_weighted_n) {
-      rows[["Weighted n"]] <- rep("", nrow(block))
-    }
-
-    rows$Variable[1] <- block$label[1]
-    test_row <- get_test_row_index_lm(block)
-    if (!is.null(test_header)) {
-      rows[[test_header]][1] <- format_number_lm(
-        block$statistic[test_row],
-        digits,
-        decimal_mark
-      )
-    }
-    if (show_p_value) {
-      rows$p[1] <- format_p_value_lm(block$p.value[test_row], decimal_mark)
-    }
-    if (include_es) {
-      rows[[format_effect_size_header_lm(effect_size)]][1] <- format_number_lm(
-        block$es_value[1],
-        effect_size_digits,
-        decimal_mark
-      )
-    }
-    if (include_r2) {
-      rows[[r2_header]][1] <- format_number_lm(
-        get_r2_value_lm(block, r2_type),
-        fit_digits,
-        decimal_mark
-      )
-    }
-    if (show_n) {
-      rows$n[1] <- if (is.na(block$n[1])) {
-        ""
-      } else {
-        as.character(as.integer(block$n[1]))
-      }
-    }
-    if (show_weighted_n) {
-      rows[["Weighted n"]][1] <- if (is.na(block$sum_w[1])) {
-        ""
-      } else {
-        format_number_lm(block$sum_w[1], digits, decimal_mark)
-      }
-    }
-
-    if (identical(predictor_type, "categorical")) {
-      rows$Level <- ifelse(
-        block$level == block$reference,
-        paste0(block$level, " (ref)"),
-        block$level
-      )
-      rows$M <- format_number_lm(block$emmean, digits, decimal_mark)
-      if (is_binary_cat) {
-        delta_name <- get_delta_label_lm(block)
-        rows[[delta_name]][test_row] <- format_number_lm(
-          block$estimate[test_row],
-          digits,
-          decimal_mark
-        )
-        if (isTRUE(ci)) {
-          rows[[ci_ll_name]][test_row] <- format_number_lm(
-            block$estimate_ci_lower[test_row],
-            digits,
-            decimal_mark
-          )
-          rows[[ci_ul_name]][test_row] <- format_number_lm(
-            block$estimate_ci_upper[test_row],
-            digits,
-            decimal_mark
-          )
-        }
-      }
-    } else {
-      rows$M <- ""
-      rows$B[1] <- format_number_lm(block$estimate[1], digits, decimal_mark)
-      if (isTRUE(ci)) {
-        rows[[ci_ll_name]][1] <- format_number_lm(
-          block$estimate_ci_lower[1],
-          digits,
-          decimal_mark
-        )
-        rows[[ci_ul_name]][1] <- format_number_lm(
-          block$estimate_ci_upper[1],
-          digits,
-          decimal_mark
-        )
-      }
-    }
-
-    out[[i]] <- rows
-  }
-
-  do.call(rbind, out)
 }
 
 build_wide_display_df_continuous_lm <- function(
@@ -1925,31 +1774,3 @@ format_p_value_lm <- function(p, decimal_mark = ".") {
   out
 }
 
-format_test_value_lm <- function(
-  type,
-  statistic,
-  df1,
-  df2,
-  digits,
-  decimal_mark
-) {
-  if (is.na(statistic) || is.na(type)) {
-    return("")
-  }
-
-  stat_txt <- format_number_lm(statistic, digits, decimal_mark)
-  if (identical(type, "t")) {
-    return(paste0("t = ", stat_txt))
-  }
-  if (identical(type, "F")) {
-    return(paste0("F = ", stat_txt))
-  }
-  stat_txt
-}
-
-format_effect_size_lm <- function(type, value, digits, decimal_mark) {
-  if (is.na(type) || is.na(value)) {
-    return("")
-  }
-  paste0(type, " = ", format_number_lm(value, digits, decimal_mark))
-}

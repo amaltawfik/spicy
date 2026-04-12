@@ -72,55 +72,6 @@ invisible(build_wide_raw_continuous_lm(
   ci = TRUE
 ))
 
-display_cat <- build_display_df_continuous_lm(
-  long_cat,
-  digits = 2L,
-  decimal_mark = ".",
-  ci_level = 0.95,
-  show_statistic = TRUE,
-  show_p_value = TRUE,
-  show_n = TRUE,
-  effect_size = "f2",
-  r2_type = "r2",
-  ci = TRUE
-)
-invisible(build_display_df_continuous_lm(
-  long_cat_no_ci,
-  digits = 2L,
-  decimal_mark = ",",
-  ci_level = 0.95,
-  show_statistic = FALSE,
-  show_p_value = FALSE,
-  show_n = FALSE,
-  effect_size = "none",
-  r2_type = "none",
-  ci = FALSE
-))
-invisible(build_display_df_continuous_lm(
-  long_num,
-  digits = 2L,
-  decimal_mark = ".",
-  ci_level = 0.95,
-  show_statistic = TRUE,
-  show_p_value = TRUE,
-  show_n = TRUE,
-  effect_size = "f2",
-  r2_type = "adj_r2",
-  ci = TRUE
-))
-invisible(build_display_df_continuous_lm(
-  make_empty_lm_rows("y", "Y", "continuous"),
-  digits = 2L,
-  decimal_mark = ".",
-  ci_level = 0.95,
-  show_statistic = TRUE,
-  show_p_value = TRUE,
-  show_n = TRUE,
-  effect_size = "none",
-  r2_type = "none",
-  ci = TRUE
-))
-
 wide_cat <- build_wide_display_df_continuous_lm(
   long_cat,
   digits = 2L,
@@ -286,12 +237,6 @@ format_number_lm(c(1.23, NA_real_), 2L, ",")
 format_p_value_lm(NA_real_, ".")
 format_p_value_lm(0.0005, ".")
 format_p_value_lm(0.045, ",")
-format_test_value_lm(NA_character_, NA_real_, 1, 10, 2L, ".")
-format_test_value_lm("t", 2.34, 1, 10, 2L, ".")
-format_test_value_lm("F", 3.21, 2, 10, 2L, ".")
-format_test_value_lm("z", 1.11, 1, 10, 2L, ".")
-format_effect_size_lm(NA_character_, NA_real_, 2L, ".")
-format_effect_size_lm("f²", 0.23, 2L, ".")
 
 make_empty_lm_rows("y", "Y", "continuous")
 fit_numeric_predictor_lm_rows(

@@ -155,6 +155,10 @@ sample size.
 \item \code{"excel"} / \code{"word"}: writes to disk and returns the file path.
 \item \code{"clipboard"}: copies the wide table and returns it invisibly.
 }
+
+If no numeric outcome columns remain after applying \code{select}, \code{exclude},
+and \code{regex}, the function emits a warning and returns an empty
+\code{data.frame()} regardless of \code{output}.
 }
 \description{
 Builds APA-style summary tables from a series of simple linear models for

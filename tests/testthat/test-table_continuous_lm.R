@@ -282,22 +282,6 @@ test_that("table_continuous_lm HC4, HC4m, and HC5 use leverage-adjusted SE", {
 
 # ---- display ----
 
-test_that("table_continuous_lm display builder formats level blocks", {
-  out <- table_continuous_lm(
-    sochealth,
-    select = wellbeing_score,
-    by = education,
-    decimal_mark = ","
-  )
-
-  display <- spicy:::build_display_df_continuous_lm(out, 2L, ",", 0.95)
-  expect_equal(display$Variable[1], "WHO-5 wellbeing index (0-100)")
-  expect_equal(display$Variable[2], "")
-  expect_match(display$Level[1], "\\(ref\\)")
-  expect_false("95% CI LL" %in% names(display))
-  expect_false("f²" %in% names(display))
-})
-
 test_that("table_continuous_lm uses dedicated digits for fit and effect size", {
   out <- table_continuous_lm(
     iris,
@@ -681,18 +665,6 @@ test_that("table_continuous_lm internal builders cover numeric displays", {
     r2_type = "adj_r2",
     ci = TRUE
   )
-  display <- spicy:::build_display_df_continuous_lm(
-    out,
-    digits = 2L,
-    decimal_mark = ".",
-    ci_level = 0.95,
-    show_statistic = TRUE,
-    show_p_value = TRUE,
-    show_n = TRUE,
-    effect_size = "f2",
-    r2_type = "adj_r2",
-    ci = TRUE
-  )
   wide_display <- spicy:::build_wide_display_df_continuous_lm(
     out,
     digits = 2L,
@@ -712,20 +684,6 @@ test_that("table_continuous_lm internal builders cover numeric displays", {
   ))
   expect_lt(match("Adj. R²", names(wide_raw)), match("f²", names(wide_raw)))
   expect_true(any(grepl("^t", names(wide_raw))))
-  expect_true(all(
-    c(
-      "Variable",
-      "B",
-      "95% CI LL",
-      "95% CI UL",
-      "t",
-      "p",
-      "Adj. R²",
-      "f²",
-      "n"
-    ) %in%
-      names(display)
-  ))
   expect_true(all(
     c("Variable", "B", "95% CI LL", "95% CI UL", "p", "Adj. R²", "f²", "n") %in%
       names(wide_display)
@@ -761,18 +719,6 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
     r2_type = "none",
     ci = FALSE
   )
-  display <- spicy:::build_display_df_continuous_lm(
-    out,
-    digits = 2L,
-    decimal_mark = ",",
-    ci_level = 0.95,
-    show_statistic = FALSE,
-    show_p_value = FALSE,
-    show_n = FALSE,
-    effect_size = "none",
-    r2_type = "none",
-    ci = FALSE
-  )
   wide_display <- spicy:::build_wide_display_df_continuous_lm(
     out,
     digits = 2L,
@@ -791,12 +737,6 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
   ))
   expect_false(any(
     c("p", "n", "f²", "R²", "Adj. R²", "95% CI LL") %in% names(wide_raw)
-  ))
-  expect_true(all(
-    c("Variable", "Level", "M", "Δ (Male - Female)") %in% names(display)
-  ))
-  expect_false(any(
-    c("p", "n", "f²", "R²", "Adj. R²", "95% CI LL") %in% names(display)
   ))
   expect_true(all(
     c("Variable", "M (Female)", "M (Male)", "Δ (Male - Female)") %in%
@@ -839,19 +779,6 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   expect_equal(spicy:::format_number_lm(c(1.2, NA), 1L, ","), c("1,2", ""))
   expect_equal(spicy:::format_p_value_lm(NA_real_), "")
   expect_equal(spicy:::format_p_value_lm(0.045, ","), ",045")
-  expect_equal(
-    spicy:::format_test_value_lm("t", 2.34, 1, 10, 2L, "."),
-    "t = 2.34"
-  )
-  expect_equal(
-    spicy:::format_test_value_lm("F", 2.34, 1, 10, 2L, "."),
-    "F = 2.34"
-  )
-  expect_equal(spicy:::format_effect_size_lm("f²", 0.23, 2L, "."), "f² = 0.23")
-  expect_equal(
-    spicy:::format_effect_size_lm(NA_character_, NA_real_, 2L, "."),
-    ""
-  )
 })
 
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
@@ -863,7 +790,10 @@ test_that("table_continuous_lm internal covariance helper covers fallback branch
     "Unknown `vcov` type"
   )
 
-  vc <- spicy:::compute_lm_vcov(fit_singular, "HC3")
+  expect_warning(
+    vc <- spicy:::compute_lm_vcov(fit_singular, "HC3"),
+    "singular"
+  )
   expect_true(is.matrix(vc))
   expect_equal(dim(vc), c(3L, 3L))
   expect_true(all(is.na(vc)))
