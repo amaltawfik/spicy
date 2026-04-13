@@ -39,7 +39,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -179,7 +179,8 @@ scans the data frame and keeps numeric columns:</p>
 <h2 id="grouped-summaries">Grouped summaries<a class="anchor" aria-label="anchor" href="#grouped-summaries"></a>
 </h2>
 <p>Add <code>by</code> to summarize the same variables across
-categories:</p>
+categories. When <code>by</code> is supplied, a Welch-test
+<em>p</em>-value column is added automatically:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -214,9 +215,25 @@ categories:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary    2.57       2.86     259 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary    3.43       3.63     534 </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399</span></span></code></pre></div>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary           4.01       4.21     399 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group                 p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary         </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
 <p>This is the main pattern for reporting continuous variables across
-groups such as education, sex, treatment arm, or survey wave.</p>
+groups such as education, sex, treatment arm, or survey wave. Pass
+<code>p_value = FALSE</code> to suppress the test column and keep the
+output strictly descriptive.</p>
 <p>If you want the same outcomes reported in a linear-model workflow,
 with heteroskedasticity-consistent standard errors or case weights, use
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> instead:</p>
@@ -242,16 +259,15 @@ with heteroskedasticity-consistent standard errors or case weights, use
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     3.35      &lt;.001  0.16  1192</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="add-group-comparison-results">Add group-comparison results<a class="anchor" aria-label="anchor" href="#add-group-comparison-results"></a>
+<h2 id="add-test-statistics-and-effect-sizes">Add test statistics and effect sizes<a class="anchor" aria-label="anchor" href="#add-test-statistics-and-effect-sizes"></a>
 </h2>
-<p>Grouped tables can include inferential results directly in the same
-table. The default test is Welch’s test:</p>
+<p>Grouped tables can also report the test statistic and an effect size
+alongside the default <em>p</em>-value column:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
@@ -335,7 +351,6 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  test <span class="op">=</span> <span class="st">"nonparametric"</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
@@ -387,7 +402,6 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
@@ -452,7 +466,21 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.65       3.83     577 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female    3.28       3.46     615 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.33       3.52     577</span></span></code></pre></div>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.33       3.52     577 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group      p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> Female  .267 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> Female  .073 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> Female  .570 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  .453 </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male</span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
@@ -475,19 +503,32 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt; 10      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
 <span><span class="co">#&gt; 11      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
 <span><span class="co">#&gt; 12      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
-<span><span class="co">#&gt;              group     mean        sd min max ci_lower ci_upper   n</span></span>
-<span><span class="co">#&gt; 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259</span></span>
-<span><span class="co">#&gt; 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534</span></span>
-<span><span class="co">#&gt; 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399</span></span>
-<span><span class="co">#&gt; 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261</span></span>
-<span><span class="co">#&gt; 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535</span></span>
-<span><span class="co">#&gt; 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396</span></span>
-<span><span class="co">#&gt; 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260</span></span>
-<span><span class="co">#&gt; 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534</span></span>
-<span><span class="co">#&gt; 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398</span></span>
-<span><span class="co">#&gt; 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261</span></span>
-<span><span class="co">#&gt; 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532</span></span>
-<span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399</span></span></code></pre></div>
+<span><span class="co">#&gt;              group     mean        sd min max ci_lower ci_upper   n   test_type</span></span>
+<span><span class="co">#&gt; 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259 welch_anova</span></span>
+<span><span class="co">#&gt; 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261 welch_anova</span></span>
+<span><span class="co">#&gt; 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260 welch_anova</span></span>
+<span><span class="co">#&gt; 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261 welch_anova</span></span>
+<span><span class="co">#&gt; 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;    statistic df1      df2      p.value</span></span>
+<span><span class="co">#&gt; 1  118.73585   2 652.0775 1.063917e-44</span></span>
+<span><span class="co">#&gt; 2         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 3         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 4  105.98821   2 651.9434 1.398117e-40</span></span>
+<span><span class="co">#&gt; 5         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 6         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 7   82.35074   2 617.9668 1.969764e-32</span></span>
+<span><span class="co">#&gt; 8         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 9         NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 10 101.31672   2 648.7723 5.105889e-39</span></span>
+<span><span class="co">#&gt; 11        NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 12        NA  NA       NA           NA</span></span></code></pre></div>
 <p>Use <code>exclude</code> when you want a broad selection with one or
 two explicit removals:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -510,15 +551,15 @@ two explicit removals:</p>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female  3.51   1.25   1.00    5.00  </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male    3.59   1.25   1.00    5.00  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group   95% CI LL  95% CI UL    n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼───────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Female    25.39      25.98    616 </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      25.90      26.50    572 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female    65.99      68.33    620 </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      69.73      72.37    580 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female    3.41       3.61     616 </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group   95% CI LL  95% CI UL    n       p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼───────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Female    25.39      25.98    616    .018 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      25.90      26.50    572         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female    65.99      68.33    620  &lt; .001 </span></span>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      69.73      72.37    580         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female    3.41       3.61     616    .267 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      3.49       3.69     576</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -1053,6 +1094,9 @@ reporting labels:</p>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
         <div class="gt_column_spanner">n</div>
       </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
+        <div class="gt_column_spanner">p</div>
+      </th>
     </tr>
 <tr class="gt_col_headings">
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
@@ -1064,6 +1108,7 @@ reporting labels:</p>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="LL">LL</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="UL">UL</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="n"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
     </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -1077,6 +1122,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">27.66</td>
 <td headers="UL" class="gt_row gt_center">28.51</td>
 <td headers="n" class="gt_row gt_right">260</td>
+<td headers="p" class="gt_row gt_right">&lt; .001</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left"></td>
@@ -1088,6 +1134,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">25.73</td>
 <td headers="UL" class="gt_row gt_center">26.31</td>
 <td headers="n" class="gt_row gt_right">534</td>
+<td headers="p" class="gt_row gt_right"></td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
@@ -1099,6 +1146,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">24.04</td>
 <td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">24.74</td>
 <td headers="n" class="gt_row gt_right" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">394</td>
+<td headers="p" class="gt_row gt_right" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Well-being score</td>
@@ -1110,6 +1158,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">55.33</td>
 <td headers="UL" class="gt_row gt_center">59.10</td>
 <td headers="n" class="gt_row gt_right">261</td>
+<td headers="p" class="gt_row gt_right">&lt; .001</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left"></td>
@@ -1121,6 +1170,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">67.82</td>
 <td headers="UL" class="gt_row gt_center">70.12</td>
 <td headers="n" class="gt_row gt_right">539</td>
+<td headers="p" class="gt_row gt_right"></td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
@@ -1132,6 +1182,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">75.55</td>
 <td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">78.15</td>
 <td headers="n" class="gt_row gt_right" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">400</td>
+<td headers="p" class="gt_row gt_right" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Satisfaction with health</td>
@@ -1143,6 +1194,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">2.57</td>
 <td headers="UL" class="gt_row gt_center">2.86</td>
 <td headers="n" class="gt_row gt_right">259</td>
+<td headers="p" class="gt_row gt_right">&lt; .001</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left"></td>
@@ -1154,6 +1206,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center">3.43</td>
 <td headers="UL" class="gt_row gt_center">3.63</td>
 <td headers="n" class="gt_row gt_right">534</td>
+<td headers="p" class="gt_row gt_right"></td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
@@ -1165,6 +1218,7 @@ reporting labels:</p>
 <td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">4.01</td>
 <td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">4.21</td>
 <td headers="n" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">399</td>
+<td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
 </tr>
 </tbody>
 </table>
@@ -1226,14 +1280,14 @@ Markdown documents:</p>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '3', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_k4spqrckw0kpdn18ho7h',}, 
-          { positions: [ { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 } ], css_id: 'tinytable_css_noytnc26b3cez9puuzlq',}, 
-          { positions: [ { i: '0', j: 9 }, { i: '9', j: 9 } ], css_id: 'tinytable_css_zge744z1r0qutx98glsf',}, 
+          { positions: [ { i: '3', j: 9 }, { i: '6', j: 9 }, { i: '3', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_k4spqrckw0kpdn18ho7h',}, 
+          { positions: [ { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 } ], css_id: 'tinytable_css_noytnc26b3cez9puuzlq',}, 
+          { positions: [ { i: '0', j: 9 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 } ], css_id: 'tinytable_css_zge744z1r0qutx98glsf',}, 
           { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_xtjhqtdg04efn40iquf2',}, 
           { positions: [ { i: '3', j: 3 }, { i: '6', j: 3 }, { i: '3', j: 4 }, { i: '6', j: 4 }, { i: '3', j: 5 }, { i: '6', j: 5 }, { i: '3', j: 6 }, { i: '6', j: 6 }, { i: '3', j: 7 }, { i: '6', j: 7 }, { i: '3', j: 8 }, { i: '6', j: 8 } ], css_id: 'tinytable_css_sxnnmk1eydbl1q3mbqjf',}, 
           { positions: [ { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 } ], css_id: 'tinytable_css_ovgjlrgklg0kgossz0qg',}, 
           { positions: [ { i: '0', j: 3 }, { i: '9', j: 3 }, { i: '0', j: 4 }, { i: '9', j: 4 }, { i: '0', j: 5 }, { i: '9', j: 5 }, { i: '0', j: 6 }, { i: '9', j: 6 }, { i: '0', j: 7 }, { i: '9', j: 7 }, { i: '0', j: 8 }, { i: '9', j: 8 } ], css_id: 'tinytable_css_vaoo6igsiooklo1ny07i',}, 
-          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_87m28vrgvywtztrjykre',}, 
+          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_87m28vrgvywtztrjykre',}, 
           { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 2 } ], css_id: 'tinytable_css_b7cvv4ri3uhjwm3ifwdh',}, 
           { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 }, { i: '7', j: 1 }, { i: '8', j: 1 }, { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 } ], css_id: 'tinytable_css_akd9vsiay8etx0xxiuj5',}, 
           { positions: [ { i: '0', j: 1 }, { i: '9', j: 1 }, { i: '0', j: 2 }, { i: '9', j: 2 } ], css_id: 'tinytable_css_dwuu145qjb9qksiwp605',}, 
@@ -1275,6 +1329,7 @@ Markdown documents:</p>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="6">Max</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="7">95% CI</th>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="9">n</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
@@ -1286,6 +1341,7 @@ Markdown documents:</p>
                 <th scope="col" data-row="0" data-col="7">LL</th>
                 <th scope="col" data-row="0" data-col="8">UL</th>
                 <th scope="col" data-row="0" data-col="9"></th>
+                <th scope="col" data-row="0" data-col="10"></th>
               </tr>
 </thead>
 <tbody>
@@ -1299,6 +1355,7 @@ Markdown documents:</p>
                   <td data-row="1" data-col="7">27.66</td>
                   <td data-row="1" data-col="8">28.51</td>
                   <td data-row="1" data-col="9">260</td>
+                  <td data-row="1" data-col="10">&lt; .001</td>
                 </tr>
 <tr>
 <td data-row="2" data-col="1"></td>
@@ -1310,6 +1367,7 @@ Markdown documents:</p>
                   <td data-row="2" data-col="7">25.73</td>
                   <td data-row="2" data-col="8">26.31</td>
                   <td data-row="2" data-col="9">534</td>
+                  <td data-row="2" data-col="10"></td>
                 </tr>
 <tr>
 <td data-row="3" data-col="1"></td>
@@ -1321,6 +1379,7 @@ Markdown documents:</p>
                   <td data-row="3" data-col="7">24.04</td>
                   <td data-row="3" data-col="8">24.74</td>
                   <td data-row="3" data-col="9">394</td>
+                  <td data-row="3" data-col="10"></td>
                 </tr>
 <tr>
 <td data-row="4" data-col="1">WHO-5 wellbeing index (0-100)</td>
@@ -1332,6 +1391,7 @@ Markdown documents:</p>
                   <td data-row="4" data-col="7">55.33</td>
                   <td data-row="4" data-col="8">59.10</td>
                   <td data-row="4" data-col="9">261</td>
+                  <td data-row="4" data-col="10">&lt; .001</td>
                 </tr>
 <tr>
 <td data-row="5" data-col="1"></td>
@@ -1343,6 +1403,7 @@ Markdown documents:</p>
                   <td data-row="5" data-col="7">67.82</td>
                   <td data-row="5" data-col="8">70.12</td>
                   <td data-row="5" data-col="9">539</td>
+                  <td data-row="5" data-col="10"></td>
                 </tr>
 <tr>
 <td data-row="6" data-col="1"></td>
@@ -1354,6 +1415,7 @@ Markdown documents:</p>
                   <td data-row="6" data-col="7">75.55</td>
                   <td data-row="6" data-col="8">78.15</td>
                   <td data-row="6" data-col="9">400</td>
+                  <td data-row="6" data-col="10"></td>
                 </tr>
 <tr>
 <td data-row="7" data-col="1">Satisfaction with health (1-5)</td>
@@ -1365,6 +1427,7 @@ Markdown documents:</p>
                   <td data-row="7" data-col="7">2.57</td>
                   <td data-row="7" data-col="8">2.86</td>
                   <td data-row="7" data-col="9">259</td>
+                  <td data-row="7" data-col="10">&lt; .001</td>
                 </tr>
 <tr>
 <td data-row="8" data-col="1"></td>
@@ -1376,6 +1439,7 @@ Markdown documents:</p>
                   <td data-row="8" data-col="7">3.43</td>
                   <td data-row="8" data-col="8">3.63</td>
                   <td data-row="8" data-col="9">534</td>
+                  <td data-row="8" data-col="10"></td>
                 </tr>
 <tr>
 <td data-row="9" data-col="1"></td>
@@ -1387,6 +1451,7 @@ Markdown documents:</p>
                   <td data-row="9" data-col="7">4.01</td>
                   <td data-row="9" data-col="8">4.21</td>
                   <td data-row="9" data-col="9">399</td>
+                  <td data-row="9" data-col="10"></td>
                 </tr>
 </tbody>
 </table>

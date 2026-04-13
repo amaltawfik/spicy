@@ -267,7 +267,11 @@ this function is the model-based companion for users who want to report
 bivariate mean comparisons in a linear-model framework. In practice, it
 is the better choice when you want heteroskedasticity-consistent
 standard errors (`vcov = "HC*"`), model fit statistics, or case weights
-via `lm(..., weights = ...)`.
+via `lm(..., weights = ...)`. Because the function exists to report a
+fitted model, its inferential output is part of the default display:
+`p_value = TRUE` is on by default, and the model `R2` is shown unless
+explicitly disabled with `r2 = "none"`. Set `p_value = FALSE` or
+`r2 = "none"` to suppress them.
 
 Effect size is reported as Cohen's `f2`, computed from the model `R2` as
 `R2 / (1 - R2)`. When `vcov != "classical"`, standard errors, confidence

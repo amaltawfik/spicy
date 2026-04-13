@@ -4,10 +4,12 @@ Computes descriptive statistics (mean, SD, min, max, confidence interval
 of the mean, *n*) for one or many continuous variables selected with
 tidyselect syntax.
 
-With `by`, produces grouped summaries with optional group-comparison
-tests (`test`), *p*-values (`p_value`), test statistics (`statistic`),
-and effect sizes (`effect_size` / `effect_size_ci`). Without `by`,
-produces one-way descriptive summaries.
+With `by`, produces grouped summaries and reports a group-comparison
+*p*-value by default (Welch test; change via `test`). Additional
+inferential output is opt-in: test statistics (`statistic`) and effect
+sizes (`effect_size` / `effect_size_ci`). Set `p_value = FALSE` to
+suppress the *p*-value column. Without `by`, produces one-way
+descriptive summaries.
 
 Multiple output formats are available via `output`: a printed ASCII
 table (`"default"`), a plain numeric `data.frame` (`"data.frame"`), or
@@ -24,7 +26,7 @@ table_continuous(
   exclude = NULL,
   regex = FALSE,
   test = c("welch", "student", "nonparametric"),
-  p_value = FALSE,
+  p_value = NULL,
   statistic = FALSE,
   effect_size = FALSE,
   effect_size_ci = FALSE,
@@ -86,14 +88,18 @@ table_continuous(
   - `"nonparametric"`: Wilcoxon rank-sum / Mann–Whitney *U* (2 groups)
     or Kruskal–Wallis *H* (3+ groups).
 
-  Used when `by` is supplied together with `p_value = TRUE`,
-  `statistic = TRUE`, or `effect_size = TRUE`. Ignored otherwise.
+  Used whenever `by` is supplied (since `p_value` defaults to `TRUE` in
+  that case) or when `statistic = TRUE` / `effect_size = TRUE`. Ignored
+  when `by` is not used, or when all three display toggles are turned
+  off.
 
 - p_value:
 
-  Logical. If `TRUE` and `by` is used, adds a *p*-value column from the
-  test specified by `test`. Defaults to `FALSE`. Ignored when `by` is
-  not used.
+  Logical or `NULL`. If `TRUE` and `by` is used, adds a *p*-value column
+  from the test specified by `test`. When `NULL` (the default), the
+  *p*-value is shown automatically whenever `by` is supplied, and hidden
+  otherwise. Pass `p_value = FALSE` to suppress the column explicitly.
+  Ignored when `by` is not used.
 
 - statistic:
 
@@ -317,12 +323,21 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
+#> 
+#>  Variable                      │ Group                 p 
+#> ───────────────────────────────┼─────────────────────────
+#>  Body mass index               │ Lower secondary  < .001 
+#>                                │ Upper secondary         
+#>                                │ Tertiary                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary  < .001 
+#>                                │ Upper secondary         
+#>                                │ Tertiary                
 
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education,
-  p_value = TRUE,
   statistic = TRUE
 )
 #> Descriptive statistics
@@ -379,6 +394,12 @@ table_continuous(
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
 #> 
+#>  Variable                      │ Group                 p 
+#> ───────────────────────────────┼─────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary  < .001 
+#>                                │ Upper secondary         
+#>                                │ Tertiary                
+#> 
 #>  Variable                      │ Group                       ES             
 #> ───────────────────────────────┼────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  η² = 0.208 [0.169, 0.246] 
@@ -399,10 +420,10 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
 #>                                │ Male    71.05  16.23  18.70  100.00    69.73   
 #> 
-#>  Variable                      │ Group   95% CI UL    n 
-#> ───────────────────────────────┼────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620 
-#>                                │ Male      72.37    580 
+#>  Variable                      │ Group   95% CI UL    n       p 
+#> ───────────────────────────────┼────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  < .001 
+#>                                │ Male      72.37    580         
 #> 
 #>  Variable                      │ Group              ES            
 #> ───────────────────────────────┼──────────────────────────────────
@@ -459,35 +480,35 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
     output = "tinytable"
   )
 }
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> | Variable                                   | Group           | M    | SD   | Min  | Max  | 95% CI      | n   |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            |                 |      |      |      |      | LL   | UL   |     |
-#> +============================================+=================+======+======+======+======+======+======+=====+
-#> | Satisfaction with health (1-5)             | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57 | 2.86 | 259 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43 | 3.63 | 534 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Tertiary        | 4.11 | 1.04 | 1.00 | 5.00 | 4.01 | 4.21 | 399 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> | Satisfaction with work (1-5)               | Lower secondary | 2.57 | 1.15 | 1.00 | 5.00 | 2.43 | 2.71 | 261 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Upper secondary | 3.42 | 1.10 | 1.00 | 5.00 | 3.33 | 3.52 | 535 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Tertiary        | 3.85 | 1.03 | 1.00 | 5.00 | 3.75 | 3.95 | 396 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> | Satisfaction with relationships (1-5)      | Lower secondary | 3.02 | 1.23 | 1.00 | 5.00 | 2.87 | 3.17 | 260 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Upper secondary | 3.74 | 0.96 | 1.00 | 5.00 | 3.66 | 3.83 | 534 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Tertiary        | 4.16 | 0.93 | 1.00 | 5.00 | 4.07 | 4.25 | 398 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> | Satisfaction with standard of living (1-5) | Lower secondary | 2.67 | 1.16 | 1.00 | 5.00 | 2.52 | 2.81 | 261 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Upper secondary | 3.39 | 1.11 | 1.00 | 5.00 | 3.29 | 3.48 | 532 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+
-#> |                                            | Tertiary        | 3.89 | 0.96 | 1.00 | 5.00 | 3.79 | 3.98 | 399 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+ 
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> | Variable                                   | Group           | M    | SD   | Min  | Max  | 95% CI      | n   | p      |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            |                 |      |      |      |      | LL   | UL   |     |        |
+#> +============================================+=================+======+======+======+======+======+======+=====+========+
+#> | Satisfaction with health (1-5)             | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57 | 2.86 | 259 | < .001 |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43 | 3.63 | 534 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Tertiary        | 4.11 | 1.04 | 1.00 | 5.00 | 4.01 | 4.21 | 399 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> | Satisfaction with work (1-5)               | Lower secondary | 2.57 | 1.15 | 1.00 | 5.00 | 2.43 | 2.71 | 261 | < .001 |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Upper secondary | 3.42 | 1.10 | 1.00 | 5.00 | 3.33 | 3.52 | 535 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Tertiary        | 3.85 | 1.03 | 1.00 | 5.00 | 3.75 | 3.95 | 396 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> | Satisfaction with relationships (1-5)      | Lower secondary | 3.02 | 1.23 | 1.00 | 5.00 | 2.87 | 3.17 | 260 | < .001 |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Upper secondary | 3.74 | 0.96 | 1.00 | 5.00 | 3.66 | 3.83 | 534 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Tertiary        | 4.16 | 0.93 | 1.00 | 5.00 | 4.07 | 4.25 | 398 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> | Satisfaction with standard of living (1-5) | Lower secondary | 2.67 | 1.16 | 1.00 | 5.00 | 2.52 | 2.81 | 261 | < .001 |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Upper secondary | 3.39 | 1.11 | 1.00 | 5.00 | 3.29 | 3.48 | 532 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+
+#> |                                            | Tertiary        | 3.89 | 0.96 | 1.00 | 5.00 | 3.79 | 3.98 | 399 |        |
+#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+--------+ 
 
 if (requireNamespace("gt", quietly = TRUE)) {
   table_continuous(
@@ -521,6 +542,8 @@ Max
 
 n
 
+p
+
 LL
 
 UL
@@ -542,6 +565,8 @@ Lower secondary
 2.86
 
 259
+
+\< .001
 
 Upper secondary
 
@@ -593,6 +618,8 @@ Lower secondary
 
 261
 
+\< .001
+
 Upper secondary
 
 3.42
@@ -642,6 +669,8 @@ Lower secondary
 3.17
 
 260
+
+\< .001
 
 Upper secondary
 
@@ -693,6 +722,8 @@ Lower secondary
 
 261
 
+\< .001
+
 Upper secondary
 
 3.39
@@ -730,20 +761,20 @@ quietly = TRUE)) { table_continuous( sochealth, select =
 [starts_with](https://tidyselect.r-lib.org/reference/starts_with.html)("life_sat"),
 by = education, output = "flextable" ) }
 
-| Variable                                   | Group           | M    | SD   | Min  | Max  | 95% CI |      | n   |
-|--------------------------------------------|-----------------|------|------|------|------|--------|------|-----|
-|                                            |                 |      |      |      |      | LL     | UL   |     |
-| Satisfaction with health (1-5)             | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57   | 2.86 | 259 |
-|                                            | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43   | 3.63 | 534 |
-|                                            | Tertiary        | 4.11 | 1.04 | 1.00 | 5.00 | 4.01   | 4.21 | 399 |
-| Satisfaction with work (1-5)               | Lower secondary | 2.57 | 1.15 | 1.00 | 5.00 | 2.43   | 2.71 | 261 |
-|                                            | Upper secondary | 3.42 | 1.10 | 1.00 | 5.00 | 3.33   | 3.52 | 535 |
-|                                            | Tertiary        | 3.85 | 1.03 | 1.00 | 5.00 | 3.75   | 3.95 | 396 |
-| Satisfaction with relationships (1-5)      | Lower secondary | 3.02 | 1.23 | 1.00 | 5.00 | 2.87   | 3.17 | 260 |
-|                                            | Upper secondary | 3.74 | 0.96 | 1.00 | 5.00 | 3.66   | 3.83 | 534 |
-|                                            | Tertiary        | 4.16 | 0.93 | 1.00 | 5.00 | 4.07   | 4.25 | 398 |
-| Satisfaction with standard of living (1-5) | Lower secondary | 2.67 | 1.16 | 1.00 | 5.00 | 2.52   | 2.81 | 261 |
-|                                            | Upper secondary | 3.39 | 1.11 | 1.00 | 5.00 | 3.29   | 3.48 | 532 |
-|                                            | Tertiary        | 3.89 | 0.96 | 1.00 | 5.00 | 3.79   | 3.98 | 399 |
+| Variable                                   | Group           | M    | SD   | Min  | Max  | 95% CI |      | n   | p       |
+|--------------------------------------------|-----------------|------|------|------|------|--------|------|-----|---------|
+|                                            |                 |      |      |      |      | LL     | UL   |     |         |
+| Satisfaction with health (1-5)             | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57   | 2.86 | 259 | \< .001 |
+|                                            | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43   | 3.63 | 534 |         |
+|                                            | Tertiary        | 4.11 | 1.04 | 1.00 | 5.00 | 4.01   | 4.21 | 399 |         |
+| Satisfaction with work (1-5)               | Lower secondary | 2.57 | 1.15 | 1.00 | 5.00 | 2.43   | 2.71 | 261 | \< .001 |
+|                                            | Upper secondary | 3.42 | 1.10 | 1.00 | 5.00 | 3.33   | 3.52 | 535 |         |
+|                                            | Tertiary        | 3.85 | 1.03 | 1.00 | 5.00 | 3.75   | 3.95 | 396 |         |
+| Satisfaction with relationships (1-5)      | Lower secondary | 3.02 | 1.23 | 1.00 | 5.00 | 2.87   | 3.17 | 260 | \< .001 |
+|                                            | Upper secondary | 3.74 | 0.96 | 1.00 | 5.00 | 3.66   | 3.83 | 534 |         |
+|                                            | Tertiary        | 4.16 | 0.93 | 1.00 | 5.00 | 4.07   | 4.25 | 398 |         |
+| Satisfaction with standard of living (1-5) | Lower secondary | 2.67 | 1.16 | 1.00 | 5.00 | 2.52   | 2.81 | 261 | \< .001 |
+|                                            | Upper secondary | 3.39 | 1.11 | 1.00 | 5.00 | 3.29   | 3.48 | 532 |         |
+|                                            | Tertiary        | 3.89 | 0.96 | 1.00 | 5.00 | 3.79   | 3.98 | 399 |         |
 
 \# }

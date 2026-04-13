@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,10 +57,17 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.0.9000" id="spicy-0809000">spicy 0.8.0.9000<a class="anchor" aria-label="anchor" href="#spicy-0809000"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.9.0" id="spicy-090">spicy 0.9.0<a class="anchor" aria-label="anchor" href="#spicy-090"></a></h2>
 <div class="section level3">
-<h3 id="development-version-0-8-0-9000">Development version<a class="anchor" aria-label="anchor" href="#development-version-0-8-0-9000"></a></h3>
-</div>
+<h3 id="breaking-changes-0-9-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-9-0"></a></h3>
+<ul><li>
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code> now enables inferential output by default when <code>by</code> is supplied. With a grouping variable, the <code>p</code> column from <code>test</code> is shown automatically (previous default hid it). This aligns the two table helpers: <code><a href="../reference/table_continuous.html">table_continuous()</a></code> stays descriptive when <code>by</code> is absent, and reports the test <em>p</em>-value when <code>by</code> is supplied, matching <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>’s inferential default. To preserve the previous behaviour, pass <code>p_value = FALSE</code> explicitly. <code>statistic</code> and <code>effect_size</code> remain <code>FALSE</code> by default and must still be enabled consciously.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-improvements-0-9-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-9-0"></a></h3>
+<ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> documentation now explicitly records why <code>p_value = TRUE</code> and <code>r2 = "r2"</code> are the default display: the function exists to report a fitted linear model, so its inferential output is part of what it is meant to convey.</p></li>
+<li><p>Internal cleanup: removed unused display-builder helpers from the <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> code path, and <code>compute_lm_vcov()</code> now warns explicitly when a robust variance estimator falls back to the classical OLS variance on a singular model matrix.</p></li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.0" id="spicy-080">spicy 0.8.0<a class="anchor" aria-label="anchor" href="#spicy-080"></a></h2><p class="text-muted">CRAN release: 2026-04-10</p>

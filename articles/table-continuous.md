@@ -85,7 +85,8 @@ table_continuous(sochealth)
 
 ## Grouped summaries
 
-Add `by` to summarize the same variables across categories:
+Add `by` to summarize the same variables across categories. When `by` is
+supplied, a Welch-test *p*-value column is added automatically:
 
 ``` r
 table_continuous(
@@ -121,11 +122,27 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 
 #>                                 │ Upper secondary    3.43       3.63     534 
-#>                                 │ Tertiary           4.01       4.21     399
+#>                                 │ Tertiary           4.01       4.21     399 
+#> 
+#>  Variable                       │ Group                 p 
+#> ────────────────────────────────┼─────────────────────────
+#>  Body mass index                │ Lower secondary  < .001 
+#>                                 │ Upper secondary         
+#>                                 │ Tertiary                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100)  │ Lower secondary  < .001 
+#>                                 │ Upper secondary         
+#>                                 │ Tertiary                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Lower secondary  < .001 
+#>                                 │ Upper secondary         
+#>                                 │ Tertiary
 ```
 
 This is the main pattern for reporting continuous variables across
-groups such as education, sex, treatment arm, or survey wave.
+groups such as education, sex, treatment arm, or survey wave. Pass
+`p_value = FALSE` to suppress the test column and keep the output
+strictly descriptive.
 
 If you want the same outcomes reported in a linear-model workflow, with
 heteroskedasticity-consistent standard errors or case weights, use
@@ -154,17 +171,16 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │     3.35      <.001  0.16  1192
 ```
 
-## Add group-comparison results
+## Add test statistics and effect sizes
 
-Grouped tables can include inferential results directly in the same
-table. The default test is Welch’s test:
+Grouped tables can also report the test statistic and an effect size
+alongside the default *p*-value column:
 
 ``` r
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
-  p_value = TRUE,
   statistic = TRUE,
   effect_size_ci = TRUE
 )
@@ -251,7 +267,6 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education,
   test = "nonparametric",
-  p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE
 )
@@ -306,7 +321,6 @@ table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education,
-  p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE,
   output = "data.frame"
@@ -372,7 +386,21 @@ table_continuous(
 #>                                             │ Male      3.65       3.83     577 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with standard of living (1-5) │ Female    3.28       3.46     615 
-#>                                             │ Male      3.33       3.52     577
+#>                                             │ Male      3.33       3.52     577 
+#> 
+#>  Variable                                   │ Group      p 
+#> ────────────────────────────────────────────┼──────────────
+#>  Satisfaction with health (1-5)             │ Female  .267 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with work (1-5)               │ Female  .073 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with relationships (1-5)      │ Female  .570 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with standard of living (1-5) │ Female  .453 
+#>                                             │ Male
 ```
 
 For more programmatic selection, set `regex = TRUE`:
@@ -398,19 +426,32 @@ table_continuous(
 #> 10      life_sat_standard Satisfaction with standard of living (1-5)
 #> 11      life_sat_standard Satisfaction with standard of living (1-5)
 #> 12      life_sat_standard Satisfaction with standard of living (1-5)
-#>              group     mean        sd min max ci_lower ci_upper   n
-#> 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259
-#> 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534
-#> 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399
-#> 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261
-#> 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535
-#> 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396
-#> 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260
-#> 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534
-#> 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398
-#> 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261
-#> 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532
-#> 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399
+#>              group     mean        sd min max ci_lower ci_upper   n   test_type
+#> 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259 welch_anova
+#> 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534        <NA>
+#> 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399        <NA>
+#> 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261 welch_anova
+#> 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535        <NA>
+#> 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396        <NA>
+#> 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260 welch_anova
+#> 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534        <NA>
+#> 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398        <NA>
+#> 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261 welch_anova
+#> 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532        <NA>
+#> 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399        <NA>
+#>    statistic df1      df2      p.value
+#> 1  118.73585   2 652.0775 1.063917e-44
+#> 2         NA  NA       NA           NA
+#> 3         NA  NA       NA           NA
+#> 4  105.98821   2 651.9434 1.398117e-40
+#> 5         NA  NA       NA           NA
+#> 6         NA  NA       NA           NA
+#> 7   82.35074   2 617.9668 1.969764e-32
+#> 8         NA  NA       NA           NA
+#> 9         NA  NA       NA           NA
+#> 10 101.31672   2 648.7723 5.105889e-39
+#> 11        NA  NA       NA           NA
+#> 12        NA  NA       NA           NA
 ```
 
 Use `exclude` when you want a broad selection with one or two explicit
@@ -436,15 +477,15 @@ table_continuous(
 #>  Satisfaction with health (1-5) │ Female  3.51   1.25   1.00    5.00  
 #>                                 │ Male    3.59   1.25   1.00    5.00  
 #> 
-#>  Variable                       │ Group   95% CI LL  95% CI UL    n 
-#> ────────────────────────────────┼───────────────────────────────────
-#>  Body mass index                │ Female    25.39      25.98    616 
-#>                                 │ Male      25.90      26.50    572 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100)  │ Female    65.99      68.33    620 
-#>                                 │ Male      69.73      72.37    580 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Female    3.41       3.61     616 
+#>  Variable                       │ Group   95% CI LL  95% CI UL    n       p 
+#> ────────────────────────────────┼───────────────────────────────────────────
+#>  Body mass index                │ Female    25.39      25.98    616    .018 
+#>                                 │ Male      25.90      26.50    572         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100)  │ Female    65.99      68.33    620  < .001 
+#>                                 │ Male      69.73      72.37    580         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female    3.41       3.61     616    .267 
 #>                                 │ Male      3.49       3.69     576
 ```
 
@@ -495,18 +536,18 @@ table_continuous(
 )
 ```
 
-| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   |
-|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|
-|                                |                 |       |       |       |        | LL     | UL    |     |
-| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 |
-|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |
-|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |
-| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 |
-|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |
-|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |
-| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 |
-|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |
-|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |
+| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   | p       |
+|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|---------|
+|                                |                 |       |       |       |        | LL     | UL    |     |         |
+| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 | \< .001 |
+|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |         |
+|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |         |
+| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 | \< .001 |
+|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |         |
+|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |         |
+| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 | \< .001 |
+|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |         |
+|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |         |
 
 ## Export to Excel or Word
 
