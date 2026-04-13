@@ -467,10 +467,45 @@ test_that("table_continuous statistic default output carries show_statistic attr
     iris,
     select = Sepal.Length,
     by = Species,
-    statistic = TRUE
+    statistic = TRUE,
+    p_value = FALSE
   )
   expect_false(attr(out, "show_p"))
   expect_true(attr(out, "show_statistic"))
+})
+
+test_that("table_continuous p_value auto-shows when by is supplied", {
+  out <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    output = "data.frame"
+  )
+  expect_true("p.value" %in% names(out))
+  expect_true(attr(out, "show_p"))
+  expect_false(is.na(out$p.value[1]))
+})
+
+test_that("table_continuous p_value stays hidden when by is absent", {
+  out <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    output = "data.frame"
+  )
+  expect_false("p.value" %in% names(out))
+  expect_false(isTRUE(attr(out, "show_p")))
+})
+
+test_that("table_continuous p_value = FALSE suppresses column when by is supplied", {
+  out <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    p_value = FALSE,
+    output = "data.frame"
+  )
+  expect_false("p.value" %in% names(out))
+  expect_false(attr(out, "show_p"))
 })
 
 test_that("table_continuous print works with statistic only", {
@@ -598,7 +633,8 @@ test_that("table_continuous warns when test is set without p_value/statistic", {
       iris,
       select = Sepal.Length,
       by = Species,
-      test = "student"
+      test = "student",
+      p_value = FALSE
     ),
     "ignored"
   )

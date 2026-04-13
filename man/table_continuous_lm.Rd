@@ -197,6 +197,10 @@ companion for users who want to report bivariate mean comparisons in a
 linear-model framework. In practice, it is the better choice when you
 want heteroskedasticity-consistent standard errors (\code{vcov = "HC*"}),
 model fit statistics, or case weights via \code{lm(..., weights = ...)}.
+Because the function exists to report a fitted model, its inferential
+output is part of the default display: \code{p_value = TRUE} is on by default,
+and the model \code{R2} is shown unless explicitly disabled with \code{r2 = "none"}.
+Set \code{p_value = FALSE} or \code{r2 = "none"} to suppress them.
 
 Effect size is reported as Cohen's \code{f2}, computed from the model \code{R2} as
 \code{R2 / (1 - R2)}. When \code{vcov != "classical"}, standard errors, confidence

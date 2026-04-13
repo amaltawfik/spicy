@@ -65,7 +65,8 @@ table_continuous(sochealth)
 
 ## Grouped summaries
 
-Add `by` to summarize the same variables across categories:
+Add `by` to summarize the same variables across categories. When
+`by` is supplied, a Welch-test *p*-value column is added automatically:
 
 ```{r grouped}
 table_continuous(
@@ -76,7 +77,9 @@ table_continuous(
 ```
 
 This is the main pattern for reporting continuous variables across
-groups such as education, sex, treatment arm, or survey wave.
+groups such as education, sex, treatment arm, or survey wave. Pass
+`p_value = FALSE` to suppress the test column and keep the output
+strictly descriptive.
 
 If you want the same outcomes reported in a linear-model workflow, with
 heteroskedasticity-consistent standard errors or case weights, use
@@ -91,17 +94,16 @@ table_continuous_lm(
 )
 ```
 
-## Add group-comparison results
+## Add test statistics and effect sizes
 
-Grouped tables can include inferential results directly in the same
-table. The default test is Welch's test:
+Grouped tables can also report the test statistic and an effect size
+alongside the default *p*-value column:
 
 ```{r pvalue-effect}
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
-  p_value = TRUE,
   statistic = TRUE,
   effect_size_ci = TRUE
 )
@@ -116,7 +118,6 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education,
   test = "nonparametric",
-  p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE
 )
@@ -130,7 +131,6 @@ table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education,
-  p_value = TRUE,
   statistic = TRUE,
   effect_size = TRUE,
   output = "data.frame"

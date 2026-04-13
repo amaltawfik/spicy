@@ -1,6 +1,27 @@
-# spicy 0.8.0.9000
+# spicy 0.9.0
 
-## Development version
+## Breaking changes
+
+* `table_continuous()` now enables inferential output by default when `by` is
+  supplied. With a grouping variable, the `p` column from `test` is shown
+  automatically (previous default hid it). This aligns the two table helpers:
+  `table_continuous()` stays descriptive when `by` is absent, and reports the
+  test *p*-value when `by` is supplied, matching `table_continuous_lm()`'s
+  inferential default. To preserve the previous behaviour, pass
+  `p_value = FALSE` explicitly. `statistic` and `effect_size` remain `FALSE`
+  by default and must still be enabled consciously.
+
+## Minor improvements
+
+* `table_continuous_lm()` documentation now explicitly records why
+  `p_value = TRUE` and `r2 = "r2"` are the default display: the function
+  exists to report a fitted linear model, so its inferential output is part
+  of what it is meant to convey.
+
+* Internal cleanup: removed unused display-builder helpers from the
+  `table_continuous_lm()` code path, and `compute_lm_vcov()` now warns
+  explicitly when a robust variance estimator falls back to the classical
+  OLS variance on a singular model matrix.
 
 # spicy 0.8.0
 

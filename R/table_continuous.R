@@ -5,10 +5,12 @@
 #' of the mean, *n*) for one or many continuous variables selected with
 #' tidyselect syntax.
 #'
-#' With `by`, produces grouped summaries with optional group-comparison
-#' tests (`test`), *p*-values (`p_value`), test statistics (`statistic`),
-#' and effect sizes (`effect_size` / `effect_size_ci`).
-#' Without `by`, produces one-way descriptive summaries.
+#' With `by`, produces grouped summaries and reports a group-comparison
+#' *p*-value by default (Welch test; change via `test`). Additional
+#' inferential output is opt-in: test statistics (`statistic`) and
+#' effect sizes (`effect_size` / `effect_size_ci`). Set `p_value = FALSE`
+#' to suppress the *p*-value column. Without `by`, produces one-way
+#' descriptive summaries.
 #'
 #' Multiple output formats are available via `output`: a printed ASCII
 #' table (`"default"`), a plain numeric `data.frame` (`"data.frame"`), or
@@ -37,11 +39,15 @@
 #'   - `"nonparametric"`: Wilcoxon rank-sum / Mann--Whitney *U*
 #'     (2 groups) or Kruskal--Wallis *H* (3+ groups).
 #'
-#'   Used when `by` is supplied together with `p_value = TRUE`,
-#'   `statistic = TRUE`, or `effect_size = TRUE`. Ignored otherwise.
-#' @param p_value Logical. If `TRUE` and `by` is used, adds a *p*-value
-#'   column from the test specified by `test`. Defaults to `FALSE`.
-#'   Ignored when `by` is not used.
+#'   Used whenever `by` is supplied (since `p_value` defaults to `TRUE`
+#'   in that case) or when `statistic = TRUE` / `effect_size = TRUE`.
+#'   Ignored when `by` is not used, or when all three display toggles
+#'   are turned off.
+#' @param p_value Logical or `NULL`. If `TRUE` and `by` is used, adds a
+#'   *p*-value column from the test specified by `test`. When `NULL` (the
+#'   default), the *p*-value is shown automatically whenever `by` is
+#'   supplied, and hidden otherwise. Pass `p_value = FALSE` to suppress
+#'   the column explicitly. Ignored when `by` is not used.
 #' @param statistic Logical. If `TRUE` and `by` is used, the test
 #'   statistic is shown in an additional column (e.g.,
 #'   `t(df) = ...`, `F(df1, df2) = ...`, `W = ...`, or `H(df) = ...`).
@@ -167,7 +173,6 @@
 #'   sochealth,
 #'   select = c(bmi, wellbeing_score),
 #'   by = education,
-#'   p_value = TRUE,
 #'   statistic = TRUE
 #' )
 #'
@@ -242,7 +247,7 @@ table_continuous <- function(
   exclude = NULL,
   regex = FALSE,
   test = c("welch", "student", "nonparametric"),
-  p_value = FALSE,
+  p_value = NULL,
   statistic = FALSE,
   effect_size = FALSE,
   effect_size_ci = FALSE,
@@ -308,7 +313,6 @@ table_continuous <- function(
     stop("`labels` must be a named character vector.", call. = FALSE)
   }
   for (.lname in c(
-    "p_value",
     "statistic",
     "effect_size",
     "effect_size_ci",
@@ -319,6 +323,12 @@ table_continuous <- function(
     if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
       stop(sprintf("`%s` must be TRUE/FALSE.", .lname), call. = FALSE)
     }
+  }
+  if (
+    !is.null(p_value) &&
+      (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
+  ) {
+    stop("`p_value` must be TRUE, FALSE, or NULL.", call. = FALSE)
   }
   output <- match.arg(output)
   test_explicit <- !missing(test)
@@ -341,11 +351,18 @@ table_continuous <- function(
     )
   }
 
+  p_value_explicit <- !is.null(p_value)
+  if (!p_value_explicit) {
+    p_value <- has_group
+  }
   if ((p_value || statistic) && !has_group) {
-    warning(
-      "`p_value` and `statistic` are ignored when `by` is not used.",
-      call. = FALSE
-    )
+    if (p_value_explicit || statistic) {
+      warning(
+        "`p_value` and `statistic` are ignored when `by` is not used.",
+        call. = FALSE
+      )
+    }
+    p_value <- FALSE
   }
   if (
     test_explicit && !p_value && !statistic && !effect_size && !effect_size_ci

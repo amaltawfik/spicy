@@ -11,7 +11,7 @@ table_continuous(
   exclude = NULL,
   regex = FALSE,
   test = c("welch", "student", "nonparametric"),
-  p_value = FALSE,
+  p_value = NULL,
   statistic = FALSE,
   effect_size = FALSE,
   effect_size_ci = FALSE,
@@ -59,12 +59,16 @@ ANOVA (3+ groups). Assumes equal variances.
 (2 groups) or Kruskal--Wallis \emph{H} (3+ groups).
 }
 
-Used when \code{by} is supplied together with \code{p_value = TRUE},
-\code{statistic = TRUE}, or \code{effect_size = TRUE}. Ignored otherwise.}
+Used whenever \code{by} is supplied (since \code{p_value} defaults to \code{TRUE}
+in that case) or when \code{statistic = TRUE} / \code{effect_size = TRUE}.
+Ignored when \code{by} is not used, or when all three display toggles
+are turned off.}
 
-\item{p_value}{Logical. If \code{TRUE} and \code{by} is used, adds a \emph{p}-value
-column from the test specified by \code{test}. Defaults to \code{FALSE}.
-Ignored when \code{by} is not used.}
+\item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds a
+\emph{p}-value column from the test specified by \code{test}. When \code{NULL} (the
+default), the \emph{p}-value is shown automatically whenever \code{by} is
+supplied, and hidden otherwise. Pass \code{p_value = FALSE} to suppress
+the column explicitly. Ignored when \code{by} is not used.}
 
 \item{statistic}{Logical. If \code{TRUE} and \code{by} is used, the test
 statistic is shown in an additional column (e.g.,
@@ -173,10 +177,12 @@ Computes descriptive statistics (mean, SD, min, max, confidence interval
 of the mean, \emph{n}) for one or many continuous variables selected with
 tidyselect syntax.
 
-With \code{by}, produces grouped summaries with optional group-comparison
-tests (\code{test}), \emph{p}-values (\code{p_value}), test statistics (\code{statistic}),
-and effect sizes (\code{effect_size} / \code{effect_size_ci}).
-Without \code{by}, produces one-way descriptive summaries.
+With \code{by}, produces grouped summaries and reports a group-comparison
+\emph{p}-value by default (Welch test; change via \code{test}). Additional
+inferential output is opt-in: test statistics (\code{statistic}) and
+effect sizes (\code{effect_size} / \code{effect_size_ci}). Set \code{p_value = FALSE}
+to suppress the \emph{p}-value column. Without \code{by}, produces one-way
+descriptive summaries.
 
 Multiple output formats are available via \code{output}: a printed ASCII
 table (\code{"default"}), a plain numeric \code{data.frame} (\code{"data.frame"}), or
@@ -220,7 +226,6 @@ table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education,
-  p_value = TRUE,
   statistic = TRUE
 )
 
