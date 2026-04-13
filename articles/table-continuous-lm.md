@@ -79,7 +79,8 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = education,
-  weights = weight
+  weights = weight,
+  show_weighted_n = TRUE
 )
 #> Continuous outcomes by Highest education level
 #> 
@@ -88,10 +89,10 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │        67.55                80.88        
 #>  Body mass index               │        25.96                23.39        
 #> 
-#>  Variable                      │ M (Tertiary)      p   R²      n 
-#> ───────────────────────────────┼─────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    66.52      <.001  0.19  1200 
-#>  Body mass index               │    26.16      <.001  0.13  1188
+#>  Variable                      │ M (Tertiary)      p   R²      n  Weighted n 
+#> ───────────────────────────────┼─────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │    66.52      <.001  0.19  1200     1196.47 
+#>  Body mass index               │    26.16      <.001  0.13  1188     1183.32
 ```
 
 This is often the most natural summary-table function when your
@@ -108,24 +109,14 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = age,
-  vcov = "HC3",
-  output = "long"
+  vcov = "HC3"
 )
-#>          variable                         label predictor_type predictor_label
-#> 1 wellbeing_score WHO-5 wellbeing index (0-100)     continuous     Age (years)
-#> 2             bmi               Body mass index     continuous     Age (years)
-#>   level reference estimate_type emmean emmean_se emmean_ci_lower
-#> 1  <NA>      <NA>         slope     NA        NA              NA
-#> 2  <NA>      <NA>         slope     NA        NA              NA
-#>   emmean_ci_upper   estimate estimate_se estimate_ci_lower estimate_ci_upper
-#> 1              NA 0.04138096 0.030585451       -0.01862605        0.10138797
-#> 2              NA 0.03508525 0.007455753        0.02045732        0.04971319
-#>   test_type statistic df1  df2      p.value es_type    es_value          r2
-#> 1         t  1.352962   1 1198 1.763230e-01      f2 0.001519732 0.001517426
-#> 2         t  4.705796   1 1186 2.826189e-06      f2 0.019622500 0.019244867
-#>         adj_r2    n sum_w
-#> 1 0.0006839677 1200    NA
-#> 2 0.0184179236 1188    NA
+#> Continuous outcomes by Age (years)
+#> 
+#>  Variable                      │  B    95% CI LL  95% CI UL      p   R²      n 
+#> ───────────────────────────────┼───────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 0.04    -0.02      0.10      .176  0.00  1200 
+#>  Body mass index               │ 0.04    0.02       0.05     <.001  0.02  1188
 ```
 
 When you need the underlying returned data for further processing, use
