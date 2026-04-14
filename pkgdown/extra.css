@@ -1,3 +1,14 @@
+/* Load a tiny JetBrains Mono subset containing only the Unicode
+   box-drawing characters used by freq() / cross_tab() output.
+   IBM Plex Mono (loaded by bslib) does not ship these glyphs in its
+   Google Fonts subsets, so without this the browser picks them up
+   from whichever system font happens to have them, producing
+   inconsistent metrics and misaligned │ / ┼ junctions. Google Fonts'
+   text= parameter returns a custom ~1 KB subset containing only the
+   listed characters: ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼. Must stay above other
+   rules: @import is only valid at the top of a CSS file. */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap&text=%E2%94%80%E2%94%82%E2%94%8C%E2%94%90%E2%94%94%E2%94%98%E2%94%9C%E2%94%A4%E2%94%AC%E2%94%B4%E2%94%BC");
+
 body,
 .navbar,
 .dropdown-menu,
@@ -18,26 +29,11 @@ samp,
   font-feature-settings: "zero" 1, "tnum" 1;
 }
 
-/* Serve Unicode box-drawing characters (│ ─ ┼ ┬ ┴ ├ ┤) from a single
-   terminal-grade monospace so freq() / cross_tab() ASCII tables render
-   with continuous vertical rules and properly aligned junctions.
-   IBM Plex Mono (loaded by bslib) does not ship these glyphs in its
-   Google Fonts subsets, so without this the browser picks them up
-   from several fallback fonts with mismatched metrics. */
-@font-face {
-  font-family: "Spicy Box Drawing";
-  src:
-    local("Cascadia Mono"),
-    local("Cascadia Code"),
-    local("Consolas"),
-    local("Menlo"),
-    local("DejaVu Sans Mono"),
-    local("Liberation Mono"),
-    local("Courier New");
-  unicode-range: U+2500-257F;
-  font-display: swap;
-}
-
+/* Keep IBM Plex Mono as the primary code font (identical look to the
+   pre-fix site), and list JetBrains Mono only as a fallback — the
+   browser automatically uses it for the box-drawing characters that
+   IBM Plex Mono does not cover, so all │ / ─ / ┼ glyphs come from a
+   single consistent source and align correctly. */
 pre,
 pre code,
 code,
@@ -47,11 +43,25 @@ samp,
 .sourceCode pre,
 .sourceCode pre code {
   font-family:
-    "Spicy Box Drawing",
     "IBM Plex Mono",
+    "JetBrains Mono",
     ui-monospace,
     SFMono-Regular,
     Menlo,
     Consolas,
     monospace;
+}
+
+/* pkgdown / downlit render R output lines (the ones starting with #>)
+   inside <span class="co"> because they share the "comment" highlight
+   class. In dark mode the bslib theme applies font-style: italic to
+   those spans via the selector
+   [data-bs-theme="dark"] pre code span.co
+   which has specificity (0, 2, 3) — higher than any class-only
+   override — so we use !important to keep ASCII output upright in
+   both light and dark themes. */
+.sourceCode .co,
+pre .co,
+code .co {
+  font-style: normal !important;
 }
