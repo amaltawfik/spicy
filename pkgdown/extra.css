@@ -17,3 +17,10 @@ samp,
 .inline-codex {
   font-feature-settings: "zero" 1, "tnum" 1;
 }
+
+pre,
+pre code,
+.sourceCode pre,
+.sourceCode pre code {
+  line-height: 1;
+}
