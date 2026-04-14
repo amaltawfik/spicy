@@ -3,9 +3,24 @@
 # Build the pkgdown site and remove internal dev docs
 # ==================================================
 
-if (!requireNamespace("jsonlite", quietly = TRUE)) {
-  stop("Package 'jsonlite' is required to clean pkgdown search.json.")
+# --- preflight ---------------------------------------------------------------
+
+if (!file.exists("DESCRIPTION") || !file.exists("_pkgdown.yml")) {
+  stop(
+    "build_pkgdown_site.R must be sourced from the package root. ",
+    "Current working directory: ",
+    getwd(),
+    call. = FALSE
+  )
 }
+
+for (pkg in c("pkgdown", "jsonlite")) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    stop("Package '", pkg, "' is required.", call. = FALSE)
+  }
+}
+
+docs_dir <- "docs"
 
 internal_pages <- c("AGENTS", "CLAUDE")
 legacy_pages <- c(
@@ -17,172 +32,137 @@ generated_reference_artifacts <- c(
   "reference/table_continuous.xlsx"
 )
 
-internal_pages_pattern <- paste(internal_pages, collapse = "|")
+internal_pattern <- paste(internal_pages, collapse = "|")
+legacy_pattern <- paste(legacy_pages, collapse = "|")
 
-remove_internal_files <- function(internal_pages, docs_dir = "docs") {
-  html_md_files <- as.vector(outer(
-    file.path(docs_dir, internal_pages),
-    c(".html", ".md"),
-    paste0
-  ))
+# --- helpers -----------------------------------------------------------------
 
-  existing_files <- html_md_files[file.exists(html_md_files)]
-
-  if (length(existing_files) > 0) {
-    unlink(existing_files)
-  }
-
-  invisible(existing_files)
+remove_files <- function(paths) {
+  existing <- paths[file.exists(paths)]
+  if (length(existing)) unlink(existing)
+  invisible(existing)
 }
 
-remove_legacy_files <- function(legacy_pages, docs_dir = "docs") {
-  html_md_files <- as.vector(outer(
-    file.path(docs_dir, legacy_pages),
-    c(".html", ".md"),
-    paste0
-  ))
-
-  existing_files <- html_md_files[file.exists(html_md_files)]
-
-  if (length(existing_files) > 0) {
-    unlink(existing_files)
-  }
-
-  invisible(existing_files)
+page_variants <- function(pages, dir = docs_dir) {
+  as.vector(outer(file.path(dir, pages), c(".html", ".md"), paste0))
 }
 
-remove_generated_reference_artifacts <- function(
-  generated_reference_artifacts,
-  docs_dir = "docs"
-) {
-  files <- file.path(docs_dir, generated_reference_artifacts)
-  existing_files <- files[file.exists(files)]
-
-  if (length(existing_files) > 0) {
-    unlink(existing_files)
-  }
-
-  invisible(existing_files)
-}
-
-clean_sitemap <- function(
-  internal_pages,
-  legacy_pages,
-  sitemap = file.path("docs", "sitemap.xml")
-) {
+clean_sitemap <- function(sitemap = file.path(docs_dir, "sitemap.xml")) {
   if (!file.exists(sitemap)) {
     return(invisible(FALSE))
   }
 
   lines <- readLines(sitemap, warn = FALSE, encoding = "UTF-8")
-  internal_keep <- !grepl(
-    paste0("/(", internal_pages_pattern, ")\\.(html|md)</loc>"),
-    lines
-  )
-  legacy_keep <- !grepl(
+  drop <- grepl(
     paste0(
       "/(",
-      paste(legacy_pages, collapse = "|"),
+      internal_pattern,
+      "|",
+      legacy_pattern,
       ")\\.(html|md)</loc>"
     ),
     lines
   )
-  keep <- internal_keep & legacy_keep
+  if (!any(drop)) {
+    return(invisible(FALSE))
+  }
 
-  writeLines(lines[keep], sitemap, useBytes = TRUE)
+  writeLines(lines[!drop], sitemap, useBytes = TRUE)
   invisible(TRUE)
 }
 
 clean_search_index <- function(
-  internal_pages,
-  legacy_pages,
-  search_index = file.path("docs", "search.json")
+  search_index = file.path(docs_dir, "search.json")
 ) {
   if (!file.exists(search_index)) {
     return(invisible(FALSE))
   }
 
   entries <- jsonlite::fromJSON(search_index, simplifyVector = FALSE)
-  internal_pattern <- paste0("/(", internal_pages_pattern, ")\\.(html|md)$")
-  legacy_pattern <- paste0(
-    "^https://amaltawfik.github.io/spicy/",
+  internal_re <- paste0("/(", internal_pattern, ")\\.(html|md)$")
+  legacy_re <- paste0(
+    "^https://amaltawfik\\.github\\.io/spicy/",
     "(",
-    paste(legacy_pages, collapse = "|"),
+    legacy_pattern,
     ")\\.(html|md)$"
   )
 
-  keep_entry <- function(entry) {
-    path <- entry$path %||% NULL
-
+  keep <- function(entry) {
+    path <- entry$path
     if (!is.character(path) || length(path) != 1) {
       return(TRUE)
     }
-
-    !grepl(internal_pattern, path) && !grepl(legacy_pattern, path)
+    !grepl(internal_re, path) && !grepl(legacy_re, path)
   }
 
-  filtered_entries <- Filter(keep_entry, entries)
+  filtered <- Filter(keep, entries)
+  if (length(filtered) == length(entries)) {
+    return(invisible(FALSE))
+  }
+
   json <- jsonlite::toJSON(
-    filtered_entries,
+    filtered,
     auto_unbox = TRUE,
     null = "null",
     force = TRUE
   )
-
   writeLines(json, search_index, useBytes = TRUE)
   invisible(TRUE)
 }
 
-fix_html_encoding_artifacts <- function(docs_dir = "docs") {
+fix_html_encoding_artifacts <- function(dir = docs_dir) {
   html_files <- list.files(
-    docs_dir,
+    dir,
     pattern = "\\.html$",
     recursive = TRUE,
     full.names = TRUE
   )
 
+  changed <- character(0)
   for (path in html_files) {
     lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
-    lines <- gsub(
+    new_lines <- gsub(
       'type="”image/svg+xml”"',
       'type="image/svg+xml"',
       lines,
       fixed = TRUE
     )
-    writeLines(lines, path, useBytes = TRUE)
+    if (!identical(lines, new_lines)) {
+      writeLines(new_lines, path, useBytes = TRUE)
+      changed <- c(changed, path)
+    }
   }
 
-  invisible(html_files)
+  invisible(changed)
 }
 
-`%||%` <- function(x, y) {
-  if (is.null(x)) {
-    y
-  } else {
-    x
-  }
-}
+# --- build -------------------------------------------------------------------
+# Any error here propagates and cleanup below will not run on a partial site.
 
 pkgdown::build_site()
 
-removed_files <- remove_internal_files(internal_pages)
-removed_legacy_files <- remove_legacy_files(legacy_pages)
-removed_reference_artifacts <- remove_generated_reference_artifacts(
-  generated_reference_artifacts
-)
-clean_sitemap(internal_pages, legacy_pages)
-clean_search_index(internal_pages, legacy_pages)
-fix_html_encoding_artifacts()
+# --- post-build cleanup ------------------------------------------------------
 
-message(
-  "Removed internal pkgdown pages: ",
-  paste(basename(removed_files), collapse = ", ")
+removed_internal <- remove_files(page_variants(internal_pages))
+removed_legacy <- remove_files(page_variants(legacy_pages))
+removed_artifacts <- remove_files(
+  file.path(docs_dir, generated_reference_artifacts)
 )
-message(
-  "Removed legacy pkgdown pages: ",
-  paste(basename(removed_legacy_files), collapse = ", ")
-)
-message(
-  "Removed generated reference artifacts: ",
-  paste(basename(removed_reference_artifacts), collapse = ", ")
-)
+
+clean_sitemap()
+clean_search_index()
+fixed_html <- fix_html_encoding_artifacts()
+
+# --- report ------------------------------------------------------------------
+
+report <- function(label, files) {
+  if (!length(files)) {
+    return(invisible())
+  }
+  message(label, ": ", paste(basename(files), collapse = ", "))
+}
+
+report("Removed internal pkgdown pages", removed_internal)
+report("Removed legacy pkgdown pages", removed_legacy)
+report("Removed generated reference artifacts", removed_artifacts)
+report("Fixed HTML encoding artifacts", fixed_html)
