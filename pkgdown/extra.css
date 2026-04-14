@@ -18,9 +18,40 @@ samp,
   font-feature-settings: "zero" 1, "tnum" 1;
 }
 
+/* Serve Unicode box-drawing characters (│ ─ ┼ ┬ ┴ ├ ┤) from a single
+   terminal-grade monospace so freq() / cross_tab() ASCII tables render
+   with continuous vertical rules and properly aligned junctions.
+   IBM Plex Mono (loaded by bslib) does not ship these glyphs in its
+   Google Fonts subsets, so without this the browser picks them up
+   from several fallback fonts with mismatched metrics. */
+@font-face {
+  font-family: "Spicy Box Drawing";
+  src:
+    local("Cascadia Mono"),
+    local("Cascadia Code"),
+    local("Consolas"),
+    local("Menlo"),
+    local("DejaVu Sans Mono"),
+    local("Liberation Mono"),
+    local("Courier New");
+  unicode-range: U+2500-257F;
+  font-display: swap;
+}
+
 pre,
 pre code,
+code,
+kbd,
+samp,
+.sourceCode,
 .sourceCode pre,
 .sourceCode pre code {
-  line-height: 1;
+  font-family:
+    "Spicy Box Drawing",
+    "IBM Plex Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
 }
