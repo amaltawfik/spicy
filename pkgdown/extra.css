@@ -1,13 +1,18 @@
 /* Load a tiny JetBrains Mono subset containing only the Unicode
-   box-drawing characters used by freq() / cross_tab() output.
-   IBM Plex Mono (loaded by bslib) does not ship these glyphs in its
-   Google Fonts subsets, so without this the browser picks them up
-   from whichever system font happens to have them, producing
-   inconsistent metrics and misaligned │ / ┼ junctions. Google Fonts'
+   box-drawing characters used by freq() / cross_tab() / table_*()
+   output. IBM Plex Mono (loaded by bslib) does not ship these glyphs
+   in its Google Fonts subsets, so without this the browser picks
+   them up from whichever system font happens to have them, producing
+   inconsistent metrics and misaligned junctions. Google Fonts'
    text= parameter returns a custom ~1 KB subset containing only the
-   listed characters: ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼. Must stay above other
-   rules: @import is only valid at the top of a CSS file. */
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap&text=%E2%94%80%E2%94%82%E2%94%8C%E2%94%90%E2%94%94%E2%94%98%E2%94%9C%E2%94%A4%E2%94%AC%E2%94%B4%E2%94%BC");
+   listed characters: ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼ ╌. The last one
+   (U+254C, light double dash) is used as the group separator rule
+   in table_categorical() / table_continuous() when several row
+   variables are stacked, and must be served from the same font as
+   │ and ┼ so the junction on the dashed rule stays aligned with
+   the solid │ column above and below. Must stay above other rules:
+   @import is only valid at the top of a CSS file. */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap&text=%E2%94%80%E2%94%82%E2%94%8C%E2%94%90%E2%94%94%E2%94%98%E2%94%9C%E2%94%A4%E2%94%AC%E2%94%B4%E2%94%BC%E2%95%8C");
 
 body,
 .navbar,
