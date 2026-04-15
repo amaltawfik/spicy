@@ -171,12 +171,18 @@ If <code>FALSE</code>, return a plain <code>data.frame</code> with frequency val
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>data.frame</code> with columns:</p><ul><li><p><code>value</code> - unique values or factor levels</p></li>
+    <p>With <code>styled = FALSE</code>, a plain <code>data.frame</code> with no extra attributes
+and columns:</p><ul><li><p><code>value</code> - unique values or factor levels</p></li>
 <li><p><code>n</code> - frequency count (weighted if applicable)</p></li>
 <li><p><code>prop</code> - proportion of total</p></li>
 <li><p><code>valid_prop</code> - proportion of valid responses (if <code>valid = TRUE</code>)</p></li>
 <li><p><code>cum_prop</code>, <code>cum_valid_prop</code> - cumulative percentages (if <code>cum = TRUE</code>)</p></li>
-</ul><p>If <code>styled = TRUE</code>, prints the formatted table to the console and returns it invisibly.</p>
+</ul><p>With <code>styled = TRUE</code> (default), prints the formatted table to the
+console and invisibly returns a <code>spicy_freq_table</code> object: the same
+<code>data.frame</code> carrying rendering metadata as attributes (<code>digits</code>,
+<code>data_name</code>, <code>var_name</code>, <code>var_label</code>, <code>class_name</code>, <code>n_total</code>,
+<code>n_valid</code>, <code>weighted</code>, <code>rescaled</code>, <code>weight_var</code>) used by
+<code><a href="print.spicy_freq_table.html">print.spicy_freq_table()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -251,6 +257,22 @@ normalizes weights so their sum equals the unweighted sample size.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: numeric</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plain vector with a sentinel value recoded as missing</span></span></span>
+<span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">99</span>, <span class="fl">99</span><span class="op">)</span>, na_val <span class="op">=</span> <span class="fl">99</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: c(1, 2, 3, 99, 99)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent  Valid Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> 1           1     20.0           33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> 2           1     20.0           33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> 3           1     20.0           33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Missing  <span style="color: #9E9E9E;">│</span> NA          2     40.0                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             5    100.0          100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: numeric</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: c(1, 2, 3, 99, 99)</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Labelled variable (haven-style)</span></span></span>
 <span class="r-in"><span><span class="va">x_lbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://haven.tidyverse.org/reference/labelled.html" class="external-link">labelled</a></span><span class="op">(</span></span></span>

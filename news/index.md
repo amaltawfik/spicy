@@ -37,6 +37,17 @@
   two numeric concepts (discrete counts vs. continuous percentages)
   visually distinct.
 
+- `freq(..., styled = FALSE)` now returns a genuinely plain `data.frame`
+  with no `spicy_freq_table` rendering metadata clinging to it, so
+  [`str()`](https://rdrr.io/r/utils/str.html),
+  [`dput()`](https://rdrr.io/r/base/dput.html), and downstream
+  programmatic use see only the tabulation columns. The metadata
+  attributes (`digits`, `data_name`, `var_name`, `var_label`,
+  `class_name`, `n_total`, `n_valid`, `weighted`, `rescaled`,
+  `weight_var`) are now documented in `@return` and remain available on
+  the invisibly returned `spicy_freq_table` object when `styled = TRUE`
+  (the default).
+
 ### Bug fixes
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now

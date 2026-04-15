@@ -118,7 +118,8 @@ freq(
 
 ## Value
 
-A `data.frame` with columns:
+With `styled = FALSE`, a plain `data.frame` with no extra attributes and
+columns:
 
 - `value` - unique values or factor levels
 
@@ -131,8 +132,12 @@ A `data.frame` with columns:
 - `cum_prop`, `cum_valid_prop` - cumulative percentages (if
   `cum = TRUE`)
 
-If `styled = TRUE`, prints the formatted table to the console and
-returns it invisibly.
+With `styled = TRUE` (default), prints the formatted table to the
+console and invisibly returns a `spicy_freq_table` object: the same
+`data.frame` carrying rendering metadata as attributes (`digits`,
+`data_name`, `var_name`, `var_label`, `class_name`, `n_total`,
+`n_valid`, `weighted`, `rescaled`, `weight_var`) used by
+[`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md).
 
 ## Details
 
@@ -218,6 +223,22 @@ freq(x)
 #> 
 #> Class: numeric
 #> Data: x
+
+# Plain vector with a sentinel value recoded as missing
+freq(c(1, 2, 3, 99, 99), na_val = 99)
+#> Frequency table: c(1, 2, 3, 99, 99)
+#> 
+#>  Category │ Values  Freq.  Percent  Valid Percent 
+#> ──────────┼───────────────────────────────────────
+#>  Valid    │ 1           1     20.0           33.3 
+#>           │ 2           1     20.0           33.3 
+#>           │ 3           1     20.0           33.3 
+#>  Missing  │ NA          2     40.0                
+#> ──────────┼───────────────────────────────────────
+#>  Total    │             5    100.0          100.0 
+#> 
+#> Class: numeric
+#> Data: c(1, 2, 3, 99, 99)
 
 # Labelled variable (haven-style)
 x_lbl <- labelled(
