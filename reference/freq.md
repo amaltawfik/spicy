@@ -24,7 +24,7 @@ freq(
   cum = FALSE,
   sort = "",
   na_val = NULL,
-  labelled_levels = c("prefixed", "labels", "values", "p", "l", "v"),
+  labelled_levels = c("prefixed", "labels", "values"),
   rescale = TRUE,
   styled = TRUE,
   ...
@@ -36,7 +36,8 @@ freq(
 - data:
 
   A `data.frame`, vector, or factor. If a data frame is provided,
-  specify the target variable `x`.
+  specify the target variable `x`. If both `data` and `x` are supplied
+  as vectors, `data` is ignored with a warning.
 
 - x:
 
@@ -45,7 +46,9 @@ freq(
 - weights:
 
   Optional numeric vector of weights (same length as `x`). The variable
-  may be referenced as a bare name when it belongs to `data`.
+  may be referenced as a bare name when it belongs to `data`, or as a
+  qualified expression like `other$w` (evaluated in the calling
+  environment), which always takes precedence over `data` lookup.
 
 - digits:
 
@@ -294,9 +297,9 @@ freq(df, sex, weights = weight, rescale = TRUE)
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent 
 #> ──────────┼───────────────────────────────────────
-#>  Valid    │ Female   2.66     44.3           50.0 
-#>           │ Male     2.66     44.3           50.0 
-#>  Missing  │ NA       0.69     11.5                
+#>  Valid    │ Female      3     44.3           50.0 
+#>           │ Male        3     44.3           50.0 
+#>  Missing  │ NA          1     11.5                
 #> ──────────┼───────────────────────────────────────
 #>  Total    │             6    100.0          100.0 
 #> 
@@ -326,9 +329,9 @@ freq(df$sex, weights = df$weight, cum = TRUE)
 #> 
 #>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent 
 #> ──────────┼─────────────────────────────────────────────────────
-#>  Valid    │ Female   2.66     44.3           50.0          44.3 
-#>           │ Male     2.66     44.3           50.0          88.5 
-#>  Missing  │ NA       0.69     11.5                        100.0 
+#>  Valid    │ Female      3     44.3           50.0          44.3 
+#>           │ Male        3     44.3           50.0          88.5 
+#>  Missing  │ NA          1     11.5                        100.0 
 #> ──────────┼─────────────────────────────────────────────────────
 #>  Total    │             6    100.0          100.0         100.0 
 #> 
@@ -342,7 +345,7 @@ freq(df$sex, weights = df$weight, cum = TRUE)
 #> 
 #> Class: factor
 #> Data: df
-#> Weight: weight (rescaled)
+#> Weight: df$weight (rescaled)
 
 # Piped version (tidy syntax) and sort alphabetically descending ("name-")
 df |> freq(sex, sort = "name-")

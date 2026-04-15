@@ -30,6 +30,29 @@
   variance estimator falls back to the classical OLS variance on a
   singular model matrix.
 
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  prints the `Freq.` column as integers regardless of `digits`, which
+  continues to control percentage precision. This matches the convention
+  of SPSS, Stata, and SAS `PROC FREQ` for weighted counts and keeps the
+  two numeric concepts (discrete counts vs. continuous percentages)
+  visually distinct.
+
+### Bug fixes
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  correctly resolves qualified weight expressions such as
+  `weights = other$w` or `weights = other[["w"]]` even when the
+  referenced column name also exists in `data`. Previously the bare-name
+  fallback could silently pull the weight vector from the wrong data
+  frame when column names collided.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) with
+  `sort` and missing values now keeps the `NA` row at the end of the
+  tabulation so the printed `Cum. Percent` and `Cum. Valid Percent`
+  columns stay monotonic and match the Valid → Missing → Total display
+  layout. Sorting previously could push the `NA` row between valid rows
+  and make cumulative percentages appear to jump.
+
 ## spicy 0.8.0
 
 CRAN release: 2026-04-10

@@ -89,13 +89,13 @@ the total weighted N matches the unweighted N:
 freq(sochealth, education, weights = weight, rescale = TRUE)
 #> Frequency table: education
 #> 
-#>  Category │ Values            Freq.  Percent 
-#> ──────────┼──────────────────────────────────
-#>  Valid    │ Lower secondary  258.62     21.6 
-#>           │ Upper secondary  546.40     45.5 
-#>           │ Tertiary         394.99     32.9 
-#> ──────────┼──────────────────────────────────
-#>  Total    │                    1200    100.0 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    259     21.6 
+#>           │ Upper secondary    546     45.5 
+#>           │ Tertiary           395     32.9 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor

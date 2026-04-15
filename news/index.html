@@ -67,6 +67,12 @@
 <h3 id="minor-improvements-0-9-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-9-0"></a></h3>
 <ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> documentation now explicitly records why <code>p_value = TRUE</code> and <code>r2 = "r2"</code> are the default display: the function exists to report a fitted linear model, so its inferential output is part of what it is meant to convey.</p></li>
 <li><p>Internal cleanup: removed unused display-builder helpers from the <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> code path, and <code>compute_lm_vcov()</code> now warns explicitly when a robust variance estimator falls back to the classical OLS variance on a singular model matrix.</p></li>
+<li><p><code><a href="../reference/freq.html">freq()</a></code> now prints the <code>Freq.</code> column as integers regardless of <code>digits</code>, which continues to control percentage precision. This matches the convention of SPSS, Stata, and SAS <code>PROC FREQ</code> for weighted counts and keeps the two numeric concepts (discrete counts vs. continuous percentages) visually distinct.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-0"></a></h3>
+<ul><li><p><code><a href="../reference/freq.html">freq()</a></code> now correctly resolves qualified weight expressions such as <code>weights = other$w</code> or <code>weights = other[["w"]]</code> even when the referenced column name also exists in <code>data</code>. Previously the bare-name fallback could silently pull the weight vector from the wrong data frame when column names collided.</p></li>
+<li><p><code><a href="../reference/freq.html">freq()</a></code> with <code>sort</code> and missing values now keeps the <code>NA</code> row at the end of the tabulation so the printed <code>Cum. Percent</code> and <code>Cum. Valid Percent</code> columns stay monotonic and match the Valid → Missing → Total display layout. Sorting previously could push the <code>NA</code> row between valid rows and make cumulative percentages appear to jump.</p></li>
 </ul></div>
 </div>
     <div class="section level2">

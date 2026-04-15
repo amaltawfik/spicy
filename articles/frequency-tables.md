@@ -114,13 +114,13 @@ adjusts the weighted total to match the unweighted sample size:
 freq(sochealth, education, weights = weight)
 #> Frequency table: education
 #> 
-#>  Category │ Values            Freq.  Percent 
-#> ──────────┼──────────────────────────────────
-#>  Valid    │ Lower secondary  258.62     21.6 
-#>           │ Upper secondary  546.40     45.5 
-#>           │ Tertiary         394.99     32.9 
-#> ──────────┼──────────────────────────────────
-#>  Total    │                    1200    100.0 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    259     21.6 
+#>           │ Upper secondary    546     45.5 
+#>           │ Tertiary           395     32.9 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1200    100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -134,13 +134,13 @@ Set `rescale = FALSE` to keep the raw weighted counts:
 freq(sochealth, education, weights = weight, rescale = FALSE)
 #> Frequency table: education
 #> 
-#>  Category │ Values             Freq.  Percent 
-#> ──────────┼───────────────────────────────────
-#>  Valid    │ Lower secondary   257.86     21.6 
-#>           │ Upper secondary   544.79     45.5 
-#>           │ Tertiary          393.82     32.9 
-#> ──────────┼───────────────────────────────────
-#>  Total    │                  1196.47    100.0 
+#>  Category │ Values           Freq.  Percent 
+#> ──────────┼─────────────────────────────────
+#>  Valid    │ Lower secondary    258     21.6 
+#>           │ Upper secondary    545     45.5 
+#>           │ Tertiary           394     32.9 
+#> ──────────┼─────────────────────────────────
+#>  Total    │                   1196    100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
