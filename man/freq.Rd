@@ -13,7 +13,7 @@ freq(
   cum = FALSE,
   sort = "",
   na_val = NULL,
-  labelled_levels = c("prefixed", "labels", "values", "p", "l", "v"),
+  labelled_levels = c("prefixed", "labels", "values"),
   rescale = TRUE,
   styled = TRUE,
   ...
@@ -21,12 +21,15 @@ freq(
 }
 \arguments{
 \item{data}{A \code{data.frame}, vector, or factor. If a data frame is provided,
-specify the target variable \code{x}.}
+specify the target variable \code{x}. If both \code{data} and \code{x} are supplied as
+vectors, \code{data} is ignored with a warning.}
 
 \item{x}{A variable from \code{data} (unquoted).}
 
 \item{weights}{Optional numeric vector of weights (same length as \code{x}).
-The variable may be referenced as a bare name when it belongs to \code{data}.}
+The variable may be referenced as a bare name when it belongs to \code{data},
+or as a qualified expression like \code{other$w} (evaluated in the calling
+environment), which always takes precedence over \code{data} lookup.}
 
 \item{digits}{Number of decimal digits to display for percentages (default: \code{1}).}
 

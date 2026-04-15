@@ -92,13 +92,7 @@ print.spicy_freq_table <- function(x, ...) {
     )
   }
 
-  fmt_int <- function(v) {
-    ifelse(
-      v %% 1 != 0,
-      format(round(v, 2), trim = TRUE),
-      format(round(v, 0), trim = TRUE)
-    )
-  }
+  fmt_int <- function(v) format(round(v, 0), trim = TRUE)
 
   build_rows <- function(block, category, show_valid_col_block) {
     if (!nrow(block)) {

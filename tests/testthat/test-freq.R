@@ -314,3 +314,78 @@ test_that("freq() styled = FALSE returns plain data.frame", {
   expect_equal(class(res), "data.frame")
   expect_false(inherits(res, "spicy_freq_table"))
 })
+
+test_that("freq() weights from a qualified expression win over data lookup", {
+  # Two data frames share a column name `w` but hold different weights.
+  # freq(df1, x, weights = df2$w) must use df2$w, not df1$w.
+  df1 <- data.frame(x = c("A", "B", "C"), w = c(1, 1, 1))
+  df2 <- data.frame(w = c(10, 20, 30))
+
+  res_qualified <- freq(df1, x, weights = df2$w, rescale = FALSE, styled = FALSE)
+  res_bare <- freq(df1, x, weights = w, rescale = FALSE, styled = FALSE)
+
+  expect_equal(sum(res_qualified$n), 60)
+  expect_equal(sum(res_bare$n), 3)
+
+  # Qualified expression also works with [[ ]]
+  res_brackets <- freq(df1, x, weights = df2[["w"]], rescale = FALSE, styled = FALSE)
+  expect_equal(sum(res_brackets$n), 60)
+})
+
+test_that("freq() cum_prop stays monotonic with sort and missing values", {
+  # When sort pushes frequent categories to the top, the NA row must still
+  # be placed at the end so the valid block's cum_prop rises monotonically
+  # from 0 toward the total-valid share.
+  x <- c("A", "A", "A", "B", "B", "C", NA, NA)
+  res <- freq(x, sort = "-", cum = TRUE, styled = FALSE)
+
+  na_pos <- which(is.na(res$value))
+  expect_equal(na_pos, nrow(res))
+
+  valid_cum <- res$cum_prop[seq_len(nrow(res) - 1L)]
+  expect_true(all(diff(valid_cum) >= 0))
+  expect_equal(res$cum_prop[nrow(res)], 1)
+
+  valid_cv <- res$cum_valid_prop[seq_len(nrow(res) - 1L)]
+  expect_true(all(diff(valid_cv) >= 0))
+  expect_equal(valid_cv[length(valid_cv)], 1)
+  expect_true(is.na(res$cum_valid_prop[nrow(res)]))
+})
+
+test_that("freq() handles a single-level factor", {
+  f <- factor(c("only", "only", "only"))
+  res <- freq(f, styled = FALSE)
+  expect_equal(nrow(res), 1L)
+  expect_equal(res$n, 3)
+  expect_equal(res$prop, 1)
+})
+
+test_that("freq() handles an all-NA input", {
+  x <- c(NA, NA, NA)
+  res <- freq(x, styled = FALSE)
+  expect_true(all(is.na(res$value)))
+  expect_equal(sum(res$n), 3)
+  expect_equal(res$prop, 1)
+  expect_true(all(is.na(res$valid_prop)))
+})
+
+test_that("freq() prints integer counts even with fractional weights", {
+  # Matches SPSS/Stata/SAS convention: the Freq. column is always rendered
+  # as integers, regardless of `digits` (which controls percentages only).
+  df <- data.frame(x = c("A", "B", "C"), w = c(1.1, 2.2, 3.3))
+  out1 <- capture.output(freq(df, x, weights = w, digits = 1, rescale = FALSE))
+  out3 <- capture.output(freq(df, x, weights = w, digits = 3, rescale = FALSE))
+  expect_false(any(grepl("1\\.1\\b", out1)))
+  expect_false(any(grepl("1\\.100", out3)))
+  expect_true(any(grepl("\\b1\\b", out1)))
+  expect_true(any(grepl("\\b2\\b", out1)))
+  expect_true(any(grepl("\\b3\\b", out1)))
+})
+
+test_that("freq() labelled_levels accepts p/l/v shortcuts via partial matching", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 2, 3), labels = c(Low = 1, Mid = 2, High = 3))
+  expect_true(any(grepl("\\[1\\]", freq(x, labelled_levels = "p", styled = FALSE)$value)))
+  expect_true(all(!grepl("\\[", freq(x, labelled_levels = "l", styled = FALSE)$value)))
+  expect_true(any(freq(x, labelled_levels = "v", styled = FALSE)$value %in% c("1", "2", "3")))
+})

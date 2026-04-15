@@ -28,10 +28,13 @@
 #' normalizes weights so their sum equals the unweighted sample size.
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
-#'   specify the target variable `x`.
+#'   specify the target variable `x`. If both `data` and `x` are supplied as
+#'   vectors, `data` is ignored with a warning.
 #' @param x A variable from `data` (unquoted).
 #' @param weights Optional numeric vector of weights (same length as `x`).
-#'   The variable may be referenced as a bare name when it belongs to `data`.
+#'   The variable may be referenced as a bare name when it belongs to `data`,
+#'   or as a qualified expression like `other$w` (evaluated in the calling
+#'   environment), which always takes precedence over `data` lookup.
 #' @param digits Number of decimal digits to display for percentages (default: `1`).
 #' @param valid Logical. If `TRUE` (default), display valid percentages
 #'   (excluding missing values).
@@ -144,19 +147,12 @@ freq <- function(
   cum = FALSE,
   sort = "",
   na_val = NULL,
-  labelled_levels = c("prefixed", "labels", "values", "p", "l", "v"),
+  labelled_levels = c("prefixed", "labels", "values"),
   rescale = TRUE,
   styled = TRUE,
   ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
-  labelled_levels <- switch(
-    labelled_levels,
-    "p" = "prefixed",
-    "l" = "labels",
-    "v" = "values",
-    labelled_levels
-  )
 
   if (!is.numeric(digits) || length(digits) != 1L || digits < 0) {
     stop("`digits` must be a single non-negative number.", call. = FALSE)
@@ -199,9 +195,9 @@ freq <- function(
   if (!missing(weights)) {
     weight_expr <- substitute(weights)
     weight_name <- deparse(weight_expr, backtick = FALSE)
-    weight_name <- sub("^.*\\$", "", weight_name)
+    is_qualified <- grepl("[$]|\\[\\[", weight_name)
 
-    if (is_df && weight_name %in% names(data)) {
+    if (is_df && !is_qualified && weight_name %in% names(data)) {
       weights <- data[[weight_name]]
     } else {
       weights <- tryCatch(
@@ -309,6 +305,19 @@ freq <- function(
     decreasing <- sort %in% c("-", "name-")
     sort_col <- if (sort %in% c("+", "-")) "n" else "value"
     df <- df[order(df[[sort_col]], decreasing = decreasing), ]
+  }
+
+  # Move missing-value rows to the end so cumulative columns match the
+  # printed layout (valid rows, then missing rows). Without this, a
+  # user-supplied `sort` can place the NA row between valid rows and make
+  # the displayed cum_prop look non-monotonic.
+  na_rows <- is.na(df$value)
+  if (any(na_rows) && !all(na_rows)) {
+    df <- rbind(
+      df[!na_rows, , drop = FALSE],
+      df[na_rows, , drop = FALSE]
+    )
+    rownames(df) <- NULL
   }
 
   if (cum) {
