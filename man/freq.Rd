@@ -76,7 +76,8 @@ If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
 \item{...}{Additional arguments passed to \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.}
 }
 \value{
-A \code{data.frame} with columns:
+With \code{styled = FALSE}, a plain \code{data.frame} with no extra attributes
+and columns:
 \itemize{
 \item \code{value} - unique values or factor levels
 \item \code{n} - frequency count (weighted if applicable)
@@ -85,7 +86,12 @@ A \code{data.frame} with columns:
 \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if \code{cum = TRUE})
 }
 
-If \code{styled = TRUE}, prints the formatted table to the console and returns it invisibly.
+With \code{styled = TRUE} (default), prints the formatted table to the
+console and invisibly returns a \code{spicy_freq_table} object: the same
+\code{data.frame} carrying rendering metadata as attributes (\code{digits},
+\code{data_name}, \code{var_name}, \code{var_label}, \code{class_name}, \code{n_total},
+\code{n_valid}, \code{weighted}, \code{rescaled}, \code{weight_var}) used by
+\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.
 }
 \description{
 Creates a frequency table for a vector or variable from a data frame, with
@@ -125,6 +131,9 @@ library(labelled)
 # Simple numeric vector
 x <- c(1, 2, 2, 3, 3, 3, NA)
 freq(x)
+
+# Plain vector with a sentinel value recoded as missing
+freq(c(1, 2, 3, 99, 99), na_val = 99)
 
 # Labelled variable (haven-style)
 x_lbl <- labelled(

@@ -15,7 +15,7 @@ This is version 0.9.0 of the **spicy** package.
 
 * `freq()` gains two bug fixes: qualified weight expressions such as `weights = other$w` are now always evaluated in the calling environment, so a column-name collision with `data` can no longer pull the weight vector from the wrong data frame; and missing-value rows are kept at the end of the tabulation after `sort`, so the printed `Cum. Percent` and `Cum. Valid Percent` columns remain monotonic and match the Valid → Missing → Total layout.
 
-* `freq()` now prints the `Freq.` column as integers regardless of `digits` (which continues to control percentage precision), matching the convention of SPSS, Stata, and SAS `PROC FREQ` for weighted counts.
+* `freq()` now prints the `Freq.` column as integers regardless of `digits` (which continues to control percentage precision), matching the convention of SPSS, Stata, and SAS `PROC FREQ` for weighted counts. `freq(..., styled = FALSE)` also returns a genuinely plain `data.frame` with no rendering metadata clinging to it, so programmatic consumers see only the tabulation columns.
 
 * `table_continuous_lm()` documentation clarifies why `p_value = TRUE` and `r2 = "r2"` are the default display, and `compute_lm_vcov()` now warns explicitly when a robust variance estimator falls back to the classical OLS variance on a singular model matrix.
 

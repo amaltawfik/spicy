@@ -69,7 +69,8 @@
 #' @param ... Additional arguments passed to [print.spicy_freq_table()].
 #'
 #' @return
-#' A `data.frame` with columns:
+#' With `styled = FALSE`, a plain `data.frame` with no extra attributes
+#' and columns:
 #' \itemize{
 #'   \item \code{value} - unique values or factor levels
 #'   \item \code{n} - frequency count (weighted if applicable)
@@ -78,7 +79,12 @@
 #'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if `cum = TRUE`)
 #' }
 #'
-#' If `styled = TRUE`, prints the formatted table to the console and returns it invisibly.
+#' With `styled = TRUE` (default), prints the formatted table to the
+#' console and invisibly returns a `spicy_freq_table` object: the same
+#' `data.frame` carrying rendering metadata as attributes (`digits`,
+#' `data_name`, `var_name`, `var_label`, `class_name`, `n_total`,
+#' `n_valid`, `weighted`, `rescaled`, `weight_var`) used by
+#' [print.spicy_freq_table()].
 #'
 #' @examples
 #' # Frequency table with labelled ordered factor
@@ -90,6 +96,9 @@
 #' # Simple numeric vector
 #' x <- c(1, 2, 2, 3, 3, 3, NA)
 #' freq(x)
+#'
+#' # Plain vector with a sentinel value recoded as missing
+#' freq(c(1, 2, 3, 99, 99), na_val = 99)
 #'
 #' # Labelled variable (haven-style)
 #' x_lbl <- labelled(
@@ -332,6 +341,13 @@ freq <- function(
     }
   }
 
+  if (!styled) {
+    # Return a genuinely plain data.frame: no spicy print-method attributes
+    # clinging to it. Users who want the metadata can keep `styled = TRUE`
+    # (default) and inspect the invisibly returned `spicy_freq_table`.
+    return(df)
+  }
+
   attr(df, "digits") <- digits
   attr(df, "data_name") <- data_name
   attr(df, "var_name") <- var_name
@@ -344,11 +360,6 @@ freq <- function(
   attr(df, "weight_var") <- weight_name
 
   class(df) <- c("spicy_freq_table", "spicy_table", class(df))
-
-  if (!styled) {
-    class(df) <- "data.frame"
-    return(df)
-  }
 
   print(df, ...)
   invisible(df)

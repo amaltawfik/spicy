@@ -8,8 +8,10 @@ test_that("print.spicy_freq_table prints correctly and invisibly", {
   )
   var_label(x) <- "Satisfaction level"
 
-  # Generate unstyled frequency table
-  df <- freq(x, styled = FALSE)
+  # Generate the styled invisible return (spicy_freq_table carrying the
+  # print-method metadata). Swallow the printed output from the freq()
+  # call itself via capture.output.
+  capture.output(df <- freq(x))
 
   # Test invisibility of print method
   expect_invisible(print.spicy_freq_table(df))
@@ -39,8 +41,9 @@ test_that("print.spicy_freq_table handles weighted tables", {
     poids = c(1.2, 0.8, 1.5, 1.0, 0.7)
   )
 
-  # Weighted frequency table
-  ftab <- freq(df, sexe, weights = poids, styled = FALSE)
+  # Weighted frequency table — keep the styled invisible return so that
+  # the metadata attributes needed by print.spicy_freq_table are present.
+  capture.output(ftab <- freq(df, sexe, weights = poids))
 
   output <- capture.output(print.spicy_freq_table(ftab))
 
@@ -52,7 +55,7 @@ test_that("print.spicy_freq_table handles weighted tables", {
 
 test_that("print.spicy_freq_table shows generic weight label when weight_var is empty", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
-  ftab <- freq(df, x, weights = w, styled = FALSE)
+  capture.output(ftab <- freq(df, x, weights = w))
   attr(ftab, "weight_var") <- NULL
   output <- capture.output(print.spicy_freq_table(ftab))
   expect_true(any(grepl("Weight: \\(applied\\)", output)))
@@ -62,7 +65,7 @@ test_that("print.spicy_freq_table handles variables without labels or missing va
   # Vector without label and no missing values
   x <- factor(c("A", "B", "B", "A", "C", "A"))
 
-  df <- freq(x, styled = FALSE)
+  capture.output(df <- freq(x))
   output <- capture.output(print.spicy_freq_table(df))
 
   # Expect no Label line, but expect Data/Class

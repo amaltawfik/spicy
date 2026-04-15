@@ -315,6 +315,35 @@ test_that("freq() styled = FALSE returns plain data.frame", {
   expect_false(inherits(res, "spicy_freq_table"))
 })
 
+test_that("freq() styled = FALSE strips spicy metadata attributes", {
+  df <- data.frame(
+    x = c("A", "B", "C"),
+    w = c(1, 2, 3)
+  )
+  res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
+  spicy_attrs <- c(
+    "digits", "data_name", "var_name", "var_label", "class_name",
+    "n_total", "n_valid", "weighted", "rescaled", "weight_var"
+  )
+  for (a in spicy_attrs) {
+    expect_null(attr(res, a), info = paste("attribute", a))
+  }
+  expect_setequal(
+    names(attributes(res)),
+    c("names", "row.names", "class")
+  )
+})
+
+test_that("freq() styled = TRUE invisibly returns an object carrying metadata", {
+  df <- data.frame(x = c("A", "B", "C"), w = c(1, 2, 3))
+  res <- withVisible(freq(df, x, weights = w))
+  expect_false(res$visible)
+  expect_s3_class(res$value, "spicy_freq_table")
+  expect_equal(attr(res$value, "digits"), 1)
+  expect_true(isTRUE(attr(res$value, "weighted")))
+  expect_equal(attr(res$value, "weight_var"), "w")
+})
+
 test_that("freq() weights from a qualified expression win over data lookup", {
   # Two data frames share a column name `w` but hold different weights.
   # freq(df1, x, weights = df2$w) must use df2$w, not df1$w.
