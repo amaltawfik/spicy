@@ -58,6 +58,40 @@ test_that("code_book() passes values and include_na to varlist", {
   expect_s3_class(cb, "datatables")
 })
 
+test_that("code_book() validates factor_levels", {
+  expect_error(
+    code_book(mtcars, factor_levels = "bad"),
+    '`factor_levels` must be "observed" or "all"'
+  )
+})
+
+test_that("code_book() defaults to all factor levels", {
+  skip_if_not_installed("DT")
+
+  captured <- character()
+
+  local_mocked_bindings(
+    varlist = function(..., factor_levels, tbl) {
+      captured <<- c(captured, factor_levels)
+      data.frame(
+        Variable = character(),
+        Label = character(),
+        Values = character(),
+        Class = character(),
+        N_distinct = integer(),
+        N_valid = integer(),
+        NAs = integer()
+      )
+    },
+    .package = "spicy"
+  )
+
+  suppressMessages(code_book(mtcars))
+  suppressMessages(code_book(mtcars, factor_levels = "observed"))
+
+  expect_equal(captured, c("all", "observed"))
+})
+
 test_that("code_book() wraps varlist() errors", {
   skip_if_not_installed("DT")
 

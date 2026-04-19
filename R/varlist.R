@@ -15,13 +15,18 @@
 #'   For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
 #'   the first three values, followed by an ellipsis (`...`), and the last value.
 #'   Values are sorted when appropriate (e.g., numeric, character, date)
-#'   For factors, the levels are used directly and are not sorted.
+#'   For factors, `factor_levels` controls whether observed or all declared
+#'   levels are shown; level order is preserved.
 #'   For labelled variables, prefixed labels are displayed via `labelled::to_factor(levels = "prefixed")`.
 #'   If `TRUE`, all unique non-missing values are displayed.
 #' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer (if interactive). If `TRUE`, returns a tibble.
 #' @param include_na Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly appended at the end of the `Values` summary
 #'   when present in the variable. This applies to all variable types.
 #'   If `FALSE` (the default), missing values are omitted from `Values` but still counted in the `NAs` column.
+#' @param factor_levels Character. Controls how factor values are displayed
+#'   in `Values`. `"observed"` (the default) shows only levels present in the
+#'   data, preserving factor level order. `"all"` shows all declared levels,
+#'   including unused levels.
 #' @param .raw_expr Internal. Do not use. Captures the original expression from `vl()` to generate an informative title. Used only for internal purposes.
 
 #' @returns
@@ -32,7 +37,7 @@
 #'   If `values = FALSE`, a compact summary (max 4 values: 3 + ... + last) is shown.
 #'   If `values = TRUE`, all unique non-missing values are displayed.
 #'   For labelled variables, **prefixed labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
-#'   For factors, levels are used as-is.
+#'   For factors, levels are displayed according to `factor_levels`.
 #'   Missing values (`NA`, `NaN`) are optionally appended at the end (controlled via `include_na`).
 #' - `Class`: the class of each variable (possibly multiple, e.g. `"labelled", "numeric"`)
 #' - `N_distinct`: number of distinct non-missing values
@@ -67,6 +72,7 @@ varlist <- function(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
+  factor_levels = c("observed", "all"),
   .raw_expr = substitute(x)
 ) {
   raw_expr <- .raw_expr
@@ -77,6 +83,11 @@ varlist <- function(
       call. = FALSE
     )
   }
+
+  validate_varlist_logical(values, "values")
+  validate_varlist_logical(tbl, "tbl")
+  validate_varlist_logical(include_na, "include_na")
+  factor_levels <- match_varlist_factor_levels(factor_levels)
 
   selectors <- if (missing(...)) {
     tidyselect::eval_select(rlang::expr(everything()), data = x)
@@ -151,9 +162,17 @@ varlist <- function(
     x,
     function(col) {
       if (values) {
-        summarize_values_all(col, include_na = include_na)
+        summarize_values_all(
+          col,
+          include_na = include_na,
+          factor_levels = factor_levels
+        )
       } else {
-        summarize_values_minmax(col, include_na = include_na)
+        summarize_values_minmax(
+          col,
+          include_na = include_na,
+          factor_levels = factor_levels
+        )
       }
     },
     character(1)
@@ -230,9 +249,14 @@ varlist_title <- function(expr, selectors_used = FALSE) {
   "vl: <data>"
 }
 
-summarize_values_minmax <- function(col, include_na = FALSE) {
-  has_na <- any(is.na(col))
-  has_nan <- is.numeric(col) && any(is.nan(col))
+summarize_values_minmax <- function(
+  col,
+  include_na = FALSE,
+  factor_levels = c("observed", "all")
+) {
+  factor_levels <- match_varlist_factor_levels(factor_levels)
+  has_na <- varlist_has_na(col)
+  has_nan <- varlist_has_nan(col)
   max_display <- 4
 
   vals <- tryCatch(
@@ -244,7 +268,7 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
         }
         unique_vals <- unique(col)
       } else if (is.factor(col)) {
-        unique_vals <- levels(col)
+        unique_vals <- factor_values(col, factor_levels = factor_levels)
       } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
         col_no_na <- stats::na.omit(col)
         unique_vals <- sort(unique(col_no_na))
@@ -255,11 +279,9 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
         unique_vals <- sort(unique(col_no_na))
       }
 
-      unique_vals <- as.character(unique_vals)
+      unique_vals <- format_varlist_values(unique_vals)
 
-      # Filter out "NA" or "" already encoded as text
-      already_present <- unique_vals %in% c("NA", "", NA_character_)
-      vals_chr_clean <- unique_vals[!already_present]
+      vals_chr_clean <- unique_vals[!is.na(unique_vals)]
 
       if (length(vals_chr_clean) == 0) {
         val_str <- ""
@@ -300,25 +322,34 @@ summarize_values_minmax <- function(col, include_na = FALSE) {
 }
 
 
-summarize_values_all <- function(col, include_na = FALSE) {
+summarize_values_all <- function(
+  col,
+  include_na = FALSE,
+  factor_levels = c("observed", "all")
+) {
+  factor_levels <- match_varlist_factor_levels(factor_levels)
   na_omit_col <- stats::na.omit(col)
-  has_na <- any(is.na(col))
-  has_nan <- is.numeric(col) && any(is.nan(col))
+  has_na <- varlist_has_na(col)
+  has_nan <- varlist_has_nan(col)
 
-  show_vals <- function(v) {
+  show_vals <- function(v, sort_values = TRUE) {
     vals <- tryCatch(
       {
-        sort(unique(v))
+        vals <- unique(v)
+        if (sort_values) {
+          sort(vals)
+        } else {
+          vals
+        }
       },
       error = function(e) {
         "Error: invalid values"
       }
     )
 
-    vals_chr <- as.character(vals)
+    vals_chr <- format_varlist_values(vals)
 
-    # Remove textual NA values already encoded
-    vals_chr_clean <- vals_chr[!vals_chr %in% c("NA", "", NA_character_)]
+    vals_chr_clean <- vals_chr[!is.na(vals_chr)]
 
     # Add NA or NaN if requested (based on flags computed above)
     extras <- c()
@@ -340,7 +371,10 @@ summarize_values_all <- function(col, include_na = FALSE) {
   }
 
   if (is.factor(col)) {
-    return(show_vals(levels(col)))
+    return(show_vals(
+      factor_values(col, factor_levels = factor_levels),
+      sort_values = FALSE
+    ))
   }
 
   if (is.logical(col) || is.character(col)) {
@@ -360,23 +394,111 @@ summarize_values_all <- function(col, include_na = FALSE) {
 }
 
 
+format_varlist_values <- function(x) {
+  values <- as.character(x)
+  values[!is.na(values) & values == ""] <- "\"\""
+  values
+}
+
+
+varlist_has_na <- function(x) {
+  missing <- is.na(x)
+  any(missing & !varlist_is_nan(x))
+}
+
+
+varlist_has_nan <- function(x) {
+  any(varlist_is_nan(x))
+}
+
+
+varlist_is_nan <- function(x) {
+  if (!is.numeric(x)) {
+    return(rep(FALSE, length(x)))
+  }
+
+  is.nan(x)
+}
+
+
+validate_varlist_logical <- function(x, arg) {
+  if (!is.logical(x) || length(x) != 1L || is.na(x)) {
+    stop("`", arg, "` must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  invisible(x)
+}
+
+
+match_varlist_factor_levels <- function(factor_levels) {
+  choices <- c("observed", "all")
+
+  if (
+    !is.character(factor_levels) ||
+      length(factor_levels) < 1L ||
+      anyNA(factor_levels)
+  ) {
+    stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
+  }
+
+  if (length(factor_levels) > 1L) {
+    if (
+      length(factor_levels) == length(choices) &&
+        setequal(factor_levels, choices)
+    ) {
+      factor_levels <- factor_levels[[1L]]
+    } else {
+      stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
+    }
+  }
+
+  tryCatch(
+    match.arg(factor_levels, choices = choices),
+    error = function(e) {
+      stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
+    }
+  )
+}
+
+
+factor_values <- function(col, factor_levels = c("observed", "all")) {
+  factor_levels <- match_varlist_factor_levels(factor_levels)
+
+  if (identical(factor_levels, "all")) {
+    return(levels(col))
+  }
+
+  observed <- stats::na.omit(col)
+  levels(col)[levels(col) %in% as.character(observed)]
+}
+
+
 #' Alias for `varlist()`
 #'
 #' `vl()` is a convenient shorthand for `varlist()` that offers identical functionality with a shorter name.
 #'
 #' For full documentation, see [`varlist()`].
 #'
-#' @aliases vl
 #' @rdname varlist
 #'
-#' @param x A data frame or a transformation of one. Must be named and identifiable.
-#' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.).
-#' @param values Logical. If `FALSE` (the default), only min/max or representative values are displayed.
-#'   If `TRUE`, all unique values are listed.
-#' @param tbl Logical. If `FALSE` (the default), the summary is opened in the Viewer (if interactive).
-#'   If `TRUE`, a tibble is returned instead.
-#' @param include_na Logical. If `TRUE`, missing values (`NA`) are included in the `Values` column.
-#'   Default is `FALSE`.
+#' @param x A data frame, or a transformation of one. Must be named and identifiable.
+#' @param ... Optional tidyselect-style column selectors (e.g. `starts_with("var")`, `where(is.numeric)`, etc.)
+#' @param values Logical. If `FALSE` (the default), displays a compact summary of the variable's values.
+#'   For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
+#'   the first three values, followed by an ellipsis (`...`), and the last value.
+#'   Values are sorted when appropriate (e.g., numeric, character, date)
+#'   For factors, `factor_levels` controls whether observed or all declared
+#'   levels are shown; level order is preserved.
+#'   For labelled variables, prefixed labels are displayed via `labelled::to_factor(levels = "prefixed")`.
+#'   If `TRUE`, all unique non-missing values are displayed.
+#' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer (if interactive). If `TRUE`, returns a tibble.
+#' @param include_na Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly appended at the end of the `Values` summary
+#'   when present in the variable. This applies to all variable types.
+#'   If `FALSE` (the default), missing values are omitted from `Values` but still counted in the `NAs` column.
+#' @param factor_levels Character. Controls how factor values are displayed
+#'   in `Values`. `"observed"` (the default) shows only levels present in the
+#'   data, preserving factor level order. `"all"` shows all declared levels,
+#'   including unused levels.
 #'
 #' @export
 #'
@@ -385,7 +507,14 @@ summarize_values_all <- function(col, include_na = FALSE) {
 #' sochealth |> vl()
 #' vl(sochealth, starts_with("bmi"))
 #' vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
-vl <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE) {
+vl <- function(
+  x,
+  ...,
+  values = FALSE,
+  tbl = FALSE,
+  include_na = FALSE,
+  factor_levels = c("observed", "all")
+) {
   raw_expr <- substitute(x)
   varlist(
     x = eval(raw_expr, envir = parent.frame()),
@@ -393,6 +522,7 @@ vl <- function(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE) {
     values = values,
     tbl = tbl,
     include_na = include_na,
+    factor_levels = factor_levels,
     .raw_expr = raw_expr
   )
 }

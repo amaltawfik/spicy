@@ -11,24 +11,43 @@ varlist(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
+  factor_levels = c("observed", "all"),
   .raw_expr = substitute(x)
 )
 
-vl(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE)
+vl(
+  x,
+  ...,
+  values = FALSE,
+  tbl = FALSE,
+  include_na = FALSE,
+  factor_levels = c("observed", "all")
+)
 }
 \arguments{
-\item{x}{A data frame or a transformation of one. Must be named and identifiable.}
+\item{x}{A data frame, or a transformation of one. Must be named and identifiable.}
 
-\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.).}
+\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.)}
 
-\item{values}{Logical. If \code{FALSE} (the default), only min/max or representative values are displayed.
-If \code{TRUE}, all unique values are listed.}
+\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary of the variable's values.
+For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
+the first three values, followed by an ellipsis (\code{...}), and the last value.
+Values are sorted when appropriate (e.g., numeric, character, date)
+For factors, \code{factor_levels} controls whether observed or all declared
+levels are shown; level order is preserved.
+For labelled variables, prefixed labels are displayed via \code{labelled::to_factor(levels = "prefixed")}.
+If \code{TRUE}, all unique non-missing values are displayed.}
 
-\item{tbl}{Logical. If \code{FALSE} (the default), the summary is opened in the Viewer (if interactive).
-If \code{TRUE}, a tibble is returned instead.}
+\item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer (if interactive). If \code{TRUE}, returns a tibble.}
 
-\item{include_na}{Logical. If \code{TRUE}, missing values (\code{NA}) are included in the \code{Values} column.
-Default is \code{FALSE}.}
+\item{include_na}{Logical. If \code{TRUE}, unique missing values (\code{NA}, \code{NaN}) are explicitly appended at the end of the \code{Values} summary
+when present in the variable. This applies to all variable types.
+If \code{FALSE} (the default), missing values are omitted from \code{Values} but still counted in the \code{NAs} column.}
+
+\item{factor_levels}{Character. Controls how factor values are displayed
+in \code{Values}. \code{"observed"} (the default) shows only levels present in the
+data, preserving factor level order. \code{"all"} shows all declared levels,
+including unused levels.}
 
 \item{.raw_expr}{Internal. Do not use. Captures the original expression from \code{vl()} to generate an informative title. Used only for internal purposes.}
 }
@@ -41,7 +60,7 @@ A tibble with one row per (selected) variable, containing the following columns:
 If \code{values = FALSE}, a compact summary (max 4 values: 3 + ... + last) is shown.
 If \code{values = TRUE}, all unique non-missing values are displayed.
 For labelled variables, \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
-For factors, levels are used as-is.
+For factors, levels are displayed according to \code{factor_levels}.
 Missing values (\code{NA}, \code{NaN}) are optionally appended at the end (controlled via \code{include_na}).
 \item \code{Class}: the class of each variable (possibly multiple, e.g. \verb{"labelled", "numeric"})
 \item \code{N_distinct}: number of distinct non-missing values

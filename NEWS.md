@@ -11,7 +11,16 @@
   `p_value = FALSE` explicitly. `statistic` and `effect_size` remain `FALSE`
   by default and must still be enabled consciously.
 
+* `varlist()` now displays observed factor levels by default in `Values`,
+  matching its role as a quick inspection of the current data. Use
+  `factor_levels = "all"` to display unused factor levels as well, which was
+  the previous default behavior and remains the default in `code_book()`.
+
 ## Minor improvements
+
+* `code_book()` gains a `factor_levels` argument. It defaults to `"all"` so
+  exported codebooks continue to document all declared factor levels,
+  including unused levels; use `"observed"` to mirror `varlist()` output.
 
 * `table_continuous_lm()` documentation now explicitly records why
   `p_value = TRUE` and `r2 = "r2"` are the default display: the function
@@ -52,6 +61,18 @@
   Valid → Missing → Total display layout. Sorting previously could push
   the `NA` row between valid rows and make cumulative percentages appear
   to jump.
+
+* `varlist()` now preserves literal `"NA"` and empty-string values in the
+  `Values` summary instead of removing them as if they were missing values.
+
+* `varlist()` now distinguishes actual `NA` values from `NaN` in the
+  `Values` summary when `include_na = TRUE`.
+
+* `varlist(values = TRUE)` now preserves factor level order in the
+  `Values` summary, matching the default compact factor display.
+
+* `varlist()` now validates `values`, `tbl`, and `include_na` up front and
+  gives a clear error when one of them is not `TRUE` or `FALSE`.
 
 # spicy 0.8.0
 

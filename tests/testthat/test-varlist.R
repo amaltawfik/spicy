@@ -28,6 +28,39 @@ test_that("varlist() throws error for non-data.frame input", {
   expect_error(varlist(1:10), "only works with named data frames")
 })
 
+test_that("varlist() validates logical arguments", {
+  expect_error(varlist(mtcars, values = NA), "`values` must be TRUE or FALSE")
+  expect_error(
+    varlist(mtcars, values = c(TRUE, FALSE)),
+    "`values` must be TRUE or FALSE"
+  )
+  expect_error(varlist(mtcars, tbl = NA), "`tbl` must be TRUE or FALSE")
+  expect_error(
+    varlist(mtcars, include_na = NA),
+    "`include_na` must be TRUE or FALSE"
+  )
+  expect_error(vl(mtcars, values = NA), "`values` must be TRUE or FALSE")
+})
+
+test_that("varlist() validates factor_levels", {
+  expect_error(
+    varlist(mtcars, factor_levels = "bad"),
+    '`factor_levels` must be "observed" or "all"'
+  )
+  expect_error(
+    varlist(mtcars, factor_levels = NA_character_),
+    '`factor_levels` must be "observed" or "all"'
+  )
+  expect_error(
+    varlist(mtcars, factor_levels = c("observed", "bad")),
+    '`factor_levels` must be "observed" or "all"'
+  )
+  expect_error(
+    vl(mtcars, factor_levels = "bad"),
+    '`factor_levels` must be "observed" or "all"'
+  )
+})
+
 test_that("varlist_title() returns vl: name for simple object", {
   dummy_expr <- quote(iris)
   expect_equal(varlist_title(dummy_expr), "vl: iris")
@@ -119,6 +152,17 @@ test_that("varlist() values = FALSE shows all when <= 4 values", {
   expect_equal(unname(res$Values), "1, 2, 3")
 })
 
+test_that("varlist() preserves literal NA and empty string values", {
+  df <- data.frame(x = c("", "NA", "b"), stringsAsFactors = FALSE)
+
+  res <- varlist(df, tbl = TRUE)
+  res_all <- varlist(df, tbl = TRUE, values = TRUE)
+
+  expect_equal(unname(res$Values), "\"\", NA, b")
+  expect_equal(unname(res_all$Values), "\"\", NA, b")
+  expect_equal(unname(res$N_distinct), 3L)
+})
+
 test_that("varlist() include_na appends NA to values", {
   df <- data.frame(x = c(1, 2, NA))
   res <- varlist(df, tbl = TRUE, include_na = TRUE)
@@ -128,7 +172,20 @@ test_that("varlist() include_na appends NA to values", {
 test_that("varlist() include_na appends NaN for numeric", {
   df <- data.frame(x = c(1, 2, NaN))
   res <- varlist(df, tbl = TRUE, include_na = TRUE)
-  expect_match(res$Values, "NaN")
+  expect_equal(unname(res$Values), "1, 2, NaN")
+})
+
+test_that("varlist() include_na distinguishes NA from NaN", {
+  nan_only <- data.frame(x = c(1, NaN, 3))
+  both <- data.frame(x = c(1, NA, NaN, 3))
+
+  res_nan_only <- varlist(nan_only, tbl = TRUE, include_na = TRUE)
+  res_both <- varlist(both, tbl = TRUE, include_na = TRUE)
+
+  expect_equal(unname(res_nan_only$Values), "1, 3, NaN")
+  expect_equal(unname(res_both$Values), "1, 3, NA, NaN")
+  expect_equal(unname(res_both$NAs), 2L)
+  expect_equal(unname(res_both$N_valid), 2L)
 })
 
 test_that("summarize_values_minmax handles factors", {
@@ -177,7 +234,32 @@ test_that("summarize_values_all handles character columns", {
 test_that("summarize_values_all handles factors with values = TRUE", {
   f <- factor(c("x", "y"), levels = c("y", "x"))
   res <- varlist(data.frame(v = f), tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "y, x")
+})
+
+test_that("varlist() displays observed factor levels by default", {
+  f <- factor(c("x", "x"), levels = c("x", "y"))
+  res <- varlist(data.frame(v = f), tbl = TRUE)
+  res_all <- varlist(data.frame(v = f), tbl = TRUE, values = TRUE)
+
+  expect_equal(unname(res$Values), "x")
+  expect_equal(unname(res_all$Values), "x")
+  expect_equal(unname(res$N_distinct), 1L)
+})
+
+test_that("varlist() can display all factor levels", {
+  f <- factor(c("x", "x"), levels = c("x", "y"))
+  res <- varlist(data.frame(v = f), tbl = TRUE, factor_levels = "all")
+  res_all <- varlist(
+    data.frame(v = f),
+    tbl = TRUE,
+    values = TRUE,
+    factor_levels = "all"
+  )
+
   expect_equal(unname(res$Values), "x, y")
+  expect_equal(unname(res_all$Values), "x, y")
+  expect_equal(unname(res$N_distinct), 1L)
 })
 
 test_that("summarize_values_minmax handles all-NA column", {
@@ -240,5 +322,5 @@ test_that("varlist() non-interactive prints message", {
 test_that("varlist() values=TRUE with NaN shows NaN", {
   df <- data.frame(x = c(1, NaN, 3))
   res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
-  expect_match(res$Values, "NaN")
+  expect_equal(unname(res$Values), "1, 3, NaN")
 })
