@@ -1,9 +1,20 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 2 notes on R-oldrelease only
+0 errors | 0 warnings | 2 notes
 
-* On R-oldrelease (4.4.3), CRAN's spell checker flags "bivariate" in `DESCRIPTION` as a possibly misspelled word. This is an ordinary statistical term used in the package description.
-* On R-oldrelease (4.4.3), a NOTE reports that the Author field differs from Authors@R. This is caused by the `ROR` (Research Organization Registry) identifier in the `comment` field of `Authors@R`, which older R versions do not fully expand into the plain-text Author field. The package metadata is correct; the discrepancy is cosmetic and does not appear on R-release or R-devel.
+* checking CRAN incoming feasibility ... NOTE
+  Number of updates in past 6 months: 7
+
+* On R-oldrelease (4.4.3), a NOTE reports that the Author field differs
+  from Authors@R. This is caused by the ROR (Research Organization
+  Registry) identifier in the `comment` field of `Authors@R`, which older R
+  versions do not fully expand into the plain-text Author field. The package
+  metadata is correct; the discrepancy is cosmetic.
+
+This release contains user-facing fixes and documentation improvements for
+variable inspection and summary-table workflows. The additional submission is
+intended to make the package behavior clearer and more robust before broader
+use of version 0.9.0.
 
 ## Comments
 
@@ -11,7 +22,11 @@ This is version 0.9.0 of the **spicy** package.
 
 ### Main changes
 
-* `table_continuous()` now enables inferential output by default when `by` is supplied: the `p` column from the chosen group-comparison test is shown automatically, aligning the function with `table_continuous_lm()`'s inferential default. Previous behaviour is available via `p_value = FALSE`. `statistic` and `effect_size` remain `FALSE` by default.
+* `table_continuous()` now enables inferential output by default when `by` is supplied: the `p` column from the chosen group-comparison test is shown automatically, aligning the function with `table_continuous_lm()`'s inferential default. Previous behavior is available via `p_value = FALSE`. `statistic` and `effect_size` remain `FALSE` by default.
+
+* `varlist()` and `vl()` now display observed factor levels by default in `Values`, with `factor_levels = "all"` available to include unused levels. `code_book()` gains the same argument but defaults to `"all"` so exported codebooks continue to document all declared factor levels.
+
+* `varlist()` now preserves literal `"NA"` and empty-string values, distinguishes actual `NA` values from `NaN` when `include_na = TRUE`, preserves factor level order, and validates logical arguments up front with clear error messages.
 
 * `freq()` gains two bug fixes: qualified weight expressions such as `weights = other$w` are now always evaluated in the calling environment, so a column-name collision with `data` can no longer pull the weight vector from the wrong data frame; and missing-value rows are kept at the end of the tabulation after `sort`, so the printed `Cum. Percent` and `Cum. Valid Percent` columns remain monotonic and match the Valid → Missing → Total layout.
 
