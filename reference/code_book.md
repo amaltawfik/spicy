@@ -14,7 +14,14 @@ print, CSV, Excel, PDF) directly.
 ## Usage
 
 ``` r
-code_book(x, values = FALSE, include_na = FALSE, title = "Codebook", ...)
+code_book(
+  x,
+  values = FALSE,
+  include_na = FALSE,
+  title = "Codebook",
+  factor_levels = c("all", "observed"),
+  ...
+)
 ```
 
 ## Arguments
@@ -30,8 +37,9 @@ code_book(x, values = FALSE, include_na = FALSE, title = "Codebook", ...)
   factor variables, up to four unique non-missing values are shown: the
   first three values, followed by an ellipsis (`...`), and the last
   value. Values are sorted when appropriate (e.g., numeric, character,
-  date) For factors, the levels are used directly and are not sorted.
-  For labelled variables, prefixed labels are displayed via
+  date) For factors, `factor_levels` controls whether observed or all
+  declared levels are shown; level order is preserved. For labelled
+  variables, prefixed labels are displayed via
   `labelled::to_factor(levels = "prefixed")`. If `TRUE`, all unique
   non-missing values are displayed.
 
@@ -48,6 +56,13 @@ code_book(x, values = FALSE, include_na = FALSE, title = "Codebook", ...)
   Optional character string displayed as the table title in the Viewer.
   Defaults to `"Codebook"`. Set to `NULL` to remove the title
   completely.
+
+- factor_levels:
+
+  Character. Controls how factor values are displayed in `Values`.
+  `"all"` (the default) shows all declared levels, including unused
+  levels. `"observed"` shows only levels present in the data, preserving
+  factor level order.
 
 - ...:
 

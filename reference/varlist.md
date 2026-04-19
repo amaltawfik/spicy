@@ -17,38 +17,64 @@ varlist(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
+  factor_levels = c("observed", "all"),
   .raw_expr = substitute(x)
 )
 
-vl(x, ..., values = FALSE, tbl = FALSE, include_na = FALSE)
+vl(
+  x,
+  ...,
+  values = FALSE,
+  tbl = FALSE,
+  include_na = FALSE,
+  factor_levels = c("observed", "all")
+)
 ```
 
 ## Arguments
 
 - x:
 
-  A data frame or a transformation of one. Must be named and
+  A data frame, or a transformation of one. Must be named and
   identifiable.
 
 - ...:
 
   Optional tidyselect-style column selectors (e.g. `starts_with("var")`,
-  `where(is.numeric)`, etc.).
+  `where(is.numeric)`, etc.)
 
 - values:
 
-  Logical. If `FALSE` (the default), only min/max or representative
-  values are displayed. If `TRUE`, all unique values are listed.
+  Logical. If `FALSE` (the default), displays a compact summary of the
+  variable's values. For numeric, character, date/time, labelled, and
+  factor variables, up to four unique non-missing values are shown: the
+  first three values, followed by an ellipsis (`...`), and the last
+  value. Values are sorted when appropriate (e.g., numeric, character,
+  date) For factors, `factor_levels` controls whether observed or all
+  declared levels are shown; level order is preserved. For labelled
+  variables, prefixed labels are displayed via
+  `labelled::to_factor(levels = "prefixed")`. If `TRUE`, all unique
+  non-missing values are displayed.
 
 - tbl:
 
-  Logical. If `FALSE` (the default), the summary is opened in the Viewer
-  (if interactive). If `TRUE`, a tibble is returned instead.
+  Logical. If `FALSE` (the default), opens the summary in the Viewer (if
+  interactive). If `TRUE`, returns a tibble.
 
 - include_na:
 
-  Logical. If `TRUE`, missing values (`NA`) are included in the `Values`
-  column. Default is `FALSE`.
+  Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly
+  appended at the end of the `Values` summary when present in the
+  variable. This applies to all variable types. If `FALSE` (the
+  default), missing values are omitted from `Values` but still counted
+  in the `NAs` column.
+
+- factor_levels:
+
+  Character. Controls how factor values are displayed in `Values`.
+  `"observed"` (the default) shows only levels present in the data,
+  preserving factor level order. `"all"` shows all declared levels,
+  including unused levels.
 
 - .raw_expr:
 
@@ -70,8 +96,8 @@ columns:
   all unique non-missing values are displayed. For labelled variables,
   **prefixed labels** are displayed using
   `labelled::to_factor(levels = "prefixed")`. For factors, levels are
-  used as-is. Missing values (`NA`, `NaN`) are optionally appended at
-  the end (controlled via `include_na`).
+  displayed according to `factor_levels`. Missing values (`NA`, `NaN`)
+  are optionally appended at the end (controlled via `include_na`).
 
 - `Class`: the class of each variable (possibly multiple, e.g.
   `"labelled", "numeric"`)

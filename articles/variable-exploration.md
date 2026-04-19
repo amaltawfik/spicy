@@ -145,7 +145,7 @@ head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
 #> 3 education         Highest education lev… Lower… orde…          3    1200     0
 #> 4 social_class      Subjective social cla… Lower… orde…          5    1200     0
 #> 5 employment_status Employment status      Emplo… fact…          4    1200     0
-#> 6 income_group      Household income group High,… orde…          4    1182    18
+#> 6 income_group      Household income group Low, … orde…          4    1182    18
 ```
 
 For a focused inspection, select only the variables you want to review:

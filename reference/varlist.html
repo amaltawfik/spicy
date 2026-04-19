@@ -72,10 +72,18 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 <span>  values <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  tbl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  .raw_expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">vl</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span>, values <span class="op">=</span> <span class="cn">FALSE</span>, tbl <span class="op">=</span> <span class="cn">FALSE</span>, include_na <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">vl</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  values <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tbl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  include_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -83,26 +91,39 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A data frame or a transformation of one. Must be named and identifiable.</p></dd>
+<dd><p>A data frame, or a transformation of one. Must be named and identifiable.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Optional tidyselect-style column selectors (e.g. <code>starts_with("var")</code>, <code>where(is.numeric)</code>, etc.).</p></dd>
+<dd><p>Optional tidyselect-style column selectors (e.g. <code>starts_with("var")</code>, <code>where(is.numeric)</code>, etc.)</p></dd>
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), only min/max or representative values are displayed.
-If <code>TRUE</code>, all unique values are listed.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), displays a compact summary of the variable's values.
+For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
+the first three values, followed by an ellipsis (<code>...</code>), and the last value.
+Values are sorted when appropriate (e.g., numeric, character, date)
+For factors, <code>factor_levels</code> controls whether observed or all declared
+levels are shown; level order is preserved.
+For labelled variables, prefixed labels are displayed via <code>labelled::to_factor(levels = "prefixed")</code>.
+If <code>TRUE</code>, all unique non-missing values are displayed.</p></dd>
 
 
 <dt id="arg-tbl">tbl<a class="anchor" aria-label="anchor" href="#arg-tbl"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), the summary is opened in the Viewer (if interactive).
-If <code>TRUE</code>, a tibble is returned instead.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), opens the summary in the Viewer (if interactive). If <code>TRUE</code>, returns a tibble.</p></dd>
 
 
 <dt id="arg-include-na">include_na<a class="anchor" aria-label="anchor" href="#arg-include-na"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, missing values (<code>NA</code>) are included in the <code>Values</code> column.
-Default is <code>FALSE</code>.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, unique missing values (<code>NA</code>, <code>NaN</code>) are explicitly appended at the end of the <code>Values</code> summary
+when present in the variable. This applies to all variable types.
+If <code>FALSE</code> (the default), missing values are omitted from <code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
+
+
+<dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
+<dd><p>Character. Controls how factor values are displayed
+in <code>Values</code>. <code>"observed"</code> (the default) shows only levels present in the
+data, preserving factor level order. <code>"all"</code> shows all declared levels,
+including unused levels.</p></dd>
 
 
 <dt id="arg--raw-expr">.raw_expr<a class="anchor" aria-label="anchor" href="#arg--raw-expr"></a></dt>
@@ -117,7 +138,7 @@ Default is <code>FALSE</code>.</p></dd>
 If <code>values = FALSE</code>, a compact summary (max 4 values: 3 + ... + last) is shown.
 If <code>values = TRUE</code>, all unique non-missing values are displayed.
 For labelled variables, <strong>prefixed labels</strong> are displayed using <code>labelled::to_factor(levels = "prefixed")</code>.
-For factors, levels are used as-is.
+For factors, levels are displayed according to <code>factor_levels</code>.
 Missing values (<code>NA</code>, <code>NaN</code>) are optionally appended at the end (controlled via <code>include_na</code>).</p></li>
 <li><p><code>Class</code>: the class of each variable (possibly multiple, e.g. <code>"labelled", "numeric"</code>)</p></li>
 <li><p><code>N_distinct</code>: number of distinct non-missing values</p></li>
