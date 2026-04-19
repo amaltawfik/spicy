@@ -12,7 +12,7 @@
   stays descriptive when `by` is absent, and reports the test *p*-value
   when `by` is supplied, matching
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)’s
-  inferential default. To preserve the previous behaviour, pass
+  inferential default. To preserve the previous behavior, pass
   `p_value = FALSE` explicitly. `statistic` and `effect_size` remain
   `FALSE` by default and must still be enabled consciously.
 
@@ -32,18 +32,6 @@
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   output.
 
-- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  documentation now explicitly records why `p_value = TRUE` and
-  `r2 = "r2"` are the default display: the function exists to report a
-  fitted linear model, so its inferential output is part of what it is
-  meant to convey.
-
-- Internal cleanup: removed unused display-builder helpers from the
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  code path, and `compute_lm_vcov()` now warns explicitly when a robust
-  variance estimator falls back to the classical OLS variance on a
-  singular model matrix.
-
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
   prints the `Freq.` column as integers regardless of `digits`, which
   continues to control percentage precision. This matches the convention
@@ -61,6 +49,11 @@
   `weight_var`) are now documented in `@return` and remain available on
   the invisibly returned `spicy_freq_table` object when `styled = TRUE`
   (the default).
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  documentation now clarifies why `p_value = TRUE` and `r2 = "r2"` are
+  the defaults, and robust-variance fallback warnings are now more
+  explicit when a model matrix is singular.
 
 ### Bug fixes
 
