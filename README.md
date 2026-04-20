@@ -285,7 +285,17 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 
 #>                                 │ Upper secondary    3.43       3.63     534 
-#>                                 │ Tertiary           4.01       4.21     399
+#>                                 │ Tertiary           4.01       4.21     399 
+#> 
+#>  Variable                       │ Group                 p 
+#> ────────────────────────────────┼─────────────────────────
+#>  Body mass index                │ Lower secondary  < .001 
+#>                                 │ Upper secondary         
+#>                                 │ Tertiary                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Lower secondary  < .001 
+#>                                 │ Upper secondary         
+#>                                 │ Tertiary
 ```
 
 ``` r
