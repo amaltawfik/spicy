@@ -17,8 +17,7 @@ varlist(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
-  factor_levels = c("observed", "all"),
-  .raw_expr = substitute(x)
+  factor_levels = c("observed", "all")
 )
 
 vl(
@@ -63,9 +62,9 @@ vl(
 
 - include_na:
 
-  Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly
-  appended at the end of the `Values` summary when present in the
-  variable. This applies to all variable types. If `FALSE` (the
+  Logical. If `TRUE`, unique missing value markers (`<NA>`, `<NaN>`) are
+  explicitly appended at the end of the `Values` summary when present in
+  the variable. This applies to all variable types. If `FALSE` (the
   default), missing values are omitted from `Values` but still counted
   in the `NAs` column.
 
@@ -75,11 +74,6 @@ vl(
   `"observed"` (the default) shows only levels present in the data,
   preserving factor level order. `"all"` shows all declared levels,
   including unused levels.
-
-- .raw_expr:
-
-  Internal. Do not use. Captures the original expression from `vl()` to
-  generate an informative title. Used only for internal purposes.
 
 ## Value
 
@@ -96,8 +90,11 @@ columns:
   all unique non-missing values are displayed. For labelled variables,
   **prefixed labels** are displayed using
   `labelled::to_factor(levels = "prefixed")`. For factors, levels are
-  displayed according to `factor_levels`. Missing values (`NA`, `NaN`)
-  are optionally appended at the end (controlled via `include_na`).
+  displayed according to `factor_levels`. Matrix and array columns are
+  summarized by their dimensions. Missing value markers (`<NA>`,
+  `<NaN>`) are optionally appended at the end (controlled via
+  `include_na`). Literal strings `"NA"`, `"NaN"`, and `""` are quoted to
+  distinguish them from missing markers.
 
 - `Class`: the class of each variable (possibly multiple, e.g.
   `"labelled", "numeric"`)

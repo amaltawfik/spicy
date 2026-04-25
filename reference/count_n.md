@@ -234,7 +234,7 @@ df <- tibble(
 count_n(df, count = 2)
 #> [1] 0 2 0 1 0
 count_n(df, count = "b", ignore_case = TRUE)
-#> [1] 0 2 2 0 0
+#> [1] 0 2 3 0 0
 count_n(df, count = "a", select = fact)
 #> [1] 1 0 0 1 0
 count_n(df, count = as.Date("2023-01-01"), select = date)

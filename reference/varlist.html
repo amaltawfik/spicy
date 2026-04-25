@@ -15,7 +15,7 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Generate a comprehensive summary of the variables</h1>
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/v0.9.0/R/varlist.R" class="external-link"><code>R/varlist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/R/varlist.R" class="external-link"><code>R/varlist.R</code></a></small>
       <div class="d-none name"><code>varlist.Rd</code></div>
     </div>
 
@@ -72,8 +72,7 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 <span>  values <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  tbl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
-<span>  .raw_expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">vl</span><span class="op">(</span></span>
@@ -114,7 +113,9 @@ If <code>TRUE</code>, all unique non-missing values are displayed.</p></dd>
 
 
 <dt id="arg-include-na">include_na<a class="anchor" aria-label="anchor" href="#arg-include-na"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, unique missing values (<code>NA</code>, <code>NaN</code>) are explicitly appended at the end of the <code>Values</code> summary
+<dd><p>Logical. If <code>TRUE</code>, unique missing value markers
+(<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are explicitly appended at the end of the <code>Values</code>
+summary
 when present in the variable. This applies to all variable types.
 If <code>FALSE</code> (the default), missing values are omitted from <code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
 
@@ -124,10 +125,6 @@ If <code>FALSE</code> (the default), missing values are omitted from <code>Value
 in <code>Values</code>. <code>"observed"</code> (the default) shows only levels present in the
 data, preserving factor level order. <code>"all"</code> shows all declared levels,
 including unused levels.</p></dd>
-
-
-<dt id="arg--raw-expr">.raw_expr<a class="anchor" aria-label="anchor" href="#arg--raw-expr"></a></dt>
-<dd><p>Internal. Do not use. Captures the original expression from <code>vl()</code> to generate an informative title. Used only for internal purposes.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -139,7 +136,10 @@ If <code>values = FALSE</code>, a compact summary (max 4 values: 3 + ... + last)
 If <code>values = TRUE</code>, all unique non-missing values are displayed.
 For labelled variables, <strong>prefixed labels</strong> are displayed using <code>labelled::to_factor(levels = "prefixed")</code>.
 For factors, levels are displayed according to <code>factor_levels</code>.
-Missing values (<code>NA</code>, <code>NaN</code>) are optionally appended at the end (controlled via <code>include_na</code>).</p></li>
+Matrix and array columns are summarized by their dimensions.
+Missing value markers (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are optionally appended at the
+end (controlled via <code>include_na</code>). Literal strings <code>"NA"</code>, <code>"NaN"</code>, and
+<code>""</code> are quoted to distinguish them from missing markers.</p></li>
 <li><p><code>Class</code>: the class of each variable (possibly multiple, e.g. <code>"labelled", "numeric"</code>)</p></li>
 <li><p><code>N_distinct</code>: number of distinct non-missing values</p></li>
 <li><p><code>N_valid</code>: number of non-missing observations</p></li>

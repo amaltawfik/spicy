@@ -1,6 +1,33 @@
 # Changelog
 
+## spicy (development version)
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now displays actual missing values as `<NA>` and `<NaN>` in `Values`
+  when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`, and
+  empty-string values so they cannot be confused with missing markers.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now displays labelled values in the same prefixed-label order for
+  compact and `values = TRUE` summaries, rather than using data order in
+  compact summaries.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  no longer exposes the internal `.raw_expr` argument in its public
+  signature; interactive title generation is now handled internally.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now validates column names up front and gives clearer errors for
+  missing, empty, `NA`, or duplicate names.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now summarizes matrix and array columns by their dimensions and counts
+  valid, missing, and distinct observations by rows instead of by
+  individual cells.
+
 ## spicy 0.9.0
+
+CRAN release: 2026-04-20
 
 ### Breaking changes
 

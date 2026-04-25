@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,11 +53,19 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/amaltawfik/spicy/blob/v0.9.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/amaltawfik/spicy/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.9.0" id="spicy-090">spicy 0.9.0<a class="anchor" aria-label="anchor" href="#spicy-090"></a></h2>
+<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<ul><li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays actual missing values as <code>&lt;NA&gt;</code> and <code>&lt;NaN&gt;</code> in <code>Values</code> when <code>include_na = TRUE</code>, and quotes literal <code>"NA"</code>, <code>"NaN"</code>, and empty-string values so they cannot be confused with missing markers.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays labelled values in the same prefixed-label order for compact and <code>values = TRUE</code> summaries, rather than using data order in compact summaries.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> no longer exposes the internal <code>.raw_expr</code> argument in its public signature; interactive title generation is now handled internally.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now validates column names up front and gives clearer errors for missing, empty, <code>NA</code>, or duplicate names.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now summarizes matrix and array columns by their dimensions and counts valid, missing, and distinct observations by rows instead of by individual cells.</p></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="spicy-090">spicy 0.9.0<a class="anchor" aria-label="anchor" href="#spicy-090"></a></h2><p class="text-muted">CRAN release: 2026-04-20</p>
 <div class="section level3">
 <h3 id="breaking-changes-0-9-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-9-0"></a></h3>
 <ul><li><p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> now enables inferential output by default when <code>by</code> is supplied. With a grouping variable, the <code>p</code> column from <code>test</code> is shown automatically (previous default hid it). This aligns the two table helpers: <code><a href="../reference/table_continuous.html">table_continuous()</a></code> stays descriptive when <code>by</code> is absent, and reports the test <em>p</em>-value when <code>by</code> is supplied, matching <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>’s inferential default. To preserve the previous behavior, pass <code>p_value = FALSE</code> explicitly. <code>statistic</code> and <code>effect_size</code> remain <code>FALSE</code> by default and must still be enabled consciously.</p></li>

@@ -15,7 +15,7 @@ It supports type-safe comparison, case-insensitive string matching, and detectio
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@ It supports type-safe comparison, case-insensitive string matching, and detectio
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Row-wise Count of Specific or Special Values</h1>
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/v0.9.0/R/count_n.R" class="external-link"><code>R/count_n.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/R/count_n.R" class="external-link"><code>R/count_n.R</code></a></small>
       <div class="d-none name"><code>count_n.Rd</code></div>
     </div>
 
@@ -250,7 +250,7 @@ This behavior applies to both character and factor columns. Factors are first co
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 2 0 1 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 2 2 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 2 3 0 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"a"</span>, select <span class="op">=</span> <span class="va">fact</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 0 0 1 0</span>
 <span class="r-in"><span><span class="fu">count_n</span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-01"</span><span class="op">)</span>, select <span class="op">=</span> <span class="va">date</span><span class="op">)</span></span></span>
