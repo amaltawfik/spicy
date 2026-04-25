@@ -207,6 +207,18 @@ test_that("code_book() sanitizes export filenames", {
   ))
   expect_equal(cb$x$caption, "<caption>\u00c2ge &amp; sant\u00e9</caption>")
   expect_equal(code_book_filenames(cb), rep("Age_sante", 3))
+
+  cb <- suppressMessages(code_book(
+    head(mtcars),
+    title = "Cafe\u0301 creme brule\u0301e"
+  ))
+  expect_equal(code_book_filenames(cb), rep("Cafe_creme_brulee", 3))
+
+  cb <- suppressMessages(code_book(
+    head(mtcars),
+    filename = "R\u00e9sum\u00e9 final"
+  ))
+  expect_equal(code_book_filenames(cb), rep("Resume_final", 3))
 })
 
 test_that("code_book() works with labelled data", {

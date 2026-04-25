@@ -24,13 +24,12 @@ workflows.
 
 ## What is spicy?
 
-spicy helps you explore categorical, quantitative, and numeric data in
-R, with tools for labelled variables, frequency tables,
-cross-tabulations, and summary tables. It provides readable,
-console-first outputs. It is designed for survey research, descriptive
-statistics, and reporting workflows, with tools for frequency tables,
-cross-tabulations with chi-squared tests and effect sizes, categorical
-and continuous summary tables, variable inspection, and codebooks.
+spicy helps you explore categorical, continuous, and labelled survey
+data in R. It provides readable, console-first outputs for survey
+research, descriptive statistics, and reporting workflows, including
+frequency tables, cross-tabulations with chi-squared tests and effect
+sizes, categorical and continuous summary tables, variable inspection,
+and codebooks.
 
 With spicy, you can:
 
@@ -49,8 +48,8 @@ With spicy, you can:
   `table_continuous_lm()` for linear regression reporting, robust
   standard errors, weighted mean comparisons, and console, gt,
   tinytable, flextable, Excel, Word, or clipboard output.
-- **Generate codebooks** with `code_book()` for labelled and
-  survey-style datasets.
+- **Generate interactive and exportable codebooks** with `code_book()`
+  for labelled and survey-style datasets.
 - **Extract variable labels** with `label_from_names()`, including
   LimeSurvey-style headers.
 
@@ -60,20 +59,28 @@ with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 
 ## Installation
 
-Install the current CRAN release:
+Install the current CRAN release, recommended for most users:
 
 ``` r
 install.packages("spicy")
 ```
 
-Install the latest build from
-[r-universe](https://amaltawfik.r-universe.dev/spicy):
+Install the latest [r-universe](https://amaltawfik.r-universe.dev/spicy)
+build:
 
 ``` r
-install.packages("spicy", repos = c("https://amaltawfik.r-universe.dev", "https://cloud.r-project.org"))
+install.packages(
+  "spicy",
+  repos = c(
+    "https://amaltawfik.r-universe.dev",
+    "https://cloud.r-project.org"
+  )
+)
 ```
 
-This may be newer than the current CRAN release.
+This installs `spicy` from r-universe when available; CRAN is included
+only as a fallback for dependencies. The r-universe build may be newer
+than the current CRAN release.
 
 Install the development version from GitHub with `pak`:
 
@@ -108,6 +115,15 @@ varlist(sochealth, tbl = TRUE)
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
 #> # ℹ 14 more rows
+```
+
+``` r
+code_book(
+  sochealth,
+  starts_with("bmi"),
+  values = TRUE,
+  include_na = TRUE
+)
 ```
 
 See [Explore variables and build codebooks in

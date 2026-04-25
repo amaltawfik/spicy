@@ -6,9 +6,9 @@
 #' an overview of variable names, labels, classes, and representative values in
 #' a sortable, searchable table.
 #'
-#' The output is displayed as an interactive `DT::datatable()` in the Viewer pane,
-#' allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
-#' directly.
+#' The output is displayed as an interactive `DT::datatable()` in the Viewer pane
+#' (for example in RStudio or Positron), allowing searching, sorting, and export
+#' (copy, print, CSV, Excel, PDF) directly.
 #'
 #' @param x A data frame or tibble.
 #' @param ... Optional tidyselect-style column selectors (e.g.
@@ -16,10 +16,10 @@
 #'   or reordered, but renaming selections is not supported.
 #' @param values Logical. If `FALSE` (the default), displays a compact
 #'   summary of the variable's values. For numeric, character, date/time,
-#'   labelled, and factor variables, up to four unique non-missing values are
-#'   shown: the first three values, followed by an ellipsis (`...`), and the
-#'   last value. Values are sorted when appropriate (e.g., numeric, character,
-#'   date).
+#'   labelled, and factor variables, all unique non-missing values are shown
+#'   when there are at most four; otherwise the first three values, an ellipsis
+#'   (`...`), and the last value are shown. Values are sorted when appropriate
+#'   (e.g., numeric, character, date).
 #'   For factors, `factor_levels` controls whether observed or all declared
 #'   levels are shown; level order is preserved.
 #'   For labelled variables, prefixed labels are displayed via
@@ -31,8 +31,8 @@
 #'   strings `"NA"`, `"NaN"`, and `""` are quoted to distinguish them from
 #'   missing markers. If `FALSE` (the default), missing values are omitted from
 #'   `Values` but still counted in the `NAs` column.
-#' @param title Optional character string displayed as the table title in the
-#'   Viewer. Defaults to `"Codebook"`. Set to `NULL` to remove the title
+#' @param title Optional character string displayed as the table caption.
+#'   Defaults to `"Codebook"`. Set to `NULL` to remove the title
 #'   completely. When `filename = NULL`, the title is also used as the base for
 #'   export filenames after conversion to a portable ASCII name.
 #' @param filename Optional character string used as the base for exported CSV,
@@ -48,6 +48,8 @@
 #' - The interactive `datatable` supports column sorting, global searching, and
 #'   client-side export to various formats.
 #' - Variable selection uses the same tidyselect interface as [`varlist()`].
+#' - By default, factor variables document all declared levels, including unused
+#'   levels. Use `factor_levels = "observed"` to mirror [`varlist()`]'s default.
 #' - All exports occur client-side through the Viewer or Tab.
 #'
 #' @return
@@ -61,7 +63,19 @@
 #' \dontrun{
 #' if (requireNamespace("DT", quietly = TRUE)) {
 #'   code_book(sochealth)
-#'   code_book(sochealth, starts_with("bmi"), values = TRUE)
+#'   code_book(sochealth, starts_with("bmi"))
+#'   code_book(sochealth, starts_with("bmi"), values = TRUE, include_na = TRUE)
+#'
+#'   factors <- data.frame(
+#'     group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+#'   )
+#'   code_book(
+#'     factors,
+#'     values = TRUE,
+#'     include_na = TRUE,
+#'     factor_levels = "observed"
+#'   )
+#'
 #'   code_book(
 #'     sochealth,
 #'     starts_with("bmi"),
@@ -229,10 +243,7 @@ code_book_sanitize_filename <- function(filename, arg, fallback = NULL) {
     return(fallback)
   }
 
-  filename <- trimws(enc2utf8(filename))
-  filename <- suppressWarnings(
-    iconv(filename, from = "", to = "ASCII//TRANSLIT", sub = "")
-  )
+  filename <- code_book_ascii_filename(trimws(filename))
 
   if (is.na(filename)) {
     filename <- ""
@@ -277,6 +288,23 @@ code_book_sanitize_filename <- function(filename, arg, fallback = NULL) {
   }
 
   filename
+}
+
+
+code_book_ascii_filename <- function(filename) {
+  filename <- enc2utf8(filename)
+  filename <- gsub("\\p{M}+", "", filename, perl = TRUE)
+  filename <- suppressWarnings(
+    iconv(filename, from = "UTF-8", to = "ASCII//TRANSLIT", sub = "")
+  )
+
+  if (is.na(filename)) {
+    return(filename)
+  }
+
+  # Some iconv implementations transliterate accents as ASCII marks.
+  filename <- gsub("\\p{M}+", "", filename, perl = TRUE)
+  gsub("[`'\"^~]+", "", filename, perl = TRUE)
 }
 
 

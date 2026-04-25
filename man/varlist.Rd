@@ -32,9 +32,10 @@ or reordered, but renaming selections is not supported.}
 
 \item{values}{Logical. If \code{FALSE} (the default), displays a compact summary
 of the variable's values. For numeric, character, date/time, labelled, and
-factor variables, up to four unique non-missing values are shown: the
-first three values, followed by an ellipsis (\code{...}), and the last value.
-Values are sorted when appropriate (e.g., numeric, character, date).
+factor variables, all unique non-missing values are shown when there are
+at most four; otherwise the first three values, an ellipsis (\code{...}), and
+the last value are shown. Values are sorted when appropriate (e.g.,
+numeric, character, date).
 For factors, \code{factor_levels} controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -47,8 +48,9 @@ if the session is interactive. If \code{TRUE}, returns a tibble.}
 \item{include_na}{Logical. If \code{TRUE}, unique missing value markers
 (\verb{<NA>}, \verb{<NaN>}) are explicitly appended at the end of the \code{Values}
 summary when present in the variable. This applies to all variable types.
-If \code{FALSE} (the default), missing values are omitted from \code{Values} but
-still counted in the \code{NAs} column.}
+Literal strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them
+from missing markers. If \code{FALSE} (the default), missing values are omitted
+from \code{Values} but still counted in the \code{NAs} column.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"observed"} (the default) shows only levels present in the
@@ -62,10 +64,11 @@ columns:
 \item \code{Variable}: variable names
 \item \code{Label}: variable labels (if available via the \code{label} attribute)
 \item \code{Values}: a summary of the variable's values, depending on the \code{values}
-and \code{include_na} arguments. If \code{values = FALSE}, a compact summary (max 4
-values: 3 + ... + last) is shown. If \code{values = TRUE}, all unique
-non-missing values are displayed. For labelled variables, \strong{prefixed
-labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
+and \code{include_na} arguments. If \code{values = FALSE}, a compact summary is
+shown: all unique values when there are at most four, otherwise
+3 + ... + last. If \code{values = TRUE}, all unique non-missing values are
+displayed. For labelled variables, \strong{prefixed labels} are displayed using
+\code{labelled::to_factor(levels = "prefixed")}.
 For factors, levels are displayed according to \code{factor_levels}.
 Matrix and array columns are summarized by their dimensions.
 Missing value markers (\verb{<NA>}, \verb{<NaN>}) are optionally appended at the
@@ -96,16 +99,34 @@ functionality with a shorter name.
 The function can also apply tidyselect-style variable selectors to select or
 reorder columns dynamically.
 
-If used interactively (e.g. in RStudio), the summary is displayed in the
-Viewer pane with a contextual title like \code{vl: sochealth}. If the data frame
-has been transformed or subsetted, the title will display an asterisk (\code{*}),
-e.g. \verb{vl: sochealth*}. Anonymous or ambiguous calls use \verb{vl: <data>}.
+If used interactively (e.g. in RStudio or Positron), the summary is
+displayed in the Viewer pane with a contextual title like \code{vl: sochealth}.
+If the data frame has been transformed or subsetted, the title will display
+an asterisk (\code{*}), e.g. \verb{vl: sochealth*}. Anonymous or ambiguous calls use
+\verb{vl: <data>}.
 }
 \examples{
 varlist(sochealth, tbl = TRUE)
 sochealth |> varlist(tbl = TRUE)
 varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
-varlist(sochealth, starts_with("bmi"), tbl = TRUE)
+varlist(
+  sochealth,
+  starts_with("bmi"),
+  values = TRUE,
+  include_na = TRUE,
+  tbl = TRUE
+)
+
+df <- data.frame(
+  group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+)
+varlist(
+  df,
+  values = TRUE,
+  include_na = TRUE,
+  factor_levels = "all",
+  tbl = TRUE
+)
 
 vl(sochealth, tbl = TRUE)
 sochealth |> vl(tbl = TRUE)

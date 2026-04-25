@@ -23,10 +23,10 @@ or reordered, but renaming selections is not supported.}
 
 \item{values}{Logical. If \code{FALSE} (the default), displays a compact
 summary of the variable's values. For numeric, character, date/time,
-labelled, and factor variables, up to four unique non-missing values are
-shown: the first three values, followed by an ellipsis (\code{...}), and the
-last value. Values are sorted when appropriate (e.g., numeric, character,
-date).
+labelled, and factor variables, all unique non-missing values are shown
+when there are at most four; otherwise the first three values, an ellipsis
+(\code{...}), and the last value are shown. Values are sorted when appropriate
+(e.g., numeric, character, date).
 For factors, \code{factor_levels} controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -40,8 +40,8 @@ strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them 
 missing markers. If \code{FALSE} (the default), missing values are omitted from
 \code{Values} but still counted in the \code{NAs} column.}
 
-\item{title}{Optional character string displayed as the table title in the
-Viewer. Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
+\item{title}{Optional character string displayed as the table caption.
+Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
 completely. When \code{filename = NULL}, the title is also used as the base for
 export filenames after conversion to a portable ASCII name.}
 
@@ -64,15 +64,17 @@ selected variables of a data frame. It builds upon \code{\link[=varlist]{varlist
 an overview of variable names, labels, classes, and representative values in
 a sortable, searchable table.
 
-The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane,
-allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
-directly.
+The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane
+(for example in RStudio or Positron), allowing searching, sorting, and export
+(copy, print, CSV, Excel, PDF) directly.
 }
 \details{
 \itemize{
 \item The interactive \code{datatable} supports column sorting, global searching, and
 client-side export to various formats.
 \item Variable selection uses the same tidyselect interface as \code{\link[=varlist]{varlist()}}.
+\item By default, factor variables document all declared levels, including unused
+levels. Use \code{factor_levels = "observed"} to mirror \code{\link[=varlist]{varlist()}}'s default.
 \item All exports occur client-side through the Viewer or Tab.
 }
 }
@@ -88,7 +90,19 @@ Requires the following package:
 \dontrun{
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
-  code_book(sochealth, starts_with("bmi"), values = TRUE)
+  code_book(sochealth, starts_with("bmi"))
+  code_book(sochealth, starts_with("bmi"), values = TRUE, include_na = TRUE)
+
+  factors <- data.frame(
+    group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+  )
+  code_book(
+    factors,
+    values = TRUE,
+    include_na = TRUE,
+    factor_levels = "observed"
+  )
+
   code_book(
     sochealth,
     starts_with("bmi"),

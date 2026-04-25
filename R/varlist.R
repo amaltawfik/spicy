@@ -8,10 +8,11 @@
 #' The function can also apply tidyselect-style variable selectors to select or
 #' reorder columns dynamically.
 #'
-#' If used interactively (e.g. in RStudio), the summary is displayed in the
-#' Viewer pane with a contextual title like `vl: sochealth`. If the data frame
-#' has been transformed or subsetted, the title will display an asterisk (`*`),
-#' e.g. `vl: sochealth*`. Anonymous or ambiguous calls use `vl: <data>`.
+#' If used interactively (e.g. in RStudio or Positron), the summary is
+#' displayed in the Viewer pane with a contextual title like `vl: sochealth`.
+#' If the data frame has been transformed or subsetted, the title will display
+#' an asterisk (`*`), e.g. `vl: sochealth*`. Anonymous or ambiguous calls use
+#' `vl: <data>`.
 #'
 #' @aliases vl
 #'
@@ -22,9 +23,10 @@
 #'
 #' @param values Logical. If `FALSE` (the default), displays a compact summary
 #'   of the variable's values. For numeric, character, date/time, labelled, and
-#'   factor variables, up to four unique non-missing values are shown: the
-#'   first three values, followed by an ellipsis (`...`), and the last value.
-#'   Values are sorted when appropriate (e.g., numeric, character, date).
+#'   factor variables, all unique non-missing values are shown when there are
+#'   at most four; otherwise the first three values, an ellipsis (`...`), and
+#'   the last value are shown. Values are sorted when appropriate (e.g.,
+#'   numeric, character, date).
 #'   For factors, `factor_levels` controls whether observed or all declared
 #'   levels are shown; level order is preserved.
 #'   For labelled variables, prefixed labels are displayed via
@@ -35,23 +37,25 @@
 #' @param include_na Logical. If `TRUE`, unique missing value markers
 #'   (`<NA>`, `<NaN>`) are explicitly appended at the end of the `Values`
 #'   summary when present in the variable. This applies to all variable types.
-#'   If `FALSE` (the default), missing values are omitted from `Values` but
-#'   still counted in the `NAs` column.
+#'   Literal strings `"NA"`, `"NaN"`, and `""` are quoted to distinguish them
+#'   from missing markers. If `FALSE` (the default), missing values are omitted
+#'   from `Values` but still counted in the `NAs` column.
 #' @param factor_levels Character. Controls how factor values are displayed
 #'   in `Values`. `"observed"` (the default) shows only levels present in the
 #'   data, preserving factor level order. `"all"` shows all declared levels,
 #'   including unused levels.
-
+#'
 #' @returns
 #' A tibble with one row per selected variable, containing the following
 #' columns:
 #' - `Variable`: variable names
 #' - `Label`: variable labels (if available via the `label` attribute)
 #' - `Values`: a summary of the variable's values, depending on the `values`
-#'   and `include_na` arguments. If `values = FALSE`, a compact summary (max 4
-#'   values: 3 + ... + last) is shown. If `values = TRUE`, all unique
-#'   non-missing values are displayed. For labelled variables, **prefixed
-#'   labels** are displayed using `labelled::to_factor(levels = "prefixed")`.
+#'   and `include_na` arguments. If `values = FALSE`, a compact summary is
+#'   shown: all unique values when there are at most four, otherwise
+#'   3 + ... + last. If `values = TRUE`, all unique non-missing values are
+#'   displayed. For labelled variables, **prefixed labels** are displayed using
+#'   `labelled::to_factor(levels = "prefixed")`.
 #'   For factors, levels are displayed according to `factor_levels`.
 #'   Matrix and array columns are summarized by their dimensions.
 #'   Missing value markers (`<NA>`, `<NaN>`) are optionally appended at the
@@ -82,7 +86,24 @@
 #' varlist(sochealth, tbl = TRUE)
 #' sochealth |> varlist(tbl = TRUE)
 #' varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
-#' varlist(sochealth, starts_with("bmi"), tbl = TRUE)
+#' varlist(
+#'   sochealth,
+#'   starts_with("bmi"),
+#'   values = TRUE,
+#'   include_na = TRUE,
+#'   tbl = TRUE
+#' )
+#'
+#' df <- data.frame(
+#'   group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+#' )
+#' varlist(
+#'   df,
+#'   values = TRUE,
+#'   include_na = TRUE,
+#'   factor_levels = "all",
+#'   tbl = TRUE
+#' )
 #'
 varlist <- function(
   x,
@@ -260,9 +281,10 @@ varlist_impl <- function(
 #'   or reordered, but renaming selections is not supported.
 #' @param values Logical. If `FALSE` (the default), displays a compact summary
 #'   of the variable's values. For numeric, character, date/time, labelled, and
-#'   factor variables, up to four unique non-missing values are shown: the
-#'   first three values, followed by an ellipsis (`...`), and the last value.
-#'   Values are sorted when appropriate (e.g., numeric, character, date).
+#'   factor variables, all unique non-missing values are shown when there are
+#'   at most four; otherwise the first three values, an ellipsis (`...`), and
+#'   the last value are shown. Values are sorted when appropriate (e.g.,
+#'   numeric, character, date).
 #'   For factors, `factor_levels` controls whether observed or all declared
 #'   levels are shown; level order is preserved.
 #'   For labelled variables, prefixed labels are displayed via
@@ -273,8 +295,9 @@ varlist_impl <- function(
 #' @param include_na Logical. If `TRUE`, unique missing value markers
 #'   (`<NA>`, `<NaN>`) are explicitly appended at the end of the `Values`
 #'   summary when present in the variable. This applies to all variable types.
-#'   If `FALSE` (the default), missing values are omitted from `Values` but
-#'   still counted in the `NAs` column.
+#'   Literal strings `"NA"`, `"NaN"`, and `""` are quoted to distinguish them
+#'   from missing markers. If `FALSE` (the default), missing values are omitted
+#'   from `Values` but still counted in the `NAs` column.
 #' @param factor_levels Character. Controls how factor values are displayed
 #'   in `Values`. `"observed"` (the default) shows only levels present in the
 #'   data, preserving factor level order. `"all"` shows all declared levels,
