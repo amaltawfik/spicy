@@ -6,15 +6,20 @@
 \usage{
 code_book(
   x,
+  ...,
   values = FALSE,
   include_na = FALSE,
   title = "Codebook",
-  factor_levels = c("all", "observed"),
-  ...
+  filename = NULL,
+  factor_levels = c("all", "observed")
 )
 }
 \arguments{
 \item{x}{A data frame or tibble.}
+
+\item{...}{Optional tidyselect-style column selectors (e.g.
+\code{starts_with("var")}, \code{where(is.numeric)}, etc.). Columns can be selected
+or reordered, but renaming selections is not supported.}
 
 \item{values}{Logical. If \code{FALSE} (the default), displays a compact
 summary of the variable's values. For numeric, character, date/time,
@@ -37,23 +42,27 @@ missing markers. If \code{FALSE} (the default), missing values are omitted from
 
 \item{title}{Optional character string displayed as the table title in the
 Viewer. Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
-completely.}
+completely. When \code{filename = NULL}, the title is also used as the base for
+export filenames after conversion to a portable ASCII name.}
+
+\item{filename}{Optional character string used as the base for exported CSV,
+Excel, and PDF filenames. If \code{NULL} (the default), a portable filename is
+derived from \code{title}, falling back to \code{"Codebook"} when needed. File
+extensions are added by the browser/export engine.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"all"} (the default) shows all declared levels, including
 unused levels. \code{"observed"} shows only levels present in the data,
 preserving factor level order.}
-
-\item{...}{Additional arguments (currently unused).}
 }
 \value{
 A \code{DT::datatable} object.
 }
 \description{
 \code{code_book()} creates an interactive and exportable codebook summarizing
-variables of a data frame. It builds upon \code{\link[=varlist]{varlist()}} to provide an
-overview of variable names, labels, classes, and representative values in a
-sortable, searchable table.
+selected variables of a data frame. It builds upon \code{\link[=varlist]{varlist()}} to provide
+an overview of variable names, labels, classes, and representative values in
+a sortable, searchable table.
 
 The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane,
 allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
@@ -63,6 +72,7 @@ directly.
 \itemize{
 \item The interactive \code{datatable} supports column sorting, global searching, and
 client-side export to various formats.
+\item Variable selection uses the same tidyselect interface as \code{\link[=varlist]{varlist()}}.
 \item All exports occur client-side through the Viewer or Tab.
 }
 }
@@ -78,6 +88,13 @@ Requires the following package:
 \dontrun{
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
+  code_book(sochealth, starts_with("bmi"), values = TRUE)
+  code_book(
+    sochealth,
+    starts_with("bmi"),
+    title = "BMI codebook",
+    filename = "bmi_codebook"
+  )
 }
 }
 

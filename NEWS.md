@@ -1,5 +1,7 @@
 # spicy (development version)
 
+* `code_book()` now accepts tidyselect-style variable selectors through `...`, matching `varlist()` and `vl()`, validates control arguments more directly, surfaces `varlist()` selection errors without an extra wrapper, and gains a `filename` argument for portable export filenames.
+
 * `varlist()` now displays actual missing values as `<NA>` and `<NaN>` in `Values` when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`, and empty-string values so they cannot be confused with missing markers.
 
 * `varlist()` now displays labelled values in the same prefixed-label order for compact and `values = TRUE` summaries, rather than using data order in compact summaries.

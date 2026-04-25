@@ -149,12 +149,28 @@ vl(sochealth, starts_with("bmi"), tbl = TRUE)
 
 ## Build an interactive codebook
 
-When you want a searchable and exportable overview of the whole dataset,
-`code_book()` builds an interactive codebook in the Viewer.
+When you want a searchable and exportable overview of the whole dataset or a
+selected set of variables, `code_book()` builds an interactive codebook in the
+Viewer.
 
 ```{r code-book-basic, eval = build_rich_tables}
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
+}
+```
+
+Use the same tidyselect-style selectors as `varlist()` to build a focused
+codebook:
+
+```{r code-book-select, eval = build_rich_tables}
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(
+    sochealth,
+    starts_with("bmi"),
+    values = TRUE,
+    title = "BMI codebook",
+    filename = "bmi_codebook"
+  )
 }
 ```
 
