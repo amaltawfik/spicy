@@ -9,15 +9,15 @@
 selected variables of a data frame. It builds upon varlist() to provide
 an overview of variable names, labels, classes, and representative values in
 a sortable, searchable table.
-The output is displayed as an interactive DT::datatable() in the Viewer pane,
-allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
-directly."><meta property="og:description" content="code_book() creates an interactive and exportable codebook summarizing
+The output is displayed as an interactive DT::datatable() in the Viewer pane
+(for example in RStudio or Positron), allowing searching, sorting, and export
+(copy, print, CSV, Excel, PDF) directly."><meta property="og:description" content="code_book() creates an interactive and exportable codebook summarizing
 selected variables of a data frame. It builds upon varlist() to provide
 an overview of variable names, labels, classes, and representative values in
 a sortable, searchable table.
-The output is displayed as an interactive DT::datatable() in the Viewer pane,
-allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
-directly."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+The output is displayed as an interactive DT::datatable() in the Viewer pane
+(for example in RStudio or Positron), allowing searching, sorting, and export
+(copy, print, CSV, Excel, PDF) directly."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -74,9 +74,9 @@ directly."><meta property="og:image" content="https://amaltawfik.github.io/spicy
 selected variables of a data frame. It builds upon <code><a href="varlist.html">varlist()</a></code> to provide
 an overview of variable names, labels, classes, and representative values in
 a sortable, searchable table.</p>
-<p>The output is displayed as an interactive <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable()</a></code> in the Viewer pane,
-allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
-directly.</p>
+<p>The output is displayed as an interactive <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable()</a></code> in the Viewer pane
+(for example in RStudio or Positron), allowing searching, sorting, and export
+(copy, print, CSV, Excel, PDF) directly.</p>
     </div>
 
     <div class="section level2">
@@ -109,10 +109,10 @@ or reordered, but renaming selections is not supported.</p></dd>
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (the default), displays a compact
 summary of the variable's values. For numeric, character, date/time,
-labelled, and factor variables, up to four unique non-missing values are
-shown: the first three values, followed by an ellipsis (<code>...</code>), and the
-last value. Values are sorted when appropriate (e.g., numeric, character,
-date).
+labelled, and factor variables, all unique non-missing values are shown
+when there are at most four; otherwise the first three values, an ellipsis
+(<code>...</code>), and the last value are shown. Values are sorted when appropriate
+(e.g., numeric, character, date).
 For factors, <code>factor_levels</code> controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -130,8 +130,8 @@ missing markers. If <code>FALSE</code> (the default), missing values are omitted
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
-<dd><p>Optional character string displayed as the table title in the
-Viewer. Defaults to <code>"Codebook"</code>. Set to <code>NULL</code> to remove the title
+<dd><p>Optional character string displayed as the table caption.
+Defaults to <code>"Codebook"</code>. Set to <code>NULL</code> to remove the title
 completely. When <code>filename = NULL</code>, the title is also used as the base for
 export filenames after conversion to a portable ASCII name.</p></dd>
 
@@ -160,6 +160,8 @@ preserving factor level order.</p></dd>
 <ul><li><p>The interactive <code>datatable</code> supports column sorting, global searching, and
 client-side export to various formats.</p></li>
 <li><p>Variable selection uses the same tidyselect interface as <code><a href="varlist.html">varlist()</a></code>.</p></li>
+<li><p>By default, factor variables document all declared levels, including unused
+levels. Use <code>factor_levels = "observed"</code> to mirror <code><a href="varlist.html">varlist()</a></code>'s default.</p></li>
 <li><p>All exports occur client-side through the Viewer or Tab.</p></li>
 </ul></div>
     <div class="section level2">
@@ -178,7 +180,19 @@ client-side export to various formats.</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"DT"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, include_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="cn">NA</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">factors</span>,</span></span>
+<span class="r-in"><span>    values <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>    include_na <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>    factor_levels <span class="op">=</span> <span class="st">"observed"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>    <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span></span>

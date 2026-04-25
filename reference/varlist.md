@@ -46,14 +46,14 @@ vl(
 
   Logical. If `FALSE` (the default), displays a compact summary of the
   variable's values. For numeric, character, date/time, labelled, and
-  factor variables, up to four unique non-missing values are shown: the
-  first three values, followed by an ellipsis (`...`), and the last
-  value. Values are sorted when appropriate (e.g., numeric, character,
-  date). For factors, `factor_levels` controls whether observed or all
-  declared levels are shown; level order is preserved. For labelled
-  variables, prefixed labels are displayed via
-  `labelled::to_factor(levels = "prefixed")`. If `TRUE`, all unique
-  non-missing values are displayed.
+  factor variables, all unique non-missing values are shown when there
+  are at most four; otherwise the first three values, an ellipsis
+  (`...`), and the last value are shown. Values are sorted when
+  appropriate (e.g., numeric, character, date). For factors,
+  `factor_levels` controls whether observed or all declared levels are
+  shown; level order is preserved. For labelled variables, prefixed
+  labels are displayed via `labelled::to_factor(levels = "prefixed")`.
+  If `TRUE`, all unique non-missing values are displayed.
 
 - tbl:
 
@@ -64,9 +64,10 @@ vl(
 
   Logical. If `TRUE`, unique missing value markers (`<NA>`, `<NaN>`) are
   explicitly appended at the end of the `Values` summary when present in
-  the variable. This applies to all variable types. If `FALSE` (the
-  default), missing values are omitted from `Values` but still counted
-  in the `NAs` column.
+  the variable. This applies to all variable types. Literal strings
+  `"NA"`, `"NaN"`, and `""` are quoted to distinguish them from missing
+  markers. If `FALSE` (the default), missing values are omitted from
+  `Values` but still counted in the `NAs` column.
 
 - factor_levels:
 
@@ -86,15 +87,15 @@ columns:
 
 - `Values`: a summary of the variable's values, depending on the
   `values` and `include_na` arguments. If `values = FALSE`, a compact
-  summary (max 4 values: 3 + ... + last) is shown. If `values = TRUE`,
-  all unique non-missing values are displayed. For labelled variables,
-  **prefixed labels** are displayed using
-  `labelled::to_factor(levels = "prefixed")`. For factors, levels are
-  displayed according to `factor_levels`. Matrix and array columns are
-  summarized by their dimensions. Missing value markers (`<NA>`,
-  `<NaN>`) are optionally appended at the end (controlled via
-  `include_na`). Literal strings `"NA"`, `"NaN"`, and `""` are quoted to
-  distinguish them from missing markers.
+  summary is shown: all unique values when there are at most four,
+  otherwise 3 + ... + last. If `values = TRUE`, all unique non-missing
+  values are displayed. For labelled variables, **prefixed labels** are
+  displayed using `labelled::to_factor(levels = "prefixed")`. For
+  factors, levels are displayed according to `factor_levels`. Matrix and
+  array columns are summarized by their dimensions. Missing value
+  markers (`<NA>`, `<NaN>`) are optionally appended at the end
+  (controlled via `include_na`). Literal strings `"NA"`, `"NaN"`, and
+  `""` are quoted to distinguish them from missing markers.
 
 - `Class`: the class of each variable (possibly multiple, e.g.
   `"labelled", "numeric"`)
@@ -115,11 +116,11 @@ is displayed and the function returns invisibly.
 The function can also apply tidyselect-style variable selectors to
 select or reorder columns dynamically.
 
-If used interactively (e.g. in RStudio), the summary is displayed in the
-Viewer pane with a contextual title like `vl: sochealth`. If the data
-frame has been transformed or subsetted, the title will display an
-asterisk (`*`), e.g. `vl: sochealth*`. Anonymous or ambiguous calls use
-`vl: <data>`.
+If used interactively (e.g. in RStudio or Positron), the summary is
+displayed in the Viewer pane with a contextual title like
+`vl: sochealth`. If the data frame has been transformed or subsetted,
+the title will display an asterisk (`*`), e.g. `vl: sochealth*`.
+Anonymous or ambiguous calls use `vl: <data>`.
 
 ## Examples
 
@@ -168,12 +169,33 @@ varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #>  8 life_sat_relationships Satisfaction wi… 1, 2,… inte…          5    1192     8
 #>  9 life_sat_standard      Satisfaction wi… 1, 2,… inte…          5    1192     8
 #> 10 weight                 Survey design w… 0.294… nume…        794    1200     0
-varlist(sochealth, starts_with("bmi"), tbl = TRUE)
+varlist(
+  sochealth,
+  starts_with("bmi"),
+  values = TRUE,
+  include_na = TRUE,
+  tbl = TRUE
+)
 #> # A tibble: 2 × 7
 #>   Variable     Label           Values             Class N_distinct N_valid   NAs
 #>   <chr>        <chr>           <chr>              <chr>      <int>   <int> <int>
-#> 1 bmi          Body mass index 16, 16.6, 16.8, .… nume…        177    1188    12
+#> 1 bmi          Body mass index 16, 16.6, 16.8, 1… nume…        177    1188    12
 #> 2 bmi_category BMI category    Normal weight, Ov… orde…          3    1188    12
+
+df <- data.frame(
+  group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+)
+varlist(
+  df,
+  values = TRUE,
+  include_na = TRUE,
+  factor_levels = "all",
+  tbl = TRUE
+)
+#> # A tibble: 1 × 7
+#>   Variable Label Values        Class  N_distinct N_valid   NAs
+#>   <chr>    <chr> <chr>         <chr>       <int>   <int> <int>
+#> 1 group    NA    A, B, C, <NA> factor          2       2     1
 
 vl(sochealth, tbl = TRUE)
 #> # A tibble: 24 × 7

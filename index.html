@@ -98,7 +98,7 @@
 <div class="section level2">
 <h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
 </h2>
-<p>spicy helps you explore categorical, quantitative, and numeric data in R, with tools for labelled variables, frequency tables, cross-tabulations, and summary tables. It provides readable, console-first outputs. It is designed for survey research, descriptive statistics, and reporting workflows, with tools for frequency tables, cross-tabulations with chi-squared tests and effect sizes, categorical and continuous summary tables, variable inspection, and codebooks.</p>
+<p>spicy helps you explore categorical, continuous, and labelled survey data in R. It provides readable, console-first outputs for survey research, descriptive statistics, and reporting workflows, including frequency tables, cross-tabulations with chi-squared tests and effect sizes, categorical and continuous summary tables, variable inspection, and codebooks.</p>
 <p>With spicy, you can:</p>
 <ul>
 <li>
@@ -116,7 +116,7 @@
 <li>
 <strong>Build model-based continuous summary tables in R</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear regression reporting, robust standard errors, weighted mean comparisons, and console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
 <li>
-<strong>Generate codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
+<strong>Generate interactive and exportable codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
 <li>
 <strong>Extract variable labels</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
 </ul>
@@ -125,13 +125,19 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install the current CRAN release:</p>
+<p>Install the current CRAN release, recommended for most users:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"spicy"</span><span class="op">)</span></span></code></pre></div>
-<p>Install the latest build from <a href="https://amaltawfik.r-universe.dev/spicy" class="external-link">r-universe</a>:</p>
+<p>Install the latest <a href="https://amaltawfik.r-universe.dev/spicy" class="external-link">r-universe</a> build:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"spicy"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://amaltawfik.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>This may be newer than the current CRAN release.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="st">"spicy"</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"https://amaltawfik.r-universe.dev"</span>,</span>
+<span>    <span class="st">"https://cloud.r-project.org"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>This installs <code>spicy</code> from r-universe when available; CRAN is included only as a fallback for dependencies. The r-universe build may be newer than the current CRAN release.</p>
 <p>Install the development version from GitHub with <code>pak</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
@@ -162,12 +168,19 @@
 <span><span class="co">#&gt;  9 income            Monthly household in… 1000,… nume…       1052    1200     0</span></span>
 <span><span class="co">#&gt; 10 smoking           Current smoker        No, Y… fact…          2    1175    25</span></span>
 <span><span class="co">#&gt; # ℹ 14 more rows</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/code_book.html">code_book</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span>
+<span>  values <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  include_na <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a> for more on <code><a href="reference/varlist.html">varlist()</a></code>, <code><a href="reference/varlist.html">vl()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
 </div>
 <div class="section level3">
 <h3 id="frequency-tables-and-cross-tabulations">Frequency tables and cross-tabulations<a class="anchor" aria-label="anchor" href="#frequency-tables-and-cross-tabulations"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">income_group</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Frequency table: income_group</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -211,7 +224,7 @@
 <div class="section level3">
 <h3 id="association-measures">Association measures<a class="anchor" aria-label="anchor" href="#association-measures"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Quick scalar estimate</span></span>
@@ -227,7 +240,7 @@
 <div class="section level3">
 <h3 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -244,7 +257,7 @@
 <span><span class="co">#&gt;  Physical activity      │                     </span></span>
 <span><span class="co">#&gt;    No                   │      650       54.2 </span></span>
 <span><span class="co">#&gt;    Yes                  │      550       45.8</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -282,7 +295,7 @@
 <span><span class="co">#&gt;  Physical activity │          &lt; .001         .21 </span></span>
 <span><span class="co">#&gt;    No              │    54.2                     </span></span>
 <span><span class="co">#&gt;    Yes             │    45.8</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span></span>
@@ -298,7 +311,7 @@
 <span><span class="co">#&gt; ────────────────────────────────┼─────────────────</span></span>
 <span><span class="co">#&gt;  Body mass index                │   26.14    1188 </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │   3.62     1192</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -335,7 +348,7 @@
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary  &lt; .001 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary         </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -357,7 +370,7 @@
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
@@ -375,7 +388,7 @@
 <div class="section level3">
 <h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>

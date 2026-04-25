@@ -8,8 +8,8 @@ representative values in a sortable, searchable table.
 
 The output is displayed as an interactive
 [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html) in the
-Viewer pane, allowing searching, sorting, and export (copy, print, CSV,
-Excel, PDF) directly.
+Viewer pane (for example in RStudio or Positron), allowing searching,
+sorting, and export (copy, print, CSV, Excel, PDF) directly.
 
 ## Usage
 
@@ -41,14 +41,14 @@ code_book(
 
   Logical. If `FALSE` (the default), displays a compact summary of the
   variable's values. For numeric, character, date/time, labelled, and
-  factor variables, up to four unique non-missing values are shown: the
-  first three values, followed by an ellipsis (`...`), and the last
-  value. Values are sorted when appropriate (e.g., numeric, character,
-  date). For factors, `factor_levels` controls whether observed or all
-  declared levels are shown; level order is preserved. For labelled
-  variables, prefixed labels are displayed via
-  `labelled::to_factor(levels = "prefixed")`. If `TRUE`, all unique
-  non-missing values are displayed.
+  factor variables, all unique non-missing values are shown when there
+  are at most four; otherwise the first three values, an ellipsis
+  (`...`), and the last value are shown. Values are sorted when
+  appropriate (e.g., numeric, character, date). For factors,
+  `factor_levels` controls whether observed or all declared levels are
+  shown; level order is preserved. For labelled variables, prefixed
+  labels are displayed via `labelled::to_factor(levels = "prefixed")`.
+  If `TRUE`, all unique non-missing values are displayed.
 
 - include_na:
 
@@ -61,10 +61,10 @@ code_book(
 
 - title:
 
-  Optional character string displayed as the table title in the Viewer.
-  Defaults to `"Codebook"`. Set to `NULL` to remove the title
-  completely. When `filename = NULL`, the title is also used as the base
-  for export filenames after conversion to a portable ASCII name.
+  Optional character string displayed as the table caption. Defaults to
+  `"Codebook"`. Set to `NULL` to remove the title completely. When
+  `filename = NULL`, the title is also used as the base for export
+  filenames after conversion to a portable ASCII name.
 
 - filename:
 
@@ -92,6 +92,11 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 - Variable selection uses the same tidyselect interface as
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md).
 
+- By default, factor variables document all declared levels, including
+  unused levels. Use `factor_levels = "observed"` to mirror
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)'s
+  default.
+
 - All exports occur client-side through the Viewer or Tab.
 
 ## Dependencies
@@ -111,7 +116,19 @@ for generating the underlying variable summaries.
 if (FALSE) { # \dontrun{
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
-  code_book(sochealth, starts_with("bmi"), values = TRUE)
+  code_book(sochealth, starts_with("bmi"))
+  code_book(sochealth, starts_with("bmi"), values = TRUE, include_na = TRUE)
+
+  factors <- data.frame(
+    group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
+  )
+  code_book(
+    factors,
+    values = TRUE,
+    include_na = TRUE,
+    factor_levels = "observed"
+  )
+
   code_book(
     sochealth,
     starts_with("bmi"),

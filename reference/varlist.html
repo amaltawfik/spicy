@@ -114,9 +114,10 @@ or reordered, but renaming selections is not supported.</p></dd>
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (the default), displays a compact summary
 of the variable's values. For numeric, character, date/time, labelled, and
-factor variables, up to four unique non-missing values are shown: the
-first three values, followed by an ellipsis (<code>...</code>), and the last value.
-Values are sorted when appropriate (e.g., numeric, character, date).
+factor variables, all unique non-missing values are shown when there are
+at most four; otherwise the first three values, an ellipsis (<code>...</code>), and
+the last value are shown. Values are sorted when appropriate (e.g.,
+numeric, character, date).
 For factors, <code>factor_levels</code> controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -133,8 +134,9 @@ if the session is interactive. If <code>TRUE</code>, returns a tibble.</p></dd>
 <dd><p>Logical. If <code>TRUE</code>, unique missing value markers
 (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are explicitly appended at the end of the <code>Values</code>
 summary when present in the variable. This applies to all variable types.
-If <code>FALSE</code> (the default), missing values are omitted from <code>Values</code> but
-still counted in the <code>NAs</code> column.</p></dd>
+Literal strings <code>"NA"</code>, <code>"NaN"</code>, and <code>""</code> are quoted to distinguish them
+from missing markers. If <code>FALSE</code> (the default), missing values are omitted
+from <code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
 
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
@@ -150,10 +152,11 @@ including unused levels.</p></dd>
 columns:</p><ul><li><p><code>Variable</code>: variable names</p></li>
 <li><p><code>Label</code>: variable labels (if available via the <code>label</code> attribute)</p></li>
 <li><p><code>Values</code>: a summary of the variable's values, depending on the <code>values</code>
-and <code>include_na</code> arguments. If <code>values = FALSE</code>, a compact summary (max 4
-values: 3 + ... + last) is shown. If <code>values = TRUE</code>, all unique
-non-missing values are displayed. For labelled variables, <strong>prefixed
-labels</strong> are displayed using <code>labelled::to_factor(levels = "prefixed")</code>.
+and <code>include_na</code> arguments. If <code>values = FALSE</code>, a compact summary is
+shown: all unique values when there are at most four, otherwise
+3 + ... + last. If <code>values = TRUE</code>, all unique non-missing values are
+displayed. For labelled variables, <strong>prefixed labels</strong> are displayed using
+<code>labelled::to_factor(levels = "prefixed")</code>.
 For factors, levels are displayed according to <code>factor_levels</code>.
 Matrix and array columns are summarized by their dimensions.
 Missing value markers (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are optionally appended at the
@@ -173,10 +176,11 @@ the function returns invisibly.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The function can also apply tidyselect-style variable selectors to select or
 reorder columns dynamically.</p>
-<p>If used interactively (e.g. in RStudio), the summary is displayed in the
-Viewer pane with a contextual title like <code>vl: sochealth</code>. If the data frame
-has been transformed or subsetted, the title will display an asterisk (<code>*</code>),
-e.g. <code>vl: sochealth*</code>. Anonymous or ambiguous calls use <code>vl: &lt;data&gt;</code>.</p>
+<p>If used interactively (e.g. in RStudio or Positron), the summary is
+displayed in the Viewer pane with a contextual title like <code>vl: sochealth</code>.
+If the data frame has been transformed or subsetted, the title will display
+an asterisk (<code>*</code>), e.g. <code>vl: sochealth*</code>. Anonymous or ambiguous calls use
+<code>vl: &lt;data&gt;</code>.</p>
     </div>
 
     <div class="section level2">
@@ -225,12 +229,33 @@ e.g. <code>vl: sochealth*</code>. Anonymous or ambiguous calls use <code>vl: &lt
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> life_sat_relationships Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> life_sat_standard      Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> weight                 Survey design w… 0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span>
-<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  values <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  include_na <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  tbl <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Variable     Label           Values             Class N_distinct N_valid   NAs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi          Body mass index 16, 16.6, 16.8, .… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi          Body mass index 16, 16.6, 16.8, 1… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category BMI category    Normal weight, Ov… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="cn">NA</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df</span>,</span></span>
+<span class="r-in"><span>  values <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  include_na <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  factor_levels <span class="op">=</span> <span class="st">"all"</span>,</span></span>
+<span class="r-in"><span>  tbl <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Variable Label Values        Class  N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> group    <span style="color: #BB0000;">NA</span>    A, B, C, &lt;NA&gt; factor          2       2     1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 7</span></span>

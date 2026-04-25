@@ -12,6 +12,11 @@
   selection errors without an extra wrapper, and gains a `filename`
   argument for portable export filenames.
 
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  now sanitizes accented export filenames consistently across platforms,
+  avoiding OS-specific [`iconv()`](https://rdrr.io/r/base/iconv.html)
+  transliteration differences.
+
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now displays actual missing values as `<NA>` and `<NaN>` in `Values`
   when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`, and
