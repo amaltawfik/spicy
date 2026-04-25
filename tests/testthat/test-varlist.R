@@ -20,12 +20,53 @@ test_that("varlist() works with tidyselect selectors", {
   expect_true(all(grepl("^Sepal", result$Variable)))
 })
 
+test_that("varlist() supports tidyselect helpers with local objects", {
+  selected <- "Sepal.Width"
+  result <- varlist(iris, all_of(selected), tbl = TRUE)
+  expect_equal(result$Variable, selected)
+})
+
+test_that("varlist() does not expose internal raw expression argument", {
+  expect_false(".raw_expr" %in% names(formals(varlist)))
+})
+
 test_that("vl() is an alias of varlist()", {
   expect_equal(vl(mtcars, tbl = TRUE), varlist(mtcars, tbl = TRUE))
 })
 
 test_that("varlist() throws error for non-data.frame input", {
   expect_error(varlist(1:10), "only works with named data frames")
+})
+
+test_that("varlist() validates missing column names", {
+  df <- structure(
+    list(1:3),
+    class = "data.frame",
+    row.names = c(NA_integer_, -3L)
+  )
+
+  expect_error(varlist(df, tbl = TRUE), "`x` must have column names")
+})
+
+test_that("varlist() validates NA column names", {
+  df <- data.frame(x = 1:3)
+  names(df) <- NA_character_
+
+  expect_error(varlist(df, tbl = TRUE), "`x` must have non-empty column names")
+})
+
+test_that("varlist() validates empty column names", {
+  df <- data.frame(x = 1:3)
+  names(df) <- ""
+
+  expect_error(varlist(df, tbl = TRUE), "`x` must have non-empty column names")
+})
+
+test_that("varlist() validates duplicate column names", {
+  df <- data.frame(x = 1:3, y = 4:6)
+  names(df) <- c("x", "x")
+
+  expect_error(varlist(df, tbl = TRUE), "`x` must have unique column names")
 })
 
 test_that("varlist() validates logical arguments", {
@@ -158,21 +199,21 @@ test_that("varlist() preserves literal NA and empty string values", {
   res <- varlist(df, tbl = TRUE)
   res_all <- varlist(df, tbl = TRUE, values = TRUE)
 
-  expect_equal(unname(res$Values), "\"\", NA, b")
-  expect_equal(unname(res_all$Values), "\"\", NA, b")
+  expect_equal(unname(res$Values), "\"\", \"NA\", b")
+  expect_equal(unname(res_all$Values), "\"\", \"NA\", b")
   expect_equal(unname(res$N_distinct), 3L)
 })
 
 test_that("varlist() include_na appends NA to values", {
   df <- data.frame(x = c(1, 2, NA))
   res <- varlist(df, tbl = TRUE, include_na = TRUE)
-  expect_match(res$Values, "NA")
+  expect_equal(unname(res$Values), "1, 2, <NA>")
 })
 
 test_that("varlist() include_na appends NaN for numeric", {
   df <- data.frame(x = c(1, 2, NaN))
   res <- varlist(df, tbl = TRUE, include_na = TRUE)
-  expect_equal(unname(res$Values), "1, 2, NaN")
+  expect_equal(unname(res$Values), "1, 2, <NaN>")
 })
 
 test_that("varlist() include_na distinguishes NA from NaN", {
@@ -182,10 +223,33 @@ test_that("varlist() include_na distinguishes NA from NaN", {
   res_nan_only <- varlist(nan_only, tbl = TRUE, include_na = TRUE)
   res_both <- varlist(both, tbl = TRUE, include_na = TRUE)
 
-  expect_equal(unname(res_nan_only$Values), "1, 3, NaN")
-  expect_equal(unname(res_both$Values), "1, 3, NA, NaN")
+  expect_equal(unname(res_nan_only$Values), "1, 3, <NaN>")
+  expect_equal(unname(res_both$Values), "1, 3, <NA>, <NaN>")
   expect_equal(unname(res_both$NAs), 2L)
   expect_equal(unname(res_both$N_valid), 2L)
+})
+
+test_that("varlist() distinguishes literal NA strings from missing values", {
+  df <- data.frame(x = c("NA", NA), stringsAsFactors = FALSE)
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  res_all <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+
+  expect_equal(unname(res$Values), "\"NA\", <NA>")
+  expect_equal(unname(res_all$Values), "\"NA\", <NA>")
+})
+
+test_that("varlist() quotes literal NaN strings", {
+  df <- data.frame(x = c("NaN", NA), stringsAsFactors = FALSE)
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+
+  expect_equal(unname(res$Values), "\"NaN\", <NA>")
+})
+
+test_that("varlist() distinguishes factor NA levels from missing values", {
+  f <- factor(c("NA", NA), levels = "NA")
+  res <- varlist(data.frame(x = f), tbl = TRUE, include_na = TRUE)
+
+  expect_equal(unname(res$Values), "\"NA\", <NA>")
 })
 
 test_that("summarize_values_minmax handles factors", {
@@ -204,6 +268,60 @@ test_that("summarize_values_minmax handles POSIXct columns", {
   df <- data.frame(t = as.POSIXct(c("2024-01-01 10:00", "2024-06-15 12:00")))
   res <- varlist(df, tbl = TRUE)
   expect_match(res$Values, "2024")
+})
+
+test_that("varlist() summarizes matrix columns by rows", {
+  mat <- rbind(c(1, 2), c(3, 4))
+  df <- data.frame(x = I(mat))
+
+  res <- varlist(df, tbl = TRUE)
+
+  expect_equal(unname(res$Values), "Matrix(2 x 2)")
+  expect_equal(unname(res$N_distinct), 2L)
+  expect_equal(unname(res$N_valid), 2L)
+  expect_equal(unname(res$NAs), 0L)
+})
+
+test_that("varlist() counts matrix rows with missing cells as missing", {
+  mat <- rbind(c(1, 2), c(NA_real_, 4))
+  df <- data.frame(x = I(mat))
+
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+
+  expect_equal(unname(res$Values), "Matrix(2 x 2), <NA>")
+  expect_equal(unname(res$N_distinct), 1L)
+  expect_equal(unname(res$N_valid), 1L)
+  expect_equal(unname(res$NAs), 1L)
+})
+
+test_that("varlist() counts distinct matrix rows", {
+  mat <- rbind(c(1, 2), c(1, 2), c(3, 4))
+  df <- data.frame(x = I(mat))
+
+  res <- varlist(df, tbl = TRUE)
+
+  expect_equal(unname(res$N_distinct), 2L)
+  expect_equal(unname(res$N_valid), 3L)
+})
+
+test_that("varlist() values = TRUE keeps matrix columns structural", {
+  mat <- rbind(c(1, 2), c(3, 4))
+  df <- data.frame(x = I(mat))
+
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+
+  expect_equal(unname(res$Values), "Matrix(2 x 2)")
+})
+
+test_that("varlist() summarizes array columns by dimensions", {
+  arr <- array(1:8, dim = c(2, 2, 2))
+  df <- tibble::tibble(x = I(arr))
+
+  res <- varlist(df, tbl = TRUE)
+
+  expect_equal(unname(res$Values), "Array(2 x 2 x 2)")
+  expect_equal(unname(res$N_distinct), 2L)
+  expect_equal(unname(res$N_valid), 2L)
 })
 
 test_that("summarize_values_minmax handles list columns", {
@@ -272,7 +390,7 @@ test_that("summarize_values_minmax handles all-NA column", {
 test_that("summarize_values_minmax include_na with empty non-NA values", {
   df <- data.frame(x = c(NA_real_, NA_real_))
   res <- varlist(df, tbl = TRUE, include_na = TRUE)
-  expect_equal(unname(res$Values), "NA")
+  expect_equal(unname(res$Values), "<NA>")
 })
 
 test_that("varlist() handles labelled columns", {
@@ -290,6 +408,18 @@ test_that("varlist() handles labelled columns with values = TRUE", {
   df <- data.frame(v = x)
   res <- varlist(df, tbl = TRUE, values = TRUE)
   expect_match(res$Values, "Low")
+})
+
+test_that("varlist() uses labelled value order consistently", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(2, 1, 3), labels = c(Low = 1, Mid = 2, High = 3))
+  df <- data.frame(v = x)
+
+  res <- varlist(df, tbl = TRUE)
+  res_all <- varlist(df, tbl = TRUE, values = TRUE)
+
+  expect_equal(unname(res$Values), "[1] Low, [2] Mid, [3] High")
+  expect_equal(unname(res_all$Values), "[1] Low, [2] Mid, [3] High")
 })
 
 test_that("N_distinct counts correctly", {
@@ -322,5 +452,5 @@ test_that("varlist() non-interactive prints message", {
 test_that("varlist() values=TRUE with NaN shows NaN", {
   df <- data.frame(x = c(1, NaN, 3))
   res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
-  expect_equal(unname(res$Values), "1, 3, NaN")
+  expect_equal(unname(res$Values), "1, 3, <NaN>")
 })

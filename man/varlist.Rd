@@ -11,8 +11,7 @@ varlist(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
-  factor_levels = c("observed", "all"),
-  .raw_expr = substitute(x)
+  factor_levels = c("observed", "all")
 )
 
 vl(
@@ -40,7 +39,9 @@ If \code{TRUE}, all unique non-missing values are displayed.}
 
 \item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer (if interactive). If \code{TRUE}, returns a tibble.}
 
-\item{include_na}{Logical. If \code{TRUE}, unique missing values (\code{NA}, \code{NaN}) are explicitly appended at the end of the \code{Values} summary
+\item{include_na}{Logical. If \code{TRUE}, unique missing value markers
+(\verb{<NA>}, \verb{<NaN>}) are explicitly appended at the end of the \code{Values}
+summary
 when present in the variable. This applies to all variable types.
 If \code{FALSE} (the default), missing values are omitted from \code{Values} but still counted in the \code{NAs} column.}
 
@@ -48,8 +49,6 @@ If \code{FALSE} (the default), missing values are omitted from \code{Values} but
 in \code{Values}. \code{"observed"} (the default) shows only levels present in the
 data, preserving factor level order. \code{"all"} shows all declared levels,
 including unused levels.}
-
-\item{.raw_expr}{Internal. Do not use. Captures the original expression from \code{vl()} to generate an informative title. Used only for internal purposes.}
 }
 \value{
 A tibble with one row per (selected) variable, containing the following columns:
@@ -61,7 +60,10 @@ If \code{values = FALSE}, a compact summary (max 4 values: 3 + ... + last) is sh
 If \code{values = TRUE}, all unique non-missing values are displayed.
 For labelled variables, \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
 For factors, levels are displayed according to \code{factor_levels}.
-Missing values (\code{NA}, \code{NaN}) are optionally appended at the end (controlled via \code{include_na}).
+Matrix and array columns are summarized by their dimensions.
+Missing value markers (\verb{<NA>}, \verb{<NaN>}) are optionally appended at the
+end (controlled via \code{include_na}). Literal strings \code{"NA"}, \code{"NaN"}, and
+\code{""} are quoted to distinguish them from missing markers.
 \item \code{Class}: the class of each variable (possibly multiple, e.g. \verb{"labelled", "numeric"})
 \item \code{N_distinct}: number of distinct non-missing values
 \item \code{N_valid}: number of non-missing observations

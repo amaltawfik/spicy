@@ -106,6 +106,17 @@ test_that("code_book() wraps varlist() errors", {
   )
 })
 
+test_that("code_book() wraps varlist() column name errors", {
+  skip_if_not_installed("DT")
+  df <- data.frame(x = 1:3, y = 4:6)
+  names(df) <- c("x", "x")
+
+  expect_error(
+    code_book(df),
+    "Error when calling varlist\\(\\): `x` must have unique column names"
+  )
+})
+
 test_that("code_book() errors when varlist() does not return a data frame", {
   skip_if_not_installed("DT")
 
