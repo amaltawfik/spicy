@@ -6,15 +6,15 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Generate an interactive variable codebook — code_book"><meta name="description" content="code_book() creates an interactive and exportable codebook summarizing
-variables of a data frame. It builds upon varlist() to provide an
-overview of variable names, labels, classes, and representative values in a
-sortable, searchable table.
+selected variables of a data frame. It builds upon varlist() to provide
+an overview of variable names, labels, classes, and representative values in
+a sortable, searchable table.
 The output is displayed as an interactive DT::datatable() in the Viewer pane,
 allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
 directly."><meta property="og:description" content="code_book() creates an interactive and exportable codebook summarizing
-variables of a data frame. It builds upon varlist() to provide an
-overview of variable names, labels, classes, and representative values in a
-sortable, searchable table.
+selected variables of a data frame. It builds upon varlist() to provide
+an overview of variable names, labels, classes, and representative values in
+a sortable, searchable table.
 The output is displayed as an interactive DT::datatable() in the Viewer pane,
 allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
 directly."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
@@ -71,9 +71,9 @@ directly."><meta property="og:image" content="https://amaltawfik.github.io/spicy
 
     <div class="ref-description section level2">
     <p><code>code_book()</code> creates an interactive and exportable codebook summarizing
-variables of a data frame. It builds upon <code><a href="varlist.html">varlist()</a></code> to provide an
-overview of variable names, labels, classes, and representative values in a
-sortable, searchable table.</p>
+selected variables of a data frame. It builds upon <code><a href="varlist.html">varlist()</a></code> to provide
+an overview of variable names, labels, classes, and representative values in
+a sortable, searchable table.</p>
 <p>The output is displayed as an interactive <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable()</a></code> in the Viewer pane,
 allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
 directly.</p>
@@ -83,11 +83,12 @@ directly.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">code_book</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
+<span>  <span class="va">...</span>,</span>
 <span>  values <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Codebook"</span>,</span>
-<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"observed"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  filename <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"observed"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,6 +98,12 @@ directly.</p>
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A data frame or tibble.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Optional tidyselect-style column selectors (e.g.
+<code>starts_with("var")</code>, <code>where(is.numeric)</code>, etc.). Columns can be selected
+or reordered, but renaming selections is not supported.</p></dd>
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
@@ -125,7 +132,15 @@ missing markers. If <code>FALSE</code> (the default), missing values are omitted
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>Optional character string displayed as the table title in the
 Viewer. Defaults to <code>"Codebook"</code>. Set to <code>NULL</code> to remove the title
-completely.</p></dd>
+completely. When <code>filename = NULL</code>, the title is also used as the base for
+export filenames after conversion to a portable ASCII name.</p></dd>
+
+
+<dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
+<dd><p>Optional character string used as the base for exported CSV,
+Excel, and PDF filenames. If <code>NULL</code> (the default), a portable filename is
+derived from <code>title</code>, falling back to <code>"Codebook"</code> when needed. File
+extensions are added by the browser/export engine.</p></dd>
 
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
@@ -133,10 +148,6 @@ completely.</p></dd>
 in <code>Values</code>. <code>"all"</code> (the default) shows all declared levels, including
 unused levels. <code>"observed"</code> shows only levels present in the data,
 preserving factor level order.</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments (currently unused).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -148,6 +159,7 @@ preserving factor level order.</p></dd>
 
 <ul><li><p>The interactive <code>datatable</code> supports column sorting, global searching, and
 client-side export to various formats.</p></li>
+<li><p>Variable selection uses the same tidyselect interface as <code><a href="varlist.html">varlist()</a></code>.</p></li>
 <li><p>All exports occur client-side through the Viewer or Tab.</p></li>
 </ul></div>
     <div class="section level2">
@@ -166,6 +178,13 @@ client-side export to various formats.</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"DT"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>    <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    title <span class="op">=</span> <span class="st">"BMI codebook"</span>,</span></span>
+<span class="r-in"><span>    filename <span class="op">=</span> <span class="st">"bmi_codebook"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

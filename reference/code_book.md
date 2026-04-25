@@ -1,7 +1,7 @@
 # Generate an interactive variable codebook
 
 `code_book()` creates an interactive and exportable codebook summarizing
-variables of a data frame. It builds upon
+selected variables of a data frame. It builds upon
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
 to provide an overview of variable names, labels, classes, and
 representative values in a sortable, searchable table.
@@ -16,11 +16,12 @@ Excel, PDF) directly.
 ``` r
 code_book(
   x,
+  ...,
   values = FALSE,
   include_na = FALSE,
   title = "Codebook",
-  factor_levels = c("all", "observed"),
-  ...
+  filename = NULL,
+  factor_levels = c("all", "observed")
 )
 ```
 
@@ -29,6 +30,12 @@ code_book(
 - x:
 
   A data frame or tibble.
+
+- ...:
+
+  Optional tidyselect-style column selectors (e.g. `starts_with("var")`,
+  `where(is.numeric)`, etc.). Columns can be selected or reordered, but
+  renaming selections is not supported.
 
 - values:
 
@@ -56,7 +63,15 @@ code_book(
 
   Optional character string displayed as the table title in the Viewer.
   Defaults to `"Codebook"`. Set to `NULL` to remove the title
-  completely.
+  completely. When `filename = NULL`, the title is also used as the base
+  for export filenames after conversion to a portable ASCII name.
+
+- filename:
+
+  Optional character string used as the base for exported CSV, Excel,
+  and PDF filenames. If `NULL` (the default), a portable filename is
+  derived from `title`, falling back to `"Codebook"` when needed. File
+  extensions are added by the browser/export engine.
 
 - factor_levels:
 
@@ -64,10 +79,6 @@ code_book(
   `"all"` (the default) shows all declared levels, including unused
   levels. `"observed"` shows only levels present in the data, preserving
   factor level order.
-
-- ...:
-
-  Additional arguments (currently unused).
 
 ## Value
 
@@ -77,6 +88,9 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 
 - The interactive `datatable` supports column sorting, global searching,
   and client-side export to various formats.
+
+- Variable selection uses the same tidyselect interface as
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md).
 
 - All exports occur client-side through the Viewer or Tab.
 
@@ -97,6 +111,13 @@ for generating the underlying variable summaries.
 if (FALSE) { # \dontrun{
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
+  code_book(sochealth, starts_with("bmi"), values = TRUE)
+  code_book(
+    sochealth,
+    starts_with("bmi"),
+    title = "BMI codebook",
+    filename = "bmi_codebook"
+  )
 }
 } # }
 ```

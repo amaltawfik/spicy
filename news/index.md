@@ -2,6 +2,16 @@
 
 ## spicy (development version)
 
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  now accepts tidyselect-style variable selectors through `...`,
+  matching
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  validates control arguments more directly, surfaces
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  selection errors without an extra wrapper, and gains a `filename`
+  argument for portable export filenames.
+
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now displays actual missing values as `<NA>` and `<NaN>` in `Values`
   when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`, and

@@ -211,13 +211,30 @@ vl(sochealth, starts_with("bmi"), tbl = TRUE)
 
 ## Build an interactive codebook
 
-When you want a searchable and exportable overview of the whole dataset,
+When you want a searchable and exportable overview of the whole dataset
+or a selected set of variables,
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 builds an interactive codebook in the Viewer.
 
 ``` r
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
+}
+```
+
+Use the same tidyselect-style selectors as
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+to build a focused codebook:
+
+``` r
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(
+    sochealth,
+    starts_with("bmi"),
+    values = TRUE,
+    title = "BMI codebook",
+    filename = "bmi_codebook"
+  )
 }
 ```
 
