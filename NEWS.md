@@ -8,6 +8,10 @@
 
 * `varlist()` now validates column names up front and gives clearer errors for missing, empty, `NA`, or duplicate names.
 
+* `varlist()` now errors clearly when tidyselect expressions try to rename columns; `...` is for selecting variables, not renaming them.
+
+* `varlist()` now gives more precise Viewer titles for extraction, pipe, and literal `get("name")` expressions while keeping ambiguous dynamic calls anonymous.
+
 * `varlist()` now summarizes matrix and array columns by their dimensions and counts valid, missing, and distinct observations by rows instead of by individual cells.
 
 # spicy 0.9.0

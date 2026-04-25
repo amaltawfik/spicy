@@ -16,21 +16,28 @@ code_book(
 \arguments{
 \item{x}{A data frame or tibble.}
 
-\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary of the variable's values.
-For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
-the first three values, followed by an ellipsis (\code{...}), and the last value.
-Values are sorted when appropriate (e.g., numeric, character, date)
+\item{values}{Logical. If \code{FALSE} (the default), displays a compact
+summary of the variable's values. For numeric, character, date/time,
+labelled, and factor variables, up to four unique non-missing values are
+shown: the first three values, followed by an ellipsis (\code{...}), and the
+last value. Values are sorted when appropriate (e.g., numeric, character,
+date).
 For factors, \code{factor_levels} controls whether observed or all declared
 levels are shown; level order is preserved.
-For labelled variables, prefixed labels are displayed via \code{labelled::to_factor(levels = "prefixed")}.
+For labelled variables, prefixed labels are displayed via
+\code{labelled::to_factor(levels = "prefixed")}.
 If \code{TRUE}, all unique non-missing values are displayed.}
 
-\item{include_na}{Logical. If \code{TRUE}, unique missing values (\code{NA}, \code{NaN}) are explicitly appended at the end of the \code{Values} summary
-when present in the variable. This applies to all variable types.
-If \code{FALSE} (the default), missing values are omitted from \code{Values} but still counted in the \code{NAs} column.}
+\item{include_na}{Logical. If \code{TRUE}, unique missing value markers
+(\verb{<NA>}, \verb{<NaN>}) are appended at the end of the \code{Values} summary when
+present in the variable. This applies to all variable types. Literal
+strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them from
+missing markers. If \code{FALSE} (the default), missing values are omitted from
+\code{Values} but still counted in the \code{NAs} column.}
 
-\item{title}{Optional character string displayed as the table title in the Viewer.
-Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title completely.}
+\item{title}{Optional character string displayed as the table title in the
+Viewer. Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
+completely.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"all"} (the default) shows all declared levels, including
@@ -43,17 +50,18 @@ preserving factor level order.}
 A \code{DT::datatable} object.
 }
 \description{
-\code{code_book()} creates an interactive and exportable codebook summarizing all variables of a data frame.
-It builds upon \code{\link[=varlist]{varlist()}} to provide an overview of variable names, labels,
-classes, and representative values in a sortable, searchable table.
+\code{code_book()} creates an interactive and exportable codebook summarizing
+variables of a data frame. It builds upon \code{\link[=varlist]{varlist()}} to provide an
+overview of variable names, labels, classes, and representative values in a
+sortable, searchable table.
 
 The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane,
-allowing filtering, column reordering, and export (copy, print, CSV, Excel, PDF)
+allowing searching, sorting, and export (copy, print, CSV, Excel, PDF)
 directly.
 }
 \details{
 \itemize{
-\item The interactive \code{datatable} supports column sorting, searching, and
+\item The interactive \code{datatable} supports column sorting, global searching, and
 client-side export to various formats.
 \item All exports occur client-side through the Viewer or Tab.
 }
@@ -68,8 +76,9 @@ Requires the following package:
 
 \examples{
 \dontrun{
-# Launch the interactive codebook (opens in Viewer)
-code_book(sochealth)
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(sochealth)
+}
 }
 
 }

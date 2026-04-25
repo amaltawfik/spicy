@@ -24,26 +24,31 @@ vl(
 )
 }
 \arguments{
-\item{x}{A data frame, or a transformation of one. Must be named and identifiable.}
+\item{x}{A data frame, or a transformation of one.}
 
-\item{...}{Optional tidyselect-style column selectors (e.g. \code{starts_with("var")}, \code{where(is.numeric)}, etc.)}
+\item{...}{Optional tidyselect-style column selectors (e.g.
+\code{starts_with("var")}, \code{where(is.numeric)}, etc.). Columns can be selected
+or reordered, but renaming selections is not supported.}
 
-\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary of the variable's values.
-For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
-the first three values, followed by an ellipsis (\code{...}), and the last value.
-Values are sorted when appropriate (e.g., numeric, character, date)
+\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary
+of the variable's values. For numeric, character, date/time, labelled, and
+factor variables, up to four unique non-missing values are shown: the
+first three values, followed by an ellipsis (\code{...}), and the last value.
+Values are sorted when appropriate (e.g., numeric, character, date).
 For factors, \code{factor_levels} controls whether observed or all declared
 levels are shown; level order is preserved.
-For labelled variables, prefixed labels are displayed via \code{labelled::to_factor(levels = "prefixed")}.
+For labelled variables, prefixed labels are displayed via
+\code{labelled::to_factor(levels = "prefixed")}.
 If \code{TRUE}, all unique non-missing values are displayed.}
 
-\item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer (if interactive). If \code{TRUE}, returns a tibble.}
+\item{tbl}{Logical. If \code{FALSE} (the default), opens the summary in the Viewer
+if the session is interactive. If \code{TRUE}, returns a tibble.}
 
 \item{include_na}{Logical. If \code{TRUE}, unique missing value markers
 (\verb{<NA>}, \verb{<NaN>}) are explicitly appended at the end of the \code{Values}
-summary
-when present in the variable. This applies to all variable types.
-If \code{FALSE} (the default), missing values are omitted from \code{Values} but still counted in the \code{NAs} column.}
+summary when present in the variable. This applies to all variable types.
+If \code{FALSE} (the default), missing values are omitted from \code{Values} but
+still counted in the \code{NAs} column.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"observed"} (the default) shows only levels present in the
@@ -51,48 +56,59 @@ data, preserving factor level order. \code{"all"} shows all declared levels,
 including unused levels.}
 }
 \value{
-A tibble with one row per (selected) variable, containing the following columns:
+A tibble with one row per selected variable, containing the following
+columns:
 \itemize{
 \item \code{Variable}: variable names
 \item \code{Label}: variable labels (if available via the \code{label} attribute)
-\item \code{Values}: a summary of the variable's values, depending on the \code{values} and \code{include_na} arguments.
-If \code{values = FALSE}, a compact summary (max 4 values: 3 + ... + last) is shown.
-If \code{values = TRUE}, all unique non-missing values are displayed.
-For labelled variables, \strong{prefixed labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
+\item \code{Values}: a summary of the variable's values, depending on the \code{values}
+and \code{include_na} arguments. If \code{values = FALSE}, a compact summary (max 4
+values: 3 + ... + last) is shown. If \code{values = TRUE}, all unique
+non-missing values are displayed. For labelled variables, \strong{prefixed
+labels} are displayed using \code{labelled::to_factor(levels = "prefixed")}.
 For factors, levels are displayed according to \code{factor_levels}.
 Matrix and array columns are summarized by their dimensions.
 Missing value markers (\verb{<NA>}, \verb{<NaN>}) are optionally appended at the
 end (controlled via \code{include_na}). Literal strings \code{"NA"}, \code{"NaN"}, and
 \code{""} are quoted to distinguish them from missing markers.
-\item \code{Class}: the class of each variable (possibly multiple, e.g. \verb{"labelled", "numeric"})
+\item \code{Class}: the class of each variable (possibly multiple, e.g.
+\verb{"labelled", "numeric"})
 \item \code{N_distinct}: number of distinct non-missing values
 \item \code{N_valid}: number of non-missing observations
 \item \code{NAs}: number of missing observations
-If \code{tbl = FALSE} and used interactively, the summary is displayed in the Viewer pane.
-If the data frame is a transformation (e.g. \code{head(df)} or \code{df[ , 1:3]}), an asterisk (\code{*}) is appended to the name in the title (e.g. \verb{vl: df*}).
 }
+
+If \code{tbl = TRUE}, the tibble is returned. If \code{tbl = FALSE} and the session is
+interactive, the summary is displayed in the Viewer pane and the function
+returns invisibly. In non-interactive sessions, a message is displayed and
+the function returns invisibly.
 }
 \description{
-\code{varlist()} lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.
+\code{varlist()} lists the variables of a data frame and extracts essential
+metadata, including variable names, labels, summary values, classes, number
+of distinct values, number of valid (non-missing) observations, and number
+of missing values.
 
-\code{vl()} is a convenient shorthand for \code{varlist()} that offers identical functionality with a shorter name.
+\code{vl()} is a convenient shorthand for \code{varlist()} that offers identical
+functionality with a shorter name.
 }
 \details{
-The function can also apply tidyselect-style variable selectors to filter columns dynamically.
+The function can also apply tidyselect-style variable selectors to select or
+reorder columns dynamically.
 
-If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like \code{vl: sochealth}. If the data frame has been transformed or subsetted, the title will display an asterisk (\code{*}), e.g. \verb{vl: sochealth*}.
-
-For full documentation, see \code{\link[=varlist]{varlist()}}.
+If used interactively (e.g. in RStudio), the summary is displayed in the
+Viewer pane with a contextual title like \code{vl: sochealth}. If the data frame
+has been transformed or subsetted, the title will display an asterisk (\code{*}),
+e.g. \verb{vl: sochealth*}. Anonymous or ambiguous calls use \verb{vl: <data>}.
 }
 \examples{
-varlist(sochealth)
-sochealth |> varlist()
-varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 varlist(sochealth, tbl = TRUE)
+sochealth |> varlist(tbl = TRUE)
+varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 varlist(sochealth, starts_with("bmi"), tbl = TRUE)
 
-vl(sochealth)
-sochealth |> vl()
-vl(sochealth, starts_with("bmi"))
+vl(sochealth, tbl = TRUE)
+sochealth |> vl(tbl = TRUE)
+vl(sochealth, starts_with("bmi"), tbl = TRUE)
 vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 }

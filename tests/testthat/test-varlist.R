@@ -26,6 +26,25 @@ test_that("varlist() supports tidyselect helpers with local objects", {
   expect_equal(result$Variable, selected)
 })
 
+test_that("varlist() errors on renamed tidyselect selections", {
+  df <- data.frame(old = 1:3)
+
+  expect_error(
+    varlist(df, new = old, tbl = TRUE),
+    "`...` can select columns but cannot rename them in varlist\\(\\)"
+  )
+})
+
+test_that("varlist() errors on renamed tidyselect helper selections", {
+  selected <- c(new = "old")
+  df <- data.frame(old = 1:3)
+
+  expect_error(
+    varlist(df, all_of(selected), tbl = TRUE),
+    "`...` can select columns but cannot rename them in varlist\\(\\)"
+  )
+})
+
 test_that("varlist() does not expose internal raw expression argument", {
   expect_false(".raw_expr" %in% names(formals(varlist)))
 })
@@ -124,11 +143,35 @@ test_that("varlist_title() extracts symbol from nested call arg", {
   expect_equal(varlist_title(quote(fun(subset(df, x > 1)))), "vl: df*")
 })
 
+test_that("varlist_title() handles extraction calls", {
+  expect_equal(varlist_title(quote(df[, 1:3])), "vl: df*")
+  expect_equal(varlist_title(quote(df[["x"]])), "vl: df*")
+  expect_equal(varlist_title(quote(df$x)), "vl: df*")
+})
+
+test_that("varlist_title() handles literal lookup calls", {
+  expect_equal(varlist_title(quote(get("df"))), "vl: df")
+  expect_equal(varlist_title(quote(base::get("df"))), "vl: df")
+  expect_equal(
+    varlist_title(quote(get("df")), selectors_used = TRUE),
+    "vl: df*"
+  )
+})
+
+test_that("varlist_title() handles magrittr-style pipe calls", {
+  expect_equal(varlist_title(quote(df %>% head())), "vl: df*")
+})
+
+test_that("varlist_title() avoids ambiguous lookup and call arguments", {
+  expect_equal(varlist_title(quote(get(name))), "vl: <data>")
+  expect_equal(varlist_title(quote(fun(x, df))), "vl: <data>")
+})
+
 test_that("varlist_title() returns fallback for non-symbol expressions", {
   expect_equal(varlist_title(1L), "vl: <data>")
 })
 
-test_that("varlist_title() returns fallback when deparse fails", {
+test_that("varlist_title() returns fallback for unusual objects", {
   bad <- structure(list(), class = "weird")
   expect_equal(varlist_title(bad), "vl: <data>")
 })
