@@ -322,8 +322,16 @@ test_that("freq() styled = FALSE strips spicy metadata attributes", {
   )
   res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
   spicy_attrs <- c(
-    "digits", "data_name", "var_name", "var_label", "class_name",
-    "n_total", "n_valid", "weighted", "rescaled", "weight_var"
+    "digits",
+    "data_name",
+    "var_name",
+    "var_label",
+    "class_name",
+    "n_total",
+    "n_valid",
+    "weighted",
+    "rescaled",
+    "weight_var"
   )
   for (a in spicy_attrs) {
     expect_null(attr(res, a), info = paste("attribute", a))
@@ -350,14 +358,26 @@ test_that("freq() weights from a qualified expression win over data lookup", {
   df1 <- data.frame(x = c("A", "B", "C"), w = c(1, 1, 1))
   df2 <- data.frame(w = c(10, 20, 30))
 
-  res_qualified <- freq(df1, x, weights = df2$w, rescale = FALSE, styled = FALSE)
+  res_qualified <- freq(
+    df1,
+    x,
+    weights = df2$w,
+    rescale = FALSE,
+    styled = FALSE
+  )
   res_bare <- freq(df1, x, weights = w, rescale = FALSE, styled = FALSE)
 
   expect_equal(sum(res_qualified$n), 60)
   expect_equal(sum(res_bare$n), 3)
 
   # Qualified expression also works with [[ ]]
-  res_brackets <- freq(df1, x, weights = df2[["w"]], rescale = FALSE, styled = FALSE)
+  res_brackets <- freq(
+    df1,
+    x,
+    weights = df2[["w"]],
+    rescale = FALSE,
+    styled = FALSE
+  )
   expect_equal(sum(res_brackets$n), 60)
 })
 
@@ -414,7 +434,14 @@ test_that("freq() prints integer counts even with fractional weights", {
 test_that("freq() labelled_levels accepts p/l/v shortcuts via partial matching", {
   skip_if_not_installed("labelled")
   x <- labelled::labelled(c(1, 2, 3), labels = c(Low = 1, Mid = 2, High = 3))
-  expect_true(any(grepl("\\[1\\]", freq(x, labelled_levels = "p", styled = FALSE)$value)))
-  expect_true(all(!grepl("\\[", freq(x, labelled_levels = "l", styled = FALSE)$value)))
-  expect_true(any(freq(x, labelled_levels = "v", styled = FALSE)$value %in% c("1", "2", "3")))
+  expect_true(any(grepl(
+    "\\[1\\]",
+    freq(x, labelled_levels = "p", styled = FALSE)$value
+  )))
+  expect_true(all(
+    !grepl("\\[", freq(x, labelled_levels = "l", styled = FALSE)$value)
+  ))
+  expect_true(any(
+    freq(x, labelled_levels = "v", styled = FALSE)$value %in% c("1", "2", "3")
+  ))
 })

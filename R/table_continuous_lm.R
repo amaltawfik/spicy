@@ -1784,4 +1784,3 @@ format_p_value_lm <- function(p, decimal_mark = ".") {
   out <- sub("^-0(?=[\\.,])", "-", out, perl = TRUE)
   out
 }
-

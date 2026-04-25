@@ -39,7 +39,9 @@ legacy_pattern <- paste(legacy_pages, collapse = "|")
 
 remove_files <- function(paths) {
   existing <- paths[file.exists(paths)]
-  if (length(existing)) unlink(existing)
+  if (length(existing)) {
+    unlink(existing)
+  }
   invisible(existing)
 }
 
