@@ -5,9 +5,17 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Generate a comprehensive summary of the variables — varlist"><meta name="description" content="varlist() lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.
-vl() is a convenient shorthand for varlist() that offers identical functionality with a shorter name."><meta property="og:description" content="varlist() lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.
-vl() is a convenient shorthand for varlist() that offers identical functionality with a shorter name."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Generate a comprehensive summary of the variables — varlist"><meta name="description" content="varlist() lists the variables of a data frame and extracts essential
+metadata, including variable names, labels, summary values, classes, number
+of distinct values, number of valid (non-missing) observations, and number
+of missing values.
+vl() is a convenient shorthand for varlist() that offers identical
+functionality with a shorter name."><meta property="og:description" content="varlist() lists the variables of a data frame and extracts essential
+metadata, including variable names, labels, summary values, classes, number
+of distinct values, number of valid (non-missing) observations, and number
+of missing values.
+vl() is a convenient shorthand for varlist() that offers identical
+functionality with a shorter name."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -60,8 +68,12 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
     </div>
 
     <div class="ref-description section level2">
-    <p><code>varlist()</code> lists the variables of a data frame and extracts essential metadata, including variable names, labels, summary values, classes, number of distinct values, number of valid (non-missing) observations, and number of missing values.</p>
-<p><code>vl()</code> is a convenient shorthand for <code>varlist()</code> that offers identical functionality with a shorter name.</p>
+    <p><code>varlist()</code> lists the variables of a data frame and extracts essential
+metadata, including variable names, labels, summary values, classes, number
+of distinct values, number of valid (non-missing) observations, and number
+of missing values.</p>
+<p><code>vl()</code> is a convenient shorthand for <code>varlist()</code> that offers identical
+functionality with a shorter name.</p>
     </div>
 
     <div class="section level2">
@@ -90,34 +102,39 @@ vl() is a convenient shorthand for varlist() that offers identical functionality
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A data frame, or a transformation of one. Must be named and identifiable.</p></dd>
+<dd><p>A data frame, or a transformation of one.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Optional tidyselect-style column selectors (e.g. <code>starts_with("var")</code>, <code>where(is.numeric)</code>, etc.)</p></dd>
+<dd><p>Optional tidyselect-style column selectors (e.g.
+<code>starts_with("var")</code>, <code>where(is.numeric)</code>, etc.). Columns can be selected
+or reordered, but renaming selections is not supported.</p></dd>
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), displays a compact summary of the variable's values.
-For numeric, character, date/time, labelled, and factor variables, up to four unique non-missing values are shown:
-the first three values, followed by an ellipsis (<code>...</code>), and the last value.
-Values are sorted when appropriate (e.g., numeric, character, date)
+<dd><p>Logical. If <code>FALSE</code> (the default), displays a compact summary
+of the variable's values. For numeric, character, date/time, labelled, and
+factor variables, up to four unique non-missing values are shown: the
+first three values, followed by an ellipsis (<code>...</code>), and the last value.
+Values are sorted when appropriate (e.g., numeric, character, date).
 For factors, <code>factor_levels</code> controls whether observed or all declared
 levels are shown; level order is preserved.
-For labelled variables, prefixed labels are displayed via <code>labelled::to_factor(levels = "prefixed")</code>.
+For labelled variables, prefixed labels are displayed via
+<code>labelled::to_factor(levels = "prefixed")</code>.
 If <code>TRUE</code>, all unique non-missing values are displayed.</p></dd>
 
 
 <dt id="arg-tbl">tbl<a class="anchor" aria-label="anchor" href="#arg-tbl"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), opens the summary in the Viewer (if interactive). If <code>TRUE</code>, returns a tibble.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), opens the summary in the Viewer
+if the session is interactive. If <code>TRUE</code>, returns a tibble.</p></dd>
 
 
 <dt id="arg-include-na">include_na<a class="anchor" aria-label="anchor" href="#arg-include-na"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, unique missing value markers
 (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are explicitly appended at the end of the <code>Values</code>
-summary
-when present in the variable. This applies to all variable types.
-If <code>FALSE</code> (the default), missing values are omitted from <code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
+summary when present in the variable. This applies to all variable types.
+If <code>FALSE</code> (the default), missing values are omitted from <code>Values</code> but
+still counted in the <code>NAs</code> column.</p></dd>
 
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
@@ -129,52 +146,42 @@ including unused levels.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per (selected) variable, containing the following columns:</p><ul><li><p><code>Variable</code>: variable names</p></li>
+    <p>A tibble with one row per selected variable, containing the following
+columns:</p><ul><li><p><code>Variable</code>: variable names</p></li>
 <li><p><code>Label</code>: variable labels (if available via the <code>label</code> attribute)</p></li>
-<li><p><code>Values</code>: a summary of the variable's values, depending on the <code>values</code> and <code>include_na</code> arguments.
-If <code>values = FALSE</code>, a compact summary (max 4 values: 3 + ... + last) is shown.
-If <code>values = TRUE</code>, all unique non-missing values are displayed.
-For labelled variables, <strong>prefixed labels</strong> are displayed using <code>labelled::to_factor(levels = "prefixed")</code>.
+<li><p><code>Values</code>: a summary of the variable's values, depending on the <code>values</code>
+and <code>include_na</code> arguments. If <code>values = FALSE</code>, a compact summary (max 4
+values: 3 + ... + last) is shown. If <code>values = TRUE</code>, all unique
+non-missing values are displayed. For labelled variables, <strong>prefixed
+labels</strong> are displayed using <code>labelled::to_factor(levels = "prefixed")</code>.
 For factors, levels are displayed according to <code>factor_levels</code>.
 Matrix and array columns are summarized by their dimensions.
 Missing value markers (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are optionally appended at the
 end (controlled via <code>include_na</code>). Literal strings <code>"NA"</code>, <code>"NaN"</code>, and
 <code>""</code> are quoted to distinguish them from missing markers.</p></li>
-<li><p><code>Class</code>: the class of each variable (possibly multiple, e.g. <code>"labelled", "numeric"</code>)</p></li>
+<li><p><code>Class</code>: the class of each variable (possibly multiple, e.g.
+<code>"labelled", "numeric"</code>)</p></li>
 <li><p><code>N_distinct</code>: number of distinct non-missing values</p></li>
 <li><p><code>N_valid</code>: number of non-missing observations</p></li>
-<li><p><code>NAs</code>: number of missing observations
-If <code>tbl = FALSE</code> and used interactively, the summary is displayed in the Viewer pane.
-If the data frame is a transformation (e.g. <code>head(df)</code> or <code>df[ , 1:3]</code>), an asterisk (<code>*</code>) is appended to the name in the title (e.g. <code>vl: df*</code>).</p></li>
-</ul></div>
+<li><p><code>NAs</code>: number of missing observations</p></li>
+</ul><p>If <code>tbl = TRUE</code>, the tibble is returned. If <code>tbl = FALSE</code> and the session is
+interactive, the summary is displayed in the Viewer pane and the function
+returns invisibly. In non-interactive sessions, a message is displayed and
+the function returns invisibly.</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function can also apply tidyselect-style variable selectors to filter columns dynamically.</p>
-<p>If used interactively (e.g. in RStudio), the summary is displayed in the Viewer pane with a contextual title like <code>vl: sochealth</code>. If the data frame has been transformed or subsetted, the title will display an asterisk (<code>*</code>), e.g. <code>vl: sochealth*</code>.</p>
-<p>For full documentation, see <code>varlist()</code>.</p>
+    <p>The function can also apply tidyselect-style variable selectors to select or
+reorder columns dynamically.</p>
+<p>If used interactively (e.g. in RStudio), the summary is displayed in the
+Viewer pane with a contextual title like <code>vl: sochealth</code>. If the data frame
+has been transformed or subsetted, the title will display an asterisk (<code>*</code>),
+e.g. <code>vl: sochealth*</code>. Anonymous or ambiguous calls use <code>vl: &lt;data&gt;</code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
-<span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">varlist</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
-<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Variable               Label            Values Class N_distinct N_valid   NAs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> age                    Age (years)      25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> income                 Monthly househo… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> wellbeing_score        WHO-5 wellbeing… 18.7,… nume…        517    <span style="text-decoration: underline;">1</span>200     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> bmi                    Body mass index  16, 1… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> political_position     Political posit… 0, 1,… nume…         11    <span style="text-decoration: underline;">1</span>185    15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> life_sat_health        Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> life_sat_work          Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> life_sat_relationships Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> life_sat_standard      Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> weight                 Survey design w… 0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span>
-<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Variable          Label                 Values Class N_distinct N_valid   NAs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
@@ -189,6 +196,35 @@ If the data frame is a transformation (e.g. <code>head(df)</code> or <code>df[ ,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 14 more rows</span></span>
+<span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">varlist</span><span class="op">(</span>tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Variable          Label                 Values Class N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sex               Sex                   Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> age               Age (years)           25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> age_group         Age group             25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> education         Highest education le… Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> social_class      Subjective social cl… Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> region            Region of residence   Centr… fact…          6    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> employment_status Employment status     Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> income_group      Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 14 more rows</span></span>
+<span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Variable               Label            Values Class N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> age                    Age (years)      25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> income                 Monthly househo… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> wellbeing_score        WHO-5 wellbeing… 18.7,… nume…        517    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> bmi                    Body mass index  16, 1… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> political_position     Political posit… 0, 1,… nume…         11    <span style="text-decoration: underline;">1</span>185    15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> life_sat_health        Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> life_sat_work          Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> life_sat_relationships Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> life_sat_standard      Satisfaction wi… 1, 2,… inte…          5    <span style="text-decoration: underline;">1</span>192     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> weight                 Survey design w… 0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span>
 <span class="r-in"><span><span class="fu">varlist</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Variable     Label           Values             Class N_distinct N_valid   NAs</span>
@@ -196,12 +232,42 @@ If the data frame is a transformation (e.g. <code>head(df)</code> or <code>df[ ,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi          Body mass index 16, 16.6, 16.8, .… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category BMI category    Normal weight, Ov… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
-<span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">vl</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
-<span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Non-interactive session: use `tbl = TRUE` to return a tibble.</span>
+<span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Variable          Label                 Values Class N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sex               Sex                   Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> age               Age (years)           25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> age_group         Age group             25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> education         Highest education le… Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> social_class      Subjective social cl… Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> region            Region of residence   Centr… fact…          6    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> employment_status Employment status     Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> income_group      Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 14 more rows</span></span>
+<span class="r-in"><span><span class="va">sochealth</span> <span class="op">|&gt;</span> <span class="fu">vl</span><span class="op">(</span>tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Variable          Label                 Values Class N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sex               Sex                   Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> age               Age (years)           25, 2… nume…         51    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> age_group         Age group             25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> education         Highest education le… Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> social_class      Subjective social cl… Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> region            Region of residence   Centr… fact…          6    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> employment_status Employment status     Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> income_group      Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 14 more rows</span></span>
+<span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Variable     Label           Values             Class N_distinct N_valid   NAs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi          Body mass index 16, 16.6, 16.8, .… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category BMI category    Normal weight, Ov… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span>
 <span class="r-in"><span><span class="fu">vl</span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Variable               Label            Values Class N_distinct N_valid   NAs</span>

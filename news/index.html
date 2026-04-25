@@ -62,6 +62,8 @@
 <li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays labelled values in the same prefixed-label order for compact and <code>values = TRUE</code> summaries, rather than using data order in compact summaries.</p></li>
 <li><p><code><a href="../reference/varlist.html">varlist()</a></code> no longer exposes the internal <code>.raw_expr</code> argument in its public signature; interactive title generation is now handled internally.</p></li>
 <li><p><code><a href="../reference/varlist.html">varlist()</a></code> now validates column names up front and gives clearer errors for missing, empty, <code>NA</code>, or duplicate names.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now errors clearly when tidyselect expressions try to rename columns; <code>...</code> is for selecting variables, not renaming them.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now gives more precise Viewer titles for extraction, pipe, and literal <code>get("name")</code> expressions while keeping ambiguous dynamic calls anonymous.</p></li>
 <li><p><code><a href="../reference/varlist.html">varlist()</a></code> now summarizes matrix and array columns by their dimensions and counts valid, missing, and distinct observations by rows instead of by individual cells.</p></li>
 </ul></div>
     <div class="section level2">

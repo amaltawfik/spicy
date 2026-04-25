@@ -1,15 +1,15 @@
 # Generate an interactive variable codebook
 
 `code_book()` creates an interactive and exportable codebook summarizing
-all variables of a data frame. It builds upon
+variables of a data frame. It builds upon
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
 to provide an overview of variable names, labels, classes, and
 representative values in a sortable, searchable table.
 
 The output is displayed as an interactive
 [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html) in the
-Viewer pane, allowing filtering, column reordering, and export (copy,
-print, CSV, Excel, PDF) directly.
+Viewer pane, allowing searching, sorting, and export (copy, print, CSV,
+Excel, PDF) directly.
 
 ## Usage
 
@@ -37,7 +37,7 @@ code_book(
   factor variables, up to four unique non-missing values are shown: the
   first three values, followed by an ellipsis (`...`), and the last
   value. Values are sorted when appropriate (e.g., numeric, character,
-  date) For factors, `factor_levels` controls whether observed or all
+  date). For factors, `factor_levels` controls whether observed or all
   declared levels are shown; level order is preserved. For labelled
   variables, prefixed labels are displayed via
   `labelled::to_factor(levels = "prefixed")`. If `TRUE`, all unique
@@ -45,11 +45,12 @@ code_book(
 
 - include_na:
 
-  Logical. If `TRUE`, unique missing values (`NA`, `NaN`) are explicitly
+  Logical. If `TRUE`, unique missing value markers (`<NA>`, `<NaN>`) are
   appended at the end of the `Values` summary when present in the
-  variable. This applies to all variable types. If `FALSE` (the
-  default), missing values are omitted from `Values` but still counted
-  in the `NAs` column.
+  variable. This applies to all variable types. Literal strings `"NA"`,
+  `"NaN"`, and `""` are quoted to distinguish them from missing markers.
+  If `FALSE` (the default), missing values are omitted from `Values` but
+  still counted in the `NAs` column.
 
 - title:
 
@@ -74,8 +75,8 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 
 ## Details
 
-- The interactive `datatable` supports column sorting, searching, and
-  client-side export to various formats.
+- The interactive `datatable` supports column sorting, global searching,
+  and client-side export to various formats.
 
 - All exports occur client-side through the Viewer or Tab.
 
@@ -94,7 +95,8 @@ for generating the underlying variable summaries.
 
 ``` r
 if (FALSE) { # \dontrun{
-# Launch the interactive codebook (opens in Viewer)
-code_book(sochealth)
+if (requireNamespace("DT", quietly = TRUE)) {
+  code_book(sochealth)
+}
 } # }
 ```

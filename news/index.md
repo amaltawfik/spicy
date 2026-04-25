@@ -21,6 +21,15 @@
   missing, empty, `NA`, or duplicate names.
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now errors clearly when tidyselect expressions try to rename columns;
+  `...` is for selecting variables, not renaming them.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now gives more precise Viewer titles for extraction, pipe, and literal
+  `get("name")` expressions while keeping ambiguous dynamic calls
+  anonymous.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now summarizes matrix and array columns by their dimensions and counts
   valid, missing, and distinct observations by rows instead of by
   individual cells.
