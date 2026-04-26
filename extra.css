@@ -70,3 +70,79 @@ pre .co,
 code .co {
   font-style: normal !important;
 }
+
+/* IBM Plex Sans has a lower x-height (~520/1000) than IBM Plex Mono
+   (~554/1000), so at identical nominal size the body text reads
+   visually smaller than code blocks. Bumping body to 17px and
+   line-height to 1.6 rebalances the two and improves readability
+   for long-form documentation. The font-family fallback covers
+   the brief swap moment plus offline / CSP-restricted contexts;
+   bslib's default rule sets only "IBM Plex Sans" without a
+   fallback. */
+:root {
+  --bs-body-font-size: 1.0625rem;
+  --bs-body-line-height: 1.6;
+  --bs-body-font-family:
+    "IBM Plex Sans",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    sans-serif;
+}
+
+/* Cap the article main column at 78ch on large screens so prose
+   lines stay within a comfortable reading length. Code blocks,
+   wide ASCII tables, and rich tables (gt / tinytable / flextable)
+   sit inside this column and remain free to overflow horizontally
+   on their own when needed; we do not constrain them individually. */
+@media (min-width: 992px) {
+  .template-article main {
+    max-width: 78ch;
+  }
+}
+
+/* Soft background and rounding for inline `code` so it stands out
+   from prose without competing with block code (already styled by
+   the syntax highlighter). The :not(pre) > code selector excludes
+   highlighted blocks, which always live under <pre>. */
+:not(pre) > code {
+  background-color: rgba(135, 131, 120, 0.12);
+  padding: 0.125em 0.35em;
+  border-radius: 0.25rem;
+}
+[data-bs-theme="dark"] :not(pre) > code {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Bootstrap's default top-margin on headings is too tight for
+   long-form articles; section breaks need clearer vertical
+   breathing room. */
+.template-article h2 { margin-top: 2.5rem; }
+.template-article h3 { margin-top: 2rem; }
+.template-article h4 { margin-top: 1.5rem; }
+
+/* knitr-rendered Markdown tables ship without gt/tinytable/flextable
+   classes and inherit Bootstrap's tight cell padding. Loosen rows
+   without touching the styled table engines (which carry their own
+   spacing). */
+.template-article table:not(.gt_table):not(.tinytable):not(.tabwid) th,
+.template-article table:not(.gt_table):not(.tinytable):not(.tabwid) td {
+  padding: 0.5rem 0.75rem;
+}
+
+/* Respect users with vestibular sensitivity who request reduced
+   motion via OS / browser settings. Disables animations and
+   transitions package-wide, including any added by Bootstrap or
+   pkgdown JS components. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
