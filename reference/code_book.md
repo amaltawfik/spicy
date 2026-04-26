@@ -76,9 +76,11 @@ code_book(
 - factor_levels:
 
   Character. Controls how factor values are displayed in `Values`.
-  `"all"` (the default) shows all declared levels, including unused
-  levels. `"observed"` shows only levels present in the data, preserving
-  factor level order.
+  `"all"` (the default;
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  uses `"observed"`) shows all declared levels, including unused levels.
+  `"observed"` shows only levels present in the data, preserving factor
+  level order.
 
 ## Value
 
@@ -93,7 +95,11 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md).
 
 - By default, factor variables document all declared levels, including
-  unused levels. Use `factor_levels = "observed"` to mirror
+  unused levels — appropriate for a schema-oriented codebook. This
+  differs from
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  which defaults to `"observed"` to summarize observed data only. Pass
+  `factor_levels = "observed"` to mirror
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)'s
   default.
 

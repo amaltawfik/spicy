@@ -23,7 +23,7 @@ functionality with a shorter name."><meta property="og:image" content="https://a
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -141,9 +141,9 @@ from <code>Values</code> but still counted in the <code>NAs</code> column.</p></
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
 <dd><p>Character. Controls how factor values are displayed
-in <code>Values</code>. <code>"observed"</code> (the default) shows only levels present in the
-data, preserving factor level order. <code>"all"</code> shows all declared levels,
-including unused levels.</p></dd>
+in <code>Values</code>. <code>"observed"</code> (the default; <code><a href="code_book.html">code_book()</a></code> uses <code>"all"</code>)
+shows only levels present in the data, preserving factor level order.
+<code>"all"</code> shows all declared levels, including unused levels.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -181,6 +181,11 @@ displayed in the Viewer pane with a contextual title like <code>vl: sochealth</c
 If the data frame has been transformed or subsetted, the title will display
 an asterisk (<code>*</code>), e.g. <code>vl: sochealth*</code>. Anonymous or ambiguous calls use
 <code>vl: &lt;data&gt;</code>.</p>
+<p>For factor variables, <code>varlist()</code> defaults to displaying only the levels
+observed in the data (<code>factor_levels = "observed"</code>) — a reflection of what
+is actually present. By contrast, <code><a href="code_book.html">code_book()</a></code> defaults to <code>"all"</code> to
+document the declared schema, including unused levels. Pass <code>factor_levels</code>
+explicitly to override either default.</p>
     </div>
 
     <div class="section level2">

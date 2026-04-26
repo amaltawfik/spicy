@@ -72,9 +72,11 @@ vl(
 - factor_levels:
 
   Character. Controls how factor values are displayed in `Values`.
-  `"observed"` (the default) shows only levels present in the data,
-  preserving factor level order. `"all"` shows all declared levels,
-  including unused levels.
+  `"observed"` (the default;
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  uses `"all"`) shows only levels present in the data, preserving factor
+  level order. `"all"` shows all declared levels, including unused
+  levels.
 
 ## Value
 
@@ -121,6 +123,13 @@ displayed in the Viewer pane with a contextual title like
 `vl: sochealth`. If the data frame has been transformed or subsetted,
 the title will display an asterisk (`*`), e.g. `vl: sochealth*`.
 Anonymous or ambiguous calls use `vl: <data>`.
+
+For factor variables, `varlist()` defaults to displaying only the levels
+observed in the data (`factor_levels = "observed"`) — a reflection of
+what is actually present. By contrast,
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+defaults to `"all"` to document the declared schema, including unused
+levels. Pass `factor_levels` explicitly to override either default.
 
 ## Examples
 

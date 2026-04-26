@@ -21,7 +21,7 @@ publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
 ``` r
 table_continuous(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by = NULL,
   exclude = NULL,
   regex = FALSE,
@@ -55,7 +55,7 @@ table_continuous(
 
   Columns to include. If `regex = FALSE`, use tidyselect syntax or a
   character vector of column names (default:
-  [`dplyr::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
+  [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
   string).
 

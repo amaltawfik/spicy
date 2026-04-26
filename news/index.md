@@ -1,35 +1,67 @@
 # Changelog
 
-## spicy (development version)
+## spicy 0.10.0
+
+### New features
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   now accepts tidyselect-style variable selectors through `...`,
   matching
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
-  validates control arguments more directly, surfaces
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  selection errors without an extra wrapper, and gains a `filename`
-  argument for portable export filenames.
+  and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md).
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  now sanitizes accented export filenames consistently across platforms,
-  avoiding OS-specific [`iconv()`](https://rdrr.io/r/base/iconv.html)
-  transliteration differences.
+  gains a `filename` argument for the base name of CSV, Excel, and PDF
+  exports. When `NULL` (the default), the filename is derived from
+  `title` and falls back to `"Codebook"` when needed. Filenames are
+  sanitized to portable ASCII consistently across platforms.
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  now displays actual missing values as `<NA>` and `<NaN>` in `Values`
-  when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`, and
-  empty-string values so they cannot be confused with missing markers.
+  now summarizes matrix and array columns by their dimensions, and
+  counts valid, missing, and distinct observations by rows.
+
+### Improvements
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now displays missing values as `<NA>` and `<NaN>` in the `Values`
+  summary when `include_na = TRUE`, and quotes literal `"NA"`, `"NaN"`,
+  and empty-string values so they cannot be confused with the missing
+  markers.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  now emits a column-named warning and marks the failing cell as
+  `<error: ...>` when a column cannot be summarized, instead of silently
+  writing `"Invalid or unsupported format"`. Remaining columns are
+  unaffected.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  produces more precise Viewer titles for extraction, pipe, and literal
+  `get("name")` expressions, while keeping ambiguous dynamic calls
+  anonymous (`vl: <data>`).
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  now rejects partial-match names in `...` (e.g. `val = TRUE`,
+  `tit = "x"`) that would otherwise be silently treated as tidyselect
+  expressions, and surfaces
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  selection errors directly.
+
+### Bug fixes
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now displays labelled values in the same prefixed-label order for
-  compact and `values = TRUE` summaries, rather than using data order in
-  compact summaries.
+  compact and `values = TRUE` summaries; previously the compact summary
+  used data order.
 
-- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  no longer exposes the internal `.raw_expr` argument in its public
-  signature; interactive title generation is now handled internally.
+- `varlist(values = TRUE)` now deduplicates element types when
+  summarizing list-columns. Previously `list(1L, 2L, "a")` produced
+  `"List(3): character, integer, integer"`; now produces
+  `"List(3): character, integer"`.
+
+- `include_na = TRUE` now correctly appends `<NA>` markers for
+  list-columns in both
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  modes; previously it had no effect on this column type.
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now validates column names up front and gives clearer errors for
@@ -37,17 +69,7 @@
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   now errors clearly when tidyselect expressions try to rename columns;
-  `...` is for selecting variables, not renaming them.
-
-- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  now gives more precise Viewer titles for extraction, pipe, and literal
-  `get("name")` expressions while keeping ambiguous dynamic calls
-  anonymous.
-
-- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  now summarizes matrix and array columns by their dimensions and counts
-  valid, missing, and distinct observations by rows instead of by
-  individual cells.
+  `...` is for selecting variables, not renaming.
 
 ## spicy 0.9.0
 

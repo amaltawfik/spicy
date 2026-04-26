@@ -12,7 +12,7 @@ and reported.
 ``` r
 sum_n(
   data = NULL,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   exclude = NULL,
   min_valid = NULL,
   digits = NULL,
@@ -31,7 +31,7 @@ sum_n(
 
   Columns to include. If `regex = FALSE`, use tidyselect syntax
   (default:
-  [`dplyr::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
+  [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
   string).
 

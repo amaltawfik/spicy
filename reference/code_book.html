@@ -25,7 +25,7 @@ The output is displayed as an interactive DT::datatable() in the Viewer pane
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -145,9 +145,9 @@ extensions are added by the browser/export engine.</p></dd>
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
 <dd><p>Character. Controls how factor values are displayed
-in <code>Values</code>. <code>"all"</code> (the default) shows all declared levels, including
-unused levels. <code>"observed"</code> shows only levels present in the data,
-preserving factor level order.</p></dd>
+in <code>Values</code>. <code>"all"</code> (the default; <code><a href="varlist.html">varlist()</a></code> uses <code>"observed"</code>) shows
+all declared levels, including unused levels. <code>"observed"</code> shows only
+levels present in the data, preserving factor level order.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -160,8 +160,11 @@ preserving factor level order.</p></dd>
 <ul><li><p>The interactive <code>datatable</code> supports column sorting, global searching, and
 client-side export to various formats.</p></li>
 <li><p>Variable selection uses the same tidyselect interface as <code><a href="varlist.html">varlist()</a></code>.</p></li>
-<li><p>By default, factor variables document all declared levels, including unused
-levels. Use <code>factor_levels = "observed"</code> to mirror <code><a href="varlist.html">varlist()</a></code>'s default.</p></li>
+<li><p>By default, factor variables document all declared levels, including
+unused levels — appropriate for a schema-oriented codebook. This differs
+from <code><a href="varlist.html">varlist()</a></code>, which defaults to <code>"observed"</code> to summarize observed
+data only. Pass <code>factor_levels = "observed"</code> to mirror <code><a href="varlist.html">varlist()</a></code>'s
+default.</p></li>
 <li><p>All exports occur client-side through the Viewer or Tab.</p></li>
 </ul></div>
     <div class="section level2">

@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,17 +57,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
-<ul><li><p><code><a href="../reference/code_book.html">code_book()</a></code> now accepts tidyselect-style variable selectors through <code>...</code>, matching <code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/varlist.html">vl()</a></code>, validates control arguments more directly, surfaces <code><a href="../reference/varlist.html">varlist()</a></code> selection errors without an extra wrapper, and gains a <code>filename</code> argument for portable export filenames.</p></li>
-<li><p><code><a href="../reference/code_book.html">code_book()</a></code> now sanitizes accented export filenames consistently across platforms, avoiding OS-specific <code><a href="https://rdrr.io/r/base/iconv.html" class="external-link">iconv()</a></code> transliteration differences.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays actual missing values as <code>&lt;NA&gt;</code> and <code>&lt;NaN&gt;</code> in <code>Values</code> when <code>include_na = TRUE</code>, and quotes literal <code>"NA"</code>, <code>"NaN"</code>, and empty-string values so they cannot be confused with missing markers.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays labelled values in the same prefixed-label order for compact and <code>values = TRUE</code> summaries, rather than using data order in compact summaries.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> no longer exposes the internal <code>.raw_expr</code> argument in its public signature; interactive title generation is now handled internally.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now validates column names up front and gives clearer errors for missing, empty, <code>NA</code>, or duplicate names.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now errors clearly when tidyselect expressions try to rename columns; <code>...</code> is for selecting variables, not renaming them.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now gives more precise Viewer titles for extraction, pipe, and literal <code>get("name")</code> expressions while keeping ambiguous dynamic calls anonymous.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now summarizes matrix and array columns by their dimensions and counts valid, missing, and distinct observations by rows instead of by individual cells.</p></li>
+<h2 class="pkg-version" data-toc-text="0.10.0" id="spicy-0100">spicy 0.10.0<a class="anchor" aria-label="anchor" href="#spicy-0100"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-10-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-10-0"></a></h3>
+<ul><li><p><code><a href="../reference/code_book.html">code_book()</a></code> now accepts tidyselect-style variable selectors through <code>...</code>, matching <code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/varlist.html">vl()</a></code>.</p></li>
+<li><p><code><a href="../reference/code_book.html">code_book()</a></code> gains a <code>filename</code> argument for the base name of CSV, Excel, and PDF exports. When <code>NULL</code> (the default), the filename is derived from <code>title</code> and falls back to <code>"Codebook"</code> when needed. Filenames are sanitized to portable ASCII consistently across platforms.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now summarizes matrix and array columns by their dimensions, and counts valid, missing, and distinct observations by rows.</p></li>
 </ul></div>
+<div class="section level3">
+<h3 id="improvements-0-10-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-10-0"></a></h3>
+<ul><li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays missing values as <code>&lt;NA&gt;</code> and <code>&lt;NaN&gt;</code> in the <code>Values</code> summary when <code>include_na = TRUE</code>, and quotes literal <code>"NA"</code>, <code>"NaN"</code>, and empty-string values so they cannot be confused with the missing markers.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now emits a column-named warning and marks the failing cell as <code>&lt;error: ...&gt;</code> when a column cannot be summarized, instead of silently writing <code>"Invalid or unsupported format"</code>. Remaining columns are unaffected.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> produces more precise Viewer titles for extraction, pipe, and literal <code>get("name")</code> expressions, while keeping ambiguous dynamic calls anonymous (<code>vl: &lt;data&gt;</code>).</p></li>
+<li><p><code><a href="../reference/code_book.html">code_book()</a></code> now rejects partial-match names in <code>...</code> (e.g. <code>val = TRUE</code>, <code>tit = "x"</code>) that would otherwise be silently treated as tidyselect expressions, and surfaces <code><a href="../reference/varlist.html">varlist()</a></code> selection errors directly.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-10-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-10-0"></a></h3>
+<ul><li><p><code><a href="../reference/varlist.html">varlist()</a></code> now displays labelled values in the same prefixed-label order for compact and <code>values = TRUE</code> summaries; previously the compact summary used data order.</p></li>
+<li><p><code>varlist(values = TRUE)</code> now deduplicates element types when summarizing list-columns. Previously <code>list(1L, 2L, "a")</code> produced <code>"List(3): character, integer, integer"</code>; now produces <code>"List(3): character, integer"</code>.</p></li>
+<li><p><code>include_na = TRUE</code> now correctly appends <code>&lt;NA&gt;</code> markers for list-columns in both <code><a href="../reference/varlist.html">varlist()</a></code> modes; previously it had no effect on this column type.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now validates column names up front and gives clearer errors for missing, empty, <code>NA</code>, or duplicate names.</p></li>
+<li><p><code><a href="../reference/varlist.html">varlist()</a></code> now errors clearly when tidyselect expressions try to rename columns; <code>...</code> is for selecting variables, not renaming.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.0" id="spicy-090">spicy 0.9.0<a class="anchor" aria-label="anchor" href="#spicy-090"></a></h2><p class="text-muted">CRAN release: 2026-04-20</p>
 <div class="section level3">

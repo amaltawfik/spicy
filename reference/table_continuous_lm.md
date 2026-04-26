@@ -20,7 +20,7 @@ long `data.frame` (`"long"`), or rendered outputs (`"tinytable"`,
 ``` r
 table_continuous_lm(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by,
   exclude = NULL,
   regex = FALSE,
@@ -60,7 +60,7 @@ table_continuous_lm(
 
   Outcome columns to include. If `regex = FALSE`, use tidyselect syntax
   or a character vector of column names (default:
-  [`dplyr::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
+  [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
   string).
 
