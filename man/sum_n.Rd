@@ -6,7 +6,7 @@
 \usage{
 sum_n(
   data = NULL,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   exclude = NULL,
   min_valid = NULL,
   digits = NULL,
@@ -17,7 +17,7 @@ sum_n(
 \arguments{
 \item{data}{A \code{data.frame} or \code{matrix}.}
 
-\item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect syntax (default: \code{dplyr::everything()}).
+\item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect syntax (default: \code{tidyselect::everything()}).
 If \code{regex = TRUE}, provide a regular expression pattern (character string).}
 
 \item{exclude}{Columns to exclude (default: \code{NULL}).}

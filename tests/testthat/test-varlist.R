@@ -46,7 +46,8 @@ test_that("varlist() errors on renamed tidyselect helper selections", {
 })
 
 test_that("varlist() does not expose internal raw expression argument", {
-  expect_false(".raw_expr" %in% names(formals(varlist)))
+  expect_false(any(c("raw_expr", ".raw_expr") %in% names(formals(varlist))))
+  expect_false(any(c("raw_expr", ".raw_expr") %in% names(formals(vl))))
 })
 
 test_that("vl() is an alias of varlist()", {
@@ -379,6 +380,45 @@ test_that("summarize_values_all handles list columns", {
   expect_match(res$Values, "List\\(2\\)")
 })
 
+test_that("varlist() minmax list-column shows only structure", {
+  df <- tibble::tibble(x = list(1L, 2L, 3L))
+  res <- varlist(df, tbl = TRUE)
+  expect_equal(unname(res$Values), "List(3)")
+})
+
+test_that("varlist() values=TRUE deduplicates list-column element types", {
+  df <- tibble::tibble(x = list(1L, 2L, 3L, "a"))
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "List(4): character, integer")
+})
+
+test_that("varlist() values=TRUE handles empty list-column without orphan colon", {
+  df <- tibble::tibble(x = I(list()))
+  res <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_equal(unname(res$Values), "List(0)")
+})
+
+test_that("varlist() minmax list-column appends <NA> when include_na = TRUE", {
+  df <- tibble::tibble(x = list(1, NA, "x"))
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_equal(unname(res$Values), "List(3), <NA>")
+})
+
+test_that("varlist() values=TRUE list-column appends <NA> when include_na = TRUE", {
+  df <- tibble::tibble(x = list(1, NA, "x"))
+  res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+  expect_equal(
+    unname(res$Values),
+    "List(3): character, double, logical, <NA>"
+  )
+})
+
+test_that("varlist() does not append <NA> for list-column without NA", {
+  df <- tibble::tibble(x = list(1L, 2L, 3L))
+  res <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_equal(unname(res$Values), "List(3)")
+})
+
 test_that("summarize_values_all handles logical columns", {
   df <- data.frame(x = c(TRUE, FALSE, TRUE))
   res <- varlist(df, tbl = TRUE, values = TRUE)
@@ -496,4 +536,137 @@ test_that("varlist() values=TRUE with NaN shows NaN", {
   df <- data.frame(x = c(1, NaN, 3))
   res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
   expect_equal(unname(res$Values), "1, 3, <NaN>")
+})
+
+test_that("varlist() warns and marks the cell when a column cannot be summarized", {
+  local_mocked_bindings(
+    summarize_values_minmax = function(...) stop("synthetic failure"),
+    .package = "spicy"
+  )
+
+  df <- data.frame(x = 1:3, y = letters[1:3])
+
+  warnings <- testthat::capture_warnings(
+    res <- varlist(df, tbl = TRUE)
+  )
+
+  expect_length(warnings, 2L)
+  expect_match(warnings[[1]], "Could not summarize column `x`.*synthetic failure")
+  expect_match(warnings[[2]], "Could not summarize column `y`.*synthetic failure")
+  expect_equal(
+    unname(res$Values),
+    rep("<error: synthetic failure>", 2L)
+  )
+})
+
+test_that("varlist() isolates per-column failures", {
+  call_count <- 0L
+  local_mocked_bindings(
+    summarize_values_minmax = function(col, ...) {
+      call_count <<- call_count + 1L
+      if (call_count == 1L) {
+        stop("only x fails")
+      }
+      "fine"
+    },
+    .package = "spicy"
+  )
+
+  df <- data.frame(x = 1:3, y = letters[1:3])
+
+  suppressWarnings(res <- varlist(df, tbl = TRUE))
+
+  expect_equal(unname(res$Values[[1]]), "<error: only x fails>")
+  expect_equal(unname(res$Values[[2]]), "fine")
+})
+
+test_that("varlist() error handling is symmetric across values modes", {
+  local_mocked_bindings(
+    summarize_values_all = function(...) stop("values=TRUE failure"),
+    .package = "spicy"
+  )
+
+  expect_warning(
+    res <- varlist(data.frame(x = 1:3), tbl = TRUE, values = TRUE),
+    "Could not summarize column `x`.*values=TRUE failure"
+  )
+  expect_equal(unname(res$Values[[1]]), "<error: values=TRUE failure>")
+})
+
+test_that("varlist() collapses multi-line error messages onto a single cell", {
+  local_mocked_bindings(
+    summarize_values_minmax = function(...) stop("line one\n  line two"),
+    .package = "spicy"
+  )
+
+  expect_warning(
+    res <- varlist(data.frame(x = 1:3), tbl = TRUE),
+    "Could not summarize column `x`"
+  )
+  expect_equal(unname(res$Values[[1]]), "<error: line one line two>")
+})
+
+test_that("varlist() handles zero-row data frames across column types", {
+  df <- tibble::tibble(
+    int = integer(0),
+    chr = character(0),
+    fac = factor(character(0), levels = c("x", "y", "z")),
+    dat = as.Date(character(0)),
+    lst = list()
+  )
+
+  res <- varlist(df, tbl = TRUE)
+
+  expect_equal(nrow(res), 5L)
+  expect_equal(res$Variable, c("int", "chr", "fac", "dat", "lst"))
+  expect_equal(unname(res$N_valid), rep(0L, 5L))
+  expect_equal(unname(res$NAs), rep(0L, 5L))
+  expect_equal(unname(res$N_distinct), rep(0L, 5L))
+  expect_equal(unname(res$Values), c("", "", "", "", "List(0)"))
+})
+
+test_that("varlist() factor_levels = 'all' shows declared levels even on zero rows", {
+  df <- tibble::tibble(
+    f = factor(character(0), levels = c("x", "y"))
+  )
+
+  res_obs <- varlist(df, tbl = TRUE, values = TRUE)
+  res_all <- varlist(df, tbl = TRUE, values = TRUE, factor_levels = "all")
+
+  expect_equal(unname(res_obs$Values), "")
+  expect_equal(unname(res_all$Values), "x, y")
+})
+
+test_that("varlist() combines factor_levels = 'all' with include_na", {
+  f <- factor(c("a", NA), levels = c("a", "b", "c"))
+  df <- data.frame(v = f)
+
+  res_minmax <- varlist(
+    df,
+    tbl = TRUE,
+    factor_levels = "all",
+    include_na = TRUE
+  )
+  res_all <- varlist(
+    df,
+    tbl = TRUE,
+    values = TRUE,
+    factor_levels = "all",
+    include_na = TRUE
+  )
+
+  expect_equal(unname(res_minmax$Values), "a, b, c, <NA>")
+  expect_equal(unname(res_all$Values), "a, b, c, <NA>")
+  expect_equal(unname(res_minmax$NAs), 1L)
+  expect_equal(unname(res_minmax$N_distinct), 1L)
+})
+
+test_that("vl() works end-to-end through a base pipe chain", {
+  res_pipe <- mtcars |> head(5) |> vl(tbl = TRUE)
+  res_direct <- vl(head(mtcars, 5), tbl = TRUE)
+
+  expect_equal(res_pipe, res_direct)
+  expect_equal(nrow(res_pipe), ncol(mtcars))
+  expect_equal(unname(res_pipe$N_valid), rep(5L, ncol(mtcars)))
+  expect_equal(unname(res_pipe$NAs), rep(0L, ncol(mtcars)))
 })

@@ -20,7 +20,7 @@
 #' @param data A `data.frame`.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax or a character vector of column names (default:
-#'   `dplyr::everything()`). If `regex = TRUE`, provide a regular
+#'   `tidyselect::everything()`). If `regex = TRUE`, provide a regular
 #'   expression pattern (character string).
 #' @param by Optional grouping column. Accepts an unquoted column name or
 #'   a single character column name. The column does not need to be
@@ -237,12 +237,11 @@
 #'
 #' @importFrom stats qt qnorm qf pf sd var t.test oneway.test wilcox.test
 #'   kruskal.test quantile
-#' @importFrom dplyr select where all_of any_of
 #' @importFrom rlang enquo eval_tidy quo_get_env inform
 #' @export
 table_continuous <- function(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by = NULL,
   exclude = NULL,
   regex = FALSE,
@@ -396,7 +395,7 @@ table_continuous <- function(
   # --- column selection (reuse mean_n pattern) ---
   work <- data
   if (has_group) {
-    work <- dplyr::select(work, -dplyr::all_of(group_col_name))
+    work <- dplyr::select(work, -tidyselect::all_of(group_col_name))
   }
 
   if (regex) {
@@ -418,7 +417,7 @@ table_continuous <- function(
       error = function(e) NULL
     )
     if (is.character(sel_val)) {
-      work <- dplyr::select(work, dplyr::all_of(sel_val))
+      work <- dplyr::select(work, tidyselect::all_of(sel_val))
     } else {
       work <- dplyr::select(work, !!sel_quo)
     }
@@ -426,10 +425,10 @@ table_continuous <- function(
 
   exclude_quo <- rlang::enquo(exclude)
   exclude_names <- resolve_multi_column_selection(exclude_quo, work, "exclude")
-  work <- dplyr::select(work, -dplyr::any_of(exclude_names))
+  work <- dplyr::select(work, -tidyselect::any_of(exclude_names))
 
   all_cols <- names(work)
-  work <- dplyr::select(work, dplyr::where(is.numeric))
+  work <- dplyr::select(work, tidyselect::where(is.numeric))
   numeric_cols <- names(work)
 
   ignored <- setdiff(all_cols, numeric_cols)

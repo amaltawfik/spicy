@@ -440,3 +440,18 @@ test_that("code_book() errors when varlist() does not return a data frame", {
     "`varlist\\(\\)` did not return a data frame"
   )
 })
+
+test_that("code_book() HTML-escapes special characters in title", {
+  skip_if_not_installed("DT")
+
+  cb <- suppressMessages(code_book(
+    head(mtcars),
+    title = "<script>alert(1)</script>"
+  ))
+
+  expect_equal(
+    cb$x$caption,
+    "<caption>&lt;script&gt;alert(1)&lt;/script&gt;</caption>"
+  )
+  expect_false(grepl("<script>alert", cb$x$caption, fixed = TRUE))
+})

@@ -51,9 +51,9 @@ derived from \code{title}, falling back to \code{"Codebook"} when needed. File
 extensions are added by the browser/export engine.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
-in \code{Values}. \code{"all"} (the default) shows all declared levels, including
-unused levels. \code{"observed"} shows only levels present in the data,
-preserving factor level order.}
+in \code{Values}. \code{"all"} (the default; \code{\link[=varlist]{varlist()}} uses \code{"observed"}) shows
+all declared levels, including unused levels. \code{"observed"} shows only
+levels present in the data, preserving factor level order.}
 }
 \value{
 A \code{DT::datatable} object.
@@ -73,8 +73,11 @@ The output is displayed as an interactive \code{DT::datatable()} in the Viewer p
 \item The interactive \code{datatable} supports column sorting, global searching, and
 client-side export to various formats.
 \item Variable selection uses the same tidyselect interface as \code{\link[=varlist]{varlist()}}.
-\item By default, factor variables document all declared levels, including unused
-levels. Use \code{factor_levels = "observed"} to mirror \code{\link[=varlist]{varlist()}}'s default.
+\item By default, factor variables document all declared levels, including
+unused levels — appropriate for a schema-oriented codebook. This differs
+from \code{\link[=varlist]{varlist()}}, which defaults to \code{"observed"} to summarize observed
+data only. Pass \code{factor_levels = "observed"} to mirror \code{\link[=varlist]{varlist()}}'s
+default.
 \item All exports occur client-side through the Viewer or Tab.
 }
 }

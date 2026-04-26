@@ -1,74 +1,102 @@
+summarize_varlist_column <- function(
+  col,
+  name,
+  values = FALSE,
+  include_na = FALSE,
+  factor_levels = "observed"
+) {
+  tryCatch(
+    if (values) {
+      summarize_values_all(
+        col,
+        include_na = include_na,
+        factor_levels = factor_levels
+      )
+    } else {
+      summarize_values_minmax(
+        col,
+        include_na = include_na,
+        factor_levels = factor_levels
+      )
+    },
+    error = function(e) {
+      msg <- trimws(gsub("\\s+", " ", conditionMessage(e)))
+      warning(
+        "Could not summarize column `",
+        name,
+        "`: ",
+        msg,
+        call. = FALSE
+      )
+      paste0("<error: ", msg, ">")
+    }
+  )
+}
+
+
 summarize_values_minmax <- function(
   col,
   include_na = FALSE,
-  factor_levels = c("observed", "all")
+  factor_levels = "observed"
 ) {
-  factor_levels <- match_varlist_factor_levels(factor_levels)
   has_na <- varlist_has_na(col)
   has_nan <- varlist_has_nan(col)
   max_display <- 4
 
-  vals <- tryCatch(
-    {
-      if (labelled::is.labelled(col)) {
-        col <- labelled::to_factor(col, levels = "prefixed")
-        unique_vals <- factor_values(col, factor_levels = "observed")
-      } else if (is.factor(col)) {
-        unique_vals <- factor_values(col, factor_levels = factor_levels)
-      } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
-        col_no_na <- stats::na.omit(col)
-        unique_vals <- sort(unique(col_no_na))
-      } else if (varlist_is_array_column(col)) {
-        return(summarize_varlist_array(col, include_na = include_na))
-      } else if (is.list(col)) {
-        return(paste0("List(", length(col), ")"))
-      } else {
-        col_no_na <- stats::na.omit(col)
-        unique_vals <- sort(unique(col_no_na))
-      }
+  if (labelled::is.labelled(col)) {
+    col <- labelled::to_factor(col, levels = "prefixed")
+    unique_vals <- factor_values(col, factor_levels = "observed")
+  } else if (is.factor(col)) {
+    unique_vals <- factor_values(col, factor_levels = factor_levels)
+  } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
+    col_no_na <- stats::na.omit(col)
+    unique_vals <- sort(unique(col_no_na))
+  } else if (varlist_is_array_column(col)) {
+    return(summarize_varlist_array(col, include_na = include_na))
+  } else if (is.list(col)) {
+    return(summarize_varlist_list(
+      col,
+      values = FALSE,
+      include_na = include_na
+    ))
+  } else {
+    col_no_na <- stats::na.omit(col)
+    unique_vals <- sort(unique(col_no_na))
+  }
 
-      unique_vals <- format_varlist_values(unique_vals)
+  unique_vals <- format_varlist_values(unique_vals)
+  vals_chr_clean <- unique_vals[!is.na(unique_vals)]
 
-      vals_chr_clean <- unique_vals[!is.na(unique_vals)]
+  if (length(vals_chr_clean) == 0) {
+    val_str <- ""
+  } else if (length(vals_chr_clean) <= max_display) {
+    val_str <- paste(vals_chr_clean, collapse = ", ")
+  } else {
+    val_str <- paste(
+      c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)),
+      collapse = ", "
+    )
+  }
 
-      if (length(vals_chr_clean) == 0) {
-        val_str <- ""
-      } else if (length(vals_chr_clean) <= max_display) {
-        val_str <- paste(vals_chr_clean, collapse = ", ")
-      } else {
-        val_str <- paste(
-          c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)),
-          collapse = ", "
-        )
-      }
+  extras <- format_varlist_missing_values(has_na, has_nan, include_na)
 
-      extras <- format_varlist_missing_values(has_na, has_nan, include_na)
-
-      if (length(extras)) {
-        if (nzchar(val_str)) {
-          return(paste(val_str, paste(extras, collapse = ", "), sep = ", "))
-        } else {
-          return(paste(extras, collapse = ", "))
-        }
-      }
-
-      val_str
-    },
-    error = function(e) {
-      "Invalid or unsupported format"
+  if (length(extras)) {
+    if (nzchar(val_str)) {
+      return(paste(val_str, paste(extras, collapse = ", "), sep = ", "))
+    } else {
+      return(paste(extras, collapse = ", "))
     }
-  )
+  }
 
-  vals
+  val_str
 }
 
 
 summarize_values_all <- function(
   col,
   include_na = FALSE,
-  factor_levels = c("observed", "all")
+  factor_levels = "observed"
 ) {
-  factor_levels <- match_varlist_factor_levels(factor_levels)
   na_omit_col <- stats::na.omit(col)
   has_na <- varlist_has_na(col)
   has_nan <- varlist_has_nan(col)
@@ -120,11 +148,10 @@ summarize_values_all <- function(
   }
 
   if (is.list(col)) {
-    return(paste0(
-      "List(",
-      length(col),
-      "): ",
-      paste(sort(sapply(col, typeof)), collapse = ", ")
+    return(summarize_varlist_list(
+      col,
+      values = TRUE,
+      include_na = include_na
     ))
   }
 
@@ -171,6 +198,28 @@ summarize_varlist_array <- function(col, include_na = FALSE) {
   )
 
   paste(c(summary, extras), collapse = ", ")
+}
+
+
+summarize_varlist_list <- function(col, values = FALSE, include_na = FALSE) {
+  base <- paste0("List(", length(col), ")")
+
+  if (values && length(col) > 0L) {
+    types <- sort(unique(vapply(col, typeof, character(1))))
+    base <- paste0(base, ": ", paste(types, collapse = ", "))
+  }
+
+  extras <- format_varlist_missing_values(
+    varlist_has_na(col),
+    varlist_has_nan(col),
+    include_na
+  )
+
+  if (length(extras)) {
+    return(paste(c(base, extras), collapse = ", "))
+  }
+
+  base
 }
 
 
@@ -243,9 +292,7 @@ varlist_is_nan <- function(x) {
 }
 
 
-factor_values <- function(col, factor_levels = c("observed", "all")) {
-  factor_levels <- match_varlist_factor_levels(factor_levels)
-
+factor_values <- function(col, factor_levels = "observed") {
   if (identical(factor_levels, "all")) {
     return(levels(col))
   }

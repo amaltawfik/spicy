@@ -6,7 +6,7 @@
 \usage{
 table_continuous_lm(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by,
   exclude = NULL,
   regex = FALSE,
@@ -40,7 +40,7 @@ table_continuous_lm(
 
 \item{select}{Outcome columns to include. If \code{regex = FALSE}, use tidyselect
 syntax or a character vector of column names (default:
-\code{dplyr::everything()}). If \code{regex = TRUE}, provide a regular expression
+\code{tidyselect::everything()}). If \code{regex = TRUE}, provide a regular expression
 pattern (character string).}
 
 \item{by}{A single predictor column. Accepts an unquoted column name or a

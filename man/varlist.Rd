@@ -53,9 +53,9 @@ from missing markers. If \code{FALSE} (the default), missing values are omitted
 from \code{Values} but still counted in the \code{NAs} column.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
-in \code{Values}. \code{"observed"} (the default) shows only levels present in the
-data, preserving factor level order. \code{"all"} shows all declared levels,
-including unused levels.}
+in \code{Values}. \code{"observed"} (the default; \code{\link[=code_book]{code_book()}} uses \code{"all"})
+shows only levels present in the data, preserving factor level order.
+\code{"all"} shows all declared levels, including unused levels.}
 }
 \value{
 A tibble with one row per selected variable, containing the following
@@ -104,6 +104,12 @@ displayed in the Viewer pane with a contextual title like \code{vl: sochealth}.
 If the data frame has been transformed or subsetted, the title will display
 an asterisk (\code{*}), e.g. \verb{vl: sochealth*}. Anonymous or ambiguous calls use
 \verb{vl: <data>}.
+
+For factor variables, \code{varlist()} defaults to displaying only the levels
+observed in the data (\code{factor_levels = "observed"}) — a reflection of what
+is actually present. By contrast, \code{\link[=code_book]{code_book()}} defaults to \code{"all"} to
+document the declared schema, including unused levels. Pass \code{factor_levels}
+explicitly to override either default.
 }
 \examples{
 varlist(sochealth, tbl = TRUE)

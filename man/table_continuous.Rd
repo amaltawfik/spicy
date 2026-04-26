@@ -6,7 +6,7 @@
 \usage{
 table_continuous(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by = NULL,
   exclude = NULL,
   regex = FALSE,
@@ -34,7 +34,7 @@ table_continuous(
 
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect
 syntax or a character vector of column names (default:
-\code{dplyr::everything()}). If \code{regex = TRUE}, provide a regular
+\code{tidyselect::everything()}). If \code{regex = TRUE}, provide a regular
 expression pattern (character string).}
 
 \item{by}{Optional grouping column. Accepts an unquoted column name or

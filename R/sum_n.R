@@ -5,7 +5,7 @@
 #' Non-numeric columns are excluded automatically and reported.
 #'
 #' @param data A `data.frame` or `matrix`.
-#' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `dplyr::everything()`).
+#' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).
 #' @param min_valid Minimum number of valid (non-NA) values required per row.
@@ -20,9 +20,6 @@
 #'
 #' @return A numeric vector of row-wise sums
 #'
-#' @importFrom dplyr pick
-#' @importFrom dplyr select
-#' @importFrom dplyr where
 #' @importFrom rlang inform
 #' @examples
 #' library(dplyr)
@@ -112,7 +109,7 @@
 #' @export
 sum_n <- function(
   data = NULL,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   exclude = NULL,
   min_valid = NULL,
   digits = NULL,
@@ -141,7 +138,7 @@ sum_n <- function(
   }
 
   if (is.null(data)) {
-    data <- dplyr::pick(dplyr::everything())
+    data <- dplyr::pick(tidyselect::everything())
   }
 
   if (regex) {
@@ -164,16 +161,16 @@ sum_n <- function(
       error = function(e) NULL
     )
     if (is.character(sel_val)) {
-      data <- dplyr::select(data, dplyr::all_of(sel_val))
+      data <- dplyr::select(data, tidyselect::all_of(sel_val))
     } else {
       data <- dplyr::select(data, !!sel_quo)
     }
   }
 
-  data <- dplyr::select(data, -dplyr::any_of(exclude))
+  data <- dplyr::select(data, -tidyselect::any_of(exclude))
 
   all_cols <- names(data)
-  data <- dplyr::select(data, dplyr::where(is.numeric))
+  data <- dplyr::select(data, tidyselect::where(is.numeric))
   numeric_cols <- names(data)
 
   ignored <- setdiff(all_cols, numeric_cols)

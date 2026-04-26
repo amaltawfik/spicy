@@ -19,7 +19,7 @@
 #' @param data A `data.frame`.
 #' @param select Outcome columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax or a character vector of column names (default:
-#'   `dplyr::everything()`). If `regex = TRUE`, provide a regular expression
+#'   `tidyselect::everything()`). If `regex = TRUE`, provide a regular expression
 #'   pattern (character string).
 #' @param by A single predictor column. Accepts an unquoted column name or a
 #'   single character column name. The predictor can be numeric, logical,
@@ -236,7 +236,7 @@
 #' @export
 table_continuous_lm <- function(
   data,
-  select = dplyr::everything(),
+  select = tidyselect::everything(),
   by,
   exclude = NULL,
   regex = FALSE,

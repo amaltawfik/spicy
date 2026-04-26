@@ -142,7 +142,6 @@
 #' [print.spicy_freq_table()] for formatted printing.
 #' [spicy_print_table()] for the underlying ASCII rendering engine.
 #'
-#' @importFrom dplyr pull
 #' @importFrom labelled is.labelled to_factor var_label
 #'
 #' @export

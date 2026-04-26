@@ -14,6 +14,12 @@
 #' an asterisk (`*`), e.g. `vl: sochealth*`. Anonymous or ambiguous calls use
 #' `vl: <data>`.
 #'
+#' For factor variables, `varlist()` defaults to displaying only the levels
+#' observed in the data (`factor_levels = "observed"`) — a reflection of what
+#' is actually present. By contrast, [code_book()] defaults to `"all"` to
+#' document the declared schema, including unused levels. Pass `factor_levels`
+#' explicitly to override either default.
+#'
 #' @aliases vl
 #'
 #' @param x A data frame, or a transformation of one.
@@ -41,9 +47,9 @@
 #'   from missing markers. If `FALSE` (the default), missing values are omitted
 #'   from `Values` but still counted in the `NAs` column.
 #' @param factor_levels Character. Controls how factor values are displayed
-#'   in `Values`. `"observed"` (the default) shows only levels present in the
-#'   data, preserving factor level order. `"all"` shows all declared levels,
-#'   including unused levels.
+#'   in `Values`. `"observed"` (the default; [code_book()] uses `"all"`)
+#'   shows only levels present in the data, preserving factor level order.
+#'   `"all"` shows all declared levels, including unused levels.
 #'
 #' @returns
 #' A tibble with one row per selected variable, containing the following
@@ -218,21 +224,15 @@ varlist_impl <- function(
   )
 
   res$Values <- vapply(
-    x,
-    function(col) {
-      if (values) {
-        summarize_values_all(
-          col,
-          include_na = include_na,
-          factor_levels = factor_levels
-        )
-      } else {
-        summarize_values_minmax(
-          col,
-          include_na = include_na,
-          factor_levels = factor_levels
-        )
-      }
+    seq_along(x),
+    function(i) {
+      summarize_varlist_column(
+        col = x[[i]],
+        name = names(x)[[i]],
+        values = values,
+        include_na = include_na,
+        factor_levels = factor_levels
+      )
     },
     character(1)
   )
@@ -275,34 +275,6 @@ varlist_impl <- function(
 #'
 #' @rdname varlist
 #'
-#' @param x A data frame, or a transformation of one.
-#' @param ... Optional tidyselect-style column selectors (e.g.
-#'   `starts_with("var")`, `where(is.numeric)`, etc.). Columns can be selected
-#'   or reordered, but renaming selections is not supported.
-#' @param values Logical. If `FALSE` (the default), displays a compact summary
-#'   of the variable's values. For numeric, character, date/time, labelled, and
-#'   factor variables, all unique non-missing values are shown when there are
-#'   at most four; otherwise the first three values, an ellipsis (`...`), and
-#'   the last value are shown. Values are sorted when appropriate (e.g.,
-#'   numeric, character, date).
-#'   For factors, `factor_levels` controls whether observed or all declared
-#'   levels are shown; level order is preserved.
-#'   For labelled variables, prefixed labels are displayed via
-#'   `labelled::to_factor(levels = "prefixed")`.
-#'   If `TRUE`, all unique non-missing values are displayed.
-#' @param tbl Logical. If `FALSE` (the default), opens the summary in the Viewer
-#'   if the session is interactive. If `TRUE`, returns a tibble.
-#' @param include_na Logical. If `TRUE`, unique missing value markers
-#'   (`<NA>`, `<NaN>`) are explicitly appended at the end of the `Values`
-#'   summary when present in the variable. This applies to all variable types.
-#'   Literal strings `"NA"`, `"NaN"`, and `""` are quoted to distinguish them
-#'   from missing markers. If `FALSE` (the default), missing values are omitted
-#'   from `Values` but still counted in the `NAs` column.
-#' @param factor_levels Character. Controls how factor values are displayed
-#'   in `Values`. `"observed"` (the default) shows only levels present in the
-#'   data, preserving factor level order. `"all"` shows all declared levels,
-#'   including unused levels.
-#'
 #' @export
 #'
 #' @examples
@@ -318,14 +290,13 @@ vl <- function(
   include_na = FALSE,
   factor_levels = c("observed", "all")
 ) {
-  raw_expr <- substitute(x)
   varlist_impl(
-    x = eval(raw_expr, envir = parent.frame()),
+    x = x,
     ...,
     values = values,
     tbl = tbl,
     include_na = include_na,
     factor_levels = factor_levels,
-    raw_expr = raw_expr
+    raw_expr = substitute(x)
   )
 }
