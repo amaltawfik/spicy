@@ -2,17 +2,11 @@
 
 0 errors | 0 warnings | 0 notes
 
-* On R-oldrelease (4.4.3), a NOTE may report that the Author field differs
-  from Authors@R. This is caused by the ROR (Research Organization
-  Registry) identifier in the `comment` field of `Authors@R`, which older
-  R versions do not fully expand into the plain-text Author field. The
-  package metadata is correct; the discrepancy is cosmetic.
-
-* CRAN incoming feasibility may report a NOTE about update frequency
-  (number of updates in the past 6 months). This release follows shortly
-  after 0.9.0 to deliver user-facing improvements and bug fixes for
-  variable inspection and codebook workflows. No further updates are
-  planned in the immediate term.
+* CRAN incoming feasibility reports a NOTE about update frequency
+  (number of updates in the past 6 months). This release follows
+  shortly after 0.9.0 to deliver user-facing improvements and bug
+  fixes for variable inspection, codebook generation, and frequency
+  tables. No further updates are planned in the immediate term.
 
 ## Comments
 
