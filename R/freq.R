@@ -22,6 +22,7 @@
 #' * Optional weighting with a rescaling mechanism
 #' * Support for cumulative percentages (`cum = TRUE`)
 #' * Multiple display modes for labels via `labelled_levels`
+#' * Schema-vs-observed level display via `factor_levels`
 #'
 #' For factor and labelled inputs, the `factor_levels` argument
 #' controls whether declared-but-unobserved levels appear in the
@@ -140,6 +141,11 @@
 #'
 #' # Display values only, sorted descending
 #' freq(x_lbl, labelled_levels = "values", sort = "-")
+#'
+#' # Show all declared factor levels, including unused ones (SPSS-style).
+#' # The default "observed" mirrors Stata's `tab` and drops unused levels.
+#' f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
+#' freq(f, factor_levels = "all")
 #'
 #' # With weighting
 #' df <- data.frame(

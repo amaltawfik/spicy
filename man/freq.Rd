@@ -125,6 +125,7 @@ It automatically detects the type of input (\code{vector}, \code{factor}, or
 \item Optional weighting with a rescaling mechanism
 \item Support for cumulative percentages (\code{cum = TRUE})
 \item Multiple display modes for labels via \code{labelled_levels}
+\item Schema-vs-observed level display via \code{factor_levels}
 }
 
 For factor and labelled inputs, the \code{factor_levels} argument
@@ -177,6 +178,11 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 
 # Display values only, sorted descending
 freq(x_lbl, labelled_levels = "values", sort = "-")
+
+# Show all declared factor levels, including unused ones (SPSS-style).
+# The default "observed" mirrors Stata's `tab` and drops unused levels.
+f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
+freq(f, factor_levels = "all")
 
 # With weighting
 df <- data.frame(
