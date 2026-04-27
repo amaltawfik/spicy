@@ -1,5 +1,7 @@
 # Changelog
 
+## spicy (development version)
+
 ## spicy 0.10.0
 
 ### New features
