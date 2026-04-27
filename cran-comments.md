@@ -18,11 +18,12 @@
 
 This is version 0.10.0 of the **spicy** package.
 
-This release extends `code_book()` and `varlist()` with new selectors,
-arguments, and column-type support, refines how missing values and
-list-columns are summarized, and improves error reporting when a column
-cannot be summarized. See `NEWS.md` for the full list of user-facing
-changes.
+This release extends `code_book()`, `varlist()`, and `freq()` with new
+arguments and column-type support, harmonizes the `factor_levels`
+option across the three functions for consistent observed-vs-declared
+behavior, hardens `freq()`'s input validation, fixes a misleading
+`weights = NULL` error, and refines how missing values and list-columns
+are summarized. See `NEWS.md` for the full list of user-facing changes.
 
 ### Testing environments
 
