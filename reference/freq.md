@@ -172,6 +172,8 @@ It automatically detects the type of input (`vector`, `factor`, or
 
 - Multiple display modes for labels via `labelled_levels`
 
+- Schema-vs-observed level display via `factor_levels`
+
 For factor and labelled inputs, the `factor_levels` argument controls
 whether declared-but-unobserved levels appear in the output. The default
 `"observed"` drops them (Stata `tab` behavior); `"all"` keeps them with
@@ -338,6 +340,23 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
+
+# Show all declared factor levels, including unused ones (SPSS-style).
+# The default "observed" mirrors Stata's `tab` and drops unused levels.
+f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
+freq(f, factor_levels = "all")
+#> Frequency table: f
+#> 
+#>  Category │ Values  Freq.  Percent 
+#> ──────────┼────────────────────────
+#>  Valid    │ Yes         2     66.7 
+#>           │ No          1     33.3 
+#>           │ Maybe       0      0.0 
+#> ──────────┼────────────────────────
+#>  Total    │             3    100.0 
+#> 
+#> Class: factor
+#> Data: f
 
 # With weighting
 df <- data.frame(

@@ -207,6 +207,7 @@ flexibility of R's data structures.</p>
 <li><p>Optional weighting with a rescaling mechanism</p></li>
 <li><p>Support for cumulative percentages (<code>cum = TRUE</code>)</p></li>
 <li><p>Multiple display modes for labels via <code>labelled_levels</code></p></li>
+<li><p>Schema-vs-observed level display via <code>factor_levels</code></p></li>
 </ul><p>For factor and labelled inputs, the <code>factor_levels</code> argument
 controls whether declared-but-unobserved levels appear in the
 output. The default <code>"observed"</code> drops them (Stata <code>tab</code> behavior);
@@ -366,6 +367,23 @@ the actual sum of non-<code>NA</code> weights.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Satisfaction level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: haven_labelled, vctrs_vctr, double</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x_lbl</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Show all declared factor levels, including unused ones (SPSS-style).</span></span></span>
+<span class="r-in"><span><span class="co"># The default "observed" mirrors Stata's `tab` and drops unused levels.</span></span></span>
+<span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Yes"</span>, <span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Yes"</span>, <span class="st">"No"</span>, <span class="st">"Maybe"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">f</span>, factor_levels <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: f</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category <span style="color: #9E9E9E;">│</span> Values  Freq.  Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid    <span style="color: #9E9E9E;">│</span> Yes         2     66.7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> No          1     33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> Maybe       0      0.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>             3    100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: factor</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: f</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With weighting</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
