@@ -23,9 +23,25 @@
 #' * Support for cumulative percentages (`cum = TRUE`)
 #' * Multiple display modes for labels via `labelled_levels`
 #'
+#' For factor and labelled inputs, unused levels — declared but not
+#' present in the data — are dropped from the output. This mirrors
+#' Stata's `tab` behavior and differs from SPSS `FREQUENCIES`, which
+#' shows all declared codes. To inspect or document the declared schema
+#' instead (including unused levels), use [varlist()] or [code_book()]
+#' with `factor_levels = "all"`.
+#'
 #' When weighting is applied (`weights`), the frequencies and percentages are
 #' computed proportionally to the weights. The argument `rescale = TRUE`
-#' normalizes weights so their sum equals the unweighted sample size.
+#' normalizes weights so their sum equals the unweighted sample size
+#' (`length(weights)`).
+#'
+#' Missing values in `weights` are treated as zero (with a warning), so
+#' the corresponding rows contribute nothing to any cell. With
+#' `rescale = TRUE`, the remaining weights are normalized so the total
+#' weighted N still equals `length(weights)` — the implicit share of the
+#' zeroed rows is redistributed over the others, mirroring Stata's
+#' `pweight` semantics. With `rescale = FALSE`, the total weighted N is
+#' the actual sum of non-`NA` weights.
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
@@ -34,7 +50,8 @@
 #' @param weights Optional numeric vector of weights (same length as `x`).
 #'   The variable may be referenced as a bare name when it belongs to `data`,
 #'   or as a qualified expression like `other$w` (evaluated in the calling
-#'   environment), which always takes precedence over `data` lookup.
+#'   environment), which always takes precedence over `data` lookup. `NA`
+#'   weights are treated as zero with a warning; see `Details`.
 #' @param digits Number of decimal digits to display for percentages (default: `1`).
 #' @param valid Logical. If `TRUE` (default), display valid percentages
 #'   (excluding missing values).
@@ -46,7 +63,7 @@
 #'   * `"-"` - decreasing frequency
 #'   * `"name+"` - alphabetical A-Z
 #'   * `"name-"` - alphabetical Z-A
-#' @param na_val Vector of numeric or character values to be treated as missing (`NA`).
+#' @param na_val Atomic vector of numeric or character values to be treated as missing (`NA`).
 #'
 #' For *labelled* variables (from **haven** or **labelled**), this argument
 #' must refer to the underlying coded values, not the visible labels.
@@ -63,7 +80,8 @@
 #'   * `"labels"` or `"l"` - show only labels
 #'   * `"values"` or `"v"` - show only numeric codes
 #' @param rescale Logical. If `TRUE` (default), rescale weights so that their
-#'   total equals the unweighted sample size.
+#'   total equals the unweighted sample size (`length(weights)`). See
+#'   `Details` for the interaction with `NA` weights.
 #' @param styled Logical. If `TRUE` (default), print the formatted spicy table.
 #'   If `FALSE`, return a plain `data.frame` with frequency values.
 #' @param ... Additional arguments passed to [print.spicy_freq_table()].
@@ -162,16 +180,31 @@ freq <- function(
 ) {
   labelled_levels <- match.arg(labelled_levels)
 
-  if (!is.numeric(digits) || length(digits) != 1L || digits < 0) {
+  if (
+    !is.numeric(digits) ||
+      length(digits) != 1L ||
+      !is.finite(digits) ||
+      digits < 0
+  ) {
     stop("`digits` must be a single non-negative number.", call. = FALSE)
   }
 
-  if (!sort %in% c("", "+", "-", "name+", "name-")) {
+  if (
+    !is.character(sort) ||
+      length(sort) != 1L ||
+      is.na(sort) ||
+      !sort %in% c("", "+", "-", "name+", "name-")
+  ) {
     stop(
       "Invalid value for 'sort'. Use '+', '-', 'name+', or 'name-'.",
       call. = FALSE
     )
   }
+
+  validate_varlist_logical(valid, "valid")
+  validate_varlist_logical(cum, "cum")
+  validate_varlist_logical(rescale, "rescale")
+  validate_varlist_logical(styled, "styled")
 
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
@@ -194,41 +227,75 @@ freq <- function(
       "Both `data` and `x` are vectors; `data` is ignored.",
       call. = FALSE
     )
+    # `x` is what gets analyzed here — mirror the `!is_df && missing(x)`
+    # branch above so the printed footer (`Data: ...`) does not surface
+    # the name of the vector that was just declared "ignored".
     var_name <- deparse(substitute(x))
-    data_name <- deparse(substitute(data))
+    data_name <- var_name
   }
 
   x_original <- x
 
+  weight_name <- NULL
+
   if (!missing(weights)) {
     weight_expr <- substitute(weights)
-    weight_name <- deparse(weight_expr, backtick = FALSE)
-    is_qualified <- grepl("[$]|\\[\\[", weight_name)
 
-    if (is_df && !is_qualified && weight_name %in% names(data)) {
-      weights <- data[[weight_name]]
-    } else {
+    # Any `weights` expression that evaluates to NULL is treated as
+    # "no weighting": literal `weights = NULL`, parameterized patterns
+    # like `weights = if (use_w) w else NULL`, or a variable holding
+    # NULL. Only an expression that *fails to resolve* (e.g., the
+    # typo `weights = nonexistent_var`) is rejected — caught via
+    # the sentinel below to distinguish it from a legitimate NULL.
+    if (!is.null(weight_expr)) {
+      weight_name <- deparse(weight_expr, backtick = FALSE)
+
+      # Evaluate via `eval_tidy` with `data` as a data mask: bare
+      # column names resolve from `data` first; qualified expressions
+      # like `df2$w` skip the mask and resolve in the caller's
+      # environment, preserving the precedence tested by "weights from
+      # a qualified expression win over data lookup". Compound
+      # expressions (`if (cond) col else NULL`) also see column names
+      # through the mask, which the earlier bare-name shortcut could
+      # not handle.
+      not_found <- new.env(parent = emptyenv())
       weights <- tryCatch(
-        eval(weight_expr, envir = parent.frame()),
-        error = function(e) NULL
-      )
-    }
-
-    if (is.null(weights)) {
-      stop(
-        paste0(
-          "The weighting variable '",
-          weight_name,
-          "' was not found either in the data frame or in the global environment."
+        rlang::eval_tidy(
+          rlang::new_quosure(weight_expr, env = parent.frame()),
+          data = if (is_df) data else NULL
         ),
-        call. = FALSE
+        error = function(e) not_found
       )
+
+      if (identical(weights, not_found)) {
+        stop(
+          paste0(
+            "The weighting variable '",
+            weight_name,
+            "' was not found either in the data frame or in the global environment."
+          ),
+          call. = FALSE
+        )
+      }
+
+      # Resolved to NULL — drop the name so the printed footer does
+      # not claim a weighting that was never applied.
+      if (is.null(weights)) {
+        weight_name <- NULL
+      }
     }
-  } else {
-    weight_name <- NULL
   }
 
   if (!is.null(weights)) {
+    # Type guard up front: without it, a character weight vector
+    # passes the comparisons via lexicographic coercion and only
+    # crashes later at the `is.finite` check, with a misleading
+    # "finite numeric" message. Logical is accepted because
+    # TRUE/FALSE coerce naturally to 1/0 — a common shorthand for
+    # "include / exclude" weighting.
+    if (!is.numeric(weights) && !is.logical(weights)) {
+      stop("`weights` must be a numeric or logical vector.", call. = FALSE)
+    }
     if (length(weights) != length(x)) {
       stop("`weights` must have the same length as `x`.", call. = FALSE)
     }
@@ -275,8 +342,7 @@ freq <- function(
 
   if (is.factor(x)) {
     x <- droplevels(x)
-  }
-  if (!is.factor(x)) {
+  } else {
     x <- factor(x)
   }
 
@@ -302,10 +368,12 @@ freq <- function(
   )
 
   df$prop <- df$n / n_total
-  df$valid_prop <- if (valid && n_valid > 0) {
-    ifelse(is.na(df$value), NA, df$n / n_valid)
+
+  if (valid && n_valid > 0) {
+    df$valid_prop <- df$n / n_valid
+    df$valid_prop[is.na(df$value)] <- NA
   } else {
-    NA
+    df$valid_prop <- NA
   }
 
   # --- Sort
@@ -331,10 +399,13 @@ freq <- function(
   if (cum) {
     df$cum_prop <- cumsum(df$prop)
     if (valid) {
-      df$cum_valid_prop <- cumsum(
-        ifelse(is.na(df$valid_prop), 0, df$valid_prop)
-      )
-      df$cum_valid_prop[is.na(df$valid_prop)] <- NA
+      # cumsum over the non-NA subset only, leaving NAs in place at
+      # the missing-value row(s). A plain `cumsum(df$valid_prop)`
+      # would propagate the trailing NA forward and corrupt every
+      # subsequent cumulative value.
+      valid_idx <- !is.na(df$valid_prop)
+      df$cum_valid_prop <- df$valid_prop
+      df$cum_valid_prop[valid_idx] <- cumsum(df$valid_prop[valid_idx])
     } else {
       df$cum_valid_prop <- NA
     }

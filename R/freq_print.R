@@ -186,7 +186,17 @@ print.spicy_freq_table <- function(x, ...) {
 
   footer_lines <- c()
 
-  if (!is.null(var_label) && nzchar(var_label)) {
+  # Defensive: only emit a Label line when var_label is a non-empty
+  # single string. Skips NULL / NA / numeric / multi-element values
+  # silently. Notably, `nzchar(NA_character_)` returns NA, which would
+  # otherwise crash the surrounding `if` with "missing value where
+  # TRUE/FALSE needed".
+  if (
+    is.character(var_label) &&
+      length(var_label) == 1L &&
+      !is.na(var_label) &&
+      nzchar(var_label)
+  ) {
     footer_lines <- c(footer_lines, paste0("Label: ", var_label))
   }
 

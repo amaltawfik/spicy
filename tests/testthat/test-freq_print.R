@@ -73,3 +73,28 @@ test_that("print.spicy_freq_table handles variables without labels or missing va
   expect_true(any(grepl("^Class:", output)))
   expect_true(any(grepl("^Data:", output)))
 })
+
+test_that("print.spicy_freq_table tolerates pathological var_label values", {
+  # Defensive: NA / non-character / multi-element labels must not
+  # produce a Label line and must not crash. NA_character_ would
+  # previously trigger "missing value where TRUE/FALSE needed" via
+  # nzchar(NA_character_) returning NA inside the surrounding `if`.
+  df <- data.frame(x = c("A", "B", "B"))
+  capture.output(ftab <- freq(df, x))
+
+  attr(ftab, "var_label") <- NA_character_
+  out <- capture.output(print.spicy_freq_table(ftab))
+  expect_false(any(grepl("^Label:", out)))
+
+  attr(ftab, "var_label") <- 42L
+  out <- capture.output(print.spicy_freq_table(ftab))
+  expect_false(any(grepl("^Label:", out)))
+
+  attr(ftab, "var_label") <- c("first", "second")
+  out <- capture.output(print.spicy_freq_table(ftab))
+  expect_false(any(grepl("^Label:", out)))
+
+  attr(ftab, "var_label") <- ""
+  out <- capture.output(print.spicy_freq_table(ftab))
+  expect_false(any(grepl("^Label:", out)))
+})

@@ -194,6 +194,69 @@ test_that("freq() with factor input works directly", {
   expect_equal(sum(res$n, na.rm = TRUE), 4)
 })
 
+test_that("freq() works with a tibble input", {
+  tib <- tibble::tibble(
+    x = c("A", "B", "B", "C", "A", "B"),
+    w = c(1, 2, 3, 4, 5, 6)
+  )
+
+  # Bare-name column extraction
+  res_unweighted <- freq(tib, x, styled = FALSE)
+  expect_s3_class(res_unweighted, "data.frame")
+  expect_equal(sum(res_unweighted$n), 6L)
+  expect_setequal(res_unweighted$value, c("A", "B", "C"))
+
+  # Bare-name weight resolves through the data mask (tidy-eval)
+  res_weighted <- freq(tib, x, weights = w, rescale = FALSE, styled = FALSE)
+  expect_equal(sum(res_weighted$n), sum(tib$w))
+})
+
+test_that("freq() works with a tibble containing a labelled column", {
+  skip_if_not_installed("labelled")
+
+  tib <- tibble::tibble(
+    sat = labelled::labelled(
+      c(1, 2, 3, 1, 2),
+      labels = c(Low = 1, Mid = 2, High = 3)
+    )
+  )
+
+  res <- freq(tib, sat, styled = FALSE)
+  expect_s3_class(res, "data.frame")
+  expect_equal(sum(res$n), 5L)
+  # Default labelled_levels = "prefixed"
+  expect_true(any(grepl("\\[1\\] Low", res$value)))
+})
+
+test_that("freq() preserves footer metadata when input is a tibble", {
+  tib <- tibble::tibble(
+    x = c("A", "B", "B"),
+    w = c(2, 3, 5)
+  )
+  capture.output(res <- freq(tib, x, weights = w))
+
+  expect_equal(attr(res, "var_name"), "x")
+  expect_equal(attr(res, "data_name"), "tib")
+  expect_true(isTRUE(attr(res, "weighted")))
+  expect_equal(attr(res, "weight_var"), "w")
+})
+
+test_that("freq() works with a data.table input", {
+  skip_if_not_installed("data.table")
+
+  dt <- data.table::data.table(
+    x = c("A", "B", "B", "C"),
+    w = c(1, 2, 3, 4)
+  )
+
+  res_unweighted <- freq(dt, x, styled = FALSE)
+  expect_s3_class(res_unweighted, "data.frame")
+  expect_equal(sum(res_unweighted$n), 4L)
+
+  res_weighted <- freq(dt, x, weights = w, rescale = FALSE, styled = FALSE)
+  expect_equal(sum(res_weighted$n), sum(dt$w))
+})
+
 test_that("freq() cum + weighted works", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
   res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
@@ -209,6 +272,40 @@ test_that("freq() na_val with plain vector", {
 
 test_that("freq() errors with non-finite weights", {
   expect_error(freq(c(1, 2), weights = c(1, Inf)), "finite")
+})
+
+test_that("freq() rejects non-numeric weights with a clear type error", {
+  # Without the upfront type guard, character weights pass the
+  # `< 0` comparison via lexicographic coercion and only crash at
+  # `is.finite` with a misleading "finite numeric values" message.
+  expect_error(
+    freq(c(1, 2, 3), weights = c("a", "b", "c")),
+    "must be a numeric or logical vector",
+    fixed = TRUE
+  )
+  expect_error(
+    freq(c(1, 2, 3), weights = factor(c("a", "b", "c"))),
+    "must be a numeric or logical vector",
+    fixed = TRUE
+  )
+  expect_error(
+    freq(c(1, 2, 3), weights = list(1, 2, 3)),
+    "must be a numeric or logical vector",
+    fixed = TRUE
+  )
+})
+
+test_that("freq() accepts logical weights via implicit coercion", {
+  # TRUE = 1, FALSE = 0 — common shorthand for "include / exclude"
+  # weighting in survey contexts. Locks in the supported type set.
+  res <- freq(
+    c("A", "B", "C"),
+    weights = c(TRUE, FALSE, TRUE),
+    rescale = FALSE,
+    styled = FALSE
+  )
+  expect_equal(sum(res$n), 2)
+  expect_equal(res$n[res$value == "B"], 0)
 })
 
 test_that("freq() styled output has class spicy_freq_table", {
@@ -248,6 +345,84 @@ test_that("freq() errors when weight variable not found", {
   )
 })
 
+test_that("freq() accepts literal `weights = NULL` as no weighting", {
+  df <- data.frame(x = c("A", "B", "C"))
+
+  expect_silent({
+    res <- freq(df, x, weights = NULL, styled = FALSE)
+  })
+  expect_equal(sum(res$n), 3L)
+})
+
+test_that("freq() supports the `weights = if (cond) wts else NULL` pattern", {
+  df <- data.frame(x = c("A", "B", "C"))
+  my_w <- c(2, 3, 5)
+
+  use_w <- FALSE
+  res_off <- freq(
+    df,
+    x,
+    weights = if (use_w) my_w else NULL,
+    rescale = FALSE,
+    styled = FALSE
+  )
+  expect_equal(sum(res_off$n), 3L)
+
+  use_w <- TRUE
+  res_on <- freq(
+    df,
+    x,
+    weights = if (use_w) my_w else NULL,
+    rescale = FALSE,
+    styled = FALSE
+  )
+  expect_equal(sum(res_on$n), 10L)
+})
+
+test_that("freq() resolves column refs inside compound weight expressions", {
+  # Tidy-eval makes `data` available as a mask, so column references
+  # nested inside an `if/else` (or any other expression) work.
+  df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
+
+  use_w <- TRUE
+  res_on <- freq(
+    df,
+    x,
+    weights = if (use_w) w else NULL,
+    rescale = FALSE,
+    styled = FALSE
+  )
+  expect_equal(sum(res_on$n), 10L)
+
+  use_w <- FALSE
+  res_off <- freq(
+    df,
+    x,
+    weights = if (use_w) w else NULL,
+    rescale = FALSE,
+    styled = FALSE
+  )
+  expect_equal(sum(res_off$n), 3L)
+})
+
+test_that("freq() treats a variable holding NULL as no weighting", {
+  df <- data.frame(x = c("A", "B", "C"))
+  my_w <- NULL
+
+  expect_silent({
+    res <- freq(df, x, weights = my_w, styled = FALSE)
+  })
+  expect_equal(sum(res$n), 3L)
+})
+
+test_that("freq() with `weights = NULL` carries no weighting metadata", {
+  df <- data.frame(x = c("A", "B", "C"))
+  capture.output(res <- freq(df, x, weights = NULL))
+
+  expect_false(isTRUE(attr(res, "weighted")))
+  expect_null(attr(res, "weight_var"))
+})
+
 test_that("freq() cum + valid styled prints invisibly", {
   x <- c("A", "B", NA, "A")
   expect_invisible(freq(x, cum = TRUE, valid = TRUE, styled = TRUE))
@@ -261,9 +436,81 @@ test_that("freq() warns when data is vector and x is given", {
   expect_s3_class(res, "data.frame")
 })
 
+test_that("freq() aligns data_name on x when both data and x are vectors", {
+  capture.output(
+    res <- suppressWarnings(freq(c(1, 2, 3), x = c(4, 5, 6)))
+  )
+
+  expect_equal(attr(res, "var_name"), "c(4, 5, 6)")
+  expect_equal(attr(res, "data_name"), attr(res, "var_name"))
+})
+
+test_that("freq() footer does not reveal the ignored `data` vector name", {
+  out <- capture.output(
+    suppressWarnings(freq(c(1, 2, 3), x = c(4, 5, 6)))
+  )
+
+  # The analyzed vector (x) appears in the title and the footer;
+  # the ignored `data` vector must not appear anywhere.
+  expect_false(any(grepl("c\\(1, 2, 3\\)", out)))
+  expect_true(any(grepl("c\\(4, 5, 6\\)", out)))
+})
+
 test_that("freq() errors with invalid digits", {
   expect_error(freq(c(1, 2), digits = -1), "non-negative")
   expect_error(freq(c(1, 2), digits = "a"), "non-negative")
+})
+
+test_that("freq() rejects non-finite digits with the same friendly message", {
+  # is.finite() catches NA, NaN, Inf and -Inf in one check. Without
+  # this guard, `digits = NA` would crash inside the validation `if`
+  # with "missing value where TRUE/FALSE needed", and `digits = Inf`
+  # would crash later in `format(..., nsmall = Inf)`.
+  for (bad in list(NA, NA_real_, NA_integer_, NaN, Inf, -Inf)) {
+    expect_error(
+      freq(c(1, 2), digits = bad),
+      "non-negative number",
+      fixed = TRUE,
+      info = paste("digits =", deparse(bad))
+    )
+  }
+})
+
+test_that("freq() rejects pathological sort values with the friendly message", {
+  # Without `is.character` / `length == 1L` / `!is.na` guards, `sort = NULL`
+  # crashed with "argument is of length zero" (logical(0) inside `if`),
+  # `sort = NA` crashed with "missing value where TRUE/FALSE needed",
+  # and `sort = c("+", "-")` warned about length and silently took the
+  # first element.
+  for (bad in list(NULL, NA_character_, NA, c("+", "-"), 1L, "")) {
+    if (identical(bad, "")) {
+      next # "" is a valid sort value, skip
+    }
+    expect_error(
+      freq(c(1, 2), sort = bad),
+      "Invalid value for 'sort'",
+      fixed = TRUE,
+      info = paste("sort =", deparse(bad))
+    )
+  }
+})
+
+test_that("freq() validates logical arguments up front", {
+  # Reuses validate_varlist_logical() — same error message format
+  # as varlist() / code_book(), so users get a consistent diagnostic
+  # across the package.
+  expect_error(freq(c(1, 2), valid = "yes"), "`valid` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), valid = NA), "`valid` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), valid = c(TRUE, FALSE)), "`valid` must be TRUE or FALSE", fixed = TRUE)
+
+  expect_error(freq(c(1, 2), cum = "yes"), "`cum` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), cum = NA), "`cum` must be TRUE or FALSE", fixed = TRUE)
+
+  expect_error(freq(c(1, 2), rescale = "no"), "`rescale` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), rescale = NA), "`rescale` must be TRUE or FALSE", fixed = TRUE)
+
+  expect_error(freq(c(1, 2), styled = "yes"), "`styled` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), styled = NA), "`styled` must be TRUE or FALSE", fixed = TRUE)
 })
 
 test_that("freq() validates sort early", {
@@ -276,6 +523,31 @@ test_that("freq() warns with NA weights", {
     res <- freq(df, x, weights = w, styled = FALSE),
     "NA values in `weights`"
   )
+})
+
+test_that("freq() rescaled total stays at length(weights) when some are NA", {
+  # Locks in the documented Stata-pweight behavior: NA weights become
+  # zero (the row contributes nothing), but with rescale = TRUE the
+  # remaining weights are normalized so the total weighted N still
+  # equals length(weights). With rescale = FALSE the total reflects
+  # the actual sum of non-NA weights.
+  df <- data.frame(x = c("A", "B", "C", "D"), w = c(1, 2, NA, NA))
+
+  res_rescaled <- suppressWarnings(
+    freq(df, x, weights = w, rescale = TRUE, styled = FALSE)
+  )
+  res_unrescaled <- suppressWarnings(
+    freq(df, x, weights = w, rescale = FALSE, styled = FALSE)
+  )
+
+  expect_equal(sum(res_rescaled$n), 4)
+  expect_equal(sum(res_unrescaled$n), 3)
+
+  # The NA-weighted rows contribute nothing in either mode.
+  expect_equal(res_unrescaled$n[res_unrescaled$value == "C"], 0)
+  expect_equal(res_unrescaled$n[res_unrescaled$value == "D"], 0)
+  expect_equal(res_rescaled$n[res_rescaled$value == "C"], 0)
+  expect_equal(res_rescaled$n[res_rescaled$value == "D"], 0)
 })
 
 test_that("freq() errors when total frequency is zero", {
@@ -399,6 +671,31 @@ test_that("freq() cum_prop stays monotonic with sort and missing values", {
   expect_true(all(diff(valid_cv) >= 0))
   expect_equal(valid_cv[length(valid_cv)], 1)
   expect_true(is.na(res$cum_valid_prop[nrow(res)]))
+})
+
+test_that("freq() drops unused factor levels from the output", {
+  # Documented Stata-style behavior: declared-but-unobserved levels
+  # are not shown. Schema-level inspection lives in varlist() /
+  # code_book(factor_levels = "all").
+  x <- factor(c("a", "b", "a"), levels = c("a", "b", "c"))
+  res <- freq(x, styled = FALSE)
+
+  expect_equal(nrow(res), 2L)
+  expect_setequal(res$value, c("a", "b"))
+  expect_false("c" %in% res$value)
+})
+
+test_that("freq() drops unused labelled values from the output", {
+  skip_if_not_installed("labelled")
+
+  x <- labelled::labelled(
+    c(1, 2, 1),
+    labels = c(Low = 1, Mid = 2, High = 3)
+  )
+  res <- freq(x, styled = FALSE)
+
+  expect_equal(nrow(res), 2L)
+  expect_false(any(grepl("High", res$value)))
 })
 
 test_that("freq() handles a single-level factor", {

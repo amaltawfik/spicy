@@ -29,7 +29,8 @@ vectors, \code{data} is ignored with a warning.}
 \item{weights}{Optional numeric vector of weights (same length as \code{x}).
 The variable may be referenced as a bare name when it belongs to \code{data},
 or as a qualified expression like \code{other$w} (evaluated in the calling
-environment), which always takes precedence over \code{data} lookup.}
+environment), which always takes precedence over \code{data} lookup. \code{NA}
+weights are treated as zero with a warning; see \code{Details}.}
 
 \item{digits}{Number of decimal digits to display for percentages (default: \code{1}).}
 
@@ -48,7 +49,7 @@ If \code{TRUE}, adds cumulative percentages.}
 \item \code{"name-"} - alphabetical Z-A
 }}
 
-\item{na_val}{Vector of numeric or character values to be treated as missing (\code{NA}).
+\item{na_val}{Atomic vector of numeric or character values to be treated as missing (\code{NA}).
 
 For \emph{labelled} variables (from \strong{haven} or \strong{labelled}), this argument
 must refer to the underlying coded values, not the visible labels.
@@ -68,7 +69,8 @@ values are displayed:
 }}
 
 \item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
-total equals the unweighted sample size.}
+total equals the unweighted sample size (\code{length(weights)}). See
+\code{Details} for the interaction with \code{NA} weights.}
 
 \item{styled}{Logical. If \code{TRUE} (default), print the formatted spicy table.
 If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
@@ -117,9 +119,25 @@ It automatically detects the type of input (\code{vector}, \code{factor}, or
 \item Multiple display modes for labels via \code{labelled_levels}
 }
 
+For factor and labelled inputs, unused levels — declared but not
+present in the data — are dropped from the output. This mirrors
+Stata's \code{tab} behavior and differs from SPSS \code{FREQUENCIES}, which
+shows all declared codes. To inspect or document the declared schema
+instead (including unused levels), use \code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}}
+with \code{factor_levels = "all"}.
+
 When weighting is applied (\code{weights}), the frequencies and percentages are
 computed proportionally to the weights. The argument \code{rescale = TRUE}
-normalizes weights so their sum equals the unweighted sample size.
+normalizes weights so their sum equals the unweighted sample size
+(\code{length(weights)}).
+
+Missing values in \code{weights} are treated as zero (with a warning), so
+the corresponding rows contribute nothing to any cell. With
+\code{rescale = TRUE}, the remaining weights are normalized so the total
+weighted N still equals \code{length(weights)} — the implicit share of the
+zeroed rows is redistributed over the others, mirroring Stata's
+\code{pweight} semantics. With \code{rescale = FALSE}, the total weighted N is
+the actual sum of non-\code{NA} weights.
 }
 \examples{
 # Frequency table with labelled ordered factor
