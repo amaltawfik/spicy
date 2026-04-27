@@ -48,7 +48,8 @@ freq(
   Optional numeric vector of weights (same length as `x`). The variable
   may be referenced as a bare name when it belongs to `data`, or as a
   qualified expression like `other$w` (evaluated in the calling
-  environment), which always takes precedence over `data` lookup.
+  environment), which always takes precedence over `data` lookup. `NA`
+  weights are treated as zero with a warning; see `Details`.
 
 - digits:
 
@@ -80,7 +81,8 @@ freq(
 
 - na_val:
 
-  Vector of numeric or character values to be treated as missing (`NA`).
+  Atomic vector of numeric or character values to be treated as missing
+  (`NA`).
 
   For *labelled* variables (from **haven** or **labelled**), this
   argument must refer to the underlying coded values, not the visible
@@ -104,7 +106,8 @@ freq(
 - rescale:
 
   Logical. If `TRUE` (default), rescale weights so that their total
-  equals the unweighted sample size.
+  equals the unweighted sample size (`length(weights)`). See `Details`
+  for the interaction with `NA` weights.
 
 - styled:
 
@@ -158,10 +161,28 @@ It automatically detects the type of input (`vector`, `factor`, or
 
 - Multiple display modes for labels via `labelled_levels`
 
+For factor and labelled inputs, unused levels — declared but not present
+in the data — are dropped from the output. This mirrors Stata's `tab`
+behavior and differs from SPSS `FREQUENCIES`, which shows all declared
+codes. To inspect or document the declared schema instead (including
+unused levels), use
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+or
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+with `factor_levels = "all"`.
+
 When weighting is applied (`weights`), the frequencies and percentages
 are computed proportionally to the weights. The argument
 `rescale = TRUE` normalizes weights so their sum equals the unweighted
-sample size.
+sample size (`length(weights)`).
+
+Missing values in `weights` are treated as zero (with a warning), so the
+corresponding rows contribute nothing to any cell. With
+`rescale = TRUE`, the remaining weights are normalized so the total
+weighted N still equals `length(weights)` — the implicit share of the
+zeroed rows is redistributed over the others, mirroring Stata's
+`pweight` semantics. With `rescale = FALSE`, the total weighted N is the
+actual sum of non-`NA` weights.
 
 ## See also
 
