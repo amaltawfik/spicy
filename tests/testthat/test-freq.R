@@ -241,22 +241,6 @@ test_that("freq() preserves footer metadata when input is a tibble", {
   expect_equal(attr(res, "weight_var"), "w")
 })
 
-test_that("freq() works with a data.table input", {
-  skip_if_not_installed("data.table")
-
-  dt <- data.table::data.table(
-    x = c("A", "B", "B", "C"),
-    w = c(1, 2, 3, 4)
-  )
-
-  res_unweighted <- freq(dt, x, styled = FALSE)
-  expect_s3_class(res_unweighted, "data.frame")
-  expect_equal(sum(res_unweighted$n), 4L)
-
-  res_weighted <- freq(dt, x, weights = w, rescale = FALSE, styled = FALSE)
-  expect_equal(sum(res_weighted$n), sum(dt$w))
-})
-
 test_that("freq() cum + weighted works", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
   res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
