@@ -25,6 +25,7 @@ freq(
   sort = "",
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
+  factor_levels = c("observed", "all"),
   rescale = TRUE,
   styled = TRUE,
   ...
@@ -103,6 +104,16 @@ freq(
 
   - `"values"` or `"v"` - show only numeric codes
 
+- factor_levels:
+
+  Character. Controls how factor and labelled values are displayed in
+  the frequency table. `"observed"` (the default; matches Stata's `tab`)
+  shows only levels present in the data. `"all"` (matches SPSS
+  `FREQUENCIES` and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)'s
+  default) keeps every declared level, including unused ones, which
+  appear with `n = 0`.
+
 - rescale:
 
   Logical. If `TRUE` (default), rescale weights so that their total
@@ -161,11 +172,12 @@ It automatically detects the type of input (`vector`, `factor`, or
 
 - Multiple display modes for labels via `labelled_levels`
 
-For factor and labelled inputs, unused levels — declared but not present
-in the data — are dropped from the output. This mirrors Stata's `tab`
-behavior and differs from SPSS `FREQUENCIES`, which shows all declared
-codes. To inspect or document the declared schema instead (including
-unused levels), use
+For factor and labelled inputs, the `factor_levels` argument controls
+whether declared-but-unobserved levels appear in the output. The default
+`"observed"` drops them (Stata `tab` behavior); `"all"` keeps them with
+`n = 0`, matching SPSS `FREQUENCIES` and
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)'s
+default. For schema-level inspection without computing frequencies, use
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
 or
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)

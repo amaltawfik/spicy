@@ -88,6 +88,7 @@ returns a <code>data.frame</code> containing frequencies and proportions.</p>
 <span>  sort <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  na_val <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  labelled_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prefixed"</span>, <span class="st">"labels"</span>, <span class="st">"values"</span><span class="op">)</span>,</span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  styled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -156,6 +157,15 @@ values are displayed:</p><ul><li><p><code>"prefixed"</code> or <code>"p"</code> 
 </ul></dd>
 
 
+<dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
+<dd><p>Character. Controls how factor and labelled values
+are displayed in the frequency table. <code>"observed"</code> (the default;
+matches Stata's <code>tab</code>) shows only levels present in the data.
+<code>"all"</code> (matches SPSS <code>FREQUENCIES</code> and <code><a href="code_book.html">code_book()</a></code>'s default)
+keeps every declared level, including unused ones, which appear
+with <code>n = 0</code>.</p></dd>
+
+
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (default), rescale weights so that their
 total equals the unweighted sample size (<code>length(weights)</code>). See
@@ -197,12 +207,13 @@ flexibility of R's data structures.</p>
 <li><p>Optional weighting with a rescaling mechanism</p></li>
 <li><p>Support for cumulative percentages (<code>cum = TRUE</code>)</p></li>
 <li><p>Multiple display modes for labels via <code>labelled_levels</code></p></li>
-</ul><p>For factor and labelled inputs, unused levels — declared but not
-present in the data — are dropped from the output. This mirrors
-Stata's <code>tab</code> behavior and differs from SPSS <code>FREQUENCIES</code>, which
-shows all declared codes. To inspect or document the declared schema
-instead (including unused levels), use <code><a href="varlist.html">varlist()</a></code> or <code><a href="code_book.html">code_book()</a></code>
-with <code>factor_levels = "all"</code>.</p>
+</ul><p>For factor and labelled inputs, the <code>factor_levels</code> argument
+controls whether declared-but-unobserved levels appear in the
+output. The default <code>"observed"</code> drops them (Stata <code>tab</code> behavior);
+<code>"all"</code> keeps them with <code>n = 0</code>, matching SPSS <code>FREQUENCIES</code> and
+<code><a href="code_book.html">code_book()</a></code>'s default. For schema-level inspection without
+computing frequencies, use <code><a href="varlist.html">varlist()</a></code> or <code><a href="code_book.html">code_book()</a></code> with
+<code>factor_levels = "all"</code>.</p>
 <p>When weighting is applied (<code>weights</code>), the frequencies and percentages are
 computed proportionally to the weights. The argument <code>rescale = TRUE</code>
 normalizes weights so their sum equals the unweighted sample size
