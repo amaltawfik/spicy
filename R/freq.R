@@ -23,12 +23,13 @@
 #' * Support for cumulative percentages (`cum = TRUE`)
 #' * Multiple display modes for labels via `labelled_levels`
 #'
-#' For factor and labelled inputs, unused levels — declared but not
-#' present in the data — are dropped from the output. This mirrors
-#' Stata's `tab` behavior and differs from SPSS `FREQUENCIES`, which
-#' shows all declared codes. To inspect or document the declared schema
-#' instead (including unused levels), use [varlist()] or [code_book()]
-#' with `factor_levels = "all"`.
+#' For factor and labelled inputs, the `factor_levels` argument
+#' controls whether declared-but-unobserved levels appear in the
+#' output. The default `"observed"` drops them (Stata `tab` behavior);
+#' `"all"` keeps them with `n = 0`, matching SPSS `FREQUENCIES` and
+#' [code_book()]'s default. For schema-level inspection without
+#' computing frequencies, use [varlist()] or [code_book()] with
+#' `factor_levels = "all"`.
 #'
 #' When weighting is applied (`weights`), the frequencies and percentages are
 #' computed proportionally to the weights. The argument `rescale = TRUE`
@@ -79,6 +80,12 @@
 #'   * `"prefixed"` or `"p"` - show labels as `[value] label` (default)
 #'   * `"labels"` or `"l"` - show only labels
 #'   * `"values"` or `"v"` - show only numeric codes
+#' @param factor_levels Character. Controls how factor and labelled values
+#'   are displayed in the frequency table. `"observed"` (the default;
+#'   matches Stata's `tab`) shows only levels present in the data.
+#'   `"all"` (matches SPSS `FREQUENCIES` and [code_book()]'s default)
+#'   keeps every declared level, including unused ones, which appear
+#'   with `n = 0`.
 #' @param rescale Logical. If `TRUE` (default), rescale weights so that their
 #'   total equals the unweighted sample size (`length(weights)`). See
 #'   `Details` for the interaction with `NA` weights.
@@ -174,11 +181,13 @@ freq <- function(
   sort = "",
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
+  factor_levels = c("observed", "all"),
   rescale = TRUE,
   styled = TRUE,
   ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
+  factor_levels <- match_varlist_factor_levels(factor_levels)
 
   if (
     !is.numeric(digits) ||
@@ -341,7 +350,13 @@ freq <- function(
   }
 
   if (is.factor(x)) {
-    x <- droplevels(x)
+    # Keep all declared levels with `factor_levels = "all"` so the
+    # output table includes unused levels with n = 0; otherwise drop
+    # them, matching Stata `tab` and the SPSS `FREQUENCIES` default
+    # behavior controlled by this argument.
+    if (factor_levels == "observed") {
+      x <- droplevels(x)
+    }
   } else {
     x <- factor(x)
   }
@@ -359,6 +374,11 @@ freq <- function(
   } else {
     f <- addNA(x, ifany = TRUE)
     tab <- tapply(weights, f, sum)
+    # `tapply` returns NA for groups with no observations, which only
+    # happens with `factor_levels = "all"` for declared-but-unobserved
+    # levels. Coerce those to 0 so the frequency table shows them as
+    # `n = 0` rather than `n = NA`.
+    tab[is.na(tab)] <- 0
   }
 
   df <- data.frame(

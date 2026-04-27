@@ -14,6 +14,7 @@ freq(
   sort = "",
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
+  factor_levels = c("observed", "all"),
   rescale = TRUE,
   styled = TRUE,
   ...
@@ -68,6 +69,13 @@ values are displayed:
 \item \code{"values"} or \code{"v"} - show only numeric codes
 }}
 
+\item{factor_levels}{Character. Controls how factor and labelled values
+are displayed in the frequency table. \code{"observed"} (the default;
+matches Stata's \code{tab}) shows only levels present in the data.
+\code{"all"} (matches SPSS \code{FREQUENCIES} and \code{\link[=code_book]{code_book()}}'s default)
+keeps every declared level, including unused ones, which appear
+with \code{n = 0}.}
+
 \item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
 total equals the unweighted sample size (\code{length(weights)}). See
 \code{Details} for the interaction with \code{NA} weights.}
@@ -119,12 +127,13 @@ It automatically detects the type of input (\code{vector}, \code{factor}, or
 \item Multiple display modes for labels via \code{labelled_levels}
 }
 
-For factor and labelled inputs, unused levels — declared but not
-present in the data — are dropped from the output. This mirrors
-Stata's \code{tab} behavior and differs from SPSS \code{FREQUENCIES}, which
-shows all declared codes. To inspect or document the declared schema
-instead (including unused levels), use \code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}}
-with \code{factor_levels = "all"}.
+For factor and labelled inputs, the \code{factor_levels} argument
+controls whether declared-but-unobserved levels appear in the
+output. The default \code{"observed"} drops them (Stata \code{tab} behavior);
+\code{"all"} keeps them with \code{n = 0}, matching SPSS \code{FREQUENCIES} and
+\code{\link[=code_book]{code_book()}}'s default. For schema-level inspection without
+computing frequencies, use \code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}} with
+\code{factor_levels = "all"}.
 
 When weighting is applied (\code{weights}), the frequencies and percentages are
 computed proportionally to the weights. The argument \code{rescale = TRUE}

@@ -669,6 +669,124 @@ test_that("freq() drops unused factor levels from the output", {
   expect_false("c" %in% res$value)
 })
 
+test_that("freq() factor_levels = 'all' keeps unused factor levels with n = 0", {
+  x <- factor(c("a", "b", "a"), levels = c("a", "b", "c"))
+  res <- freq(x, factor_levels = "all", styled = FALSE)
+
+  expect_equal(nrow(res), 3L)
+  expect_setequal(res$value, c("a", "b", "c"))
+  expect_equal(res$n[res$value == "c"], 0)
+  expect_equal(res$prop[res$value == "c"], 0)
+  # Sum still equals length(x): the n = 0 row contributes nothing.
+  expect_equal(sum(res$n), 3L)
+})
+
+test_that("freq() factor_levels = 'all' keeps unused labelled levels", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(
+    c(1, 2, 1),
+    labels = c(Low = 1, Mid = 2, High = 3)
+  )
+  res <- freq(x, factor_levels = "all", styled = FALSE)
+
+  expect_equal(nrow(res), 3L)
+  expect_true(any(grepl("High", res$value)))
+  expect_equal(res$n[grepl("High", res$value)], 0)
+})
+
+test_that("freq() factor_levels = 'all' keeps weighted unused levels at n = 0", {
+  # tapply() returns NA for empty groups; freq() must coerce those
+  # to 0 so the table shows the unused level with `n = 0` rather
+  # than a stray `n = NA` row.
+  df <- data.frame(
+    x = factor(c("a", "b", "a"), levels = c("a", "b", "c")),
+    w = c(2, 3, 5)
+  )
+  res <- freq(
+    df,
+    x,
+    weights = w,
+    factor_levels = "all",
+    rescale = FALSE,
+    styled = FALSE
+  )
+
+  expect_equal(nrow(res), 3L)
+  expect_equal(res$n[res$value == "c"], 0)
+  expect_equal(sum(res$n), sum(df$w))
+})
+
+test_that("freq() factor_levels = 'all' interacts cleanly with sort and cum", {
+  x <- factor(c("a", "b", "a"), levels = c("a", "b", "c"))
+
+  # sort = "+" (freq ascending): unused level (n = 0) comes first
+  res_asc <- freq(x, factor_levels = "all", sort = "+", styled = FALSE)
+  expect_equal(res_asc$value[1], "c")
+
+  # sort = "-" (freq descending): unused level lands at the end
+  res_desc <- freq(x, factor_levels = "all", sort = "-", styled = FALSE)
+  expect_equal(res_desc$value[nrow(res_desc)], "c")
+
+  # cum_prop monotone, reaches 1, stays at 1 across the n = 0 row
+  res_cum <- freq(x, factor_levels = "all", cum = TRUE, styled = FALSE)
+  expect_true(all(diff(res_cum$cum_prop) >= 0))
+  expect_equal(res_cum$cum_prop[nrow(res_cum)], 1)
+})
+
+test_that("freq() factor_levels = 'all' interacts with na_val", {
+  # na_val recodes some values as NA, but the original levels stay
+  # in the factor's `levels` attribute — so factor_levels = "all"
+  # still shows them with n = 0 alongside the new NA row.
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(
+    c(1, 2, 1),
+    labels = c(Low = 1, Mid = 2, High = 3)
+  )
+  res <- freq(x, na_val = 1, factor_levels = "all", styled = FALSE)
+
+  # Low (recoded to NA, n = 0), Mid (1), High (unused, n = 0), NA (2)
+  expect_equal(nrow(res), 4L)
+  expect_true(any(is.na(res$value)))
+  expect_equal(sum(res$n[!is.na(res$value)]), 1)
+  expect_equal(res$n[is.na(res$value)], 2)
+})
+
+test_that("freq() factor_levels = 'all' is a no-op for plain character vectors", {
+  # Numeric / character / logical have no declared levels — the
+  # argument has nothing to do, output identical to "observed".
+  res_obs <- freq(c("a", "b", "a"), factor_levels = "observed", styled = FALSE)
+  res_all <- freq(c("a", "b", "a"), factor_levels = "all", styled = FALSE)
+
+  expect_equal(res_obs, res_all)
+})
+
+test_that("freq() validates factor_levels", {
+  expect_error(
+    freq(c(1, 2), factor_levels = "bogus"),
+    'must be "observed" or "all"',
+    fixed = TRUE
+  )
+  expect_error(
+    freq(c(1, 2), factor_levels = NA_character_),
+    'must be "observed" or "all"',
+    fixed = TRUE
+  )
+  expect_error(
+    freq(c(1, 2), factor_levels = c("observed", "bad")),
+    'must be "observed" or "all"',
+    fixed = TRUE
+  )
+})
+
+test_that("freq() default factor_levels preserves current behavior", {
+  # Regression guard: omitting the argument equals "observed".
+  x <- factor(c("a", "b", "a"), levels = c("a", "b", "c"))
+  expect_equal(
+    freq(x, styled = FALSE),
+    freq(x, factor_levels = "observed", styled = FALSE)
+  )
+})
+
 test_that("freq() drops unused labelled values from the output", {
   skip_if_not_installed("labelled")
 
