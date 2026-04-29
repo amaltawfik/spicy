@@ -60,6 +60,23 @@
 #'   the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
+#' @param align Horizontal alignment of numeric columns in the printed
+#'   ASCII table and in the `tinytable` and `gt` outputs. The first
+#'   column (`Variable`) is always left-aligned. One of:
+#'   - `"decimal"` (default): align numeric columns on the decimal
+#'     mark, the standard scientific-publication convention used by
+#'     SPSS, SAS, LaTeX `siunitx`, [gt::cols_align_decimal()] and
+#'     `tinytable::style_tt(align = "d")`. For ASCII print, values
+#'     are pre-padded with leading and trailing spaces so the dots
+#'     line up vertically.
+#'   - `"center"` / `"right"`: literal alignment of numeric columns.
+#'   - `"auto"`: legacy uniform right-alignment.
+#'
+#'   The `flextable`, `word`, `excel`, and `clipboard` engines
+#'   currently fall back to right-aligned numerics regardless of
+#'   `align`; full decimal alignment for those engines is a planned
+#'   follow-up. Same default and semantics as
+#'   [table_continuous()] / [table_continuous_lm()].
 #' @param output Output format. One of:
 #'   - `"default"` (a printed ASCII table, returned invisibly)
 #'   - `"data.frame"` (a wide numeric `data.frame`)
@@ -109,10 +126,38 @@
 #' }
 #'
 #' @details
-#' When `by` is used, each selected variable is cross-tabulated against
-#' the grouping variable with [cross_tab()]. Chi-squared statistics,
-#' *p*-values, and the chosen association measure are reported for each
-#' variable.
+#' # Tests
+#'
+#' When `by` is used, each selected variable is cross-tabulated
+#' against the grouping variable with [cross_tab()]. The omnibus
+#' chi-squared test (with optional Yates continuity correction or
+#' Monte Carlo *p*-value, see `correct` / `simulate_p`) is computed
+#' and reported in the `p` column. The chosen association measure
+#' (`assoc_measure`, with `"auto"` selecting Cramer's V for nominal
+#' variables and Kendall's Tau-b when both are ordered) is reported
+#' alongside, with optional CI via `assoc_ci`. Without `by`, the
+#' table reports the marginal frequency distribution of each variable
+#' with no inferential statistics.
+#'
+#' For model-based comparisons (cluster-robust SE, weighted contrasts,
+#' fitted means) on continuous outcomes, see [table_continuous_lm()].
+#' For descriptive (empirical) comparisons on continuous outcomes, see
+#' [table_continuous()].
+#'
+#' # Display conventions
+#'
+#' By default (`align = "decimal"`) numeric columns are aligned on
+#' the decimal mark, the standard scientific-publication convention
+#' used by SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+#' [gt::cols_align_decimal()] / `tinytable::style_tt(align = "d")`.
+#' For the printed ASCII table the alignment is achieved by padding
+#' numeric cells with leading and trailing spaces so dots line up
+#' vertically. Pass `align = "auto"` to revert to the legacy uniform
+#' right-alignment used in spicy < 0.11.0.
+#'
+#' *p*-values are formatted with `p_digits` decimal places (default
+#' 3, the APA standard). Leading zeros on *p* are always stripped
+#' (`.045`, not `0.045`).
 #'
 #' Optional output engines require suggested packages:
 #' \itemize{
@@ -124,9 +169,13 @@
 #'   \item \pkg{clipr} for `output = "clipboard"`
 #' }
 #'
-#' @seealso [table_continuous()] for continuous variables;
-#'   [cross_tab()] for two-way cross-tabulations; [freq()] for one-way
-#'   frequency tables.
+#' @family spicy tables
+#' @seealso [table_continuous()] for empirical comparisons on
+#'   continuous outcomes; [table_continuous_lm()] for the model-based
+#'   companion (heteroskedasticity-consistent / cluster-robust /
+#'   bootstrap / jackknife SE, fitted means, weighted contrasts);
+#'   [cross_tab()] for two-way cross-tabulations; [freq()] for
+#'   one-way frequency tables.
 #'
 #' @examples
 #' # Long numeric output
@@ -218,6 +267,7 @@ table_categorical <- function(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c(
     "default",
     "data.frame",
@@ -239,6 +289,7 @@ table_categorical <- function(
   word_path = NULL
 ) {
   output <- match.arg(output)
+  align <- match.arg(align)
 
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
@@ -400,6 +451,8 @@ table_categorical <- function(
     p_val <- attr(ct_obj, "p_value")
     v_val <- attr(ct_obj, "assoc_value")
     m_name <- attr(ct_obj, "assoc_measure")
+    chi2_val <- attr(ct_obj, "chi2")
+    df_val <- attr(ct_obj, "df")
     ar <- attr(ct_obj, "assoc_result")
     ci_lo <- if (!is.null(ar)) ar[["ci_lower"]] else NA_real_
     ci_hi <- if (!is.null(ar)) ar[["ci_upper"]] else NA_real_
@@ -411,6 +464,8 @@ table_categorical <- function(
         p_op = p_op,
         v = v_val,
         measure = m_name %||% "Cramer's V",
+        chi2 = chi2_val %||% NA_real_,
+        df = df_val %||% NA_real_,
         ci_lower = ci_lo,
         ci_upper = ci_hi
       ))
@@ -451,6 +506,8 @@ table_categorical <- function(
       p_op = p_op,
       v = v_val,
       measure = "Cramer's V",
+      chi2 = NA_real_,
+      df = NA_real_,
       ci_lower = NA_real_,
       ci_upper = NA_real_
     )
@@ -739,6 +796,9 @@ table_categorical <- function(
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
       attr(out, "indent_text") <- indent_text
+      attr(out, "align") <- align
+      attr(out, "decimal_mark") <- decimal_mark
+      attr(out, "long_data") <- long_raw
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
       print(out)
       return(invisible(out))
@@ -765,7 +825,18 @@ table_categorical <- function(
       tt <- tinytable::tt(dat_tt, escape = FALSE)
       tt <- tinytable::theme_empty(tt)
       tt <- tinytable::style_tt(tt, j = 1, align = "l")
-      tt <- tinytable::style_tt(tt, j = 2:ncol(dat_tt), align = "r")
+      tt_align <- switch(
+        align,
+        decimal = "d",
+        center = "c",
+        right = "r",
+        "r"
+      )
+      tt <- tinytable::style_tt(
+        tt,
+        j = 2:ncol(dat_tt),
+        align = tt_align
+      )
       tt <- tinytable::style_tt(tt, i = 0, j = 2:ncol(dat_tt), align = "c")
       if (length(mod_rows)) {
         tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
@@ -816,7 +887,13 @@ table_categorical <- function(
       tbl <- gt::gt(dat_gt)
       tbl <- gt::cols_label(tbl, Variable = "", n = "n", pct = "%")
       tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
-      tbl <- gt::cols_align(tbl, align = "right", columns = c("n", "pct"))
+      if (identical(align, "decimal")) {
+        tbl <- gt::cols_align_decimal(tbl, columns = c("n", "pct"))
+      } else if (identical(align, "center")) {
+        tbl <- gt::cols_align(tbl, align = "center", columns = c("n", "pct"))
+      } else {
+        tbl <- gt::cols_align(tbl, align = "right", columns = c("n", "pct"))
+      }
       rule <- gt::cell_borders(
         sides = "bottom",
         color = "currentColor",
@@ -1118,6 +1195,8 @@ table_categorical <- function(
           group = gr,
           n = suppressWarnings(as.numeric(ct_n[in_n, gr])),
           pct = suppressWarnings(as.numeric(ct_pct[in_p, gr])),
+          chi2 = st$chi2 %||% NA_real_,
+          df = st$df %||% NA_real_,
           p = st$p,
           p_op = st$p_op,
           ci_lower = st$ci_lower,
@@ -1397,6 +1476,9 @@ table_categorical <- function(
     attr(out, "display_df") <- report_wide_char
     attr(out, "group_var") <- by_name
     attr(out, "indent_text") <- indent_text
+    attr(out, "align") <- align
+    attr(out, "decimal_mark") <- decimal_mark
+    attr(out, "long_data") <- long_raw
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
     print(out)
     return(invisible(out))
@@ -1484,7 +1566,10 @@ table_categorical <- function(
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- tinytable::theme_empty(tt)
 
-    # Alignment
+    # Alignment. Honour the `align` argument: "decimal" uses the
+    # native tinytable decimal-alignment primitive on every numeric
+    # column; "center" / "right" apply literal alignment; "auto"
+    # preserves the legacy right-alignment.
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
     stat_j <- if (show_assoc) {
@@ -1492,7 +1577,14 @@ table_categorical <- function(
     } else {
       ncol(dat_tt)
     }
-    tt <- tinytable::style_tt(tt, j = c(data_j, stat_j), align = "r")
+    tt_align <- switch(
+      align,
+      decimal = "d",
+      center = "c",
+      right = "r",
+      "r"
+    )
+    tt <- tinytable::style_tt(tt, j = c(data_j, stat_j), align = tt_align)
     # Centre n/% labels (row 0 = column labels row)
     tt <- tinytable::style_tt(tt, i = 0, j = data_j, align = "c")
     # Centre spanner labels (row -1 = spanner row)
@@ -1630,17 +1722,31 @@ table_categorical <- function(
       )
     }
 
-    # Alignment
+    # Alignment. The Variable column is always left-aligned; numeric
+    # columns honour the `align` argument: "decimal" uses
+    # gt::cols_align_decimal() (the native gt primitive); "center" /
+    # "right" use gt::cols_align(); "auto" preserves the legacy
+    # rule (centre for group n/%, right for p / association measure).
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
     grp_cols <- unlist(lapply(group_levels, function(g) {
       c(paste0(g, "_n"), paste0(g, "_pct"))
     }))
-    tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
     right_cols <- "p"
     if (show_assoc) {
       right_cols <- c(right_cols, "assoc_col")
     }
-    tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
+    numeric_cols <- c(grp_cols, right_cols)
+    if (identical(align, "decimal") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+    } else if (identical(align, "center") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    } else if (identical(align, "right") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
+    } else {
+      # "auto": legacy per-column rule.
+      tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
+      tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
+    }
     # Left-align the Variable spanner label
     tbl <- gt::tab_style(
       tbl,

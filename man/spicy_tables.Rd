@@ -45,6 +45,7 @@ when the terminal allows ANSI color output (via the \strong{crayon} package).
 \code{\link[labelled:to_factor]{labelled::to_factor()}} and \code{\link[dplyr:pull]{dplyr::pull()}} for data transformations.
 
 Other spicy tables: 
+\code{\link{table_categorical}()},
 \code{\link{table_continuous}()},
 \code{\link{table_continuous_lm}()}
 }

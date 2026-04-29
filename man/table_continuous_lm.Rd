@@ -891,6 +891,7 @@ design-based inference on complex-survey samples.
 
 Other spicy tables: 
 \code{\link{spicy_tables}},
+\code{\link{table_categorical}()},
 \code{\link{table_continuous}()}
 }
 \concept{spicy tables}

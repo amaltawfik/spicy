@@ -446,6 +446,7 @@ contrasts, fitted means);
 
 Other spicy tables: 
 \code{\link{spicy_tables}},
+\code{\link{table_categorical}()},
 \code{\link{table_continuous_lm}()}
 }
 \concept{spicy tables}

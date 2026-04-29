@@ -23,6 +23,7 @@ table_categorical(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -99,6 +100,26 @@ Defaults to \code{FALSE}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
+\item{align}{Horizontal alignment of numeric columns in the printed
+ASCII table and in the \code{tinytable} and \code{gt} outputs. The first
+column (\code{Variable}) is always left-aligned. One of:
+\itemize{
+\item \code{"decimal"} (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and
+\code{tinytable::style_tt(align = "d")}. For ASCII print, values
+are pre-padded with leading and trailing spaces so the dots
+line up vertically.
+\item \code{"center"} / \code{"right"}: literal alignment of numeric columns.
+\item \code{"auto"}: legacy uniform right-alignment.
+}
+
+The \code{flextable}, \code{word}, \code{excel}, and \code{clipboard} engines
+currently fall back to right-aligned numerics regardless of
+\code{align}; full decimal alignment for those engines is a planned
+follow-up. Same default and semantics as
+\code{\link[=table_continuous]{table_continuous()}} / \code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
+
 \item{output}{Output format. One of:
 \itemize{
 \item \code{"default"} (a printed ASCII table, returned invisibly)
@@ -173,11 +194,37 @@ table (\code{"default"}), a wide or long numeric \code{data.frame}
 (\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, \code{"excel"}, \code{"clipboard"},
 \code{"word"}).
 }
-\details{
-When \code{by} is used, each selected variable is cross-tabulated against
-the grouping variable with \code{\link[=cross_tab]{cross_tab()}}. Chi-squared statistics,
-\emph{p}-values, and the chosen association measure are reported for each
-variable.
+\section{Tests}{
+When \code{by} is used, each selected variable is cross-tabulated
+against the grouping variable with \code{\link[=cross_tab]{cross_tab()}}. The omnibus
+chi-squared test (with optional Yates continuity correction or
+Monte Carlo \emph{p}-value, see \code{correct} / \code{simulate_p}) is computed
+and reported in the \code{p} column. The chosen association measure
+(\code{assoc_measure}, with \code{"auto"} selecting Cramer's V for nominal
+variables and Kendall's Tau-b when both are ordered) is reported
+alongside, with optional CI via \code{assoc_ci}. Without \code{by}, the
+table reports the marginal frequency distribution of each variable
+with no inferential statistics.
+
+For model-based comparisons (cluster-robust SE, weighted contrasts,
+fitted means) on continuous outcomes, see \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
+For descriptive (empirical) comparisons on continuous outcomes, see
+\code{\link[=table_continuous]{table_continuous()}}.
+}
+
+\section{Display conventions}{
+By default (\code{align = "decimal"}) numeric columns are aligned on
+the decimal mark, the standard scientific-publication convention
+used by SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
+\code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} / \code{tinytable::style_tt(align = "d")}.
+For the printed ASCII table the alignment is achieved by padding
+numeric cells with leading and trailing spaces so dots line up
+vertically. Pass \code{align = "auto"} to revert to the legacy uniform
+right-alignment used in spicy < 0.11.0.
+
+\emph{p}-values are formatted with \code{p_digits} decimal places (default
+3, the APA standard). Leading zeros on \emph{p} are always stripped
+(\code{.045}, not \code{0.045}).
 
 Optional output engines require suggested packages:
 \itemize{
@@ -189,6 +236,7 @@ Optional output engines require suggested packages:
 \item \pkg{clipr} for \code{output = "clipboard"}
 }
 }
+
 \examples{
 # Long numeric output
 table_categorical(
@@ -260,7 +308,16 @@ if (requireNamespace("openxlsx2", quietly = TRUE)) {
 
 }
 \seealso{
-\code{\link[=table_continuous]{table_continuous()}} for continuous variables;
-\code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations; \code{\link[=freq]{freq()}} for one-way
-frequency tables.
+\code{\link[=table_continuous]{table_continuous()}} for empirical comparisons on
+continuous outcomes; \code{\link[=table_continuous_lm]{table_continuous_lm()}} for the model-based
+companion (heteroskedasticity-consistent / cluster-robust /
+bootstrap / jackknife SE, fitted means, weighted contrasts);
+\code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations; \code{\link[=freq]{freq()}} for
+one-way frequency tables.
+
+Other spicy tables: 
+\code{\link{spicy_tables}},
+\code{\link{table_continuous}()},
+\code{\link{table_continuous_lm}()}
 }
+\concept{spicy tables}

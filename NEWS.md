@@ -2,6 +2,10 @@
 
 ## New features
 
+* `table_categorical()` gains an `align` argument (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`) controlling horizontal alignment of numeric columns in the printed ASCII table and in the `tinytable` and `gt` outputs, using the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`. The `flextable`, `word`, `excel`, and `clipboard` engines fall back to right-aligned numerics. Same default and semantics as `table_continuous()` / `table_continuous_lm()`.
+
+* `table_categorical()` gains four S3 methods mirroring the other `table_*()` companions: `as.data.frame()` and `tibble::as_tibble()` return the underlying wide-format data, `broom::tidy()` returns one row per `(variable x level x group)` with `outcome`, `level`, `group`, `n`, `proportion`, and `broom::glance()` returns one row per variable with the chi-squared test (`statistic`, `df`, `p.value`), the chosen association measure (`assoc_type`, `assoc_value`, `assoc_ci_lower/upper`), and `n_total`.
+
 * `table_continuous()` is harmonised with `table_continuous_lm()` and gains five new arguments: `p_digits` (APA *p*-value precision, default `3`), `align` (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`), `show_n` (toggle `n` column), `ci` (toggle mean CI columns), and `output = "long"` (synonym of `"data.frame"`). The two functions now share the same reporting vocabulary, decimal mark, and digits convention.
 
 * `table_continuous()`'s `effect_size` argument is migrated from logical to a character enum: `"none"` (default), `"auto"`, `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`. `"auto"` reproduces the historical auto-selection; explicit names let users override the default measure without changing `test`. Incompatible explicit choices error clearly. `effect_size = TRUE` and `FALSE` are silently coerced to `"auto"` and `"none"` so existing scripts continue to work unchanged.
@@ -28,6 +32,8 @@
 
 * `table_continuous()` documentation is reorganised to mirror `table_continuous_lm()`'s structure: markdown subsections in `@details` (*Tests* / *Effect sizes* / *Display conventions*), `@family spicy tables`, and reciprocal `@seealso` cross-references between the two functions.
 
+* `table_categorical()` documentation is reorganised to mirror its `table_*()` companions: markdown subsections in `@details` (*Tests* / *Display conventions*), `@family spicy tables`, and `@seealso` cross-references to `table_continuous()` and `table_continuous_lm()`.
+
 * `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and `df2` as integer columns (previously numeric).
 
 * `table_continuous_lm()` now preserves the `predictor_label` for outcomes that fall through to the degenerate-model path.
@@ -45,6 +51,8 @@
 ## Breaking changes
 
 * `table_continuous_lm()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new `align` argument, default `"decimal"`). This matches the SPSS, SAS, and LaTeX `siunitx` convention and uses the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`. The `excel` output keeps the engine default. Pass `align = "auto"` to restore the previous per-column rule.
+
+* `table_categorical()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable` and `gt` outputs (new `align` argument, default `"decimal"`). The `flextable`, `word`, `excel`, and `clipboard` engines keep the previous right-aligned numeric layout. Pass `align = "auto"` to restore the previous uniform right-alignment everywhere.
 
 * `table_continuous_lm(..., output = "long")` now returns `NA` in `es_type` and `es_value` when `effect_size = "none"`. Previously these were populated with `"f2"` regardless of the request. Set `effect_size = "f2"` explicitly to restore.
 

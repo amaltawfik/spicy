@@ -1591,3 +1591,149 @@ test_that("table_categorical grouped errors for missing clipr", {
 test_that("table_categorical grouped word errors for missing officer", {
   skip("Cannot mock officer requireNamespace without recursion")
 })
+
+# ---- harmonisation with table_continuous() / _lm() (Phase 2) -------------
+
+test_that("align argument validates and is stored as attribute", {
+  for (a in c("decimal", "auto", "center", "right")) {
+    out <- table_categorical(sochealth, select = smoking, by = sex, align = a)
+    expect_equal(attr(out, "align"), a)
+  }
+  expect_error(
+    table_categorical(sochealth, select = smoking, by = sex, align = "bogus"),
+    "should be one of"
+  )
+})
+
+test_that("align defaults to 'decimal' on the printed object", {
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  expect_equal(attr(out, "align"), "decimal")
+  out_ow <- table_categorical(sochealth, select = smoking)
+  expect_equal(attr(out_ow, "align"), "decimal")
+})
+
+test_that("align = 'decimal' produces gt and tinytable outputs", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("tinytable")
+  out_gt <- table_categorical(
+    sochealth, select = smoking, by = sex, output = "gt", align = "decimal"
+  )
+  expect_s3_class(out_gt, "gt_tbl")
+
+  out_tt <- table_categorical(
+    sochealth, select = smoking, by = sex, output = "tinytable", align = "decimal"
+  )
+  expect_true(inherits(out_tt, "tinytable"))
+})
+
+test_that("align = 'center' / 'right' / 'auto' all render gt + tinytable", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("tinytable")
+  for (a in c("center", "right", "auto")) {
+    expect_s3_class(
+      table_categorical(
+        sochealth, select = smoking, by = sex, output = "gt", align = a
+      ),
+      "gt_tbl"
+    )
+    expect_true(inherits(
+      table_categorical(
+        sochealth, select = smoking, by = sex, output = "tinytable", align = a
+      ),
+      "tinytable"
+    ))
+  }
+})
+
+# ---- broom S3 methods -----------------------------------------------------
+
+test_that("as.data.frame() strips spicy classes and rendering attrs", {
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  df <- as.data.frame(out)
+  expect_true(inherits(df, "data.frame"))
+  expect_false("spicy_categorical_table" %in% class(df))
+  expect_false("spicy_table" %in% class(df))
+  expect_null(attr(df, "display_df"))
+  expect_null(attr(df, "long_data"))
+  expect_null(attr(df, "align"))
+  # group_var preserved as provenance
+  expect_equal(attr(df, "group_var"), "sex")
+})
+
+test_that("as_tibble() returns a tbl_df", {
+  skip_if_not_installed("tibble")
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  tb <- tibble::as_tibble(out)
+  expect_s3_class(tb, "tbl_df")
+})
+
+test_that("tidy() returns long-format with broom-conventional columns (cross-tab)", {
+  out <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex
+  )
+  td <- broom::tidy(out)
+  expect_setequal(
+    names(td),
+    c("outcome", "level", "group", "n", "proportion")
+  )
+  expect_true(all(td$proportion >= 0 & td$proportion <= 1))
+  expect_equal(unique(td$outcome), c("smoking", "physical_activity"))
+  # All three sex groups appear (Female, Male, Total)
+  expect_true(all(c("Female", "Male", "Total") %in% td$group))
+})
+
+test_that("tidy() returns no group column without by", {
+  out <- table_categorical(sochealth, select = smoking)
+  td <- broom::tidy(out)
+  expect_false("group" %in% names(td))
+  expect_setequal(names(td), c("outcome", "level", "n", "proportion"))
+})
+
+test_that("glance() returns chi-squared test + association measure (cross-tab)", {
+  out <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex
+  )
+  gl <- broom::glance(out)
+  expect_setequal(
+    names(gl),
+    c(
+      "outcome",
+      "test_type",
+      "statistic",
+      "df",
+      "p.value",
+      "assoc_type",
+      "assoc_value",
+      "assoc_ci_lower",
+      "assoc_ci_upper",
+      "n_total"
+    )
+  )
+  expect_equal(nrow(gl), 2L)
+  expect_true(all(gl$test_type == "chi_squared"))
+  expect_true(all(is.finite(gl$statistic)))
+  expect_true(all(gl$df >= 1L))
+  expect_true(all(gl$p.value >= 0 & gl$p.value <= 1))
+  expect_true(all(gl$assoc_type == "Cramer's V"))
+})
+
+test_that("glance() returns NA test/ES, populated n_total without by", {
+  out <- table_categorical(sochealth, select = smoking)
+  gl <- broom::glance(out)
+  expect_equal(nrow(gl), 1L)
+  expect_true(is.na(gl$test_type))
+  expect_true(is.na(gl$statistic))
+  expect_true(is.na(gl$p.value))
+  expect_equal(gl$n_total, 1175L)  # observed n for smoking
+})
+
+test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
+  out <- table_categorical(
+    sochealth, select = smoking, by = sex, assoc_ci = TRUE
+  )
+  gl <- broom::glance(out)
+  expect_true(is.finite(gl$assoc_ci_lower))
+  expect_true(is.finite(gl$assoc_ci_upper))
+  expect_true(gl$assoc_ci_lower <= gl$assoc_value)
+  expect_true(gl$assoc_ci_upper >= gl$assoc_value)
+})
