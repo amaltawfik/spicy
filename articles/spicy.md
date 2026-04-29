@@ -311,34 +311,34 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                       │ Group              M     SD    Min    Max  
+#>  Variable                       │ Group                M    SD    Min    Max 
 #> ────────────────────────────────┼────────────────────────────────────────────
 #>  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 
 #>                                 │ Upper secondary  26.02  3.43  16.00  37.10 
 #>                                 │ Tertiary         24.39  3.52  16.00  33.00 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary  2.71   1.20  1.00   5.00  
-#>                                 │ Upper secondary  3.53   1.19  1.00   5.00  
-#>                                 │ Tertiary         4.11   1.04  1.00   5.00  
+#>  Satisfaction with health (1-5) │ Lower secondary   2.71  1.20   1.00   5.00 
+#>                                 │ Upper secondary   3.53  1.19   1.00   5.00 
+#>                                 │ Tertiary          4.11  1.04   1.00   5.00 
 #> 
 #>  Variable                       │ Group            95% CI LL  95% CI UL    n 
 #> ────────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index                │ Lower secondary    27.66      28.51    260 
-#>                                 │ Upper secondary    25.73      26.31    534 
-#>                                 │ Tertiary           24.04      24.74    394 
+#>  Body mass index                │ Lower secondary      27.66      28.51  260 
+#>                                 │ Upper secondary      25.73      26.31  534 
+#>                                 │ Tertiary             24.04      24.74  394 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary    2.57       2.86     259 
-#>                                 │ Upper secondary    3.43       3.63     534 
-#>                                 │ Tertiary           4.01       4.21     399 
+#>  Satisfaction with health (1-5) │ Lower secondary       2.57       2.86  259 
+#>                                 │ Upper secondary       3.43       3.63  534 
+#>                                 │ Tertiary              4.01       4.21  399 
 #> 
-#>  Variable                       │ Group                 p 
-#> ────────────────────────────────┼─────────────────────────
-#>  Body mass index                │ Lower secondary  < .001 
-#>                                 │ Upper secondary         
-#>                                 │ Tertiary                
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary  < .001 
-#>                                 │ Upper secondary         
+#>  Variable                       │ Group                p 
+#> ────────────────────────────────┼────────────────────────
+#>  Body mass index                │ Lower secondary  <.001 
+#>                                 │ Upper secondary        
+#>                                 │ Tertiary               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Lower secondary  <.001 
+#>                                 │ Upper secondary        
 #>                                 │ Tertiary
 ```
 

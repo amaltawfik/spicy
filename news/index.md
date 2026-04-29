@@ -4,6 +4,104 @@
 
 ### New features
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  is harmonised with
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and gains five new arguments. The signatures of the descriptive and
+  model-based companions now share their reporting vocabulary end-to-end
+  (decimal alignment, *p*-value precision, CI / *n* / long toggles,
+  broom integration), so a descriptive analysis and a model-based
+  analysis of the same data use the same table layout, decimal mark, and
+  digits convention.
+
+  - `p_digits` (default `3`, the APA standard) controls the number of
+    decimal places used to render *p*-values in the `p` column. Both the
+    displayed precision and the small-*p* threshold derive from this
+    argument: `p_digits = 3` prints `.045` and `<.001`, `p_digits = 4`
+    prints `.0451` and `<.0001`. Same semantics as
+    [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
+  - `align` (default `"decimal"`) controls horizontal alignment of
+    numeric columns in the printed ASCII table and in the `tinytable`,
+    `gt`, `flextable`, `word`, and `clipboard` outputs: `"decimal"`
+    aligns on the decimal mark (the publication-grade default, via
+    [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+    / `tinytable::style_tt(align = "d")` natively, and via leading /
+    trailing space padding for engines without a native primitive),
+    `"center"` and `"right"` apply literal alignment, and `"auto"`
+    preserves the legacy per-column rule (centre for descriptive
+    columns, right for `n` and `p`). Excel keeps the engine default.
+
+  - `show_n` (default `TRUE`) toggles the unweighted `n` column in the
+    rendered outputs and the printed ASCII table; the `n` column is
+    always present in `output = "data.frame"` / `"long"`.
+
+  - `ci` (default `TRUE`) toggles the mean confidence-interval columns
+    (`<level>% CI LL` / `<level>% CI UL`) in the rendered outputs and
+    the printed ASCII table; the columns are always present in
+    `output = "data.frame"` / `"long"`.
+
+  - `output = "long"` is added as a synonym of `output = "data.frame"`
+    (the descriptive output is naturally already long; the two names
+    coexist for explicit harmony with
+    [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)’s
+    naming).
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)’s
+  `effect_size` argument is migrated from logical to a character enum:
+  `"none"` (default), `"auto"`, `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
+  `"epsilon_sq"`. `"auto"` reproduces the historical behaviour
+  (auto-select the canonical measure for the active `(test, n_groups)`
+  combination); the explicit names give users control to pick a specific
+  measure without changing `test`. Incompatible explicit choices (e.g.
+  `"eta_sq"` with two groups, or `"hedges_g"` with
+  `test = "nonparametric"`) trigger an actionable error rather than a
+  silent fallback. For backward compatibility, `effect_size = TRUE` is
+  silently coerced to `"auto"` and `effect_size = FALSE` to `"none"`;
+  existing scripts continue to work unchanged.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains four S3 methods for ecosystem integration, mirroring
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+  [`tibble::as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
+  strip the spicy classes and rendering-only attributes and return the
+  underlying long-format data (with `"group_var"` preserved as a
+  lightweight provenance marker).
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  returns one row per `(variable x group)` with broom-conventional
+  columns (`outcome`, `label`, `group`, `estimate`, `std.error`,
+  `conf.low`, `conf.high`, `n`, `min`, `max`, `sd`);
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  returns one row per variable with the omnibus test and effect-size
+  summary (`test_type`, `statistic`, `df`, `df.residual`, `p.value`,
+  `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`, `n_total`).
+  Together they make
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  directly consumable by `gtsummary`, `modelsummary`, `parameters`, and
+  any other tidyverse-stats pipeline. `print(x)` and the existing
+  `output = ...` formats are unaffected.
+
+### Improvements
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  *p*-values are now formatted via the same helper as
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  Output is unchanged for the default `p_digits = 3` apart from a tiny
+  visual difference: the small-*p* prefix used to be `"< .001"` (with a
+  non-breaking space, a relic of fixed-width column alignment); it is
+  now `"<.001"` (no NBSP), and decimal-point alignment is handled by the
+  new `align = "decimal"` default rather than character padding inside
+  the cell.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  documentation is reorganised to mirror
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)’s
+  structure: markdown subsections in `@details` (*Tests* / *Effect
+  sizes* / *Display conventions*), `@family spicy tables`, and
+  reciprocal `@seealso` cross-references pointing each function at its
+  companion.
+
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   gains a `cluster` argument and four new `vcov` choices (`"CR0"`,
   `"CR1"`, `"CR2"`, `"CR3"`) for cluster-robust standard errors. This
