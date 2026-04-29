@@ -26,8 +26,9 @@ table_continuous_lm(
   regex = FALSE,
   weights = NULL,
   vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5", "CR0", "CR1",
-    "CR2", "CR3"),
+    "CR2", "CR3", "bootstrap", "jackknife"),
   cluster = NULL,
+  boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -173,6 +174,17 @@ table_continuous_lm(
     [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md);
     install `clubSandwich` to use them.
 
+  - `"bootstrap"`: nonparametric (resampling cases) or cluster bootstrap
+    variance, depending on whether `cluster` is supplied (Davison and
+    Hinkley 1997; Cameron, Gelbach and Miller 2008). The number of
+    replicates is set by `boot_n`. Inference is asymptotic (`z` for
+    single contrasts, `chi^2(q)` for the global Wald test); CIs are
+    Wald-type around the point estimate.
+
+  - `"jackknife"`: leave-one-out variance, or leave-one-cluster-out when
+    `cluster` is supplied (Quenouille 1956; MacKinnon and White 1985).
+    Inference is asymptotic (`z` / `chi^2(q)`).
+
   The `HC*` variants are computed via
   [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html).
   Coefficients (means, contrasts, slopes), `R²`, and the standardized
@@ -182,8 +194,11 @@ table_continuous_lm(
 
 - cluster:
 
-  Cluster identifier for cluster-robust standard errors. Required when
-  `vcov` is one of the `CR*` variants and forbidden otherwise. Accepts:
+  Cluster identifier for cluster-aware variance estimators. Required
+  when `vcov` is one of the `CR*` variants; optional and triggers a
+  cluster bootstrap or leave-one-cluster-out jackknife when `vcov` is
+  `"bootstrap"` / `"jackknife"`; forbidden for the other
+  (independent-observation) variants. Accepts:
 
   - `NULL` (default): no cluster structure.
 
@@ -196,7 +211,20 @@ table_continuous_lm(
 
   Rows with `NA` in `cluster` are excluded from the analytic sample for
   each outcome (alongside rows with `NA` in `y`, `by`, or `weights`). At
-  least two distinct non-missing cluster values are required.
+  least two distinct non-missing cluster values are required. Multi-way
+  clustering (a list / data.frame of multiple cluster vectors) is not
+  supported; use
+  [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
+  or
+  [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
+  directly on the fitted model for that case.
+
+- boot_n:
+
+  Integer. Number of bootstrap replicates used when
+  `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise. Larger
+  values reduce Monte-Carlo error in the bootstrap variance; typical
+  values for inference are `500`-`2000`.
 
 - contrast:
 
@@ -505,15 +533,14 @@ internally consistent with the rest of the table.
   with `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin 1985). The
   sign matches the displayed `Delta (level2 - level1)`. For published
   reports of two-group comparisons, *g* is the convention recommended by
-  Hedges and Olkin (1985), Lakens (2013), and the APA Publication Manual
-  (APA 2020).
+  Hedges and Olkin (1985).
 
 - `"omega2"`: Hays' `ω²`, computed from weighted sums of squares as
   `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and truncated at 0
   for small or null effects (Hays 1963; Olejnik and Algina 2003). Less
   biased than `η²` (which equals `R²` in this single-predictor design)
   and recommended for reporting variance explained in ANOVA-style
-  designs (Olejnik and Algina 2003; Lakens 2013).
+  designs (Olejnik and Algina 2003).
 
 All four effect sizes are point estimates derived from the OLS/WLS fit
 and are **invariant to `vcov`**: choosing `HC*` changes the SE, CI, and
@@ -534,8 +561,8 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
   samples. For Hedges' *g* the bounds inherit the *J* small-sample
   correction.
 
-- `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004; Smithson
-  2003). Bounds are converted from the noncentrality parameter using
+- `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Bounds
+  are converted from the noncentrality parameter using
   `omega² = ncp / (ncp + N)` and `f² = ncp / N` respectively, with
   `N = df1 + df2 + 1` (total sample size).
 
@@ -588,6 +615,23 @@ matches Stata's `, vce(cluster id)`. Effect sizes remain invariant to
 `vcov` (including `CR*`); only the SE, CI, test statistic, and `df2` of
 the contrast change.
 
+Two resampling-based estimators are also available without adding any
+dependency: `vcov = "bootstrap"` (nonparametric resampling-cases
+bootstrap; Davison and Hinkley 1997) and `vcov = "jackknife"`
+(leave-one-out delete-1; Quenouille 1956; MacKinnon and White 1985).
+Supplying `cluster` switches both to their cluster-aware variants
+(cluster bootstrap, Cameron, Gelbach and Miller 2008;
+leave-one-cluster-out jackknife). The number of bootstrap replicates is
+controlled by `boot_n` (default `1000`); replicates that fail to fit on
+rank-deficient resamples are dropped, with an explicit warning if more
+than half fail and a fallback to the classical OLS variance below 10
+valid replicates. Inference for both estimators is asymptotic (`z` for
+single-coefficient contrasts, `chi^2(q)` for the multi-coefficient
+global Wald test on `k > 2` categorical predictors), reflected in the
+displayed test header. Use the bootstrap when the residual distribution
+is non-standard or the sample is small; use the jackknife as a
+closed-form, deterministic alternative.
+
 `R²`, adjusted `R²`, and the effect sizes remain ordinary least-squares
 (or weighted least-squares) statistics regardless of `vcov`.
 
@@ -639,9 +683,6 @@ Optional output engines require the corresponding suggested packages:
 
 ## References
 
-American Psychological Association (2020). *Publication Manual of the
-American Psychological Association* (7th ed.). Washington, DC: APA.
-
 Austin, P. C., & Stuart, E. A. (2015). Moving towards best practice when
 using inverse probability of treatment weighting (IPTW) using the
 propensity score to estimate causal treatment effects in observational
@@ -651,6 +692,11 @@ studies. *Statistics in Medicine*, **34**(28), 3661–3679.
 Bell, R. M., & McCaffrey, D. F. (2002). Bias reduction in standard
 errors for linear regression with multi-stage samples. *Survey
 Methodology*, **28**(2), 169–181.
+
+Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008). Bootstrap-based
+improvements for inference with clustered errors. *Review of Economics
+and Statistics*, **90**(3), 414–427.
+[doi:10.1162/rest.90.3.414](https://doi.org/10.1162/rest.90.3.414)
 
 Cohen, J. (1988). *Statistical Power Analysis for the Behavioral
 Sciences* (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
@@ -677,6 +723,10 @@ regression model. *AStA Advances in Statistical Analysis*, **95**(2),
 129–146.
 [doi:10.1007/s10182-010-0141-2](https://doi.org/10.1007/s10182-010-0141-2)
 
+Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap Methods and Their
+Application*. Cambridge: Cambridge University Press.
+[doi:10.1017/CBO9780511802843](https://doi.org/10.1017/CBO9780511802843)
+
 DuMouchel, W. H., & Duncan, G. J. (1983). Using sample survey weights in
 multiple regression analyses of stratified samples. *Journal of the
 American Statistical Association*, **78**(383), 535–543.
@@ -692,11 +742,6 @@ Rinehart and Winston.
 
 Hedges, L. V., & Olkin, I. (1985). *Statistical Methods for
 Meta-Analysis*. Orlando, FL: Academic Press.
-
-Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
-cumulative science: A practical primer for *t*-tests and ANOVAs.
-*Frontiers in Psychology*, **4**, 863.
-[doi:10.3389/fpsyg.2013.00863](https://doi.org/10.3389/fpsyg.2013.00863)
 
 Long, J. S., & Ervin, L. H. (2000). Using heteroscedasticity consistent
 standard errors in the linear regression model. *The American
@@ -723,8 +768,9 @@ effects models. *Journal of Business & Economic Statistics*, **36**(4),
 672–683.
 [doi:10.1080/07350015.2016.1247004](https://doi.org/10.1080/07350015.2016.1247004)
 
-Smithson, M. (2003). *Confidence Intervals*. Quantitative Applications
-in the Social Sciences, No. 140. Thousand Oaks, CA: Sage.
+Quenouille, M. H. (1956). Notes on bias in estimation. *Biometrika*,
+**43**(3/4), 353–360.
+[doi:10.1093/biomet/43.3-4.353](https://doi.org/10.1093/biomet/43.3-4.353)
 
 Steiger, J. H. (2004). Beyond the *F* test: Effect size confidence
 intervals and tests of close fit in the analysis of variance and
