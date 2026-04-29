@@ -43,16 +43,14 @@
   observations are not independent (repeated measurements, nested
   designs, panel data). Dispatches to \[clubSandwich::vcovCR()\] /
   \[clubSandwich::coef_test()\] / \[clubSandwich::Wald_test()\] with
-  Satterthwaite degrees of freedom (Bell & McCaffrey 2002; Pustejovsky &
-  Tipton 2018); `"CR2"` is the recommended default. The fractional df is
-  rendered as e.g. `t(45.3)` / `F(2, 45.3)`. `clubSandwich` is added to
-  `Suggests`.
+  Satterthwaite degrees of freedom; `"CR2"` is the recommended default.
+  The fractional df is rendered as e.g. `t(45.3)` / `F(2, 45.3)`.
+  `clubSandwich` is added to `Suggests`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   gains two resampling-based variance estimators: `vcov = "bootstrap"`
-  (nonparametric or cluster bootstrap; Davison & Hinkley 1997; Cameron,
-  Gelbach & Miller 2008) and `vcov = "jackknife"` (leave-one-out or
-  leave-one-cluster-out; Quenouille 1956). Both are implemented in pure
+  (nonparametric or cluster bootstrap) and `vcov = "jackknife"`
+  (leave-one-out or leave-one-cluster-out). Both are implemented in pure
   base R (no new dependency) and use asymptotic `z` / `chi^2(q)`
   inference rendered in the displayed test header. A new `boot_n`
   argument (default `1000`) controls the bootstrap replicates.
@@ -67,20 +65,19 @@
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   gains an `effect_size_ci` argument (default `FALSE`). When `TRUE`, the
   table reports a noncentral-distribution confidence interval at
-  `ci_level`: noncentral *t* inversion (Steiger & Fouladi 1997;
-  Goulet-Pelletier & Cousineau 2018) for `"d"` / `"g"`, noncentral *F*
-  inversion (Steiger 2004) for `"omega2"` / `"f2"`. The CI is shown
-  bracketed in the rendered outputs (e.g. `0.18 [0.07, 0.30]`) and as
-  `es_ci_lower` / `es_ci_upper` in the long output.
+  `ci_level`: noncentral *t* inversion for `"d"` / `"g"`, noncentral *F*
+  inversion for `"omega2"` / `"f2"`. The CI is shown bracketed in the
+  rendered outputs (e.g. `0.18 [0.07, 0.30]`) and as `es_ci_lower` /
+  `es_ci_upper` in the long output.
 
 ### Improvements
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now computes `HC*` heteroskedasticity-consistent variance estimators
-  via \[sandwich::vcovHC()\] (Zeileis 2004) rather than an in-package
-  implementation. Numerical results are unchanged for non-degenerate
-  fits. Rank-deficient fits now return the rank-by-rank covariance of
-  the identifiable coefficients without warnings, replacing the previous
+  via \[sandwich::vcovHC()\] rather than an in-package implementation.
+  Numerical results are unchanged for non-degenerate fits.
+  Rank-deficient fits now return the rank-by-rank covariance of the
+  identifiable coefficients without warnings, replacing the previous
   full-size matrix with `NA`s. `sandwich` is added to `Imports`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -103,8 +100,9 @@
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   documentation is substantially expanded: markdown subsections in
   `@details` (Model and outputs / Effect sizes / Robust standard errors
-  / Weights / Display conventions), `@family spicy tables`, and 23
-  academic references with DOIs covering the underlying methodology.
+  / Weights / Display conventions), `@family spicy tables`, and a
+  curated bibliography in `@references` covering the underlying
+  methodology.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   documentation is reorganised to mirror
