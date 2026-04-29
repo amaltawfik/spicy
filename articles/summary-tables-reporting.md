@@ -102,9 +102,9 @@ table_continuous_lm(
 #> ────────────────────────────────┼──────────────────────────────────────────
 #>  Body mass index                │        25.96                23.39        
 #>  WHO-5 wellbeing index (0-100)  │        67.55                80.88        
-#>  Satisfaction with health (1-5) │        3.45                 4.39         
+#>  Satisfaction with health (1-5) │         3.45                 4.39        
 #> 
-#>  Variable                       │ M (Tertiary)      p   R²      n 
+#>  Variable                       │ M (Tertiary)    p     R²    n   
 #> ────────────────────────────────┼─────────────────────────────────
 #>  Body mass index                │    26.16      <.001  0.13  1188 
 #>  WHO-5 wellbeing index (0-100)  │    66.52      <.001  0.19  1200 

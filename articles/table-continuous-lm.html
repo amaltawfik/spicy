@@ -128,10 +128,10 @@ weights.</p>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>    3.51       3.59          0.08        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²      n </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL    p     R²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  1188 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    2.13      5.64     &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>    0.09      0.93      .018  0.00  1188 </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>   -0.06      0.22      .267  0.00  1192</span></span></code></pre></div>
 <p>For categorical predictors, the table reports estimated means by
 level. When the predictor is dichotomous, it can also show a single mean
@@ -157,7 +157,7 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t        p   R²      n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t      p     R²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     4.32  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188</span></span></code></pre></div>
@@ -182,10 +182,10 @@ slopes in the same model-based table:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        67.55                80.88        </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>        25.96                23.39        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²      n  Weighted n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)    p     R²    n    Weighted n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.52      &lt;.001  0.19  1200     1196.47 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    26.16      &lt;.001  0.13  1188     1183.32</span></span></code></pre></div>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.52      &lt;.001  0.19  1200   1196.47   </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    26.16      &lt;.001  0.13  1188   1183.32</span></span></code></pre></div>
 <p>This is often the most natural summary-table function when your
 reporting workflow already relies on weighted linear models.</p>
 </div>
@@ -203,10 +203,10 @@ reports the slope rather than group means:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Age (years)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  B    95% CI LL  95% CI UL      p   R²      n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  B    95% CI LL  95% CI UL    p     R²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.04    -0.02      0.10      .176  0.00  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04    0.02       0.05     &lt;.001  0.02  1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  1188</span></span></code></pre></div>
 <p>When you need the underlying returned data for further processing,
 use <code>output = "data.frame"</code> for the wide raw table or
 <code>output = "long"</code> for the analytic long table.</p>
@@ -238,7 +238,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91   </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL     p   R²     d       n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL   p     R²     d     n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   0.47     .124  0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.49     .905  0.00  -0.01  1163</span></span></code></pre></div>
@@ -260,7 +260,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91   </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL     p   R²     g       n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL   p     R²     g     n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   0.47     .124  0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.49     .905  0.00  -0.01  1163</span></span></code></pre></div>
@@ -282,7 +282,7 @@ Lakens 2013):</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        67.68                81.56        </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>        26.17                23.55        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²    ω²      n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)    p     R²    ω²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.10      &lt;.001  0.21  0.21  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    26.35      &lt;.001  0.13  0.13  1188</span></span></code></pre></div>
@@ -298,12 +298,12 @@ defined for any predictor type:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Age (years)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  B    95% CI LL  95% CI UL      p   R²    f²  </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  B    95% CI LL  95% CI UL    p     R²    f²  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.04    -0.02      0.10      .177  0.00  0.00 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04    0.02       0.05     &lt;.001  0.02  0.02 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  0.02 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>    n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 1188</span></span></code></pre></div>
@@ -345,12 +345,12 @@ with the bracketed CI (article-ready):</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91   </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL     p   R²            g          </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL   p     R²            g          </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   0.47     .124  0.00  -0.11 [-0.25, 0.03] </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.49     .905  0.00  -0.01 [-0.15, 0.13] </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>    n </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 1163</span></span></code></pre></div>
@@ -419,7 +419,7 @@ European reporting):</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   67,16      71,05          3,89           2,13    </span></span>
 <span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   25,69      26,20          0,51           0,09    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span> 95% CI UL      p   R²           g             n </span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²           g           n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   5,64     &lt;,001  0,02  0,25 [0,14; 0,36]  1200 </span></span>
 <span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0,93      ,018  0,00  0,14 [0,02; 0,25]  1188</span></span></code></pre></div>
@@ -969,52 +969,52 @@ summary-table helpers, including <code>tinytable</code>,
     </tr>
 <tr class="gt_col_headings">
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: left;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Female)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">LL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="UL">UL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="t"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="p"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="R²"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Female)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">LL</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="UL">UL</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="t"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="p"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="R²"></th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="n"></th>
     </tr>
 </thead>
 <tbody class="gt_table_body">
 <tr>
 <td headers="Variable" class="gt_row gt_left">WHO-5 wellbeing index (0-100)</td>
-<td headers="M (Female)" class="gt_row gt_center">67.16</td>
-<td headers="M (Male)" class="gt_row gt_center">71.05</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center">3.89</td>
-<td headers="LL" class="gt_row gt_center">2.12</td>
-<td headers="UL" class="gt_row gt_center">5.65</td>
-<td headers="t" class="gt_row gt_center">4.32</td>
-<td headers="p" class="gt_row gt_right">&lt;.001</td>
-<td headers="R²" class="gt_row gt_center">0.02</td>
+<td headers="M (Female)" class="gt_row gt_right">67.16</td>
+<td headers="M (Male)" class="gt_row gt_right">71.05</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_right">3.89</td>
+<td headers="LL" class="gt_row gt_right">2.12</td>
+<td headers="UL" class="gt_row gt_right">5.65</td>
+<td headers="t" class="gt_row gt_right">4.32</td>
+<td headers="p" class="gt_row gt_left">&lt;.001</td>
+<td headers="R²" class="gt_row gt_right">0.02</td>
 <td headers="n" class="gt_row gt_right">1200</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Body mass index</td>
-<td headers="M (Female)" class="gt_row gt_center">25.69</td>
-<td headers="M (Male)" class="gt_row gt_center">26.20</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center">0.51</td>
-<td headers="LL" class="gt_row gt_center">0.09</td>
-<td headers="UL" class="gt_row gt_center">0.93</td>
-<td headers="t" class="gt_row gt_center">2.38</td>
-<td headers="p" class="gt_row gt_right">.018</td>
-<td headers="R²" class="gt_row gt_center">0.00</td>
+<td headers="M (Female)" class="gt_row gt_right">25.69</td>
+<td headers="M (Male)" class="gt_row gt_right">26.20</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_right">0.51</td>
+<td headers="LL" class="gt_row gt_right">0.09</td>
+<td headers="UL" class="gt_row gt_right">0.93</td>
+<td headers="t" class="gt_row gt_right">2.38</td>
+<td headers="p" class="gt_row gt_left">.018</td>
+<td headers="R²" class="gt_row gt_right">0.00</td>
 <td headers="n" class="gt_row gt_right">1188</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">Satisfaction with health (1-5)</td>
-<td headers="M (Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.51</td>
-<td headers="M (Male)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.59</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.08</td>
-<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">-0.06</td>
-<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.22</td>
-<td headers="t" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.11</td>
-<td headers="p" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">.267</td>
-<td headers="R²" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.00</td>
+<td headers="M (Female)" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.51</td>
+<td headers="M (Male)" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">3.59</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.08</td>
+<td headers="LL" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">-0.06</td>
+<td headers="UL" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.22</td>
+<td headers="t" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.11</td>
+<td headers="p" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">.267</td>
+<td headers="R²" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.00</td>
 <td headers="n" class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1192</td>
 </tr>
 </tbody>

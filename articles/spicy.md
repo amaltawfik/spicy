@@ -361,7 +361,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
 #>  Body mass index               │   25.69      26.20          0.51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²      n 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.12       5.65     <.001  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188

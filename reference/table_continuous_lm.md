@@ -41,6 +41,7 @@ table_continuous_lm(
   fit_digits = 2,
   effect_size_digits = 2,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -295,6 +296,36 @@ table_continuous_lm(
 - decimal_mark:
 
   Character used as decimal separator. Either `"."` (default) or `","`.
+
+- align:
+
+  Horizontal alignment of numeric columns in the printed ASCII table and
+  in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard`
+  outputs. The first column (`Variable`) is always left-aligned. One of:
+
+  - `"decimal"` (default): align numeric columns on the decimal mark,
+    the standard scientific-publication convention used by SPSS, SAS,
+    LaTeX `siunitx`,
+    [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+    and `tinytable::style_tt(align = "d")`. For engines without a native
+    decimal-alignment primitive (`flextable`, `word`, `clipboard`, ASCII
+    print), values are pre-padded with leading and trailing spaces so
+    the dots line up vertically; the body of the `flextable`/`word`
+    output additionally uses a monospace font to make character widths
+    uniform.
+
+  - `"center"`: center-align all numeric columns.
+
+  - `"right"`: right-align all numeric columns.
+
+  - `"auto"`: legacy per-column rule used in spicy \< 0.11.0 (center for
+    the descriptive / inferential columns; right for `n`, `Weighted n`,
+    and `p`).
+
+  The `excel` output uses the engine's default alignment in any case:
+  cell-string padding does not align decimals under proportional fonts,
+  and writing raw numbers with a numeric format would require a separate
+  refactor.
 
 - output:
 
@@ -668,7 +699,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
 #>  Body mass index               │   25.69      26.20          0.51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²      n 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188 
@@ -740,7 +771,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
 #>  Body mass index               │   25.69      26.20          0.51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²    d       n 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    d     n   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  0.25  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  0.14  1188 
@@ -762,15 +793,15 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.01      70.88          3.87        
 #>  Body mass index               │   25.51      25.98          0.47        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL   t        p   R²    g   
+#>  Variable                      │ 95% CI LL  95% CI UL   t      p     R²    g   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.11       5.62     4.33  <.001  0.02  0.25 
 #>  Body mass index               │   0.05       0.89     2.18   .030  0.00  0.13 
 #> 
-#>  Variable                      │    n  Weighted n 
+#>  Variable                      │  n    Weighted n 
 #> ───────────────────────────────┼──────────────────
-#>  WHO-5 wellbeing index (0-100) │ 1200     1196.47 
-#>  Body mass index               │ 1188     1183.32 
+#>  WHO-5 wellbeing index (0-100) │ 1200   1196.47   
+#>  Body mass index               │ 1188   1183.32   
 
 # Hedges' g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
@@ -787,12 +818,12 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
 #>  Body mass index               │   25.69      26.20          0.51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²  
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²  
 #> ───────────────────────────────┼───────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02 
 #>  Body mass index               │   0.09       0.93      .018  0.00 
 #> 
-#>  Variable                      │         g             n 
+#>  Variable                      │         g           n   
 #> ───────────────────────────────┼─────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.25 [0.14, 0.36]  1200 
 #>  Body mass index               │ 0.14 [0.02, 0.25]  1188 
@@ -811,7 +842,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
 #>  Body mass index               │   25.69      26.20          0.51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²    f²      n 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    f²    n   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  0.00  1188 
@@ -830,7 +861,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │        67.68                81.56        
 #>  Body mass index               │        26.17                23.55        
 #> 
-#>  Variable                      │ M (Tertiary)      p   R²    ω²      n 
+#>  Variable                      │ M (Tertiary)    p     R²    ω²    n   
 #> ───────────────────────────────┼───────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │    66.10      <.001  0.21  0.21  1200 
 #>  Body mass index               │    26.35      <.001  0.13  0.13  1188 
@@ -847,7 +878,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by Age (years)
 #> 
-#>  Variable                      │  B        p   R²      n 
+#>  Variable                      │  B      p     R²    n   
 #> ───────────────────────────────┼─────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.04   .176  0.00  1200 
 #>  Body mass index               │ 0.04  <.001  0.02  1188 
@@ -872,7 +903,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100) │   67.16      71.05          3.89           2.13    
 #>  Body-mass index (kg/m²) │   25.69      26.20          0.51           0.09    
 #> 
-#>  Variable                │ 95% CI UL      p  Adj. R²     n 
+#>  Variable                │ 95% CI UL    p    Adj. R²   n   
 #> ─────────────────────────┼─────────────────────────────────
 #>  WHO-5 wellbeing (0-100) │   5.64     <.001   0.01    1200 
 #>  Body-mass index (kg/m²) │   0.93      .018   0.00    1188 
@@ -891,7 +922,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   67,16      71,05          3,89        
 #>  Body mass index               │   25,69      26,20          0,51        
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL      p   R²      n 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2,13       5,64     <,001  0,02  1200 
 #>  Body mass index               │   0,09       0,93      ,018  0,00  1188 
@@ -919,7 +950,7 @@ table_continuous_lm(
 #>  Satisfaction with relationships (1-5)      │       0.04           -0.09   
 #>  Satisfaction with standard of living (1-5) │       0.05           -0.08   
 #> 
-#>  Variable                                   │ 95% CI UL     p   R²      n 
+#>  Variable                                   │ 95% CI UL   p     R²    n   
 #> ────────────────────────────────────────────┼─────────────────────────────
 #>  Satisfaction with health (1-5)             │   0.22     .267  0.00  1192 
 #>  Satisfaction with work (1-5)               │   0.26     .073  0.00  1192 
@@ -1029,7 +1060,7 @@ output = "flextable" ) }
 |-------------------------------|------------|----------|-------------------|--------|------|--------|------|------|
 |                               |            |          |                   | LL     | UL   |        |      |      |
 | WHO-5 wellbeing index (0-100) | 67.16      | 71.05    | 3.89              | 2.13   | 5.64 | \<.001 | 0.02 | 1200 |
-| Body mass index               | 25.69      | 26.20    | 0.51              | 0.09   | 0.93 | .018   | 0.00 | 1188 |
+| Body mass index               | 25.69      | 26.20    | 0.51              | 0.09   | 0.93 |  .018  | 0.00 | 1188 |
 
 \# Excel: write to a temporary file. if
 ([requireNamespace](https://rdrr.io/r/base/ns-load.html)("openxlsx2",
