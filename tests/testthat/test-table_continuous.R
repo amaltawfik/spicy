@@ -2043,3 +2043,49 @@ test_that("build_display_df fmt_test F-test with decimal comma", {
   )
   expect_true(grepl(",", display$Test[1]))
 })
+
+test_that("effect-size CI bracket separator switches with decimal_mark", {
+  df_two <- iris[iris$Species != "virginica", ]
+  df_two$Species <- droplevels(df_two$Species)
+
+  raw <- table_continuous(
+    df_two,
+    select = Sepal.Length,
+    by = Species,
+    test = "student",
+    effect_size = TRUE,
+    effect_size_ci = TRUE,
+    output = "data.frame"
+  )
+
+  display_dot <- spicy:::build_display_df(
+    raw,
+    digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_effect_size = TRUE,
+    show_effect_size_ci = TRUE,
+    effect_size_digits = 2L
+  )
+  display_comma <- spicy:::build_display_df(
+    raw,
+    digits = 2L,
+    decimal_mark = ",",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_effect_size = TRUE,
+    show_effect_size_ci = TRUE,
+    effect_size_digits = 2L
+  )
+
+  es_dot <- display_dot$ES[1]
+  es_comma <- display_comma$ES[1]
+
+  expect_match(es_dot, "\\[\\-?[0-9.]+, \\-?[0-9.]+\\]")
+  expect_match(es_comma, "\\[\\-?[0-9,]+; \\-?[0-9,]+\\]")
+  expect_false(grepl(";", es_dot, fixed = TRUE))
+  expect_false(grepl(", ", es_comma, fixed = TRUE))
+})

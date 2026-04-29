@@ -993,7 +993,11 @@ build_display_df <- function(
         lo <- sub("\\.", decimal_mark, lo)
         hi <- sub("\\.", decimal_mark, hi)
       }
-      s <- paste0(s, " [", lo, ", ", hi, "]")
+      # European convention: when the decimal mark is ",", switch the
+      # list separator inside [LL, UL] to ";" to avoid the ambiguity
+      # of "[0,07, 0,30]" where commas serve two roles.
+      ci_sep <- if (decimal_mark == ",") "; " else ", "
+      s <- paste0(s, " [", lo, ci_sep, hi, "]")
     }
     s
   }

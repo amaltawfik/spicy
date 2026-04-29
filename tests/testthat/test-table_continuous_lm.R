@@ -1434,6 +1434,70 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- bracket separator for European decimal mark ----
+
+test_that("ci_bracket_separator_lm returns ', ' for '.' and '; ' for ','", {
+  expect_equal(spicy:::ci_bracket_separator_lm("."), ", ")
+  expect_equal(spicy:::ci_bracket_separator_lm(","), "; ")
+})
+
+test_that("effect-size CI bracket separator switches with decimal_mark", {
+  out_dot <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    decimal_mark = ".",
+    output = "default"
+  )
+  out_comma <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    decimal_mark = ",",
+    output = "default"
+  )
+
+  display_dot <- spicy:::build_wide_display_df_continuous_lm(
+    out_dot,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+  display_comma <- spicy:::build_wide_display_df_continuous_lm(
+    out_comma,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    decimal_mark = ",",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+
+  expect_match(display_dot$g[1], "^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
+  expect_match(display_comma$g[1], "^[0-9,]+ \\[[0-9,]+; [0-9,]+\\]$")
+  expect_false(grepl(";", display_dot$g[1], fixed = TRUE))
+  expect_false(grepl(", ", display_comma$g[1], fixed = TRUE))
+})
+
 # ---- internal CI helpers ----
 
 test_that("find_ncp_t_lm inverts pt() correctly", {

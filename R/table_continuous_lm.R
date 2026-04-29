@@ -1943,7 +1943,8 @@ build_wide_display_df_continuous_lm <- function(
           decimal_mark
         )
         if (nzchar(es_str) && nzchar(es_lo) && nzchar(es_hi)) {
-          es_str <- paste0(es_str, " [", es_lo, ", ", es_hi, "]")
+          sep <- ci_bracket_separator_lm(decimal_mark)
+          es_str <- paste0(es_str, " [", es_lo, sep, es_hi, "]")
         }
       }
       out[[format_effect_size_header_lm(effect_size)]][i] <- es_str
@@ -2549,6 +2550,16 @@ get_r2_value_lm <- function(block, r2_type = "r2") {
     adj_r2 = block$adj_r2[1],
     NA_real_
   )
+}
+
+# Internal: separator placed between LL and UL inside the inline
+# "[LL, UL]" notation used to display effect-size confidence intervals.
+# When `decimal_mark = ","`, the values themselves contain commas
+# ("0,18") and a comma list-separator would be ambiguous
+# ("0,18 [0,07, 0,30]"); the European convention is to switch the
+# list separator to a semicolon in that case ("0,18 [0,07; 0,30]").
+ci_bracket_separator_lm <- function(decimal_mark) {
+  if (identical(decimal_mark, ",")) "; " else ", "
 }
 
 format_number_lm <- function(x, digits = 2L, decimal_mark = ".") {
