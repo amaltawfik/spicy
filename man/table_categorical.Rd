@@ -91,11 +91,12 @@ to report (\code{"auto"}, \code{"cramer_v"}, \code{"phi"}, \code{"gamma"}, \code
 \code{"tau_c"}, \code{"somers_d"}, \code{"lambda"}, \code{"none"}). Defaults to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
-confidence interval of the association measure. In data formats
-(\code{"data.frame"}, \code{"long"}, \code{"excel"}, \code{"clipboard"}), two extra
-columns \verb{CI lower} and \verb{CI upper} are added.
-In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}),
-the CI is shown inline (e.g., \code{.14 [.08, .19]}).
+confidence interval of the association measure. In wide raw
+outputs (\code{"data.frame"}, \code{"excel"}, \code{"clipboard"}), two extra
+columns \verb{CI lower} / \verb{CI upper} are added; in the long raw
+output (\code{"long"}) the bounds appear as \code{ci_lower} / \code{ci_upper}.
+In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
+\code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}).
 Defaults to \code{FALSE}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}

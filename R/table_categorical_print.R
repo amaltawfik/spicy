@@ -223,6 +223,16 @@ tidy.spicy_categorical_table <- function(x, ...) {
     )
   }
   has_group <- "group" %in% names(long)
+
+  # Drop the synthetic "Total" group (added by `cross_tab(include_total
+  # = TRUE)`, the default). It is a marginal aggregate, not a real
+  # group level, and including it would mean `tidy()` reports each
+  # observation twice. Users who need the marginal can derive it via
+  # `dplyr::summarise()` on the tidy output.
+  if (has_group) {
+    long <- long[long$group != "Total", , drop = FALSE]
+  }
+
   pct_col <- if ("pct" %in% names(long)) {
     long$pct
   } else if ("percent" %in% names(long)) {
@@ -294,13 +304,14 @@ glance.spicy_categorical_table <- function(x, ...) {
   n_total <- vapply(
     by_var,
     function(b) {
+      # In a cross-tab with `include_total = TRUE` (the default),
+      # the long format also stores a synthetic "Total" group whose
+      # `n` are already the sum across the real groups. Excluding
+      # those rows before summing avoids double-counting.
       if ("group" %in% names(b)) {
-        # cross-tab: n_total = sum of n across (level, group); each
-        # row is one cell so summing is fine.
-        as.integer(sum(b$n, na.rm = TRUE))
-      } else {
-        as.integer(sum(b$n, na.rm = TRUE))
+        b <- b[b$group != "Total", , drop = FALSE]
       }
+      as.integer(sum(b$n, na.rm = TRUE))
     },
     integer(1)
   )

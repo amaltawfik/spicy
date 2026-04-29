@@ -53,11 +53,12 @@
 #'   to report (`"auto"`, `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`,
 #'   `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`). Defaults to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
-#'   confidence interval of the association measure. In data formats
-#'   (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`), two extra
-#'   columns `CI lower` and `CI upper` are added.
-#'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`),
-#'   the CI is shown inline (e.g., `.14 [.08, .19]`).
+#'   confidence interval of the association measure. In wide raw
+#'   outputs (`"data.frame"`, `"excel"`, `"clipboard"`), two extra
+#'   columns `CI lower` / `CI upper` are added; in the long raw
+#'   output (`"long"`) the bounds appear as `ci_lower` / `ci_upper`.
+#'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
+#'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
 #' @param align Horizontal alignment of numeric columns in the printed
@@ -538,19 +539,25 @@ table_categorical <- function(
     out
   }
 
+  # `fmt_p` defers to the shared `format_p_value_lm()` helper so the
+  # three `table_*` functions print *p*-values identically: `p_digits`
+  # drives both the displayed precision AND the small-*p* threshold
+  # (`p_digits = 3` -> `<.001`, `p_digits = 4` -> `<.0001`, etc.),
+  # leading zeros are stripped, and the configured `decimal_mark` is
+  # honoured. The `op` argument carries the comparison operator
+  # parsed from `cross_tab()`'s note text in the rare fallback path
+  # where the numeric p-value is unavailable: `op = "<"` means the
+  # underlying note literally said "p < threshold", so we honour the
+  # request and render the small-p form regardless of the numeric
+  # placeholder.
   fmt_p <- function(p, op = NA_character_) {
     if (is.na(p)) {
       return("")
     }
-    if ((!is.na(op) && op == "<" && p <= 0.001) || p < 0.001) {
-      return(if (decimal_mark == ".") "<\u00A0.001" else "<\u00A0,001")
+    if (!is.na(op) && identical(op, "<")) {
+      return(paste0("<", decimal_mark, strrep("0", p_digits - 1L), "1"))
     }
-    s <- formatC(p, format = "f", digits = p_digits)
-    s <- sub("^0\\.", ".", s)
-    if (decimal_mark != ".") {
-      s <- sub("\\.", decimal_mark, s)
-    }
-    s
+    format_p_value_lm(p, decimal_mark, digits = p_digits)
   }
 
   fmt_v <- function(v) {

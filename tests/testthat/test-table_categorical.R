@@ -1678,8 +1678,9 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
   )
   expect_true(all(td$proportion >= 0 & td$proportion <= 1))
   expect_equal(unique(td$outcome), c("smoking", "physical_activity"))
-  # All three sex groups appear (Female, Male, Total)
-  expect_true(all(c("Female", "Male", "Total") %in% td$group))
+  # Real groups appear; the synthetic "Total" marginal is excluded
+  # by `tidy()` (one row per real group, broom convention).
+  expect_setequal(unique(td$group), c("Female", "Male"))
 })
 
 test_that("tidy() returns no group column without by", {
@@ -1736,4 +1737,87 @@ test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
   expect_true(is.finite(gl$assoc_ci_upper))
   expect_true(gl$assoc_ci_lower <= gl$assoc_value)
   expect_true(gl$assoc_ci_upper >= gl$assoc_value)
+})
+
+# ---- audit fixes (n_total / Total filtering / p_digits threshold) --------
+
+test_that("glance() n_total excludes the synthetic 'Total' group", {
+  # smoking x sex with include_total = TRUE (default) should not
+  # double-count: the underlying analytic sample is the count of
+  # observations with non-NA smoking (1175 in sochealth), NOT
+  # 2 * 1175 (which is what summing across Female + Male + Total
+  # would give).
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  gl <- broom::glance(out)
+  observed_n <- sum(!is.na(sochealth$smoking))
+  expect_equal(gl$n_total, observed_n)
+
+  # Triple group setting with iris: 150 observations, three Species
+  # plus a Total marginal -> n_total must remain 150, not 4 * 50.
+  iris2 <- iris
+  iris2$pet_size <- factor(iris2$Petal.Length > 4, labels = c("small", "large"))
+  out_iris <- table_categorical(iris2, select = pet_size, by = Species)
+  gl_iris <- broom::glance(out_iris)
+  expect_equal(gl_iris$n_total, 150L)
+})
+
+test_that("glance() n_total stays correct when include_total = FALSE", {
+  out <- table_categorical(
+    sochealth, select = smoking, by = sex, include_total = FALSE
+  )
+  gl <- broom::glance(out)
+  expect_equal(gl$n_total, sum(!is.na(sochealth$smoking)))
+})
+
+test_that("tidy() drops the synthetic 'Total' group", {
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  td <- broom::tidy(out)
+  expect_false("Total" %in% td$group)
+  expect_setequal(unique(td$group), c("Female", "Male"))
+})
+
+test_that("tidy() respects include_total = FALSE without spurious Total rows", {
+  out <- table_categorical(
+    sochealth, select = smoking, by = sex, include_total = FALSE
+  )
+  td <- broom::tidy(out)
+  expect_false("Total" %in% td$group)
+})
+
+test_that("p_digits drives the small-p threshold in table_categorical()", {
+  # With a strong association, the chi-squared p-value falls well
+  # below 1e-4. p_digits = 4 -> the rendered p column should show
+  # `<.0001`, not `<.001` (which would be the legacy hardcoded
+  # threshold). Use the wide raw `data.frame` output and inspect the
+  # rendered display via the same code path the printed and gt
+  # outputs use.
+  out_default <- table_categorical(
+    sochealth, select = smoking, by = education
+  )
+  out_p4 <- table_categorical(
+    sochealth, select = smoking, by = education, p_digits = 4
+  )
+  # Both objects expose `display_df` as an attribute; the `p` column
+  # is rendered in the report-wide form.
+  disp_default <- attr(out_default, "display_df")
+  disp_p4 <- attr(out_p4, "display_df")
+  p_default <- disp_default[["p"]][nzchar(disp_default[["p"]])]
+  p_p4 <- disp_p4[["p"]][nzchar(disp_p4[["p"]])]
+  # Default: any small p prints as `<.001`
+  expect_true(any(grepl("^<\\.001$", p_default)))
+  # p_digits = 4: same small p prints as `<.0001`
+  expect_true(any(grepl("^<\\.0001$", p_p4)))
+})
+
+test_that("p_digits = 4 respects decimal_mark = ','", {
+  out <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    p_digits = 4,
+    decimal_mark = ","
+  )
+  disp <- attr(out, "display_df")
+  p_col <- disp[["p"]][nzchar(disp[["p"]])]
+  expect_true(any(grepl("^<,0001$", p_col)))
 })
