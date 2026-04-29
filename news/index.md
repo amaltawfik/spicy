@@ -86,6 +86,18 @@
   producing the ambiguous output `g = 0,18 [0,07, 0,30]`. The default
   `decimal_mark = "."` behaviour is unchanged (`g = 0.18 [0.07, 0.30]`).
 
+- `table_continuous_lm(..., output = "data.frame")` now names the
+  contrast confidence-interval columns from `ci_level` (e.g.
+  `"99% CI LL"` / `"99% CI UL"` when `ci_level = 0.99`). Previously the
+  wide raw output hardcoded `"95% CI LL"` / `"95% CI UL"` regardless of
+  the requested `ci_level`, while the wide display already used the
+  correct level. The two formats are now consistent.
+
+- The categorical-predictor global Wald *F* now degrades gracefully to
+  `NA` (instead of erroring) when the coefficient covariance submatrix
+  is singular — a rare edge case under heavily rank-deficient
+  heteroskedasticity-consistent variance estimators.
+
 ### Breaking changes
 
 - `table_continuous_lm(..., output = "long")` now returns `NA` in

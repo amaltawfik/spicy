@@ -494,11 +494,19 @@ the canonical R implementation in the `sandwich` package
 
 When `weights` is supplied, `table_continuous_lm()` fits weighted linear
 models via `lm(..., weights = ...)`. Means become weighted least-squares
-estimates, contrasts and slopes are weighted, and `R²`, adjusted `R²`,
-and the four effect sizes use the corresponding weighted sums of
-squares. This is appropriate for case-weighted analyses and weighted
-article tables, but is **not** a substitute for a full complex-survey
-design workflow (see e.g. the `survey` package).
+estimates and contrasts and slopes are weighted. The fit statistics `R²`
+and adjusted `R²`, as well as Hays' `omega²` and Cohen's `f²`, use the
+corresponding **weighted sums of squares** from the WLS fit. Cohen's `d`
+and Hedges' `g` use the **WLS coefficient and the model's weighted
+residual standard deviation** (`summary(fit)$sigma`), which is the
+standard convention for case-weighted regression-style reporting
+(DuMouchel and Duncan 1983); the noncentral *t* CI for `d` / `g` uses
+the raw (unweighted) group counts and the residual degrees of freedom of
+the WLS fit (`n - p`). This case-weighted workflow is appropriate for
+weighted article tables, but is **not** a substitute for a full
+complex-survey design (see e.g. the `survey` package), nor for
+propensity-score balance assessment under the Austin and Stuart (2015)
+convention (see e.g. `cobalt::bal.tab()`).
 
 The `n` column always reports the unweighted analytic sample size for
 each outcome. When `show_weighted_n = TRUE`, an additional `Weighted n`

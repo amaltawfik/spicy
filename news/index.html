@@ -76,8 +76,9 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li>
-<code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now use a semicolon as the list separator inside the bracketed effect-size CI display (e.g. <code>g = 0,18 [0,07; 0,30]</code>) when <code>decimal_mark = ","</code>. Previously a comma was used in both roles, producing the ambiguous output <code>g = 0,18 [0,07, 0,30]</code>. The default <code>decimal_mark = "."</code> behaviour is unchanged (<code>g = 0.18 [0.07, 0.30]</code>).</li>
+<ul><li><p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now use a semicolon as the list separator inside the bracketed effect-size CI display (e.g. <code>g = 0,18 [0,07; 0,30]</code>) when <code>decimal_mark = ","</code>. Previously a comma was used in both roles, producing the ambiguous output <code>g = 0,18 [0,07, 0,30]</code>. The default <code>decimal_mark = "."</code> behaviour is unchanged (<code>g = 0.18 [0.07, 0.30]</code>).</p></li>
+<li><p><code>table_continuous_lm(..., output = "data.frame")</code> now names the contrast confidence-interval columns from <code>ci_level</code> (e.g. <code>"99% CI LL"</code> / <code>"99% CI UL"</code> when <code>ci_level = 0.99</code>). Previously the wide raw output hardcoded <code>"95% CI LL"</code> / <code>"95% CI UL"</code> regardless of the requested <code>ci_level</code>, while the wide display already used the correct level. The two formats are now consistent.</p></li>
+<li><p>The categorical-predictor global Wald <em>F</em> now degrades gracefully to <code>NA</code> (instead of erroring) when the coefficient covariance submatrix is singular — a rare edge case under heavily rank-deficient heteroskedasticity-consistent variance estimators.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
