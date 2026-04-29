@@ -40,6 +40,7 @@ table_continuous_lm(
   digits = 2,
   fit_digits = 2,
   effect_size_digits = 2,
+  p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
@@ -292,6 +293,18 @@ table_continuous_lm(
 
   Number of decimal places for the effect-size column (`f2`, `d`, `g`,
   or `omega2`) in wide and rendered outputs (default: `2`).
+
+- p_digits:
+
+  Integer \>= 1. Number of decimal places used to render *p*-values in
+  the `p` column (default: `3`, the APA Publication Manual standard).
+  Both the displayed precision and the small-*p* threshold derive from
+  this argument: `p_digits = 3` prints `.045` and `<.001`;
+  `p_digits = 4` prints `.0451` and `<.0001`; `p_digits = 2` prints
+  `.05` and `<.01`. Useful for genomics / GWAS contexts where adjusted
+  *p*-values can be very small, or for journals using a coarser
+  convention. Leading zeros are always stripped, following APA
+  convention.
 
 - decimal_mark:
 
