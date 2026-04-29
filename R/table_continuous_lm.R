@@ -163,6 +163,29 @@
 #'   (default: `2`).
 #' @param decimal_mark Character used as decimal separator. Either `"."`
 #'   (default) or `","`.
+#' @param align Horizontal alignment of numeric columns in the printed
+#'   ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and
+#'   `clipboard` outputs. The first column (`Variable`) is always
+#'   left-aligned. One of:
+#'   - `"decimal"` (default): align numeric columns on the decimal
+#'     mark, the standard scientific-publication convention used by
+#'     SPSS, SAS, LaTeX `siunitx`, [gt::cols_align_decimal()] and
+#'     `tinytable::style_tt(align = "d")`. For engines without a
+#'     native decimal-alignment primitive (`flextable`, `word`,
+#'     `clipboard`, ASCII print), values are pre-padded with leading
+#'     and trailing spaces so the dots line up vertically; the body
+#'     of the `flextable`/`word` output additionally uses a monospace
+#'     font to make character widths uniform.
+#'   - `"center"`: center-align all numeric columns.
+#'   - `"right"`: right-align all numeric columns.
+#'   - `"auto"`: legacy per-column rule used in spicy < 0.11.0
+#'     (center for the descriptive / inferential columns; right for
+#'     `n`, `Weighted n`, and `p`).
+#'
+#'   The `excel` output uses the engine's default alignment in any
+#'   case: cell-string padding does not align decimals under
+#'   proportional fonts, and writing raw numbers with a numeric
+#'   format would require a separate refactor.
 #' @param output Output format. One of:
 #'   - `"default"`: a printed ASCII table, returned invisibly
 #'   - `"data.frame"`: a plain wide `data.frame`
@@ -686,6 +709,7 @@ table_continuous_lm <- function(
   fit_digits = 2,
   effect_size_digits = 2,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c(
     "default",
     "data.frame",
@@ -772,6 +796,7 @@ table_continuous_lm <- function(
   contrast <- match.arg(contrast)
   effect_size <- match.arg(effect_size)
   r2 <- match.arg(r2)
+  align <- match.arg(align)
 
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")
@@ -938,6 +963,7 @@ table_continuous_lm <- function(
   attr(result, "show_effect_size_ci") <- effect_size_ci
   attr(result, "r2_type") <- r2
   attr(result, "show_ci") <- ci
+  attr(result, "align") <- align
 
   if (identical(output, "long")) {
     return(result)
@@ -990,6 +1016,8 @@ table_continuous_lm <- function(
     wide_df,
     output = output,
     ci_level = ci_level,
+    align = align,
+    decimal_mark = decimal_mark,
     excel_path = excel_path,
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
@@ -1998,6 +2026,8 @@ export_continuous_lm_table <- function(
   display_df,
   output,
   ci_level,
+  align = "decimal",
+  decimal_mark = ".",
   excel_path,
   excel_sheet,
   clipboard_delim,
@@ -2007,6 +2037,26 @@ export_continuous_lm_table <- function(
   ci_ll <- paste0(ci_pct, " CI LL")
   ci_ul <- paste0(ci_pct, " CI UL")
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
+
+  # For engines without native decimal alignment (flextable, word,
+  # clipboard), pre-pad numeric cells with leading/trailing spaces so
+  # decimal points line up vertically. gt and tinytable have native
+  # decimal alignment and are handled with their own API. Excel keeps
+  # the engine-default alignment (proportional fonts make cell-string
+  # padding unreliable; native decimal alignment in Excel would
+  # require writing raw numbers + a number format).
+  use_decimal <- identical(align, "decimal")
+  needs_padding_engine <- output %in%
+    c("flextable", "word", "clipboard")
+  if (use_decimal && needs_padding_engine) {
+    numeric_cols <- setdiff(seq_along(display_df), 1L)
+    for (j in numeric_cols) {
+      display_df[[j]] <- decimal_align_strings_lm(
+        display_df[[j]],
+        decimal_mark = decimal_mark
+      )
+    }
+  }
 
   if (identical(output, "tinytable")) {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
@@ -2045,14 +2095,27 @@ export_continuous_lm_table <- function(
     tt <- tinytable::theme_empty(tt)
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     if (ncol(display_df) > 1L) {
-      right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
-      center_j <- setdiff(seq_len(nc), c(1L, right_j))
-      if (length(center_j) > 0L) {
-        tt <- tinytable::style_tt(tt, j = center_j, align = "c")
-      }
-      if (length(right_j) > 0L) {
-        for (rj in right_j) {
+      numeric_j <- setdiff(seq_len(nc), 1L)
+      if (use_decimal && length(numeric_j) > 0L) {
+        for (rj in numeric_j) {
+          tt <- tinytable::style_tt(tt, j = rj, align = "d")
+        }
+      } else if (identical(align, "center") && length(numeric_j) > 0L) {
+        tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
+      } else if (identical(align, "right") && length(numeric_j) > 0L) {
+        for (rj in numeric_j) {
           tt <- tinytable::style_tt(tt, j = rj, align = "r")
+        }
+      } else {
+        right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
+        center_j <- setdiff(seq_len(nc), c(1L, right_j))
+        if (length(center_j) > 0L) {
+          tt <- tinytable::style_tt(tt, j = center_j, align = "c")
+        }
+        if (length(right_j) > 0L) {
+          for (rj in right_j) {
+            tt <- tinytable::style_tt(tt, j = rj, align = "r")
+          }
         }
       }
       spanner_center_j <- setdiff(seq_len(nc), 1L)
@@ -2138,13 +2201,23 @@ export_continuous_lm_table <- function(
     }
 
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
-    center_cols <- setdiff(col_keys, c("Variable", "n", "p"))
-    if (length(center_cols) > 0L) {
-      tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-    }
-    right_cols <- intersect(c("n", "Weighted n", "p"), col_keys)
-    if (length(right_cols) > 0L) {
-      tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
+    numeric_cols <- setdiff(col_keys, "Variable")
+    if (use_decimal && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+    } else if (identical(align, "center") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    } else if (identical(align, "right") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
+    } else {
+      # "auto": legacy per-column rule
+      center_cols <- setdiff(col_keys, c("Variable", "n", "p"))
+      if (length(center_cols) > 0L) {
+        tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
+      }
+      right_cols <- intersect(c("n", "Weighted n", "p"), col_keys)
+      if (length(right_cols) > 0L) {
+        tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
+      }
     }
 
     rule <- gt::cell_borders(
@@ -2286,17 +2359,40 @@ export_continuous_lm_table <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
     ci_j <- which(col_keys %in% c("LL", "UL"))
     left_j <- 1L
-    right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
-    center_j <- setdiff(seq_along(col_keys), c(left_j, right_j))
+    numeric_j <- setdiff(seq_along(col_keys), left_j)
 
     ft <- flextable::align(ft, j = left_j, part = "header", align = "left")
     ft <- flextable::align(ft, j = left_j, part = "body", align = "left")
-    if (length(center_j) > 0L) {
-      ft <- flextable::align(ft, j = center_j, part = "all", align = "center")
-    }
-    if (length(right_j) > 0L) {
-      ft <- flextable::align(ft, j = right_j, part = "header", align = "center")
-      ft <- flextable::align(ft, j = right_j, part = "body", align = "right")
+
+    if (use_decimal && length(numeric_j) > 0L) {
+      # Cells are pre-padded for decimal alignment; right-align the
+      # padded strings preserves the dot-aligned column. Use a
+      # monospace font in the body so character widths match. (For
+      # proportional fonts, alignment is approximate.)
+      ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
+      ft <- flextable::align(ft, j = numeric_j, part = "body", align = "right")
+      ft <- flextable::font(
+        ft,
+        j = numeric_j,
+        part = "body",
+        fontname = "Consolas"
+      )
+    } else if (identical(align, "center") && length(numeric_j) > 0L) {
+      ft <- flextable::align(ft, j = numeric_j, part = "all", align = "center")
+    } else if (identical(align, "right") && length(numeric_j) > 0L) {
+      ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
+      ft <- flextable::align(ft, j = numeric_j, part = "body", align = "right")
+    } else {
+      # "auto": legacy per-column rule
+      right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
+      center_j <- setdiff(seq_along(col_keys), c(left_j, right_j))
+      if (length(center_j) > 0L) {
+        ft <- flextable::align(ft, j = center_j, part = "all", align = "center")
+      }
+      if (length(right_j) > 0L) {
+        ft <- flextable::align(ft, j = right_j, part = "header", align = "center")
+        ft <- flextable::align(ft, j = right_j, part = "body", align = "right")
+      }
     }
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
@@ -2579,6 +2675,77 @@ get_r2_value_lm <- function(block, r2_type = "r2") {
 # list separator to a semicolon in that case ("0,18 [0,07; 0,30]").
 ci_bracket_separator_lm <- function(decimal_mark) {
   if (identical(decimal_mark, ",")) "; " else ", "
+}
+
+# Internal: decimal-point alignment for a vector of formatted numeric
+# strings. Pads each value with leading and trailing spaces so that
+# the (first) decimal mark falls at the same horizontal position
+# across the column. This is the standard scientific-publication
+# convention (SPSS, SAS, LaTeX siunitx, gt::cols_align_decimal()).
+#
+# Algorithm:
+#   * For each non-blank value, locate the first occurrence of
+#     `decimal_mark` and split into (chars-before, chars-after).
+#   * Values with no decimal mark (integers) are treated as having an
+#     implicit dot at the end and contribute their full width to the
+#     "before" max and 0 to the "after" max.
+#   * Pad each value so that all values share the same total width
+#     and their dots line up vertically.
+#   * Blank / NA cells are returned as a string of spaces of that
+#     same total width, so the column stays clean when rendered.
+#
+# The function is purely string-based and never converts to numeric,
+# so it is robust to formats like "<.001", "f² = 0.18 [0.07, 0.30]",
+# and any decimal_mark.
+decimal_align_strings_lm <- function(values, decimal_mark = ".") {
+  if (length(values) == 0L) {
+    return(character(0))
+  }
+  values <- as.character(values)
+  values[is.na(values)] <- ""
+
+  is_blank <- !nzchar(trimws(values))
+  if (all(is_blank)) {
+    return(values)
+  }
+
+  dot_pos <- regexpr(decimal_mark, values, fixed = TRUE)
+  has_dot <- dot_pos != -1L
+
+  before <- ifelse(
+    is_blank,
+    NA_integer_,
+    ifelse(has_dot, dot_pos - 1L, nchar(values))
+  )
+  after <- ifelse(
+    is_blank,
+    NA_integer_,
+    ifelse(has_dot, nchar(values) - dot_pos, 0L)
+  )
+
+  max_before <- max(before, na.rm = TRUE)
+  max_after <- max(after, na.rm = TRUE)
+  total_width <- max_before + ifelse(max_after > 0L, 1L + max_after, 0L)
+
+  vapply(
+    seq_along(values),
+    function(i) {
+      if (is_blank[i]) {
+        return(strrep(" ", total_width))
+      }
+      v <- values[i]
+      pad_l <- strrep(" ", max_before - before[i])
+      pad_r <- if (has_dot[i]) {
+        strrep(" ", max_after - after[i])
+      } else if (max_after > 0L) {
+        strrep(" ", 1L + max_after)
+      } else {
+        ""
+      }
+      paste0(pad_l, v, pad_r)
+    },
+    character(1)
+  )
 }
 
 format_number_lm <- function(x, digits = 2L, decimal_mark = ".") {

@@ -28,6 +28,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   show_effect_size_ci <- attr(x, "show_effect_size_ci") %||% FALSE
   r2_type <- attr(x, "r2_type") %||% "r2"
   show_ci <- attr(x, "show_ci") %||% TRUE
+  align <- attr(x, "align") %||% "decimal"
 
   display_df <- build_wide_display_df_continuous_lm(
     x,
@@ -47,8 +48,30 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   )
 
   align_left <- 1L
-  right_cols <- which(names(display_df) %in% c("n", "Weighted n", "p"))
-  align_center <- setdiff(seq_len(ncol(display_df)), c(align_left, right_cols))
+  if (identical(align, "decimal")) {
+    numeric_cols <- setdiff(seq_along(display_df), align_left)
+    for (j in numeric_cols) {
+      display_df[[j]] <- decimal_align_strings_lm(
+        display_df[[j]],
+        decimal_mark = decimal_mark
+      )
+    }
+    right_cols <- integer(0)
+    align_center <- numeric_cols
+  } else if (identical(align, "center")) {
+    right_cols <- integer(0)
+    align_center <- setdiff(seq_along(display_df), align_left)
+  } else if (identical(align, "right")) {
+    right_cols <- setdiff(seq_along(display_df), align_left)
+    align_center <- integer(0)
+  } else {
+    # "auto": legacy per-column rule
+    right_cols <- which(names(display_df) %in% c("n", "Weighted n", "p"))
+    align_center <- setdiff(
+      seq_len(ncol(display_df)),
+      c(align_left, right_cols)
+    )
+  }
 
   padding <- "normal"
   col_widths <- vapply(

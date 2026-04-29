@@ -27,6 +27,7 @@ table_continuous_lm(
   fit_digits = 2,
   effect_size_digits = 2,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -217,6 +218,32 @@ column (\code{f2}, \code{d}, \code{g}, or \code{omega2}) in wide and rendered ou
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}
+
+\item{align}{Horizontal alignment of numeric columns in the printed
+ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word}, and
+\code{clipboard} outputs. The first column (\code{Variable}) is always
+left-aligned. One of:
+\itemize{
+\item \code{"decimal"} (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and
+\code{tinytable::style_tt(align = "d")}. For engines without a
+native decimal-alignment primitive (\code{flextable}, \code{word},
+\code{clipboard}, ASCII print), values are pre-padded with leading
+and trailing spaces so the dots line up vertically; the body
+of the \code{flextable}/\code{word} output additionally uses a monospace
+font to make character widths uniform.
+\item \code{"center"}: center-align all numeric columns.
+\item \code{"right"}: right-align all numeric columns.
+\item \code{"auto"}: legacy per-column rule used in spicy < 0.11.0
+(center for the descriptive / inferential columns; right for
+\code{n}, \verb{Weighted n}, and \code{p}).
+}
+
+The \code{excel} output uses the engine's default alignment in any
+case: cell-string padding does not align decimals under
+proportional fonts, and writing raw numbers with a numeric
+format would require a separate refactor.}
 
 \item{output}{Output format. One of:
 \itemize{

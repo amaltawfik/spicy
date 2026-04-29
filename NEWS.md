@@ -83,6 +83,22 @@
 
 ## Breaking changes
 
+* `table_continuous_lm()` now defaults to **decimal-point alignment**
+  for numeric columns in the printed ASCII table and in the
+  `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new
+  `align = "decimal"` argument, default). This is the standard
+  scientific-publication convention used by SPSS, SAS, LaTeX
+  `siunitx`, and the native primitives of gt
+  ([gt::cols_align_decimal()]) and tinytable
+  (`style_tt(align = "d")`). Engines without a native primitive
+  (`flextable`, `word`, `clipboard`, ASCII print) get the alignment
+  via leading/trailing space padding, with `flextable` / `word`
+  switching the cell font to Consolas (monospace) to ensure
+  character-width uniformity. The `excel` output keeps the engine's
+  default alignment. To restore the previous per-column rule (center
+  for descriptive / inferential columns; right for `n`, `Weighted n`,
+  `p`), pass `align = "auto"`.
+
 * `table_continuous_lm(..., output = "long")` now returns `NA` in `es_type`
   and `es_value` when `effect_size = "none"`. Previously these columns were
   populated with `"f2"` and the corresponding f² value regardless of the

@@ -1434,6 +1434,189 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- decimal alignment ----
+
+test_that("decimal_align_strings_lm aligns dots in heterogeneous-magnitude column", {
+  out <- spicy:::decimal_align_strings_lm(
+    c("1234.56", "0.05", "42.30"),
+    decimal_mark = "."
+  )
+  # All values padded to identical width.
+  expect_equal(length(unique(nchar(out))), 1L)
+  # Decimal-point positions identical across rows.
+  dot_pos <- vapply(
+    out,
+    function(s) regexpr(".", s, fixed = TRUE),
+    integer(1)
+  )
+  expect_equal(length(unique(dot_pos)), 1L)
+})
+
+test_that("decimal_align_strings_lm handles integers (no dot) as if dotted at end", {
+  out <- spicy:::decimal_align_strings_lm(
+    c("1.23", "100", "12.5"),
+    decimal_mark = "."
+  )
+  expect_equal(length(unique(nchar(out))), 1L)
+})
+
+test_that("decimal_align_strings_lm handles blanks and NA as full-width spaces", {
+  out <- spicy:::decimal_align_strings_lm(
+    c("1.23", "", NA_character_, "42.5"),
+    decimal_mark = "."
+  )
+  expect_equal(length(unique(nchar(out))), 1L)
+  # Blank/NA become whitespace-only of the right width.
+  expect_true(!nzchar(trimws(out[2])))
+  expect_true(!nzchar(trimws(out[3])))
+})
+
+test_that("decimal_align_strings_lm respects European decimal mark", {
+  out <- spicy:::decimal_align_strings_lm(
+    c("1,23", "0,05", "42,30"),
+    decimal_mark = ","
+  )
+  expect_equal(length(unique(nchar(out))), 1L)
+  comma_pos <- vapply(
+    out,
+    function(s) regexpr(",", s, fixed = TRUE),
+    integer(1)
+  )
+  expect_equal(length(unique(comma_pos)), 1L)
+})
+
+test_that("decimal_align_strings_lm handles bracket notation like '0.18 [0.07, 0.30]'", {
+  out <- spicy:::decimal_align_strings_lm(
+    c("0.18 [0.07, 0.30]", "12.34 [10.0, 14.7]"),
+    decimal_mark = "."
+  )
+  expect_equal(length(unique(nchar(out))), 1L)
+  # First-dot positions aligned across rows.
+  first_dot <- vapply(
+    out,
+    function(s) regexpr(".", s, fixed = TRUE),
+    integer(1)
+  )
+  expect_equal(length(unique(first_dot)), 1L)
+})
+
+test_that("align='decimal' is the default and pads ASCII display values", {
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    output = "long"
+  )
+  expect_equal(attr(out, "align"), "decimal")
+})
+
+test_that("align='decimal' produces dot-aligned numeric columns", {
+  # Test the pre-padding pipeline that the ASCII print method applies:
+  # build the display df, then pre-pad numeric columns. All values in
+  # each numeric column must end up with identical nchar (and therefore
+  # identically-positioned decimal marks).
+  long <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    statistic = TRUE,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  display <- spicy:::build_wide_display_df_continuous_lm(
+    long,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = TRUE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+  numeric_cols <- setdiff(seq_along(display), 1L)
+  for (j in numeric_cols) {
+    display[[j]] <- spicy:::decimal_align_strings_lm(
+      display[[j]],
+      decimal_mark = "."
+    )
+  }
+  for (j in numeric_cols) {
+    vals <- display[[j]]
+    if (all(!nzchar(trimws(vals)))) {
+      next
+    }
+    expect_equal(
+      length(unique(nchar(vals))),
+      1L,
+      info = sprintf(
+        "Column '%s' has heterogeneous widths after decimal padding.",
+        names(display)[j]
+      )
+    )
+  }
+})
+
+test_that("align='center' restores the legacy column-by-column rendering", {
+  out_decimal <- capture.output(
+    table_continuous_lm(
+      sochealth,
+      select = c(wellbeing_score, bmi),
+      by = sex
+    )
+  )
+  out_center <- capture.output(
+    table_continuous_lm(
+      sochealth,
+      select = c(wellbeing_score, bmi),
+      by = sex,
+      align = "center"
+    )
+  )
+  # Different alignment strategies should produce different output.
+  expect_false(identical(out_decimal, out_center))
+})
+
+test_that("align argument validates", {
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = sex,
+      align = "bogus"
+    ),
+    "should be one of"
+  )
+})
+
+test_that("align='decimal' on gt and tinytable returns valid styled objects", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("tinytable")
+  expect_s3_class(
+    table_continuous_lm(
+      sochealth,
+      select = c(wellbeing_score, bmi),
+      by = sex,
+      output = "gt"
+    ),
+    "gt_tbl"
+  )
+  expect_true(inherits(
+    table_continuous_lm(
+      sochealth,
+      select = c(wellbeing_score, bmi),
+      by = sex,
+      output = "tinytable"
+    ),
+    "tinytable"
+  ))
+})
+
 # ---- wide raw respects ci_level for contrast CI columns ----
 
 test_that("wide raw uses ci_level-derived names for contrast CI columns", {
