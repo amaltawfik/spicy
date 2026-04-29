@@ -26,6 +26,7 @@ table_continuous_lm(
   digits = 2,
   fit_digits = 2,
   effect_size_digits = 2,
+  p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
@@ -215,6 +216,16 @@ adjusted \verb{R²}) in wide and rendered outputs (default: \code{2}).}
 \item{effect_size_digits}{Number of decimal places for the effect-size
 column (\code{f2}, \code{d}, \code{g}, or \code{omega2}) in wide and rendered outputs
 (default: \code{2}).}
+
+\item{p_digits}{Integer >= 1. Number of decimal places used to render
+\emph{p}-values in the \code{p} column (default: \code{3}, the APA Publication
+Manual standard). Both the displayed precision and the
+small-\emph{p} threshold derive from this argument: \code{p_digits = 3}
+prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
+\verb{<.0001}; \code{p_digits = 2} prints \code{.05} and \verb{<.01}. Useful for
+genomics / GWAS contexts where adjusted \emph{p}-values can be very
+small, or for journals using a coarser convention. Leading zeros
+are always stripped, following APA convention.}
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}

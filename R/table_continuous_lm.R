@@ -161,6 +161,15 @@
 #' @param effect_size_digits Number of decimal places for the effect-size
 #'   column (`f2`, `d`, `g`, or `omega2`) in wide and rendered outputs
 #'   (default: `2`).
+#' @param p_digits Integer >= 1. Number of decimal places used to render
+#'   *p*-values in the `p` column (default: `3`, the APA Publication
+#'   Manual standard). Both the displayed precision and the
+#'   small-*p* threshold derive from this argument: `p_digits = 3`
+#'   prints `.045` and `<.001`; `p_digits = 4` prints `.0451` and
+#'   `<.0001`; `p_digits = 2` prints `.05` and `<.01`. Useful for
+#'   genomics / GWAS contexts where adjusted *p*-values can be very
+#'   small, or for journals using a coarser convention. Leading zeros
+#'   are always stripped, following APA convention.
 #' @param decimal_mark Character used as decimal separator. Either `"."`
 #'   (default) or `","`.
 #' @param align Horizontal alignment of numeric columns in the printed
@@ -708,6 +717,7 @@ table_continuous_lm <- function(
   digits = 2,
   fit_digits = 2,
   effect_size_digits = 2,
+  p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "auto", "center", "right"),
   output = c(
@@ -769,6 +779,18 @@ table_continuous_lm <- function(
     )
   }
   effect_size_digits <- as.integer(effect_size_digits)
+  if (
+    !is.numeric(p_digits) ||
+      length(p_digits) != 1L ||
+      is.na(p_digits) ||
+      p_digits < 1
+  ) {
+    stop(
+      "`p_digits` must be a single positive integer (>= 1).",
+      call. = FALSE
+    )
+  }
+  p_digits <- as.integer(p_digits)
   if (!decimal_mark %in% c(".", ",")) {
     stop('`decimal_mark` must be "." or ",".', call. = FALSE)
   }
@@ -949,6 +971,7 @@ table_continuous_lm <- function(
   attr(result, "digits") <- digits
   attr(result, "fit_digits") <- fit_digits
   attr(result, "effect_size_digits") <- effect_size_digits
+  attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
   attr(result, "by_var") <- by_name
   attr(result, "by_label") <- by_label
@@ -990,6 +1013,7 @@ table_continuous_lm <- function(
     digits = digits,
     fit_digits = fit_digits,
     effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
     decimal_mark = decimal_mark,
     ci_level = ci_level,
     show_statistic = statistic,
@@ -1854,7 +1878,8 @@ build_wide_display_df_continuous_lm <- function(
   r2_type = "r2",
   ci = TRUE,
   fit_digits = 2L,
-  effect_size_digits = 2L
+  effect_size_digits = 2L,
+  p_digits = 3L
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
@@ -1970,7 +1995,11 @@ build_wide_display_df_continuous_lm <- function(
       )
     }
     if (show_p_value) {
-      out$p[i] <- format_p_value_lm(block$p.value[test_row], decimal_mark)
+      out$p[i] <- format_p_value_lm(
+        block$p.value[test_row],
+        decimal_mark,
+        digits = p_digits
+      )
     }
     if (include_es) {
       es_str <- format_number_lm(
@@ -2768,14 +2797,20 @@ format_number_lm <- function(x, digits = 2L, decimal_mark = ".") {
   out
 }
 
-format_p_value_lm <- function(p, decimal_mark = ".") {
+format_p_value_lm <- function(p, decimal_mark = ".", digits = 3L) {
   if (is.na(p)) {
     return("")
   }
-  if (p < 0.001) {
-    return(if (identical(decimal_mark, ".")) "<.001" else "<,001")
+  digits <- as.integer(digits)
+  if (!is.finite(digits) || digits < 1L) {
+    digits <- 3L
   }
-  out <- format_number_lm(p, 3L, decimal_mark)
+  threshold <- 10^(-digits)
+  if (p < threshold) {
+    # "<.001" for digits=3, "<.0001" for digits=4, "<.01" for digits=2
+    return(paste0("<", decimal_mark, strrep("0", digits - 1L), "1"))
+  }
+  out <- format_number_lm(p, digits, decimal_mark)
   out <- sub("^0(?=[\\.,])", "", out, perl = TRUE)
   out <- sub("^-0(?=[\\.,])", "-", out, perl = TRUE)
   out

@@ -31,6 +31,15 @@
 
 ## Improvements
 
+* `table_continuous_lm()` gains a `p_digits` argument controlling the
+  number of decimal places used to render *p*-values in the `p` column
+  (default `3`, the APA standard). Both the displayed precision and the
+  small-*p* threshold derive from this argument: `p_digits = 3` prints
+  `.045` and `<.001`, `p_digits = 4` prints `.0451` and `<.0001`,
+  `p_digits = 2` prints `.05` and `<.01`. Useful for genomics / GWAS
+  contexts with very small adjusted *p*-values, and for journals that
+  prefer a coarser convention.
+
 * `table_continuous_lm()` documentation has been substantially expanded
   with SPSS / Stata / SAS-style detail for `by`, `weights`, `vcov`,
   `contrast`, `r2`, and `effect_size_digits`; markdown subsections in

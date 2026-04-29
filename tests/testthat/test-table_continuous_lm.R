@@ -1434,6 +1434,148 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- p_digits ----
+
+test_that("format_p_value_lm derives threshold from digits", {
+  expect_equal(spicy:::format_p_value_lm(0.045, ".", 3L), ".045")
+  expect_equal(spicy:::format_p_value_lm(0.0008, ".", 3L), "<.001")
+  expect_equal(spicy:::format_p_value_lm(0.0451, ".", 4L), ".0451")
+  expect_equal(spicy:::format_p_value_lm(0.00008, ".", 4L), "<.0001")
+  expect_equal(spicy:::format_p_value_lm(0.05, ".", 2L), ".05")
+  expect_equal(spicy:::format_p_value_lm(0.005, ".", 2L), "<.01")
+})
+
+test_that("format_p_value_lm respects European decimal mark across digits", {
+  expect_equal(spicy:::format_p_value_lm(0.045, ",", 3L), ",045")
+  expect_equal(spicy:::format_p_value_lm(0.0008, ",", 3L), "<,001")
+  expect_equal(spicy:::format_p_value_lm(0.00008, ",", 4L), "<,0001")
+  expect_equal(spicy:::format_p_value_lm(0.005, ",", 2L), "<,01")
+})
+
+test_that("format_p_value_lm handles NA and falls back to default for bad digits", {
+  expect_equal(spicy:::format_p_value_lm(NA_real_, ".", 3L), "")
+  # Non-finite or < 1 digits silently fall back to digits=3.
+  expect_equal(spicy:::format_p_value_lm(0.045, ".", 0L), ".045")
+  expect_equal(spicy:::format_p_value_lm(0.045, ".", -1L), ".045")
+})
+
+test_that("p_digits argument propagates through table_continuous_lm()", {
+  out_3 <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    output = "default"
+  )
+  out_4 <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    p_digits = 4,
+    output = "default"
+  )
+  out_2 <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    p_digits = 2,
+    output = "default"
+  )
+
+  expect_equal(attr(out_3, "p_digits"), 3L)
+  expect_equal(attr(out_4, "p_digits"), 4L)
+  expect_equal(attr(out_2, "p_digits"), 2L)
+})
+
+test_that("p_digits changes the rendered p value in wide display", {
+  long <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    output = "long"
+  )
+  display_3 <- spicy:::build_wide_display_df_continuous_lm(
+    long,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    p_digits = 3L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "none",
+    effect_size_ci = FALSE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+  display_4 <- spicy:::build_wide_display_df_continuous_lm(
+    long,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    p_digits = 4L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "none",
+    effect_size_ci = FALSE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+
+  # The p column is named "p". With p_digits = 3, format is X.XXX or
+  # <.001; with p_digits = 4 it is X.XXXX or <.0001.
+  expect_match(display_3$p[1], "^[<.0-9]+$")
+  expect_match(display_4$p[1], "^[<.0-9]+$")
+  # Number of fractional digits in the rendered string should match
+  # p_digits, except for "<.0..1" which has digits chars after the dot.
+  count_after_dot <- function(s) nchar(sub("^.*\\.", "", s))
+  expect_equal(count_after_dot(display_3$p[1]), 3L)
+  expect_equal(count_after_dot(display_4$p[1]), 4L)
+})
+
+test_that("p_digits validates as a single positive integer", {
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = sex,
+      p_digits = 0
+    ),
+    "positive integer"
+  )
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = sex,
+      p_digits = -1
+    ),
+    "positive integer"
+  )
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = sex,
+      p_digits = c(2, 3)
+    ),
+    "positive integer"
+  )
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = sex,
+      p_digits = NA
+    ),
+    "positive integer"
+  )
+})
+
 # ---- decimal alignment ----
 
 test_that("decimal_align_strings_lm aligns dots in heterogeneous-magnitude column", {
