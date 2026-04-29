@@ -11,7 +11,9 @@ table_continuous_lm(
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
-  vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5"),
+  vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5", "CR0", "CR1",
+    "CR2", "CR3"),
+  cluster = NULL,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -109,12 +111,40 @@ observations (Cribari-Neto 2004).
 (Cribari-Neto and da Silva 2011).
 \item \code{"HC5"}: alternative leverage-adaptive variant designed for
 leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).
+\item \code{"CR0"}, \code{"CR1"}, \code{"CR2"}, \code{"CR3"}: cluster-robust sandwich
+estimators for non-independent observations (Liang and Zeger
+1986); requires \code{cluster}. \code{"CR2"} is the modern default
+(Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
+Satterthwaite degrees of freedom for inference; the
+fractional df is reported in the \code{df2} column and in the
+\code{t(df)} / \code{F(df1, df2)} test header. \code{"CR1"} corresponds to
+Stata's \verb{, vce(cluster id)} default. Cluster-robust variants
+are dispatched to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} and inference uses
+\code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} / \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}};
+install \code{clubSandwich} to use them.
 }
 
+The \verb{HC*} variants are computed via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}.
 Coefficients (means, contrasts, slopes), \verb{R²}, and the standardized
 effect sizes (\code{f2}, \code{d}, \code{g}, \code{omega2}) are point estimates from the
 OLS/WLS fit and are not affected by \code{vcov}; only their standard errors,
 CIs, and the test statistic of the contrast change.}
+
+\item{cluster}{Cluster identifier for cluster-robust standard errors.
+Required when \code{vcov} is one of the \verb{CR*} variants and forbidden
+otherwise. Accepts:
+\itemize{
+\item \code{NULL} (default): no cluster structure.
+\item an unquoted column name in \code{data}.
+\item a single character column name in \code{data}.
+\item an atomic vector of length \code{nrow(data)} evaluated in the calling
+environment (factor, character, integer, etc.).
+}
+
+Rows with \code{NA} in \code{cluster} are excluded from the analytic sample
+for each outcome (alongside rows with \code{NA} in \code{y}, \code{by}, or
+\code{weights}). At least two distinct non-missing cluster values are
+required.}
 
 \item{contrast}{Contrast display for categorical predictors. One of:
 \itemize{
@@ -417,10 +447,8 @@ sizes) are more appropriate.
 \section{Robust standard errors}{
 When \code{vcov} is one of the \verb{HC*} variants, the standard errors, CIs, and
 Wald test statistics use a heteroskedasticity-consistent sandwich
-estimator computed in-package (no extra dependency). The implementation
-follows the formulas reviewed in Zeileis (2004), the same set used by
-the canonical R implementation in the \code{sandwich} package
-(\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}). For a brief guide:
+estimator computed via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}} (Zeileis 2004), the
+canonical R implementation. For a brief guide:
 \itemize{
 \item \code{"HC0"} is the original White (1980) form; \code{"HC1"} adds the
 \code{n / (n - p)} correction (MacKinnon and White 1985), Stata's
@@ -434,6 +462,24 @@ refinement (Cribari-Neto and da Silva 2011); \code{"HC5"} is an
 alternative leverage-adaptive variant (Cribari-Neto, Souza and
 Vasconcellos 2007).
 }
+
+When observations are not independent (repeated measurements per
+individual, students nested in classes, patients in hospitals,
+country-year panels), classical and \verb{HC*} standard errors are biased
+downward. Use the \verb{CR*} variants together with \code{cluster = id_var} to
+get cluster-robust inference (Liang and Zeger 1986). The
+implementation dispatches to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} for the
+variance and to \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} (single-coefficient,
+Satterthwaite \emph{t}) and \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}} (multi-coefficient
+Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
+\code{"CR2"} (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
+modern recommended default; it generally produces fractional
+Satterthwaite degrees of freedom in \code{df2}, which the displayed
+\code{t(df)} / \code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
+matches Stata's \verb{, vce(cluster id)}. Effect sizes remain invariant
+to \code{vcov} (including \verb{CR*}); only the SE, CI, test statistic, and
+\code{df2} of the contrast change.
+
 \verb{R²}, adjusted \verb{R²}, and the effect sizes remain ordinary
 least-squares (or weighted least-squares) statistics regardless of
 \code{vcov}.
@@ -567,6 +613,16 @@ table_continuous_lm(
   ci = FALSE
 )
 
+# Cluster-robust SE for repeated-measures data: the `sleep` dataset
+# has 10 subjects measured twice (one observation per group).
+table_continuous_lm(
+  sleep,
+  select = extra,
+  by = group,
+  cluster = ID,
+  vcov = "CR2"
+)
+
 # --- Article-style polish -----------------------------------------------
 
 # Pretty outcome labels and adjusted R².
@@ -673,6 +729,10 @@ causal treatment effects in observational studies.
 \emph{Statistics in Medicine}, \strong{34}(28), 3661--3679.
 \doi{10.1002/sim.6607}
 
+Bell, R. M., & McCaffrey, D. F. (2002).
+Bias reduction in standard errors for linear regression with
+multi-stage samples. \emph{Survey Methodology}, \strong{28}(2), 169--181.
+
 Cohen, J. (1988).
 \emph{Statistical Power Analysis for the Behavioral Sciences}
 (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
@@ -728,6 +788,11 @@ Using heteroscedasticity consistent standard errors in the linear
 regression model. \emph{The American Statistician}, \strong{54}(3), 217--224.
 \doi{10.1080/00031305.2000.10474549}
 
+Liang, K.-Y., & Zeger, S. L. (1986).
+Longitudinal data analysis using generalized linear models.
+\emph{Biometrika}, \strong{73}(1), 13--22.
+\doi{10.1093/biomet/73.1.13}
+
 MacKinnon, J. G., & White, H. (1985).
 Some heteroskedasticity-consistent covariance matrix estimators with
 improved finite sample properties.
@@ -739,6 +804,12 @@ Generalized eta and omega squared statistics: Measures of effect
 size for some common research designs.
 \emph{Psychological Methods}, \strong{8}(4), 434--447.
 \doi{10.1037/1082-989X.8.4.434}
+
+Pustejovsky, J. E., & Tipton, E. (2018).
+Small-sample methods for cluster-robust variance estimation and
+hypothesis testing in fixed effects models.
+\emph{Journal of Business & Economic Statistics}, \strong{36}(4), 672--683.
+\doi{10.1080/07350015.2016.1247004}
 
 Smithson, M. (2003).
 \emph{Confidence Intervals}. Quantitative Applications in the Social
@@ -771,7 +842,11 @@ Econometric computing with HC and HAC covariance matrix estimators.
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_categorical]{table_categorical()}}.
 For broader workflows on the same statistical building blocks:
 \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}} (the canonical R implementation of the \verb{HC*}
-sandwich estimators); \code{\link[effectsize:cohens_d]{effectsize::cohens_d()}},
+sandwich estimators, used internally for \code{vcov = "HC*"});
+\code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}}, \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} and
+\code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}} (the canonical R implementation of
+cluster-robust variance and Satterthwaite-style inference, used
+internally for \code{vcov = "CR*"}); \code{\link[effectsize:cohens_d]{effectsize::cohens_d()}},
 \code{\link[effectsize:cohens_d]{effectsize::hedges_g()}}, and \code{\link[effectsize:eta_squared]{effectsize::omega_squared()}}
 (alternative effect-size computations and CIs); \code{\link[cobalt:bal.tab]{cobalt::bal.tab()}}
 for propensity-score covariate balance with weighted standardized

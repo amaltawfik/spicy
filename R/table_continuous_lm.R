@@ -75,11 +75,36 @@
 #'     (Cribari-Neto and da Silva 2011).
 #'   - `"HC5"`: alternative leverage-adaptive variant designed for
 #'     leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).
+#'   - `"CR0"`, `"CR1"`, `"CR2"`, `"CR3"`: cluster-robust sandwich
+#'     estimators for non-independent observations (Liang and Zeger
+#'     1986); requires `cluster`. `"CR2"` is the modern default
+#'     (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
+#'     Satterthwaite degrees of freedom for inference; the
+#'     fractional df is reported in the `df2` column and in the
+#'     `t(df)` / `F(df1, df2)` test header. `"CR1"` corresponds to
+#'     Stata's `, vce(cluster id)` default. Cluster-robust variants
+#'     are dispatched to [clubSandwich::vcovCR()] and inference uses
+#'     [clubSandwich::coef_test()] / [clubSandwich::Wald_test()];
+#'     install `clubSandwich` to use them.
 #'
+#'   The `HC*` variants are computed via [sandwich::vcovHC()].
 #'   Coefficients (means, contrasts, slopes), `R²`, and the standardized
 #'   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
 #'   OLS/WLS fit and are not affected by `vcov`; only their standard errors,
 #'   CIs, and the test statistic of the contrast change.
+#' @param cluster Cluster identifier for cluster-robust standard errors.
+#'   Required when `vcov` is one of the `CR*` variants and forbidden
+#'   otherwise. Accepts:
+#'   - `NULL` (default): no cluster structure.
+#'   - an unquoted column name in `data`.
+#'   - a single character column name in `data`.
+#'   - an atomic vector of length `nrow(data)` evaluated in the calling
+#'     environment (factor, character, integer, etc.).
+#'
+#'   Rows with `NA` in `cluster` are excluded from the analytic sample
+#'   for each outcome (alongside rows with `NA` in `y`, `by`, or
+#'   `weights`). At least two distinct non-missing cluster values are
+#'   required.
 #' @param contrast Contrast display for categorical predictors. One of:
 #'   - `"auto"` (default): show a single reference contrast
 #'     `Delta (level2 - level1)` only when `by` has exactly two non-empty
@@ -334,10 +359,8 @@
 #'
 #' When `vcov` is one of the `HC*` variants, the standard errors, CIs, and
 #' Wald test statistics use a heteroskedasticity-consistent sandwich
-#' estimator computed in-package (no extra dependency). The implementation
-#' follows the formulas reviewed in Zeileis (2004), the same set used by
-#' the canonical R implementation in the `sandwich` package
-#' ([sandwich::vcovHC()]). For a brief guide:
+#' estimator computed via [sandwich::vcovHC()] (Zeileis 2004), the
+#' canonical R implementation. For a brief guide:
 #' \itemize{
 #'   \item `"HC0"` is the original White (1980) form; `"HC1"` adds the
 #'     `n / (n - p)` correction (MacKinnon and White 1985), Stata's
@@ -351,6 +374,24 @@
 #'     alternative leverage-adaptive variant (Cribari-Neto, Souza and
 #'     Vasconcellos 2007).
 #' }
+#'
+#' When observations are not independent (repeated measurements per
+#' individual, students nested in classes, patients in hospitals,
+#' country-year panels), classical and `HC*` standard errors are biased
+#' downward. Use the `CR*` variants together with `cluster = id_var` to
+#' get cluster-robust inference (Liang and Zeger 1986). The
+#' implementation dispatches to [clubSandwich::vcovCR()] for the
+#' variance and to [clubSandwich::coef_test()] (single-coefficient,
+#' Satterthwaite *t*) and [clubSandwich::Wald_test()] (multi-coefficient
+#' Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
+#' `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
+#' modern recommended default; it generally produces fractional
+#' Satterthwaite degrees of freedom in `df2`, which the displayed
+#' `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
+#' matches Stata's `, vce(cluster id)`. Effect sizes remain invariant
+#' to `vcov` (including `CR*`); only the SE, CI, test statistic, and
+#' `df2` of the contrast change.
+#'
 #' `R²`, adjusted `R²`, and the effect sizes remain ordinary
 #' least-squares (or weighted least-squares) statistics regardless of
 #' `vcov`.
@@ -411,6 +452,10 @@
 #'   *Statistics in Medicine*, **34**(28), 3661--3679.
 #'   \doi{10.1002/sim.6607}
 #'
+#' Bell, R. M., & McCaffrey, D. F. (2002).
+#'   Bias reduction in standard errors for linear regression with
+#'   multi-stage samples. *Survey Methodology*, **28**(2), 169--181.
+#'
 #' Cohen, J. (1988).
 #'   *Statistical Power Analysis for the Behavioral Sciences*
 #'   (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
@@ -466,6 +511,11 @@
 #'   regression model. *The American Statistician*, **54**(3), 217--224.
 #'   \doi{10.1080/00031305.2000.10474549}
 #'
+#' Liang, K.-Y., & Zeger, S. L. (1986).
+#'   Longitudinal data analysis using generalized linear models.
+#'   *Biometrika*, **73**(1), 13--22.
+#'   \doi{10.1093/biomet/73.1.13}
+#'
 #' MacKinnon, J. G., & White, H. (1985).
 #'   Some heteroskedasticity-consistent covariance matrix estimators with
 #'   improved finite sample properties.
@@ -477,6 +527,12 @@
 #'   size for some common research designs.
 #'   *Psychological Methods*, **8**(4), 434--447.
 #'   \doi{10.1037/1082-989X.8.4.434}
+#'
+#' Pustejovsky, J. E., & Tipton, E. (2018).
+#'   Small-sample methods for cluster-robust variance estimation and
+#'   hypothesis testing in fixed effects models.
+#'   *Journal of Business & Economic Statistics*, **36**(4), 672--683.
+#'   \doi{10.1080/07350015.2016.1247004}
 #'
 #' Smithson, M. (2003).
 #'   *Confidence Intervals*. Quantitative Applications in the Social
@@ -509,7 +565,11 @@
 #' @seealso [table_continuous()], [table_categorical()].
 #'   For broader workflows on the same statistical building blocks:
 #'   [sandwich::vcovHC()] (the canonical R implementation of the `HC*`
-#'   sandwich estimators); [effectsize::cohens_d()],
+#'   sandwich estimators, used internally for `vcov = "HC*"`);
+#'   [clubSandwich::vcovCR()], [clubSandwich::coef_test()] and
+#'   [clubSandwich::Wald_test()] (the canonical R implementation of
+#'   cluster-robust variance and Satterthwaite-style inference, used
+#'   internally for `vcov = "CR*"`); [effectsize::cohens_d()],
 #'   [effectsize::hedges_g()], and [effectsize::omega_squared()]
 #'   (alternative effect-size computations and CIs); [cobalt::bal.tab()]
 #'   for propensity-score covariate balance with weighted standardized
@@ -599,6 +659,16 @@
 #'   by = age,
 #'   vcov = "HC3",
 #'   ci = FALSE
+#' )
+#'
+#' # Cluster-robust SE for repeated-measures data: the `sleep` dataset
+#' # has 10 subjects measured twice (one observation per group).
+#' table_continuous_lm(
+#'   sleep,
+#'   select = extra,
+#'   by = group,
+#'   cluster = ID,
+#'   vcov = "CR2"
 #' )
 #'
 #' # --- Article-style polish -----------------------------------------------
@@ -702,7 +772,12 @@ table_continuous_lm <- function(
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
-  vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5"),
+  vcov = c(
+    "classical",
+    "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5",
+    "CR0", "CR1", "CR2", "CR3"
+  ),
+  cluster = NULL,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -877,13 +952,64 @@ table_continuous_lm <- function(
     show_weighted_n <- FALSE
   }
 
+  cluster_quo <- rlang::enquo(cluster)
+  cluster_name <- detect_weights_column_name(cluster_quo, data)
+  cluster_vec <- resolve_cluster_argument(cluster_quo, data, "cluster")
+
+  is_cr_vcov <- startsWith(vcov, "CR")
+  if (is_cr_vcov && is.null(cluster_vec)) {
+    stop(
+      sprintf(
+        paste0(
+          "`vcov = \"%s\"` requires `cluster` to be specified ",
+          "(an atomic vector or a single column name in `data`)."
+        ),
+        vcov
+      ),
+      call. = FALSE
+    )
+  }
+  if (!is_cr_vcov && !is.null(cluster_vec)) {
+    stop(
+      sprintf(
+        paste0(
+          "`cluster` is only used when `vcov` is one of the cluster-",
+          "robust variants (\"CR0\", \"CR1\", \"CR2\", \"CR3\"). ",
+          "Got `vcov = \"%s\"`."
+        ),
+        vcov
+      ),
+      call. = FALSE
+    )
+  }
+  if (is_cr_vcov) {
+    if (!requireNamespace("clubSandwich", quietly = TRUE)) {
+      stop(
+        sprintf(
+          paste0(
+            "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
+            "Install it with install.packages(\"clubSandwich\")."
+          ),
+          vcov
+        ),
+        call. = FALSE
+      )
+    }
+    if (length(unique(stats::na.omit(cluster_vec))) < 2L) {
+      stop(
+        "`cluster` must contain at least two distinct non-missing values.",
+        call. = FALSE
+      )
+    }
+  }
+
   available_names <- names(data)
   excluded_names <- resolve_multi_column_selection(
     rlang::enquo(exclude),
     data,
     "exclude"
   )
-  excluded_names <- unique(c(excluded_names, by_name, weights_name))
+  excluded_names <- unique(c(excluded_names, by_name, weights_name, cluster_name))
 
   if (isTRUE(regex)) {
     select_val <- tryCatch(
@@ -954,6 +1080,7 @@ table_continuous_lm <- function(
         y = data[[numeric_outcomes[i]]],
         predictor = by_vector,
         weights = weights_vec,
+        cluster = cluster_vec,
         outcome_name = numeric_outcomes[i],
         outcome_label = outcome_labels[i],
         predictor_label = by_label,
@@ -1053,6 +1180,7 @@ fit_outcome_lm_rows <- function(
   y,
   predictor,
   weights,
+  cluster = NULL,
   outcome_name,
   outcome_label,
   predictor_label,
@@ -1065,10 +1193,14 @@ fit_outcome_lm_rows <- function(
   if (!is.null(weights)) {
     keep <- keep & !is.na(weights)
   }
+  if (!is.null(cluster)) {
+    keep <- keep & !is.na(cluster)
+  }
 
   y <- y[keep]
   predictor <- predictor[keep]
   weights <- if (is.null(weights)) NULL else weights[keep]
+  cluster <- if (is.null(cluster)) NULL else cluster[keep]
 
   if (is.numeric(predictor)) {
     return(
@@ -1076,6 +1208,7 @@ fit_outcome_lm_rows <- function(
         y = y,
         x = predictor,
         weights = weights,
+        cluster = cluster,
         outcome_name = outcome_name,
         outcome_label = outcome_label,
         predictor_label = predictor_label,
@@ -1090,6 +1223,7 @@ fit_outcome_lm_rows <- function(
     y = y,
     x = predictor,
     weights = weights,
+    cluster = cluster,
     outcome_name = outcome_name,
     outcome_label = outcome_label,
     predictor_label = predictor_label,
@@ -1104,6 +1238,7 @@ fit_numeric_predictor_lm_rows <- function(
   y,
   x,
   weights,
+  cluster = NULL,
   outcome_name,
   outcome_label,
   predictor_label,
@@ -1127,22 +1262,17 @@ fit_numeric_predictor_lm_rows <- function(
     stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(fit, vcov_type)
-  cf <- stats::coef(fit)
-  se <- sqrt(diag(vc))
+  vc <- compute_lm_vcov(fit, vcov_type, cluster = cluster)
   model_stats <- compute_lm_model_stats(fit)
 
-  df_resid <- stats::df.residual(fit)
-  crit <- if (is.finite(df_resid) && df_resid > 0) {
-    stats::qt(1 - (1 - ci_level) / 2, df = df_resid)
-  } else {
-    stats::qnorm(1 - (1 - ci_level) / 2)
-  }
-
-  estimate <- unname(cf[["x"]])
-  estimate_se <- unname(se[["x"]])
-  statistic <- estimate / estimate_se
-  p_value <- 2 * stats::pt(abs(statistic), df = df_resid, lower.tail = FALSE)
+  inf <- compute_lm_coef_inference(
+    fit,
+    coef_idx = 2L,
+    vc = vc,
+    vcov_type = vcov_type,
+    cluster = cluster,
+    ci_level = ci_level
+  )
 
   es_ci <- compute_es_ci_lm(fit, effect_size, ci_level)
 
@@ -1158,15 +1288,15 @@ fit_numeric_predictor_lm_rows <- function(
     emmean_se = NA_real_,
     emmean_ci_lower = NA_real_,
     emmean_ci_upper = NA_real_,
-    estimate = estimate,
-    estimate_se = estimate_se,
-    estimate_ci_lower = estimate - crit * estimate_se,
-    estimate_ci_upper = estimate + crit * estimate_se,
+    estimate = inf$estimate,
+    estimate_se = inf$se,
+    estimate_ci_lower = inf$ci_lower,
+    estimate_ci_upper = inf$ci_upper,
     test_type = "t",
-    statistic = statistic,
+    statistic = inf$statistic,
     df1 = 1L,
-    df2 = as.integer(df_resid),
-    p.value = p_value,
+    df2 = inf$df,
+    p.value = inf$p.value,
     es_type = pick_es_type_lm(effect_size),
     es_value = pick_es_value_lm(model_stats, effect_size),
     es_ci_lower = es_ci[1],
@@ -1183,6 +1313,7 @@ fit_categorical_predictor_lm_rows <- function(
   y,
   x,
   weights,
+  cluster = NULL,
   outcome_name,
   outcome_label,
   predictor_label,
@@ -1208,7 +1339,7 @@ fit_categorical_predictor_lm_rows <- function(
     stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(fit, vcov_type)
+  vc <- compute_lm_vcov(fit, vcov_type, cluster = cluster)
   cf <- stats::coef(fit)
   df_resid <- stats::df.residual(fit)
   crit <- if (is.finite(df_resid) && df_resid > 0) {
@@ -1227,22 +1358,15 @@ fit_categorical_predictor_lm_rows <- function(
   emmean <- as.vector(design %*% cf)
   emmean_se <- sqrt(rowSums((design %*% vc) * design))
 
-  q <- max(1L, ncol(design) - 1L)
-  beta_sub <- cf[-1]
-  vc_sub <- vc[-1, -1, drop = FALSE]
-  global_stat <- if (length(beta_sub) == 0L) {
-    NA_real_
-  } else {
-    tryCatch(
-      as.numeric(crossprod(beta_sub, solve(vc_sub, beta_sub)) / q),
-      error = function(e) NA_real_
-    )
-  }
-  global_p <- if (is.na(global_stat) || !is.finite(global_stat)) {
-    NA_real_
-  } else {
-    stats::pf(global_stat, q, df_resid, lower.tail = FALSE)
-  }
+  # Global Wald F (k > 2 ANOVA-style, or t² for binary). Dispatches
+  # to clubSandwich::Wald_test() with HTZ/Satterthwaite for CR mode.
+  wald <- compute_lm_wald_test(
+    fit,
+    coef_idx_set = seq_along(cf)[-1],
+    vc = vc,
+    vcov_type = vcov_type,
+    cluster = cluster
+  )
 
   show_reference <- identical(contrast, "auto") && nlevels(x) == 2L
 
@@ -1265,10 +1389,10 @@ fit_categorical_predictor_lm_rows <- function(
     estimate_ci_lower = rep(NA_real_, length(levs)),
     estimate_ci_upper = rep(NA_real_, length(levs)),
     test_type = c("F", rep(NA_character_, length(levs) - 1L)),
-    statistic = c(global_stat, rep(NA_real_, length(levs) - 1L)),
-    df1 = c(q, rep(NA_integer_, length(levs) - 1L)),
-    df2 = c(as.integer(df_resid), rep(NA_integer_, length(levs) - 1L)),
-    p.value = c(global_p, rep(NA_real_, length(levs) - 1L)),
+    statistic = c(wald$statistic, rep(NA_real_, length(levs) - 1L)),
+    df1 = c(as.integer(wald$df1), rep(NA_integer_, length(levs) - 1L)),
+    df2 = c(wald$df2, rep(NA_real_, length(levs) - 1L)),
+    p.value = c(wald$p.value, rep(NA_real_, length(levs) - 1L)),
     es_type = c(
       pick_es_type_lm(effect_size),
       rep(NA_character_, length(levs) - 1L)
@@ -1287,28 +1411,30 @@ fit_categorical_predictor_lm_rows <- function(
   )
 
   if (isTRUE(show_reference)) {
-    coef_names <- names(cf)[-1]
-    se <- sqrt(diag(vc))[-1]
-    for (i in seq_along(coef_names)) {
+    # Per-level contrast (binary case): use the same single-coef
+    # inference helper as for numeric predictors so CR mode picks
+    # up Satterthwaite df automatically.
+    for (i in seq_len(nlevels(x) - 1L)) {
+      coef_idx <- i + 1L
       row_idx <- i + 1L
-      est <- unname(cf[coef_names[i]])
-      se_i <- unname(se[i])
-      stat_i <- est / se_i
+      inf <- compute_lm_coef_inference(
+        fit,
+        coef_idx = coef_idx,
+        vc = vc,
+        vcov_type = vcov_type,
+        cluster = cluster,
+        ci_level = ci_level
+      )
       out$estimate_type[row_idx] <- "difference"
-      out$estimate[row_idx] <- est
-      out$estimate_se[row_idx] <- se_i
-      out$estimate_ci_lower[row_idx] <- est - crit * se_i
-      out$estimate_ci_upper[row_idx] <- est + crit * se_i
+      out$estimate[row_idx] <- inf$estimate
+      out$estimate_se[row_idx] <- inf$se
+      out$estimate_ci_lower[row_idx] <- inf$ci_lower
+      out$estimate_ci_upper[row_idx] <- inf$ci_upper
       out$test_type[row_idx] <- "t"
-      out$statistic[row_idx] <- stat_i
+      out$statistic[row_idx] <- inf$statistic
       out$df1[row_idx] <- 1L
-      out$df2[row_idx] <- as.integer(df_resid)
-      out$p.value[row_idx] <- 2 *
-        stats::pt(
-          abs(stat_i),
-          df = df_resid,
-          lower.tail = FALSE
-        )
+      out$df2[row_idx] <- inf$df
+      out$p.value[row_idx] <- inf$p.value
     }
   }
 
@@ -1340,7 +1466,7 @@ make_empty_lm_rows <- function(
     test_type = NA_character_,
     statistic = NA_real_,
     df1 = NA_integer_,
-    df2 = NA_integer_,
+    df2 = NA_real_,
     p.value = NA_real_,
     es_type = NA_character_,
     es_value = NA_real_,
@@ -1389,65 +1515,300 @@ detect_weights_column_name <- function(quo, data) {
   NULL
 }
 
-compute_lm_vcov <- function(fit, type = "classical") {
+# Internal: resolve a `cluster` argument from a public function call
+# into a vector of length nrow(data). Accepts the same forms as
+# `weights` (NULL, unquoted column name, character column name, or a
+# raw vector evaluated in the calling environment), but without the
+# numeric-only restriction: cluster IDs may be factor, character,
+# integer, or any atomic type.
+resolve_cluster_argument <- function(quo, data, arg = "cluster") {
+  if (rlang::quo_is_null(quo)) {
+    return(NULL)
+  }
+
+  sentinel <- new.env(parent = emptyenv())
+  val <- tryCatch(
+    rlang::eval_tidy(
+      quo,
+      data = data,
+      env = rlang::quo_get_env(quo)
+    ),
+    error = function(e) sentinel
+  )
+
+  if (identical(val, sentinel)) {
+    stop(
+      sprintf(
+        paste0(
+          "`%s` must be NULL, an atomic vector, or a single column ",
+          "name in `data`."
+        ),
+        arg
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (is.null(val)) {
+    return(NULL)
+  }
+
+  if (is.character(val) && length(val) == 1L && val %in% names(data)) {
+    val <- data[[val]]
+  }
+
+  if (!is.atomic(val)) {
+    stop(
+      sprintf(
+        paste0(
+          "`%s` must be NULL, an atomic vector, or a single column ",
+          "name in `data`."
+        ),
+        arg
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (length(val) != nrow(data)) {
+    stop(
+      sprintf(
+        "Cluster `%s` must have length `nrow(data)` (got %d, expected %d).",
+        arg,
+        length(val),
+        nrow(data)
+      ),
+      call. = FALSE
+    )
+  }
+
+  val
+}
+
+compute_lm_vcov <- function(fit, type = "classical", cluster = NULL) {
   if (identical(type, "classical")) {
     return(stats::vcov(fit))
   }
 
-  x <- stats::model.matrix(fit)
-  e <- stats::residuals(fit)
-  w <- stats::weights(fit)
-  if (is.null(w)) {
-    w <- rep(1, length(e))
+  if (startsWith(type, "HC")) {
+    return(tryCatch(
+      sandwich::vcovHC(fit, type = type),
+      error = function(e) {
+        warning(
+          sprintf(
+            paste0(
+              "Robust `vcov = \"%s\"` could not be computed (%s); ",
+              "falling back to the classical OLS variance, ",
+              "which may contain NA."
+            ),
+            type,
+            conditionMessage(e)
+          ),
+          call. = FALSE
+        )
+        stats::vcov(fit)
+      }
+    ))
   }
 
-  xw <- x * sqrt(w)
-  xtwx_inv <- tryCatch(
-    solve(crossprod(xw)),
-    error = function(e2) {
-      warning(
+  if (startsWith(type, "CR")) {
+    if (is.null(cluster)) {
+      stop(
+        sprintf(
+          "`vcov = \"%s\"` requires `cluster` to be specified.",
+          type
+        ),
+        call. = FALSE
+      )
+    }
+    if (!requireNamespace("clubSandwich", quietly = TRUE)) {
+      stop(
         sprintf(
           paste0(
-            "Robust `vcov = \"%s\"` could not be computed ",
-            "(model matrix is singular); falling back to the ",
-            "classical OLS variance, which may contain NA."
+            "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
+            "Install it with install.packages(\"clubSandwich\")."
           ),
           type
         ),
         call. = FALSE
       )
-      stats::vcov(fit)
     }
-  )
-  hat <- rowSums((xw %*% xtwx_inv) * xw)
-  n <- nrow(x)
-  p <- max(1L, as.integer(round(sum(hat))))
-  omega <- (w^2) * (e^2)
-  h_adj <- pmax(1 - hat, .Machine$double.eps)
-  nh_over_p <- n * hat / p
+    return(tryCatch(
+      clubSandwich::vcovCR(fit, type = type, cluster = cluster),
+      error = function(e) {
+        warning(
+          sprintf(
+            paste0(
+              "Cluster-robust `vcov = \"%s\"` could not be computed (%s); ",
+              "falling back to the classical OLS variance, ",
+              "which may contain NA."
+            ),
+            type,
+            conditionMessage(e)
+          ),
+          call. = FALSE
+        )
+        stats::vcov(fit)
+      }
+    ))
+  }
 
-  scale <- switch(
-    type,
-    HC0 = rep(1, length(h_adj)),
-    HC1 = rep(n / max(1, n - p), length(h_adj)),
-    HC2 = 1 / h_adj,
-    HC3 = 1 / (h_adj^2),
-    HC4 = {
-      delta <- pmin(4, nh_over_p)
-      1 / (h_adj^delta)
-    },
-    HC4m = {
-      delta <- pmin(1, nh_over_p) + pmin(1.5, nh_over_p)
-      1 / (h_adj^delta)
-    },
-    HC5 = {
-      delta <- pmin(nh_over_p, pmax(4, n * 0.7 * max(hat) / p))
-      1 / sqrt(h_adj^delta)
-    },
-    stop("Unknown `vcov` type.", call. = FALSE)
+  stop(
+    sprintf("Unknown `vcov` type \"%s\".", type),
+    call. = FALSE
   )
+}
 
-  xtwx_inv %*% crossprod(x, (omega * scale) * x) %*% xtwx_inv
+# Internal: single-coefficient inference (estimate, SE, t, df, p, CI).
+# For classical / HC* mode, uses df.residual(fit) and the supplied vcov.
+# For CR* mode, uses clubSandwich::coef_test() with Satterthwaite df.
+# Falls back to df.residual + supplied vcov if coef_test fails.
+compute_lm_coef_inference <- function(
+  fit,
+  coef_idx,
+  vc,
+  vcov_type,
+  cluster = NULL,
+  ci_level = 0.95
+) {
+  cf <- stats::coef(fit)
+  estimate <- unname(cf[coef_idx])
+
+  if (startsWith(vcov_type, "CR") && !is.null(cluster)) {
+    ct <- tryCatch(
+      clubSandwich::coef_test(
+        fit,
+        vcov = vc,
+        cluster = cluster,
+        test = "Satterthwaite"
+      ),
+      error = function(e) NULL
+    )
+    if (
+      !is.null(ct) &&
+        is.data.frame(ct) &&
+        nrow(ct) >= coef_idx &&
+        all(c("df_Satt", "p_Satt", "SE", "tstat") %in% names(ct))
+    ) {
+      df <- ct$df_Satt[coef_idx]
+      se_est <- ct$SE[coef_idx]
+      stat <- ct$tstat[coef_idx]
+      pval <- ct$p_Satt[coef_idx]
+      crit <- if (is.finite(df) && df > 0) {
+        stats::qt(1 - (1 - ci_level) / 2, df = df)
+      } else {
+        stats::qnorm(1 - (1 - ci_level) / 2)
+      }
+      return(list(
+        estimate = estimate,
+        se = unname(se_est),
+        statistic = unname(stat),
+        df = unname(df),
+        p.value = unname(pval),
+        ci_lower = estimate - crit * unname(se_est),
+        ci_upper = estimate + crit * unname(se_est)
+      ))
+    }
+  }
+
+  # Classical / HC* / CR fallback path
+  se_est <- sqrt(diag(vc))[coef_idx]
+  df <- stats::df.residual(fit)
+  stat <- estimate / se_est
+  crit <- if (is.finite(df) && df > 0) {
+    stats::qt(1 - (1 - ci_level) / 2, df = df)
+  } else {
+    stats::qnorm(1 - (1 - ci_level) / 2)
+  }
+  pval <- 2 * stats::pt(abs(stat), df = df, lower.tail = FALSE)
+  list(
+    estimate = estimate,
+    se = unname(se_est),
+    statistic = unname(stat),
+    df = as.double(unname(df)),
+    p.value = unname(pval),
+    ci_lower = estimate - crit * unname(se_est),
+    ci_upper = estimate + crit * unname(se_est)
+  )
+}
+
+# Internal: multi-coefficient Wald F (used for the global test in
+# k > 2 categorical predictors). For CR* mode uses
+# clubSandwich::Wald_test() with the HTZ (Hotelling-T-squared with
+# Satterthwaite df) method; for classical / HC* uses the Wald F with
+# df.residual.
+compute_lm_wald_test <- function(
+  fit,
+  coef_idx_set,
+  vc,
+  vcov_type,
+  cluster = NULL
+) {
+  cf <- stats::coef(fit)
+  beta_sub <- cf[coef_idx_set]
+  q <- length(beta_sub)
+  df_resid_classical <- stats::df.residual(fit)
+
+  if (q == 0L) {
+    return(list(
+      statistic = NA_real_,
+      df1 = NA_integer_,
+      df2 = NA_integer_,
+      p.value = NA_real_
+    ))
+  }
+
+  if (startsWith(vcov_type, "CR") && !is.null(cluster)) {
+    constraints <- tryCatch(
+      clubSandwich::constrain_zero(coef_idx_set, coefs = cf),
+      error = function(e) NULL
+    )
+    wt <- if (!is.null(constraints)) {
+      tryCatch(
+        clubSandwich::Wald_test(
+          fit,
+          constraints = constraints,
+          vcov = vc,
+          cluster = cluster,
+          test = "HTZ"
+        ),
+        error = function(e) NULL
+      )
+    } else {
+      NULL
+    }
+    if (
+      !is.null(wt) &&
+        is.data.frame(wt) &&
+        nrow(wt) >= 1L &&
+        all(c("Fstat", "df_num", "df_denom", "p_val") %in% names(wt))
+    ) {
+      return(list(
+        statistic = unname(wt$Fstat[1]),
+        df1 = as.integer(unname(wt$df_num[1])),
+        df2 = as.double(unname(wt$df_denom[1])),
+        p.value = unname(wt$p_val[1])
+      ))
+    }
+  }
+
+  # Classical / HC* path
+  vc_sub <- vc[coef_idx_set, coef_idx_set, drop = FALSE]
+  global_stat <- tryCatch(
+    as.numeric(crossprod(beta_sub, solve(vc_sub, beta_sub)) / q),
+    error = function(e) NA_real_
+  )
+  global_p <- if (is.na(global_stat) || !is.finite(global_stat)) {
+    NA_real_
+  } else {
+    stats::pf(global_stat, q, df_resid_classical, lower.tail = FALSE)
+  }
+  list(
+    statistic = global_stat,
+    df1 = as.integer(q),
+    df2 = as.double(df_resid_classical),
+    p.value = global_p
+  )
 }
 
 compute_lm_model_stats <- function(fit) {
@@ -2641,15 +3002,30 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
   same_df1 <- length(df1_vals) == 1L
   same_df2 <- length(df2_vals) == 1L
 
+  # df1 is always integer (number of constraints). df2 may be a
+  # fractional Satterthwaite df under cluster-robust inference; show
+  # as integer when whole, with a single decimal otherwise (e.g.
+  # `t(45.3)` instead of `t(45)`).
+  format_df <- function(d) {
+    d <- unname(d)
+    if (!is.finite(d)) {
+      return("")
+    }
+    if (abs(d - round(d)) < .Machine$double.eps^0.5) {
+      return(as.character(as.integer(round(d))))
+    }
+    formatC(d, format = "f", digits = 1L)
+  }
+
   if (identical(predictor_type, "continuous")) {
     if (isTRUE(exact) && same_df2) {
-      return(paste0("t(", as.integer(round(df2_vals)), ")"))
+      return(paste0("t(", format_df(df2_vals), ")"))
     }
     return("t")
   }
   if (length(unique(stats::na.omit(block$level))) == 2L) {
     if (isTRUE(exact) && same_df2) {
-      return(paste0("t(", as.integer(round(df2_vals)), ")"))
+      return(paste0("t(", format_df(df2_vals), ")"))
     }
     return("t")
   }
@@ -2657,9 +3033,9 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
     return(
       paste0(
         "F(",
-        as.integer(round(df1_vals)),
+        format_df(df1_vals),
         ", ",
-        as.integer(round(df2_vals)),
+        format_df(df2_vals),
         ")"
       )
     )

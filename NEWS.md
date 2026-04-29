@@ -2,6 +2,23 @@
 
 ## New features
 
+* `table_continuous_lm()` gains a `cluster` argument and four new
+  `vcov` choices (`"CR0"`, `"CR1"`, `"CR2"`, `"CR3"`) for
+  cluster-robust standard errors. This addresses the standard scenario
+  where observations are not independent (repeated measurements per
+  subject, students nested in classes, panel data, etc.); classical
+  and `HC*` standard errors are biased downward in that case. The
+  implementation dispatches to [clubSandwich::vcovCR()] for the
+  variance and to [clubSandwich::coef_test()] / [clubSandwich::Wald_test()]
+  for inference, with Satterthwaite-style degrees of freedom (Bell &
+  McCaffrey 2002; Pustejovsky & Tipton 2018) — `"CR2"` is the modern
+  recommended default. The fractional Satterthwaite df is reported in
+  the `df2` column and rendered as e.g. `t(45.3)` / `F(2, 45.3)` in
+  the test header. Effect sizes (`f2`, `d`, `g`, `omega2`) and their
+  CIs remain invariant to `vcov`. `clubSandwich` is added to
+  `Suggests`; `cluster` is required when `vcov` is `"CR*"` and
+  forbidden otherwise.
+
 * `table_continuous_lm()` gains three new `effect_size` choices alongside
   `"f2"`: Cohen's `"d"` and Hedges' `"g"` for two-group comparisons, and
   Hays' `"omega2"` (truncated at 0) for any predictor type. All four are
@@ -30,6 +47,17 @@
   present in `es_ci_lower` and `es_ci_upper`.
 
 ## Improvements
+
+* `table_continuous_lm()` now computes `HC*` heteroskedasticity-
+  consistent variance estimators via [sandwich::vcovHC()] (Zeileis 2004)
+  rather than the previous in-package implementation. The numerical
+  results are unchanged for non-degenerate fits, but the implementation
+  benefits from `sandwich`'s 20+ years of edge-case handling and is now
+  aligned with the canonical R reference cited in the documentation.
+  Rank-deficient fits (e.g., perfectly collinear predictors) now return
+  the rank-by-rank covariance of the identifiable coefficients without
+  emitting a warning, replacing the previous fallback to a full-size
+  matrix containing `NA`s. `sandwich` is added to `Imports`.
 
 * `table_continuous_lm()` gains four S3 methods for ecosystem
   integration: `as.data.frame()` and `tibble::as_tibble()` return a

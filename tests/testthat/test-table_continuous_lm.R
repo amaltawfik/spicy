@@ -793,13 +793,13 @@ test_that("table_continuous_lm internal covariance helper covers fallback branch
     "Unknown `vcov` type"
   )
 
-  expect_warning(
-    vc <- spicy:::compute_lm_vcov(fit_singular, "HC3"),
-    "singular"
-  )
+  # sandwich::vcovHC handles rank-deficient fits gracefully by
+  # returning the (rank x rank) matrix for the identifiable
+  # coefficients, without raising a warning.
+  vc <- spicy:::compute_lm_vcov(fit_singular, "HC3")
   expect_true(is.matrix(vc))
-  expect_equal(dim(vc), c(3L, 3L))
-  expect_true(all(is.na(vc)))
+  expect_equal(dim(vc), c(fit_singular$rank, fit_singular$rank))
+  expect_false(anyNA(vc))
 })
 
 test_that("table_continuous_lm export helper validates output-specific paths", {
@@ -1396,7 +1396,7 @@ test_that("degenerate models still preserve the predictor label", {
   expect_true(all(out$predictor_label == "Group label"))
 })
 
-test_that("long output uses integer types for n, df1, df2", {
+test_that("long output uses integer types for n and df1, double for df2", {
   out_num <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -1411,15 +1411,19 @@ test_that("long output uses integer types for n, df1, df2", {
   )
   out_empty <- spicy:::make_empty_lm_rows("y", "Y", "continuous")
 
+  # n and df1 are always whole numbers -> integer.
+  # df2 is double to allow fractional Satterthwaite df under cluster-
+  # robust inference (CR2). Whole-number df2 still equal their
+  # integer value (e.g., 147.0).
   expect_type(out_num$n, "integer")
   expect_type(out_num$df1, "integer")
-  expect_type(out_num$df2, "integer")
+  expect_type(out_num$df2, "double")
   expect_type(out_cat$n, "integer")
   expect_type(out_cat$df1, "integer")
-  expect_type(out_cat$df2, "integer")
+  expect_type(out_cat$df2, "double")
   expect_type(out_empty$n, "integer")
   expect_type(out_empty$df1, "integer")
-  expect_type(out_empty$df2, "integer")
+  expect_type(out_empty$df2, "double")
 })
 
 test_that("effect_size = 'none' yields NA es_type and es_value in long output", {
@@ -1991,7 +1995,7 @@ test_that("global Wald F gracefully degrades to NA on a singular vcov", {
   # Patch compute_lm_vcov to return a singular vcov, simulating the
   # rare path where solve(vc_sub, beta_sub) would error.
   testthat::local_mocked_bindings(
-    compute_lm_vcov = function(fit, type = "classical") {
+    compute_lm_vcov = function(fit, type = "classical", cluster = NULL) {
       vc <- stats::vcov(fit)
       vc[, ] <- 0
       vc
@@ -2076,6 +2080,231 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
   expect_false(grepl(";", display_dot$g[1], fixed = TRUE))
   expect_false(grepl(", ", display_comma$g[1], fixed = TRUE))
 })
+
+# ---- cluster-robust SE ----
+
+test_that("cluster-robust vcov requires cluster + clubSandwich", {
+  expect_error(
+    table_continuous_lm(
+      sleep,
+      select = extra,
+      by = group,
+      vcov = "CR2"
+    ),
+    "requires `cluster`"
+  )
+  expect_error(
+    table_continuous_lm(
+      sleep,
+      select = extra,
+      by = group,
+      vcov = "HC3",
+      cluster = ID
+    ),
+    "cluster.*only used.*CR"
+  )
+})
+
+test_that("cluster argument resolves columns and vectors consistently", {
+  skip_if_not_installed("clubSandwich")
+
+  # Column form via NSE.
+  out_nse <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = ID,
+    vcov = "CR2",
+    output = "long"
+  )
+  # Character form.
+  out_chr <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = "ID",
+    vcov = "CR2",
+    output = "long"
+  )
+  # Vector form.
+  out_vec <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = sleep$ID,
+    vcov = "CR2",
+    output = "long"
+  )
+
+  expect_equal(out_nse$statistic, out_chr$statistic)
+  expect_equal(out_nse$statistic, out_vec$statistic)
+  expect_equal(out_nse$p.value, out_chr$p.value)
+  expect_equal(out_nse$df2, out_chr$df2)
+})
+
+test_that("CR2 matches clubSandwich::coef_test() for binary contrast", {
+  skip_if_not_installed("clubSandwich")
+
+  out <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = ID,
+    vcov = "CR2",
+    output = "long"
+  )
+  contrast_row <- out[!is.na(out$estimate), ]
+
+  fit <- stats::lm(extra ~ group, data = sleep)
+  ct <- clubSandwich::coef_test(
+    fit,
+    vcov = "CR2",
+    cluster = sleep$ID,
+    test = "Satterthwaite"
+  )
+
+  expect_equal(contrast_row$estimate, unname(coef(fit)[2]), tolerance = 1e-8)
+  expect_equal(contrast_row$estimate_se[1], ct$SE[2], tolerance = 1e-8)
+  expect_equal(contrast_row$statistic[1], ct$tstat[2], tolerance = 1e-8)
+  expect_equal(contrast_row$df2[1], ct$df_Satt[2], tolerance = 1e-6)
+  expect_equal(contrast_row$p.value[1], ct$p_Satt[2], tolerance = 1e-8)
+})
+
+test_that("CR2 matches clubSandwich::Wald_test() for k>2 categorical", {
+  skip_if_not_installed("clubSandwich")
+
+  # Use a synthetic clustering structure independent of the predictor
+  # so the cluster-robust variance estimator is well-defined.
+  set.seed(20260418)
+  df <- iris
+  df$cluster_id <- rep(seq_len(15), each = 10)
+
+  out <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    cluster = cluster_id,
+    vcov = "CR2",
+    statistic = TRUE,
+    output = "long"
+  )
+  test_row <- out[1L, ]
+
+  fit <- stats::lm(Sepal.Length ~ Species, data = df)
+  wt <- clubSandwich::Wald_test(
+    fit,
+    constraints = clubSandwich::constrain_zero(2:3),
+    vcov = "CR2",
+    cluster = df$cluster_id,
+    test = "HTZ"
+  )
+
+  expect_equal(test_row$statistic, wt$Fstat[1], tolerance = 1e-6)
+  expect_equal(test_row$df1, as.integer(wt$df_num[1]))
+  expect_equal(test_row$df2, wt$df_denom[1], tolerance = 1e-6)
+  expect_equal(test_row$p.value, wt$p_val[1], tolerance = 1e-8)
+})
+
+test_that("effect sizes are invariant to vcov = 'CR2'", {
+  skip_if_not_installed("clubSandwich")
+  fit_classical <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    vcov = "classical",
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  fit_cr2 <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    vcov = "CR2",
+    cluster = ID,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  # ES point estimate identical (depends only on OLS fit).
+  expect_equal(
+    fit_classical$es_value[!is.na(fit_classical$es_value)],
+    fit_cr2$es_value[!is.na(fit_cr2$es_value)]
+  )
+  # ES CI also identical (does not depend on vcov).
+  expect_equal(
+    fit_classical$es_ci_lower[!is.na(fit_classical$es_ci_lower)],
+    fit_cr2$es_ci_lower[!is.na(fit_cr2$es_ci_lower)]
+  )
+})
+
+test_that("CR2 df2 differs from classical df.residual (cluster-aware df)", {
+  skip_if_not_installed("clubSandwich")
+  long_classical <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    output = "long"
+  )
+  long_cr2 <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = ID,
+    vcov = "CR2",
+    output = "long"
+  )
+  classical_df2 <- long_classical$df2[!is.na(long_classical$df2)]
+  cr2_df2 <- long_cr2$df2[!is.na(long_cr2$df2)]
+  # CR2 SW-df is generally smaller than the classical n - p df, since
+  # it reflects cluster-level rather than observation-level
+  # information.
+  expect_true(all(cr2_df2 < classical_df2))
+})
+
+test_that("get_test_header_lm formats fractional df with one decimal", {
+  long <- table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    output = "long"
+  )
+  long$df2 <- 45.32
+  long$df1 <- 1L
+  hdr <- spicy:::get_test_header_lm(long, show_statistic = TRUE, exact = TRUE)
+  expect_equal(hdr, "t(45.3)")
+
+  long$df2 <- 45.0
+  hdr_int <- spicy:::get_test_header_lm(long, show_statistic = TRUE, exact = TRUE)
+  expect_equal(hdr_int, "t(45)")
+})
+
+test_that("cluster validation: must have nrow(data) length, no all-NA, etc.", {
+  skip_if_not_installed("clubSandwich")
+  expect_error(
+    table_continuous_lm(
+      sleep,
+      select = extra,
+      by = group,
+      cluster = c(1, 2, 3),
+      vcov = "CR2"
+    ),
+    "Cluster `cluster` must have length"
+  )
+  # Single distinct cluster value -> error.
+  expect_error(
+    table_continuous_lm(
+      sleep,
+      select = extra,
+      by = group,
+      cluster = rep(1, nrow(sleep)),
+      vcov = "CR2"
+    ),
+    "at least two distinct"
+  )
+})
+
+# ---- end cluster-robust ----
 
 # ---- internal CI helpers ----
 
@@ -2170,16 +2399,37 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
   expect_equal(spicy:::pick_es_value_lm(ms, "g"), 0.45)
 })
 
-test_that("compute_lm_vcov singular fallback warns with the expected sprintf message", {
-  fit_singular <- stats::lm(mpg ~ wt + I(2 * wt), data = mtcars)
-  w <- tryCatch(
-    spicy:::compute_lm_vcov(fit_singular, "HC4m"),
+test_that("compute_lm_vcov falls back to classical vcov when sandwich errors", {
+  # The defensive fallback in compute_lm_vcov (warn + return classical
+  # vcov) is reached only when sandwich::vcovHC() itself errors. We
+  # mock a failure to verify the fallback path emits a clear sprintf
+  # warning and returns a usable (possibly-NA) matrix.
+  testthat::local_mocked_bindings(
+    vcovHC = function(x, type, ...) stop("synthetic test failure"),
+    .package = "sandwich"
+  )
+
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  msg <- tryCatch(
+    spicy:::compute_lm_vcov(fit, "HC4m"),
     warning = function(w) conditionMessage(w)
   )
-  expect_true(is.character(w))
-  expect_match(w, "Robust `vcov = \"HC4m\"`")
-  expect_match(w, "model matrix is singular")
-  expect_match(w, "falling back to the classical OLS variance")
+
+  expect_true(is.character(msg))
+  expect_match(msg, "Robust `vcov = \"HC4m\"`")
+  expect_match(msg, "synthetic test failure")
+  expect_match(msg, "falling back to the classical OLS variance")
+})
+
+test_that("compute_lm_vcov matches sandwich::vcovHC numerically", {
+  fit <- stats::lm(mpg ~ wt + cyl, data = mtcars)
+  for (type in c("HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5")) {
+    expect_equal(
+      spicy:::compute_lm_vcov(fit, type),
+      sandwich::vcovHC(fit, type = type),
+      info = paste0("vcov type = ", type)
+    )
+  }
 })
 
 # ---- end internal CI helpers ----
