@@ -1434,6 +1434,113 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- internal CI helpers ----
+
+test_that("find_ncp_t_lm inverts pt() correctly", {
+  ncp <- spicy:::find_ncp_t_lm(t_obs = 2.5, df = 30, p = 0.5)
+  expect_equal(stats::pt(2.5, df = 30, ncp = ncp), 0.5, tolerance = 1e-6)
+
+  ncp_lo <- spicy:::find_ncp_t_lm(t_obs = 2.5, df = 30, p = 0.975)
+  expect_equal(
+    stats::pt(2.5, df = 30, ncp = ncp_lo),
+    0.975,
+    tolerance = 1e-6
+  )
+
+  ncp_hi <- spicy:::find_ncp_t_lm(t_obs = 2.5, df = 30, p = 0.025)
+  expect_equal(
+    stats::pt(2.5, df = 30, ncp = ncp_hi),
+    0.025,
+    tolerance = 1e-6
+  )
+  expect_lt(ncp_lo, ncp_hi)
+})
+
+test_that("find_ncp_t_lm returns NA for invalid inputs", {
+  expect_true(is.na(spicy:::find_ncp_t_lm(NA_real_, 10, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_t_lm(2, NA_real_, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_t_lm(2, 0, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_t_lm(2, 10, 0)))
+  expect_true(is.na(spicy:::find_ncp_t_lm(2, 10, 1)))
+})
+
+test_that("find_ncp_f_lm inverts pf() correctly and respects ncp >= 0", {
+  ncp <- spicy:::find_ncp_f_lm(f_obs = 5, df1 = 2, df2 = 30, p = 0.5)
+  expect_gte(ncp, 0)
+  expect_equal(
+    stats::pf(5, df1 = 2, df2 = 30, ncp = ncp),
+    0.5,
+    tolerance = 1e-6
+  )
+
+  ncp_hi <- spicy:::find_ncp_f_lm(f_obs = 5, df1 = 2, df2 = 30, p = 0.025)
+  expect_gte(ncp_hi, 0)
+  expect_equal(
+    stats::pf(5, df1 = 2, df2 = 30, ncp = ncp_hi),
+    0.025,
+    tolerance = 1e-6
+  )
+
+  expect_equal(
+    spicy:::find_ncp_f_lm(f_obs = 0.001, df1 = 2, df2 = 30, p = 0.975),
+    0
+  )
+})
+
+test_that("find_ncp_f_lm returns NA for invalid inputs", {
+  expect_true(is.na(spicy:::find_ncp_f_lm(NA_real_, 2, 30, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_f_lm(-1, 2, 30, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_f_lm(5, 0, 30, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_f_lm(5, 2, 0, 0.5)))
+  expect_true(is.na(spicy:::find_ncp_f_lm(5, 2, 30, 0)))
+})
+
+test_that("compute_es_ci_lm dispatches and the strict fallback rejects unknown effect_size", {
+  fit <- stats::lm(Sepal.Length ~ Species, data = iris)
+
+  expect_equal(
+    spicy:::compute_es_ci_lm(fit, "none", 0.95),
+    c(NA_real_, NA_real_)
+  )
+  expect_equal(
+    length(spicy:::compute_es_ci_lm(fit, "f2", 0.95)),
+    2L
+  )
+  expect_equal(
+    length(spicy:::compute_es_ci_lm(fit, "omega2", 0.95)),
+    2L
+  )
+  expect_error(
+    spicy:::compute_es_ci_lm(fit, "bogus", 0.95),
+    "Unknown `effect_size`"
+  )
+})
+
+test_that("pick_es_value_lm fails fast on unknown effect_size", {
+  ms <- list(f2 = 1, d = 0.5, g = 0.45, omega2 = 0.2)
+  expect_error(
+    spicy:::pick_es_value_lm(ms, "bogus"),
+    "Unknown `effect_size`"
+  )
+  expect_equal(spicy:::pick_es_value_lm(ms, "none"), NA_real_)
+  expect_equal(spicy:::pick_es_value_lm(ms, "f2"), 1)
+  expect_equal(spicy:::pick_es_value_lm(ms, "g"), 0.45)
+})
+
+test_that("compute_lm_vcov singular fallback warns with the expected sprintf message", {
+  fit_singular <- stats::lm(mpg ~ wt + I(2 * wt), data = mtcars)
+  w <- tryCatch(
+    spicy:::compute_lm_vcov(fit_singular, "HC4m"),
+    warning = function(w) conditionMessage(w)
+  )
+  expect_true(is.character(w))
+  expect_match(w, "Robust `vcov = \"HC4m\"`")
+  expect_match(w, "model matrix is singular")
+  expect_match(w, "falling back to the classical OLS variance")
+})
+
+# ---- end internal CI helpers ----
+
 # ---- end effect sizes ----
 
 test_that("table_continuous_lm clipboard output can be exercised with a mocked writer", {
