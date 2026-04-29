@@ -145,9 +145,21 @@ unquoted column name or a single character column name.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>An optional character vector of display labels for the
-variables named in <code>select</code> (must be the same length and in the same
-order). When <code>NULL</code> (the default), column names are used as-is.</p></dd>
+<dd><p>Optional display labels for the variables. Two
+forms are accepted (matching <code><a href="table_continuous.html">table_continuous()</a></code> and
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>):</p><ul><li><p>A <strong>named character vector</strong> whose names match column names
+in <code>data</code> (e.g. <code>c(bmi = "Body mass index")</code>); only listed
+columns are relabelled, others fall back to attribute-based
+labels or the column name. <strong>Recommended form</strong>.</p></li>
+<li><p>A <strong>positional character vector</strong> of the same length as
+<code>select</code>, in the same order. Backward-compatible with the
+spicy &lt; 0.11.0 API.</p></li>
+</ul><p>When <code>NULL</code> (the default), column names are used as-is. If a
+variable label attribute is present (e.g. from <code>haven</code>), it is
+<em>not</em> picked up here – pass <code>labels = c(...)</code> explicitly. (The
+continuous companions auto-detect attribute labels; the
+categorical function is conservative because the indented row
+labels expect predictable text.)</p></dd>
 
 
 <dt id="arg-levels-keep">levels_keep<a class="anchor" aria-label="anchor" href="#arg-levels-keep"></a></dt>

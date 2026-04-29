@@ -67,9 +67,25 @@ table_categorical(
 
 - labels:
 
-  An optional character vector of display labels for the variables named
-  in `select` (must be the same length and in the same order). When
-  `NULL` (the default), column names are used as-is.
+  Optional display labels for the variables. Two forms are accepted
+  (matching
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)):
+
+  - A **named character vector** whose names match column names in
+    `data` (e.g. `c(bmi = "Body mass index")`); only listed columns are
+    relabelled, others fall back to attribute-based labels or the column
+    name. **Recommended form**.
+
+  - A **positional character vector** of the same length as `select`, in
+    the same order. Backward-compatible with the spicy \< 0.11.0 API.
+
+  When `NULL` (the default), column names are used as-is. If a variable
+  label attribute is present (e.g. from `haven`), it is *not* picked up
+  here – pass `labels = c(...)` explicitly. (The continuous companions
+  auto-detect attribute labels; the categorical function is conservative
+  because the indented row labels expect predictable text.)
 
 - levels_keep:
 

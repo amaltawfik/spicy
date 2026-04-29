@@ -145,6 +145,17 @@
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  `labels` argument now also accepts a **named character vector** keyed
+  by column name in `data` (e.g. `c(bmi = "Body mass index")`), matching
+  the API of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  Only listed columns are relabelled; unlisted ones fall back to their
+  column name. Unknown names error clearly. The legacy positional
+  character vector (length matching `select`) continues to work.
+
 - `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and
   `df2` as integer columns (previously numeric).
 
