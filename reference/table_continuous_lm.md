@@ -472,14 +472,14 @@ Wald test statistics use a heteroskedasticity-consistent sandwich
 estimator computed in-package (no extra dependency). The implementation
 follows the formulas reviewed in Zeileis (2004), the same set used by
 the canonical R implementation in the `sandwich` package
-(`sandwich::vcovHC`). For a brief guide:
+(`sandwich::vcovHC()`). For a brief guide:
 
 - `"HC0"` is the original White (1980) form; `"HC1"` adds the
   `n / (n - p)` correction (MacKinnon and White 1985), Stata's
   `, robust` default.
 
 - `"HC2"` and `"HC3"` use leverage-based residual rescalings (MacKinnon
-  and White 1985); `"HC3"` is the `sandwich::vcovHC` default for small
+  and White 1985); `"HC3"` is the `sandwich::vcovHC()` default for small
   to moderate samples (Long and Ervin 2000).
 
 - `"HC4"` adapts the leverage exponent for influential observations
@@ -643,7 +643,8 @@ and
 [`effectsize::omega_squared()`](https://easystats.github.io/effectsize/reference/eta_squared.html)
 (alternative effect-size computations and CIs); `cobalt::bal.tab()` for
 propensity-score covariate balance with weighted standardized mean
-differences (Austin and Stuart 2015); the `survey` package for
+differences (Austin and Stuart 2015); the
+[`survey`](https://CRAN.R-project.org/package=survey) package for
 design-based inference on complex-survey samples.
 
 Other spicy tables:
