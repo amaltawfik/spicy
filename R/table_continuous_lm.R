@@ -86,15 +86,26 @@
 #'     are dispatched to [clubSandwich::vcovCR()] and inference uses
 #'     [clubSandwich::coef_test()] / [clubSandwich::Wald_test()];
 #'     install `clubSandwich` to use them.
+#'   - `"bootstrap"`: nonparametric (resampling cases) or cluster
+#'     bootstrap variance, depending on whether `cluster` is supplied
+#'     (Davison and Hinkley 1997; Cameron, Gelbach and Miller 2008).
+#'     The number of replicates is set by `boot_n`. Inference is
+#'     asymptotic (`z` for single contrasts, `chi^2(q)` for the global
+#'     Wald test); CIs are Wald-type around the point estimate.
+#'   - `"jackknife"`: leave-one-out variance, or leave-one-cluster-out
+#'     when `cluster` is supplied (Quenouille 1956; MacKinnon and White
+#'     1985). Inference is asymptotic (`z` / `chi^2(q)`).
 #'
 #'   The `HC*` variants are computed via [sandwich::vcovHC()].
 #'   Coefficients (means, contrasts, slopes), `R²`, and the standardized
 #'   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
 #'   OLS/WLS fit and are not affected by `vcov`; only their standard errors,
 #'   CIs, and the test statistic of the contrast change.
-#' @param cluster Cluster identifier for cluster-robust standard errors.
-#'   Required when `vcov` is one of the `CR*` variants and forbidden
-#'   otherwise. Accepts:
+#' @param cluster Cluster identifier for cluster-aware variance
+#'   estimators. Required when `vcov` is one of the `CR*` variants;
+#'   optional and triggers a cluster bootstrap or leave-one-cluster-out
+#'   jackknife when `vcov` is `"bootstrap"` / `"jackknife"`; forbidden
+#'   for the other (independent-observation) variants. Accepts:
 #'   - `NULL` (default): no cluster structure.
 #'   - an unquoted column name in `data`.
 #'   - a single character column name in `data`.
@@ -104,7 +115,13 @@
 #'   Rows with `NA` in `cluster` are excluded from the analytic sample
 #'   for each outcome (alongside rows with `NA` in `y`, `by`, or
 #'   `weights`). At least two distinct non-missing cluster values are
-#'   required.
+#'   required. Multi-way clustering (a list / data.frame of multiple
+#'   cluster vectors) is not supported; use [sandwich::vcovCL()] or
+#'   [clubSandwich::vcovCR()] directly on the fitted model for that case.
+#' @param boot_n Integer. Number of bootstrap replicates used when
+#'   `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise.
+#'   Larger values reduce Monte-Carlo error in the bootstrap variance;
+#'   typical values for inference are `500`-`2000`.
 #' @param contrast Contrast display for categorical predictors. One of:
 #'   - `"auto"` (default): show a single reference contrast
 #'     `Delta (level2 - level1)` only when `by` has exactly two non-empty
@@ -313,16 +330,14 @@
 #'     pooled within-group SD for the unweighted two-group case);
 #'     `g = J * d` with `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin
 #'     1985). The sign matches the displayed `Delta (level2 - level1)`.
-#'     For published reports of two-group comparisons, *g* is the convention
-#'     recommended by Hedges and Olkin (1985), Lakens (2013), and the APA
-#'     Publication Manual (APA 2020).
+#'     For published reports of two-group comparisons, *g* is the
+#'     convention recommended by Hedges and Olkin (1985).
 #'   \item `"omega2"`: Hays' `ω²`, computed from weighted sums of
 #'     squares as `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and
 #'     truncated at 0 for small or null effects (Hays 1963; Olejnik and
 #'     Algina 2003). Less biased than `η²` (which equals `R²` in this
 #'     single-predictor design) and recommended for reporting variance
-#'     explained in ANOVA-style designs (Olejnik and Algina 2003;
-#'     Lakens 2013).
+#'     explained in ANOVA-style designs (Olejnik and Algina 2003).
 #' }
 #'
 #' All four effect sizes are point estimates derived from the OLS/WLS fit
@@ -343,9 +358,9 @@
 #'     older Hedges-Olkin normal approximation which is biased for small
 #'     samples. For Hedges' *g* the bounds inherit the *J* small-sample
 #'     correction.
-#'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004;
-#'     Smithson 2003). Bounds are converted from the noncentrality parameter
-#'     using `omega² = ncp / (ncp + N)` and `f² = ncp / N` respectively, with
+#'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004).
+#'     Bounds are converted from the noncentrality parameter using
+#'     `omega² = ncp / (ncp + N)` and `f² = ncp / N` respectively, with
 #'     `N = df1 + df2 + 1` (total sample size).
 #' }
 #' For the weighted case, the CI uses raw (unweighted) group counts and
@@ -391,6 +406,24 @@
 #' matches Stata's `, vce(cluster id)`. Effect sizes remain invariant
 #' to `vcov` (including `CR*`); only the SE, CI, test statistic, and
 #' `df2` of the contrast change.
+#'
+#' Two resampling-based estimators are also available without adding
+#' any dependency: `vcov = "bootstrap"` (nonparametric resampling-cases
+#' bootstrap; Davison and Hinkley 1997) and `vcov = "jackknife"`
+#' (leave-one-out delete-1; Quenouille 1956; MacKinnon and White 1985).
+#' Supplying `cluster` switches both to their cluster-aware variants
+#' (cluster bootstrap, Cameron, Gelbach and Miller 2008;
+#' leave-one-cluster-out jackknife). The number of bootstrap replicates
+#' is controlled by `boot_n` (default `1000`); replicates that fail to
+#' fit on rank-deficient resamples are dropped, with an explicit warning
+#' if more than half fail and a fallback to the classical OLS variance
+#' below 10 valid replicates. Inference for both estimators is
+#' asymptotic (`z` for single-coefficient contrasts, `chi^2(q)` for the
+#' multi-coefficient global Wald test on `k > 2` categorical
+#' predictors), reflected in the displayed test header. Use the
+#' bootstrap when the residual distribution is non-standard or the
+#' sample is small; use the jackknife as a closed-form, deterministic
+#' alternative.
 #'
 #' `R²`, adjusted `R²`, and the effect sizes remain ordinary
 #' least-squares (or weighted least-squares) statistics regardless of
@@ -441,10 +474,6 @@
 #' }
 #'
 #' @references
-#' American Psychological Association (2020).
-#'   *Publication Manual of the American Psychological Association*
-#'   (7th ed.). Washington, DC: APA.
-#'
 #' Austin, P. C., & Stuart, E. A. (2015).
 #'   Moving towards best practice when using inverse probability of
 #'   treatment weighting (IPTW) using the propensity score to estimate
@@ -455,6 +484,11 @@
 #' Bell, R. M., & McCaffrey, D. F. (2002).
 #'   Bias reduction in standard errors for linear regression with
 #'   multi-stage samples. *Survey Methodology*, **28**(2), 169--181.
+#'
+#' Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008).
+#'   Bootstrap-based improvements for inference with clustered errors.
+#'   *Review of Economics and Statistics*, **90**(3), 414--427.
+#'   \doi{10.1162/rest.90.3.414}
 #'
 #' Cohen, J. (1988).
 #'   *Statistical Power Analysis for the Behavioral Sciences*
@@ -483,6 +517,11 @@
 #'   *AStA Advances in Statistical Analysis*, **95**(2), 129--146.
 #'   \doi{10.1007/s10182-010-0141-2}
 #'
+#' Davison, A. C., & Hinkley, D. V. (1997).
+#'   *Bootstrap Methods and Their Application*.
+#'   Cambridge: Cambridge University Press.
+#'   \doi{10.1017/CBO9780511802843}
+#'
 #' DuMouchel, W. H., & Duncan, G. J. (1983).
 #'   Using sample survey weights in multiple regression analyses of
 #'   stratified samples. *Journal of the American Statistical
@@ -499,12 +538,6 @@
 #'
 #' Hedges, L. V., & Olkin, I. (1985).
 #'   *Statistical Methods for Meta-Analysis*. Orlando, FL: Academic Press.
-#'
-#' Lakens, D. (2013).
-#'   Calculating and reporting effect sizes to facilitate cumulative
-#'   science: A practical primer for *t*-tests and ANOVAs.
-#'   *Frontiers in Psychology*, **4**, 863.
-#'   \doi{10.3389/fpsyg.2013.00863}
 #'
 #' Long, J. S., & Ervin, L. H. (2000).
 #'   Using heteroscedasticity consistent standard errors in the linear
@@ -534,9 +567,9 @@
 #'   *Journal of Business & Economic Statistics*, **36**(4), 672--683.
 #'   \doi{10.1080/07350015.2016.1247004}
 #'
-#' Smithson, M. (2003).
-#'   *Confidence Intervals*. Quantitative Applications in the Social
-#'   Sciences, No. 140. Thousand Oaks, CA: Sage.
+#' Quenouille, M. H. (1956).
+#'   Notes on bias in estimation. *Biometrika*, **43**(3/4), 353--360.
+#'   \doi{10.1093/biomet/43.3-4.353}
 #'
 #' Steiger, J. H. (2004).
 #'   Beyond the *F* test: Effect size confidence intervals and tests of
@@ -775,9 +808,11 @@ table_continuous_lm <- function(
   vcov = c(
     "classical",
     "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5",
-    "CR0", "CR1", "CR2", "CR3"
+    "CR0", "CR1", "CR2", "CR3",
+    "bootstrap", "jackknife"
   ),
   cluster = NULL,
+  boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -866,6 +901,18 @@ table_continuous_lm <- function(
     )
   }
   p_digits <- as.integer(p_digits)
+  if (
+    !is.numeric(boot_n) ||
+      length(boot_n) != 1L ||
+      is.na(boot_n) ||
+      boot_n < 50
+  ) {
+    stop(
+      "`boot_n` must be a single positive integer (>= 50).",
+      call. = FALSE
+    )
+  }
+  boot_n <- as.integer(boot_n)
   if (!decimal_mark %in% c(".", ",")) {
     stop('`decimal_mark` must be "." or ",".', call. = FALSE)
   }
@@ -957,6 +1004,9 @@ table_continuous_lm <- function(
   cluster_vec <- resolve_cluster_argument(cluster_quo, data, "cluster")
 
   is_cr_vcov <- startsWith(vcov, "CR")
+  is_resampling_vcov <- vcov %in% c("bootstrap", "jackknife")
+  cluster_allowed <- is_cr_vcov || is_resampling_vcov
+
   if (is_cr_vcov && is.null(cluster_vec)) {
     stop(
       sprintf(
@@ -969,38 +1019,37 @@ table_continuous_lm <- function(
       call. = FALSE
     )
   }
-  if (!is_cr_vcov && !is.null(cluster_vec)) {
+  if (!cluster_allowed && !is.null(cluster_vec)) {
     stop(
       sprintf(
         paste0(
           "`cluster` is only used when `vcov` is one of the cluster-",
-          "robust variants (\"CR0\", \"CR1\", \"CR2\", \"CR3\"). ",
-          "Got `vcov = \"%s\"`."
+          "robust variants (\"CR0\", \"CR1\", \"CR2\", \"CR3\"), ",
+          "\"bootstrap\", or \"jackknife\". Got `vcov = \"%s\"`."
         ),
         vcov
       ),
       call. = FALSE
     )
   }
-  if (is_cr_vcov) {
-    if (!requireNamespace("clubSandwich", quietly = TRUE)) {
-      stop(
-        sprintf(
-          paste0(
-            "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
-            "Install it with install.packages(\"clubSandwich\")."
-          ),
-          vcov
+  if (is_cr_vcov && !requireNamespace("clubSandwich", quietly = TRUE)) {
+    stop(
+      sprintf(
+        paste0(
+          "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
+          "Install it with install.packages(\"clubSandwich\")."
         ),
-        call. = FALSE
-      )
-    }
-    if (length(unique(stats::na.omit(cluster_vec))) < 2L) {
-      stop(
-        "`cluster` must contain at least two distinct non-missing values.",
-        call. = FALSE
-      )
-    }
+        vcov
+      ),
+      call. = FALSE
+    )
+  }
+  if (!is.null(cluster_vec) &&
+        length(unique(stats::na.omit(cluster_vec))) < 2L) {
+    stop(
+      "`cluster` must contain at least two distinct non-missing values.",
+      call. = FALSE
+    )
   }
 
   available_names <- names(data)
@@ -1087,7 +1136,8 @@ table_continuous_lm <- function(
         vcov_type = vcov,
         contrast = contrast,
         ci_level = ci_level,
-        effect_size = effect_size
+        effect_size = effect_size,
+        boot_n = boot_n
       )
     }
   )
@@ -1187,7 +1237,8 @@ fit_outcome_lm_rows <- function(
   vcov_type,
   contrast,
   ci_level,
-  effect_size = "none"
+  effect_size = "none",
+  boot_n = 1000L
 ) {
   keep <- !is.na(y) & !is.na(predictor)
   if (!is.null(weights)) {
@@ -1214,7 +1265,8 @@ fit_outcome_lm_rows <- function(
         predictor_label = predictor_label,
         vcov_type = vcov_type,
         ci_level = ci_level,
-        effect_size = effect_size
+        effect_size = effect_size,
+        boot_n = boot_n
       )
     )
   }
@@ -1230,7 +1282,8 @@ fit_outcome_lm_rows <- function(
     vcov_type = vcov_type,
     contrast = contrast,
     ci_level = ci_level,
-    effect_size = effect_size
+    effect_size = effect_size,
+    boot_n = boot_n
   )
 }
 
@@ -1244,7 +1297,8 @@ fit_numeric_predictor_lm_rows <- function(
   predictor_label,
   vcov_type,
   ci_level,
-  effect_size = "none"
+  effect_size = "none",
+  boot_n = 1000L
 ) {
   if (length(y) < 2L || stats::sd(x, na.rm = TRUE) == 0) {
     return(make_empty_lm_rows(
@@ -1262,7 +1316,13 @@ fit_numeric_predictor_lm_rows <- function(
     stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(fit, vcov_type, cluster = cluster)
+  vc <- compute_lm_vcov(
+    fit,
+    vcov_type,
+    cluster = cluster,
+    weights = weights,
+    boot_n = boot_n
+  )
   model_stats <- compute_lm_model_stats(fit)
 
   inf <- compute_lm_coef_inference(
@@ -1292,7 +1352,7 @@ fit_numeric_predictor_lm_rows <- function(
     estimate_se = inf$se,
     estimate_ci_lower = inf$ci_lower,
     estimate_ci_upper = inf$ci_upper,
-    test_type = "t",
+    test_type = inf$test_type %||% "t",
     statistic = inf$statistic,
     df1 = 1L,
     df2 = inf$df,
@@ -1320,7 +1380,8 @@ fit_categorical_predictor_lm_rows <- function(
   vcov_type,
   contrast,
   ci_level,
-  effect_size = "none"
+  effect_size = "none",
+  boot_n = 1000L
 ) {
   x <- droplevels(coerce_lm_factor(x))
   if (length(y) < 2L || nlevels(x) < 2L) {
@@ -1339,7 +1400,13 @@ fit_categorical_predictor_lm_rows <- function(
     stats::lm(y ~ x, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(fit, vcov_type, cluster = cluster)
+  vc <- compute_lm_vcov(
+    fit,
+    vcov_type,
+    cluster = cluster,
+    weights = weights,
+    boot_n = boot_n
+  )
   cf <- stats::coef(fit)
   df_resid <- stats::df.residual(fit)
   crit <- if (is.finite(df_resid) && df_resid > 0) {
@@ -1388,7 +1455,10 @@ fit_categorical_predictor_lm_rows <- function(
     estimate_se = rep(NA_real_, length(levs)),
     estimate_ci_lower = rep(NA_real_, length(levs)),
     estimate_ci_upper = rep(NA_real_, length(levs)),
-    test_type = c("F", rep(NA_character_, length(levs) - 1L)),
+    test_type = c(
+      wald$test_type %||% "F",
+      rep(NA_character_, length(levs) - 1L)
+    ),
     statistic = c(wald$statistic, rep(NA_real_, length(levs) - 1L)),
     df1 = c(as.integer(wald$df1), rep(NA_integer_, length(levs) - 1L)),
     df2 = c(wald$df2, rep(NA_real_, length(levs) - 1L)),
@@ -1430,7 +1500,7 @@ fit_categorical_predictor_lm_rows <- function(
       out$estimate_se[row_idx] <- inf$se
       out$estimate_ci_lower[row_idx] <- inf$ci_lower
       out$estimate_ci_upper[row_idx] <- inf$ci_upper
-      out$test_type[row_idx] <- "t"
+      out$test_type[row_idx] <- inf$test_type %||% "t"
       out$statistic[row_idx] <- inf$statistic
       out$df1[row_idx] <- 1L
       out$df2[row_idx] <- inf$df
@@ -1516,11 +1586,18 @@ detect_weights_column_name <- function(quo, data) {
 }
 
 # Internal: resolve a `cluster` argument from a public function call
-# into a vector of length nrow(data). Accepts the same forms as
-# `weights` (NULL, unquoted column name, character column name, or a
-# raw vector evaluated in the calling environment), but without the
-# numeric-only restriction: cluster IDs may be factor, character,
-# integer, or any atomic type.
+# into either NULL or a single atomic vector of length nrow(data).
+# Accepts the same forms as `weights` (NULL, unquoted column name,
+# character column name, or a raw vector evaluated in the calling
+# environment), but without the numeric-only restriction: cluster IDs
+# may be factor, character, integer, or any atomic type.
+#
+# Multi-way clustering (`cluster = list(c1, c2)`) is intentionally
+# not supported in this iteration, because the canonical R backends
+# disagree: clubSandwich (used here for CR2/CR3 with Satterthwaite
+# df) only supports a single cluster vector, while sandwich::vcovCL
+# supports multi-way but only at CR0/CR1. A future release may add a
+# dedicated `multiway` argument that routes to sandwich::vcovCL.
 resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   if (rlang::quo_is_null(quo)) {
     return(NULL)
@@ -1551,6 +1628,22 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
 
   if (is.null(val)) {
     return(NULL)
+  }
+
+  if (is.list(val) && !is.atomic(val)) {
+    stop(
+      sprintf(
+        paste0(
+          "Multi-way clustering (`%s` as a list / data.frame) is not ",
+          "supported in this version. Supply a single atomic cluster ",
+          "vector or column name. For two-way clustering at CR0 / CR1 ",
+          "level, use `sandwich::vcovCL()` directly on the fitted ",
+          "`lm()`."
+        ),
+        arg
+      ),
+      call. = FALSE
+    )
   }
 
   if (is.character(val) && length(val) == 1L && val %in% names(data)) {
@@ -1585,9 +1678,32 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   val
 }
 
-compute_lm_vcov <- function(fit, type = "classical", cluster = NULL) {
+compute_lm_vcov <- function(
+  fit,
+  type = "classical",
+  cluster = NULL,
+  weights = NULL,
+  boot_n = 1000L
+) {
   if (identical(type, "classical")) {
     return(stats::vcov(fit))
+  }
+
+  if (identical(type, "bootstrap")) {
+    return(compute_lm_vcov_bootstrap(
+      fit,
+      cluster = cluster,
+      weights = weights,
+      boot_n = boot_n
+    ))
+  }
+
+  if (identical(type, "jackknife")) {
+    return(compute_lm_vcov_jackknife(
+      fit,
+      cluster = cluster,
+      weights = weights
+    ))
   }
 
   if (startsWith(type, "HC")) {
@@ -1659,6 +1775,187 @@ compute_lm_vcov <- function(fit, type = "classical", cluster = NULL) {
   )
 }
 
+# Internal: nonparametric / cluster bootstrap variance-covariance
+# matrix of the coefficient vector. Resamples observations (or whole
+# clusters when `cluster` is supplied), refits `lm()` on each
+# replicate, and returns the empirical covariance of the bootstrapped
+# coefficients. References: Davison & Hinkley (1997); Cameron, Gelbach
+# & Miller (2008) for the cluster bootstrap.
+compute_lm_vcov_bootstrap <- function(
+  fit,
+  cluster = NULL,
+  weights = NULL,
+  boot_n = 1000L
+) {
+  mf <- stats::model.frame(fit)
+  # Drop the auxiliary "(weights)" column, if any: it carries a
+  # parenthesised name that confuses `lm()` when `mf` is passed back
+  # in as `data`. Weights are reattached explicitly via `weights =`.
+  mf[["(weights)"]] <- NULL
+  formula <- stats::formula(fit)
+  n_obs <- nrow(mf)
+  orig_coefs <- stats::coef(fit)
+  k <- length(orig_coefs)
+  coef_names <- names(orig_coefs)
+
+  if (is.null(weights)) {
+    weights <- stats::weights(fit)
+  }
+
+  refit <- function(boot_idx) {
+    sub_data <- mf[boot_idx, , drop = FALSE]
+    sub_w <- if (is.null(weights)) NULL else weights[boot_idx]
+    args <- list(formula = formula, data = sub_data)
+    if (!is.null(sub_w)) {
+      args$weights <- sub_w
+    }
+    tryCatch(
+      suppressWarnings(do.call(stats::lm, args)),
+      error = function(e) NULL
+    )
+  }
+
+  beta_boot <- matrix(NA_real_, nrow = boot_n, ncol = k)
+  colnames(beta_boot) <- coef_names
+
+  if (is.null(cluster)) {
+    # Nonparametric obs bootstrap
+    for (b in seq_len(boot_n)) {
+      boot_idx <- sample.int(n_obs, n_obs, replace = TRUE)
+      fit_b <- refit(boot_idx)
+      if (!is.null(fit_b)) {
+        coefs_b <- stats::coef(fit_b)
+        common <- intersect(names(coefs_b), coef_names)
+        beta_boot[b, common] <- coefs_b[common]
+      }
+    }
+  } else {
+    # Cluster bootstrap: resample whole clusters
+    unique_g <- unique(cluster)
+    G <- length(unique_g)
+    cl_indices <- split(seq_along(cluster), cluster)
+    for (b in seq_len(boot_n)) {
+      boot_g <- sample(unique_g, G, replace = TRUE)
+      boot_idx <- unlist(cl_indices[as.character(boot_g)], use.names = FALSE)
+      fit_b <- refit(boot_idx)
+      if (!is.null(fit_b)) {
+        coefs_b <- stats::coef(fit_b)
+        common <- intersect(names(coefs_b), coef_names)
+        beta_boot[b, common] <- coefs_b[common]
+      }
+    }
+  }
+
+  valid <- stats::complete.cases(beta_boot)
+  n_valid <- sum(valid)
+  if (n_valid < 10L) {
+    warning(
+      sprintf(
+        paste0(
+          "Bootstrap: only %d / %d valid replicates; bootstrap vcov ",
+          "is unreliable. Falling back to the classical OLS variance."
+        ),
+        n_valid,
+        boot_n
+      ),
+      call. = FALSE
+    )
+    return(stats::vcov(fit))
+  }
+  if (n_valid < boot_n %/% 2L) {
+    warning(
+      sprintf(
+        paste0(
+          "Bootstrap: %d / %d replicates failed (rank-deficient ",
+          "resamples?). The bootstrap vcov is computed from the ",
+          "%d valid replicates."
+        ),
+        boot_n - n_valid,
+        boot_n,
+        n_valid
+      ),
+      call. = FALSE
+    )
+  }
+
+  beta_boot <- beta_boot[valid, , drop = FALSE]
+  stats::cov(beta_boot)
+}
+
+# Internal: leave-one-out (or leave-one-cluster-out) jackknife
+# variance-covariance matrix of the coefficient vector. References:
+# Quenouille (1956) and Tukey (1958) for the original jackknife;
+# MacKinnon & White (1985) for the linear-regression form.
+compute_lm_vcov_jackknife <- function(
+  fit,
+  cluster = NULL,
+  weights = NULL
+) {
+  mf <- stats::model.frame(fit)
+  mf[["(weights)"]] <- NULL
+  formula <- stats::formula(fit)
+  n_obs <- nrow(mf)
+  orig_coefs <- stats::coef(fit)
+  k <- length(orig_coefs)
+  coef_names <- names(orig_coefs)
+
+  if (is.null(weights)) {
+    weights <- stats::weights(fit)
+  }
+
+  refit <- function(jack_idx) {
+    sub_data <- mf[jack_idx, , drop = FALSE]
+    sub_w <- if (is.null(weights)) NULL else weights[jack_idx]
+    args <- list(formula = formula, data = sub_data)
+    if (!is.null(sub_w)) {
+      args$weights <- sub_w
+    }
+    tryCatch(
+      suppressWarnings(do.call(stats::lm, args)),
+      error = function(e) NULL
+    )
+  }
+
+  if (is.null(cluster)) {
+    G <- n_obs
+    units <- seq_len(n_obs)
+    leave_out <- function(g) which(units != g)
+  } else {
+    unique_g <- unique(cluster)
+    G <- length(unique_g)
+    leave_out <- function(g) which(cluster != unique_g[g])
+  }
+
+  beta_jack <- matrix(NA_real_, nrow = G, ncol = k)
+  colnames(beta_jack) <- coef_names
+  for (g in seq_len(G)) {
+    fit_g <- refit(leave_out(g))
+    if (!is.null(fit_g)) {
+      coefs_g <- stats::coef(fit_g)
+      common <- intersect(names(coefs_g), coef_names)
+      beta_jack[g, common] <- coefs_g[common]
+    }
+  }
+
+  valid <- stats::complete.cases(beta_jack)
+  n_valid <- sum(valid)
+  if (n_valid < 2L) {
+    warning(
+      paste0(
+        "Jackknife: fewer than 2 valid leave-out replicates; ",
+        "falling back to the classical OLS variance."
+      ),
+      call. = FALSE
+    )
+    return(stats::vcov(fit))
+  }
+  beta_jack <- beta_jack[valid, , drop = FALSE]
+  beta_mean <- colMeans(beta_jack)
+  centered <- sweep(beta_jack, 2L, beta_mean, FUN = "-")
+  scale <- (n_valid - 1L) / n_valid
+  scale * crossprod(centered)
+}
+
 # Internal: single-coefficient inference (estimate, SE, t, df, p, CI).
 # For classical / HC* mode, uses df.residual(fit) and the supplied vcov.
 # For CR* mode, uses clubSandwich::coef_test() with Satterthwaite df.
@@ -1673,6 +1970,24 @@ compute_lm_coef_inference <- function(
 ) {
   cf <- stats::coef(fit)
   estimate <- unname(cf[coef_idx])
+
+  # Resampling-based vcov: asymptotic z inference (df = Inf).
+  if (vcov_type %in% c("bootstrap", "jackknife")) {
+    se_est <- sqrt(diag(vc))[coef_idx]
+    stat <- estimate / se_est
+    crit <- stats::qnorm(1 - (1 - ci_level) / 2)
+    pval <- 2 * stats::pnorm(abs(stat), lower.tail = FALSE)
+    return(list(
+      estimate = estimate,
+      se = unname(se_est),
+      statistic = unname(stat),
+      df = Inf,
+      p.value = unname(pval),
+      ci_lower = estimate - crit * unname(se_est),
+      ci_upper = estimate + crit * unname(se_est),
+      test_type = "z"
+    ))
+  }
 
   if (startsWith(vcov_type, "CR") && !is.null(cluster)) {
     ct <- tryCatch(
@@ -1703,10 +2018,11 @@ compute_lm_coef_inference <- function(
         estimate = estimate,
         se = unname(se_est),
         statistic = unname(stat),
-        df = unname(df),
+        df = as.double(unname(df)),
         p.value = unname(pval),
         ci_lower = estimate - crit * unname(se_est),
-        ci_upper = estimate + crit * unname(se_est)
+        ci_upper = estimate + crit * unname(se_est),
+        test_type = "t"
       ))
     }
   }
@@ -1728,7 +2044,8 @@ compute_lm_coef_inference <- function(
     df = as.double(unname(df)),
     p.value = unname(pval),
     ci_lower = estimate - crit * unname(se_est),
-    ci_upper = estimate + crit * unname(se_est)
+    ci_upper = estimate + crit * unname(se_est),
+    test_type = "t"
   )
 }
 
@@ -1754,7 +2071,29 @@ compute_lm_wald_test <- function(
       statistic = NA_real_,
       df1 = NA_integer_,
       df2 = NA_integer_,
-      p.value = NA_real_
+      p.value = NA_real_,
+      test_type = NA_character_
+    ))
+  }
+
+  # Resampling-based vcov: asymptotic chi^2 (Wald) test, df = q.
+  if (vcov_type %in% c("bootstrap", "jackknife")) {
+    vc_sub <- vc[coef_idx_set, coef_idx_set, drop = FALSE]
+    chi2 <- tryCatch(
+      as.numeric(crossprod(beta_sub, solve(vc_sub, beta_sub))),
+      error = function(e) NA_real_
+    )
+    pval <- if (is.na(chi2) || !is.finite(chi2)) {
+      NA_real_
+    } else {
+      stats::pchisq(chi2, df = q, lower.tail = FALSE)
+    }
+    return(list(
+      statistic = chi2,
+      df1 = as.integer(q),
+      df2 = Inf,
+      p.value = pval,
+      test_type = "chi2"
     ))
   }
 
@@ -1787,7 +2126,8 @@ compute_lm_wald_test <- function(
         statistic = unname(wt$Fstat[1]),
         df1 = as.integer(unname(wt$df_num[1])),
         df2 = as.double(unname(wt$df_denom[1])),
-        p.value = unname(wt$p_val[1])
+        p.value = unname(wt$p_val[1]),
+        test_type = "F"
       ))
     }
   }
@@ -1807,7 +2147,8 @@ compute_lm_wald_test <- function(
     statistic = global_stat,
     df1 = as.integer(q),
     df2 = as.double(df_resid_classical),
-    p.value = global_p
+    p.value = global_p,
+    test_type = "F"
   )
 }
 
@@ -2995,17 +3336,12 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
   if (!isTRUE(show_statistic)) {
     return(NULL)
   }
-  predictor_type <- unique(block$predictor_type)
-  predictor_type <- predictor_type[!is.na(predictor_type)][1]
-  df1_vals <- unique(stats::na.omit(block$df1))
-  df2_vals <- unique(stats::na.omit(block$df2))
-  same_df1 <- length(df1_vals) == 1L
-  same_df2 <- length(df2_vals) == 1L
 
   # df1 is always integer (number of constraints). df2 may be a
-  # fractional Satterthwaite df under cluster-robust inference; show
-  # as integer when whole, with a single decimal otherwise (e.g.
-  # `t(45.3)` instead of `t(45)`).
+  # fractional Satterthwaite df under cluster-robust inference;
+  # show as integer when whole, with a single decimal otherwise
+  # (e.g. `t(45.3)` instead of `t(45)`). Asymptotic methods (z,
+  # chi2) carry no df2 in the displayed header.
   format_df <- function(d) {
     d <- unname(d)
     if (!is.finite(d)) {
@@ -3017,30 +3353,58 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
     formatC(d, format = "f", digits = 1L)
   }
 
-  if (identical(predictor_type, "continuous")) {
-    if (isTRUE(exact) && same_df2) {
+  # Choose the displayed test. For numeric or binary categorical
+  # predictors, the user-relevant test is the single-coefficient
+  # contrast (`"t"` or asymptotic `"z"`). For k > 2 categorical
+  # predictors, it is the multi-coefficient global Wald (`"F"` or
+  # asymptotic `"chi2"`). When both kinds appear in the block (binary
+  # categorical: row 1 has `"F"`, row 2 has `"t"`), the single-coef
+  # one wins because that is the row the wide table actually shows.
+  test_types <- unique(stats::na.omit(block$test_type))
+  if (length(test_types) == 0L) {
+    return(NULL)
+  }
+  single_coef <- intersect(test_types, c("t", "z"))
+  multi_coef <- intersect(test_types, c("F", "chi2"))
+  chosen <- if (length(single_coef) > 0L) single_coef[1] else multi_coef[1]
+  if (length(chosen) == 0L || is.na(chosen)) {
+    return(test_types[1])
+  }
+
+  rows_for_chosen <- which(block$test_type == chosen)
+  df1_vals <- unique(stats::na.omit(block$df1[rows_for_chosen]))
+  df2_vals <- unique(stats::na.omit(block$df2[rows_for_chosen]))
+
+  if (identical(chosen, "z")) {
+    return("z")
+  }
+  if (identical(chosen, "chi2")) {
+    if (isTRUE(exact) && length(df1_vals) == 1L) {
+      return(paste0("χ²(", format_df(df1_vals), ")"))
+    }
+    return("χ²")
+  }
+  if (identical(chosen, "t")) {
+    if (isTRUE(exact) && length(df2_vals) == 1L) {
       return(paste0("t(", format_df(df2_vals), ")"))
     }
     return("t")
   }
-  if (length(unique(stats::na.omit(block$level))) == 2L) {
-    if (isTRUE(exact) && same_df2) {
-      return(paste0("t(", format_df(df2_vals), ")"))
-    }
-    return("t")
-  }
-  if (isTRUE(exact) && same_df1 && same_df2) {
-    return(
-      paste0(
-        "F(",
-        format_df(df1_vals),
-        ", ",
-        format_df(df2_vals),
-        ")"
+  if (identical(chosen, "F")) {
+    if (isTRUE(exact) && length(df1_vals) == 1L && length(df2_vals) == 1L) {
+      return(
+        paste0(
+          "F(",
+          format_df(df1_vals),
+          ", ",
+          format_df(df2_vals),
+          ")"
+        )
       )
-    )
+    }
+    return("F")
   }
-  "F"
+  chosen
 }
 
 format_effect_size_header_lm <- function(effect_size = "f2") {

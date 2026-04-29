@@ -12,8 +12,9 @@ table_continuous_lm(
   regex = FALSE,
   weights = NULL,
   vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5", "CR0", "CR1",
-    "CR2", "CR3"),
+    "CR2", "CR3", "bootstrap", "jackknife"),
   cluster = NULL,
+  boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -122,6 +123,15 @@ Stata's \verb{, vce(cluster id)} default. Cluster-robust variants
 are dispatched to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} and inference uses
 \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} / \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}};
 install \code{clubSandwich} to use them.
+\item \code{"bootstrap"}: nonparametric (resampling cases) or cluster
+bootstrap variance, depending on whether \code{cluster} is supplied
+(Davison and Hinkley 1997; Cameron, Gelbach and Miller 2008).
+The number of replicates is set by \code{boot_n}. Inference is
+asymptotic (\code{z} for single contrasts, \code{chi^2(q)} for the global
+Wald test); CIs are Wald-type around the point estimate.
+\item \code{"jackknife"}: leave-one-out variance, or leave-one-cluster-out
+when \code{cluster} is supplied (Quenouille 1956; MacKinnon and White
+1985). Inference is asymptotic (\code{z} / \code{chi^2(q)}).
 }
 
 The \verb{HC*} variants are computed via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}.
@@ -130,9 +140,11 @@ effect sizes (\code{f2}, \code{d}, \code{g}, \code{omega2}) are point estimates 
 OLS/WLS fit and are not affected by \code{vcov}; only their standard errors,
 CIs, and the test statistic of the contrast change.}
 
-\item{cluster}{Cluster identifier for cluster-robust standard errors.
-Required when \code{vcov} is one of the \verb{CR*} variants and forbidden
-otherwise. Accepts:
+\item{cluster}{Cluster identifier for cluster-aware variance
+estimators. Required when \code{vcov} is one of the \verb{CR*} variants;
+optional and triggers a cluster bootstrap or leave-one-cluster-out
+jackknife when \code{vcov} is \code{"bootstrap"} / \code{"jackknife"}; forbidden
+for the other (independent-observation) variants. Accepts:
 \itemize{
 \item \code{NULL} (default): no cluster structure.
 \item an unquoted column name in \code{data}.
@@ -144,7 +156,14 @@ environment (factor, character, integer, etc.).
 Rows with \code{NA} in \code{cluster} are excluded from the analytic sample
 for each outcome (alongside rows with \code{NA} in \code{y}, \code{by}, or
 \code{weights}). At least two distinct non-missing cluster values are
-required.}
+required. Multi-way clustering (a list / data.frame of multiple
+cluster vectors) is not supported; use \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} or
+\code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} directly on the fitted model for that case.}
+
+\item{boot_n}{Integer. Number of bootstrap replicates used when
+\code{vcov = "bootstrap"}. Defaults to \code{1000}. Ignored otherwise.
+Larger values reduce Monte-Carlo error in the bootstrap variance;
+typical values for inference are \code{500}-\code{2000}.}
 
 \item{contrast}{Contrast display for categorical predictors. One of:
 \itemize{
@@ -401,16 +420,14 @@ primary use is in \emph{a priori} power analysis (e.g. G*Power).
 pooled within-group SD for the unweighted two-group case);
 \code{g = J * d} with \code{J = 1 - 3 / (4 * df_resid - 1)} (Hedges and Olkin
 1985). The sign matches the displayed \code{Delta (level2 - level1)}.
-For published reports of two-group comparisons, \emph{g} is the convention
-recommended by Hedges and Olkin (1985), Lakens (2013), and the APA
-Publication Manual (APA 2020).
+For published reports of two-group comparisons, \emph{g} is the
+convention recommended by Hedges and Olkin (1985).
 \item \code{"omega2"}: Hays' \verb{ω²}, computed from weighted sums of
 squares as \code{(SS_effect - df_effect * MSE) / (SS_total + MSE)} and
 truncated at 0 for small or null effects (Hays 1963; Olejnik and
 Algina 2003). Less biased than \verb{η²} (which equals \verb{R²} in this
 single-predictor design) and recommended for reporting variance
-explained in ANOVA-style designs (Olejnik and Algina 2003;
-Lakens 2013).
+explained in ANOVA-style designs (Olejnik and Algina 2003).
 }
 
 All four effect sizes are point estimates derived from the OLS/WLS fit
@@ -431,9 +448,9 @@ across sample sizes (Cousineau and Goulet-Pelletier 2021), unlike the
 older Hedges-Olkin normal approximation which is biased for small
 samples. For Hedges' \emph{g} the bounds inherit the \emph{J} small-sample
 correction.
-\item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004;
-Smithson 2003). Bounds are converted from the noncentrality parameter
-using \verb{omega² = ncp / (ncp + N)} and \verb{f² = ncp / N} respectively, with
+\item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
+Bounds are converted from the noncentrality parameter using
+\verb{omega² = ncp / (ncp + N)} and \verb{f² = ncp / N} respectively, with
 \code{N = df1 + df2 + 1} (total sample size).
 }
 For the weighted case, the CI uses raw (unweighted) group counts and
@@ -479,6 +496,24 @@ Satterthwaite degrees of freedom in \code{df2}, which the displayed
 matches Stata's \verb{, vce(cluster id)}. Effect sizes remain invariant
 to \code{vcov} (including \verb{CR*}); only the SE, CI, test statistic, and
 \code{df2} of the contrast change.
+
+Two resampling-based estimators are also available without adding
+any dependency: \code{vcov = "bootstrap"} (nonparametric resampling-cases
+bootstrap; Davison and Hinkley 1997) and \code{vcov = "jackknife"}
+(leave-one-out delete-1; Quenouille 1956; MacKinnon and White 1985).
+Supplying \code{cluster} switches both to their cluster-aware variants
+(cluster bootstrap, Cameron, Gelbach and Miller 2008;
+leave-one-cluster-out jackknife). The number of bootstrap replicates
+is controlled by \code{boot_n} (default \code{1000}); replicates that fail to
+fit on rank-deficient resamples are dropped, with an explicit warning
+if more than half fail and a fallback to the classical OLS variance
+below 10 valid replicates. Inference for both estimators is
+asymptotic (\code{z} for single-coefficient contrasts, \code{chi^2(q)} for the
+multi-coefficient global Wald test on \code{k > 2} categorical
+predictors), reflected in the displayed test header. Use the
+bootstrap when the residual distribution is non-standard or the
+sample is small; use the jackknife as a closed-form, deterministic
+alternative.
 
 \verb{R²}, adjusted \verb{R²}, and the effect sizes remain ordinary
 least-squares (or weighted least-squares) statistics regardless of
@@ -718,10 +753,6 @@ if (
 
 }
 \references{
-American Psychological Association (2020).
-\emph{Publication Manual of the American Psychological Association}
-(7th ed.). Washington, DC: APA.
-
 Austin, P. C., & Stuart, E. A. (2015).
 Moving towards best practice when using inverse probability of
 treatment weighting (IPTW) using the propensity score to estimate
@@ -732,6 +763,11 @@ causal treatment effects in observational studies.
 Bell, R. M., & McCaffrey, D. F. (2002).
 Bias reduction in standard errors for linear regression with
 multi-stage samples. \emph{Survey Methodology}, \strong{28}(2), 169--181.
+
+Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008).
+Bootstrap-based improvements for inference with clustered errors.
+\emph{Review of Economics and Statistics}, \strong{90}(3), 414--427.
+\doi{10.1162/rest.90.3.414}
 
 Cohen, J. (1988).
 \emph{Statistical Power Analysis for the Behavioral Sciences}
@@ -760,6 +796,11 @@ for the linear regression model.
 \emph{AStA Advances in Statistical Analysis}, \strong{95}(2), 129--146.
 \doi{10.1007/s10182-010-0141-2}
 
+Davison, A. C., & Hinkley, D. V. (1997).
+\emph{Bootstrap Methods and Their Application}.
+Cambridge: Cambridge University Press.
+\doi{10.1017/CBO9780511802843}
+
 DuMouchel, W. H., & Duncan, G. J. (1983).
 Using sample survey weights in multiple regression analyses of
 stratified samples. \emph{Journal of the American Statistical
@@ -776,12 +817,6 @@ Hays, W. L. (1963).
 
 Hedges, L. V., & Olkin, I. (1985).
 \emph{Statistical Methods for Meta-Analysis}. Orlando, FL: Academic Press.
-
-Lakens, D. (2013).
-Calculating and reporting effect sizes to facilitate cumulative
-science: A practical primer for \emph{t}-tests and ANOVAs.
-\emph{Frontiers in Psychology}, \strong{4}, 863.
-\doi{10.3389/fpsyg.2013.00863}
 
 Long, J. S., & Ervin, L. H. (2000).
 Using heteroscedasticity consistent standard errors in the linear
@@ -811,9 +846,9 @@ hypothesis testing in fixed effects models.
 \emph{Journal of Business & Economic Statistics}, \strong{36}(4), 672--683.
 \doi{10.1080/07350015.2016.1247004}
 
-Smithson, M. (2003).
-\emph{Confidence Intervals}. Quantitative Applications in the Social
-Sciences, No. 140. Thousand Oaks, CA: Sage.
+Quenouille, M. H. (1956).
+Notes on bias in estimation. \emph{Biometrika}, \strong{43}(3/4), 353--360.
+\doi{10.1093/biomet/43.3-4.353}
 
 Steiger, J. H. (2004).
 Beyond the \emph{F} test: Effect size confidence intervals and tests of

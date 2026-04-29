@@ -19,6 +19,24 @@
   `Suggests`; `cluster` is required when `vcov` is `"CR*"` and
   forbidden otherwise.
 
+* `table_continuous_lm()` gains two resampling-based variance
+  estimators: `vcov = "bootstrap"` (nonparametric resampling-cases
+  bootstrap or — when `cluster` is supplied — cluster bootstrap;
+  Davison & Hinkley 1997; Cameron, Gelbach & Miller 2008) and
+  `vcov = "jackknife"` (leave-one-out, or leave-one-cluster-out when
+  `cluster` is supplied; Quenouille 1956; MacKinnon & White 1985).
+  Both estimators are implemented in pure base R (no new dependency)
+  and use asymptotic inference: `z` for single-coefficient contrasts
+  and `chi^2(q)` for the global Wald test on `k > 2` categorical
+  predictors, rendered in the displayed test header. A new `boot_n`
+  argument (default `1000`) controls the number of bootstrap
+  replicates. Replicates that fail to fit (rank-deficient resamples)
+  are dropped with a clear warning if more than half fail; if fewer
+  than 10 valid replicates remain, the function falls back to the
+  classical OLS variance with an explicit warning. As with all `vcov`
+  variants, point estimates and effect sizes are unchanged; only the
+  SE / CI / test statistic of the contrast are affected.
+
 * `table_continuous_lm()` gains three new `effect_size` choices alongside
   `"f2"`: Cohen's `"d"` and Hedges' `"g"` for two-group comparisons, and
   Hays' `"omega2"` (truncated at 0) for any predictor type. All four are
