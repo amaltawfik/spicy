@@ -1,5 +1,48 @@
 # spicy (development version)
 
+## New features
+
+* `table_continuous_lm()` gains three new `effect_size` choices alongside
+  `"f2"`: Cohen's `"d"` and Hedges' `"g"` for two-group comparisons, and
+  Hays' `"omega2"` (truncated at 0) for any predictor type. All four are
+  derived from the fitted (possibly weighted) `lm()` to stay consistent with
+  the displayed contrast and CI, and are invariant to `vcov` (which only
+  affects the SE/CI/test statistic of the contrast). `"d"` and `"g"` error
+  early when `by` is numeric or has a number of non-empty levels other than
+  two. The convention `es_type` strings (`"d"`, `"g"`, `"omega2"`) differ
+  from the auto-selected ones used by `table_continuous()` (`"hedges_g"`,
+  `"eta_sq"`, ...), reflecting the explicit user-driven nature of the
+  argument here.
+
+* `table_continuous_lm()` gains an `effect_size_ci` argument (default
+  `FALSE`). When `TRUE` and an effect size is selected, the table reports a
+  noncentral-distribution confidence interval at `ci_level`. The method
+  matches the modern consensus across commercial software (Stata `esize` /
+  `estat esize`, SAS `PROC TTEST` and `PROC GLM EFFECTSIZE` 14.2+) and
+  mainstream R packages (`effectsize`, `MOTE`, `TOSTER`, `effsize`):
+  noncentral *t* inversion (Steiger and Fouladi 1997; Goulet-Pelletier and
+  Cousineau 2018) for `"d"` and `"g"`, noncentral *F* inversion (Steiger
+  2004) for `"omega2"` and `"f2"`. CIs are invariant to `vcov`. In the
+  printed and rendered outputs, the effect size is shown with bracketed
+  bounds (e.g. `0.18 [0.07, 0.30]`); in the wide raw `output = "data.frame"`,
+  the bounds appear as numeric columns `effect_size_ci_lower` and
+  `effect_size_ci_upper`; in `output = "long"`, the bounds are always
+  present in `es_ci_lower` and `es_ci_upper`.
+
+## Breaking changes
+
+* `table_continuous_lm(..., output = "long")` now returns `NA` in `es_type`
+  and `es_value` when `effect_size = "none"`. Previously these columns were
+  populated with `"f2"` and the corresponding f² value regardless of the
+  argument, which contradicted the explicit `"none"` request. To restore the
+  old behavior, set `effect_size = "f2"` explicitly. The wide and rendered
+  outputs are unaffected.
+
+* `table_continuous_lm(..., output = "long")` renames the `sum_w` column to
+  `weighted_n`, matching the `Weighted n` column already used in the wide
+  and rendered outputs and the `show_weighted_n` argument. Code that read
+  the long-format `sum_w` column should be updated to read `weighted_n`.
+
 # spicy 0.10.0
 
 ## New features

@@ -34,10 +34,12 @@ test_that("table_continuous_lm returns expected raw structure", {
       "p.value",
       "es_type",
       "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
       "r2",
       "adj_r2",
       "n",
-      "sum_w"
+      "weighted_n"
     )
   )
   expect_equal(nrow(out), 6L)
@@ -92,7 +94,8 @@ test_that("table_continuous_lm binary factor stores means and auto contrast", {
       mean(df$Sepal.Length[df$Species == "setosa"])
   )
   expect_false(is.na(out$p.value[1]))
-  expect_equal(out$es_type[1], "f2")
+  expect_true(is.na(out$es_type[1]))
+  expect_true(is.na(out$es_value[1]))
 })
 
 test_that("table_continuous_lm 3+ level factor reports estimated means", {
@@ -145,7 +148,7 @@ test_that("table_continuous_lm weights accept column names", {
     output = "long"
   )
 
-  expect_equal(out$sum_w[1], sum(df$w))
+  expect_equal(out$weighted_n[1], sum(df$w))
   expect_equal(
     out$emmean[2],
     weighted.mean(df$y[df$g == "B"], df$w[df$g == "B"])
@@ -960,6 +963,478 @@ test_that("table_continuous_lm word output works", {
   expect_equal(out, tmp)
   expect_true(file.exists(tmp))
 })
+
+# ---- effect sizes ----
+
+test_that("effect_size = 'd' matches beta / sigma from lm for binary by", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  fit <- lm(Sepal.Length ~ Species, data = df)
+  expected_d <- unname(coef(fit)[2]) / summary(fit)$sigma
+
+  out <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    output = "long"
+  )
+
+  expect_equal(out$es_type[1], "d")
+  expect_equal(out$es_value[1], expected_d)
+})
+
+test_that("effect_size = 'g' applies the Hedges small-sample correction", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  fit <- lm(Sepal.Length ~ Species, data = df)
+  d <- unname(coef(fit)[2]) / summary(fit)$sigma
+  df_resid <- df.residual(fit)
+  expected_g <- (1 - 3 / (4 * df_resid - 1)) * d
+
+  out <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "g",
+    output = "long"
+  )
+
+  expect_equal(out$es_type[1], "g")
+  expect_equal(out$es_value[1], expected_g)
+})
+
+test_that("effect_size = 'd' / 'g' work with weights via the WLS fit", {
+  df <- data.frame(
+    y = c(1, 2, 3, 5, 6, 8, 10, 12),
+    g = factor(c("A", "A", "A", "A", "B", "B", "B", "B")),
+    w = c(1, 2, 1, 2, 1, 2, 1, 2)
+  )
+  fit <- lm(y ~ g, data = df, weights = w)
+  expected_d <- unname(coef(fit)[2]) / summary(fit)$sigma
+  expected_g <- (1 - 3 / (4 * df.residual(fit) - 1)) * expected_d
+
+  out_d <- table_continuous_lm(
+    df,
+    select = y,
+    by = g,
+    weights = w,
+    effect_size = "d",
+    output = "long"
+  )
+  out_g <- table_continuous_lm(
+    df,
+    select = y,
+    by = g,
+    weights = w,
+    effect_size = "g",
+    output = "long"
+  )
+
+  expect_equal(out_d$es_value[1], expected_d)
+  expect_equal(out_g$es_value[1], expected_g)
+})
+
+test_that("effect_size = 'd' / 'g' error when by is not a 2-level categorical", {
+  expect_error(
+    table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size = "d",
+      output = "long"
+    ),
+    "exactly two non-empty levels"
+  )
+  expect_error(
+    table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size = "g",
+      output = "long"
+    ),
+    "exactly two non-empty levels"
+  )
+  expect_error(
+    table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Petal.Width,
+      effect_size = "d",
+      output = "long"
+    ),
+    "exactly two non-empty levels"
+  )
+})
+
+test_that("effect_size = 'omega2' matches Hays' formula and is truncated at 0", {
+  fit <- lm(Sepal.Length ~ Species, data = iris)
+  ss_total <- sum((iris$Sepal.Length - mean(iris$Sepal.Length))^2)
+  ss_resid <- sum(residuals(fit)^2)
+  ss_effect <- ss_total - ss_resid
+  df_effect <- length(coef(fit)) - 1L
+  df_resid <- df.residual(fit)
+  mse <- ss_resid / df_resid
+  expected <- max(0, (ss_effect - df_effect * mse) / (ss_total + mse))
+
+  out <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "omega2",
+    output = "long"
+  )
+
+  expect_equal(out$es_type[1], "omega2")
+  expect_equal(out$es_value[1], expected)
+
+  null_df <- data.frame(
+    y = c(1, 2, 3, 1, 2, 3),
+    g = factor(c("A", "A", "A", "B", "B", "B"))
+  )
+  out_null <- table_continuous_lm(
+    null_df,
+    select = y,
+    by = g,
+    effect_size = "omega2",
+    output = "long"
+  )
+  expect_equal(out_null$es_value[1], 0)
+})
+
+test_that("effect sizes are invariant to the choice of vcov", {
+  df <- data.frame(
+    y = c(1, 1.2, 1.1, 5, 7.5, 10),
+    x = factor(c("A", "A", "A", "B", "B", "B"))
+  )
+
+  for (es in c("f2", "d", "g", "omega2")) {
+    classical <- table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      vcov = "classical",
+      effect_size = es,
+      output = "long"
+    )
+    robust <- table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      vcov = "HC3",
+      effect_size = es,
+      output = "long"
+    )
+    expect_equal(classical$es_value[1], robust$es_value[1])
+  }
+})
+
+test_that("effect_size column header reflects the chosen metric in wide outputs", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+
+  out_d <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    output = "data.frame"
+  )
+  out_g <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "g",
+    output = "data.frame"
+  )
+  out_omega <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "omega2",
+    output = "data.frame"
+  )
+
+  expect_true("d" %in% names(out_d))
+  expect_true("g" %in% names(out_g))
+  expect_true("ω²" %in% names(out_omega))
+})
+
+test_that("effect_size_ci computes valid noncentral CIs containing the point estimate", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+
+  for (es in c("d", "g")) {
+    out <- table_continuous_lm(
+      df,
+      select = Sepal.Length,
+      by = Species,
+      effect_size = es,
+      effect_size_ci = TRUE,
+      output = "long"
+    )
+    expect_true(is.finite(out$es_ci_lower[1]))
+    expect_true(is.finite(out$es_ci_upper[1]))
+    expect_lt(out$es_ci_lower[1], out$es_value[1])
+    expect_gt(out$es_ci_upper[1], out$es_value[1])
+  }
+
+  for (es in c("f2", "omega2")) {
+    out <- table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size = es,
+      effect_size_ci = TRUE,
+      output = "long"
+    )
+    expect_true(is.finite(out$es_ci_lower[1]))
+    expect_true(is.finite(out$es_ci_upper[1]))
+    expect_lte(out$es_ci_lower[1], out$es_value[1])
+    expect_gte(out$es_ci_upper[1], out$es_value[1])
+  }
+})
+
+test_that("effect_size_ci CIs match effectsize package for d and g (nct)", {
+  skip_if_not_installed("effectsize")
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+
+  out_d <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  ed <- effectsize::cohens_d(
+    Sepal.Length ~ Species,
+    data = df,
+    ci_method = "nct"
+  )
+  expect_equal(abs(out_d$es_value[1]), abs(ed$Cohens_d), tolerance = 1e-6)
+  expect_equal(
+    sort(c(out_d$es_ci_lower[1], out_d$es_ci_upper[1])),
+    sort(abs(c(ed$CI_low, ed$CI_high))),
+    tolerance = 1e-4
+  )
+
+  out_g <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  eg <- effectsize::hedges_g(
+    Sepal.Length ~ Species,
+    data = df,
+    ci_method = "nct"
+  )
+  expect_equal(abs(out_g$es_value[1]), abs(eg$Hedges_g), tolerance = 1e-4)
+  expect_equal(
+    sort(c(out_g$es_ci_lower[1], out_g$es_ci_upper[1])),
+    sort(abs(c(eg$CI_low, eg$CI_high))),
+    tolerance = 1e-4
+  )
+})
+
+test_that("effect_size_ci is invariant to vcov choice", {
+  df <- data.frame(
+    y = c(1, 1.2, 1.1, 5, 7.5, 10),
+    x = factor(c("A", "A", "A", "B", "B", "B"))
+  )
+  for (es in c("f2", "d", "g", "omega2")) {
+    classical <- table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      vcov = "classical",
+      effect_size = es,
+      effect_size_ci = TRUE,
+      output = "long"
+    )
+    robust <- table_continuous_lm(
+      df,
+      select = y,
+      by = x,
+      vcov = "HC3",
+      effect_size = es,
+      effect_size_ci = TRUE,
+      output = "long"
+    )
+    expect_equal(classical$es_ci_lower[1], robust$es_ci_lower[1])
+    expect_equal(classical$es_ci_upper[1], robust$es_ci_upper[1])
+  }
+})
+
+test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  out <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    digits = 2L,
+    effect_size_digits = 2L,
+    output = "long"
+  )
+  display <- spicy:::build_wide_display_df_continuous_lm(
+    out,
+    digits = 2L,
+    effect_size_digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "g",
+    effect_size_ci = TRUE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+
+  expect_match(display$g[1], "^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
+})
+
+test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  out <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    effect_size_ci = TRUE,
+    output = "data.frame"
+  )
+
+  expect_true(all(
+    c("d", "effect_size_ci_lower", "effect_size_ci_upper") %in% names(out)
+  ))
+  expect_type(out$effect_size_ci_lower, "double")
+  expect_type(out$effect_size_ci_upper, "double")
+  expect_lt(out$effect_size_ci_lower[1], out$d[1])
+  expect_gt(out$effect_size_ci_upper[1], out$d[1])
+})
+
+test_that("effect_size_ci = TRUE warns and resets when effect_size is none", {
+  expect_warning(
+    out <- table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size_ci = TRUE,
+      output = "long"
+    ),
+    "effect_size_ci.*is ignored"
+  )
+  expect_true(all(is.na(out$es_ci_lower)))
+  expect_true(all(is.na(out$es_ci_upper)))
+})
+
+test_that("effect_size_ci validates as logical scalar", {
+  expect_error(
+    table_continuous_lm(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size_ci = NA,
+      output = "long"
+    ),
+    "effect_size_ci.*TRUE/FALSE"
+  )
+})
+
+test_that("ci_level controls effect-size CI width", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  out_95 <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    effect_size_ci = TRUE,
+    ci_level = 0.95,
+    output = "long"
+  )
+  out_99 <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    effect_size_ci = TRUE,
+    ci_level = 0.99,
+    output = "long"
+  )
+
+  width_95 <- out_95$es_ci_upper[1] - out_95$es_ci_lower[1]
+  width_99 <- out_99$es_ci_upper[1] - out_99$es_ci_lower[1]
+  expect_gt(width_99, width_95)
+})
+
+test_that("degenerate models still preserve the predictor label", {
+  df <- data.frame(
+    y_ok = c(1, 2, 3, 4, 5, 6),
+    y_bad = c(NA, NA, NA, NA, NA, 1),
+    g = factor(c("A", "A", "A", "B", "B", "B"))
+  )
+  attr(df$g, "label") <- "Group label"
+
+  out <- table_continuous_lm(
+    df,
+    select = c(y_ok, y_bad),
+    by = g,
+    output = "long"
+  )
+
+  expect_true(all(out$predictor_label == "Group label"))
+})
+
+test_that("long output uses integer types for n, df1, df2", {
+  out_num <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Petal.Width,
+    output = "long"
+  )
+  out_cat <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    output = "long"
+  )
+  out_empty <- spicy:::make_empty_lm_rows("y", "Y", "continuous")
+
+  expect_type(out_num$n, "integer")
+  expect_type(out_num$df1, "integer")
+  expect_type(out_num$df2, "integer")
+  expect_type(out_cat$n, "integer")
+  expect_type(out_cat$df1, "integer")
+  expect_type(out_cat$df2, "integer")
+  expect_type(out_empty$n, "integer")
+  expect_type(out_empty$df1, "integer")
+  expect_type(out_empty$df2, "integer")
+})
+
+test_that("effect_size = 'none' yields NA es_type and es_value in long output", {
+  out <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    output = "long"
+  )
+
+  expect_true(all(is.na(out$es_type)))
+  expect_true(all(is.na(out$es_value)))
+})
+
+# ---- end effect sizes ----
 
 test_that("table_continuous_lm clipboard output can be exercised with a mocked writer", {
   skip_if_not_installed("clipr")

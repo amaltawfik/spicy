@@ -25,6 +25,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   show_n <- attr(x, "show_n") %||% TRUE
   show_weighted_n <- attr(x, "show_weighted_n") %||% FALSE
   effect_size <- attr(x, "effect_size") %||% "none"
+  show_effect_size_ci <- attr(x, "show_effect_size_ci") %||% FALSE
   r2_type <- attr(x, "r2_type") %||% "r2"
   show_ci <- attr(x, "show_ci") %||% TRUE
 
@@ -40,6 +41,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     show_n = show_n,
     show_weighted_n = show_weighted_n,
     effect_size = effect_size,
+    effect_size_ci = show_effect_size_ci,
     r2_type = r2_type,
     ci = show_ci
   )

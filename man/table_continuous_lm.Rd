@@ -17,7 +17,8 @@ table_continuous_lm(
   p_value = TRUE,
   show_n = TRUE,
   show_weighted_n = FALSE,
-  effect_size = c("none", "f2"),
+  effect_size = c("none", "f2", "d", "g", "omega2"),
+  effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
   labels = NULL,
@@ -44,8 +45,24 @@ syntax or a character vector of column names (default:
 pattern (character string).}
 
 \item{by}{A single predictor column. Accepts an unquoted column name or a
-single character column name. The predictor can be numeric, logical,
-character, or factor.}
+single character column name. The predictor can be:
+\itemize{
+\item \strong{numeric} (continuous): treated as a covariate. The table reports
+the slope and its CI from \code{lm(y ~ by)}.
+\item \strong{factor} or \strong{ordered factor}: treated as categorical. Level order
+is preserved as declared; the \strong{first level} is the reference for
+the displayed contrast (R's default treatment-contrast convention).
+\item \strong{character}: coerced to factor with \code{factor(by)}, which orders the
+levels alphabetically. To control the reference level, supply \code{by}
+as an explicit factor with the desired level ordering (e.g. via
+\code{forcats::fct_relevel()} or \code{factor(..., levels = ...)}).
+\item \strong{logical}: coerced to factor with levels \code{"FALSE"}, \code{"TRUE"} (in
+that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
+so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
+}
+
+Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
+outcome (NAs in \code{y} and \code{weights} are also excluded; see Details).}
 
 \item{exclude}{Columns to exclude from \code{select}. Supports tidyselect syntax
 and character vectors of column names.}
@@ -53,19 +70,61 @@ and character vectors of column names.}
 \item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect helpers. If
 \code{TRUE}, the \code{select} argument is treated as a regular expression.}
 
-\item{weights}{Optional case weights. Accepts \code{NULL}, an unquoted numeric
-column name, a single character column name, or a numeric vector of length
-\code{nrow(data)}.}
+\item{weights}{Optional case weights. Accepts:
+\itemize{
+\item \code{NULL} (default): an ordinary unweighted \code{lm()} is fit.
+\item an \strong{unquoted numeric column name} present in \code{data}.
+\item a \strong{single character column name} present in \code{data}.
+\item a \strong{numeric vector of length \code{nrow(data)}} evaluated in the calling
+environment.
+}
 
-\item{vcov}{Variance estimator used for uncertainty estimates. One of
-\code{"classical"} (default), \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, or \code{"HC5"}.}
+Validation: weights must be finite, non-negative, and contain at least
+one positive value (otherwise the function errors). Rows with \code{NA} in
+\code{weights} are excluded from the analytic sample for each outcome,
+alongside rows with \code{NA} in \code{y} or \code{by}. When supplied, weights are
+passed to \code{lm(..., weights = ...)}, so coefficients become weighted
+least-squares estimates and \verb{R²}, adjusted \verb{R²}, and the four effect
+sizes are computed from the corresponding weighted sums of squares
+(see the \emph{Weights} section in Details).}
+
+\item{vcov}{Variance estimator used for standard errors, confidence
+intervals, and Wald test statistics. One of:
+\itemize{
+\item \code{"classical"} (default): the ordinary OLS/WLS variance from
+\code{vcov(lm)}, which assumes homoscedastic errors.
+\item \code{"HC0"}: the original Eicker--White heteroskedasticity-consistent
+sandwich estimator (White 1980), with no finite-sample correction.
+\item \code{"HC1"}: HC0 multiplied by \code{n / (n - p)} (MacKinnon and White 1985).
+Matches Stata's \verb{, robust} default.
+\item \code{"HC2"}: residuals divided by \code{sqrt(1 - h_ii)}
+(MacKinnon and White 1985).
+\item \code{"HC3"}: residuals divided by \code{(1 - h_ii)} (MacKinnon and White 1985).
+A common default for small to moderate samples (Long and Ervin 2000).
+\item \code{"HC4"}: leverage-adaptive variant designed for influential
+observations (Cribari-Neto 2004).
+\item \code{"HC4m"}: refinement of HC4 with a modified leverage exponent
+(Cribari-Neto and da Silva 2011).
+\item \code{"HC5"}: alternative leverage-adaptive variant designed for
+leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).
+}
+
+Coefficients (means, contrasts, slopes), \verb{R²}, and the standardized
+effect sizes (\code{f2}, \code{d}, \code{g}, \code{omega2}) are point estimates from the
+OLS/WLS fit and are not affected by \code{vcov}; only their standard errors,
+CIs, and the test statistic of the contrast change.}
 
 \item{contrast}{Contrast display for categorical predictors. One of:
 \itemize{
-\item \code{"auto"}: show a single reference contrast only when \code{by} has exactly
-two levels.
-\item \code{"none"}: suppress difference columns for categorical predictors.
+\item \code{"auto"} (default): show a single reference contrast
+\code{Delta (level2 - level1)} only when \code{by} has exactly two non-empty
+levels. The reference level is the \strong{first level of the factor}
+(R's default treatment-contrast convention,
+\code{getOption("contrasts")[1]}). To change which level acts as the
+reference, re-level \code{by} upstream (for example with
+\code{forcats::fct_relevel()} or \code{stats::relevel()}).
+\item \code{"none"}: suppress the contrast column for categorical predictors.
+Level-specific means are still displayed.
 }}
 
 \item{statistic}{Logical. If \code{TRUE}, includes a test-statistic column in the
@@ -82,10 +141,57 @@ includes a \verb{Weighted n} column equal to the sum of case weights in the
 analytic sample. Defaults to \code{FALSE}.}
 
 \item{effect_size}{Character. Effect-size column to include in the wide and
-rendered outputs. One of \code{"none"} (the default) or \code{"f2"}.}
+rendered outputs. One of:
+\itemize{
+\item \code{"none"} (the default): no effect-size column.
+\item \code{"f2"}: Cohen's \verb{f² = R² / (1 - R²)}. Defined for any predictor type.
+Familiar from Cohen (1988); standard input for a-priori power analysis.
+Note that for a single-predictor model, \verb{f²} is a monotone transform of
+\verb{R²} and adds no information beyond it.
+\item \code{"d"}: Cohen's \code{d = beta_hat / sigma_hat}, where \code{beta_hat} is the
+model coefficient (the displayed difference) and \code{sigma_hat} is the
+residual standard deviation from the fitted model. Defined only when
+\code{by} has exactly two non-empty levels; otherwise the function errors.
+The sign matches the displayed \code{Delta (level2 - level1)}.
+\item \code{"g"}: Hedges' \code{g = J * d} with the small-sample correction
+\code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"d"}.
+\item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
+population variance explained, less optimistic than \verb{R²} for small
+samples. Defined for any predictor type and truncated at 0.
+}
+
+When \code{weights} is supplied, \code{"d"}, \code{"g"}, and \code{"omega2"} are derived from
+the weighted least-squares fit (using weighted sums of squares and the
+model's weighted residual standard deviation), keeping them consistent
+with the weighted contrast and its CI shown in the table. All effect
+sizes are point estimates derived from the OLS/WLS fit and are \strong{not}
+affected by \code{vcov}.}
+
+\item{effect_size_ci}{Logical. If \code{TRUE} and \code{effect_size != "none"}, adds
+a confidence interval for the effect size derived from inversion of the
+appropriate noncentral distribution (noncentral t for \code{"d"} / \code{"g"};
+noncentral F for \code{"omega2"} / \code{"f2"}). The CI level is taken from
+\code{ci_level}. In the long output (\code{output = "long"}), the bounds are always
+present in \code{es_ci_lower} / \code{es_ci_upper} (numeric). In the wide raw
+output (\code{output = "data.frame"}), the bounds appear as numeric columns
+\code{effect_size_ci_lower} / \code{effect_size_ci_upper}. In the printed ASCII
+table and rendered outputs (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
+\code{"word"}, \code{"excel"}, \code{"clipboard"}), the effect-size column shows the
+value followed by the CI in brackets (e.g. \code{0.18 [0.07, 0.30]}). Defaults
+to \code{FALSE}. When \code{effect_size = "none"}, this argument is ignored with a
+warning.}
 
 \item{r2}{Character. Fit statistic to include in the wide and rendered
-outputs. One of \code{"r2"} (the default), \code{"adj_r2"}, or \code{"none"}.}
+outputs. One of:
+\itemize{
+\item \code{"r2"} (default): the model \verb{R²} (\code{summary(lm)$r.squared}).
+\item \code{"adj_r2"}: adjusted \verb{R²}, penalising for \code{df_effect} relative to the
+residual degrees of freedom.
+\item \code{"none"}: omit the fit-statistic column.
+}
+
+When \code{weights} is supplied, \verb{R²} and adjusted \verb{R²} are the weighted
+least-squares versions reported by \code{summary(lm(..., weights = ...))}.}
 
 \item{ci}{Logical. If \code{TRUE}, includes contrast confidence-interval columns
 in the wide and rendered outputs when a single contrast is shown.
@@ -102,11 +208,12 @@ intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 \item{digits}{Number of decimal places for descriptive values, regression
 coefficients, and test statistics (default: \code{2}).}
 
-\item{fit_digits}{Number of decimal places for model-fit columns (\code{R2} or
-adjusted \code{R2}) in wide and rendered outputs (default: \code{2}).}
+\item{fit_digits}{Number of decimal places for model-fit columns (\verb{R²} or
+adjusted \verb{R²}) in wide and rendered outputs (default: \code{2}).}
 
-\item{effect_size_digits}{Number of decimal places for effect-size columns
-(\code{f2}) in wide and rendered outputs (default: \code{2}).}
+\item{effect_size_digits}{Number of decimal places for the effect-size
+column (\code{f2}, \code{d}, \code{g}, or \code{omega2}) in wide and rendered outputs
+(default: \code{2}).}
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}
@@ -140,15 +247,25 @@ non-numeric selected outcomes (default: \code{FALSE}).}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: prints a styled ASCII table and returns the
-underlying long \code{data.frame} invisibly, with class
-\code{"spicy_continuous_lm_table"}.
-\item \code{"data.frame"}: a plain wide \code{data.frame} with one row per outcome
-and numeric columns for means, optional contrasts, optional test
-statistics, model fit, and sample size.
-\item \code{"long"}: a raw \code{data.frame} with one block per outcome and columns
-describing estimated means, contrasts, test statistics, model fit, and
-sample size.
+\item \code{"default"}: prints a styled ASCII table and invisibly returns
+the underlying long \code{data.frame} with class
+\code{"spicy_continuous_lm_table"} / \code{"spicy_table"}.
+\item \code{"data.frame"}: a plain wide \code{data.frame} with one row per
+outcome and numeric columns for means (categorical \code{by}) or slope
+(numeric \code{by}), optional contrast and CI, optional test statistic,
+\code{p}, fit statistic (\verb{R²} or adjusted \verb{R²}), effect size, optional
+\code{effect_size_ci_lower} / \code{effect_size_ci_upper} (when
+\code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.
+\item \code{"long"}: a raw \code{data.frame} with one block per outcome and 28
+columns covering identification (\code{variable}, \code{label},
+\code{predictor_type}, \code{predictor_label}, \code{level}, \code{reference}),
+fitted means and their CI (\code{emmean}, \code{emmean_se}, \code{emmean_ci_lower},
+\code{emmean_ci_upper}), contrast or slope estimates and CI
+(\code{estimate_type}, \code{estimate}, \code{estimate_se}, \code{estimate_ci_lower},
+\code{estimate_ci_upper}), inferential output (\code{test_type}, \code{statistic},
+\code{df1}, \code{df2}, \code{p.value}), effect size with its CI (\code{es_type},
+\code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit (\code{r2}, \code{adj_r2}),
+and sample size (\code{n}, \code{weighted_n}).
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -176,58 +293,139 @@ Multiple output formats are available via \code{output}: a printed ASCII table
 \code{data.frame} (\code{"long"}), or rendered outputs (\code{"tinytable"}, \code{"gt"},
 \code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}).
 }
-\details{
+\section{Model and outputs}{
 \code{table_continuous_lm()} is designed for article-style bivariate reporting:
 a single predictor supplied with \code{by}, and one simple model per selected
-continuous outcome. The model fit is always \code{lm(outcome ~ by, ...)}.
-
-For categorical predictors, the reported means are model-based fitted means
-for each level of \code{by}, and the reported contrasts are derived from the same
-fitted linear model. For an unweighted \code{lm(y ~ factor)} with classical
-variance, these fitted means coincide numerically with the empirical
-subgroup means; the "model-based" qualifier matters because (a) under
-\code{weights}, the means become weighted least-squares estimates, (b) their
-confidence intervals are derived from the model \code{vcov} (classical or \verb{HC*})
-rather than from a separate empirical standard error, and (c) the reported
-tests, \code{p}-values, and effect sizes all come from the same fitted model,
-so means, contrasts, and inference stay internally consistent.
+continuous outcome. The model fit is always \code{lm(outcome ~ by, ...)},
+optionally with \code{weights}. For categorical predictors, the reported means
+are model-based fitted means for each level of \code{by}, and contrasts are
+derived from the same fitted linear model. For an unweighted
+\code{lm(y ~ factor)} with classical variance, the fitted means coincide
+numerically with empirical subgroup means; the \emph{model-based} qualifier
+matters because (a) under \code{weights} the means become weighted
+least-squares estimates, (b) their CIs are derived from the model \code{vcov}
+(classical or \verb{HC*}), and (c) tests, \emph{p}-values, and effect sizes all
+come from the same fitted model, keeping the table internally consistent.
 
 Compared with \code{\link[=table_continuous]{table_continuous()}}, this function is the model-based
-companion for users who want to report bivariate mean comparisons in a
-linear-model framework. In practice, it is the better choice when you
-want heteroskedasticity-consistent standard errors (\code{vcov = "HC*"}),
-model fit statistics, or case weights via \code{lm(..., weights = ...)}.
-Because the function exists to report a fitted model, its inferential
-output is part of the default display: \code{p_value = TRUE} is on by default,
-and the model \code{R2} is shown unless explicitly disabled with \code{r2 = "none"}.
-Set \code{p_value = FALSE} or \code{r2 = "none"} to suppress them.
+companion: choose it when you want heteroskedasticity-consistent standard
+errors (\code{vcov = "HC*"}), model fit statistics, or case weights via
+\code{lm(..., weights = ...)}. Because the function exists to report a fitted
+model, its inferential output is on by default: \code{p_value = TRUE} and
+\code{r2 = "r2"} are the defaults; set \code{p_value = FALSE} or \code{r2 = "none"} to
+suppress them.
+}
 
-Effect size is reported as Cohen's \code{f2}, computed from the model \code{R2} as
-\code{R2 / (1 - R2)}. When \code{vcov != "classical"}, standard errors, confidence
-intervals, and test statistics use the requested heteroskedasticity-
-consistent estimator, while \code{R2} and adjusted \code{R2} remain the ordinary
-least-squares fit statistics.
+\section{Effect sizes}{
+Effect size is selected explicitly via \code{effect_size} (defaults to
+\code{"none"}). All variants are derived from the same fitted model as the
+displayed coefficients, \verb{R²}, and CIs, so the effect size stays
+internally consistent with the rest of the table.
 
-When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted linear
-models using \code{lm(..., weights = ...)} and reports weighted model-based
-means or slopes accordingly. This is appropriate for case-weighted
-analyses and weighted article tables, but it is not a substitute for a
-full complex-survey design workflow.
+\itemize{
+\item \code{"f2"}: Cohen's \verb{f² = R² / (1 - R²)} (Cohen 1988). Defined
+for any predictor type. For a single-predictor model, \verb{f²} is a
+monotone transform of \verb{R²} and adds no information beyond it; its
+primary use is in \emph{a priori} power analysis (e.g. G*Power).
+\item \code{"d"}, \code{"g"}: standardized mean difference (Cohen's \emph{d} or Hedges'
+\emph{g}), defined only when \code{by} has exactly two non-empty levels.
+\code{d = beta_hat / sigma_hat} with \code{sigma_hat = summary(fit)$sigma} (the
+pooled within-group SD for the unweighted two-group case);
+\code{g = J * d} with \code{J = 1 - 3 / (4 * df_resid - 1)} (Hedges and Olkin
+1985). The sign matches the displayed \code{Delta (level2 - level1)}.
+For published reports of two-group comparisons, \emph{g} is the convention
+recommended by Hedges and Olkin (1985), Lakens (2013), and the APA
+Publication Manual (APA 2020).
+\item \code{"omega2"}: Hays' \verb{ω²}, computed from weighted sums of
+squares as \code{(SS_effect - df_effect * MSE) / (SS_total + MSE)} and
+truncated at 0 for small or null effects (Hays 1963; Olejnik and
+Algina 2003). Less biased than \verb{η²} (which equals \verb{R²} in this
+single-predictor design) and recommended for reporting variance
+explained in ANOVA-style designs (Olejnik and Algina 2003;
+Lakens 2013).
+}
 
-In wide and rendered outputs, \code{n} always reports the unweighted analytic
-sample size used for each outcome. When \code{show_weighted_n = TRUE}, an
-additional \verb{Weighted n} column reports the sum of case weights for the same
+All four effect sizes are point estimates derived from the OLS/WLS fit
+and are \strong{invariant to \code{vcov}}: choosing \verb{HC*} changes the SE, CI, and
+test statistic of the contrast but not the standardized magnitude
+itself.
+
+Confidence intervals for the effect size are available via
+\code{effect_size_ci = TRUE} and use the modern noncentral-distribution
+inversion approach, the consensus standard in commercial statistical
+software (Stata \code{esize} / \verb{estat esize}, SAS \verb{PROC TTEST} and
+\verb{PROC GLM EFFECTSIZE} 14.2+) and in mainstream R packages
+(\code{effectsize}, \code{MOTE}, \code{TOSTER}, \code{effsize}):
+\itemize{
+\item \code{"d"}, \code{"g"}: noncentral \emph{t} inversion (Steiger and Fouladi 1997;
+Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
+across sample sizes (Cousineau and Goulet-Pelletier 2021), unlike the
+older Hedges-Olkin normal approximation which is biased for small
+samples. For Hedges' \emph{g} the bounds inherit the \emph{J} small-sample
+correction.
+\item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004;
+Smithson 2003). Bounds are converted from the noncentrality parameter
+using \verb{omega² = ncp / (ncp + N)} and \verb{f² = ncp / N} respectively, with
+\code{N = df1 + df2 + 1} (total sample size).
+}
+For the weighted case, the CI uses raw (unweighted) group counts and
+\code{df.residual(fit) = n - p}, consistent with the WLS reporting convention
+(DuMouchel and Duncan 1983). For propensity-score balance assessment or
+complex-survey designs, dedicated packages (\code{cobalt::bal.tab()} for the
+Austin and Stuart 2015 formulation; \code{survey} for design-based effect
+sizes) are more appropriate.
+}
+
+\section{Robust standard errors}{
+When \code{vcov} is one of the \verb{HC*} variants, the standard errors, CIs, and
+Wald test statistics use a heteroskedasticity-consistent sandwich
+estimator computed in-package (no extra dependency). The implementation
+follows the formulas reviewed in Zeileis (2004), the same set used by
+the canonical R implementation in the \code{sandwich} package
+(\code{sandwich::vcovHC}). For a brief guide:
+\itemize{
+\item \code{"HC0"} is the original White (1980) form; \code{"HC1"} adds the
+\code{n / (n - p)} correction (MacKinnon and White 1985), Stata's
+\verb{, robust} default.
+\item \code{"HC2"} and \code{"HC3"} use leverage-based residual rescalings
+(MacKinnon and White 1985); \code{"HC3"} is the \code{sandwich::vcovHC}
+default for small to moderate samples (Long and Ervin 2000).
+\item \code{"HC4"} adapts the leverage exponent for influential
+observations (Cribari-Neto 2004); \code{"HC4m"} is a modified-exponent
+refinement (Cribari-Neto and da Silva 2011); \code{"HC5"} is an
+alternative leverage-adaptive variant (Cribari-Neto, Souza and
+Vasconcellos 2007).
+}
+\verb{R²}, adjusted \verb{R²}, and the effect sizes remain ordinary
+least-squares (or weighted least-squares) statistics regardless of
+\code{vcov}.
+}
+
+\section{Weights}{
+When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted
+linear models via \code{lm(..., weights = ...)}. Means become weighted
+least-squares estimates, contrasts and slopes are weighted, and \verb{R²},
+adjusted \verb{R²}, and the four effect sizes use the corresponding
+weighted sums of squares. This is appropriate for case-weighted
+analyses and weighted article tables, but is \strong{not} a substitute for
+a full complex-survey design workflow (see e.g. the \code{survey} package).
+
+The \code{n} column always reports the unweighted analytic sample size for
+each outcome. When \code{show_weighted_n = TRUE}, an additional
+\verb{Weighted n} column reports the sum of case weights in the same
 analytic sample.
+}
 
-For dichotomous categorical predictors, the wide outputs report means in
-reference-level order and labels the contrast column explicitly as
-\code{Delta (level2 - level1)}. For categorical predictors with more than two
-levels, no single contrast or contrast confidence interval is shown in the
-wide outputs; instead, the table reports level-specific means plus the
-overall \code{F} test when \code{statistic = TRUE} (or \code{F(df1, df2)} when the degrees
-of freedom are constant across outcomes).
+\section{Display conventions}{
+For dichotomous categorical predictors, the wide outputs report fitted
+means in reference-level order and label the contrast column
+explicitly as \code{Delta (level2 - level1)}. For categorical predictors
+with more than two levels, no single contrast or contrast CI is shown
+in the wide outputs; instead, the table reports level-specific means
+plus the overall \code{F} test when \code{statistic = TRUE} (or \code{F(df1, df2)}
+when the degrees of freedom are constant across outcomes).
 
-Optional output engines require suggested packages:
+Optional output engines require the corresponding suggested packages:
 \itemize{
 \item \pkg{tinytable} for \code{output = "tinytable"}
 \item \pkg{gt} for \code{output = "gt"}
@@ -237,13 +435,18 @@ Optional output engines require suggested packages:
 \item \pkg{clipr} for \code{output = "clipboard"}
 }
 }
+
 \examples{
+# --- Basic usage ---------------------------------------------------------
+
+# Default: ASCII table with model-based means, p, and R².
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex
 )
 
+# Plain wide data.frame (one row per outcome, numeric columns).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -251,6 +454,64 @@ table_continuous_lm(
   output = "data.frame"
 )
 
+# Long, raw data.frame with one block per outcome
+# (useful for downstream programmatic processing).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  output = "long"
+)
+
+# --- Effect sizes -------------------------------------------------------
+
+# Cohen's d (binary by required).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  effect_size = "d"
+)
+
+# Hedges' g with weighted analysis and weighted n column.
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  weights = weight,
+  statistic = TRUE,
+  effect_size = "g",
+  show_weighted_n = TRUE
+)
+
+# Hedges' g with noncentral t confidence interval (bracket notation).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  effect_size = "g",
+  effect_size_ci = TRUE
+)
+
+# Cohen's f² alongside R² (familiar power-analysis effect size).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  effect_size = "f2"
+)
+
+# Hays' ω² for a 3-level predictor (d / g would error here).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = education,
+  effect_size = "omega2"
+)
+
+# --- Robust SE for a numeric predictor ----------------------------------
+
+# HC3 standard errors for the slope of a continuous predictor.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -259,22 +520,45 @@ table_continuous_lm(
   ci = FALSE
 )
 
+# --- Article-style polish -----------------------------------------------
+
+# Pretty outcome labels and adjusted R².
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  weights = weight,
-  statistic = TRUE,
-  effect_size = "f2",
-  show_weighted_n = TRUE
+  labels = c(
+    wellbeing_score = "WHO-5 wellbeing (0-100)",
+    bmi = "Body-mass index (kg/m²)"
+  ),
+  r2 = "adj_r2"
+)
+
+# European decimal comma.
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  decimal_mark = ","
+)
+
+# Regex selection of all columns starting with "life_sat".
+table_continuous_lm(
+  sochealth,
+  select = "^life_sat",
+  by = sex,
+  regex = TRUE
 )
 
 \donttest{
+# --- Rendered outputs (require Suggests packages) -----------------------
+
 if (requireNamespace("tinytable", quietly = TRUE)) {
   table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
     by = sex,
+    effect_size = "g",
     output = "tinytable"
   )
 }
@@ -296,9 +580,158 @@ if (requireNamespace("flextable", quietly = TRUE)) {
     output = "flextable"
   )
 }
+
+# Excel: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp_xlsx <- tempfile(fileext = ".xlsx")
+  table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    output = "excel",
+    excel_path = tmp_xlsx
+  )
+  file.exists(tmp_xlsx)
+  unlink(tmp_xlsx)
+}
+
+# Word: write to a temporary .docx.
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp_docx <- tempfile(fileext = ".docx")
+  table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    output = "word",
+    word_path = tmp_docx
+  )
+  file.exists(tmp_docx)
+  unlink(tmp_docx)
+}
 }
 
 }
-\seealso{
-\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_categorical]{table_categorical()}}
+\references{
+American Psychological Association (2020).
+\emph{Publication Manual of the American Psychological Association}
+(7th ed.). Washington, DC: APA.
+
+Austin, P. C., & Stuart, E. A. (2015).
+Moving towards best practice when using inverse probability of
+treatment weighting (IPTW) using the propensity score to estimate
+causal treatment effects in observational studies.
+\emph{Statistics in Medicine}, \strong{34}(28), 3661--3679.
+\doi{10.1002/sim.6607}
+
+Cohen, J. (1988).
+\emph{Statistical Power Analysis for the Behavioral Sciences}
+(2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
+
+Cousineau, D., & Goulet-Pelletier, J.-C. (2021).
+Expected and empirical coverages of different methods for generating
+noncentral \emph{t} confidence intervals for a standardized mean
+difference. \emph{Behavior Research Methods}, \strong{53}, 2376--2394.
+\doi{10.3758/s13428-021-01550-4}
+
+Cribari-Neto, F. (2004).
+Asymptotic inference under heteroskedasticity of unknown form.
+\emph{Computational Statistics & Data Analysis}, \strong{45}(2), 215--233.
+\doi{10.1016/S0167-9473(02)00366-3}
+
+Cribari-Neto, F., Souza, T. C., & Vasconcellos, K. L. P. (2007).
+Inference under heteroskedasticity and leveraged data.
+\emph{Communications in Statistics -- Theory and Methods},
+\strong{36}(10), 1877--1888.
+\doi{10.1080/03610920601126589}
+
+Cribari-Neto, F., & da Silva, W. B. (2011).
+A new heteroskedasticity-consistent covariance matrix estimator
+for the linear regression model.
+\emph{AStA Advances in Statistical Analysis}, \strong{95}(2), 129--146.
+\doi{10.1007/s10182-010-0141-2}
+
+DuMouchel, W. H., & Duncan, G. J. (1983).
+Using sample survey weights in multiple regression analyses of
+stratified samples. \emph{Journal of the American Statistical
+Association}, \strong{78}(383), 535--543.
+\doi{10.1080/01621459.1983.10478006}
+
+Goulet-Pelletier, J.-C., & Cousineau, D. (2018).
+A review of effect sizes and their confidence intervals, Part I:
+The Cohen's \emph{d} family. \emph{The Quantitative Methods for Psychology},
+\strong{14}(4), 242--265. \doi{10.20982/tqmp.14.4.p242}
+
+Hays, W. L. (1963).
+\emph{Statistics for Psychologists}. New York: Holt, Rinehart and Winston.
+
+Hedges, L. V., & Olkin, I. (1985).
+\emph{Statistical Methods for Meta-Analysis}. Orlando, FL: Academic Press.
+
+Lakens, D. (2013).
+Calculating and reporting effect sizes to facilitate cumulative
+science: A practical primer for \emph{t}-tests and ANOVAs.
+\emph{Frontiers in Psychology}, \strong{4}, 863.
+\doi{10.3389/fpsyg.2013.00863}
+
+Long, J. S., & Ervin, L. H. (2000).
+Using heteroscedasticity consistent standard errors in the linear
+regression model. \emph{The American Statistician}, \strong{54}(3), 217--224.
+\doi{10.1080/00031305.2000.10474549}
+
+MacKinnon, J. G., & White, H. (1985).
+Some heteroskedasticity-consistent covariance matrix estimators with
+improved finite sample properties.
+\emph{Journal of Econometrics}, \strong{29}(3), 305--325.
+\doi{10.1016/0304-4076(85)90158-7}
+
+Olejnik, S., & Algina, J. (2003).
+Generalized eta and omega squared statistics: Measures of effect
+size for some common research designs.
+\emph{Psychological Methods}, \strong{8}(4), 434--447.
+\doi{10.1037/1082-989X.8.4.434}
+
+Smithson, M. (2003).
+\emph{Confidence Intervals}. Quantitative Applications in the Social
+Sciences, No. 140. Thousand Oaks, CA: Sage.
+
+Steiger, J. H. (2004).
+Beyond the \emph{F} test: Effect size confidence intervals and tests of
+close fit in the analysis of variance and contrast analysis.
+\emph{Psychological Methods}, \strong{9}(2), 164--182.
+\doi{10.1037/1082-989X.9.2.164}
+
+Steiger, J. H., & Fouladi, R. T. (1997).
+Noncentrality interval estimation and the evaluation of statistical
+models. In L. L. Harlow, S. A. Mulaik, & J. H. Steiger (Eds.),
+\emph{What if there were no significance tests?} (pp. 221--257).
+Mahwah, NJ: Lawrence Erlbaum.
+
+White, H. (1980).
+A heteroskedasticity-consistent covariance matrix estimator and a
+direct test for heteroskedasticity.
+\emph{Econometrica}, \strong{48}(4), 817--838.
+\doi{10.2307/1912934}
+
+Zeileis, A. (2004).
+Econometric computing with HC and HAC covariance matrix estimators.
+\emph{Journal of Statistical Software}, \strong{11}(10), 1--17.
+\doi{10.18637/jss.v011.i10}
 }
+\seealso{
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_categorical]{table_categorical()}}.
+For broader workflows on the same statistical building blocks:
+\code{sandwich::vcovHC()} (the canonical R implementation of the \verb{HC*}
+sandwich estimators); \code{effectsize::cohens_d()},
+\code{effectsize::hedges_g()}, and \code{effectsize::omega_squared()} (alternative
+effect-size computations and CIs); \code{cobalt::bal.tab()} for
+propensity-score covariate balance with weighted standardized mean
+differences (Austin and Stuart 2015); the \code{survey} package for
+design-based inference on complex-survey samples.
+
+Other spicy tables: 
+\code{\link{spicy_tables}}
+}
+\concept{spicy tables}

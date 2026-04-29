@@ -36,6 +36,7 @@ Imports:
 Suggests:
     clipr,
     DT,
+    effectsize,
     flextable,
     gt,
     knitr,
