@@ -13,14 +13,18 @@ table_continuous(
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
-  effect_size = FALSE,
+  show_n = TRUE,
+  effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
   effect_size_ci = FALSE,
+  ci = TRUE,
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
+  p_digits = 3,
   decimal_mark = ".",
-  output = c("default", "data.frame", "tinytable", "gt", "flextable", "excel",
+  align = c("decimal", "auto", "center", "right"),
+  output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = "Descriptives",
@@ -77,25 +81,54 @@ Both \code{p_value} and \code{statistic} are independent; either or both
 can be enabled. Defaults to \code{FALSE}. Ignored when \code{by} is not
 used.}
 
-\item{effect_size}{Logical. If \code{TRUE} and \code{by} is used, adds an
-effect-size column ("ES"). The measure is chosen automatically:
+\item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column
+in the rendered outputs and the printed ASCII table (the
+\code{n} column is always present in \code{output = "data.frame"} /
+\code{"long"} for downstream programmatic access). Defaults to \code{TRUE}.}
+
+\item{effect_size}{Effect-size measure to include in the rendered
+outputs. One of:
 \itemize{
-\item Hedges' \emph{g} (bias-corrected) - 2 groups, parametric (CI via
-Hedges & Olkin approximation).
-\item Eta-squared (\eqn{\eta^2}) - 3+ groups, parametric (CI via
-noncentral \emph{F} distribution).
-\item Rank-biserial \emph{r} (\code{r_rb}) - 2 groups, nonparametric (CI via
-Fisher \emph{z}-transform).
-\item Epsilon-squared (\eqn{\varepsilon^2}) - 3+ groups,
-nonparametric (CI via percentile bootstrap, 2 000 replicates).
+\item \code{"none"} (default): no effect-size column.
+\item \code{"auto"}: auto-select the canonical measure for the chosen
+\code{test} and group count -- Hedges' \emph{g} (parametric, 2 groups),
+eta-squared (parametric, 3+ groups), rank-biserial \emph{r}
+(nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
+groups). This is the historical behaviour of \code{effect_size = TRUE}.
+\item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardised mean
+difference, 2 groups, parametric). CI via the Hedges & Olkin
+normal approximation.
+\item \code{"eta_sq"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
+\code{SS_between / SS_total}). CI via inversion of the noncentral
+\emph{F} distribution.
+\item \code{"r_rb"}: Rank-biserial \emph{r} from the Wilcoxon / Mann-Whitney
+statistic (2 groups, nonparametric). CI via Fisher
+\emph{z}-transform.
+\item \code{"epsilon_sq"}: Epsilon-squared (\eqn{\varepsilon^2}) from the
+Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
+percentile bootstrap (2 000 replicates).
 }
 
-Defaults to \code{FALSE}. Ignored when \code{by} is not used.}
+For backward compatibility, \code{effect_size = TRUE} is silently
+coerced to \code{"auto"} and \code{effect_size = FALSE} to \code{"none"}.
+Explicit choices are validated against the active \code{test} and the
+number of groups; an incompatible request (e.g. \code{"eta_sq"} with
+two groups, or \code{"hedges_g"} with \code{test = "nonparametric"})
+triggers an actionable error. Ignored when \code{by} is not used.}
 
 \item{effect_size_ci}{Logical. If \code{TRUE}, appends the confidence
 interval of the effect size in brackets (e.g.,
-\code{g = 0.45 [0.22, 0.68]}). Implies \code{effect_size = TRUE}.
-Defaults to \code{FALSE}.}
+\code{g = 0.45 [0.22, 0.68]}). Implies a non-\code{"none"} effect size; if
+\code{effect_size = "none"} is left unchanged, this argument is
+ignored with a warning, and the function falls back to
+\code{effect_size = "auto"}. Defaults to \code{FALSE}.}
+
+\item{ci}{Logical. If \code{TRUE}, includes the mean confidence interval
+columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) in the rendered
+outputs and the printed ASCII table. Defaults to \code{TRUE}. The CI
+level is taken from \code{ci_level}. The columns are always present in
+the long output (\code{output = "data.frame"} / \code{"long"}) for
+downstream programmatic access.}
 
 \item{labels}{An optional named character vector of variable labels.
 Names must match column names in \code{data}. When \code{NULL} (the default),
@@ -111,13 +144,52 @@ statistics (default: \code{2}).}
 \item{effect_size_digits}{Number of decimal places for effect-size values
 in formatted displays (default: \code{2}).}
 
+\item{p_digits}{Integer >= 1. Number of decimal places used to
+render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
+Publication Manual standard). Both the displayed precision and
+the small-\emph{p} threshold derive from this argument: \code{p_digits = 3}
+prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
+\verb{<.0001}; \code{p_digits = 2} prints \code{.05} and \verb{<.01}. Useful for
+genomics / GWAS contexts with very small \emph{p}-values, or for
+journals using a coarser convention. Leading zeros are always
+stripped, following APA convention.}
+
 \item{decimal_mark}{Character used as decimal separator.
 Either \code{"."} (default) or \code{","}.}
 
+\item{align}{Horizontal alignment of numeric columns in the printed
+ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word},
+and \code{clipboard} outputs. The first column (\code{Variable}) and
+\code{Group} (when present) are always left-aligned. One of:
+\itemize{
+\item \code{"decimal"} (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and
+\code{tinytable::style_tt(align = "d")}. For engines without a
+native decimal-alignment primitive (\code{flextable}, \code{word},
+\code{clipboard}, ASCII print), values are pre-padded with leading
+and trailing spaces so the dots line up vertically; the body
+of the \code{flextable}/\code{word} output additionally uses a monospace
+font to make character widths uniform.
+\item \code{"center"}: center-align all numeric columns.
+\item \code{"right"}: right-align all numeric columns.
+\item \code{"auto"}: legacy per-column rule (center for the descriptive
+columns, right for \code{n} and \code{p}).
+}
+
+The \code{excel} output uses the engine's default alignment in any
+case: cell-string padding does not align decimals under
+proportional fonts. Same default and semantics as
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
+
 \item{output}{Output format. One of:
 \itemize{
-\item \code{"default"} (a printed ASCII table, returned invisibly)
-\item \code{"data.frame"} (a plain numeric \code{data.frame})
+\item \code{"default"}: a printed ASCII table, returned invisibly.
+\item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with one row
+per \verb{(variable x group)} (or one row per \code{variable} when \code{by}
+is not used). The two names are synonyms; pick whichever reads
+better in your pipeline (\code{"long"} matches
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}'s naming).
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
@@ -144,14 +216,15 @@ Depends on \code{output}:
 \itemize{
 \item \code{"default"}: prints a styled ASCII table and returns the
 underlying \code{data.frame} invisibly (S3 class
-\code{"spicy_continuous_table"}).
-\item \code{"data.frame"}: a plain \code{data.frame} with columns
-\code{variable}, \code{label}, \code{group} (when \code{by} is used), \code{mean}, \code{sd},
-\code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}.
-When \code{by} is used together with \code{p_value = TRUE},
-\code{statistic = TRUE}, or \code{effect_size = TRUE}, additional columns
-are appended (populated on the first row of each variable block
-only):
+\code{"spicy_continuous_table"} / \code{"spicy_table"}). The object can
+be re-coerced via \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} or
+piped into \code{broom::tidy()} / \code{broom::glance()}.
+\item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with
+columns \code{variable}, \code{label}, \code{group} (when \code{by} is used),
+\code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}. When
+\code{by} is used together with \code{p_value = TRUE}, \code{statistic = TRUE},
+or \code{effect_size != "none"}, additional columns are appended
+(populated on the first row of each variable block only):
 \itemize{
 \item \code{test_type} -- test identifier (e.g., \code{"welch_t"},
 \code{"welch_anova"}, \code{"student_t"}, \code{"anova"}, \code{"wilcoxon"},
@@ -159,10 +232,13 @@ only):
 \item \code{statistic}, \code{df1}, \code{df2}, \code{p.value} -- test results.
 \item \code{es_type} -- effect-size identifier (\code{"hedges_g"},
 \code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), when
-\code{effect_size = TRUE}.
+\code{effect_size != "none"}.
 \item \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} -- effect-size
 estimate and confidence interval bounds.
 }
+The two names \code{"data.frame"} and \code{"long"} are synonyms (the
+descriptive output is naturally already long). Pick whichever
+reads better in your code.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -185,14 +261,84 @@ to suppress the \emph{p}-value column. Without \code{by}, produces one-way
 descriptive summaries.
 
 Multiple output formats are available via \code{output}: a printed ASCII
-table (\code{"default"}), a plain numeric \code{data.frame} (\code{"data.frame"}), or
-publication-ready tables (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}).
+table (\code{"default"}), a plain \code{data.frame} (\code{"data.frame"} or
+\code{"long"} -- synonyms for the underlying long-format data, see
+Details), or publication-ready tables (\code{"tinytable"}, \code{"gt"},
+\code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}).
+
+This is the descriptive companion to \code{\link[=table_continuous_lm]{table_continuous_lm()}}. The
+two functions share their argument vocabulary (\code{select}, \code{by},
+\code{weights} / \code{vcov} exclusively in the model variant, \code{effect_size},
+\code{ci_level}, \code{digits}, \code{p_digits}, \code{decimal_mark}, \code{align}, ...) so a
+descriptive analysis and a model-based analysis of the same data
+use the same table layout, decimal mark, and reporting precision.
 }
-\details{
-Non-numeric columns are silently dropped (set \code{verbose = TRUE} to see
-which columns were excluded). When a single constant column is passed,
-SD and CI are shown as \code{"--"} in the ASCII table.
+\section{Tests}{
+The omnibus test is computed only when \code{by} is supplied and at
+least two groups have two or more observations. Choice driven by
+\code{test}:
+\itemize{
+\item \code{"welch"} (default): Welch \emph{t}-test for two groups
+(\code{stats::t.test(var.equal = FALSE)}); Welch one-way ANOVA for
+three or more (\code{stats::oneway.test(var.equal = FALSE)}). Does
+not assume equal variances.
+\item \code{"student"}: Student \emph{t}-test (\code{var.equal = TRUE}) /
+classical ANOVA (\code{stats::oneway.test(var.equal = TRUE)}).
+\item \code{"nonparametric"}: Wilcoxon rank-sum / Mann-Whitney \emph{U}
+for two groups (\code{stats::wilcox.test}); Kruskal-Wallis \emph{H} for
+three or more (\code{stats::kruskal.test}).
+}
+
+For model-based contrasts (heteroskedasticity-consistent SE,
+cluster-robust SE, weighted contrasts, fitted means, etc.), use
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}.
+}
+
+\section{Effect sizes}{
+Effect size is selected via \code{effect_size}. The default is \code{"none"}
+(no column). \code{"auto"} mirrors the historical \code{effect_size = TRUE}
+behaviour and chooses the canonical measure for the active
+(\code{test}, \code{n_groups}) combination:
+\itemize{
+\item Parametric, 2 groups -> Hedges' \emph{g} (Hedges & Olkin 1985).
+\item Parametric, 3+ groups -> Eta-squared (\eqn{\eta^2}).
+\item Nonparametric, 2 groups -> Rank-biserial \emph{r}.
+\item Nonparametric, 3+ groups -> Epsilon-squared
+(\eqn{\varepsilon^2}).
+}
+Explicit choices (\code{"hedges_g"}, \code{"eta_sq"}, \code{"r_rb"},
+\code{"epsilon_sq"}) are validated against (\code{test}, \code{n_groups}); an
+incompatible request triggers a clear error rather than a silent
+fallback. The model-based companion \code{\link[=table_continuous_lm]{table_continuous_lm()}} adds
+Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}, all
+derived from the fitted (possibly weighted) \code{lm()}. CIs are
+available via \code{effect_size_ci = TRUE}: noncentral \emph{F} inversion
+for \eqn{\eta^2}, Hedges-Olkin normal approximation for \emph{g},
+Fisher \emph{z}-transform for \emph{r}, and percentile bootstrap (2 000
+replicates) for \eqn{\varepsilon^2}.
+}
+
+\section{Display conventions}{
+By default (\code{align = "decimal"}) numeric columns are aligned on
+the decimal mark, the standard scientific-publication convention
+used by SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
+\code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} / \code{tinytable::style_tt(align = "d")}.
+For engines without a native primitive (\code{flextable}, \code{word},
+\code{clipboard}, ASCII print), values are pre-padded with leading and
+trailing spaces so dots line up vertically; \code{flextable}/\code{word}
+additionally use a monospace font in the body. Pass
+\code{align = "auto"} to revert to the legacy per-column rule (centre
+for the descriptive columns, right for \code{n} and \code{p}).
+
+\emph{p}-values are formatted with \code{p_digits} decimal places (default
+3, the APA standard). The threshold below which the column shows
+\verb{<.001} is \code{10^{-p_digits}}; setting \code{p_digits = 4} shifts both
+the displayed precision and the threshold accordingly. Leading
+zeros on \emph{p} are always stripped (\code{.045}, not \code{0.045}).
+
+Non-numeric columns are silently dropped (set \code{verbose = TRUE} to
+see which columns were excluded). When a single constant column is
+passed, SD and CI are shown as \code{"--"} in the ASCII table.
 
 Optional output engines require suggested packages:
 \itemize{
@@ -204,6 +350,7 @@ Optional output engines require suggested packages:
 \item \pkg{clipr} for \code{output = "clipboard"}
 }
 }
+
 \examples{
 table_continuous(
   sochealth,
@@ -290,7 +437,15 @@ if (requireNamespace("flextable", quietly = TRUE)) {
 
 }
 \seealso{
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} for the model-based companion
+(heteroskedasticity-consistent SE, cluster-robust SE, weighted
+contrasts, fitted means);
 \code{\link[=table_categorical]{table_categorical()}} for categorical variables;
-\code{\link[=freq]{freq()}} for one-way frequency tables; \code{\link[=cross_tab]{cross_tab()}} for two-way
-cross-tabulations.
+\code{\link[=freq]{freq()}} for one-way frequency tables;
+\code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations.
+
+Other spicy tables: 
+\code{\link{spicy_tables}},
+\code{\link{table_continuous_lm}()}
 }
+\concept{spicy tables}

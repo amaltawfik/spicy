@@ -13,9 +13,17 @@
 #' descriptive summaries.
 #'
 #' Multiple output formats are available via `output`: a printed ASCII
-#' table (`"default"`), a plain numeric `data.frame` (`"data.frame"`), or
-#' publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
-#' `"excel"`, `"clipboard"`, `"word"`).
+#' table (`"default"`), a plain `data.frame` (`"data.frame"` or
+#' `"long"` -- synonyms for the underlying long-format data, see
+#' Details), or publication-ready tables (`"tinytable"`, `"gt"`,
+#' `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
+#'
+#' This is the descriptive companion to [table_continuous_lm()]. The
+#' two functions share their argument vocabulary (`select`, `by`,
+#' `weights` / `vcov` exclusively in the model variant, `effect_size`,
+#' `ci_level`, `digits`, `p_digits`, `decimal_mark`, `align`, ...) so a
+#' descriptive analysis and a model-based analysis of the same data
+#' use the same table layout, decimal mark, and reporting precision.
 #'
 #' @param data A `data.frame`.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
@@ -54,22 +62,49 @@
 #'   Both `p_value` and `statistic` are independent; either or both
 #'   can be enabled. Defaults to `FALSE`. Ignored when `by` is not
 #'   used.
-#' @param effect_size Logical. If `TRUE` and `by` is used, adds an
-#'   effect-size column ("ES"). The measure is chosen automatically:
-#'   - Hedges' *g* (bias-corrected) - 2 groups, parametric (CI via
-#'     Hedges & Olkin approximation).
-#'   - Eta-squared (\eqn{\eta^2}) - 3+ groups, parametric (CI via
-#'     noncentral *F* distribution).
-#'   - Rank-biserial *r* (`r_rb`) - 2 groups, nonparametric (CI via
-#'     Fisher *z*-transform).
-#'   - Epsilon-squared (\eqn{\varepsilon^2}) - 3+ groups,
-#'     nonparametric (CI via percentile bootstrap, 2 000 replicates).
+#' @param show_n Logical. If `TRUE`, includes an unweighted `n` column
+#'   in the rendered outputs and the printed ASCII table (the
+#'   `n` column is always present in `output = "data.frame"` /
+#'   `"long"` for downstream programmatic access). Defaults to `TRUE`.
+#' @param effect_size Effect-size measure to include in the rendered
+#'   outputs. One of:
+#'   - `"none"` (default): no effect-size column.
+#'   - `"auto"`: auto-select the canonical measure for the chosen
+#'     `test` and group count -- Hedges' *g* (parametric, 2 groups),
+#'     eta-squared (parametric, 3+ groups), rank-biserial *r*
+#'     (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
+#'     groups). This is the historical behaviour of `effect_size = TRUE`.
+#'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardised mean
+#'     difference, 2 groups, parametric). CI via the Hedges & Olkin
+#'     normal approximation.
+#'   - `"eta_sq"`: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
+#'     `SS_between / SS_total`). CI via inversion of the noncentral
+#'     *F* distribution.
+#'   - `"r_rb"`: Rank-biserial *r* from the Wilcoxon / Mann-Whitney
+#'     statistic (2 groups, nonparametric). CI via Fisher
+#'     *z*-transform.
+#'   - `"epsilon_sq"`: Epsilon-squared (\eqn{\varepsilon^2}) from the
+#'     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
+#'     percentile bootstrap (2 000 replicates).
 #'
-#'   Defaults to `FALSE`. Ignored when `by` is not used.
+#'   For backward compatibility, `effect_size = TRUE` is silently
+#'   coerced to `"auto"` and `effect_size = FALSE` to `"none"`.
+#'   Explicit choices are validated against the active `test` and the
+#'   number of groups; an incompatible request (e.g. `"eta_sq"` with
+#'   two groups, or `"hedges_g"` with `test = "nonparametric"`)
+#'   triggers an actionable error. Ignored when `by` is not used.
 #' @param effect_size_ci Logical. If `TRUE`, appends the confidence
 #'   interval of the effect size in brackets (e.g.,
-#'   `g = 0.45 [0.22, 0.68]`). Implies `effect_size = TRUE`.
-#'   Defaults to `FALSE`.
+#'   `g = 0.45 [0.22, 0.68]`). Implies a non-`"none"` effect size; if
+#'   `effect_size = "none"` is left unchanged, this argument is
+#'   ignored with a warning, and the function falls back to
+#'   `effect_size = "auto"`. Defaults to `FALSE`.
+#' @param ci Logical. If `TRUE`, includes the mean confidence interval
+#'   columns (`<level>% CI LL` / `<level>% CI UL`) in the rendered
+#'   outputs and the printed ASCII table. Defaults to `TRUE`. The CI
+#'   level is taken from `ci_level`. The columns are always present in
+#'   the long output (`output = "data.frame"` / `"long"`) for
+#'   downstream programmatic access.
 #' @param labels An optional named character vector of variable labels.
 #'   Names must match column names in `data`. When `NULL` (the default),
 #'   labels are auto-detected from variable attributes (e.g., haven
@@ -80,11 +115,46 @@
 #'   statistics (default: `2`).
 #' @param effect_size_digits Number of decimal places for effect-size values
 #'   in formatted displays (default: `2`).
+#' @param p_digits Integer >= 1. Number of decimal places used to
+#'   render *p*-values in the `p` column (default: `3`, the APA
+#'   Publication Manual standard). Both the displayed precision and
+#'   the small-*p* threshold derive from this argument: `p_digits = 3`
+#'   prints `.045` and `<.001`; `p_digits = 4` prints `.0451` and
+#'   `<.0001`; `p_digits = 2` prints `.05` and `<.01`. Useful for
+#'   genomics / GWAS contexts with very small *p*-values, or for
+#'   journals using a coarser convention. Leading zeros are always
+#'   stripped, following APA convention.
 #' @param decimal_mark Character used as decimal separator.
 #'   Either `"."` (default) or `","`.
+#' @param align Horizontal alignment of numeric columns in the printed
+#'   ASCII table and in the `tinytable`, `gt`, `flextable`, `word`,
+#'   and `clipboard` outputs. The first column (`Variable`) and
+#'   `Group` (when present) are always left-aligned. One of:
+#'   - `"decimal"` (default): align numeric columns on the decimal
+#'     mark, the standard scientific-publication convention used by
+#'     SPSS, SAS, LaTeX `siunitx`, [gt::cols_align_decimal()] and
+#'     `tinytable::style_tt(align = "d")`. For engines without a
+#'     native decimal-alignment primitive (`flextable`, `word`,
+#'     `clipboard`, ASCII print), values are pre-padded with leading
+#'     and trailing spaces so the dots line up vertically; the body
+#'     of the `flextable`/`word` output additionally uses a monospace
+#'     font to make character widths uniform.
+#'   - `"center"`: center-align all numeric columns.
+#'   - `"right"`: right-align all numeric columns.
+#'   - `"auto"`: legacy per-column rule (center for the descriptive
+#'     columns, right for `n` and `p`).
+#'
+#'   The `excel` output uses the engine's default alignment in any
+#'   case: cell-string padding does not align decimals under
+#'   proportional fonts. Same default and semantics as
+#'   [table_continuous_lm()].
 #' @param output Output format. One of:
-#'   - `"default"` (a printed ASCII table, returned invisibly)
-#'   - `"data.frame"` (a plain numeric `data.frame`)
+#'   - `"default"`: a printed ASCII table, returned invisibly.
+#'   - `"data.frame"` / `"long"`: a plain `data.frame` with one row
+#'     per `(variable x group)` (or one row per `variable` when `by`
+#'     is not used). The two names are synonyms; pick whichever reads
+#'     better in your pipeline (`"long"` matches
+#'     [table_continuous_lm()]'s naming).
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
@@ -104,14 +174,15 @@
 #' \itemize{
 #'   \item `"default"`: prints a styled ASCII table and returns the
 #'     underlying `data.frame` invisibly (S3 class
-#'     `"spicy_continuous_table"`).
-#'   \item `"data.frame"`: a plain `data.frame` with columns
-#'     `variable`, `label`, `group` (when `by` is used), `mean`, `sd`,
-#'     `min`, `max`, `ci_lower`, `ci_upper`, `n`.
-#'     When `by` is used together with `p_value = TRUE`,
-#'     `statistic = TRUE`, or `effect_size = TRUE`, additional columns
-#'     are appended (populated on the first row of each variable block
-#'     only):
+#'     `"spicy_continuous_table"` / `"spicy_table"`). The object can
+#'     be re-coerced via [as.data.frame.spicy_continuous_table()] or
+#'     piped into `broom::tidy()` / `broom::glance()`.
+#'   \item `"data.frame"` / `"long"`: a plain `data.frame` with
+#'     columns `variable`, `label`, `group` (when `by` is used),
+#'     `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`. When
+#'     `by` is used together with `p_value = TRUE`, `statistic = TRUE`,
+#'     or `effect_size != "none"`, additional columns are appended
+#'     (populated on the first row of each variable block only):
 #'     \itemize{
 #'       \item `test_type` -- test identifier (e.g., `"welch_t"`,
 #'         `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
@@ -119,10 +190,13 @@
 #'       \item `statistic`, `df1`, `df2`, `p.value` -- test results.
 #'       \item `es_type` -- effect-size identifier (`"hedges_g"`,
 #'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), when
-#'         `effect_size = TRUE`.
+#'         `effect_size != "none"`.
 #'       \item `es_value`, `es_ci_lower`, `es_ci_upper` -- effect-size
 #'         estimate and confidence interval bounds.
 #'     }
+#'     The two names `"data.frame"` and `"long"` are synonyms (the
+#'     descriptive output is naturally already long). Pick whichever
+#'     reads better in your code.
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -133,9 +207,73 @@
 #' }
 #'
 #' @details
-#' Non-numeric columns are silently dropped (set `verbose = TRUE` to see
-#' which columns were excluded). When a single constant column is passed,
-#' SD and CI are shown as `"--"` in the ASCII table.
+#' # Tests
+#'
+#' The omnibus test is computed only when `by` is supplied and at
+#' least two groups have two or more observations. Choice driven by
+#' `test`:
+#' \itemize{
+#'   \item `"welch"` (default): Welch *t*-test for two groups
+#'     (`stats::t.test(var.equal = FALSE)`); Welch one-way ANOVA for
+#'     three or more (`stats::oneway.test(var.equal = FALSE)`). Does
+#'     not assume equal variances.
+#'   \item `"student"`: Student *t*-test (`var.equal = TRUE`) /
+#'     classical ANOVA (`stats::oneway.test(var.equal = TRUE)`).
+#'   \item `"nonparametric"`: Wilcoxon rank-sum / Mann-Whitney *U*
+#'     for two groups (`stats::wilcox.test`); Kruskal-Wallis *H* for
+#'     three or more (`stats::kruskal.test`).
+#' }
+#'
+#' For model-based contrasts (heteroskedasticity-consistent SE,
+#' cluster-robust SE, weighted contrasts, fitted means, etc.), use
+#' [table_continuous_lm()].
+#'
+#' # Effect sizes
+#'
+#' Effect size is selected via `effect_size`. The default is `"none"`
+#' (no column). `"auto"` mirrors the historical `effect_size = TRUE`
+#' behaviour and chooses the canonical measure for the active
+#' (`test`, `n_groups`) combination:
+#' \itemize{
+#'   \item Parametric, 2 groups -> Hedges' *g* (Hedges & Olkin 1985).
+#'   \item Parametric, 3+ groups -> Eta-squared (\eqn{\eta^2}).
+#'   \item Nonparametric, 2 groups -> Rank-biserial *r*.
+#'   \item Nonparametric, 3+ groups -> Epsilon-squared
+#'     (\eqn{\varepsilon^2}).
+#' }
+#' Explicit choices (`"hedges_g"`, `"eta_sq"`, `"r_rb"`,
+#' `"epsilon_sq"`) are validated against (`test`, `n_groups`); an
+#' incompatible request triggers a clear error rather than a silent
+#' fallback. The model-based companion [table_continuous_lm()] adds
+#' Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}, all
+#' derived from the fitted (possibly weighted) `lm()`. CIs are
+#' available via `effect_size_ci = TRUE`: noncentral *F* inversion
+#' for \eqn{\eta^2}, Hedges-Olkin normal approximation for *g*,
+#' Fisher *z*-transform for *r*, and percentile bootstrap (2 000
+#' replicates) for \eqn{\varepsilon^2}.
+#'
+#' # Display conventions
+#'
+#' By default (`align = "decimal"`) numeric columns are aligned on
+#' the decimal mark, the standard scientific-publication convention
+#' used by SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+#' [gt::cols_align_decimal()] / `tinytable::style_tt(align = "d")`.
+#' For engines without a native primitive (`flextable`, `word`,
+#' `clipboard`, ASCII print), values are pre-padded with leading and
+#' trailing spaces so dots line up vertically; `flextable`/`word`
+#' additionally use a monospace font in the body. Pass
+#' `align = "auto"` to revert to the legacy per-column rule (centre
+#' for the descriptive columns, right for `n` and `p`).
+#'
+#' *p*-values are formatted with `p_digits` decimal places (default
+#' 3, the APA standard). The threshold below which the column shows
+#' `<.001` is `10^{-p_digits}`; setting `p_digits = 4` shifts both
+#' the displayed precision and the threshold accordingly. Leading
+#' zeros on *p* are always stripped (`.045`, not `0.045`).
+#'
+#' Non-numeric columns are silently dropped (set `verbose = TRUE` to
+#' see which columns were excluded). When a single constant column is
+#' passed, SD and CI are shown as `"--"` in the ASCII table.
 #'
 #' Optional output engines require suggested packages:
 #' \itemize{
@@ -147,9 +285,13 @@
 #'   \item \pkg{clipr} for `output = "clipboard"`
 #' }
 #'
-#' @seealso [table_categorical()] for categorical variables;
-#'   [freq()] for one-way frequency tables; [cross_tab()] for two-way
-#'   cross-tabulations.
+#' @family spicy tables
+#' @seealso [table_continuous_lm()] for the model-based companion
+#'   (heteroskedasticity-consistent SE, cluster-robust SE, weighted
+#'   contrasts, fitted means);
+#'   [table_categorical()] for categorical variables;
+#'   [freq()] for one-way frequency tables;
+#'   [cross_tab()] for two-way cross-tabulations.
 #'
 #' @examples
 #' table_continuous(
@@ -248,16 +390,28 @@ table_continuous <- function(
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
-  effect_size = FALSE,
+  show_n = TRUE,
+  effect_size = c(
+    "none",
+    "auto",
+    "hedges_g",
+    "eta_sq",
+    "r_rb",
+    "epsilon_sq"
+  ),
   effect_size_ci = FALSE,
+  ci = TRUE,
   labels = NULL,
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
+  p_digits = 3,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c(
     "default",
     "data.frame",
+    "long",
     "tinytable",
     "gt",
     "flextable",
@@ -305,6 +459,18 @@ table_continuous <- function(
     )
   }
   effect_size_digits <- as.integer(effect_size_digits)
+  if (
+    !is.numeric(p_digits) ||
+      length(p_digits) != 1L ||
+      is.na(p_digits) ||
+      p_digits < 1
+  ) {
+    stop(
+      "`p_digits` must be a single integer >= 1 (typically 2-4).",
+      call. = FALSE
+    )
+  }
+  p_digits <- as.integer(p_digits)
   if (!decimal_mark %in% c(".", ",")) {
     stop('`decimal_mark` must be "." or ","', call. = FALSE)
   }
@@ -313,8 +479,9 @@ table_continuous <- function(
   }
   for (.lname in c(
     "statistic",
-    "effect_size",
     "effect_size_ci",
+    "show_n",
+    "ci",
     "regex",
     "verbose"
   )) {
@@ -323,6 +490,22 @@ table_continuous <- function(
       stop(sprintf("`%s` must be TRUE/FALSE.", .lname), call. = FALSE)
     }
   }
+
+  # `effect_size` accepts both logical (legacy) and character (current
+  # documented enum). Logical TRUE maps to "auto" (auto-select the
+  # measure from test type and group count, the historical behaviour);
+  # logical FALSE maps to "none". Character values are validated below.
+  if (is.logical(effect_size)) {
+    if (length(effect_size) != 1L || is.na(effect_size)) {
+      stop("`effect_size` must be a single TRUE/FALSE or character value.",
+        call. = FALSE
+      )
+    }
+    effect_size <- if (isTRUE(effect_size)) "auto" else "none"
+  }
+  effect_size_explicit <- !missing(effect_size)
+  effect_size <- match.arg(effect_size)
+
   if (
     !is.null(p_value) &&
       (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
@@ -332,6 +515,7 @@ table_continuous <- function(
   output <- match.arg(output)
   test_explicit <- !missing(test)
   test <- match.arg(test)
+  align <- match.arg(align)
 
   # --- by (grouping) handling ---
   group_quo <- rlang::enquo(by)
@@ -363,8 +547,13 @@ table_continuous <- function(
     }
     p_value <- FALSE
   }
+  has_es_request <- !identical(effect_size, "none")
   if (
-    test_explicit && !p_value && !statistic && !effect_size && !effect_size_ci
+    test_explicit &&
+      !p_value &&
+      !statistic &&
+      !has_es_request &&
+      !effect_size_ci
   ) {
     warning(
       "`test` is ignored when both `p_value` and `statistic` are FALSE.",
@@ -373,20 +562,21 @@ table_continuous <- function(
   }
   do_test <- (p_value || statistic) && has_group
 
-  if ((effect_size || effect_size_ci) && !has_group) {
+  if ((has_es_request || effect_size_ci) && !has_group) {
     warning(
       "`effect_size` is ignored when `by` is not used.",
       call. = FALSE
     )
   }
-  if (effect_size_ci && !effect_size) {
+  if (effect_size_ci && !has_es_request) {
     warning(
-      "`effect_size_ci` implies `effect_size = TRUE`.",
+      "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.",
       call. = FALSE
     )
-    effect_size <- TRUE
+    effect_size <- "auto"
+    has_es_request <- TRUE
   }
-  do_es <- effect_size && has_group
+  do_es <- has_es_request && has_group
   # Effect size needs test computation even if p_value/statistic are FALSE
   if (do_es && !do_test) {
     do_test <- TRUE
@@ -553,13 +743,22 @@ table_continuous <- function(
       )
       if (do_es) {
         if (testable) {
-          es_row <- compute_effect_size(
-            xvec,
-            gvec,
+          chosen_es <- resolve_effect_size_choice(
+            effect_size,
             n_valid_groups,
             test,
-            ci_level
+            explicit = effect_size_explicit
           )
+          if (!identical(chosen_es, "none")) {
+            es_row <- compute_effect_size(
+              xvec,
+              gvec,
+              n_valid_groups,
+              test,
+              ci_level,
+              type = chosen_es
+            )
+          }
         }
       }
 
@@ -629,16 +828,29 @@ table_continuous <- function(
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
   attr(result, "effect_size_digits") <- effect_size_digits
+  attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
+  attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
   attr(result, "test") <- if (do_test) test else NA_character_
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
-  attr(result, "show_effect_size") <- effect_size && has_group
+  attr(result, "show_n") <- show_n
+  attr(result, "show_ci") <- ci
+  attr(result, "show_effect_size") <- has_es_request && has_group
   attr(result, "show_effect_size_ci") <- effect_size_ci && has_group
+  attr(result, "effect_size") <- effect_size
 
-  # --- plain data.frame return ---
-  if (output == "data.frame") {
+  # --- raw long-format return (one row per variable x group) ---
+  # `output = "data.frame"` and `output = "long"` both return the
+  # underlying long-format data.frame. The two names coexist for
+  # harmonisation with `table_continuous_lm()`, where `"data.frame"`
+  # is the wide formatted output and `"long"` is the raw analytic
+  # data. In `table_continuous()` the descriptive output is naturally
+  # already long (one row per (variable x group)), so the two are
+  # synonyms and return identical content; pick whichever name reads
+  # better in your pipeline.
+  if (output %in% c("data.frame", "long")) {
     return(result)
   }
 
@@ -648,8 +860,11 @@ table_continuous <- function(
       result,
       digits = digits,
       effect_size_digits = effect_size_digits,
+      p_digits = p_digits,
       decimal_mark = decimal_mark,
       ci_level = ci_level,
+      show_ci = ci,
+      show_n = show_n,
       show_p = attr(result, "show_p"),
       show_statistic = attr(result, "show_statistic"),
       show_effect_size = attr(result, "show_effect_size"),
@@ -661,7 +876,10 @@ table_continuous <- function(
         result,
         output = output,
         ci_level = ci_level,
+        align = align,
+        decimal_mark = decimal_mark,
         has_group = has_group,
+        show_n = show_n,
         excel_path = excel_path,
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
@@ -722,8 +940,101 @@ run_group_test <- function(xvec, gvec, n_groups, method) {
   row
 }
 
+# Internal: resolve a user-supplied effect_size value (after the
+# logical -> character coercion at the public boundary) to the actual
+# measure to compute, given the test method and group count. Returns
+# `"none"` (compute nothing), `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
+# `"epsilon_sq"`. When `explicit = TRUE` and the user-requested
+# measure is incompatible with `(method, n_groups)`, an actionable
+# error is raised; when `explicit = FALSE` the function silently
+# falls back to "auto" -- this is the case e.g. when the user wrote
+# `effect_size_ci = TRUE` without choosing a measure, where we set
+# `effect_size = "auto"` upstream.
+resolve_effect_size_choice <- function(
+  effect_size,
+  n_groups,
+  method,
+  explicit = TRUE
+) {
+  if (identical(effect_size, "none")) {
+    return("none")
+  }
+
+  auto_choice <- if (method == "nonparametric") {
+    if (n_groups == 2L) "r_rb" else "epsilon_sq"
+  } else {
+    if (n_groups == 2L) "hedges_g" else "eta_sq"
+  }
+
+  if (identical(effect_size, "auto")) {
+    return(auto_choice)
+  }
+
+  is_parametric <- method %in% c("welch", "student")
+  parametric_es <- c("hedges_g", "eta_sq")
+  np_es <- c("r_rb", "epsilon_sq")
+
+  if (is_parametric && effect_size %in% np_es) {
+    if (!explicit) return(auto_choice)
+    stop(
+      sprintf(
+        "Effect size `%s` is a nonparametric measure; switch `test = \"nonparametric\"` or pick `\"hedges_g\"` / `\"eta_sq\"`.",
+        effect_size
+      ),
+      call. = FALSE
+    )
+  }
+  if (!is_parametric && effect_size %in% parametric_es) {
+    if (!explicit) return(auto_choice)
+    stop(
+      sprintf(
+        "Effect size `%s` is a parametric measure; switch `test` to `\"welch\"` / `\"student\"` or pick `\"r_rb\"` / `\"epsilon_sq\"`.",
+        effect_size
+      ),
+      call. = FALSE
+    )
+  }
+
+  two_group_only <- c("hedges_g", "r_rb")
+  multi_group_only <- c("eta_sq", "epsilon_sq")
+
+  if (n_groups == 2L && effect_size %in% multi_group_only) {
+    if (!explicit) return(auto_choice)
+    stop(
+      sprintf(
+        "Effect size `%s` requires more than two groups; with two groups, pick `\"hedges_g\"` (parametric) or `\"r_rb\"` (nonparametric).",
+        effect_size
+      ),
+      call. = FALSE
+    )
+  }
+  if (n_groups > 2L && effect_size %in% two_group_only) {
+    if (!explicit) return(auto_choice)
+    stop(
+      sprintf(
+        "Effect size `%s` requires exactly two groups; with %d groups, pick `\"eta_sq\"` (parametric) or `\"epsilon_sq\"` (nonparametric).",
+        effect_size,
+        n_groups
+      ),
+      call. = FALSE
+    )
+  }
+
+  effect_size
+}
+
 # --- internal: compute effect size ---
-compute_effect_size <- function(xvec, gvec, n_groups, method, ci_level) {
+# `type` is one of `"hedges_g"`, `"eta_sq"`, `"r_rb"`, `"epsilon_sq"`,
+# already resolved by `resolve_effect_size_choice()` against the
+# (method, n_groups) compatibility matrix.
+compute_effect_size <- function(
+  xvec,
+  gvec,
+  n_groups,
+  method,
+  ci_level,
+  type = NULL
+) {
   row <- data.frame(
     es_type = NA_character_,
     es_value = NA_real_,
@@ -733,81 +1044,87 @@ compute_effect_size <- function(xvec, gvec, n_groups, method, ci_level) {
   )
   alpha <- 1 - ci_level
 
-  if (method == "nonparametric") {
-    if (n_groups == 2L) {
-      # Rank-biserial r from Wilcoxon W
-      grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
-      n1 <- sum(gvec == grp_levels[1])
-      n2 <- sum(gvec == grp_levels[2])
-      wt <- stats::wilcox.test(xvec ~ gvec)
-      w <- unname(wt$statistic)
-      r <- 1 - (2 * w) / (n1 * n2)
-      row$es_type <- "r_rb"
-      row$es_value <- r
-      # Fisher z-transform CI
-      n_total <- n1 + n2
-      if (n_total > 3L) {
-        z <- atanh(r)
-        se_z <- 1 / sqrt(n_total - 3)
-        z_crit <- stats::qnorm(1 - alpha / 2)
-        row$es_ci_lower <- tanh(z - z_crit * se_z)
-        row$es_ci_upper <- tanh(z + z_crit * se_z)
-      }
+  if (is.null(type)) {
+    type <- if (method == "nonparametric") {
+      if (n_groups == 2L) "r_rb" else "epsilon_sq"
     } else {
-      # Epsilon-squared from Kruskal-Wallis H
-      kt <- stats::kruskal.test(xvec ~ gvec)
-      h <- unname(kt$statistic)
-      n_total <- length(xvec)
-      row$es_type <- "epsilon_sq"
-      row$es_value <- max(0, (h - n_groups + 1) / (n_total - n_groups))
-      # Bootstrap CI for epsilon-squared
-      ci <- epsilon_sq_boot_ci(xvec, gvec, n_groups, ci_level)
-      row$es_ci_lower <- ci[1]
-      row$es_ci_upper <- ci[2]
+      if (n_groups == 2L) "hedges_g" else "eta_sq"
     }
-  } else {
-    if (n_groups == 2L) {
-      # Hedges' g (bias-corrected standardised mean difference)
-      grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
-      x1 <- xvec[gvec == grp_levels[1]]
-      x2 <- xvec[gvec == grp_levels[2]]
-      n1 <- length(x1)
-      n2 <- length(x2)
-      s_pooled <- sqrt(
-        ((n1 - 1) * stats::var(x1) + (n2 - 1) * stats::var(x2)) / (n1 + n2 - 2)
-      )
-      d <- (mean(x1) - mean(x2)) / s_pooled
-      # Hedges' correction factor (J)
-      g <- d * (1 - 3 / (4 * (n1 + n2 - 2) - 1))
-      row$es_type <- "hedges_g"
-      row$es_value <- g
-      # Hedges & Olkin approximation for SE
-      se_g <- sqrt(1 / n1 + 1 / n2 + g^2 / (2 * (n1 + n2)))
+  }
+
+  if (identical(type, "r_rb")) {
+    # Rank-biserial r from Wilcoxon W
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    n1 <- sum(gvec == grp_levels[1])
+    n2 <- sum(gvec == grp_levels[2])
+    wt <- stats::wilcox.test(xvec ~ gvec)
+    w <- unname(wt$statistic)
+    r <- 1 - (2 * w) / (n1 * n2)
+    row$es_type <- "r_rb"
+    row$es_value <- r
+    # Fisher z-transform CI
+    n_total <- n1 + n2
+    if (n_total > 3L) {
+      z <- atanh(r)
+      se_z <- 1 / sqrt(n_total - 3)
       z_crit <- stats::qnorm(1 - alpha / 2)
-      row$es_ci_lower <- g - z_crit * se_g
-      row$es_ci_upper <- g + z_crit * se_g
-    } else {
-      # Eta-squared from one-way ANOVA (SS_between / SS_total)
-      grand_mean <- mean(xvec)
-      grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
-      ss_between <- 0
-      for (g in grp_levels) {
-        xg <- xvec[gvec == g]
-        ss_between <- ss_between + length(xg) * (mean(xg) - grand_mean)^2
-      }
-      ss_total <- sum((xvec - grand_mean)^2)
-      eta_sq <- ss_between / ss_total
-      row$es_type <- "eta_sq"
-      row$es_value <- eta_sq
-      # CI via noncentral F
-      n_total <- length(xvec)
-      df1 <- n_groups - 1
-      df2 <- n_total - n_groups
-      f_obs <- (ss_between / df1) / ((ss_total - ss_between) / df2)
-      ci <- eta_sq_ci(f_obs, df1, df2, ci_level)
-      row$es_ci_lower <- ci[1]
-      row$es_ci_upper <- ci[2]
+      row$es_ci_lower <- tanh(z - z_crit * se_z)
+      row$es_ci_upper <- tanh(z + z_crit * se_z)
     }
+  } else if (identical(type, "epsilon_sq")) {
+    # Epsilon-squared from Kruskal-Wallis H
+    kt <- stats::kruskal.test(xvec ~ gvec)
+    h <- unname(kt$statistic)
+    n_total <- length(xvec)
+    row$es_type <- "epsilon_sq"
+    row$es_value <- max(0, (h - n_groups + 1) / (n_total - n_groups))
+    # Bootstrap CI for epsilon-squared
+    ci <- epsilon_sq_boot_ci(xvec, gvec, n_groups, ci_level)
+    row$es_ci_lower <- ci[1]
+    row$es_ci_upper <- ci[2]
+  } else if (identical(type, "hedges_g")) {
+    # Hedges' g (bias-corrected standardised mean difference)
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    x1 <- xvec[gvec == grp_levels[1]]
+    x2 <- xvec[gvec == grp_levels[2]]
+    n1 <- length(x1)
+    n2 <- length(x2)
+    s_pooled <- sqrt(
+      ((n1 - 1) * stats::var(x1) + (n2 - 1) * stats::var(x2)) / (n1 + n2 - 2)
+    )
+    d <- (mean(x1) - mean(x2)) / s_pooled
+    # Hedges' correction factor (J)
+    g <- d * (1 - 3 / (4 * (n1 + n2 - 2) - 1))
+    row$es_type <- "hedges_g"
+    row$es_value <- g
+    # Hedges & Olkin approximation for SE
+    se_g <- sqrt(1 / n1 + 1 / n2 + g^2 / (2 * (n1 + n2)))
+    z_crit <- stats::qnorm(1 - alpha / 2)
+    row$es_ci_lower <- g - z_crit * se_g
+    row$es_ci_upper <- g + z_crit * se_g
+  } else if (identical(type, "eta_sq")) {
+    # Eta-squared from one-way ANOVA (SS_between / SS_total)
+    grand_mean <- mean(xvec)
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    ss_between <- 0
+    for (g in grp_levels) {
+      xg <- xvec[gvec == g]
+      ss_between <- ss_between + length(xg) * (mean(xg) - grand_mean)^2
+    }
+    ss_total <- sum((xvec - grand_mean)^2)
+    eta_sq <- ss_between / ss_total
+    row$es_type <- "eta_sq"
+    row$es_value <- eta_sq
+    # CI via noncentral F
+    n_total <- length(xvec)
+    df1 <- n_groups - 1
+    df2 <- n_total - n_groups
+    f_obs <- (ss_between / df1) / ((ss_total - ss_between) / df2)
+    ci <- eta_sq_ci(f_obs, df1, df2, ci_level)
+    row$es_ci_lower <- ci[1]
+    row$es_ci_upper <- ci[2]
+  } else {
+    stop(sprintf("Unknown effect-size type `%s`.", type), call. = FALSE)
   }
 
   row
@@ -911,9 +1228,12 @@ build_display_df <- function(
   ci_level,
   show_p = FALSE,
   show_statistic = FALSE,
+  show_n = TRUE,
+  show_ci = TRUE,
   show_effect_size = FALSE,
   show_effect_size_ci = FALSE,
-  effect_size_digits = 2L
+  effect_size_digits = 2L,
+  p_digits = 3L
 ) {
   fmt <- function(v, d = digits) {
     out <- formatC(v, format = "f", digits = d)
@@ -923,20 +1243,10 @@ build_display_df <- function(
     ifelse(is.na(v), "--", out)
   }
 
-  fmt_p <- function(p) {
-    if (is.na(p)) {
-      return("")
-    }
-    if (p < 0.001) {
-      return(if (decimal_mark == ".") "<\u00A0.001" else "<\u00A0,001")
-    }
-    s <- formatC(p, format = "f", digits = 3L)
-    s <- sub("^0\\.", ".", s)
-    if (decimal_mark != ".") {
-      s <- sub("\\.", decimal_mark, s)
-    }
-    s
-  }
+  # Delegate p-value formatting to the shared helper from
+  # `table_continuous_lm.R`, which honours the user-supplied `p_digits`
+  # (APA default: 3) and the configured decimal_mark.
+  fmt_p <- function(p) format_p_value_lm(p, decimal_mark, digits = p_digits)
 
   fmt_test <- function(test_type, stat, df1, df2, decimal_mark) {
     if (is.na(stat)) {
@@ -1008,6 +1318,9 @@ build_display_df <- function(
   has_computed <- "statistic" %in% names(result)
   has_es <- "es_value" %in% names(result)
 
+  ci_ll_name <- paste0(ci_pct, " CI LL")
+  ci_ul_name <- paste0(ci_pct, " CI UL")
+
   if (has_group) {
     df <- data.frame(
       Variable = result$label,
@@ -1016,16 +1329,16 @@ build_display_df <- function(
       SD = fmt(result$sd),
       Min = fmt(result$min),
       Max = fmt(result$max),
-      LL = fmt(result$ci_lower),
-      UL = fmt(result$ci_upper),
-      n = as.character(result$n),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
-    names(df)[7:8] <- c(
-      paste0(ci_pct, " CI LL"),
-      paste0(ci_pct, " CI UL")
-    )
+    if (isTRUE(show_ci)) {
+      df[[ci_ll_name]] <- fmt(result$ci_lower)
+      df[[ci_ul_name]] <- fmt(result$ci_upper)
+    }
+    if (isTRUE(show_n)) {
+      df$n <- as.character(result$n)
+    }
 
     # Deduplicate Variable labels: show only on first row per block
     vars <- result$variable
@@ -1080,16 +1393,16 @@ build_display_df <- function(
       SD = fmt(result$sd),
       Min = fmt(result$min),
       Max = fmt(result$max),
-      LL = fmt(result$ci_lower),
-      UL = fmt(result$ci_upper),
-      n = as.character(result$n),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
-    names(df)[6:7] <- c(
-      paste0(ci_pct, " CI LL"),
-      paste0(ci_pct, " CI UL")
-    )
+    if (isTRUE(show_ci)) {
+      df[[ci_ll_name]] <- fmt(result$ci_lower)
+      df[[ci_ul_name]] <- fmt(result$ci_upper)
+    }
+    if (isTRUE(show_n)) {
+      df$n <- as.character(result$n)
+    }
   }
 
   df
@@ -1136,7 +1449,10 @@ export_desc_table <- function(
   raw_result,
   output,
   ci_level,
+  align = "decimal",
+  decimal_mark = ".",
   has_group,
+  show_n = TRUE,
   excel_path,
   excel_sheet,
   clipboard_delim,
@@ -1145,10 +1461,62 @@ export_desc_table <- function(
   ci_pct <- paste0(round(ci_level * 100), "%")
   ci_ll <- paste0(ci_pct, " CI LL")
   ci_ul <- paste0(ci_pct, " CI UL")
+  has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
   has_statistic <- "Test" %in% names(display_df)
   has_p <- "p" %in% names(display_df)
   has_es <- "ES" %in% names(display_df)
+  has_n <- "n" %in% names(display_df)
   sep_rows <- compute_var_sep_rows(display_df)
+
+  # For engines without a native decimal-alignment primitive
+  # (flextable, word, clipboard, ASCII print), pre-pad numeric cells
+  # with leading/trailing spaces so dots line up vertically. gt and
+  # tinytable have native primitives and are handled with their own
+  # API. Excel keeps the engine-default alignment (proportional fonts
+  # make cell-string padding unreliable). Same approach as
+  # `table_continuous_lm()` for cross-function consistency.
+  use_decimal <- identical(align, "decimal")
+  needs_padding_engine <- output %in% c("flextable", "word", "clipboard")
+
+  # Phase-1 limitation for rendered engines: the spanner logic in
+  # `tinytable` / `gt` / `flextable` / `word` / `excel` currently
+  # assumes the CI and `n` columns exist. When the user opts out via
+  # `ci = FALSE` / `show_n = FALSE`, fall back to inserting empty
+  # placeholder columns for those engines so the rendered table still
+  # renders. The opt-out has effect for `output = "default"` (ASCII)
+  # and `output = "data.frame"` / `"long"` (the columns are simply
+  # absent there). A follow-up will extend the rendered engines to
+  # honour the opt-out fully.
+  rendered_engines <- c(
+    "tinytable",
+    "gt",
+    "flextable",
+    "word",
+    "excel"
+  )
+  if (output %in% rendered_engines) {
+    if (!has_ci) {
+      empty <- rep("", nrow(display_df))
+      display_df[[ci_ll]] <- empty
+      display_df[[ci_ul]] <- empty
+      has_ci <- TRUE
+    }
+    if (!has_n) {
+      display_df[["n"]] <- rep("", nrow(display_df))
+      has_n <- TRUE
+    }
+  }
+
+  if (use_decimal && needs_padding_engine) {
+    left_skip <- if (has_group) 2L else 1L
+    numeric_cols <- setdiff(seq_along(display_df), seq_len(left_skip))
+    for (j in numeric_cols) {
+      display_df[[j]] <- decimal_align_strings_lm(
+        display_df[[j]],
+        decimal_mark = decimal_mark
+      )
+    }
+  }
 
   # ---- tinytable ----
   if (output == "tinytable") {
@@ -1210,21 +1578,41 @@ export_desc_table <- function(
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- tinytable::theme_empty(tt)
 
-    # Alignment
+    # Body alignment. The first column ("Variable") and "Group" (when
+    # present) are always left-aligned; numeric columns honour the
+    # `align` argument: "decimal" -> tinytable::style_tt(align = "d");
+    # "center" / "right" -> their literal alignment; "auto" preserves
+    # the legacy per-column rule (right for n/p, center otherwise).
     left_j <- 1L
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     if (has_group) {
       tt <- tinytable::style_tt(tt, j = 2, align = "l")
       left_j <- c(left_j, 2L)
     }
-    right_j <- n_pos
-    if (has_p) {
-      right_j <- c(right_j, gspec[["p"]])
-    }
-    center_j <- setdiff(seq_len(nc), c(left_j, right_j))
-    tt <- tinytable::style_tt(tt, j = center_j, align = "c")
-    for (rj in right_j) {
-      tt <- tinytable::style_tt(tt, j = rj, align = "r")
+    numeric_j <- setdiff(seq_len(nc), left_j)
+    if (use_decimal && length(numeric_j) > 0L) {
+      for (rj in numeric_j) {
+        tt <- tinytable::style_tt(tt, j = rj, align = "d")
+      }
+    } else if (identical(align, "center") && length(numeric_j) > 0L) {
+      tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
+    } else if (identical(align, "right") && length(numeric_j) > 0L) {
+      for (rj in numeric_j) {
+        tt <- tinytable::style_tt(tt, j = rj, align = "r")
+      }
+    } else {
+      # "auto": legacy per-column rule -- right for n/p, center for the rest.
+      right_j <- n_pos
+      if (has_p) {
+        right_j <- c(right_j, gspec[["p"]])
+      }
+      center_j <- setdiff(numeric_j, right_j)
+      if (length(center_j) > 0L) {
+        tt <- tinytable::style_tt(tt, j = center_j, align = "c")
+      }
+      for (rj in right_j) {
+        tt <- tinytable::style_tt(tt, j = rj, align = "r")
+      }
     }
 
     # Spanner alignment
@@ -1346,24 +1734,39 @@ export_desc_table <- function(
       columns = c("LL", "UL")
     )
 
-    # Alignment
+    # Alignment. The Variable / Group columns are always left-aligned;
+    # numeric columns honour the `align` argument: "decimal" uses
+    # gt::cols_align_decimal() (the native gt primitive); "center" /
+    # "right" use gt::cols_align(); "auto" preserves the legacy
+    # per-column rule (right for n/p, center otherwise).
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
     if (has_group) {
       tbl <- gt::cols_align(tbl, align = "left", columns = "Group")
     }
-    center_cols <- c("M", "SD", "Min", "Max", "LL", "UL")
-    if (has_statistic) {
-      center_cols <- c(center_cols, "Test")
+    left_cols <- c("Variable", if (has_group) "Group")
+    numeric_cols <- setdiff(names(display_df), left_cols)
+    if (use_decimal && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+    } else if (identical(align, "center") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    } else if (identical(align, "right") && length(numeric_cols) > 0L) {
+      tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
+    } else {
+      # "auto": legacy per-column rule.
+      center_cols <- c("M", "SD", "Min", "Max", "LL", "UL")
+      if (has_statistic) {
+        center_cols <- c(center_cols, "Test")
+      }
+      if (has_es) {
+        center_cols <- c(center_cols, "ES")
+      }
+      tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
+      right_cols <- "n"
+      if (has_p) {
+        right_cols <- c(right_cols, "p")
+      }
+      tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
     }
-    if (has_es) {
-      center_cols <- c(center_cols, "ES")
-    }
-    tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-    right_cols <- "n"
-    if (has_p) {
-      right_cols <- c(right_cols, "p")
-    }
-    tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
 
     left_spanners <- "spn_Variable"
     if (has_group) {
@@ -1508,15 +1911,82 @@ export_desc_table <- function(
 
     ci_j <- which(col_keys %in% c("LL", "UL"))
     left_j <- if (has_group) 1:2 else 1L
-    right_j <- which(col_keys == "n")
-    if (has_p) {
-      right_j <- c(right_j, which(col_keys == "p"))
-    }
-    center_j <- setdiff(seq_len(nc), c(left_j, right_j))
+    numeric_j <- setdiff(seq_len(nc), left_j)
 
     ft <- flextable::align(ft, j = left_j, part = "all", align = "left")
-    ft <- flextable::align(ft, j = center_j, part = "all", align = "center")
-    ft <- flextable::align(ft, j = right_j, part = "all", align = "right")
+    if (use_decimal && length(numeric_j) > 0L) {
+      # Cells were pre-padded by `decimal_align_strings_lm()` above;
+      # right-aligning the padded strings preserves the dot-aligned
+      # column. Use a monospace font in the body so character widths
+      # match (proportional fonts give approximate alignment).
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "header",
+        align = "center"
+      )
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "body",
+        align = "right"
+      )
+      ft <- flextable::font(
+        ft,
+        j = numeric_j,
+        part = "body",
+        fontname = "Consolas"
+      )
+    } else if (identical(align, "center") && length(numeric_j) > 0L) {
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "all",
+        align = "center"
+      )
+    } else if (identical(align, "right") && length(numeric_j) > 0L) {
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "header",
+        align = "center"
+      )
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "body",
+        align = "right"
+      )
+    } else {
+      # "auto": legacy per-column rule.
+      right_j <- which(col_keys == "n")
+      if (has_p) {
+        right_j <- c(right_j, which(col_keys == "p"))
+      }
+      center_j <- setdiff(numeric_j, right_j)
+      if (length(center_j) > 0L) {
+        ft <- flextable::align(
+          ft,
+          j = center_j,
+          part = "all",
+          align = "center"
+        )
+      }
+      if (length(right_j) > 0L) {
+        ft <- flextable::align(
+          ft,
+          j = right_j,
+          part = "header",
+          align = "center"
+        )
+        ft <- flextable::align(
+          ft,
+          j = right_j,
+          part = "body",
+          align = "right"
+        )
+      }
+    }
 
     # APA borders
     ft <- flextable::hline_top(ft, part = "header", border = bd)

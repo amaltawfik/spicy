@@ -914,8 +914,10 @@ test_that("fmt_p uses non-breaking space in display", {
     show_effect_size_ci = FALSE
   )
   p_col <- display[["p"]][nzchar(display[["p"]])]
-  # p should be very small -> "<\u00A0.001" with non-breaking space
-  expect_true(any(grepl("<\u00A0", p_col)))
+  # p should be very small -> "<.001" (shared format_p_value_lm helper,
+  # no non-breaking space; alignment is now handled by decimal_align).
+  expect_true(any(startsWith(p_col, "<")))
+  expect_true(any(grepl("\\.001", p_col)))
 })
 
 test_that("table_continuous warns on no numeric columns", {
@@ -2088,4 +2090,341 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
   expect_match(es_comma, "\\[\\-?[0-9,]+; \\-?[0-9,]+\\]")
   expect_false(grepl(";", es_dot, fixed = TRUE))
   expect_false(grepl(", ", es_comma, fixed = TRUE))
+})
+
+# ---- harmonisation with table_continuous_lm() (Phase 1) ------------------
+
+test_that("effect_size accepts logical TRUE/FALSE as silent aliases", {
+  out_T <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    effect_size = TRUE,
+    output = "long"
+  )
+  out_auto <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    effect_size = "auto",
+    output = "long"
+  )
+  out_F <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    effect_size = FALSE,
+    output = "long"
+  )
+  out_none <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    effect_size = "none",
+    output = "long"
+  )
+
+  # TRUE == "auto" (Hedges' g for two-group parametric)
+  expect_equal(unique(out_T$es_type[!is.na(out_T$es_type)]), "hedges_g")
+  expect_equal(out_T$es_value, out_auto$es_value)
+
+  # FALSE == "none" (no effect-size columns populated)
+  expect_true(all(is.na(out_F$es_type)))
+  expect_true(all(is.na(out_none$es_type)))
+})
+
+test_that("effect_size character explicit choices dispatch correctly", {
+  out_g <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    effect_size = "hedges_g",
+    output = "long"
+  )
+  expect_equal(unique(out_g$es_type[!is.na(out_g$es_type)]), "hedges_g")
+
+  out_eta <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "eta_sq",
+    output = "long"
+  )
+  expect_equal(unique(out_eta$es_type[!is.na(out_eta$es_type)]), "eta_sq")
+
+  out_rrb <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    test = "nonparametric",
+    effect_size = "r_rb",
+    output = "long"
+  )
+  expect_equal(unique(out_rrb$es_type[!is.na(out_rrb$es_type)]), "r_rb")
+
+  out_eps <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    test = "nonparametric",
+    effect_size = "epsilon_sq",
+    output = "long"
+  )
+  expect_equal(unique(out_eps$es_type[!is.na(out_eps$es_type)]), "epsilon_sq")
+})
+
+test_that("effect_size mismatched explicit choice errors clearly", {
+  # eta_sq requires k > 2; sleep has 2 groups
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, effect_size = "eta_sq"),
+    "requires more than two groups"
+  )
+  # hedges_g requires k = 2; iris$Species has 3
+  expect_error(
+    table_continuous(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      effect_size = "hedges_g"
+    ),
+    "requires exactly two groups"
+  )
+  # r_rb is nonparametric; with parametric test, error
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      by = group,
+      test = "welch",
+      effect_size = "r_rb"
+    ),
+    "nonparametric measure"
+  )
+  # hedges_g is parametric; with nonparametric test, error
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      by = group,
+      test = "nonparametric",
+      effect_size = "hedges_g"
+    ),
+    "parametric measure"
+  )
+})
+
+test_that("effect_size invalid character value rejected by match.arg", {
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      by = group,
+      effect_size = "bogus_metric"
+    ),
+    "should be one of"
+  )
+})
+
+test_that("effect_size logical NA / non-scalar errors", {
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, effect_size = NA),
+    "must be a single TRUE/FALSE or character"
+  )
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      by = group,
+      effect_size = c(TRUE, FALSE)
+    ),
+    "must be a single TRUE/FALSE or character"
+  )
+})
+
+test_that("p_digits validates and renders accordingly", {
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, p_digits = 0),
+    "p_digits"
+  )
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, p_digits = NA_integer_),
+    "p_digits"
+  )
+
+  # p_digits = 4 -> rendered p column should show 4 digits past decimal
+  out <- table_continuous(sleep, select = extra, by = group, p_digits = 4)
+  expect_s3_class(out, "spicy_continuous_table")
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE,
+    p_digits = 4L
+  )
+  p_col <- display[["p"]][nzchar(display[["p"]])]
+  # Either ".####" with 4 digits or "<.0001"
+  expect_true(any(grepl("\\.\\d{4}|<\\.0001", p_col)))
+})
+
+test_that("align argument validates and stores the choice", {
+  for (a in c("decimal", "auto", "center", "right")) {
+    out <- table_continuous(sleep, select = extra, by = group, align = a)
+    expect_equal(attr(out, "align"), a)
+  }
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, align = "bogus"),
+    "should be one of"
+  )
+})
+
+test_that("show_n = FALSE drops the n column from the rendered display df", {
+  out <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    show_n = FALSE
+  )
+  expect_false(attr(out, "show_n"))
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_n = FALSE,
+    show_ci = TRUE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE,
+    p_digits = 3L
+  )
+  expect_false("n" %in% names(display))
+})
+
+test_that("ci = FALSE drops the CI columns from the rendered display df", {
+  out <- table_continuous(sleep, select = extra, by = group, ci = FALSE)
+  expect_false(attr(out, "show_ci"))
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_n = TRUE,
+    show_ci = FALSE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE,
+    p_digits = 3L
+  )
+  expect_false(any(grepl("CI", names(display))))
+})
+
+test_that("output = 'long' is a synonym for output = 'data.frame'", {
+  out_df <- table_continuous(sleep, select = extra, by = group, output = "data.frame")
+  out_lg <- table_continuous(sleep, select = extra, by = group, output = "long")
+  expect_identical(unclass(out_df), unclass(out_lg))
+})
+
+# ---- broom S3 methods -----------------------------------------------------
+
+test_that("as.data.frame() strips spicy classes and rendering attrs", {
+  out <- table_continuous(sleep, select = extra, by = group)
+  df <- as.data.frame(out)
+  expect_true(inherits(df, "data.frame"))
+  expect_false("spicy_continuous_table" %in% class(df))
+  expect_false("spicy_table" %in% class(df))
+  # Rendering-only attributes stripped
+  expect_null(attr(df, "digits"))
+  expect_null(attr(df, "decimal_mark"))
+  expect_null(attr(df, "align"))
+  # group_var preserved as provenance
+  expect_equal(attr(df, "group_var"), "group")
+})
+
+test_that("as_tibble() returns a tbl_df", {
+  skip_if_not_installed("tibble")
+  out <- table_continuous(sleep, select = extra, by = group)
+  tb <- tibble::as_tibble(out)
+  expect_s3_class(tb, "tbl_df")
+})
+
+test_that("tidy() returns one row per (variable x group) with broom columns", {
+  out <- table_continuous(
+    iris,
+    select = c(Sepal.Length, Sepal.Width),
+    by = Species
+  )
+  td <- broom::tidy(out)
+  # 2 outcomes x 3 species = 6 rows
+  expect_equal(nrow(td), 6L)
+  expect_setequal(
+    names(td),
+    c(
+      "outcome",
+      "label",
+      "group",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "n",
+      "min",
+      "max",
+      "sd"
+    )
+  )
+  # estimate equals empirical mean
+  setosa_sl <- td[td$outcome == "Sepal.Length" & td$group == "setosa", ]
+  expect_equal(setosa_sl$estimate, mean(iris$Sepal.Length[iris$Species == "setosa"]))
+})
+
+test_that("tidy() works without by (one row per variable)", {
+  out <- table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
+  td <- broom::tidy(out)
+  expect_equal(nrow(td), 2L)
+  expect_false("group" %in% names(td))
+})
+
+test_that("glance() returns one row per outcome with omnibus test + ES", {
+  out <- table_continuous(
+    iris,
+    select = c(Sepal.Length, Sepal.Width),
+    by = Species,
+    effect_size = "eta_sq"
+  )
+  gl <- broom::glance(out)
+  expect_equal(nrow(gl), 2L)
+  expect_setequal(
+    names(gl),
+    c(
+      "outcome",
+      "label",
+      "test_type",
+      "statistic",
+      "df",
+      "df.residual",
+      "p.value",
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "n_total"
+    )
+  )
+  expect_equal(unique(gl$es_type), "eta_sq")
+  expect_true(all(gl$n_total == 150L))
+})
+
+test_that("glance() without by returns NA test/ES, populated n_total", {
+  out <- table_continuous(iris, select = Sepal.Length)
+  gl <- broom::glance(out)
+  expect_equal(nrow(gl), 1L)
+  expect_true(is.na(gl$test_type))
+  expect_true(is.na(gl$p.value))
+  expect_equal(gl$n_total, 150L)
 })
