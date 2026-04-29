@@ -3380,9 +3380,9 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
   }
   if (identical(chosen, "chi2")) {
     if (isTRUE(exact) && length(df1_vals) == 1L) {
-      return(paste0("χ²(", format_df(df1_vals), ")"))
+      return(paste0("\u03C7\u00B2(", format_df(df1_vals), ")"))
     }
-    return("χ²")
+    return("\u03C7\u00B2")
   }
   if (identical(chosen, "t")) {
     if (isTRUE(exact) && length(df2_vals) == 1L) {
