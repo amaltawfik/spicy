@@ -142,10 +142,12 @@ table_categorical(
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
   If `TRUE`, includes the confidence interval of the association
-  measure. In data formats (`"data.frame"`, `"long"`, `"excel"`,
-  `"clipboard"`), two extra columns `CI lower` and `CI upper` are added.
-  In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`),
-  the CI is shown inline (e.g., `.14 [.08, .19]`). Defaults to `FALSE`.
+  measure. In wide raw outputs (`"data.frame"`, `"excel"`,
+  `"clipboard"`), two extra columns `CI lower` / `CI upper` are added;
+  in the long raw output (`"long"`) the bounds appear as `ci_lower` /
+  `ci_upper`. In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
+  `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`). Defaults
+  to `FALSE`.
 
 - decimal_mark:
 

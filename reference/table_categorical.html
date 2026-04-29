@@ -217,11 +217,12 @@ to report (<code>"auto"</code>, <code>"cramer_v"</code>, <code>"phi"</code>, <co
 
 <dt id="arg-assoc-ci">assoc_ci<a class="anchor" aria-label="anchor" href="#arg-assoc-ci"></a></dt>
 <dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. If <code>TRUE</code>, includes the
-confidence interval of the association measure. In data formats
-(<code>"data.frame"</code>, <code>"long"</code>, <code>"excel"</code>, <code>"clipboard"</code>), two extra
-columns <code>CI lower</code> and <code>CI upper</code> are added.
-In rendered formats (<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>, <code>"word"</code>),
-the CI is shown inline (e.g., <code>.14 [.08, .19]</code>).
+confidence interval of the association measure. In wide raw
+outputs (<code>"data.frame"</code>, <code>"excel"</code>, <code>"clipboard"</code>), two extra
+columns <code>CI lower</code> / <code>CI upper</code> are added; in the long raw
+output (<code>"long"</code>) the bounds appear as <code>ci_lower</code> / <code>ci_upper</code>.
+In rendered formats (<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>,
+<code>"word"</code>), the CI is shown inline (e.g., <code>.14 [.08, .19]</code>).
 Defaults to <code>FALSE</code>.</p></dd>
 
 
