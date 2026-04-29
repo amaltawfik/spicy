@@ -123,6 +123,234 @@ When you need the underlying returned data for further processing, use
 `output = "data.frame"` for the wide raw table or `output = "long"` for
 the analytic long table.
 
+## Effect sizes
+
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+supports four effect sizes via the `effect_size` argument. All are
+derived from the **same fitted model** as the displayed coefficients and
+`R²`, so the table stays internally consistent — and all are **invariant
+to `vcov`** (the choice of classical or `HC*` standard errors changes
+the contrast SE, CI, and test statistic but not the standardized effect
+size itself).
+
+Cohen’s *d* and Hedges’ *g* are the conventions for two-group
+comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and require
+`by` to have exactly two non-empty levels:
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = smoking,
+  effect_size = "d"
+)
+#> Continuous outcomes by Current smoker
+#> 
+#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
+#> ───────────────────────────────┼──────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
+#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#> 
+#>  Variable                      │ 95% CI UL     p   R²     d       n 
+#> ───────────────────────────────┼────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
+#>  Body mass index               │   0.49     .905  0.00  -0.01  1163
+```
+
+Hedges’ *g* applies the small-sample correction
+`J = 1 - 3/(4·df_resid - 1)`. It is generally preferred over raw *d* in
+published reports (Goulet-Pelletier and Cousineau 2018):
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = smoking,
+  effect_size = "g"
+)
+#> Continuous outcomes by Current smoker
+#> 
+#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
+#> ───────────────────────────────┼──────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
+#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#> 
+#>  Variable                      │ 95% CI UL     p   R²     g       n 
+#> ───────────────────────────────┼────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
+#>  Body mass index               │   0.49     .905  0.00  -0.01  1163
+```
+
+For categorical predictors with three or more levels (or numeric
+predictors), use Hays’ `omega²` for a less biased estimate of the
+population variance explained (Hays 1963; Olejnik and Algina 2003;
+Lakens 2013):
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = education,
+  effect_size = "omega2"
+)
+#> Continuous outcomes by Highest education level
+#> 
+#>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
+#> ───────────────────────────────┼──────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │        67.68                81.56        
+#>  Body mass index               │        26.17                23.55        
+#> 
+#>  Variable                      │ M (Tertiary)      p   R²    ω²      n 
+#> ───────────────────────────────┼───────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │    66.10      <.001  0.21  0.21  1200 
+#>  Body mass index               │    26.35      <.001  0.13  0.13  1188
+```
+
+Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from
+power-analysis frameworks (e.g. G\*Power) and is defined for any
+predictor type:
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = age,
+  effect_size = "f2"
+)
+#> Continuous outcomes by Age (years)
+#> 
+#>  Variable                      │  B    95% CI LL  95% CI UL      p   R²    f²  
+#> ───────────────────────────────┼───────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 0.04    -0.02      0.10      .177  0.00  0.00 
+#>  Body mass index               │ 0.04    0.02       0.05     <.001  0.02  0.02 
+#> 
+#>  Variable                      │    n 
+#> ───────────────────────────────┼──────
+#>  WHO-5 wellbeing index (0-100) │ 1200 
+#>  Body mass index               │ 1188
+```
+
+## Confidence intervals for effect sizes
+
+Setting `effect_size_ci = TRUE` adds a confidence interval for the
+effect size. The implementation uses the modern noncentral-distribution
+inversion approach — the consensus standard in commercial statistical
+software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
+`PROC GLM EFFECTSIZE`) and in mainstream R packages (`effectsize`,
+`MOTE`, `TOSTER`, `effsize`):
+
+- Noncentral *t* inversion for `"d"` and `"g"` (Steiger and Fouladi
+  1997; Goulet-Pelletier and Cousineau 2018; Cousineau and
+  Goulet-Pelletier 2021), which has nominal coverage across sample sizes
+  — unlike the older Hedges-Olkin normal approximation that is biased
+  for small samples.
+- Noncentral *F* inversion for `"omega2"` and `"f2"` (Steiger 2004;
+  Smithson 2003).
+
+In the printed and rendered outputs, the effect size is displayed with
+the bracketed CI (article-ready):
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = smoking,
+  effect_size = "g",
+  effect_size_ci = TRUE
+)
+#> Continuous outcomes by Current smoker
+#> 
+#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
+#> ───────────────────────────────┼──────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
+#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#> 
+#>  Variable                      │ 95% CI UL     p   R²            g          
+#> ───────────────────────────────┼────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11 [-0.25, 0.03] 
+#>  Body mass index               │   0.49     .905  0.00  -0.01 [-0.15, 0.13] 
+#> 
+#>  Variable                      │    n 
+#> ───────────────────────────────┼──────
+#>  WHO-5 wellbeing index (0-100) │ 1175 
+#>  Body mass index               │ 1163
+```
+
+The CI level follows `ci_level` (default `0.95`). For programmatic
+access, the wide raw output exposes separate numeric columns, and the
+long output always includes them:
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = wellbeing_score,
+  by = smoking,
+  effect_size = "g",
+  effect_size_ci = TRUE,
+  output = "data.frame"
+)
+#>                                      Variable   M (No)  M (Yes) Δ (Yes - No)
+#> wellbeing_score WHO-5 wellbeing index (0-100) 69.36317 67.64538    -1.717793
+#>                 95% CI LL 95% CI UL         p          R²          g
+#> wellbeing_score -3.906437 0.4708504 0.1238546 0.002017481 -0.1098571
+#>                 effect_size_ci_lower effect_size_ci_upper    n
+#> wellbeing_score           -0.2497291           0.03006164 1175
+```
+
+``` r
+out <- table_continuous_lm(
+  sochealth,
+  select = wellbeing_score,
+  by = smoking,
+  effect_size = "g",
+  effect_size_ci = TRUE,
+  output = "long"
+)
+out[, c("variable", "es_type", "es_value", "es_ci_lower", "es_ci_upper")]
+#>          variable es_type   es_value es_ci_lower es_ci_upper
+#> 1 wellbeing_score       g -0.1098571  -0.2497291  0.03006164
+#> 2 wellbeing_score    <NA>         NA          NA          NA
+```
+
+When `weights` is supplied, all four effect sizes (and their CIs) are
+computed from the weighted least-squares fit, keeping them consistent
+with the weighted contrast and its CI (DuMouchel and Duncan 1983). This
+is the right convention for case-weighted reporting; for
+propensity-score balance assessment (Austin and Stuart 2015) or
+complex-survey designs, dedicated packages (`cobalt::bal.tab()` and
+`survey`) are more appropriate.
+
+## Article-style polish
+
+Pretty outcome labels and a comma decimal separator (useful for European
+reporting):
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  labels = c(
+    wellbeing_score = "WHO-5 wellbeing (0-100)",
+    bmi = "Body-mass index (kg/m²)"
+  ),
+  effect_size = "g",
+  effect_size_ci = TRUE,
+  decimal_mark = ","
+)
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────────────┼────────────────────────────────────────────────────
+#>  WHO-5 wellbeing (0-100) │   67,16      71,05          3,89           2,13    
+#>  Body-mass index (kg/m²) │   25,69      26,20          0,51           0,09    
+#> 
+#>  Variable                │ 95% CI UL      p   R²           g             n 
+#> ─────────────────────────┼─────────────────────────────────────────────────
+#>  WHO-5 wellbeing (0-100) │   5,64     <,001  0,02  0,25 [0,14, 0,36]  1200 
+#>  Body-mass index (kg/m²) │   0,93      ,018  0,00  0,14 [0,02, 0,25]  1188
+```
+
 ## Publication-ready output
 
 The function supports the same output formats as the other summary-table

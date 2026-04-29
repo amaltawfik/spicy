@@ -38,6 +38,43 @@
         `output = "long"`, the bounds are always present in
         `es_ci_lower` and `es_ci_upper`.
 
+### Improvements
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  documentation has been substantially expanded with SPSS / Stata /
+  SAS-style detail for `by`, `weights`, `vcov`, `contrast`, `r2`, and
+  `effect_size_digits`; markdown subsections in `@details` (Model and
+  outputs / Effect sizes / Robust standard errors / Weights / Display
+  conventions); `@family spicy tables`; a broader `@seealso` block
+  pointing to `sandwich::vcovHC()`,
+  [`effectsize::cohens_d()`](https://easystats.github.io/effectsize/reference/cohens_d.html),
+  [`effectsize::hedges_g()`](https://easystats.github.io/effectsize/reference/cohens_d.html),
+  [`effectsize::omega_squared()`](https://easystats.github.io/effectsize/reference/eta_squared.html),
+  `cobalt::bal.tab()`, and the `survey` package; and 20 academic
+  references with DOIs covering the underlying methodology (Cohen,
+  Hedges & Olkin, Hays, Olejnik & Algina, Lakens, Steiger,
+  Goulet-Pelletier & Cousineau, MacKinnon & White, Long & Ervin,
+  Cribari-Neto x3, Zeileis, etc.).
+
+- `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and
+  `df2` as integer columns (previously numeric). Code that compared
+  these with numeric tolerance is unaffected.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now preserves the `predictor_label` for outcomes that fall through to
+  the degenerate-model path (e.g. when an outcome has fewer than two
+  non-missing observations).
+
+- The singularity warning emitted by the internal `compute_lm_vcov()`
+  helper uses a clearer `sprintf`-based formatting; the displayed text
+  is unchanged.
+
+- The
+  [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+  gains dedicated *Effect sizes* and *Confidence intervals for effect
+  sizes* sections walking through all four effect-size choices with
+  examples.
+
 ### Breaking changes
 
 - `table_continuous_lm(..., output = "long")` now returns `NA` in
