@@ -45,9 +45,25 @@ syntax and character vectors of column names.}
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name.}
 
-\item{labels}{An optional character vector of display labels for the
-variables named in \code{select} (must be the same length and in the same
-order). When \code{NULL} (the default), column names are used as-is.}
+\item{labels}{Optional display labels for the variables. Two
+forms are accepted (matching \code{\link[=table_continuous]{table_continuous()}} and
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}):
+\itemize{
+\item A \strong{named character vector} whose names match column names
+in \code{data} (e.g. \code{c(bmi = "Body mass index")}); only listed
+columns are relabelled, others fall back to attribute-based
+labels or the column name. \strong{Recommended form}.
+\item A \strong{positional character vector} of the same length as
+\code{select}, in the same order. Backward-compatible with the
+spicy < 0.11.0 API.
+}
+
+When \code{NULL} (the default), column names are used as-is. If a
+variable label attribute is present (e.g. from \code{haven}), it is
+\emph{not} picked up here -- pass \code{labels = c(...)} explicitly. (The
+continuous companions auto-detect attribute labels; the
+categorical function is conservative because the indented row
+labels expect predictable text.)}
 
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept.}

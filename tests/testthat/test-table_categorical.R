@@ -665,7 +665,7 @@ test_that("table_categorical validates labels length", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", labels = c("a", "b")),
-    "`labels` must have same length"
+    "Positional `labels` must have the same length"
   )
 })
 
@@ -1820,4 +1820,68 @@ test_that("p_digits = 4 respects decimal_mark = ','", {
   disp <- attr(out, "display_df")
   p_col <- disp[["p"]][nzchar(disp[["p"]])]
   expect_true(any(grepl("^<,0001$", p_col)))
+})
+
+# ---- labels: dual-form (positional + named) -------------------------------
+
+test_that("labels accepts the legacy positional character vector", {
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    labels = c("Current smoker", "Physical activity"),
+    output = "long"
+  )
+  expect_setequal(unique(out$variable), c("Current smoker", "Physical activity"))
+})
+
+test_that("labels accepts a named character vector keyed by column name", {
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    labels = c(
+      smoking = "Current smoker",
+      physical_activity = "Physical activity"
+    ),
+    output = "long"
+  )
+  expect_setequal(unique(out$variable), c("Current smoker", "Physical activity"))
+})
+
+test_that("named labels can relabel only a subset; others fall back to column name", {
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    labels = c(smoking = "CS only"),
+    output = "long"
+  )
+  expect_setequal(unique(out$variable), c("CS only", "physical_activity"))
+})
+
+test_that("named labels with unknown names error clearly", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      labels = c(bogus = "X")
+    ),
+    "Names in `labels` not found in `data`"
+  )
+})
+
+test_that("positional labels with wrong length error clearly", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      labels = c("A", "B", "C")
+    ),
+    "Positional `labels` must have the same length"
+  )
+})
+
+test_that("non-character labels rejected at boundary", {
+  expect_error(
+    table_categorical(sochealth, select = smoking, labels = 123),
+    "must be a character vector"
+  )
 })

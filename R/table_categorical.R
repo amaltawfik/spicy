@@ -20,9 +20,23 @@
 #'   syntax and character vectors of column names.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name.
-#' @param labels An optional character vector of display labels for the
-#'   variables named in `select` (must be the same length and in the same
-#'   order). When `NULL` (the default), column names are used as-is.
+#' @param labels Optional display labels for the variables. Two
+#'   forms are accepted (matching [table_continuous()] and
+#'   [table_continuous_lm()]):
+#'   - A **named character vector** whose names match column names
+#'     in `data` (e.g. `c(bmi = "Body mass index")`); only listed
+#'     columns are relabelled, others fall back to attribute-based
+#'     labels or the column name. **Recommended form**.
+#'   - A **positional character vector** of the same length as
+#'     `select`, in the same order. Backward-compatible with the
+#'     spicy < 0.11.0 API.
+#'
+#'   When `NULL` (the default), column names are used as-is. If a
+#'   variable label attribute is present (e.g. from `haven`), it is
+#'   *not* picked up here -- pass `labels = c(...)` explicitly. (The
+#'   continuous companions auto-detect attribute labels; the
+#'   categorical function is conservative because the indented row
+#'   labels expect predictable text.)
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
@@ -326,11 +340,44 @@ table_categorical <- function(
   if (!all(select_names %in% names(data))) {
     stop("Some `select` columns are missing in `data`.", call. = FALSE)
   }
+  # `labels` accepts two shapes (matching the continuous companions):
+  # - named character vector keyed by column name in `data` (the
+  #   recommended form). Only listed columns are relabelled; the rest
+  #   fall back to their column name.
+  # - positional character vector of length `length(select)` in the
+  #   same order (the legacy spicy < 0.11.0 form).
   if (is.null(labels)) {
     labels <- select_names
-  }
-  if (length(labels) != length(select_names)) {
-    stop("`labels` must have same length as `select`.", call. = FALSE)
+  } else {
+    if (!is.character(labels)) {
+      stop("`labels` must be a character vector.", call. = FALSE)
+    }
+    labels_named <- !is.null(names(labels)) && all(nzchar(names(labels)))
+    if (labels_named) {
+      unknown <- setdiff(names(labels), names(data))
+      if (length(unknown) > 0L) {
+        stop(
+          sprintf(
+            "Names in `labels` not found in `data`: %s.",
+            paste(unknown, collapse = ", ")
+          ),
+          call. = FALSE
+        )
+      }
+      resolved <- select_names
+      hits <- intersect(select_names, names(labels))
+      resolved[match(hits, select_names)] <- unname(labels[hits])
+      labels <- resolved
+    } else {
+      if (length(labels) != length(select_names)) {
+        stop(
+          "Positional `labels` must have the same length as `select`. ",
+          "Pass a named character vector keyed by column name in `data` ",
+          "to relabel only specific variables.",
+          call. = FALSE
+        )
+      }
+    }
   }
   labels <- as.character(labels)
 
