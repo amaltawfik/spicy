@@ -327,11 +327,20 @@
 #'
 #' When `weights` is supplied, `table_continuous_lm()` fits weighted
 #' linear models via `lm(..., weights = ...)`. Means become weighted
-#' least-squares estimates, contrasts and slopes are weighted, and `R²`,
-#' adjusted `R²`, and the four effect sizes use the corresponding
-#' weighted sums of squares. This is appropriate for case-weighted
-#' analyses and weighted article tables, but is **not** a substitute for
-#' a full complex-survey design workflow (see e.g. the `survey` package).
+#' least-squares estimates and contrasts and slopes are weighted. The
+#' fit statistics `R²` and adjusted `R²`, as well as Hays' `omega²`
+#' and Cohen's `f²`, use the corresponding **weighted sums of squares**
+#' from the WLS fit. Cohen's `d` and Hedges' `g` use the **WLS
+#' coefficient and the model's weighted residual standard deviation**
+#' (`summary(fit)$sigma`), which is the standard convention for
+#' case-weighted regression-style reporting (DuMouchel and Duncan
+#' 1983); the noncentral *t* CI for `d` / `g` uses the raw (unweighted)
+#' group counts and the residual degrees of freedom of the WLS fit
+#' (`n - p`). This case-weighted workflow is appropriate for weighted
+#' article tables, but is **not** a substitute for a full complex-survey
+#' design (see e.g. the `survey` package), nor for propensity-score
+#' balance assessment under the Austin and Stuart (2015) convention
+#' (see e.g. `cobalt::bal.tab()`).
 #'
 #' The `n` column always reports the unweighted analytic sample size for
 #' each outcome. When `show_weighted_n = TRUE`, an additional
@@ -942,7 +951,8 @@ table_continuous_lm <- function(
     effect_size = effect_size,
     effect_size_ci = effect_size_ci,
     r2_type = r2,
-    ci = ci
+    ci = ci,
+    ci_level = ci_level
   )
   if (identical(output, "data.frame")) {
     return(wide_raw)
@@ -1170,9 +1180,12 @@ fit_categorical_predictor_lm_rows <- function(
   global_stat <- if (length(beta_sub) == 0L) {
     NA_real_
   } else {
-    as.numeric(crossprod(beta_sub, solve(vc_sub, beta_sub)) / q)
+    tryCatch(
+      as.numeric(crossprod(beta_sub, solve(vc_sub, beta_sub)) / q),
+      error = function(e) NA_real_
+    )
   }
-  global_p <- if (is.na(global_stat)) {
+  global_p <- if (is.na(global_stat) || !is.finite(global_stat)) {
     NA_real_
   } else {
     stats::pf(global_stat, q, df_resid, lower.tail = FALSE)
@@ -1583,8 +1596,10 @@ compute_smd_ci_lm <- function(fit, ci_level, hedges_correct) {
     return(c(NA_real_, NA_real_))
   }
 
-  x <- fit$model[, 2]
-  if (!is.factor(x)) {
+  predictor_name <- all.vars(stats::formula(fit))[2]
+  mf <- stats::model.frame(fit)
+  x <- mf[[predictor_name]]
+  if (is.null(x) || !is.factor(x)) {
     return(c(NA_real_, NA_real_))
   }
   group_counts <- table(x)
@@ -1680,11 +1695,14 @@ build_wide_raw_continuous_lm <- function(
   effect_size = "none",
   effect_size_ci = FALSE,
   r2_type = "r2",
-  ci = TRUE
+  ci = TRUE,
+  ci_level = 0.95
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
   by_type <- unique(first_block$predictor_type)[1]
+  ci_ll_name <- paste0(round(ci_level * 100), "% CI LL")
+  ci_ul_name <- paste0(round(ci_level * 100), "% CI UL")
   include_es <- !identical(effect_size, "none")
   include_es_ci <- include_es && isTRUE(effect_size_ci)
   include_r2 <- !identical(r2_type, "none")
@@ -1706,15 +1724,15 @@ build_wide_raw_continuous_lm <- function(
     if (nrow(first_block) == 2L) {
       out[[get_delta_label_lm(first_block)]] <- NA_real_
       if (isTRUE(ci)) {
-        out[["95% CI LL"]] <- NA_real_
-        out[["95% CI UL"]] <- NA_real_
+        out[[ci_ll_name]] <- NA_real_
+        out[[ci_ul_name]] <- NA_real_
       }
     }
   } else {
     out$B <- NA_real_
     if (isTRUE(ci)) {
-      out[["95% CI LL"]] <- NA_real_
-      out[["95% CI UL"]] <- NA_real_
+      out[[ci_ll_name]] <- NA_real_
+      out[[ci_ul_name]] <- NA_real_
     }
   }
 
@@ -1754,15 +1772,15 @@ build_wide_raw_continuous_lm <- function(
         delta_name <- get_delta_label_lm(block)
         out[[delta_name]][i] <- block$estimate[test_row]
         if (isTRUE(ci)) {
-          out[["95% CI LL"]][i] <- block$estimate_ci_lower[test_row]
-          out[["95% CI UL"]][i] <- block$estimate_ci_upper[test_row]
+          out[[ci_ll_name]][i] <- block$estimate_ci_lower[test_row]
+          out[[ci_ul_name]][i] <- block$estimate_ci_upper[test_row]
         }
       }
     } else {
       out$B[i] <- block$estimate[1]
       if (isTRUE(ci)) {
-        out[["95% CI LL"]][i] <- block$estimate_ci_lower[1]
-        out[["95% CI UL"]][i] <- block$estimate_ci_upper[1]
+        out[[ci_ll_name]][i] <- block$estimate_ci_lower[1]
+        out[[ci_ul_name]][i] <- block$estimate_ci_upper[1]
       }
     }
 

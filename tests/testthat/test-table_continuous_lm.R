@@ -1434,6 +1434,104 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- wide raw respects ci_level for contrast CI columns ----
+
+test_that("wide raw uses ci_level-derived names for contrast CI columns", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+
+  out_95 <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    ci_level = 0.95,
+    output = "data.frame"
+  )
+  out_99 <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    ci_level = 0.99,
+    output = "data.frame"
+  )
+
+  expect_true(all(c("95% CI LL", "95% CI UL") %in% names(out_95)))
+  expect_false(any(c("99% CI LL", "99% CI UL") %in% names(out_95)))
+  expect_true(all(c("99% CI LL", "99% CI UL") %in% names(out_99)))
+  expect_false(any(c("95% CI LL", "95% CI UL") %in% names(out_99)))
+
+  width_95 <- out_95[["95% CI UL"]][1] - out_95[["95% CI LL"]][1]
+  width_99 <- out_99[["99% CI UL"]][1] - out_99[["99% CI LL"]][1]
+  expect_gt(width_99, width_95)
+})
+
+test_that("wide raw column names match wide display when ci_level is custom", {
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+
+  raw_99 <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    ci_level = 0.99,
+    output = "data.frame"
+  )
+  long <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    ci_level = 0.99,
+    output = "long"
+  )
+  display_99 <- spicy:::build_wide_display_df_continuous_lm(
+    long,
+    digits = 2L,
+    fit_digits = 2L,
+    effect_size_digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.99,
+    show_statistic = FALSE,
+    show_p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "none",
+    effect_size_ci = FALSE,
+    r2_type = "r2",
+    ci = TRUE
+  )
+
+  raw_ci_cols <- grep("CI", names(raw_99), value = TRUE)
+  display_ci_cols <- grep("CI", names(display_99), value = TRUE)
+  expect_setequal(raw_ci_cols, display_ci_cols)
+})
+
+# ---- categorical Wald F: tryCatch around solve(vc_sub, beta_sub) ----
+
+test_that("global Wald F gracefully degrades to NA on a singular vcov", {
+  # Patch compute_lm_vcov to return a singular vcov, simulating the
+  # rare path where solve(vc_sub, beta_sub) would error.
+  testthat::local_mocked_bindings(
+    compute_lm_vcov = function(fit, type = "classical") {
+      vc <- stats::vcov(fit)
+      vc[, ] <- 0
+      vc
+    },
+    .package = "spicy"
+  )
+
+  out <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    statistic = TRUE,
+    output = "long"
+  )
+
+  # The first row of a 3-level block carries the global F slot.
+  test_row <- out[1L, ]
+  expect_true(is.na(test_row$statistic))
+  expect_true(is.na(test_row$p.value))
+})
+
 # ---- bracket separator for European decimal mark ----
 
 test_that("ci_bracket_separator_lm returns ', ' for '.' and '; ' for ','", {

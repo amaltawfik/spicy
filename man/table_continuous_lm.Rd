@@ -404,11 +404,20 @@ least-squares (or weighted least-squares) statistics regardless of
 \section{Weights}{
 When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted
 linear models via \code{lm(..., weights = ...)}. Means become weighted
-least-squares estimates, contrasts and slopes are weighted, and \verb{R²},
-adjusted \verb{R²}, and the four effect sizes use the corresponding
-weighted sums of squares. This is appropriate for case-weighted
-analyses and weighted article tables, but is \strong{not} a substitute for
-a full complex-survey design workflow (see e.g. the \code{survey} package).
+least-squares estimates and contrasts and slopes are weighted. The
+fit statistics \verb{R²} and adjusted \verb{R²}, as well as Hays' \verb{omega²}
+and Cohen's \verb{f²}, use the corresponding \strong{weighted sums of squares}
+from the WLS fit. Cohen's \code{d} and Hedges' \code{g} use the \strong{WLS
+coefficient and the model's weighted residual standard deviation}
+(\code{summary(fit)$sigma}), which is the standard convention for
+case-weighted regression-style reporting (DuMouchel and Duncan
+1983); the noncentral \emph{t} CI for \code{d} / \code{g} uses the raw (unweighted)
+group counts and the residual degrees of freedom of the WLS fit
+(\code{n - p}). This case-weighted workflow is appropriate for weighted
+article tables, but is \strong{not} a substitute for a full complex-survey
+design (see e.g. the \code{survey} package), nor for propensity-score
+balance assessment under the Austin and Stuart (2015) convention
+(see e.g. \code{cobalt::bal.tab()}).
 
 The \code{n} column always reports the unweighted analytic sample size for
 each outcome. When \code{show_weighted_n = TRUE}, an additional
