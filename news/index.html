@@ -75,6 +75,11 @@
 <li><p>The <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code> gains dedicated <em>Effect sizes</em> and <em>Confidence intervals for effect sizes</em> sections walking through all four effect-size choices with examples.</p></li>
 </ul></div>
 <div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now use a semicolon as the list separator inside the bracketed effect-size CI display (e.g. <code>g = 0,18 [0,07; 0,30]</code>) when <code>decimal_mark = ","</code>. Previously a comma was used in both roles, producing the ambiguous output <code>g = 0,18 [0,07, 0,30]</code>. The default <code>decimal_mark = "."</code> behaviour is unchanged (<code>g = 0.18 [0.07, 0.30]</code>).</li>
+</ul></div>
+<div class="section level3">
 <h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
 <ul><li><p><code>table_continuous_lm(..., output = "long")</code> now returns <code>NA</code> in <code>es_type</code> and <code>es_value</code> when <code>effect_size = "none"</code>. Previously these columns were populated with <code>"f2"</code> and the corresponding f² value regardless of the argument, which contradicted the explicit <code>"none"</code> request. To restore the old behavior, set <code>effect_size = "f2"</code> explicitly. The wide and rendered outputs are unaffected.</p></li>
 <li><p><code>table_continuous_lm(..., output = "long")</code> renames the <code>sum_w</code> column to <code>weighted_n</code>, matching the <code>Weighted n</code> column already used in the wide and rendered outputs and the <code>show_weighted_n</code> argument. Code that read the long-format <code>sum_w</code> column should be updated to read <code>weighted_n</code>.</p></li>

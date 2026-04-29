@@ -75,6 +75,17 @@
   sizes* sections walking through all four effect-size choices with
   examples.
 
+### Bug fixes
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now use a semicolon as the list separator inside the bracketed
+  effect-size CI display (e.g. `g = 0,18 [0,07; 0,30]`) when
+  `decimal_mark = ","`. Previously a comma was used in both roles,
+  producing the ambiguous output `g = 0,18 [0,07, 0,30]`. The default
+  `decimal_mark = "."` behaviour is unchanged (`g = 0.18 [0.07, 0.30]`).
+
 ### Breaking changes
 
 - `table_continuous_lm(..., output = "long")` now returns `NA` in
