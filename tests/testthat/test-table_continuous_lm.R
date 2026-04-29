@@ -1434,6 +1434,162 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
   expect_true(all(is.na(out$es_value)))
 })
 
+# ---- coercion + broom integration ----
+
+test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", {
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex
+  )
+  df <- as.data.frame(out)
+
+  expect_identical(class(df), "data.frame")
+  expect_setequal(
+    setdiff(names(attributes(df)), c("names", "row.names", "class")),
+    "by_var"
+  )
+  expect_equal(attr(df, "by_var"), "sex")
+  # Same content: 28 columns + same number of rows.
+  expect_equal(ncol(df), 28L)
+  expect_equal(nrow(df), nrow(out))
+  # Original object is unchanged.
+  expect_true(inherits(out, "spicy_continuous_lm_table"))
+  expect_true(!is.null(attr(out, "ci_level")))
+})
+
+test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
+  skip_if_not_installed("tibble")
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex
+  )
+  tib <- tibble::as_tibble(out)
+  expect_s3_class(tib, "tbl_df")
+  expect_equal(ncol(tib), 28L)
+  expect_equal(nrow(tib), nrow(out))
+  expect_true(inherits(out, "spicy_continuous_lm_table"))
+})
+
+test_that("tidy() returns one row per parameter for binary categorical by", {
+  skip_if_not_installed("broom")
+  df <- iris[iris$Species != "virginica", ]
+  df$Species <- droplevels(df$Species)
+  out <- table_continuous_lm(
+    df,
+    select = c(Sepal.Length, Petal.Width),
+    by = Species
+  )
+  tidy_out <- broom::tidy(out)
+
+  # Two outcomes x (2 emmeans + 1 contrast) = 6 rows.
+  expect_equal(nrow(tidy_out), 6L)
+  expect_setequal(
+    unique(tidy_out$estimate_type),
+    c("emmean", "difference")
+  )
+  # The difference rows have non-NA p.value; emmeans do not.
+  diffs <- tidy_out[tidy_out$estimate_type == "difference", ]
+  emmeans <- tidy_out[tidy_out$estimate_type == "emmean", ]
+  expect_true(all(!is.na(diffs$p.value)))
+  expect_true(all(is.na(emmeans$p.value)))
+  # Standard broom columns present.
+  expect_true(all(
+    c(
+      "outcome", "label", "term", "estimate_type", "estimate",
+      "std.error", "conf.low", "conf.high", "statistic", "p.value"
+    ) %in%
+      names(tidy_out)
+  ))
+})
+
+test_that("tidy() handles 3-level categorical by (no contrast row)", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species
+  )
+  tidy_out <- broom::tidy(out)
+
+  # 3 emmeans, no difference / slope rows.
+  expect_equal(nrow(tidy_out), 3L)
+  expect_true(all(tidy_out$estimate_type == "emmean"))
+  expect_true(all(is.na(tidy_out$p.value)))
+})
+
+test_that("tidy() handles numeric predictor (slope row)", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = age
+  )
+  tidy_out <- broom::tidy(out)
+
+  expect_equal(nrow(tidy_out), 2L)
+  expect_true(all(tidy_out$estimate_type == "slope"))
+  expect_true(all(!is.na(tidy_out$p.value)))
+  expect_true(all(!is.na(tidy_out$conf.low)))
+})
+
+test_that("glance() returns one row per outcome with model-level stats", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(
+    iris,
+    select = c(Sepal.Length, Petal.Width),
+    by = Species,
+    effect_size = "omega2",
+    effect_size_ci = TRUE
+  )
+  glance_out <- broom::glance(out)
+
+  expect_equal(nrow(glance_out), 2L)
+  expect_true(all(
+    c(
+      "outcome", "label", "predictor_type", "test_type", "statistic",
+      "df", "df.residual", "p.value", "r.squared", "adj.r.squared",
+      "es_type", "es_value", "es_ci_lower", "es_ci_upper", "nobs"
+    ) %in%
+      names(glance_out)
+  ))
+  expect_true(all(glance_out$test_type == "F"))
+  expect_true(all(!is.na(glance_out$r.squared)))
+  expect_true(all(!is.na(glance_out$es_value)))
+})
+
+test_that("glance() exposes test_type 't' for numeric predictors", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = age
+  )
+  glance_out <- broom::glance(out)
+  expect_equal(glance_out$test_type[1], "t")
+})
+
+test_that("coercion is a no-op on the original object", {
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex
+  )
+  attr_pre <- names(attributes(out))
+  cls_pre <- class(out)
+  invisible(as.data.frame(out))
+  if (requireNamespace("tibble", quietly = TRUE)) {
+    invisible(tibble::as_tibble(out))
+  }
+  if (requireNamespace("broom", quietly = TRUE)) {
+    invisible(broom::tidy(out))
+    invisible(broom::glance(out))
+  }
+  expect_identical(class(out), cls_pre)
+  expect_identical(names(attributes(out)), attr_pre)
+})
+
 # ---- p_digits ----
 
 test_that("format_p_value_lm derives threshold from digits", {

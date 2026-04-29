@@ -34,6 +34,7 @@ Imports:
     tidyselect,
     utils
 Suggests:
+    broom,
     clipr,
     DT,
     effectsize,
