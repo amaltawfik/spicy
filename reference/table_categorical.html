@@ -112,6 +112,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  assoc_measure <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"auto"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  indent_text <span class="op">=</span> <span class="st">"  "</span>,</span>
@@ -228,6 +229,24 @@ Defaults to <code>FALSE</code>.</p></dd>
 <dd><p>Decimal separator (<code>"."</code> or <code>","</code>). Defaults to <code>"."</code>.</p></dd>
 
 
+<dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
+<dd><p>Horizontal alignment of numeric columns in the printed
+ASCII table and in the <code>tinytable</code> and <code>gt</code> outputs. The first
+column (<code>Variable</code>) is always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX <code>siunitx</code>, <code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and
+<code>tinytable::style_tt(align = "d")</code>. For ASCII print, values
+are pre-padded with leading and trailing spaces so the dots
+line up vertically.</p></li>
+<li><p><code>"center"</code> / <code>"right"</code>: literal alignment of numeric columns.</p></li>
+<li><p><code>"auto"</code>: legacy uniform right-alignment.</p></li>
+</ul><p>The <code>flextable</code>, <code>word</code>, <code>excel</code>, and <code>clipboard</code> engines
+currently fall back to right-aligned numerics regardless of
+<code>align</code>; full decimal alignment for those engines is a planned
+follow-up. Same default and semantics as
+<code><a href="table_continuous.html">table_continuous()</a></code> / <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></dd>
+
+
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>Output format. One of:</p><ul><li><p><code>"default"</code> (a printed ASCII table, returned invisibly)</p></li>
 <li><p><code>"data.frame"</code> (a wide numeric <code>data.frame</code>)</p></li>
@@ -302,11 +321,35 @@ path invisibly.</p></li>
 <code>data.frame</code> invisibly.</p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>When <code>by</code> is used, each selected variable is cross-tabulated against
-the grouping variable with <code><a href="cross_tab.html">cross_tab()</a></code>. Chi-squared statistics,
-<em>p</em>-values, and the chosen association measure are reported for each
-variable.</p>
+    <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
+    <p>When <code>by</code> is used, each selected variable is cross-tabulated
+against the grouping variable with <code><a href="cross_tab.html">cross_tab()</a></code>. The omnibus
+chi-squared test (with optional Yates continuity correction or
+Monte Carlo <em>p</em>-value, see <code>correct</code> / <code>simulate_p</code>) is computed
+and reported in the <code>p</code> column. The chosen association measure
+(<code>assoc_measure</code>, with <code>"auto"</code> selecting Cramer's V for nominal
+variables and Kendall's Tau-b when both are ordered) is reported
+alongside, with optional CI via <code>assoc_ci</code>. Without <code>by</code>, the
+table reports the marginal frequency distribution of each variable
+with no inferential statistics.</p>
+<p>For model-based comparisons (cluster-robust SE, weighted contrasts,
+fitted means) on continuous outcomes, see <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.
+For descriptive (empirical) comparisons on continuous outcomes, see
+<code><a href="table_continuous.html">table_continuous()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
+    <p>By default (<code>align = "decimal"</code>) numeric columns are aligned on
+the decimal mark, the standard scientific-publication convention
+used by SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
+<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> / <code>tinytable::style_tt(align = "d")</code>.
+For the printed ASCII table the alignment is achieved by padding
+numeric cells with leading and trailing spaces so dots line up
+vertically. Pass <code>align = "auto"</code> to revert to the legacy uniform
+right-alignment used in spicy &lt; 0.11.0.</p>
+<p><em>p</em>-values are formatted with <code>p_digits</code> decimal places (default
+3, the APA standard). Leading zeros on <em>p</em> are always stripped
+(<code>.045</code>, not <code>0.045</code>).</p>
 <p>Optional output engines require suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
 <li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
 <li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>
@@ -316,9 +359,16 @@ variable.</p>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code> for continuous variables;
-<code><a href="cross_tab.html">cross_tab()</a></code> for two-way cross-tabulations; <code><a href="freq.html">freq()</a></code> for one-way
-frequency tables.</p></div>
+    <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code> for empirical comparisons on
+continuous outcomes; <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> for the model-based
+companion (heteroskedasticity-consistent / cluster-robust /
+bootstrap / jackknife SE, fitted means, weighted contrasts);
+<code><a href="cross_tab.html">cross_tab()</a></code> for two-way cross-tabulations; <code><a href="freq.html">freq()</a></code> for
+one-way frequency tables.</p>
+<p>Other spicy tables:
+<code><a href="spicy_tables.html">spicy_tables</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>,
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -331,23 +381,40 @@ frequency tables.</p></div>
 <span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group   n  pct            p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 179 69.6 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 415 78.7 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 332 84.9 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 926 78.8 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  78 30.4 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 112 21.3 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  59 15.1 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 249 21.2 2.012877e-05  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 177 67.8 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 310 57.5 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 163 40.8 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 650 54.2 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  84 32.2 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 229 42.5 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 237 59.2 8.333584e-12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 550 45.8 8.333584e-12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group   n  pct     chi2 df            p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 179 69.6 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 415 78.7 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 332 84.9 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 926 78.8 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  78 30.4 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 112 21.3 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  59 15.1 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 249 21.2 21.62672  2 2.012877e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 177 67.8 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 310 57.5 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 163 40.8 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 650 54.2 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  84 32.2 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 229 42.5 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 237 59.2 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 550 45.8 51.02146  2 8.333584e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.1356677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  0.2061986</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ASCII console output (default)</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -429,40 +496,40 @@ frequency tables.</p></div>
 <span class="r-in"><span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group        n  pct            p</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 176.0000 69.0 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 419.0000 78.5 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 325.0000 84.4 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 920.8641 78.4 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  79.0000 31.0 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 115.0000 21.5 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  60.0000 15.6 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 254.1359 21.6 2.306438e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 174.0000 67.2 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 315.0000 57.7 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 166.0000 41.9 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 654.7619 54.6 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  85.0000 32.8 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 231.0000 42.3 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 229.0000 58.1 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 545.2381 45.4 2.269974e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group        n  pct     chi2 df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 176.0000 69.0 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 419.0000 78.5 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 325.0000 84.4 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 920.8641 78.4 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  79.0000 31.0 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 115.0000 21.5 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  60.0000 15.6 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 254.1359 21.6 21.35444  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 174.0000 67.2 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 315.0000 57.7 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 166.0000 41.9 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 654.7619 54.6 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  85.0000 32.8 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 231.0000 42.3 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 229.0000 58.1 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 545.2381 45.4 44.41217  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               p Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  2.306438e-05  0.1348110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 2.269974e-10  0.1923802</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Optional output: tinytable</span></span></span>

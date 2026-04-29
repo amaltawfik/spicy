@@ -4,6 +4,32 @@
 
 ### New features
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains an `align` argument (`"decimal"` / `"auto"` / `"center"` /
+  `"right"`, default `"decimal"`) controlling horizontal alignment of
+  numeric columns in the printed ASCII table and in the `tinytable` and
+  `gt` outputs, using the native primitives of
+  [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+  and `tinytable::style_tt(align = "d")`. The `flextable`, `word`,
+  `excel`, and `clipboard` engines fall back to right-aligned numerics.
+  Same default and semantics as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  /
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains four S3 methods mirroring the other `table_*()` companions:
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+  [`tibble::as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
+  return the underlying wide-format data,
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  returns one row per `(variable x level x group)` with `outcome`,
+  `level`, `group`, `n`, `proportion`, and
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  returns one row per variable with the chi-squared test (`statistic`,
+  `df`, `p.value`), the chosen association measure (`assoc_type`,
+  `assoc_value`, `assoc_ci_lower/upper`), and `n_total`.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   is harmonised with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -111,6 +137,14 @@
   sizes* / *Display conventions*), `@family spicy tables`, and
   reciprocal `@seealso` cross-references between the two functions.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  documentation is reorganised to mirror its `table_*()` companions:
+  markdown subsections in `@details` (*Tests* / *Display conventions*),
+  `@family spicy tables`, and `@seealso` cross-references to
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
 - `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and
   `df2` as integer columns (previously numeric).
 
@@ -156,6 +190,14 @@
   and `tinytable::style_tt(align = "d")`. The `excel` output keeps the
   engine default. Pass `align = "auto"` to restore the previous
   per-column rule.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  now defaults to **decimal-point alignment** for numeric columns in the
+  printed ASCII table and in the `tinytable` and `gt` outputs (new
+  `align` argument, default `"decimal"`). The `flextable`, `word`,
+  `excel`, and `clipboard` engines keep the previous right-aligned
+  numeric layout. Pass `align = "auto"` to restore the previous uniform
+  right-alignment everywhere.
 
 - `table_continuous_lm(..., output = "long")` now returns `NA` in
   `es_type` and `es_value` when `effect_size = "none"`. Previously these

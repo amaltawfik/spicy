@@ -35,6 +35,7 @@ table_categorical(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
+  align = c("decimal", "auto", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -150,6 +151,32 @@ table_categorical(
 
   Decimal separator (`"."` or `","`). Defaults to `"."`.
 
+- align:
+
+  Horizontal alignment of numeric columns in the printed ASCII table and
+  in the `tinytable` and `gt` outputs. The first column (`Variable`) is
+  always left-aligned. One of:
+
+  - `"decimal"` (default): align numeric columns on the decimal mark,
+    the standard scientific-publication convention used by SPSS, SAS,
+    LaTeX `siunitx`,
+    [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+    and `tinytable::style_tt(align = "d")`. For ASCII print, values are
+    pre-padded with leading and trailing spaces so the dots line up
+    vertically.
+
+  - `"center"` / `"right"`: literal alignment of numeric columns.
+
+  - `"auto"`: legacy uniform right-alignment.
+
+  The `flextable`, `word`, `excel`, and `clipboard` engines currently
+  fall back to right-aligned numerics regardless of `align`; full
+  decimal alignment for those engines is a planned follow-up. Same
+  default and semantics as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  /
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
 - output:
 
   Output format. One of:
@@ -238,13 +265,40 @@ Depends on `output`:
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
 
-## Details
+## Tests
 
 When `by` is used, each selected variable is cross-tabulated against the
 grouping variable with
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-Chi-squared statistics, *p*-values, and the chosen association measure
-are reported for each variable.
+The omnibus chi-squared test (with optional Yates continuity correction
+or Monte Carlo *p*-value, see `correct` / `simulate_p`) is computed and
+reported in the `p` column. The chosen association measure
+(`assoc_measure`, with `"auto"` selecting Cramer's V for nominal
+variables and Kendall's Tau-b when both are ordered) is reported
+alongside, with optional CI via `assoc_ci`. Without `by`, the table
+reports the marginal frequency distribution of each variable with no
+inferential statistics.
+
+For model-based comparisons (cluster-robust SE, weighted contrasts,
+fitted means) on continuous outcomes, see
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+For descriptive (empirical) comparisons on continuous outcomes, see
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+## Display conventions
+
+By default (`align = "decimal"`) numeric columns are aligned on the
+decimal mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+/ `tinytable::style_tt(align = "d")`. For the printed ASCII table the
+alignment is achieved by padding numeric cells with leading and trailing
+spaces so dots line up vertically. Pass `align = "auto"` to revert to
+the legacy uniform right-alignment used in spicy \< 0.11.0.
+
+*p*-values are formatted with `p_digits` decimal places (default 3, the
+APA standard). Leading zeros on *p* are always stripped (`.045`, not
+`0.045`).
 
 Optional output engines require suggested packages:
 
@@ -263,11 +317,20 @@ Optional output engines require suggested packages:
 ## See also
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-for continuous variables;
+for empirical comparisons on continuous outcomes;
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+for the model-based companion (heteroskedasticity-consistent /
+cluster-robust / bootstrap / jackknife SE, fitted means, weighted
+contrasts);
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 for two-way cross-tabulations;
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) for
 one-way frequency tables.
+
+Other spicy tables:
+[`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 
 ## Examples
 
@@ -280,23 +343,40 @@ table_categorical(
   labels = c("Current smoker", "Physical activity"),
   output = "long"
 )
-#>             variable level           group   n  pct            p Cramer's V
-#> 1     Current smoker    No Lower secondary 179 69.6 2.012877e-05  0.1356677
-#> 2     Current smoker    No Upper secondary 415 78.7 2.012877e-05  0.1356677
-#> 3     Current smoker    No        Tertiary 332 84.9 2.012877e-05  0.1356677
-#> 4     Current smoker    No           Total 926 78.8 2.012877e-05  0.1356677
-#> 5     Current smoker   Yes Lower secondary  78 30.4 2.012877e-05  0.1356677
-#> 6     Current smoker   Yes Upper secondary 112 21.3 2.012877e-05  0.1356677
-#> 7     Current smoker   Yes        Tertiary  59 15.1 2.012877e-05  0.1356677
-#> 8     Current smoker   Yes           Total 249 21.2 2.012877e-05  0.1356677
-#> 9  Physical activity    No Lower secondary 177 67.8 8.333584e-12  0.2061986
-#> 10 Physical activity    No Upper secondary 310 57.5 8.333584e-12  0.2061986
-#> 11 Physical activity    No        Tertiary 163 40.8 8.333584e-12  0.2061986
-#> 12 Physical activity    No           Total 650 54.2 8.333584e-12  0.2061986
-#> 13 Physical activity   Yes Lower secondary  84 32.2 8.333584e-12  0.2061986
-#> 14 Physical activity   Yes Upper secondary 229 42.5 8.333584e-12  0.2061986
-#> 15 Physical activity   Yes        Tertiary 237 59.2 8.333584e-12  0.2061986
-#> 16 Physical activity   Yes           Total 550 45.8 8.333584e-12  0.2061986
+#>             variable level           group   n  pct     chi2 df            p
+#> 1     Current smoker    No Lower secondary 179 69.6 21.62672  2 2.012877e-05
+#> 2     Current smoker    No Upper secondary 415 78.7 21.62672  2 2.012877e-05
+#> 3     Current smoker    No        Tertiary 332 84.9 21.62672  2 2.012877e-05
+#> 4     Current smoker    No           Total 926 78.8 21.62672  2 2.012877e-05
+#> 5     Current smoker   Yes Lower secondary  78 30.4 21.62672  2 2.012877e-05
+#> 6     Current smoker   Yes Upper secondary 112 21.3 21.62672  2 2.012877e-05
+#> 7     Current smoker   Yes        Tertiary  59 15.1 21.62672  2 2.012877e-05
+#> 8     Current smoker   Yes           Total 249 21.2 21.62672  2 2.012877e-05
+#> 9  Physical activity    No Lower secondary 177 67.8 51.02146  2 8.333584e-12
+#> 10 Physical activity    No Upper secondary 310 57.5 51.02146  2 8.333584e-12
+#> 11 Physical activity    No        Tertiary 163 40.8 51.02146  2 8.333584e-12
+#> 12 Physical activity    No           Total 650 54.2 51.02146  2 8.333584e-12
+#> 13 Physical activity   Yes Lower secondary  84 32.2 51.02146  2 8.333584e-12
+#> 14 Physical activity   Yes Upper secondary 229 42.5 51.02146  2 8.333584e-12
+#> 15 Physical activity   Yes        Tertiary 237 59.2 51.02146  2 8.333584e-12
+#> 16 Physical activity   Yes           Total 550 45.8 51.02146  2 8.333584e-12
+#>    Cramer's V
+#> 1   0.1356677
+#> 2   0.1356677
+#> 3   0.1356677
+#> 4   0.1356677
+#> 5   0.1356677
+#> 6   0.1356677
+#> 7   0.1356677
+#> 8   0.1356677
+#> 9   0.2061986
+#> 10  0.2061986
+#> 11  0.2061986
+#> 12  0.2061986
+#> 13  0.2061986
+#> 14  0.2061986
+#> 15  0.2061986
+#> 16  0.2061986
 
 # ASCII console output (default)
 table_categorical(
@@ -378,40 +458,40 @@ table_categorical(
   simulate_p = FALSE,
   output = "long"
 )
-#>             variable level           group        n  pct            p
-#> 1     Current smoker    No Lower secondary 176.0000 69.0 2.306438e-05
-#> 2     Current smoker    No Upper secondary 419.0000 78.5 2.306438e-05
-#> 3     Current smoker    No        Tertiary 325.0000 84.4 2.306438e-05
-#> 4     Current smoker    No           Total 920.8641 78.4 2.306438e-05
-#> 5     Current smoker   Yes Lower secondary  79.0000 31.0 2.306438e-05
-#> 6     Current smoker   Yes Upper secondary 115.0000 21.5 2.306438e-05
-#> 7     Current smoker   Yes        Tertiary  60.0000 15.6 2.306438e-05
-#> 8     Current smoker   Yes           Total 254.1359 21.6 2.306438e-05
-#> 9  Physical activity    No Lower secondary 174.0000 67.2 2.269974e-10
-#> 10 Physical activity    No Upper secondary 315.0000 57.7 2.269974e-10
-#> 11 Physical activity    No        Tertiary 166.0000 41.9 2.269974e-10
-#> 12 Physical activity    No           Total 654.7619 54.6 2.269974e-10
-#> 13 Physical activity   Yes Lower secondary  85.0000 32.8 2.269974e-10
-#> 14 Physical activity   Yes Upper secondary 231.0000 42.3 2.269974e-10
-#> 15 Physical activity   Yes        Tertiary 229.0000 58.1 2.269974e-10
-#> 16 Physical activity   Yes           Total 545.2381 45.4 2.269974e-10
-#>    Cramer's V
-#> 1   0.1348110
-#> 2   0.1348110
-#> 3   0.1348110
-#> 4   0.1348110
-#> 5   0.1348110
-#> 6   0.1348110
-#> 7   0.1348110
-#> 8   0.1348110
-#> 9   0.1923802
-#> 10  0.1923802
-#> 11  0.1923802
-#> 12  0.1923802
-#> 13  0.1923802
-#> 14  0.1923802
-#> 15  0.1923802
-#> 16  0.1923802
+#>             variable level           group        n  pct     chi2 df
+#> 1     Current smoker    No Lower secondary 176.0000 69.0 21.35444  2
+#> 2     Current smoker    No Upper secondary 419.0000 78.5 21.35444  2
+#> 3     Current smoker    No        Tertiary 325.0000 84.4 21.35444  2
+#> 4     Current smoker    No           Total 920.8641 78.4 21.35444  2
+#> 5     Current smoker   Yes Lower secondary  79.0000 31.0 21.35444  2
+#> 6     Current smoker   Yes Upper secondary 115.0000 21.5 21.35444  2
+#> 7     Current smoker   Yes        Tertiary  60.0000 15.6 21.35444  2
+#> 8     Current smoker   Yes           Total 254.1359 21.6 21.35444  2
+#> 9  Physical activity    No Lower secondary 174.0000 67.2 44.41217  2
+#> 10 Physical activity    No Upper secondary 315.0000 57.7 44.41217  2
+#> 11 Physical activity    No        Tertiary 166.0000 41.9 44.41217  2
+#> 12 Physical activity    No           Total 654.7619 54.6 44.41217  2
+#> 13 Physical activity   Yes Lower secondary  85.0000 32.8 44.41217  2
+#> 14 Physical activity   Yes Upper secondary 231.0000 42.3 44.41217  2
+#> 15 Physical activity   Yes        Tertiary 229.0000 58.1 44.41217  2
+#> 16 Physical activity   Yes           Total 545.2381 45.4 44.41217  2
+#>               p Cramer's V
+#> 1  2.306438e-05  0.1348110
+#> 2  2.306438e-05  0.1348110
+#> 3  2.306438e-05  0.1348110
+#> 4  2.306438e-05  0.1348110
+#> 5  2.306438e-05  0.1348110
+#> 6  2.306438e-05  0.1348110
+#> 7  2.306438e-05  0.1348110
+#> 8  2.306438e-05  0.1348110
+#> 9  2.269974e-10  0.1923802
+#> 10 2.269974e-10  0.1923802
+#> 11 2.269974e-10  0.1923802
+#> 12 2.269974e-10  0.1923802
+#> 13 2.269974e-10  0.1923802
+#> 14 2.269974e-10  0.1923802
+#> 15 2.269974e-10  0.1923802
+#> 16 2.269974e-10  0.1923802
 
 # \donttest{
 # Optional output: tinytable

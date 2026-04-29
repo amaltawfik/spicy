@@ -817,6 +817,7 @@ design-based inference on complex-survey samples.
 
 Other spicy tables:
 [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md),
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 
 ## Examples

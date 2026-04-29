@@ -55,5 +55,6 @@ and [`dplyr::pull()`](https://dplyr.tidyverse.org/reference/pull.html)
 for data transformations.
 
 Other spicy tables:
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
