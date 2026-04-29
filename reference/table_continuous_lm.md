@@ -25,7 +25,9 @@ table_continuous_lm(
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
-  vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5"),
+  vcov = c("classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5", "CR0", "CR1",
+    "CR2", "CR3"),
+  cluster = NULL,
   contrast = c("auto", "none"),
   statistic = FALSE,
   p_value = TRUE,
@@ -156,10 +158,45 @@ table_continuous_lm(
   - `"HC5"`: alternative leverage-adaptive variant designed for
     leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).
 
+  - `"CR0"`, `"CR1"`, `"CR2"`, `"CR3"`: cluster-robust sandwich
+    estimators for non-independent observations (Liang and Zeger 1986);
+    requires `cluster`. `"CR2"` is the modern default (Bell and
+    McCaffrey 2002; Pustejovsky and Tipton 2018), with Satterthwaite
+    degrees of freedom for inference; the fractional df is reported in
+    the `df2` column and in the `t(df)` / `F(df1, df2)` test header.
+    `"CR1"` corresponds to Stata's `, vce(cluster id)` default.
+    Cluster-robust variants are dispatched to
+    [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
+    and inference uses
+    [`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
+    /
+    [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md);
+    install `clubSandwich` to use them.
+
+  The `HC*` variants are computed via
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html).
   Coefficients (means, contrasts, slopes), `R²`, and the standardized
   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
   OLS/WLS fit and are not affected by `vcov`; only their standard
   errors, CIs, and the test statistic of the contrast change.
+
+- cluster:
+
+  Cluster identifier for cluster-robust standard errors. Required when
+  `vcov` is one of the `CR*` variants and forbidden otherwise. Accepts:
+
+  - `NULL` (default): no cluster structure.
+
+  - an unquoted column name in `data`.
+
+  - a single character column name in `data`.
+
+  - an atomic vector of length `nrow(data)` evaluated in the calling
+    environment (factor, character, integer, etc.).
+
+  Rows with `NA` in `cluster` are excluded from the analytic sample for
+  each outcome (alongside rows with `NA` in `y`, `by`, or `weights`). At
+  least two distinct non-missing cluster values are required.
 
 - contrast:
 
@@ -513,23 +550,43 @@ sizes) are more appropriate.
 
 When `vcov` is one of the `HC*` variants, the standard errors, CIs, and
 Wald test statistics use a heteroskedasticity-consistent sandwich
-estimator computed in-package (no extra dependency). The implementation
-follows the formulas reviewed in Zeileis (2004), the same set used by
-the canonical R implementation in the `sandwich` package
-(`sandwich::vcovHC()`). For a brief guide:
+estimator computed via
+[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+(Zeileis 2004), the canonical R implementation. For a brief guide:
 
 - `"HC0"` is the original White (1980) form; `"HC1"` adds the
   `n / (n - p)` correction (MacKinnon and White 1985), Stata's
   `, robust` default.
 
 - `"HC2"` and `"HC3"` use leverage-based residual rescalings (MacKinnon
-  and White 1985); `"HC3"` is the `sandwich::vcovHC()` default for small
-  to moderate samples (Long and Ervin 2000).
+  and White 1985); `"HC3"` is the
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+  default for small to moderate samples (Long and Ervin 2000).
 
 - `"HC4"` adapts the leverage exponent for influential observations
   (Cribari-Neto 2004); `"HC4m"` is a modified-exponent refinement
   (Cribari-Neto and da Silva 2011); `"HC5"` is an alternative
   leverage-adaptive variant (Cribari-Neto, Souza and Vasconcellos 2007).
+
+When observations are not independent (repeated measurements per
+individual, students nested in classes, patients in hospitals,
+country-year panels), classical and `HC*` standard errors are biased
+downward. Use the `CR*` variants together with `cluster = id_var` to get
+cluster-robust inference (Liang and Zeger 1986). The implementation
+dispatches to
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
+for the variance and to
+[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
+(single-coefficient, Satterthwaite *t*) and
+[`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md)
+(multi-coefficient Hotelling-T-squared with Satterthwaite df, "HTZ") for
+inference. `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton
+2018) is the modern recommended default; it generally produces
+fractional Satterthwaite degrees of freedom in `df2`, which the
+displayed `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
+matches Stata's `, vce(cluster id)`. Effect sizes remain invariant to
+`vcov` (including `CR*`); only the SE, CI, test statistic, and `df2` of
+the contrast change.
 
 `R²`, adjusted `R²`, and the effect sizes remain ordinary least-squares
 (or weighted least-squares) statistics regardless of `vcov`.
@@ -591,6 +648,10 @@ propensity score to estimate causal treatment effects in observational
 studies. *Statistics in Medicine*, **34**(28), 3661–3679.
 [doi:10.1002/sim.6607](https://doi.org/10.1002/sim.6607)
 
+Bell, R. M., & McCaffrey, D. F. (2002). Bias reduction in standard
+errors for linear regression with multi-stage samples. *Survey
+Methodology*, **28**(2), 169–181.
+
 Cohen, J. (1988). *Statistical Power Analysis for the Behavioral
 Sciences* (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
 
@@ -642,6 +703,10 @@ standard errors in the linear regression model. *The American
 Statistician*, **54**(3), 217–224.
 [doi:10.1080/00031305.2000.10474549](https://doi.org/10.1080/00031305.2000.10474549)
 
+Liang, K.-Y., & Zeger, S. L. (1986). Longitudinal data analysis using
+generalized linear models. *Biometrika*, **73**(1), 13–22.
+[doi:10.1093/biomet/73.1.13](https://doi.org/10.1093/biomet/73.1.13)
+
 MacKinnon, J. G., & White, H. (1985). Some heteroskedasticity-consistent
 covariance matrix estimators with improved finite sample properties.
 *Journal of Econometrics*, **29**(3), 305–325.
@@ -651,6 +716,12 @@ Olejnik, S., & Algina, J. (2003). Generalized eta and omega squared
 statistics: Measures of effect size for some common research designs.
 *Psychological Methods*, **8**(4), 434–447.
 [doi:10.1037/1082-989X.8.4.434](https://doi.org/10.1037/1082-989X.8.4.434)
+
+Pustejovsky, J. E., & Tipton, E. (2018). Small-sample methods for
+cluster-robust variance estimation and hypothesis testing in fixed
+effects models. *Journal of Business & Economic Statistics*, **36**(4),
+672–683.
+[doi:10.1080/07350015.2016.1247004](https://doi.org/10.1080/07350015.2016.1247004)
 
 Smithson, M. (2003). *Confidence Intervals*. Quantitative Applications
 in the Social Sciences, No. 140. Thousand Oaks, CA: Sage.
@@ -679,8 +750,15 @@ matrix estimators. *Journal of Statistical Software*, **11**(10), 1–17.
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 For broader workflows on the same statistical building blocks:
-`sandwich::vcovHC()` (the canonical R implementation of the `HC*`
-sandwich estimators);
+[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+(the canonical R implementation of the `HC*` sandwich estimators, used
+internally for `vcov = "HC*"`);
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md),
+[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
+and
+[`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md)
+(the canonical R implementation of cluster-robust variance and
+Satterthwaite-style inference, used internally for `vcov = "CR*"`);
 [`effectsize::cohens_d()`](https://easystats.github.io/effectsize/reference/cohens_d.html),
 [`effectsize::hedges_g()`](https://easystats.github.io/effectsize/reference/cohens_d.html),
 and
@@ -895,6 +973,24 @@ table_continuous_lm(
 #> ───────────────────────────────┼─────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.04   .176  0.00  1200 
 #>  Body mass index               │ 0.04  <.001  0.02  1188 
+
+# Cluster-robust SE for repeated-measures data: the `sleep` dataset
+# has 10 subjects measured twice (one observation per group).
+table_continuous_lm(
+  sleep,
+  select = extra,
+  by = group,
+  cluster = ID,
+  vcov = "CR2"
+)
+#> Registered S3 method overwritten by 'clubSandwich':
+#>   method    from    
+#>   bread.mlm sandwich
+#> Continuous outcomes by group
+#> 
+#>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  
+#> ──────────┼───────────────────────────────────────────────────────────────
+#>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
 
 # --- Article-style polish -----------------------------------------------
 
