@@ -53,3 +53,6 @@ for the specialized frequency display method.
 [`labelled::to_factor()`](https://larmarange.github.io/labelled/reference/to_factor.html)
 and [`dplyr::pull()`](https://dplyr.tidyverse.org/reference/pull.html)
 for data transformations.
+
+Other spicy tables:
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)

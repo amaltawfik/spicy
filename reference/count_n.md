@@ -98,8 +98,9 @@ function `base_count_n()`, allowing high flexibility and testability.
 
 ## Note
 
-This function is inspired by `datawizard::row_count()`, but provides
-additional flexibility:
+This function is inspired by
+[`datawizard::row_count()`](https://easystats.github.io/datawizard/reference/row_count.html),
+but provides additional flexibility:
 
 - **Element-wise type-safe matching** using
   [`identical()`](https://rdrr.io/r/base/identical.html) when
@@ -183,9 +184,10 @@ example, `"b"` and `"B"` will match even when `allow_coercion = FALSE`.
     count_n(df, count = "b", ignore_case = TRUE)
     #> [1] 1 2 0
 
-Like `datawizard::row_count()`, this function also supports regex-based
-column selection, case-insensitive string comparison, and column
-exclusion.
+Like
+[`datawizard::row_count()`](https://easystats.github.io/datawizard/reference/row_count.html),
+this function also supports regex-based column selection,
+case-insensitive string comparison, and column exclusion.
 
 ## Examples
 

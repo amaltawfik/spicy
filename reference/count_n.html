@@ -145,7 +145,7 @@ and is designed to work fluently inside <code><a href="https://dplyr.tidyverse.o
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
-    <p>This function is inspired by <code>datawizard::row_count()</code>, but provides additional flexibility:</p><ul><li><p><strong>Element-wise type-safe matching</strong> using <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code> when <code>allow_coercion = FALSE</code>. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.</p></li>
+    <p>This function is inspired by <code><a href="https://easystats.github.io/datawizard/reference/row_count.html" class="external-link">datawizard::row_count()</a></code>, but provides additional flexibility:</p><ul><li><p><strong>Element-wise type-safe matching</strong> using <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code> when <code>allow_coercion = FALSE</code>. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.</p></li>
 <li><p><strong>Support for multiple values in <code>count</code></strong>, allowing queries like <code>count = c(2, 3)</code> or <code>count = c("yes", "no")</code> to count any of several values per row.</p></li>
 <li><p><strong>Detection of special values</strong> such as <code>NA</code>, <code>NaN</code>, <code>Inf</code>, and <code>-Inf</code> through the <code>special</code> argument — a feature not available in <code>row_count()</code>.</p></li>
 <li><p><strong>Tidyverse-native behavior</strong>: can be used inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code> without explicitly passing a <code>data</code> argument.</p></li>
@@ -196,7 +196,7 @@ This behavior applies to both character and factor columns. Factors are first co
 <span><span class="co"># Case-insensitive match succeeds for both "b" and "B"</span></span>
 <span><span class="fu"><a href="../reference/count_n.html">count_n</a></span><span class="op">(</span><span class="va">df</span>, count <span class="op">=</span> <span class="st">"b"</span>, ignore_case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1 2 0</span></span></code></pre><p></p></div>
-<p>Like <code>datawizard::row_count()</code>, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.</p>
+<p>Like <code><a href="https://easystats.github.io/datawizard/reference/row_count.html" class="external-link">datawizard::row_count()</a></code>, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.</p>
 </div>
 
 

@@ -109,7 +109,8 @@ and its confidence interval.</p>
 <span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_weighted_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"f2"</span><span class="op">)</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"f2"</span>, <span class="st">"d"</span>, <span class="st">"g"</span>, <span class="st">"omega2"</span><span class="op">)</span>,</span>
+<span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  r2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"r2"</span>, <span class="st">"adj_r2"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -145,8 +146,20 @@ pattern (character string).</p></dd>
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>A single predictor column. Accepts an unquoted column name or a
-single character column name. The predictor can be numeric, logical,
-character, or factor.</p></dd>
+single character column name. The predictor can be:</p><ul><li><p><strong>numeric</strong> (continuous): treated as a covariate. The table reports
+the slope and its CI from <code>lm(y ~ by)</code>.</p></li>
+<li><p><strong>factor</strong> or <strong>ordered factor</strong>: treated as categorical. Level order
+is preserved as declared; the <strong>first level</strong> is the reference for
+the displayed contrast (R's default treatment-contrast convention).</p></li>
+<li><p><strong>character</strong>: coerced to factor with <code>factor(by)</code>, which orders the
+levels alphabetically. To control the reference level, supply <code>by</code>
+as an explicit factor with the desired level ordering (e.g. via
+<code><a href="https://forcats.tidyverse.org/reference/fct_relevel.html" class="external-link">forcats::fct_relevel()</a></code> or <code>factor(..., levels = ...)</code>).</p></li>
+<li><p><strong>logical</strong>: coerced to factor with levels <code>"FALSE"</code>, <code>"TRUE"</code> (in
+that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
+so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
+</ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
+outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details).</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -160,21 +173,55 @@ and character vectors of column names.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
-<dd><p>Optional case weights. Accepts <code>NULL</code>, an unquoted numeric
-column name, a single character column name, or a numeric vector of length
-<code>nrow(data)</code>.</p></dd>
+<dd><p>Optional case weights. Accepts:</p><ul><li><p><code>NULL</code> (default): an ordinary unweighted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> is fit.</p></li>
+<li><p>an <strong>unquoted numeric column name</strong> present in <code>data</code>.</p></li>
+<li><p>a <strong>single character column name</strong> present in <code>data</code>.</p></li>
+<li><p>a <strong>numeric vector of length <code>nrow(data)</code></strong> evaluated in the calling
+environment.</p></li>
+</ul><p>Validation: weights must be finite, non-negative, and contain at least
+one positive value (otherwise the function errors). Rows with <code>NA</code> in
+<code>weights</code> are excluded from the analytic sample for each outcome,
+alongside rows with <code>NA</code> in <code>y</code> or <code>by</code>. When supplied, weights are
+passed to <code>lm(..., weights = ...)</code>, so coefficients become weighted
+least-squares estimates and <code>R²</code>, adjusted <code>R²</code>, and the four effect
+sizes are computed from the corresponding weighted sums of squares
+(see the <em>Weights</em> section in Details).</p></dd>
 
 
 <dt id="arg-vcov">vcov<a class="anchor" aria-label="anchor" href="#arg-vcov"></a></dt>
-<dd><p>Variance estimator used for uncertainty estimates. One of
-<code>"classical"</code> (default), <code>"HC0"</code>, <code>"HC1"</code>, <code>"HC2"</code>, <code>"HC3"</code>, <code>"HC4"</code>,
-<code>"HC4m"</code>, or <code>"HC5"</code>.</p></dd>
+<dd><p>Variance estimator used for standard errors, confidence
+intervals, and Wald test statistics. One of:</p><ul><li><p><code>"classical"</code> (default): the ordinary OLS/WLS variance from
+<code>vcov(lm)</code>, which assumes homoscedastic errors.</p></li>
+<li><p><code>"HC0"</code>: the original Eicker–White heteroskedasticity-consistent
+sandwich estimator (White 1980), with no finite-sample correction.</p></li>
+<li><p><code>"HC1"</code>: HC0 multiplied by <code>n / (n - p)</code> (MacKinnon and White 1985).
+Matches Stata's <code>, robust</code> default.</p></li>
+<li><p><code>"HC2"</code>: residuals divided by <code>sqrt(1 - h_ii)</code>
+(MacKinnon and White 1985).</p></li>
+<li><p><code>"HC3"</code>: residuals divided by <code>(1 - h_ii)</code> (MacKinnon and White 1985).
+A common default for small to moderate samples (Long and Ervin 2000).</p></li>
+<li><p><code>"HC4"</code>: leverage-adaptive variant designed for influential
+observations (Cribari-Neto 2004).</p></li>
+<li><p><code>"HC4m"</code>: refinement of HC4 with a modified leverage exponent
+(Cribari-Neto and da Silva 2011).</p></li>
+<li><p><code>"HC5"</code>: alternative leverage-adaptive variant designed for
+leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).</p></li>
+</ul><p>Coefficients (means, contrasts, slopes), <code>R²</code>, and the standardized
+effect sizes (<code>f2</code>, <code>d</code>, <code>g</code>, <code>omega2</code>) are point estimates from the
+OLS/WLS fit and are not affected by <code>vcov</code>; only their standard errors,
+CIs, and the test statistic of the contrast change.</p></dd>
 
 
 <dt id="arg-contrast">contrast<a class="anchor" aria-label="anchor" href="#arg-contrast"></a></dt>
-<dd><p>Contrast display for categorical predictors. One of:</p><ul><li><p><code>"auto"</code>: show a single reference contrast only when <code>by</code> has exactly
-two levels.</p></li>
-<li><p><code>"none"</code>: suppress difference columns for categorical predictors.</p></li>
+<dd><p>Contrast display for categorical predictors. One of:</p><ul><li><p><code>"auto"</code> (default): show a single reference contrast
+<code>Delta (level2 - level1)</code> only when <code>by</code> has exactly two non-empty
+levels. The reference level is the <strong>first level of the factor</strong>
+(R's default treatment-contrast convention,
+<code>getOption("contrasts")[1]</code>). To change which level acts as the
+reference, re-level <code>by</code> upstream (for example with
+<code><a href="https://forcats.tidyverse.org/reference/fct_relevel.html" class="external-link">forcats::fct_relevel()</a></code> or <code><a href="https://rdrr.io/r/stats/relevel.html" class="external-link">stats::relevel()</a></code>).</p></li>
+<li><p><code>"none"</code>: suppress the contrast column for categorical predictors.
+Level-specific means are still displayed.</p></li>
 </ul></dd>
 
 
@@ -201,12 +248,53 @@ analytic sample. Defaults to <code>FALSE</code>.</p></dd>
 
 <dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
 <dd><p>Character. Effect-size column to include in the wide and
-rendered outputs. One of <code>"none"</code> (the default) or <code>"f2"</code>.</p></dd>
+rendered outputs. One of:</p><ul><li><p><code>"none"</code> (the default): no effect-size column.</p></li>
+<li><p><code>"f2"</code>: Cohen's <code>f² = R² / (1 - R²)</code>. Defined for any predictor type.
+Familiar from Cohen (1988); standard input for a-priori power analysis.
+Note that for a single-predictor model, <code>f²</code> is a monotone transform of
+<code>R²</code> and adds no information beyond it.</p></li>
+<li><p><code>"d"</code>: Cohen's <code>d = beta_hat / sigma_hat</code>, where <code>beta_hat</code> is the
+model coefficient (the displayed difference) and <code>sigma_hat</code> is the
+residual standard deviation from the fitted model. Defined only when
+<code>by</code> has exactly two non-empty levels; otherwise the function errors.
+The sign matches the displayed <code>Delta (level2 - level1)</code>.</p></li>
+<li><p><code>"g"</code>: Hedges' <code>g = J * d</code> with the small-sample correction
+<code>J = 1 - 3 / (4 * df_resid - 1)</code>. Same domain as <code>"d"</code>.</p></li>
+<li><p><code>"omega2"</code>: Hays' <code>omega-squared</code>, a bias-corrected estimator of the
+population variance explained, less optimistic than <code>R²</code> for small
+samples. Defined for any predictor type and truncated at 0.</p></li>
+</ul><p>When <code>weights</code> is supplied, <code>"d"</code>, <code>"g"</code>, and <code>"omega2"</code> are derived from
+the weighted least-squares fit (using weighted sums of squares and the
+model's weighted residual standard deviation), keeping them consistent
+with the weighted contrast and its CI shown in the table. All effect
+sizes are point estimates derived from the OLS/WLS fit and are <strong>not</strong>
+affected by <code>vcov</code>.</p></dd>
+
+
+<dt id="arg-effect-size-ci">effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-ci"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> and <code>effect_size != "none"</code>, adds
+a confidence interval for the effect size derived from inversion of the
+appropriate noncentral distribution (noncentral t for <code>"d"</code> / <code>"g"</code>;
+noncentral F for <code>"omega2"</code> / <code>"f2"</code>). The CI level is taken from
+<code>ci_level</code>. In the long output (<code>output = "long"</code>), the bounds are always
+present in <code>es_ci_lower</code> / <code>es_ci_upper</code> (numeric). In the wide raw
+output (<code>output = "data.frame"</code>), the bounds appear as numeric columns
+<code>effect_size_ci_lower</code> / <code>effect_size_ci_upper</code>. In the printed ASCII
+table and rendered outputs (<code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
+<code>"word"</code>, <code>"excel"</code>, <code>"clipboard"</code>), the effect-size column shows the
+value followed by the CI in brackets (e.g. <code>0.18 [0.07, 0.30]</code>). Defaults
+to <code>FALSE</code>. When <code>effect_size = "none"</code>, this argument is ignored with a
+warning.</p></dd>
 
 
 <dt id="arg-r-">r2<a class="anchor" aria-label="anchor" href="#arg-r-"></a></dt>
 <dd><p>Character. Fit statistic to include in the wide and rendered
-outputs. One of <code>"r2"</code> (the default), <code>"adj_r2"</code>, or <code>"none"</code>.</p></dd>
+outputs. One of:</p><ul><li><p><code>"r2"</code> (default): the model <code>R²</code> (<code>summary(lm)$r.squared</code>).</p></li>
+<li><p><code>"adj_r2"</code>: adjusted <code>R²</code>, penalising for <code>df_effect</code> relative to the
+residual degrees of freedom.</p></li>
+<li><p><code>"none"</code>: omit the fit-statistic column.</p></li>
+</ul><p>When <code>weights</code> is supplied, <code>R²</code> and adjusted <code>R²</code> are the weighted
+least-squares versions reported by <code>summary(lm(..., weights = ...))</code>.</p></dd>
 
 
 <dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
@@ -233,13 +321,14 @@ coefficients, and test statistics (default: <code>2</code>).</p></dd>
 
 
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
-<dd><p>Number of decimal places for model-fit columns (<code>R2</code> or
-adjusted <code>R2</code>) in wide and rendered outputs (default: <code>2</code>).</p></dd>
+<dd><p>Number of decimal places for model-fit columns (<code>R²</code> or
+adjusted <code>R²</code>) in wide and rendered outputs (default: <code>2</code>).</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
-<dd><p>Number of decimal places for effect-size columns
-(<code>f2</code>) in wide and rendered outputs (default: <code>2</code>).</p></dd>
+<dd><p>Number of decimal places for the effect-size
+column (<code>f2</code>, <code>d</code>, <code>g</code>, or <code>omega2</code>) in wide and rendered outputs
+(default: <code>2</code>).</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
@@ -285,15 +374,25 @@ non-numeric selected outcomes (default: <code>FALSE</code>).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: prints a styled ASCII table and returns the
-underlying long <code>data.frame</code> invisibly, with class
-<code>"spicy_continuous_lm_table"</code>.</p></li>
-<li><p><code>"data.frame"</code>: a plain wide <code>data.frame</code> with one row per outcome
-and numeric columns for means, optional contrasts, optional test
-statistics, model fit, and sample size.</p></li>
-<li><p><code>"long"</code>: a raw <code>data.frame</code> with one block per outcome and columns
-describing estimated means, contrasts, test statistics, model fit, and
-sample size.</p></li>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: prints a styled ASCII table and invisibly returns
+the underlying long <code>data.frame</code> with class
+<code>"spicy_continuous_lm_table"</code> / <code>"spicy_table"</code>.</p></li>
+<li><p><code>"data.frame"</code>: a plain wide <code>data.frame</code> with one row per
+outcome and numeric columns for means (categorical <code>by</code>) or slope
+(numeric <code>by</code>), optional contrast and CI, optional test statistic,
+<code>p</code>, fit statistic (<code>R²</code> or adjusted <code>R²</code>), effect size, optional
+<code>effect_size_ci_lower</code> / <code>effect_size_ci_upper</code> (when
+<code>effect_size_ci = TRUE</code>), <code>n</code>, and <code>Weighted n</code>.</p></li>
+<li><p><code>"long"</code>: a raw <code>data.frame</code> with one block per outcome and 28
+columns covering identification (<code>variable</code>, <code>label</code>,
+<code>predictor_type</code>, <code>predictor_label</code>, <code>level</code>, <code>reference</code>),
+fitted means and their CI (<code>emmean</code>, <code>emmean_se</code>, <code>emmean_ci_lower</code>,
+<code>emmean_ci_upper</code>), contrast or slope estimates and CI
+(<code>estimate_type</code>, <code>estimate</code>, <code>estimate_se</code>, <code>estimate_ci_lower</code>,
+<code>estimate_ci_upper</code>), inferential output (<code>test_type</code>, <code>statistic</code>,
+<code>df1</code>, <code>df2</code>, <code>p.value</code>), effect size with its CI (<code>es_type</code>,
+<code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>), fit (<code>r2</code>, <code>adj_r2</code>),
+and sample size (<code>n</code>, <code>weighted_n</code>).</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
 <li><p><code>"gt"</code>: a <code>gt_tbl</code> object.</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
@@ -304,51 +403,125 @@ and <code>regex</code>, the function emits a warning and returns an empty
 <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> regardless of <code>output</code>.</p>
     </div>
     <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <h2 id="model-and-outputs">Model and outputs<a class="anchor" aria-label="anchor" href="#model-and-outputs"></a></h2>
     <p><code>table_continuous_lm()</code> is designed for article-style bivariate reporting:
 a single predictor supplied with <code>by</code>, and one simple model per selected
-continuous outcome. The model fit is always <code>lm(outcome ~ by, ...)</code>.</p>
-<p>For categorical predictors, the reported means are model-based fitted means
-for each level of <code>by</code>, and the reported contrasts are derived from the same
-fitted linear model. For an unweighted <code>lm(y ~ factor)</code> with classical
-variance, these fitted means coincide numerically with the empirical
-subgroup means; the "model-based" qualifier matters because (a) under
-<code>weights</code>, the means become weighted least-squares estimates, (b) their
-confidence intervals are derived from the model <code>vcov</code> (classical or <code>HC*</code>)
-rather than from a separate empirical standard error, and (c) the reported
-tests, <code>p</code>-values, and effect sizes all come from the same fitted model,
-so means, contrasts, and inference stay internally consistent.</p>
+continuous outcome. The model fit is always <code>lm(outcome ~ by, ...)</code>,
+optionally with <code>weights</code>. For categorical predictors, the reported means
+are model-based fitted means for each level of <code>by</code>, and contrasts are
+derived from the same fitted linear model. For an unweighted
+<code>lm(y ~ factor)</code> with classical variance, the fitted means coincide
+numerically with empirical subgroup means; the <em>model-based</em> qualifier
+matters because (a) under <code>weights</code> the means become weighted
+least-squares estimates, (b) their CIs are derived from the model <code>vcov</code>
+(classical or <code>HC*</code>), and (c) tests, <em>p</em>-values, and effect sizes all
+come from the same fitted model, keeping the table internally consistent.</p>
 <p>Compared with <code><a href="table_continuous.html">table_continuous()</a></code>, this function is the model-based
-companion for users who want to report bivariate mean comparisons in a
-linear-model framework. In practice, it is the better choice when you
-want heteroskedasticity-consistent standard errors (<code>vcov = "HC*"</code>),
-model fit statistics, or case weights via <code>lm(..., weights = ...)</code>.
-Because the function exists to report a fitted model, its inferential
-output is part of the default display: <code>p_value = TRUE</code> is on by default,
-and the model <code>R2</code> is shown unless explicitly disabled with <code>r2 = "none"</code>.
-Set <code>p_value = FALSE</code> or <code>r2 = "none"</code> to suppress them.</p>
-<p>Effect size is reported as Cohen's <code>f2</code>, computed from the model <code>R2</code> as
-<code>R2 / (1 - R2)</code>. When <code>vcov != "classical"</code>, standard errors, confidence
-intervals, and test statistics use the requested heteroskedasticity-
-consistent estimator, while <code>R2</code> and adjusted <code>R2</code> remain the ordinary
-least-squares fit statistics.</p>
-<p>When <code>weights</code> is supplied, <code>table_continuous_lm()</code> fits weighted linear
-models using <code>lm(..., weights = ...)</code> and reports weighted model-based
-means or slopes accordingly. This is appropriate for case-weighted
-analyses and weighted article tables, but it is not a substitute for a
-full complex-survey design workflow.</p>
-<p>In wide and rendered outputs, <code>n</code> always reports the unweighted analytic
-sample size used for each outcome. When <code>show_weighted_n = TRUE</code>, an
-additional <code>Weighted n</code> column reports the sum of case weights for the same
+companion: choose it when you want heteroskedasticity-consistent standard
+errors (<code>vcov = "HC*"</code>), model fit statistics, or case weights via
+<code>lm(..., weights = ...)</code>. Because the function exists to report a fitted
+model, its inferential output is on by default: <code>p_value = TRUE</code> and
+<code>r2 = "r2"</code> are the defaults; set <code>p_value = FALSE</code> or <code>r2 = "none"</code> to
+suppress them.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="effect-sizes">Effect sizes<a class="anchor" aria-label="anchor" href="#effect-sizes"></a></h2>
+    <p>Effect size is selected explicitly via <code>effect_size</code> (defaults to
+<code>"none"</code>). All variants are derived from the same fitted model as the
+displayed coefficients, <code>R²</code>, and CIs, so the effect size stays
+internally consistent with the rest of the table.</p>
+<ul><li><p><code>"f2"</code>: Cohen's <code>f² = R² / (1 - R²)</code> (Cohen 1988). Defined
+for any predictor type. For a single-predictor model, <code>f²</code> is a
+monotone transform of <code>R²</code> and adds no information beyond it; its
+primary use is in <em>a priori</em> power analysis (e.g. G*Power).</p></li>
+<li><p><code>"d"</code>, <code>"g"</code>: standardized mean difference (Cohen's <em>d</em> or Hedges'
+<em>g</em>), defined only when <code>by</code> has exactly two non-empty levels.
+<code>d = beta_hat / sigma_hat</code> with <code>sigma_hat = summary(fit)$sigma</code> (the
+pooled within-group SD for the unweighted two-group case);
+<code>g = J * d</code> with <code>J = 1 - 3 / (4 * df_resid - 1)</code> (Hedges and Olkin
+1985). The sign matches the displayed <code>Delta (level2 - level1)</code>.
+For published reports of two-group comparisons, <em>g</em> is the convention
+recommended by Hedges and Olkin (1985), Lakens (2013), and the APA
+Publication Manual (APA 2020).</p></li>
+<li><p><code>"omega2"</code>: Hays' <code>ω²</code>, computed from weighted sums of
+squares as <code>(SS_effect - df_effect * MSE) / (SS_total + MSE)</code> and
+truncated at 0 for small or null effects (Hays 1963; Olejnik and
+Algina 2003). Less biased than <code>η²</code> (which equals <code>R²</code> in this
+single-predictor design) and recommended for reporting variance
+explained in ANOVA-style designs (Olejnik and Algina 2003;
+Lakens 2013).</p></li>
+</ul><p>All four effect sizes are point estimates derived from the OLS/WLS fit
+and are <strong>invariant to <code>vcov</code></strong>: choosing <code>HC*</code> changes the SE, CI, and
+test statistic of the contrast but not the standardized magnitude
+itself.</p>
+<p>Confidence intervals for the effect size are available via
+<code>effect_size_ci = TRUE</code> and use the modern noncentral-distribution
+inversion approach, the consensus standard in commercial statistical
+software (Stata <code>esize</code> / <code>estat esize</code>, SAS <code>PROC TTEST</code> and
+<code>PROC GLM EFFECTSIZE</code> 14.2+) and in mainstream R packages
+(<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>, <code>effsize</code>):</p><ul><li><p><code>"d"</code>, <code>"g"</code>: noncentral <em>t</em> inversion (Steiger and Fouladi 1997;
+Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
+across sample sizes (Cousineau and Goulet-Pelletier 2021), unlike the
+older Hedges-Olkin normal approximation which is biased for small
+samples. For Hedges' <em>g</em> the bounds inherit the <em>J</em> small-sample
+correction.</p></li>
+<li><p><code>"omega2"</code>, <code>"f2"</code>: noncentral <em>F</em> inversion (Steiger 2004;
+Smithson 2003). Bounds are converted from the noncentrality parameter
+using <code>omega² = ncp / (ncp + N)</code> and <code>f² = ncp / N</code> respectively, with
+<code>N = df1 + df2 + 1</code> (total sample size).</p></li>
+</ul><p>For the weighted case, the CI uses raw (unweighted) group counts and
+<code>df.residual(fit) = n - p</code>, consistent with the WLS reporting convention
+(DuMouchel and Duncan 1983). For propensity-score balance assessment or
+complex-survey designs, dedicated packages (<code>cobalt::bal.tab()</code> for the
+Austin and Stuart 2015 formulation; <code>survey</code> for design-based effect
+sizes) are more appropriate.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="robust-standard-errors">Robust standard errors<a class="anchor" aria-label="anchor" href="#robust-standard-errors"></a></h2>
+    <p>When <code>vcov</code> is one of the <code>HC*</code> variants, the standard errors, CIs, and
+Wald test statistics use a heteroskedasticity-consistent sandwich
+estimator computed in-package (no extra dependency). The implementation
+follows the formulas reviewed in Zeileis (2004), the same set used by
+the canonical R implementation in the <code>sandwich</code> package
+(<code>sandwich::vcovHC</code>). For a brief guide:</p><ul><li><p><code>"HC0"</code> is the original White (1980) form; <code>"HC1"</code> adds the
+<code>n / (n - p)</code> correction (MacKinnon and White 1985), Stata's
+<code>, robust</code> default.</p></li>
+<li><p><code>"HC2"</code> and <code>"HC3"</code> use leverage-based residual rescalings
+(MacKinnon and White 1985); <code>"HC3"</code> is the <code>sandwich::vcovHC</code>
+default for small to moderate samples (Long and Ervin 2000).</p></li>
+<li><p><code>"HC4"</code> adapts the leverage exponent for influential
+observations (Cribari-Neto 2004); <code>"HC4m"</code> is a modified-exponent
+refinement (Cribari-Neto and da Silva 2011); <code>"HC5"</code> is an
+alternative leverage-adaptive variant (Cribari-Neto, Souza and
+Vasconcellos 2007).</p></li>
+</ul><p><code>R²</code>, adjusted <code>R²</code>, and the effect sizes remain ordinary
+least-squares (or weighted least-squares) statistics regardless of
+<code>vcov</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a></h2>
+    <p>When <code>weights</code> is supplied, <code>table_continuous_lm()</code> fits weighted
+linear models via <code>lm(..., weights = ...)</code>. Means become weighted
+least-squares estimates, contrasts and slopes are weighted, and <code>R²</code>,
+adjusted <code>R²</code>, and the four effect sizes use the corresponding
+weighted sums of squares. This is appropriate for case-weighted
+analyses and weighted article tables, but is <strong>not</strong> a substitute for
+a full complex-survey design workflow (see e.g. the <code>survey</code> package).</p>
+<p>The <code>n</code> column always reports the unweighted analytic sample size for
+each outcome. When <code>show_weighted_n = TRUE</code>, an additional
+<code>Weighted n</code> column reports the sum of case weights in the same
 analytic sample.</p>
-<p>For dichotomous categorical predictors, the wide outputs report means in
-reference-level order and labels the contrast column explicitly as
-<code>Delta (level2 - level1)</code>. For categorical predictors with more than two
-levels, no single contrast or contrast confidence interval is shown in the
-wide outputs; instead, the table reports level-specific means plus the
-overall <code>F</code> test when <code>statistic = TRUE</code> (or <code>F(df1, df2)</code> when the degrees
-of freedom are constant across outcomes).</p>
-<p>Optional output engines require suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
+    </div>
+    <div class="section level2">
+    <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
+    <p>For dichotomous categorical predictors, the wide outputs report fitted
+means in reference-level order and label the contrast column
+explicitly as <code>Delta (level2 - level1)</code>. For categorical predictors
+with more than two levels, no single contrast or contrast CI is shown
+in the wide outputs; instead, the table reports level-specific means
+plus the overall <code>F</code> test when <code>statistic = TRUE</code> (or <code>F(df1, df2)</code>
+when the degrees of freedom are constant across outcomes).</p>
+<p>Optional output engines require the corresponding suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
 <li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
 <li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>
 <li><p><span class="pkg">flextable</span> + <span class="pkg">officer</span> for <code>output = "word"</code></p></li>
@@ -356,13 +529,114 @@ of freedom are constant across outcomes).</p>
 <li><p><span class="pkg">clipr</span> for <code>output = "clipboard"</code></p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>American Psychological Association (2020).
+<em>Publication Manual of the American Psychological Association</em>
+(7th ed.). Washington, DC: APA.</p>
+<p>Austin, P. C., &amp; Stuart, E. A. (2015).
+Moving towards best practice when using inverse probability of
+treatment weighting (IPTW) using the propensity score to estimate
+causal treatment effects in observational studies.
+<em>Statistics in Medicine</em>, <strong>34</strong>(28), 3661–3679.
+<a href="https://doi.org/10.1002/sim.6607" class="external-link">doi:10.1002/sim.6607</a></p>
+<p>Cohen, J. (1988).
+<em>Statistical Power Analysis for the Behavioral Sciences</em>
+(2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.</p>
+<p>Cousineau, D., &amp; Goulet-Pelletier, J.-C. (2021).
+Expected and empirical coverages of different methods for generating
+noncentral <em>t</em> confidence intervals for a standardized mean
+difference. <em>Behavior Research Methods</em>, <strong>53</strong>, 2376–2394.
+<a href="https://doi.org/10.3758/s13428-021-01550-4" class="external-link">doi:10.3758/s13428-021-01550-4</a></p>
+<p>Cribari-Neto, F. (2004).
+Asymptotic inference under heteroskedasticity of unknown form.
+<em>Computational Statistics &amp; Data Analysis</em>, <strong>45</strong>(2), 215–233.
+<a href="https://doi.org/10.1016/S0167-9473%2802%2900366-3" class="external-link">doi:10.1016/S0167-9473(02)00366-3</a></p>
+<p>Cribari-Neto, F., Souza, T. C., &amp; Vasconcellos, K. L. P. (2007).
+Inference under heteroskedasticity and leveraged data.
+<em>Communications in Statistics – Theory and Methods</em>,
+<strong>36</strong>(10), 1877–1888.
+<a href="https://doi.org/10.1080/03610920601126589" class="external-link">doi:10.1080/03610920601126589</a></p>
+<p>Cribari-Neto, F., &amp; da Silva, W. B. (2011).
+A new heteroskedasticity-consistent covariance matrix estimator
+for the linear regression model.
+<em>AStA Advances in Statistical Analysis</em>, <strong>95</strong>(2), 129–146.
+<a href="https://doi.org/10.1007/s10182-010-0141-2" class="external-link">doi:10.1007/s10182-010-0141-2</a></p>
+<p>DuMouchel, W. H., &amp; Duncan, G. J. (1983).
+Using sample survey weights in multiple regression analyses of
+stratified samples. <em>Journal of the American Statistical
+Association</em>, <strong>78</strong>(383), 535–543.
+<a href="https://doi.org/10.1080/01621459.1983.10478006" class="external-link">doi:10.1080/01621459.1983.10478006</a></p>
+<p>Goulet-Pelletier, J.-C., &amp; Cousineau, D. (2018).
+A review of effect sizes and their confidence intervals, Part I:
+The Cohen's <em>d</em> family. <em>The Quantitative Methods for Psychology</em>,
+<strong>14</strong>(4), 242–265. <a href="https://doi.org/10.20982/tqmp.14.4.p242" class="external-link">doi:10.20982/tqmp.14.4.p242</a></p>
+<p>Hays, W. L. (1963).
+<em>Statistics for Psychologists</em>. New York: Holt, Rinehart and Winston.</p>
+<p>Hedges, L. V., &amp; Olkin, I. (1985).
+<em>Statistical Methods for Meta-Analysis</em>. Orlando, FL: Academic Press.</p>
+<p>Lakens, D. (2013).
+Calculating and reporting effect sizes to facilitate cumulative
+science: A practical primer for <em>t</em>-tests and ANOVAs.
+<em>Frontiers in Psychology</em>, <strong>4</strong>, 863.
+<a href="https://doi.org/10.3389/fpsyg.2013.00863" class="external-link">doi:10.3389/fpsyg.2013.00863</a></p>
+<p>Long, J. S., &amp; Ervin, L. H. (2000).
+Using heteroscedasticity consistent standard errors in the linear
+regression model. <em>The American Statistician</em>, <strong>54</strong>(3), 217–224.
+<a href="https://doi.org/10.1080/00031305.2000.10474549" class="external-link">doi:10.1080/00031305.2000.10474549</a></p>
+<p>MacKinnon, J. G., &amp; White, H. (1985).
+Some heteroskedasticity-consistent covariance matrix estimators with
+improved finite sample properties.
+<em>Journal of Econometrics</em>, <strong>29</strong>(3), 305–325.
+<a href="https://doi.org/10.1016/0304-4076%2885%2990158-7" class="external-link">doi:10.1016/0304-4076(85)90158-7</a></p>
+<p>Olejnik, S., &amp; Algina, J. (2003).
+Generalized eta and omega squared statistics: Measures of effect
+size for some common research designs.
+<em>Psychological Methods</em>, <strong>8</strong>(4), 434–447.
+<a href="https://doi.org/10.1037/1082-989X.8.4.434" class="external-link">doi:10.1037/1082-989X.8.4.434</a></p>
+<p>Smithson, M. (2003).
+<em>Confidence Intervals</em>. Quantitative Applications in the Social
+Sciences, No. 140. Thousand Oaks, CA: Sage.</p>
+<p>Steiger, J. H. (2004).
+Beyond the <em>F</em> test: Effect size confidence intervals and tests of
+close fit in the analysis of variance and contrast analysis.
+<em>Psychological Methods</em>, <strong>9</strong>(2), 164–182.
+<a href="https://doi.org/10.1037/1082-989X.9.2.164" class="external-link">doi:10.1037/1082-989X.9.2.164</a></p>
+<p>Steiger, J. H., &amp; Fouladi, R. T. (1997).
+Noncentrality interval estimation and the evaluation of statistical
+models. In L. L. Harlow, S. A. Mulaik, &amp; J. H. Steiger (Eds.),
+<em>What if there were no significance tests?</em> (pp. 221–257).
+Mahwah, NJ: Lawrence Erlbaum.</p>
+<p>White, H. (1980).
+A heteroskedasticity-consistent covariance matrix estimator and a
+direct test for heteroskedasticity.
+<em>Econometrica</em>, <strong>48</strong>(4), 817–838.
+<a href="https://doi.org/10.2307/1912934" class="external-link">doi:10.2307/1912934</a></p>
+<p>Zeileis, A. (2004).
+Econometric computing with HC and HAC covariance matrix estimators.
+<em>Journal of Statistical Software</em>, <strong>11</strong>(10), 1–17.
+<a href="https://doi.org/10.18637/jss.v011.i10" class="external-link">doi:10.18637/jss.v011.i10</a></p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>.
+For broader workflows on the same statistical building blocks:
+<code>sandwich::vcovHC()</code> (the canonical R implementation of the <code>HC*</code>
+sandwich estimators); <code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::cohens_d()</a></code>,
+<code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::hedges_g()</a></code>, and <code><a href="https://easystats.github.io/effectsize/reference/eta_squared.html" class="external-link">effectsize::omega_squared()</a></code> (alternative
+effect-size computations and CIs); <code>cobalt::bal.tab()</code> for
+propensity-score covariate balance with weighted standardized mean
+differences (Austin and Stuart 2015); the <code>survey</code> package for
+design-based inference on complex-survey samples.</p>
+<p>Other spicy tables:
+<code><a href="spicy_tables.html">spicy_tables</a></code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># --- Basic usage ---------------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Default: ASCII table with model-based means, p, and R².</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span></span></span>
@@ -379,6 +653,7 @@ of freedom are constant across outcomes).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  1188 </span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plain wide data.frame (one row per outcome, numeric columns).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
@@ -395,6 +670,154 @@ of freedom are constant across outcomes).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> wellbeing_score 1200</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> bmi             1188</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Long, raw data.frame with one block per outcome</span></span></span>
+<span class="r-in"><span><span class="co"># (useful for downstream programmatic processing).</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable                         label predictor_type predictor_label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3             bmi               Body mass index    categorical             Sex</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4             bmi               Body mass index    categorical             Sex</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    level reference estimate_type   emmean emmean_se emmean_ci_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Female    Female          &lt;NA&gt; 67.16194 0.6227155        65.94020</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   Male    Female    difference 71.04879 0.6438305        69.78563</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Female    Female          &lt;NA&gt; 25.68506 0.1495988        25.39156</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   Male    Female    difference 26.19685 0.1552460        25.89227</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   emmean_ci_upper  estimate estimate_se estimate_ci_lower estimate_ci_upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        68.38367        NA          NA                NA                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        72.31195 3.8868576   0.8957077        2.12952733         5.6441879</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        25.97857        NA          NA                NA                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        26.50144 0.5117882   0.2155948        0.08879857         0.9347778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   test_type statistic df1  df2      p.value es_type es_value es_ci_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         F 18.830621   1 1198 1.548898e-05    &lt;NA&gt;       NA          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         t  4.339426   1 1198 1.548898e-05    &lt;NA&gt;       NA          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         F  5.635133   1 1186 1.776254e-02    &lt;NA&gt;       NA          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         t  2.373843   1 1186 1.776254e-02    &lt;NA&gt;       NA          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   es_ci_upper          r2      adj_r2    n weighted_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          NA 0.015475137 0.014653330 1200         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          NA          NA          NA 1200         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          NA 0.004728908 0.003889725 1188         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          NA          NA          NA 1188         NA</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Cohen's d (binary by required).</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"d"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²    d       n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02  0.25  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  0.14  1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Hedges' g with weighted analysis and weighted n column.</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  weights <span class="op">=</span> <span class="va">weight</span>,</span></span>
+<span class="r-in"><span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span></span>
+<span class="r-in"><span>  show_weighted_n <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.01      70.88          3.87        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.51      25.98          0.47        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t        p   R²    g   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.11       5.62     4.33  &lt;.001  0.02  0.25 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.05       0.89     2.18   .030  0.00  0.13 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span>    n  Weighted n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1200     1196.47 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 1188     1183.32 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Hedges' g with noncentral t confidence interval (bracket notation).</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span></span>
+<span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span>         g             n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.25 [0.14, 0.36]  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Cohen's f² alongside R² (familiar power-analysis effect size).</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"f2"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²    f²      n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02  0.02  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  0.00  1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Hays' ω² for a 3-level predictor (d / g would error here).</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"omega2"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Highest education level</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        67.68                81.56        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>        26.17                23.55        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)      p   R²    ω²      n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.10      &lt;.001  0.21  0.21  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>    26.35      &lt;.001  0.13  0.13  1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- Robust SE for a numeric predictor ----------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># HC3 standard errors for the slope of a continuous predictor.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
@@ -409,50 +832,101 @@ of freedom are constant across outcomes).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.04   .176  0.00  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04  &lt;.001  0.02  1188 </span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- Article-style polish -----------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pretty outcome labels and adjusted R².</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>  weights <span class="op">=</span> <span class="va">weight</span>,</span></span>
-<span class="r-in"><span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"f2"</span>,</span></span>
-<span class="r-in"><span>  show_weighted_n <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    wellbeing_score <span class="op">=</span> <span class="st">"WHO-5 wellbeing (0-100)"</span>,</span></span>
+<span class="r-in"><span>    bmi <span class="op">=</span> <span class="st">"Body-mass index (kg/m²)"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  r2 <span class="op">=</span> <span class="st">"adj_r2"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> 95% CI UL      p  Adj. R²     n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001   0.01    1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0.93      .018   0.00    1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># European decimal comma.</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  decimal_mark <span class="op">=</span> <span class="st">","</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.01      70.88          3.87        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.51      25.98          0.47        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67,16      71,05          3,89        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25,69      26,20          0,51        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t        p   R²    f²  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.11       5.62     4.33  &lt;.001  0.02  0.02 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.05       0.89     2.18   .030  0.00  0.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL      p   R²      n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2,13       5,64     &lt;,001  0,02  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0,09       0,93      ,018  0,00  1188 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Regex selection of all columns starting with "life_sat".</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="st">"^life_sat"</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  regex <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span>    n  Weighted n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1200     1196.47 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 1188     1183.32 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                                   <span style="color: #9E9E9E;">│</span> M (Female)  M (Male) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>    3.51       3.59   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>    3.32       3.44   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>    3.71       3.74   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>    3.37       3.42   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                                   <span style="color: #9E9E9E;">│</span> Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>       0.08           -0.06   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>       0.12           -0.01   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>       0.04           -0.09   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>       0.05           -0.08   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                                   <span style="color: #9E9E9E;">│</span> 95% CI UL     p   R²      n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   0.22     .267  0.00  1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   0.26     .073  0.00  1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   0.16     .570  0.00  1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   0.18     .453  0.00  1192 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># --- Rendered outputs (require Suggests packages) -----------------------</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    effect_size <span class="op">=</span> <span class="st">"g"</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable                      | M (Female) | M (Male) | Δ (Male - Female) | 95% CI      | p     | R²   | n    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                               |            |          |                   | LL   | UL   |       |      |      |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +===============================+============+==========+===================+======+======+=======+======+======+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | WHO-5 wellbeing index (0-100) | 67.16      | 71.05    | 3.89              | 2.13 | 5.64 | &lt;.001 | 0.02 | 1200 |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Body mass index               | 25.69      | 26.20    | 0.51              | 0.09 | 0.93 | .018  | 0.00 | 1188 |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable                      | M (Female) | M (Male) | Δ (Male - Female) | 95% CI      | p     | R²   | g    | n    |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                               |            |          |                   | LL   | UL   |       |      |      |      |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +===============================+============+==========+===================+======+======+=======+======+======+======+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | WHO-5 wellbeing index (0-100) | 67.16      | 71.05    | 3.89              | 2.13 | 5.64 | &lt;.001 | 0.02 | 0.25 | 1200 |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Body mass index               | 25.69      | 26.20    | 0.51              | 0.09 | 0.93 | .018  | 0.00 | 0.14 | 1188 |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+ </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"gt"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -522,7 +996,38 @@ of freedom are constant across outcomes).</p>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"flextable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<style></style><div class="tabwid"><style>.cl-b50418b4{}.cl-b4fcbb3c{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-b4ffbc24{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-b4ffbc2e{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-b4ffbc38{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-b4ffecd0{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffecda{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffece4{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffece5{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffecee{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffecf8{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffecf9{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffecfa{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed02{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed0c{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed0d{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed16{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed17{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed18{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed20{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed21{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed34{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed35{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed3e{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed3f{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed48{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed49{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed4a{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed5c{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed5d{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed5e{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed66{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed70{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed71{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-b4ffed7a{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="table cl-b50418b4"><thead><tr style="overflow-wrap:break-word;"><th class="cl-b4ffecd0"><p class="cl-b4ffbc24"><span class="cl-b4fcbb3c">Variable</span></p></th><th class="cl-b4ffecda"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">M (Female)</span></p></th><th class="cl-b4ffece4"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">M (Male)</span></p></th><th class="cl-b4ffece5"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">Δ (Male - Female)</span></p></th><th colspan="2" class="cl-b4ffecee"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">95% CI</span></p></th><th class="cl-b4ffecf8"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">p</span></p></th><th class="cl-b4ffecf9"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">R²</span></p></th><th class="cl-b4ffecfa"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">n</span></p></th></tr><tr style="overflow-wrap:break-word;"><th colspan="4" class="cl-b4ffed02"><p class="cl-b4ffbc24"><span class="cl-b4fcbb3c"></span></p></th><th class="cl-b4ffed17"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">LL</span></p></th><th class="cl-b4ffed17"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">UL</span></p></th><th colspan="3" class="cl-b4ffed18"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c"></span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-b4ffed34"><p class="cl-b4ffbc24"><span class="cl-b4fcbb3c">WHO-5 wellbeing index (0-100)</span></p></td><td class="cl-b4ffed35"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">67.16</span></p></td><td class="cl-b4ffed3e"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">71.05</span></p></td><td class="cl-b4ffed3f"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">3.89</span></p></td><td class="cl-b4ffed48"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">2.13</span></p></td><td class="cl-b4ffed48"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">5.64</span></p></td><td class="cl-b4ffed49"><p class="cl-b4ffbc38"><span class="cl-b4fcbb3c">&lt;.001</span></p></td><td class="cl-b4ffed48"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">0.02</span></p></td><td class="cl-b4ffed4a"><p class="cl-b4ffbc38"><span class="cl-b4fcbb3c">1200</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-b4ffed5c"><p class="cl-b4ffbc24"><span class="cl-b4fcbb3c">Body mass index</span></p></td><td class="cl-b4ffed5d"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">25.69</span></p></td><td class="cl-b4ffed5e"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">26.20</span></p></td><td class="cl-b4ffed66"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">0.51</span></p></td><td class="cl-b4ffed70"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">0.09</span></p></td><td class="cl-b4ffed70"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">0.93</span></p></td><td class="cl-b4ffed71"><p class="cl-b4ffbc38"><span class="cl-b4fcbb3c">.018</span></p></td><td class="cl-b4ffed70"><p class="cl-b4ffbc2e"><span class="cl-b4fcbb3c">0.00</span></p></td><td class="cl-b4ffed7a"><p class="cl-b4ffbc38"><span class="cl-b4fcbb3c">1188</span></p></td></tr></tbody></table></div><span class="r-in"><span><span class="co"># }</span></span></span>
+<style></style><div class="tabwid"><style>.cl-21910198{}.cl-21888e46{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-218bb36e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-218bb382{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-218bb383{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-218be28a{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be294{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be29e{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be29f{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2a8{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2a9{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2aa{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2b2{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2b3{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2bc{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2bd{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2c6{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2c7{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2c8{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2d0{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2d1{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2d2{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2da{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2db{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2e4{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2e5{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2ee{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2ef{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2f8{width:2.684in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2f9{width:1.146in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2fa{width:0.947in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be2fb{width:1.632in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be302{width:0.625in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be30c{width:0.753in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-218be30d{width:0.674in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="table cl-21910198"><thead><tr style="overflow-wrap:break-word;"><th class="cl-218be28a"><p class="cl-218bb36e"><span class="cl-21888e46">Variable</span></p></th><th class="cl-218be294"><p class="cl-218bb382"><span class="cl-21888e46">M (Female)</span></p></th><th class="cl-218be29e"><p class="cl-218bb382"><span class="cl-21888e46">M (Male)</span></p></th><th class="cl-218be29f"><p class="cl-218bb382"><span class="cl-21888e46">Δ (Male - Female)</span></p></th><th colspan="2" class="cl-218be2a8"><p class="cl-218bb382"><span class="cl-21888e46">95% CI</span></p></th><th class="cl-218be2a9"><p class="cl-218bb382"><span class="cl-21888e46">p</span></p></th><th class="cl-218be2aa"><p class="cl-218bb382"><span class="cl-21888e46">R²</span></p></th><th class="cl-218be2b2"><p class="cl-218bb382"><span class="cl-21888e46">n</span></p></th></tr><tr style="overflow-wrap:break-word;"><th colspan="4" class="cl-218be2b3"><p class="cl-218bb36e"><span class="cl-21888e46"></span></p></th><th class="cl-218be2c7"><p class="cl-218bb382"><span class="cl-21888e46">LL</span></p></th><th class="cl-218be2c7"><p class="cl-218bb382"><span class="cl-21888e46">UL</span></p></th><th colspan="3" class="cl-218be2c8"><p class="cl-218bb382"><span class="cl-21888e46"></span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-218be2d2"><p class="cl-218bb36e"><span class="cl-21888e46">WHO-5 wellbeing index (0-100)</span></p></td><td class="cl-218be2da"><p class="cl-218bb382"><span class="cl-21888e46">67.16</span></p></td><td class="cl-218be2db"><p class="cl-218bb382"><span class="cl-21888e46">71.05</span></p></td><td class="cl-218be2e4"><p class="cl-218bb382"><span class="cl-21888e46">3.89</span></p></td><td class="cl-218be2e5"><p class="cl-218bb382"><span class="cl-21888e46">2.13</span></p></td><td class="cl-218be2e5"><p class="cl-218bb382"><span class="cl-21888e46">5.64</span></p></td><td class="cl-218be2ee"><p class="cl-218bb383"><span class="cl-21888e46">&lt;.001</span></p></td><td class="cl-218be2e5"><p class="cl-218bb382"><span class="cl-21888e46">0.02</span></p></td><td class="cl-218be2ef"><p class="cl-218bb383"><span class="cl-21888e46">1200</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-218be2f8"><p class="cl-218bb36e"><span class="cl-21888e46">Body mass index</span></p></td><td class="cl-218be2f9"><p class="cl-218bb382"><span class="cl-21888e46">25.69</span></p></td><td class="cl-218be2fa"><p class="cl-218bb382"><span class="cl-21888e46">26.20</span></p></td><td class="cl-218be2fb"><p class="cl-218bb382"><span class="cl-21888e46">0.51</span></p></td><td class="cl-218be302"><p class="cl-218bb382"><span class="cl-21888e46">0.09</span></p></td><td class="cl-218be302"><p class="cl-218bb382"><span class="cl-21888e46">0.93</span></p></td><td class="cl-218be30c"><p class="cl-218bb383"><span class="cl-21888e46">.018</span></p></td><td class="cl-218be302"><p class="cl-218bb382"><span class="cl-21888e46">0.00</span></p></td><td class="cl-218be30d"><p class="cl-218bb383"><span class="cl-21888e46">1188</span></p></td></tr></tbody></table></div><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Excel: write to a temporary file.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tmp_xlsx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
+<span class="r-in"><span>    excel_path <span class="op">=</span> <span class="va">tmp_xlsx</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">tmp_xlsx</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmp_xlsx</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Word: write to a temporary .docx.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"officer"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tmp_docx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"word"</span>,</span></span>
+<span class="r-in"><span>    word_path <span class="op">=</span> <span class="va">tmp_docx</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">tmp_docx</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmp_docx</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
