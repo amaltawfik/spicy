@@ -55,7 +55,7 @@ the displayed contrast (R's default treatment-contrast convention).
 \item \strong{character}: coerced to factor with \code{factor(by)}, which orders the
 levels alphabetically. To control the reference level, supply \code{by}
 as an explicit factor with the desired level ordering (e.g. via
-\code{forcats::fct_relevel()} or \code{factor(..., levels = ...)}).
+\code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or \code{factor(..., levels = ...)}).
 \item \strong{logical}: coerced to factor with levels \code{"FALSE"}, \code{"TRUE"} (in
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
 so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
@@ -122,7 +122,7 @@ levels. The reference level is the \strong{first level of the factor}
 (R's default treatment-contrast convention,
 \code{getOption("contrasts")[1]}). To change which level acts as the
 reference, re-level \code{by} upstream (for example with
-\code{forcats::fct_relevel()} or \code{stats::relevel()}).
+\code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or \code{\link[stats:relevel]{stats::relevel()}}).
 \item \code{"none"}: suppress the contrast column for categorical predictors.
 Level-specific means are still displayed.
 }}
@@ -371,7 +371,7 @@ using \verb{omega² = ncp / (ncp + N)} and \verb{f² = ncp / N} respectively, wi
 For the weighted case, the CI uses raw (unweighted) group counts and
 \code{df.residual(fit) = n - p}, consistent with the WLS reporting convention
 (DuMouchel and Duncan 1983). For propensity-score balance assessment or
-complex-survey designs, dedicated packages (\code{cobalt::bal.tab()} for the
+complex-survey designs, dedicated packages (\code{\link[cobalt:bal.tab]{cobalt::bal.tab()}} for the
 Austin and Stuart 2015 formulation; \code{survey} for design-based effect
 sizes) are more appropriate.
 }
@@ -382,13 +382,13 @@ Wald test statistics use a heteroskedasticity-consistent sandwich
 estimator computed in-package (no extra dependency). The implementation
 follows the formulas reviewed in Zeileis (2004), the same set used by
 the canonical R implementation in the \code{sandwich} package
-(\code{sandwich::vcovHC}). For a brief guide:
+(\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}). For a brief guide:
 \itemize{
 \item \code{"HC0"} is the original White (1980) form; \code{"HC1"} adds the
 \code{n / (n - p)} correction (MacKinnon and White 1985), Stata's
 \verb{, robust} default.
 \item \code{"HC2"} and \code{"HC3"} use leverage-based residual rescalings
-(MacKinnon and White 1985); \code{"HC3"} is the \code{sandwich::vcovHC}
+(MacKinnon and White 1985); \code{"HC3"} is the \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}
 default for small to moderate samples (Long and Ervin 2000).
 \item \code{"HC4"} adapts the leverage exponent for influential
 observations (Cribari-Neto 2004); \code{"HC4m"} is a modified-exponent
@@ -417,7 +417,7 @@ group counts and the residual degrees of freedom of the WLS fit
 article tables, but is \strong{not} a substitute for a full complex-survey
 design (see e.g. the \code{survey} package), nor for propensity-score
 balance assessment under the Austin and Stuart (2015) convention
-(see e.g. \code{cobalt::bal.tab()}).
+(see e.g. \code{\link[cobalt:bal.tab]{cobalt::bal.tab()}}).
 
 The \code{n} column always reports the unweighted analytic sample size for
 each outcome. When \code{show_weighted_n = TRUE}, an additional
@@ -732,12 +732,13 @@ Econometric computing with HC and HAC covariance matrix estimators.
 \seealso{
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_categorical]{table_categorical()}}.
 For broader workflows on the same statistical building blocks:
-\code{sandwich::vcovHC()} (the canonical R implementation of the \verb{HC*}
-sandwich estimators); \code{effectsize::cohens_d()},
-\code{effectsize::hedges_g()}, and \code{effectsize::omega_squared()} (alternative
-effect-size computations and CIs); \code{cobalt::bal.tab()} for
-propensity-score covariate balance with weighted standardized mean
-differences (Austin and Stuart 2015); the \code{survey} package for
+\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}} (the canonical R implementation of the \verb{HC*}
+sandwich estimators); \code{\link[effectsize:cohens_d]{effectsize::cohens_d()}},
+\code{\link[effectsize:cohens_d]{effectsize::hedges_g()}}, and \code{\link[effectsize:eta_squared]{effectsize::omega_squared()}}
+(alternative effect-size computations and CIs); \code{\link[cobalt:bal.tab]{cobalt::bal.tab()}}
+for propensity-score covariate balance with weighted standardized
+mean differences (Austin and Stuart 2015); the
+\href{https://CRAN.R-project.org/package=survey}{\code{survey}} package for
 design-based inference on complex-survey samples.
 
 Other spicy tables: 

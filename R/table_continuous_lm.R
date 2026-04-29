@@ -31,7 +31,7 @@
 #'   - **character**: coerced to factor with `factor(by)`, which orders the
 #'     levels alphabetically. To control the reference level, supply `by`
 #'     as an explicit factor with the desired level ordering (e.g. via
-#'     `forcats::fct_relevel()` or `factor(..., levels = ...)`).
+#'     [forcats::fct_relevel()] or `factor(..., levels = ...)`).
 #'   - **logical**: coerced to factor with levels `"FALSE"`, `"TRUE"` (in
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
 #'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
@@ -87,7 +87,7 @@
 #'     (R's default treatment-contrast convention,
 #'     `getOption("contrasts")[1]`). To change which level acts as the
 #'     reference, re-level `by` upstream (for example with
-#'     `forcats::fct_relevel()` or `stats::relevel()`).
+#'     [forcats::fct_relevel()] or [stats::relevel()]).
 #'   - `"none"`: suppress the contrast column for categorical predictors.
 #'     Level-specific means are still displayed.
 #' @param statistic Logical. If `TRUE`, includes a test-statistic column in the
@@ -294,7 +294,7 @@
 #' For the weighted case, the CI uses raw (unweighted) group counts and
 #' `df.residual(fit) = n - p`, consistent with the WLS reporting convention
 #' (DuMouchel and Duncan 1983). For propensity-score balance assessment or
-#' complex-survey designs, dedicated packages (`cobalt::bal.tab()` for the
+#' complex-survey designs, dedicated packages ([cobalt::bal.tab()] for the
 #' Austin and Stuart 2015 formulation; `survey` for design-based effect
 #' sizes) are more appropriate.
 #'
@@ -305,13 +305,13 @@
 #' estimator computed in-package (no extra dependency). The implementation
 #' follows the formulas reviewed in Zeileis (2004), the same set used by
 #' the canonical R implementation in the `sandwich` package
-#' (`sandwich::vcovHC`). For a brief guide:
+#' ([sandwich::vcovHC()]). For a brief guide:
 #' \itemize{
 #'   \item `"HC0"` is the original White (1980) form; `"HC1"` adds the
 #'     `n / (n - p)` correction (MacKinnon and White 1985), Stata's
 #'     `, robust` default.
 #'   \item `"HC2"` and `"HC3"` use leverage-based residual rescalings
-#'     (MacKinnon and White 1985); `"HC3"` is the `sandwich::vcovHC`
+#'     (MacKinnon and White 1985); `"HC3"` is the [sandwich::vcovHC()]
 #'     default for small to moderate samples (Long and Ervin 2000).
 #'   \item `"HC4"` adapts the leverage exponent for influential
 #'     observations (Cribari-Neto 2004); `"HC4m"` is a modified-exponent
@@ -340,7 +340,7 @@
 #' article tables, but is **not** a substitute for a full complex-survey
 #' design (see e.g. the `survey` package), nor for propensity-score
 #' balance assessment under the Austin and Stuart (2015) convention
-#' (see e.g. `cobalt::bal.tab()`).
+#' (see e.g. [cobalt::bal.tab()]).
 #'
 #' The `n` column always reports the unweighted analytic sample size for
 #' each outcome. When `show_weighted_n = TRUE`, an additional
@@ -476,12 +476,13 @@
 #' @family spicy tables
 #' @seealso [table_continuous()], [table_categorical()].
 #'   For broader workflows on the same statistical building blocks:
-#'   `sandwich::vcovHC()` (the canonical R implementation of the `HC*`
-#'   sandwich estimators); `effectsize::cohens_d()`,
-#'   `effectsize::hedges_g()`, and `effectsize::omega_squared()` (alternative
-#'   effect-size computations and CIs); `cobalt::bal.tab()` for
-#'   propensity-score covariate balance with weighted standardized mean
-#'   differences (Austin and Stuart 2015); the `survey` package for
+#'   [sandwich::vcovHC()] (the canonical R implementation of the `HC*`
+#'   sandwich estimators); [effectsize::cohens_d()],
+#'   [effectsize::hedges_g()], and [effectsize::omega_squared()]
+#'   (alternative effect-size computations and CIs); [cobalt::bal.tab()]
+#'   for propensity-score covariate balance with weighted standardized
+#'   mean differences (Austin and Stuart 2015); the
+#'   [`survey`](https://CRAN.R-project.org/package=survey) package for
 #'   design-based inference on complex-survey samples.
 #'
 #' @examples
