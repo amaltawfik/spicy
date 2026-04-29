@@ -41,6 +41,29 @@
 ### Improvements
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  gains four S3 methods for ecosystem integration:
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+  [`tibble::as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
+  return a plain `data.frame` / `tbl_df` (the long-format underlying
+  data, with `"by_var"` preserved as a lightweight provenance marker but
+  rendering-only attributes dropped);
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  returns one row per estimated parameter (`emmean` per level,
+  `difference` for binary contrasts, `slope` for numeric predictors)
+  with the standard broom columns (`estimate`, `std.error`, `conf.low`,
+  `conf.high`, `statistic`, `p.value`); and
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  returns one row per outcome with model-level statistics (`r.squared`,
+  `adj.r.squared`, `statistic`, `df`, `df.residual`, `p.value`, `nobs`,
+  `weighted_n`, `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`,
+  `test_type`). Together they make
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  output directly consumable by `gtsummary`, `modelsummary`,
+  `parameters`, and any other tidyverse-stats pipeline. `print(x)` and
+  the existing `output = ...` formats are unaffected. `broom` is added
+  to `Suggests` for the tidy / glance methods.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   gains a `p_digits` argument controlling the number of decimal places
   used to render *p*-values in the `p` column (default `3`, the APA
   standard). Both the displayed precision and the small-*p* threshold
