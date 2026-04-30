@@ -8,46 +8,85 @@ label_from_names(df, sep = ". ")
 }
 \arguments{
 \item{df}{A \code{data.frame} or tibble with column names of the form
-\verb{"name<sep>label"} (e.g. "name. label"). (by default from LimeSurvey).}
+\verb{"name<sep>label"} (e.g. \code{"code. question text"}).}
 
-\item{sep}{Character string used as separator between name and label.
-Default is \code{". "} (LimeSurvey's default), but any literal string can be used.}
+\item{sep}{Character string used as separator between name and
+label. Default \code{". "} (LimeSurvey's default); any literal string
+can be used. Matched as a fixed string, so regex metacharacters
+such as \code{.} or \code{|} carry no special meaning.}
 }
 \value{
-A base \code{tibble} with column names equal to the \emph{names} (before \code{sep})
-and \code{var_label} attributes equal to the \emph{labels} (after \code{sep}).
+An object of the \strong{same class as \code{df}} -- a base
+\code{data.frame} if \code{df} was a base \code{data.frame}, a \code{tbl_df} if \code{df}
+was a tibble. The output has column names equal to the trimmed
+names (before \code{sep}) and, for every column whose original name
+contained \code{sep}, a \code{"label"} attribute equal to the label (after
+\code{sep}). Columns whose name does not contain \code{sep} are passed
+through unchanged with no label attached.
 }
 \description{
-Splits each column name at the \strong{first} occurrence of \code{sep}, renames
-the column to the part before \code{sep} (the \emph{name}), and assigns the part
-after \code{sep} as a \code{\link[labelled:var_label]{labelled::var_label()}}. This works even if the label
-itself contains the separator.
+Splits each column name at the \strong{first} occurrence of \code{sep},
+renames the column to the part before \code{sep} (the \emph{name}, trimmed
+of surrounding whitespace), and assigns the part after \code{sep} as a
+\code{"label"} attribute on the column. The label attribute follows the
+\href{https://haven.tidyverse.org/}{haven} convention also used by
+\code{\link[labelled:var_label]{labelled::var_label()}}, so labelled-aware tooling
+(\code{labelled}, \code{haven}, \code{varlist()}, \code{code_book()}, ...) reads it
+transparently. Splitting at the first \code{sep} means the label itself
+may contain the separator.
 }
 \details{
-This function is especially useful for \strong{LimeSurvey CSV exports} when using
-\emph{Export results} → \emph{Export format: CSV} → \emph{Headings: Question code & question text},
-where column names look like \code{"code. question text"}. In this case the
-default separator is \code{". "}.
+This is especially useful for \strong{LimeSurvey CSV exports} when
+using \emph{Export results -> Export format: CSV -> Headings: Question
+code & question text}, where column names look like
+\code{"code. question text"}. The default separator is \code{". "} to match
+that export.
+
+LimeSurvey question codes (the part \emph{before} \code{sep}) are restricted
+to alphanumeric characters, must start with a letter, and cannot
+contain spaces or special characters. The column name therefore
+needs to encode both the code \emph{and} the question text, separated
+by a literal string -- there is no way to recover a label from a
+code alone. If your export uses \emph{Headings: Question code} (codes
+only), re-export with \emph{Headings: Question code & question text}
+(which inserts the default \code{". "} separator) before calling this
+function.
 }
+\section{Errors}{
+
+The function raises an actionable error -- rather than letting the
+downstream constructor raise a cryptic one -- when the split
+produces:
+\itemize{
+\item duplicate column names (two original names share the same
+prefix before \code{sep}); or
+\item an empty column name (the original name starts with \code{sep}
+and has nothing before it).
+}
+}
+
 \examples{
-# Example with LimeSurvey-style column names
+# LimeSurvey-style column names (default sep = ". ").
 df <- data.frame(
   "age. Age of respondent" = c(25, 30),
   "score. Total score. Manually computed." = c(12, 14),
   check.names = FALSE
 )
-
-# sep = ". " by default (LimeSurvey)
 out <- label_from_names(df)
-labelled::var_label(out)
+attr(out$age, "label")
+attr(out$score, "label")
 
-# Example with a custom separator ("|")
+# Custom separator.
 df2 <- data.frame(
   "id|Identifier" = 1:3,
   "score|Total score" = c(10, 20, 30),
   check.names = FALSE
 )
 out2 <- label_from_names(df2, sep = "|")
-labelled::var_label(out2)
 
+}
+\seealso{
+\code{\link[labelled:var_label]{labelled::var_label()}} reads the \code{"label"} attribute set
+by this function; \code{\link[=varlist]{varlist()}} and \code{\link[=code_book]{code_book()}} surface it in
+their inspection outputs.
 }
