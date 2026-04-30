@@ -843,57 +843,6 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188 
 
-# Plain wide data.frame (one row per outcome, numeric columns).
-table_continuous_lm(
-  sochealth,
-  select = c(wellbeing_score, bmi),
-  by = sex,
-  output = "data.frame"
-)
-#>                                      Variable M (Female) M (Male)
-#> wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879
-#> bmi                           Body mass index   25.68506 26.19685
-#>                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²
-#> wellbeing_score         3.8868576 2.12952733 5.6441879 1.548898e-05 0.015475137
-#> bmi                     0.5117882 0.08879857 0.9347778 1.776254e-02 0.004728908
-#>                    n
-#> wellbeing_score 1200
-#> bmi             1188
-
-# Long, raw data.frame with one block per outcome
-# (useful for downstream programmatic processing).
-table_continuous_lm(
-  sochealth,
-  select = c(wellbeing_score, bmi),
-  by = sex,
-  output = "long"
-)
-#>          variable                         label predictor_type predictor_label
-#> 1 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
-#> 2 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
-#> 3             bmi               Body mass index    categorical             Sex
-#> 4             bmi               Body mass index    categorical             Sex
-#>    level reference estimate_type   emmean emmean_se emmean_ci_lower
-#> 1 Female    Female          <NA> 67.16194 0.6227155        65.94020
-#> 2   Male    Female    difference 71.04879 0.6438305        69.78563
-#> 3 Female    Female          <NA> 25.68506 0.1495988        25.39156
-#> 4   Male    Female    difference 26.19685 0.1552460        25.89227
-#>   emmean_ci_upper  estimate estimate_se estimate_ci_lower estimate_ci_upper
-#> 1        68.38367        NA          NA                NA                NA
-#> 2        72.31195 3.8868576   0.8957077        2.12952733         5.6441879
-#> 3        25.97857        NA          NA                NA                NA
-#> 4        26.50144 0.5117882   0.2155948        0.08879857         0.9347778
-#>   test_type statistic df1  df2      p.value es_type es_value es_ci_lower
-#> 1         F 18.830621   1 1198 1.548898e-05    <NA>       NA          NA
-#> 2         t  4.339426   1 1198 1.548898e-05    <NA>       NA          NA
-#> 3         F  5.635133   1 1186 1.776254e-02    <NA>       NA          NA
-#> 4         t  2.373843   1 1186 1.776254e-02    <NA>       NA          NA
-#>   es_ci_upper          r2      adj_r2    n weighted_n
-#> 1          NA 0.015475137 0.014653330 1200         NA
-#> 2          NA          NA          NA 1200         NA
-#> 3          NA 0.004728908 0.003889725 1188         NA
-#> 4          NA          NA          NA 1188         NA
-
 # --- Effect sizes -------------------------------------------------------
 
 # Cohen's d (binary by required).
@@ -1114,42 +1063,115 @@ table_continuous_lm(
 #>  Satisfaction with relationships (1-5)      │   0.16     .570  0.00  1192 
 #>  Satisfaction with standard of living (1-5) │   0.18     .453  0.00  1192 
 
-# \donttest{
-# --- Rendered outputs (require Suggests packages) -----------------------
+# --- Output formats -----------------------------------------------------
 
+# The rendered outputs below all wrap the same call:
+#   table_continuous_lm(sochealth,
+#                       select = c(wellbeing_score, bmi),
+#                       by = sex)
+# only `output` changes. Assign to a variable to avoid the
+# console-friendly text fallback that some engines fall back to
+# when printed directly in `?` help.
+
+# Wide data.frame (one row per outcome).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  output = "data.frame"
+)
+#>                                      Variable M (Female) M (Male)
+#> wellbeing_score WHO-5 wellbeing index (0-100)   67.16194 71.04879
+#> bmi                           Body mass index   25.68506 26.19685
+#>                 Δ (Male - Female)  95% CI LL 95% CI UL            p          R²
+#> wellbeing_score         3.8868576 2.12952733 5.6441879 1.548898e-05 0.015475137
+#> bmi                     0.5117882 0.08879857 0.9347778 1.776254e-02 0.004728908
+#>                    n
+#> wellbeing_score 1200
+#> bmi             1188
+
+# Raw long data.frame (one block per outcome).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  output = "long"
+)
+#>          variable                         label predictor_type predictor_label
+#> 1 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
+#> 2 wellbeing_score WHO-5 wellbeing index (0-100)    categorical             Sex
+#> 3             bmi               Body mass index    categorical             Sex
+#> 4             bmi               Body mass index    categorical             Sex
+#>    level reference estimate_type   emmean emmean_se emmean_ci_lower
+#> 1 Female    Female          <NA> 67.16194 0.6227155        65.94020
+#> 2   Male    Female    difference 71.04879 0.6438305        69.78563
+#> 3 Female    Female          <NA> 25.68506 0.1495988        25.39156
+#> 4   Male    Female    difference 26.19685 0.1552460        25.89227
+#>   emmean_ci_upper  estimate estimate_se estimate_ci_lower estimate_ci_upper
+#> 1        68.38367        NA          NA                NA                NA
+#> 2        72.31195 3.8868576   0.8957077        2.12952733         5.6441879
+#> 3        25.97857        NA          NA                NA                NA
+#> 4        26.50144 0.5117882   0.2155948        0.08879857         0.9347778
+#>   test_type statistic df1  df2      p.value es_type es_value es_ci_lower
+#> 1         F 18.830621   1 1198 1.548898e-05    <NA>       NA          NA
+#> 2         t  4.339426   1 1198 1.548898e-05    <NA>       NA          NA
+#> 3         F  5.635133   1 1186 1.776254e-02    <NA>       NA          NA
+#> 4         t  2.373843   1 1186 1.776254e-02    <NA>       NA          NA
+#>   es_ci_upper          r2      adj_r2    n weighted_n
+#> 1          NA 0.015475137 0.014653330 1200         NA
+#> 2          NA          NA          NA 1200         NA
+#> 3          NA 0.004728908 0.003889725 1188         NA
+#> 4          NA          NA          NA 1188         NA
+
+# \donttest{
+# Rendered HTML / docx objects -- best viewed inside a
+# Quarto / R Markdown document or a pkgdown article.
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_continuous_lm(
-    sochealth,
-    select = c(wellbeing_score, bmi),
-    by = sex,
-    effect_size = "g",
+  tt <- table_continuous_lm(
+    sochealth, select = c(wellbeing_score, bmi), by = sex,
     output = "tinytable"
   )
 }
-#> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+
-#> | Variable                      | M (Female) | M (Male) | Δ (Male - Female) | 95% CI      | p     | R²   | g    | n    |
-#> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+
-#> |                               |            |          |                   | LL   | UL   |       |      |      |      |
-#> +===============================+============+==========+===================+======+======+=======+======+======+======+
-#> | WHO-5 wellbeing index (0-100) | 67.16      | 71.05    | 3.89              | 2.13 | 5.64 | <.001 | 0.02 | 0.25 | 1200 |
-#> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+
-#> | Body mass index               | 25.69      | 26.20    | 0.51              | 0.09 | 0.93 | .018  | 0.00 | 0.14 | 1188 |
-#> +-------------------------------+------------+----------+-------------------+------+------+-------+------+------+------+ 
-
 if (requireNamespace("gt", quietly = TRUE)) {
-  table_continuous_lm(
-    sochealth,
-    select = c(wellbeing_score, bmi),
-    by = sex,
+  tbl <- table_continuous_lm(
+    sochealth, select = c(wellbeing_score, bmi), by = sex,
     output = "gt"
   )
 }
+if (requireNamespace("flextable", quietly = TRUE)) {
+  ft <- table_continuous_lm(
+    sochealth, select = c(wellbeing_score, bmi), by = sex,
+    output = "flextable"
+  )
+}
 
+# Excel and Word: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp <- tempfile(fileext = ".xlsx")
+  table_continuous_lm(
+    sochealth, select = c(wellbeing_score, bmi), by = sex,
+    output = "excel", excel_path = tmp
+  )
+  unlink(tmp)
+}
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp <- tempfile(fileext = ".docx")
+  table_continuous_lm(
+    sochealth, select = c(wellbeing_score, bmi), by = sex,
+    output = "word", word_path = tmp
+  )
+  unlink(tmp)
+}
+# }
 
-  
-
-
-
-        Variable
-      
+if (FALSE) { # \dontrun{
+# Clipboard: writes to the system clipboard.
+table_continuous_lm(
+  sochealth, select = c(wellbeing_score, bmi), by = sex,
+  output = "clipboard"
+)
+} # }
 ```

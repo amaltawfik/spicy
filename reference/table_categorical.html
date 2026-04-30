@@ -392,52 +392,11 @@ one-way frequency tables.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Long numeric output</span></span></span>
-<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group   n  pct     chi2 df            p</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 179 69.6 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 415 78.7 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 332 84.9 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 926 78.8 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  78 30.4 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 112 21.3 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  59 15.1 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 249 21.2 21.62672  2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 177 67.8 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 310 57.5 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 163 40.8 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 650 54.2 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  84 32.2 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 229 42.5 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 237 59.2 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 550 45.8 51.02146  2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  0.2061986</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># --- Basic usage ---------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># ASCII console output (default)</span></span></span>
+<span class="r-in"><span><span class="co"># Default: ASCII console table grouped by sex.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
@@ -463,9 +422,9 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>            </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># One-way frequency-style table</span></span></span>
+<span class="r-in"><span><span class="co"># One-way frequency-style table (no `by`).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table</span></span>
@@ -480,117 +439,215 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No                   <span style="color: #9E9E9E;">│</span>      650       54.2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                  <span style="color: #9E9E9E;">│</span>      550       45.8 </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Wide numeric data.frame</span></span></span>
+<span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    smoking           <span class="op">=</span> <span class="st">"Current smoker"</span>,</span></span>
+<span class="r-in"><span>    physical_activity <span class="op">=</span> <span class="st">"Physical activity"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by education</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker    <span style="color: #9E9E9E;">│</span>                                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>               179               69.6                415 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>                78               30.4                112 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Physical activity <span style="color: #9E9E9E;">│</span>                                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>               177               67.8                310 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>                84               32.2                229 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker    <span style="color: #9E9E9E;">│</span>                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>              78.7         332        84.9      926 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>              21.3          59        15.1      249 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Physical activity <span style="color: #9E9E9E;">│</span>                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>              57.5         163        40.8      650 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>              42.5         237        59.2      550 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Total %      p  Cramer's V </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker    <span style="color: #9E9E9E;">│</span>          &lt;.001         .14 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>    78.8                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>    21.2                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Physical activity <span style="color: #9E9E9E;">│</span>          &lt;.001         .21 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>    54.2                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>    45.8                    </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Survey weights with rescaling.</span></span></span>
+<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
+<span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"weight"</span>,</span></span>
+<span class="r-in"><span>  rescale <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by education</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>               176               69.0                419 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>                79               31.0                115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>               174               67.2                315 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>                85               32.8                231 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>              78.5         325        84.4    920.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>              21.5          60        15.6    254.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>              57.7         166        41.9    654.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>              42.3         229        58.1    545.2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Total %      p  Cramer's V </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001         .13 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>    78.4                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>    21.6                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001         .19 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>    54.6                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>    45.4                    </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Confidence interval for the association measure.</span></span></span>
+<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="va">smoking</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
+<span class="r-in"><span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by education</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking  <span style="color: #9E9E9E;">│</span>                                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No     <span style="color: #9E9E9E;">│</span>               179               69.6                415 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes    <span style="color: #9E9E9E;">│</span>                78               30.4                112 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total %      p </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking  <span style="color: #9E9E9E;">│</span>                                                              &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No     <span style="color: #9E9E9E;">│</span>              78.7         332        84.9      926     78.8        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes    <span style="color: #9E9E9E;">│</span>              21.3          59        15.1      249     21.2        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Cramer's V  CI lower  CI upper </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking  <span style="color: #9E9E9E;">│</span>        .14       .08       .19 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No     <span style="color: #9E9E9E;">│</span>                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes    <span style="color: #9E9E9E;">│</span>                                </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># The rendered outputs below all wrap the same call:</span></span></span>
+<span class="r-in"><span><span class="co">#   table_categorical(sochealth,</span></span></span>
+<span class="r-in"><span><span class="co">#                     select = c(smoking, physical_activity),</span></span></span>
+<span class="r-in"><span><span class="co">#                     by = sex)</span></span></span>
+<span class="r-in"><span><span class="co"># only `output` changes. Assign to a variable to avoid the</span></span></span>
+<span class="r-in"><span><span class="co"># console-friendly text fallback that some engines fall back to</span></span></span>
+<span class="r-in"><span><span class="co"># when printed directly in `?` help.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Wide data.frame (one row per modality).</span></span></span>
+<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            Variable Level Lower secondary n Lower secondary % Upper secondary n</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    Current smoker    No               179              69.6               415</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    Current smoker   Yes                78              30.4               112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Physical activity    No               177              67.8               310</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Physical activity   Yes                84              32.2               229</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1              78.7        332       84.9     926    78.8 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2              21.3         59       15.1     249    21.2 2.012877e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3              57.5        163       40.8     650    54.2 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4              42.5        237       59.2     550    45.8 8.333584e-12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.1356677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.2061986</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.2061986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            Variable Level Female n Female % Male n Male % Total n Total %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           smoking    No      475     78.4    451   79.3     926    78.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           smoking   Yes      131     21.6    118   20.7     249    21.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 physical_activity    No      334     53.9    316   54.5     650    54.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 physical_activity   Yes      286     46.1    264   45.5     550    45.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           p  Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.8316763 0.006135851</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Weighted example</span></span></span>
+<span class="r-in"><span><span class="co"># Long data.frame (one row per (modality x group)).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  weights <span class="op">=</span> <span class="st">"weight"</span>,</span></span>
-<span class="r-in"><span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level           group        n  pct     chi2 df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Current smoker    No Lower secondary 176.0000 69.0 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Current smoker    No Upper secondary 419.0000 78.5 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     Current smoker    No        Tertiary 325.0000 84.4 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     Current smoker    No           Total 920.8641 78.4 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     Current smoker   Yes Lower secondary  79.0000 31.0 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Current smoker   Yes Upper secondary 115.0000 21.5 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     Current smoker   Yes        Tertiary  60.0000 15.6 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     Current smoker   Yes           Total 254.1359 21.6 21.35444  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Physical activity    No Lower secondary 174.0000 67.2 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Physical activity    No Upper secondary 315.0000 57.7 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Physical activity    No        Tertiary 166.0000 41.9 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Physical activity    No           Total 654.7619 54.6 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Physical activity   Yes Lower secondary  85.0000 32.8 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Physical activity   Yes Upper secondary 231.0000 42.3 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Physical activity   Yes        Tertiary 229.0000 58.1 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Physical activity   Yes           Total 545.2381 45.4 44.41217  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               p Cramer's V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  2.306438e-05  0.1348110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 2.269974e-10  0.1923802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 2.269974e-10  0.1923802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level  group   n  pct      chi2 df         p  Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            smoking    No Female 475 78.4 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            smoking    No   Male 451 79.3 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            smoking    No  Total 926 78.8 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4            smoking   Yes Female 131 21.6 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5            smoking   Yes   Male 118 20.7 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6            smoking   Yes  Total 249 21.2 0.1357733  1 0.7125196 0.010749501</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  physical_activity    No Female 334 53.9 0.0451784  1 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  physical_activity    No   Male 316 54.5 0.0451784  1 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  physical_activity    No  Total 650 54.2 0.0451784  1 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 physical_activity   Yes Female 286 46.1 0.0451784  1 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 physical_activity   Yes   Male 264 45.5 0.0451784  1 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 physical_activity   Yes  Total 550 45.8 0.0451784  1 0.8316763 0.006135851</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Optional output: tinytable</span></span></span>
+<span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>
+<span class="r-in"><span><span class="co"># Quarto / R Markdown document or a pkgdown article.</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="va">tt</span> <span class="op">&lt;-</span> <span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Variable          | Female     | Male       | Total      | p    | Cramer's V |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                   | n   | %    | n   | %    | n   | %    |      |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +===================+=====+======+=====+======+=====+======+======+============+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Current smoker    |     |      |     |      |     |      | .713 | .01        |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |      No           | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |      Yes          | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Physical activity |     |      |     |      |     |      | .832 | .01        |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |      No           | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |      Yes          | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +-------------------+-----+------+-----+------+-----+------+------+------------+ </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Optional output: Excel</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Current smoker"</span>, <span class="st">"Physical activity"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
-<span class="r-in"><span>    excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"gt"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"gt"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"flextable"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Excel and Word: write to a temporary file.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"excel"</span>, excel_path <span class="op">=</span> <span class="va">tmp</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"officer"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>    output <span class="op">=</span> <span class="st">"word"</span>, word_path <span class="op">=</span> <span class="va">tmp</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Clipboard: writes to the system clipboard.</span></span></span>
+<span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  output <span class="op">=</span> <span class="st">"clipboard"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

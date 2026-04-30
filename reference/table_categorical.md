@@ -359,52 +359,11 @@ Other spicy tables:
 ## Examples
 
 ``` r
-# Long numeric output
-table_categorical(
-  data = sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Current smoker", "Physical activity"),
-  output = "long"
-)
-#>             variable level           group   n  pct     chi2 df            p
-#> 1     Current smoker    No Lower secondary 179 69.6 21.62672  2 2.012877e-05
-#> 2     Current smoker    No Upper secondary 415 78.7 21.62672  2 2.012877e-05
-#> 3     Current smoker    No        Tertiary 332 84.9 21.62672  2 2.012877e-05
-#> 4     Current smoker    No           Total 926 78.8 21.62672  2 2.012877e-05
-#> 5     Current smoker   Yes Lower secondary  78 30.4 21.62672  2 2.012877e-05
-#> 6     Current smoker   Yes Upper secondary 112 21.3 21.62672  2 2.012877e-05
-#> 7     Current smoker   Yes        Tertiary  59 15.1 21.62672  2 2.012877e-05
-#> 8     Current smoker   Yes           Total 249 21.2 21.62672  2 2.012877e-05
-#> 9  Physical activity    No Lower secondary 177 67.8 51.02146  2 8.333584e-12
-#> 10 Physical activity    No Upper secondary 310 57.5 51.02146  2 8.333584e-12
-#> 11 Physical activity    No        Tertiary 163 40.8 51.02146  2 8.333584e-12
-#> 12 Physical activity    No           Total 650 54.2 51.02146  2 8.333584e-12
-#> 13 Physical activity   Yes Lower secondary  84 32.2 51.02146  2 8.333584e-12
-#> 14 Physical activity   Yes Upper secondary 229 42.5 51.02146  2 8.333584e-12
-#> 15 Physical activity   Yes        Tertiary 237 59.2 51.02146  2 8.333584e-12
-#> 16 Physical activity   Yes           Total 550 45.8 51.02146  2 8.333584e-12
-#>    Cramer's V
-#> 1   0.1356677
-#> 2   0.1356677
-#> 3   0.1356677
-#> 4   0.1356677
-#> 5   0.1356677
-#> 6   0.1356677
-#> 7   0.1356677
-#> 8   0.1356677
-#> 9   0.2061986
-#> 10  0.2061986
-#> 11  0.2061986
-#> 12  0.2061986
-#> 13  0.2061986
-#> 14  0.2061986
-#> 15  0.2061986
-#> 16  0.2061986
+# --- Basic usage ---------------------------------------------------------
 
-# ASCII console output (default)
+# Default: ASCII console table grouped by sex.
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
   by = sex
 )
@@ -430,9 +389,9 @@ table_categorical(
 #>    No              │            
 #>    Yes             │            
 
-# One-way frequency-style table
+# One-way frequency-style table (no `by`).
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity)
 )
 #> Categorical table
@@ -447,115 +406,213 @@ table_categorical(
 #>    No                   │      650       54.2 
 #>    Yes                  │      550       45.8 
 
-# Wide numeric data.frame
+# Pretty labels keyed by column name.
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Current smoker", "Physical activity"),
+  labels = c(
+    smoking           = "Current smoker",
+    physical_activity = "Physical activity"
+  )
+)
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  Current smoker    │                                                         
+#>    No              │               179               69.6                415 
+#>    Yes             │                78               30.4                112 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │                                                         
+#>    No              │               177               67.8                310 
+#>    Yes             │                84               32.2                229 
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  Current smoker    │                                                    
+#>    No              │              78.7         332        84.9      926 
+#>    Yes             │              21.3          59        15.1      249 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │                                                    
+#>    No              │              57.5         163        40.8      650 
+#>    Yes             │              42.5         237        59.2      550 
+#> 
+#>  Variable          │ Total %      p  Cramer's V 
+#> ───────────────────┼────────────────────────────
+#>  Current smoker    │          <.001         .14 
+#>    No              │    78.8                    
+#>    Yes             │    21.2                    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │          <.001         .21 
+#>    No              │    54.2                    
+#>    Yes             │    45.8                    
+
+# Survey weights with rescaling.
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  weights = "weight",
+  rescale = TRUE
+)
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │               176               69.0                419 
+#>    Yes             │                79               31.0                115 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                         
+#>    No              │               174               67.2                315 
+#>    Yes             │                85               32.8                231 
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │              78.5         325        84.4    920.9 
+#>    Yes             │              21.5          60        15.6    254.1 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                    
+#>    No              │              57.7         166        41.9    654.8 
+#>    Yes             │              42.3         229        58.1    545.2 
+#> 
+#>  Variable          │ Total %      p  Cramer's V 
+#> ───────────────────┼────────────────────────────
+#>  smoking           │          <.001         .13 
+#>    No              │    78.4                    
+#>    Yes             │    21.6                    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001         .19 
+#>    No              │    54.6                    
+#>    Yes             │    45.4                    
+
+# Confidence interval for the association measure.
+table_categorical(
+  sochealth,
+  select = smoking,
+  by = education,
+  assoc_ci = TRUE
+)
+#> Categorical table by education
+#> 
+#>  Variable │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ──────────┼─────────────────────────────────────────────────────────
+#>  smoking  │                                                         
+#>    No     │               179               69.6                415 
+#>    Yes    │                78               30.4                112 
+#> 
+#>  Variable │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total %      p 
+#> ──────────┼────────────────────────────────────────────────────────────────────
+#>  smoking  │                                                              <.001 
+#>    No     │              78.7         332        84.9      926     78.8        
+#>    Yes    │              21.3          59        15.1      249     21.2        
+#> 
+#>  Variable │ Cramer's V  CI lower  CI upper 
+#> ──────────┼────────────────────────────────
+#>  smoking  │        .14       .08       .19 
+#>    No     │                                
+#>    Yes    │                                
+
+# --- Output formats -----------------------------------------------------
+
+# The rendered outputs below all wrap the same call:
+#   table_categorical(sochealth,
+#                     select = c(smoking, physical_activity),
+#                     by = sex)
+# only `output` changes. Assign to a variable to avoid the
+# console-friendly text fallback that some engines fall back to
+# when printed directly in `?` help.
+
+# Wide data.frame (one row per modality).
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
   output = "data.frame"
 )
-#>            Variable Level Lower secondary n Lower secondary % Upper secondary n
-#> 1    Current smoker    No               179              69.6               415
-#> 2    Current smoker   Yes                78              30.4               112
-#> 3 Physical activity    No               177              67.8               310
-#> 4 Physical activity   Yes                84              32.2               229
-#>   Upper secondary % Tertiary n Tertiary % Total n Total %            p
-#> 1              78.7        332       84.9     926    78.8 2.012877e-05
-#> 2              21.3         59       15.1     249    21.2 2.012877e-05
-#> 3              57.5        163       40.8     650    54.2 8.333584e-12
-#> 4              42.5        237       59.2     550    45.8 8.333584e-12
-#>   Cramer's V
-#> 1  0.1356677
-#> 2  0.1356677
-#> 3  0.2061986
-#> 4  0.2061986
+#>            Variable Level Female n Female % Male n Male % Total n Total %
+#> 1           smoking    No      475     78.4    451   79.3     926    78.8
+#> 2           smoking   Yes      131     21.6    118   20.7     249    21.2
+#> 3 physical_activity    No      334     53.9    316   54.5     650    54.2
+#> 4 physical_activity   Yes      286     46.1    264   45.5     550    45.8
+#>           p  Cramer's V
+#> 1 0.7125196 0.010749501
+#> 2 0.7125196 0.010749501
+#> 3 0.8316763 0.006135851
+#> 4 0.8316763 0.006135851
 
-# Weighted example
+# Long data.frame (one row per (modality x group)).
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Current smoker", "Physical activity"),
-  weights = "weight",
-  rescale = TRUE,
-  simulate_p = FALSE,
+  by = sex,
   output = "long"
 )
-#>             variable level           group        n  pct     chi2 df
-#> 1     Current smoker    No Lower secondary 176.0000 69.0 21.35444  2
-#> 2     Current smoker    No Upper secondary 419.0000 78.5 21.35444  2
-#> 3     Current smoker    No        Tertiary 325.0000 84.4 21.35444  2
-#> 4     Current smoker    No           Total 920.8641 78.4 21.35444  2
-#> 5     Current smoker   Yes Lower secondary  79.0000 31.0 21.35444  2
-#> 6     Current smoker   Yes Upper secondary 115.0000 21.5 21.35444  2
-#> 7     Current smoker   Yes        Tertiary  60.0000 15.6 21.35444  2
-#> 8     Current smoker   Yes           Total 254.1359 21.6 21.35444  2
-#> 9  Physical activity    No Lower secondary 174.0000 67.2 44.41217  2
-#> 10 Physical activity    No Upper secondary 315.0000 57.7 44.41217  2
-#> 11 Physical activity    No        Tertiary 166.0000 41.9 44.41217  2
-#> 12 Physical activity    No           Total 654.7619 54.6 44.41217  2
-#> 13 Physical activity   Yes Lower secondary  85.0000 32.8 44.41217  2
-#> 14 Physical activity   Yes Upper secondary 231.0000 42.3 44.41217  2
-#> 15 Physical activity   Yes        Tertiary 229.0000 58.1 44.41217  2
-#> 16 Physical activity   Yes           Total 545.2381 45.4 44.41217  2
-#>               p Cramer's V
-#> 1  2.306438e-05  0.1348110
-#> 2  2.306438e-05  0.1348110
-#> 3  2.306438e-05  0.1348110
-#> 4  2.306438e-05  0.1348110
-#> 5  2.306438e-05  0.1348110
-#> 6  2.306438e-05  0.1348110
-#> 7  2.306438e-05  0.1348110
-#> 8  2.306438e-05  0.1348110
-#> 9  2.269974e-10  0.1923802
-#> 10 2.269974e-10  0.1923802
-#> 11 2.269974e-10  0.1923802
-#> 12 2.269974e-10  0.1923802
-#> 13 2.269974e-10  0.1923802
-#> 14 2.269974e-10  0.1923802
-#> 15 2.269974e-10  0.1923802
-#> 16 2.269974e-10  0.1923802
+#>             variable level  group   n  pct      chi2 df         p  Cramer's V
+#> 1            smoking    No Female 475 78.4 0.1357733  1 0.7125196 0.010749501
+#> 2            smoking    No   Male 451 79.3 0.1357733  1 0.7125196 0.010749501
+#> 3            smoking    No  Total 926 78.8 0.1357733  1 0.7125196 0.010749501
+#> 4            smoking   Yes Female 131 21.6 0.1357733  1 0.7125196 0.010749501
+#> 5            smoking   Yes   Male 118 20.7 0.1357733  1 0.7125196 0.010749501
+#> 6            smoking   Yes  Total 249 21.2 0.1357733  1 0.7125196 0.010749501
+#> 7  physical_activity    No Female 334 53.9 0.0451784  1 0.8316763 0.006135851
+#> 8  physical_activity    No   Male 316 54.5 0.0451784  1 0.8316763 0.006135851
+#> 9  physical_activity    No  Total 650 54.2 0.0451784  1 0.8316763 0.006135851
+#> 10 physical_activity   Yes Female 286 46.1 0.0451784  1 0.8316763 0.006135851
+#> 11 physical_activity   Yes   Male 264 45.5 0.0451784  1 0.8316763 0.006135851
+#> 12 physical_activity   Yes  Total 550 45.8 0.0451784  1 0.8316763 0.006135851
 
 # \donttest{
-# Optional output: tinytable
+# Rendered HTML / docx objects -- best viewed inside a
+# Quarto / R Markdown document or a pkgdown article.
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_categorical(
-    data = sochealth,
-    select = c(smoking, physical_activity),
-    by = sex,
-    labels = c("Current smoker", "Physical activity"),
+  tt <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
     output = "tinytable"
   )
 }
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> | Variable          | Female     | Male       | Total      | p    | Cramer's V |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |                   | n   | %    | n   | %    | n   | %    |      |            |
-#> +===================+=====+======+=====+======+=====+======+======+============+
-#> | Current smoker    |     |      |     |      |     |      | .713 | .01        |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |      No           | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |            |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |      Yes          | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |            |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> | Physical activity |     |      |     |      |     |      | .832 | .01        |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |      No           | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |            |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+
-#> |      Yes          | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |            |
-#> +-------------------+-----+------+-----+------+-----+------+------+------------+ 
-
-# Optional output: Excel
-if (requireNamespace("openxlsx2", quietly = TRUE)) {
-  table_categorical(
-    data = sochealth,
-    select = c(smoking, physical_activity),
-    by = education,
-    labels = c("Current smoker", "Physical activity"),
-    output = "excel",
-    excel_path = tempfile(fileext = ".xlsx")
+if (requireNamespace("gt", quietly = TRUE)) {
+  tbl <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "gt"
   )
 }
+if (requireNamespace("flextable", quietly = TRUE)) {
+  ft <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "flextable"
+  )
+}
+
+# Excel and Word: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp <- tempfile(fileext = ".xlsx")
+  table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "excel", excel_path = tmp
+  )
+  unlink(tmp)
+}
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp <- tempfile(fileext = ".docx")
+  table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "word", word_path = tmp
+  )
+  unlink(tmp)
+}
 # }
+
+if (FALSE) { # \dontrun{
+# Clipboard: writes to the system clipboard.
+table_categorical(
+  sochealth, select = c(smoking, physical_activity), by = sex,
+  output = "clipboard"
+)
+} # }
 ```

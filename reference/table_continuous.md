@@ -451,6 +451,9 @@ Other spicy tables:
 ## Examples
 
 ``` r
+# --- Basic usage ---------------------------------------------------------
+
+# Default: ASCII console table.
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score)
@@ -467,18 +470,7 @@ table_continuous(
 #>  Body mass index               │     26.14  1188 
 #>  WHO-5 wellbeing index (0-100) │     69.93  1200 
 
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score),
-  output = "data.frame"
-)
-#>          variable                         label     mean        sd  min   max
-#> 1             bmi               Body mass index 25.93148  3.720186 16.0  38.9
-#> 2 wellbeing_score WHO-5 wellbeing index (0-100) 69.04058 15.620359 18.7 100.0
-#>   ci_lower ci_upper    n
-#> 1 25.71972 26.14324 1188
-#> 2 68.15590 69.92527 1200
-
+# Grouped by education (Welch p-value added by default).
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
@@ -516,6 +508,7 @@ table_continuous(
 #>                                │ Upper secondary        
 #>                                │ Tertiary               
 
+# Test statistic alongside the p-value.
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
@@ -554,14 +547,43 @@ table_continuous(
 #>                                │ Upper secondary                               
 #>                                │ Tertiary                                      
 
+# --- Effect sizes -------------------------------------------------------
+
+# Auto-selected effect size with confidence interval (Hedges' g for
+# binary `by`, eta-squared for k > 2).
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  effect_size = "auto",
+  effect_size_ci = TRUE
+)
+#> Descriptive statistics
+#> 
+#>  Variable                      │ Group       M     SD    Min     Max  95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00      65.99 
+#>                                │ Male    71.05  16.23  18.70  100.00      69.73 
+#> 
+#>  Variable                      │ Group   95% CI UL    n      p 
+#> ───────────────────────────────┼───────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female      68.33  620  <.001 
+#>                                │ Male        72.37  580        
+#> 
+#>  Variable                      │ Group                         ES 
+#> ───────────────────────────────┼──────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female  g = -0.25 [-0.36, -0.14] 
+#>                                │ Male                             
+
+# Explicit effect-size measure.
 table_continuous(
   sochealth,
   select = wellbeing_score,
   by = education,
+  effect_size = "eta_sq",
   effect_size_ci = TRUE,
   effect_size_digits = 3
 )
-#> Warning: `effect_size_ci` implies `effect_size != "none"`. Defaulting to `effect_size = "auto"`.
 #> Descriptive statistics
 #> 
 #>  Variable                      │ Group                M     SD    Min     Max 
@@ -588,30 +610,9 @@ table_continuous(
 #>                                │ Upper secondary                            
 #>                                │ Tertiary                                   
 
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = sex,
-  effect_size_ci = TRUE
-)
-#> Warning: `effect_size_ci` implies `effect_size != "none"`. Defaulting to `effect_size = "auto"`.
-#> Descriptive statistics
-#> 
-#>  Variable                      │ Group       M     SD    Min     Max  95% CI LL 
-#> ───────────────────────────────┼────────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00      65.99 
-#>                                │ Male    71.05  16.23  18.70  100.00      69.73 
-#> 
-#>  Variable                      │ Group   95% CI UL    n      p 
-#> ───────────────────────────────┼───────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female      68.33  620  <.001 
-#>                                │ Male        72.37  580        
-#> 
-#>  Variable                      │ Group                         ES 
-#> ───────────────────────────────┼──────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female  g = -0.25 [-0.36, -0.14] 
-#>                                │ Male                             
+# --- Selection helpers --------------------------------------------------
 
+# Regex selection.
 table_continuous(
   sochealth,
   select = "^life_sat",
@@ -633,6 +634,7 @@ table_continuous(
 #>  Satisfaction with relationships (1-5)      │      3.79  1192 
 #>  Satisfaction with standard of living (1-5) │      3.46  1192 
 
+# Pretty labels keyed by column name.
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health),
@@ -653,59 +655,83 @@ table_continuous(
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
 
+# --- Output formats -----------------------------------------------------
+
+# The rendered outputs below all wrap the same call:
+#   table_continuous(sochealth,
+#                    select = c(bmi, wellbeing_score),
+#                    by = sex)
+# only `output` changes. Assign to a variable to avoid the
+# console-friendly text fallback that some engines fall back to
+# when printed directly in `?` help.
+
+# Wide / long data.frame (synonyms): one row per (variable x group).
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  output = "data.frame"
+)
+#>          variable                         label  group     mean        sd  min
+#> 1             bmi               Body mass index Female 25.68506  3.781113 16.0
+#> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0
+#> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6
+#> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7
+#>     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value
+#> 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2  37.7 25.89808 26.49563 572      <NA>        NA       NA  NA           NA
+#> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 100.0 69.72540 72.37219 580      <NA>        NA       NA  NA           NA
+
 # \donttest{
+# Rendered HTML / docx objects -- best viewed inside a
+# Quarto / R Markdown document or a pkgdown article.
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
+  tt <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
     output = "tinytable"
   )
 }
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> | Variable                                   | Group           | M    | SD   | Min  | Max  | 95% CI      | n   | p     |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            |                 |      |      |      |      | LL   | UL   |     |       |
-#> +============================================+=================+======+======+======+======+======+======+=====+=======+
-#> | Satisfaction with health (1-5)             | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57 | 2.86 | 259 | <.001 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43 | 3.63 | 534 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Tertiary        | 4.11 | 1.04 | 1.00 | 5.00 | 4.01 | 4.21 | 399 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> | Satisfaction with work (1-5)               | Lower secondary | 2.57 | 1.15 | 1.00 | 5.00 | 2.43 | 2.71 | 261 | <.001 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Upper secondary | 3.42 | 1.10 | 1.00 | 5.00 | 3.33 | 3.52 | 535 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Tertiary        | 3.85 | 1.03 | 1.00 | 5.00 | 3.75 | 3.95 | 396 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> | Satisfaction with relationships (1-5)      | Lower secondary | 3.02 | 1.23 | 1.00 | 5.00 | 2.87 | 3.17 | 260 | <.001 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Upper secondary | 3.74 | 0.96 | 1.00 | 5.00 | 3.66 | 3.83 | 534 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Tertiary        | 4.16 | 0.93 | 1.00 | 5.00 | 4.07 | 4.25 | 398 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> | Satisfaction with standard of living (1-5) | Lower secondary | 2.67 | 1.16 | 1.00 | 5.00 | 2.52 | 2.81 | 261 | <.001 |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Upper secondary | 3.39 | 1.11 | 1.00 | 5.00 | 3.29 | 3.48 | 532 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+
-#> |                                            | Tertiary        | 3.89 | 0.96 | 1.00 | 5.00 | 3.79 | 3.98 | 399 |       |
-#> +--------------------------------------------+-----------------+------+------+------+------+------+------+-----+-------+ 
-
 if (requireNamespace("gt", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
+  tbl <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
     output = "gt"
   )
 }
+if (requireNamespace("flextable", quietly = TRUE)) {
+  ft <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
+    output = "flextable"
+  )
+}
 
+# Excel and Word: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp <- tempfile(fileext = ".xlsx")
+  table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
+    output = "excel", excel_path = tmp
+  )
+  unlink(tmp)
+}
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp <- tempfile(fileext = ".docx")
+  table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
+    output = "word", word_path = tmp
+  )
+  unlink(tmp)
+}
+# }
 
-  
-
-
-
-        Variable
-      
+if (FALSE) { # \dontrun{
+# Clipboard: writes to the system clipboard.
+table_continuous(
+  sochealth, select = c(bmi, wellbeing_score), by = sex,
+  output = "clipboard"
+)
+} # }
 ```
