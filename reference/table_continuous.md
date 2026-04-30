@@ -460,15 +460,15 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │     M     SD    Min     Max  95% CI LL 
+#>  Variable                      │   M     SD     Min    Max    95% CI LL 
 #> ───────────────────────────────┼────────────────────────────────────────
-#>  Body mass index               │ 25.93   3.72  16.00   38.90      25.72 
-#>  WHO-5 wellbeing index (0-100) │ 69.04  15.62  18.70  100.00      68.16 
+#>  Body mass index               │ 25.93   3.72  16.00   38.90    25.72   
+#>  WHO-5 wellbeing index (0-100) │ 69.04  15.62  18.70  100.00    68.16   
 #> 
-#>  Variable                      │ 95% CI UL     n 
+#>  Variable                      │ 95% CI UL   n   
 #> ───────────────────────────────┼─────────────────
-#>  Body mass index               │     26.14  1188 
-#>  WHO-5 wellbeing index (0-100) │     69.93  1200 
+#>  Body mass index               │   26.14    1188 
+#>  WHO-5 wellbeing index (0-100) │   69.93    1200 
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -478,7 +478,7 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │ Group                M     SD    Min     Max 
+#>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
 #>  Body mass index               │ Lower secondary  28.09   3.47  18.20   38.90 
 #>                                │ Upper secondary  26.02   3.43  16.00   37.10 
@@ -488,17 +488,17 @@ table_continuous(
 #>                                │ Upper secondary  68.97  13.62  26.70  100.00 
 #>                                │ Tertiary         76.85  13.23  40.40  100.00 
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL    n 
+#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
 #> ───────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary      27.66      28.51  260 
-#>                                │ Upper secondary      25.73      26.31  534 
-#>                                │ Tertiary             24.04      24.74  394 
+#>  Body mass index               │ Lower secondary    27.66      28.51    260 
+#>                                │ Upper secondary    25.73      26.31    534 
+#>                                │ Tertiary           24.04      24.74    394 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary      55.33      59.10  261 
-#>                                │ Upper secondary      67.82      70.12  539 
-#>                                │ Tertiary             75.55      78.15  400 
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
+#>                                │ Upper secondary    67.82      70.12    539 
+#>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group                p 
+#>  Variable                      │ Group              p   
 #> ───────────────────────────────┼────────────────────────
 #>  Body mass index               │ Lower secondary  <.001 
 #>                                │ Upper secondary        
@@ -517,7 +517,7 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │ Group                M     SD    Min     Max 
+#>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
 #>  Body mass index               │ Lower secondary  28.09   3.47  18.20   38.90 
 #>                                │ Upper secondary  26.02   3.43  16.00   37.10 
@@ -527,17 +527,17 @@ table_continuous(
 #>                                │ Upper secondary  68.97  13.62  26.70  100.00 
 #>                                │ Tertiary         76.85  13.23  40.40  100.00 
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL    n 
+#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
 #> ───────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary      27.66      28.51  260 
-#>                                │ Upper secondary      25.73      26.31  534 
-#>                                │ Tertiary             24.04      24.74  394 
+#>  Body mass index               │ Lower secondary    27.66      28.51    260 
+#>                                │ Upper secondary    25.73      26.31    534 
+#>                                │ Tertiary           24.04      24.74    394 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary      55.33      59.10  261 
-#>                                │ Upper secondary      67.82      70.12  539 
-#>                                │ Tertiary             75.55      78.15  400 
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
+#>                                │ Upper secondary    67.82      70.12    539 
+#>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group                             Test      p 
+#>  Variable                      │ Group                    Test             p   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  Body mass index               │ Lower secondary  F(2, 654.48) = 87.96   <.001 
 #>                                │ Upper secondary                               
@@ -560,17 +560,17 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │ Group       M     SD    Min     Max  95% CI LL 
+#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
 #> ───────────────────────────────┼────────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00      65.99 
-#>                                │ Male    71.05  16.23  18.70  100.00      69.73 
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
+#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
 #> 
-#>  Variable                      │ Group   95% CI UL    n      p 
+#>  Variable                      │ Group   95% CI UL   n     p   
 #> ───────────────────────────────┼───────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female      68.33  620  <.001 
-#>                                │ Male        72.37  580        
+#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  <.001 
+#>                                │ Male      72.37    580        
 #> 
-#>  Variable                      │ Group                         ES 
+#>  Variable                      │ Group              ES            
 #> ───────────────────────────────┼──────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Female  g = -0.25 [-0.36, -0.14] 
 #>                                │ Male                             
@@ -586,25 +586,25 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │ Group                M     SD    Min     Max 
+#>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  57.22  15.44  18.70   97.90 
 #>                                │ Upper secondary  68.97  13.62  26.70  100.00 
 #>                                │ Tertiary         76.85  13.23  40.40  100.00 
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL    n 
+#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
 #> ───────────────────────────────┼────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary      55.33      59.10  261 
-#>                                │ Upper secondary      67.82      70.12  539 
-#>                                │ Tertiary             75.55      78.15  400 
+#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
+#>                                │ Upper secondary    67.82      70.12    539 
+#>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group                p 
+#>  Variable                      │ Group              p   
 #> ───────────────────────────────┼────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
 #>                                │ Upper secondary        
 #>                                │ Tertiary               
 #> 
-#>  Variable                      │ Group                                   ES 
+#>  Variable                      │ Group                       ES             
 #> ───────────────────────────────┼────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  η² = 0.208 [0.169, 0.246] 
 #>                                │ Upper secondary                            
@@ -620,19 +620,19 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                                   │    M    SD   Min   Max  95% CI LL 
+#>  Variable                                   │  M     SD   Min   Max   95% CI LL 
 #> ────────────────────────────────────────────┼───────────────────────────────────
-#>  Satisfaction with health (1-5)             │ 3.55  1.25  1.00  5.00       3.48 
-#>  Satisfaction with work (1-5)               │ 3.38  1.18  1.00  5.00       3.31 
-#>  Satisfaction with relationships (1-5)      │ 3.72  1.10  1.00  5.00       3.66 
-#>  Satisfaction with standard of living (1-5) │ 3.40  1.16  1.00  5.00       3.33 
+#>  Satisfaction with health (1-5)             │ 3.55  1.25  1.00  5.00    3.48    
+#>  Satisfaction with work (1-5)               │ 3.38  1.18  1.00  5.00    3.31    
+#>  Satisfaction with relationships (1-5)      │ 3.72  1.10  1.00  5.00    3.66    
+#>  Satisfaction with standard of living (1-5) │ 3.40  1.16  1.00  5.00    3.33    
 #> 
-#>  Variable                                   │ 95% CI UL     n 
+#>  Variable                                   │ 95% CI UL   n   
 #> ────────────────────────────────────────────┼─────────────────
-#>  Satisfaction with health (1-5)             │      3.62  1192 
-#>  Satisfaction with work (1-5)               │      3.45  1192 
-#>  Satisfaction with relationships (1-5)      │      3.79  1192 
-#>  Satisfaction with standard of living (1-5) │      3.46  1192 
+#>  Satisfaction with health (1-5)             │   3.62     1192 
+#>  Satisfaction with work (1-5)               │   3.45     1192 
+#>  Satisfaction with relationships (1-5)      │   3.79     1192 
+#>  Satisfaction with standard of living (1-5) │   3.46     1192 
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -645,12 +645,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                 │     M    SD    Min    Max  95% CI LL  95% CI UL 
+#>  Variable                 │   M     SD    Min    Max   95% CI LL  95% CI UL 
 #> ──────────────────────────┼─────────────────────────────────────────────────
-#>  Body mass index          │ 25.93  3.72  16.00  38.90      25.72      26.14 
-#>  Satisfaction with health │  3.55  1.25   1.00   5.00       3.48       3.62 
+#>  Body mass index          │ 25.93  3.72  16.00  38.90    25.72      26.14   
+#>  Satisfaction with health │  3.55  1.25   1.00   5.00     3.48       3.62   
 #> 
-#>  Variable                 │    n 
+#>  Variable                 │  n   
 #> ──────────────────────────┼──────
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
