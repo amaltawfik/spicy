@@ -529,12 +529,12 @@ pooled within-group SD for the unweighted two-group case);
 1985). The sign matches the displayed <code>Delta (level2 - level1)</code>.
 For published reports of two-group comparisons, <em>g</em> is the
 convention recommended by Hedges and Olkin (1985).</p></li>
-<li><p><code>"omega2"</code>: Hays' <code>ω²</code>, computed from weighted sums of
-squares as <code>(SS_effect - df_effect * MSE) / (SS_total + MSE)</code> and
-truncated at 0 for small or null effects (Hays 1963; Olejnik and
-Algina 2003). Less biased than <code>η²</code> (which equals <code>R²</code> in this
-single-predictor design) and recommended for reporting variance
-explained in ANOVA-style designs (Olejnik and Algina 2003).</p></li>
+<li><p><code>"omega2"</code>: Hays' \(\omega^2\), computed from weighted
+sums of squares as <code>(SS_effect - df_effect * MSE) / (SS_total + MSE)</code> and truncated at 0 for small or null effects (Hays
+1963; Olejnik and Algina 2003). Less biased than
+\(\eta^2\) (which equals <code>R^2</code> in this single-predictor
+design) and recommended for reporting variance explained in
+ANOVA-style designs (Olejnik and Algina 2003).</p></li>
 </ul><p>All four effect sizes are point estimates derived from the OLS/WLS fit
 and are <strong>invariant to <code>vcov</code></strong>: choosing <code>HC*</code> changes the SE, CI, and
 test statistic of the contrast but not the standardized magnitude
@@ -889,7 +889,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02  0.02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  0.00  1188 </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Hays' ω² for a 3-level predictor (d / g would error here).</span></span></span>
+<span class="r-in"><span><span class="co"># Hays' omega-squared for a 3-level predictor (d / g would error here).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>

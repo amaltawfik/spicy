@@ -535,12 +535,12 @@ internally consistent with the rest of the table.
   reports of two-group comparisons, *g* is the convention recommended by
   Hedges and Olkin (1985).
 
-- `"omega2"`: Hays' `ω²`, computed from weighted sums of squares as
-  `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and truncated at 0
-  for small or null effects (Hays 1963; Olejnik and Algina 2003). Less
-  biased than `η²` (which equals `R²` in this single-predictor design)
-  and recommended for reporting variance explained in ANOVA-style
-  designs (Olejnik and Algina 2003).
+- `"omega2"`: Hays' \\\omega^2\\, computed from weighted sums of squares
+  as `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and truncated at
+  0 for small or null effects (Hays 1963; Olejnik and Algina 2003). Less
+  biased than \\\eta^2\\ (which equals `R^2` in this single-predictor
+  design) and recommended for reporting variance explained in
+  ANOVA-style designs (Olejnik and Algina 2003).
 
 All four effect sizes are point estimates derived from the OLS/WLS fit
 and are **invariant to `vcov`**: choosing `HC*` changes the SE, CI, and
@@ -935,7 +935,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  0.00  1188 
 
-# Hays' ω² for a 3-level predictor (d / g would error here).
+# Hays' omega-squared for a 3-level predictor (d / g would error here).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
