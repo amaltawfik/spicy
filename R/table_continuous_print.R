@@ -56,7 +56,11 @@ print.spicy_continuous_table <- function(x, ...) {
   # listed in `align_center_cols`) is right-aligned by the underlying
   # `build_ascii_table()`. So:
   # - "decimal": pre-pad numeric cells via `decimal_align_strings_lm()`
-  #   (no native ASCII primitive) and right-align them; dots line up.
+  #   so the dots line up across rows. Putting the same numeric
+  #   columns in `align_center_cols` centres the column HEADERS
+  #   (otherwise they get right-aligned, which looks inconsistent
+  #   with the dot-aligned data underneath). This matches the
+  #   behaviour of `print.spicy_continuous_lm_table()`.
   # - "center": numeric cells in `align_center_cols`.
   # - "right": numeric cells in neither -> right-aligned by default.
   # - "auto": legacy per-column rule (right for n/p, centre otherwise).
@@ -67,7 +71,7 @@ print.spicy_continuous_table <- function(x, ...) {
         decimal_mark = decimal_mark
       )
     }
-    align_center <- integer(0)
+    align_center <- numeric_j
   } else if (identical(align, "center")) {
     align_center <- numeric_j
   } else if (identical(align, "right")) {

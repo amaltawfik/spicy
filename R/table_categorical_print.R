@@ -31,10 +31,13 @@ print.spicy_categorical_table <- function(x, ...) {
   # Honour the `align` attribute. ASCII has no native decimal-alignment
   # primitive, so for "decimal" we pre-pad numeric cells with leading
   # and trailing spaces (via `decimal_align_strings_lm()` from the
-  # shared formatting helpers) and right-align the padded strings;
-  # this keeps decimal points lined up vertically. "center" puts
-  # numeric cells in `align_center_cols`. "right" / "auto" leave them
-  # in neither -> right-aligned by default in `build_ascii_table()`,
+  # shared formatting helpers) so dots line up vertically. We also
+  # put the same columns in `align_center_cols` so the column
+  # HEADERS centre over the dot-aligned data (otherwise they'd be
+  # right-aligned by the default in `build_ascii_table()`, which
+  # makes the header sit visually disconnected from the data column).
+  # "center" puts numeric cells in `align_center_cols`. "right" /
+  # "auto" leave them in neither -> right-aligned by default,
   # matching the legacy categorical-table behaviour.
   if (identical(align, "decimal") && length(numeric_j) > 0L) {
     for (j in numeric_j) {
@@ -43,7 +46,7 @@ print.spicy_categorical_table <- function(x, ...) {
         decimal_mark = decimal_mark
       )
     }
-    align_center <- integer(0)
+    align_center <- numeric_j
   } else if (identical(align, "center")) {
     align_center <- numeric_j
   } else {
