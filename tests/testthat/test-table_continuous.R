@@ -914,7 +914,7 @@ test_that("fmt_p uses non-breaking space in display", {
     show_effect_size_ci = FALSE
   )
   p_col <- display[["p"]][nzchar(display[["p"]])]
-  # p should be very small -> "<.001" (shared format_p_value_lm helper,
+  # p should be very small -> "<.001" (shared format_p_value helper,
   # no non-breaking space; alignment is now handled by decimal_align).
   expect_true(any(startsWith(p_col, "<")))
   expect_true(any(grepl("\\.001", p_col)))

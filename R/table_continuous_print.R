@@ -55,7 +55,7 @@ print.spicy_continuous_table <- function(x, ...) {
   # and centre explicitly; everything else (i.e., numeric cells not
   # listed in `align_center_cols`) is right-aligned by the underlying
   # `build_ascii_table()`. So:
-  # - "decimal": pre-pad numeric cells via `decimal_align_strings_lm()`
+  # - "decimal": pre-pad numeric cells via `decimal_align_strings()`
   #   so the dots line up across rows. Putting the same numeric
   #   columns in `align_center_cols` centres the column HEADERS
   #   (otherwise they get right-aligned, which looks inconsistent
@@ -66,7 +66,7 @@ print.spicy_continuous_table <- function(x, ...) {
   # - "auto": legacy per-column rule (right for n/p, centre otherwise).
   if (identical(align, "decimal") && length(numeric_j) > 0L) {
     for (j in numeric_j) {
-      display_df[[j]] <- decimal_align_strings_lm(
+      display_df[[j]] <- decimal_align_strings(
         display_df[[j]],
         decimal_mark = decimal_mark
       )

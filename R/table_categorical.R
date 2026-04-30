@@ -645,7 +645,7 @@ table_categorical <- function(
     out
   }
 
-  # `fmt_p` defers to the shared `format_p_value_lm()` helper so the
+  # `fmt_p` defers to the shared `format_p_value()` helper so the
   # three `table_*` functions print *p*-values identically: `p_digits`
   # drives both the displayed precision AND the small-*p* threshold
   # (`p_digits = 3` -> `<.001`, `p_digits = 4` -> `<.0001`, etc.),
@@ -663,7 +663,7 @@ table_categorical <- function(
     if (!is.na(op) && identical(op, "<")) {
       return(paste0("<", decimal_mark, strrep("0", p_digits - 1L), "1"))
     }
-    format_p_value_lm(p, decimal_mark, digits = p_digits)
+    format_p_value(p, decimal_mark, digits = p_digits)
   }
 
   fmt_v <- function(v) {
@@ -698,7 +698,7 @@ table_categorical <- function(
       return(df)
     }
     for (j in seq_along(df)[-1]) {
-      df[[j]] <- decimal_align_strings_lm(
+      df[[j]] <- decimal_align_strings(
         df[[j]],
         decimal_mark = decimal_mark
       )

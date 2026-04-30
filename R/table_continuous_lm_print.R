@@ -53,7 +53,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (identical(align, "decimal")) {
     numeric_cols <- setdiff(seq_along(display_df), align_left)
     for (j in numeric_cols) {
-      display_df[[j]] <- decimal_align_strings_lm(
+      display_df[[j]] <- decimal_align_strings(
         display_df[[j]],
         decimal_mark = decimal_mark
       )

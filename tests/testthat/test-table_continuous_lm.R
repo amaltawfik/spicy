@@ -779,9 +779,9 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   expect_equal(spicy:::format_effect_size_header_lm("f2"), "f²")
   expect_equal(spicy:::format_r2_header_lm("adj_r2"), "Adj. R²")
   expect_true(is.numeric(spicy:::get_r2_value_lm(block, "r2")))
-  expect_equal(spicy:::format_number_lm(c(1.2, NA), 1L, ","), c("1,2", ""))
-  expect_equal(spicy:::format_p_value_lm(NA_real_), "")
-  expect_equal(spicy:::format_p_value_lm(0.045, ","), ",045")
+  expect_equal(spicy:::format_number(c(1.2, NA), 1L, ","), c("1,2", ""))
+  expect_equal(spicy:::format_p_value(NA_real_), "")
+  expect_equal(spicy:::format_p_value(0.045, ","), ",045")
 })
 
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
@@ -1596,27 +1596,27 @@ test_that("coercion is a no-op on the original object", {
 
 # ---- p_digits ----
 
-test_that("format_p_value_lm derives threshold from digits", {
-  expect_equal(spicy:::format_p_value_lm(0.045, ".", 3L), ".045")
-  expect_equal(spicy:::format_p_value_lm(0.0008, ".", 3L), "<.001")
-  expect_equal(spicy:::format_p_value_lm(0.0451, ".", 4L), ".0451")
-  expect_equal(spicy:::format_p_value_lm(0.00008, ".", 4L), "<.0001")
-  expect_equal(spicy:::format_p_value_lm(0.05, ".", 2L), ".05")
-  expect_equal(spicy:::format_p_value_lm(0.005, ".", 2L), "<.01")
+test_that("format_p_value derives threshold from digits", {
+  expect_equal(spicy:::format_p_value(0.045, ".", 3L), ".045")
+  expect_equal(spicy:::format_p_value(0.0008, ".", 3L), "<.001")
+  expect_equal(spicy:::format_p_value(0.0451, ".", 4L), ".0451")
+  expect_equal(spicy:::format_p_value(0.00008, ".", 4L), "<.0001")
+  expect_equal(spicy:::format_p_value(0.05, ".", 2L), ".05")
+  expect_equal(spicy:::format_p_value(0.005, ".", 2L), "<.01")
 })
 
-test_that("format_p_value_lm respects European decimal mark across digits", {
-  expect_equal(spicy:::format_p_value_lm(0.045, ",", 3L), ",045")
-  expect_equal(spicy:::format_p_value_lm(0.0008, ",", 3L), "<,001")
-  expect_equal(spicy:::format_p_value_lm(0.00008, ",", 4L), "<,0001")
-  expect_equal(spicy:::format_p_value_lm(0.005, ",", 2L), "<,01")
+test_that("format_p_value respects European decimal mark across digits", {
+  expect_equal(spicy:::format_p_value(0.045, ",", 3L), ",045")
+  expect_equal(spicy:::format_p_value(0.0008, ",", 3L), "<,001")
+  expect_equal(spicy:::format_p_value(0.00008, ",", 4L), "<,0001")
+  expect_equal(spicy:::format_p_value(0.005, ",", 2L), "<,01")
 })
 
-test_that("format_p_value_lm handles NA and falls back to default for bad digits", {
-  expect_equal(spicy:::format_p_value_lm(NA_real_, ".", 3L), "")
+test_that("format_p_value handles NA and falls back to default for bad digits", {
+  expect_equal(spicy:::format_p_value(NA_real_, ".", 3L), "")
   # Non-finite or < 1 digits silently fall back to digits=3.
-  expect_equal(spicy:::format_p_value_lm(0.045, ".", 0L), ".045")
-  expect_equal(spicy:::format_p_value_lm(0.045, ".", -1L), ".045")
+  expect_equal(spicy:::format_p_value(0.045, ".", 0L), ".045")
+  expect_equal(spicy:::format_p_value(0.045, ".", -1L), ".045")
 })
 
 test_that("p_digits argument propagates through table_continuous_lm()", {
@@ -1738,8 +1738,8 @@ test_that("p_digits validates as a single positive integer", {
 
 # ---- decimal alignment ----
 
-test_that("decimal_align_strings_lm aligns dots in heterogeneous-magnitude column", {
-  out <- spicy:::decimal_align_strings_lm(
+test_that("decimal_align_strings aligns dots in heterogeneous-magnitude column", {
+  out <- spicy:::decimal_align_strings(
     c("1234.56", "0.05", "42.30"),
     decimal_mark = "."
   )
@@ -1754,16 +1754,16 @@ test_that("decimal_align_strings_lm aligns dots in heterogeneous-magnitude colum
   expect_equal(length(unique(dot_pos)), 1L)
 })
 
-test_that("decimal_align_strings_lm handles integers (no dot) as if dotted at end", {
-  out <- spicy:::decimal_align_strings_lm(
+test_that("decimal_align_strings handles integers (no dot) as if dotted at end", {
+  out <- spicy:::decimal_align_strings(
     c("1.23", "100", "12.5"),
     decimal_mark = "."
   )
   expect_equal(length(unique(nchar(out))), 1L)
 })
 
-test_that("decimal_align_strings_lm handles blanks and NA as full-width spaces", {
-  out <- spicy:::decimal_align_strings_lm(
+test_that("decimal_align_strings handles blanks and NA as full-width spaces", {
+  out <- spicy:::decimal_align_strings(
     c("1.23", "", NA_character_, "42.5"),
     decimal_mark = "."
   )
@@ -1773,8 +1773,8 @@ test_that("decimal_align_strings_lm handles blanks and NA as full-width spaces",
   expect_true(!nzchar(trimws(out[3])))
 })
 
-test_that("decimal_align_strings_lm respects European decimal mark", {
-  out <- spicy:::decimal_align_strings_lm(
+test_that("decimal_align_strings respects European decimal mark", {
+  out <- spicy:::decimal_align_strings(
     c("1,23", "0,05", "42,30"),
     decimal_mark = ","
   )
@@ -1787,8 +1787,8 @@ test_that("decimal_align_strings_lm respects European decimal mark", {
   expect_equal(length(unique(comma_pos)), 1L)
 })
 
-test_that("decimal_align_strings_lm handles bracket notation like '0.18 [0.07, 0.30]'", {
-  out <- spicy:::decimal_align_strings_lm(
+test_that("decimal_align_strings handles bracket notation like '0.18 [0.07, 0.30]'", {
+  out <- spicy:::decimal_align_strings(
     c("0.18 [0.07, 0.30]", "12.34 [10.0, 14.7]"),
     decimal_mark = "."
   )
@@ -1843,7 +1843,7 @@ test_that("align='decimal' produces dot-aligned numeric columns", {
   )
   numeric_cols <- setdiff(seq_along(display), 1L)
   for (j in numeric_cols) {
-    display[[j]] <- spicy:::decimal_align_strings_lm(
+    display[[j]] <- spicy:::decimal_align_strings(
       display[[j]],
       decimal_mark = "."
     )
@@ -2008,9 +2008,9 @@ test_that("compute_lm_wald_test degrades to NA on a singular submatrix", {
 
 # ---- bracket separator for European decimal mark ----
 
-test_that("ci_bracket_separator_lm returns ', ' for '.' and '; ' for ','", {
-  expect_equal(spicy:::ci_bracket_separator_lm("."), ", ")
-  expect_equal(spicy:::ci_bracket_separator_lm(","), "; ")
+test_that("ci_bracket_separator returns ', ' for '.' and '; ' for ','", {
+  expect_equal(spicy:::ci_bracket_separator("."), ", ")
+  expect_equal(spicy:::ci_bracket_separator(","), "; ")
 })
 
 test_that("effect-size CI bracket separator switches with decimal_mark", {
@@ -2786,12 +2786,12 @@ test_that("resolve_cluster_argument NULL roundtrip", {
   )
 })
 
-test_that("decimal_align_strings_lm handles empty input and single value", {
-  expect_equal(spicy:::decimal_align_strings_lm(character(0)), character(0))
-  out <- spicy:::decimal_align_strings_lm("3.14", decimal_mark = ".")
+test_that("decimal_align_strings handles empty input and single value", {
+  expect_equal(spicy:::decimal_align_strings(character(0)), character(0))
+  out <- spicy:::decimal_align_strings("3.14", decimal_mark = ".")
   expect_equal(out, "3.14")
   # All blank
-  out_blank <- spicy:::decimal_align_strings_lm(c("", NA, " "))
+  out_blank <- spicy:::decimal_align_strings(c("", NA, " "))
   expect_equal(length(out_blank), 3L)
 })
 
@@ -2844,10 +2844,10 @@ test_that("find_ncp_f_lm widens the bracket on huge F statistics", {
   expect_gte(ncp, 0)
 })
 
-test_that("format_p_value_lm covers blanks, NAs, and edge digits", {
-  expect_equal(spicy:::format_p_value_lm(NA_real_), "")
+test_that("format_p_value covers blanks, NAs, and edge digits", {
+  expect_equal(spicy:::format_p_value(NA_real_), "")
   # digits = 1L is admissible
-  expect_match(spicy:::format_p_value_lm(0.05, ".", 1L), "^[<.0-9]+$")
+  expect_match(spicy:::format_p_value(0.05, ".", 1L), "^[<.0-9]+$")
 })
 
 test_that("get_test_header_lm: show_statistic = FALSE returns NULL early", {

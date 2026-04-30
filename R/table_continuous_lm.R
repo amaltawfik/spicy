@@ -2646,7 +2646,7 @@ build_wide_display_df_continuous_lm <- function(
     test_row <- get_test_row_index_lm(block)
     if (identical(by_type, "categorical")) {
       for (j in seq_len(nrow(block))) {
-        out[i, paste0("M (", block$level[j], ")")] <- format_number_lm(
+        out[i, paste0("M (", block$level[j], ")")] <- format_number(
           block$emmean[j],
           digits,
           decimal_mark
@@ -2654,18 +2654,18 @@ build_wide_display_df_continuous_lm <- function(
       }
       if (nrow(block) == 2L) {
         delta_name <- get_delta_label_lm(block)
-        out[[delta_name]][i] <- format_number_lm(
+        out[[delta_name]][i] <- format_number(
           block$estimate[test_row],
           digits,
           decimal_mark
         )
         if (isTRUE(ci)) {
-          out[[ci_ll_name]][i] <- format_number_lm(
+          out[[ci_ll_name]][i] <- format_number(
             block$estimate_ci_lower[test_row],
             digits,
             decimal_mark
           )
-          out[[ci_ul_name]][i] <- format_number_lm(
+          out[[ci_ul_name]][i] <- format_number(
             block$estimate_ci_upper[test_row],
             digits,
             decimal_mark
@@ -2673,14 +2673,14 @@ build_wide_display_df_continuous_lm <- function(
         }
       }
     } else {
-      out$B[i] <- format_number_lm(block$estimate[1], digits, decimal_mark)
+      out$B[i] <- format_number(block$estimate[1], digits, decimal_mark)
       if (isTRUE(ci)) {
-        out[[ci_ll_name]][i] <- format_number_lm(
+        out[[ci_ll_name]][i] <- format_number(
           block$estimate_ci_lower[1],
           digits,
           decimal_mark
         )
-        out[[ci_ul_name]][i] <- format_number_lm(
+        out[[ci_ul_name]][i] <- format_number(
           block$estimate_ci_upper[1],
           digits,
           decimal_mark
@@ -2689,45 +2689,45 @@ build_wide_display_df_continuous_lm <- function(
     }
 
     if (!is.null(test_header)) {
-      out[[test_header]][i] <- format_number_lm(
+      out[[test_header]][i] <- format_number(
         block$statistic[test_row],
         digits,
         decimal_mark
       )
     }
     if (show_p_value) {
-      out$p[i] <- format_p_value_lm(
+      out$p[i] <- format_p_value(
         block$p.value[test_row],
         decimal_mark,
         digits = p_digits
       )
     }
     if (include_es) {
-      es_str <- format_number_lm(
+      es_str <- format_number(
         block$es_value[1],
         effect_size_digits,
         decimal_mark
       )
       if (include_es_ci) {
-        es_lo <- format_number_lm(
+        es_lo <- format_number(
           block$es_ci_lower[1],
           effect_size_digits,
           decimal_mark
         )
-        es_hi <- format_number_lm(
+        es_hi <- format_number(
           block$es_ci_upper[1],
           effect_size_digits,
           decimal_mark
         )
         if (nzchar(es_str) && nzchar(es_lo) && nzchar(es_hi)) {
-          sep <- ci_bracket_separator_lm(decimal_mark)
+          sep <- ci_bracket_separator(decimal_mark)
           es_str <- paste0(es_str, " [", es_lo, sep, es_hi, "]")
         }
       }
       out[[format_effect_size_header_lm(effect_size)]][i] <- es_str
     }
     if (include_r2) {
-      out[[r2_header]][i] <- format_number_lm(
+      out[[r2_header]][i] <- format_number(
         get_r2_value_lm(block, r2_type),
         fit_digits,
         decimal_mark
@@ -2744,7 +2744,7 @@ build_wide_display_df_continuous_lm <- function(
       out[["Weighted n"]][i] <- if (is.na(block$weighted_n[1])) {
         ""
       } else {
-        format_number_lm(block$weighted_n[1], digits, decimal_mark)
+        format_number(block$weighted_n[1], digits, decimal_mark)
       }
     }
   }
@@ -2781,7 +2781,7 @@ export_continuous_lm_table <- function(
   if (use_decimal && needs_padding_engine) {
     numeric_cols <- setdiff(seq_along(display_df), 1L)
     for (j in numeric_cols) {
-      display_df[[j]] <- decimal_align_strings_lm(
+      display_df[[j]] <- decimal_align_strings(
         display_df[[j]],
         decimal_mark = decimal_mark
       )
@@ -3435,122 +3435,3 @@ get_r2_value_lm <- function(block, r2_type = "r2") {
   )
 }
 
-# Internal: separator placed between LL and UL inside the inline
-# "[LL, UL]" notation used to display effect-size confidence intervals.
-# When `decimal_mark = ","`, the values themselves contain commas
-# ("0,18") and a comma list-separator would be ambiguous
-# ("0,18 [0,07, 0,30]"); the European convention is to switch the
-# list separator to a semicolon in that case ("0,18 [0,07; 0,30]").
-ci_bracket_separator_lm <- function(decimal_mark) {
-  if (identical(decimal_mark, ",")) "; " else ", "
-}
-
-# Internal: decimal-point alignment for a vector of formatted numeric
-# strings. Pads each value with leading and trailing spaces so that
-# the (first) decimal mark falls at the same horizontal position
-# across the column. This is the standard scientific-publication
-# convention (SPSS, SAS, LaTeX siunitx, gt::cols_align_decimal()).
-#
-# Algorithm:
-#   * For each non-blank value, locate the first occurrence of
-#     `decimal_mark` and split into (chars-before, chars-after).
-#   * Values with no decimal mark (integers) are treated as having an
-#     implicit dot at the end and contribute their full width to the
-#     "before" max and 0 to the "after" max.
-#   * Pad each value so that all values share the same total width
-#     and their dots line up vertically.
-#   * Blank / NA cells are returned as a string of spaces of that
-#     same total width, so the column stays clean when rendered.
-#
-# The function is purely string-based and never converts to numeric,
-# so it is robust to formats like "<.001", "f² = 0.18 [0.07, 0.30]",
-# and any decimal_mark.
-decimal_align_strings_lm <- function(values, decimal_mark = ".") {
-  if (length(values) == 0L) {
-    return(character(0))
-  }
-  values <- as.character(values)
-  values[is.na(values)] <- ""
-
-  is_blank <- !nzchar(trimws(values))
-  if (all(is_blank)) {
-    return(values)
-  }
-
-  dot_pos <- regexpr(decimal_mark, values, fixed = TRUE)
-  has_dot <- dot_pos != -1L
-
-  before <- ifelse(
-    is_blank,
-    NA_integer_,
-    ifelse(has_dot, dot_pos - 1L, nchar(values))
-  )
-  after <- ifelse(
-    is_blank,
-    NA_integer_,
-    ifelse(has_dot, nchar(values) - dot_pos, 0L)
-  )
-
-  max_before <- max(before, na.rm = TRUE)
-  max_after <- max(after, na.rm = TRUE)
-  total_width <- max_before + ifelse(max_after > 0L, 1L + max_after, 0L)
-
-  vapply(
-    seq_along(values),
-    function(i) {
-      if (is_blank[i]) {
-        return(strrep(" ", total_width))
-      }
-      v <- values[i]
-      pad_l <- strrep(" ", max_before - before[i])
-      pad_r <- if (has_dot[i]) {
-        strrep(" ", max_after - after[i])
-      } else if (max_after > 0L) {
-        strrep(" ", 1L + max_after)
-      } else {
-        ""
-      }
-      paste0(pad_l, v, pad_r)
-    },
-    character(1)
-  )
-}
-
-format_number_lm <- function(x, digits = 2L, decimal_mark = ".") {
-  if (length(x) > 1L) {
-    return(vapply(
-      x,
-      format_number_lm,
-      character(1),
-      digits = digits,
-      decimal_mark = decimal_mark
-    ))
-  }
-  if (is.na(x)) {
-    return("")
-  }
-  out <- formatC(x, digits = digits, format = "f")
-  if (!identical(decimal_mark, ".")) {
-    out <- chartr(".", decimal_mark, out)
-  }
-  out
-}
-
-format_p_value_lm <- function(p, decimal_mark = ".", digits = 3L) {
-  if (is.na(p)) {
-    return("")
-  }
-  digits <- as.integer(digits)
-  if (!is.finite(digits) || digits < 1L) {
-    digits <- 3L
-  }
-  threshold <- 10^(-digits)
-  if (p < threshold) {
-    # "<.001" for digits=3, "<.0001" for digits=4, "<.01" for digits=2
-    return(paste0("<", decimal_mark, strrep("0", digits - 1L), "1"))
-  }
-  out <- format_number_lm(p, digits, decimal_mark)
-  out <- sub("^0(?=[\\.,])", "", out, perl = TRUE)
-  out <- sub("^-0(?=[\\.,])", "-", out, perl = TRUE)
-  out
-}

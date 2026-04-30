@@ -1304,7 +1304,7 @@ build_display_df <- function(
   # Delegate p-value formatting to the shared helper from
   # `table_continuous_lm.R`, which honours the user-supplied `p_digits`
   # (APA default: 3) and the configured decimal_mark.
-  fmt_p <- function(p) format_p_value_lm(p, decimal_mark, digits = p_digits)
+  fmt_p <- function(p) format_p_value(p, decimal_mark, digits = p_digits)
 
   fmt_test <- function(test_type, stat, df1, df2, decimal_mark) {
     if (is.na(stat)) {
@@ -1540,7 +1540,7 @@ export_desc_table <- function(
     left_skip <- if (has_group) 2L else 1L
     numeric_cols <- setdiff(seq_along(display_df), seq_len(left_skip))
     for (j in numeric_cols) {
-      display_df[[j]] <- decimal_align_strings_lm(
+      display_df[[j]] <- decimal_align_strings(
         display_df[[j]],
         decimal_mark = decimal_mark
       )
@@ -1948,7 +1948,7 @@ export_desc_table <- function(
 
     ft <- flextable::align(ft, j = left_j, part = "all", align = "left")
     if (use_decimal && length(numeric_j) > 0L) {
-      # Cells were pre-padded by `decimal_align_strings_lm()` above;
+      # Cells were pre-padded by `decimal_align_strings()` above;
       # right-aligning the padded strings preserves the dot-aligned
       # column. Use a monospace font in the body so character widths
       # match (proportional fonts give approximate alignment).

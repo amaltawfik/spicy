@@ -233,10 +233,10 @@ get_r2_value_lm(
   long_num[long_num$variable == "wellbeing_score", , drop = FALSE],
   "adj_r2"
 )
-format_number_lm(c(1.23, NA_real_), 2L, ",")
-format_p_value_lm(NA_real_, ".")
-format_p_value_lm(0.0005, ".")
-format_p_value_lm(0.045, ",")
+format_number(c(1.23, NA_real_), 2L, ",")
+format_p_value(NA_real_, ".")
+format_p_value(0.0005, ".")
+format_p_value(0.045, ",")
 
 make_empty_lm_rows("y", "Y", "continuous")
 fit_numeric_predictor_lm_rows(
