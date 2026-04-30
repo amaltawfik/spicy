@@ -1499,9 +1499,8 @@ export_desc_table <- function(
   # ---- tinytable ----
   if (output == "tinytable") {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'tinytable'.", call. = FALSE)
-    } # nocov end
+    }
 
     old_tt_opt <- getOption("tinytable_print_output")
     options(tinytable_print_output = "html")
@@ -1661,9 +1660,8 @@ export_desc_table <- function(
   # ---- gt ----
   if (output == "gt") {
     if (!requireNamespace("gt", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'gt'.", call. = FALSE)
-    } # nocov end
+    }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     tbl <- gt::gt(display_df)
@@ -1868,13 +1866,11 @@ export_desc_table <- function(
   # ---- flextable / word ----
   if (output %in% c("flextable", "word")) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'flextable'.", call. = FALSE)
-    } # nocov end
+    }
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'officer'.", call. = FALSE)
-    } # nocov end
+    }
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)
@@ -2015,9 +2011,8 @@ export_desc_table <- function(
   # ---- excel ----
   if (output == "excel") {
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'openxlsx2'.", call. = FALSE)
-    } # nocov end
+    }
     if (is.null(excel_path) || !nzchar(excel_path)) {
       stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
     }
@@ -2136,9 +2131,8 @@ export_desc_table <- function(
   # ---- clipboard ----
   if (output == "clipboard") {
     if (!requireNamespace("clipr", quietly = TRUE)) {
-      # nocov start
       stop("Install package 'clipr'.", call. = FALSE)
-    } # nocov end
+    }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)

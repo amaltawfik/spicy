@@ -2605,3 +2605,120 @@ test_that("clipboard text reflects ci = FALSE structurally", {
   )
   expect_true(grepl("CI", captured$text, fixed = TRUE))
 })
+
+# ---- requireNamespace() guards: actionable error when Suggests missing ---
+
+test_that("each rendered output errors with an actionable 'Install package' message when its Suggest is missing", {
+  # The defensive guards inside `export_desc_table()` (one
+  # `requireNamespace()` per engine, plus one for `officer` inside
+  # the word path) are not exercised under normal `devtools::test()`
+  # because every Suggests package is installed in the test
+  # environment. Mocking `base::requireNamespace` to return FALSE
+  # for the targeted package surfaces the guard and verifies that
+  # the user receives the canonical actionable message
+  # (`"Install package 'X'."`). Using `local_mocked_bindings` keeps
+  # the mock scoped to this `test_that` block and never leaks.
+  cases <- list(
+    list(output = "tinytable", pkg = "tinytable"),
+    list(output = "gt", pkg = "gt"),
+    list(output = "flextable", pkg = "flextable"),
+    list(output = "excel", pkg = "openxlsx2"),
+    list(output = "clipboard", pkg = "clipr")
+  )
+  for (c in cases) {
+    local_pkg <- c$pkg
+    testthat::local_mocked_bindings(
+      requireNamespace = function(package, ...) {
+        if (identical(package, local_pkg)) FALSE else TRUE
+      },
+      .package = "base"
+    )
+    args <- list(
+      data = sleep,
+      select = quote(extra),
+      by = quote(group),
+      output = c$output
+    )
+    if (identical(c$output, "excel")) {
+      args$excel_path <- tempfile(fileext = ".xlsx")
+    }
+    expect_error(
+      do.call(table_continuous, args),
+      sprintf("Install package '%s'", c$pkg)
+    )
+  }
+})
+
+test_that("every align value renders cleanly across every rendered engine", {
+  # Phase 2/3 added "decimal" / "center" / "right" / "auto" branches
+  # in each engine's alignment dispatch (gt, tinytable, flextable,
+  # word, excel, clipboard). Default tests cover the "decimal"
+  # branch; this matrix smoke-tests the three alternatives so a
+  # silent regression in any branch is caught.
+  Sys.setenv(CLIPR_ALLOW = "TRUE")
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    .package = "clipr"
+  )
+  base_args <- list(
+    data = sleep,
+    select = quote(extra),
+    by = quote(group)
+  )
+  for (al in c("center", "right", "auto")) {
+    if (requireNamespace("tinytable", quietly = TRUE)) {
+      out <- do.call(table_continuous, c(base_args, list(
+        output = "tinytable", align = al
+      )))
+      expect_true(inherits(out, "tinytable"))
+    }
+    if (requireNamespace("gt", quietly = TRUE)) {
+      out <- do.call(table_continuous, c(base_args, list(
+        output = "gt", align = al
+      )))
+      expect_s3_class(out, "gt_tbl")
+    }
+    if (requireNamespace("flextable", quietly = TRUE)) {
+      out <- do.call(table_continuous, c(base_args, list(
+        output = "flextable", align = al
+      )))
+      expect_s3_class(out, "flextable")
+    }
+    if (requireNamespace("openxlsx2", quietly = TRUE)) {
+      tmp <- tempfile(fileext = ".xlsx")
+      on.exit(unlink(tmp), add = TRUE)
+      do.call(table_continuous, c(base_args, list(
+        output = "excel", align = al, excel_path = tmp
+      )))
+      expect_true(file.exists(tmp))
+    }
+    if (requireNamespace("clipr", quietly = TRUE)) {
+      do.call(table_continuous, c(base_args, list(
+        output = "clipboard", align = al
+      )))
+    }
+  }
+})
+
+test_that("output = 'word' errors when officer is not installed even if flextable is", {
+  # `output = "word"` requires both `flextable` (for the table
+  # object) and `officer` (for `save_as_docx`). The guard for
+  # `officer` is checked inside the flextable / word branch; mock
+  # only the `officer` call to surface the actionable message.
+  testthat::local_mocked_bindings(
+    requireNamespace = function(package, ...) {
+      if (identical(package, "officer")) FALSE else TRUE
+    },
+    .package = "base"
+  )
+  tmp <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmp), add = TRUE)
+  expect_error(
+    table_continuous(
+      sleep, select = extra, by = group,
+      output = "word", word_path = tmp
+    ),
+    "Install package 'officer'"
+  )
+})
+

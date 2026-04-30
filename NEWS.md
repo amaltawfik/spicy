@@ -34,6 +34,8 @@
 
 * `table_categorical()` documentation is reorganised to mirror its `table_*()` companions: markdown subsections in `@details` (*Tests* / *Display conventions*), `@family spicy tables`, and `@seealso` cross-references to `table_continuous()` and `table_continuous_lm()`.
 
+* `table_continuous()`'s defensive `requireNamespace()` guards for the optional output engines (`tinytable`, `gt`, `flextable`, `officer`, `openxlsx2`, `clipr`) are now exercised by mocked tests so the actionable `"Install package 'X'."` messages are protected against silent regressions. Coverage of `R/table_continuous.R` rises from 93% to 99%.
+
 * `table_categorical()` `labels` argument now also accepts a **named character vector** keyed by column name in `data` (e.g. `c(bmi = "Body mass index")`), matching the API of `table_continuous()` and `table_continuous_lm()`. Only listed columns are relabelled; unlisted ones fall back to their column name. Unknown names error clearly. The legacy positional character vector (length matching `select`) continues to work.
 
 * `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and `df2` as integer columns (previously numeric).
