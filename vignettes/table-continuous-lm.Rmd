@@ -78,6 +78,59 @@ table_continuous_lm(
 )
 ```
 
+The `HC*` family is computed via [sandwich::vcovHC()] and includes
+`"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (default for small / moderate
+samples), `"HC4"`, `"HC4m"`, and `"HC5"`.
+
+## Cluster-robust standard errors
+
+When observations are not independent (repeated measurements per
+individual, students nested in classes, panel data), classical and
+`HC*` standard errors are biased downward. Use the `CR*` family
+together with `cluster = id_var` to get cluster-robust inference,
+dispatched to `clubSandwich`:
+
+```{r cluster, eval = requireNamespace("clubSandwich", quietly = TRUE)}
+table_continuous_lm(
+  sleep,
+  select = extra,
+  by = group,
+  vcov = "CR2",
+  cluster = ID,
+  statistic = TRUE
+)
+```
+
+`"CR2"` is the recommended default (Bell & McCaffrey 2002;
+Pustejovsky & Tipton 2018). It produces fractional Satterthwaite
+degrees of freedom, rendered in the displayed test header as e.g.
+`t(8.7)` or `F(2, 12.4)`. `"CR1"` matches Stata's
+`vce(cluster id)` default.
+
+## Bootstrap and jackknife
+
+For situations where the residual distribution is non-standard or
+the sample is small, `vcov = "bootstrap"` and `vcov = "jackknife"`
+provide resampling-based variance estimators in pure base R (no
+dependency added):
+
+```{r bootstrap, eval = FALSE}
+table_continuous_lm(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  vcov = "bootstrap",
+  boot_n = 1000  # default
+)
+```
+
+When `cluster` is supplied, bootstrap switches to a cluster
+bootstrap (Cameron, Gelbach & Miller 2008) and jackknife to
+leave-one-cluster-out (Quenouille 1956). Both estimators use
+asymptotic inference: `z` for single-coefficient contrasts and
+`chi^2(q)` for the global Wald test on `k > 2` categorical
+predictors, rendered in the displayed test header.
+
 ## Case weights
 
 Use `weights` when you want weighted estimated means or slopes in the
@@ -278,6 +331,33 @@ pkgdown_dark_gt(
     output = "gt"
   )
 )
+```
+
+## Tidying for downstream pipelines
+
+`table_continuous_lm()` returns an object that can be coerced to a
+plain `data.frame` / `tbl_df` (stripping the spicy formatting
+attributes) or piped into `broom::tidy()` / `broom::glance()` for
+use with `gtsummary`, `modelsummary`, `parameters`, or any other
+tidyverse-stats workflow:
+
+```{r tidy-glance}
+out <- table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  effect_size = "g",
+  effect_size_ci = TRUE
+)
+
+# One row per estimated parameter: emmean per level, contrast for
+# binary predictors, slope for numeric predictors.
+broom::tidy(out)
+
+# One row per outcome with model-level statistics: r.squared,
+# adj.r.squared, F / t, df, p.value, nobs, weighted_n, plus the
+# effect-size summary.
+broom::glance(out)
 ```
 
 ## See also

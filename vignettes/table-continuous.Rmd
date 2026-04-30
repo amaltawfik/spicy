@@ -123,6 +123,28 @@ table_continuous(
 )
 ```
 
+`effect_size = TRUE` auto-selects the canonical measure for the
+chosen `test` and number of groups: Hedges' *g* (parametric, 2
+groups), eta-squared (parametric, 3+ groups), rank-biserial *r*
+(nonparametric, 2 groups), or epsilon-squared (nonparametric, 3+
+groups). To pick a specific measure explicitly, pass its character
+name:
+
+```{r effect-size-explicit}
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  effect_size = "hedges_g",
+  effect_size_ci = TRUE
+)
+```
+
+Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
+`"hedges_g"`, `"eta_sq"`, `"r_rb"`, and `"epsilon_sq"`. Incompatible
+explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"`
+with `test = "nonparametric"`) trigger an actionable error.
+
 When you need the underlying columns for further processing, use
 `output = "data.frame"`:
 
@@ -237,6 +259,64 @@ table_continuous(
   output = "word",
   word_path = "table_continuous.docx"
 )
+```
+
+## Display options
+
+The printed ASCII table and every rendered output share the same
+formatting vocabulary as `table_continuous_lm()` and
+`table_categorical()`:
+
+- `align = "decimal"` (default) aligns numeric columns on the
+  decimal mark, matching SPSS / SAS / LaTeX `siunitx` conventions.
+  `"center"`, `"right"`, and the legacy `"auto"` are the
+  alternatives.
+- `p_digits = 3` (default, the APA standard) drives both the
+  displayed precision of the `p` column and the small-*p* threshold
+  (`p_digits = 4` -> `.0451` and `<.0001`).
+- `show_n = FALSE` and `ci = FALSE` drop the corresponding columns
+  (and the CI spanner / borders) structurally from every output;
+  the underlying `n` and `ci_lower` / `ci_upper` are always present
+  in `output = "data.frame"` / `"long"` for downstream code.
+
+```{r display-opts}
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  ci = FALSE,
+  show_n = FALSE,
+  p_digits = 4
+)
+```
+
+## Tidying for downstream pipelines
+
+`table_continuous()` returns an object that can be coerced to a plain
+`data.frame` / `tbl_df` (stripping the spicy formatting attributes)
+or piped into `broom::tidy()` / `broom::glance()` for use with
+`gtsummary`, `modelsummary`, `parameters`, or any other tidyverse
+stats workflow:
+
+```{r tidy-glance}
+out <- table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex
+)
+
+# Long descriptive rows: one per (variable x group) with broom-style
+# columns (outcome, label, group, estimate = mean, std.error,
+# conf.low / conf.high, n, min, max, sd).
+broom::tidy(out)
+
+# One row per outcome with the omnibus test + effect-size summary
+# (test_type, statistic, df, df.residual, p.value, es_type, es_value,
+# es_ci_lower / es_ci_upper, n_total).
+broom::glance(out)
+
+# Or just unbox to a plain data.frame (long-format underlying data)
+head(as.data.frame(out))
 ```
 
 ## See also

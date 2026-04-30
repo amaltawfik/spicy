@@ -164,7 +164,10 @@ for a guide on choosing the right measure.
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
-  labels = c("Current smoker", "Physical activity")
+  labels = c(
+    smoking           = "Current smoker",
+    physical_activity = "Physical activity"
+  )
 )
 ```
 
@@ -173,7 +176,10 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Current smoker", "Physical activity")
+  labels = c(
+    smoking           = "Current smoker",
+    physical_activity = "Physical activity"
+  )
 )
 ```
 

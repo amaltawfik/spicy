@@ -137,8 +137,17 @@ table_categorical(
 
 ## Custom labels
 
-By default, `table_categorical()` uses variable names as row headers. Use the
-`labels` argument to provide human-readable labels:
+By default, `table_categorical()` uses variable names as row headers.
+Use the `labels` argument to provide human-readable labels. Two
+forms are accepted (matching `table_continuous()` and
+`table_continuous_lm()`):
+
+- A **named character vector** keyed by column name in `data` --
+  the recommended form. Only listed columns are relabelled; others
+  fall back to the column name.
+- A **positional character vector** of the same length as `select`
+  -- the legacy spicy < 0.11.0 form, kept for backward
+  compatibility.
 
 ```{r labels, eval = build_rich_tables}
 pkgdown_dark_gt(
@@ -146,7 +155,10 @@ pkgdown_dark_gt(
     sochealth,
     select = c(smoking, physical_activity),
     by = education,
-    labels = c("Smoking status", "Regular physical activity"),
+    labels = c(
+      smoking           = "Smoking status",
+      physical_activity = "Regular physical activity"
+    ),
     output = "gt"
   )
 )
@@ -267,6 +279,62 @@ pkgdown_dark_gt(
     output = "gt"
   )
 )
+```
+
+`p_digits` drives both the displayed precision of the `p` column and
+the small-*p* threshold (`p_digits = 3` -> `<.001`, `p_digits = 4`
+-> `<.0001`), matching `table_continuous()` and
+`table_continuous_lm()`.
+
+## Decimal alignment
+
+By default (`align = "decimal"`) numeric columns are aligned on the
+decimal mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+`gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`.
+Engines without a native primitive (`flextable`, `word`,
+`clipboard`, ASCII print) get the alignment via leading / trailing
+space padding, with `flextable` / `word` switching the body font to
+`Consolas` so character widths match.
+
+Pass `align = "auto"` to revert to the legacy uniform
+right-alignment used in spicy < 0.11.0:
+
+```{r align}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  align = "auto"
+)
+```
+
+`"center"` and `"right"` apply literal alignment.
+
+## Tidying for downstream pipelines
+
+`table_categorical()` returns an object that can be coerced to a
+plain `data.frame` / `tbl_df` (stripping the spicy formatting
+attributes) or piped into `broom::tidy()` / `broom::glance()` for
+use with `gtsummary`, `modelsummary`, `parameters`, or any other
+tidyverse-stats workflow:
+
+```{r tidy-glance}
+out <- table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex
+)
+
+# One row per (variable x level x group) with broom-style columns
+# (outcome, level, group, n, proportion). The synthetic Total
+# margin is excluded so each observation is counted once.
+broom::tidy(out)
+
+# One row per outcome with the omnibus chi-squared test and the
+# chosen association measure (test_type, statistic, df, p.value,
+# assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).
+broom::glance(out)
 ```
 
 ## Exporting to Excel, Word, or clipboard
