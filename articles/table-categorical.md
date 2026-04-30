@@ -181,7 +181,16 @@ table_categorical(
 By default,
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 uses variable names as row headers. Use the `labels` argument to provide
-human-readable labels:
+human-readable labels. Two forms are accepted (matching
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)):
+
+- A **named character vector** keyed by column name in `data` – the
+  recommended form. Only listed columns are relabelled; others fall back
+  to the column name.
+- A **positional character vector** of the same length as `select` – the
+  legacy spicy \< 0.11.0 form, kept for backward compatibility.
 
 ``` r
 pkgdown_dark_gt(
@@ -189,7 +198,10 @@ pkgdown_dark_gt(
     sochealth,
     select = c(smoking, physical_activity),
     by = education,
-    labels = c("Smoking status", "Regular physical activity"),
+    labels = c(
+      smoking           = "Smoking status",
+      physical_activity = "Regular physical activity"
+    ),
     output = "gt"
   )
 )
@@ -341,6 +353,125 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
+
+`p_digits` drives both the displayed precision of the `p` column and the
+small-*p* threshold (`p_digits = 3` -\> `<.001`, `p_digits = 4` -\>
+`<.0001`), matching
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
+## Decimal alignment
+
+By default (`align = "decimal"`) numeric columns are aligned on the
+decimal mark, the standard scientific-publication convention used by
+SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+and `tinytable::style_tt(align = "d")`. Engines without a native
+primitive (`flextable`, `word`, `clipboard`, ASCII print) get the
+alignment via leading / trailing space padding, with `flextable` /
+`word` switching the body font to `Consolas` so character widths match.
+
+Pass `align = "auto"` to revert to the legacy uniform right-alignment
+used in spicy \< 0.11.0:
+
+``` r
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  align = "auto"
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %     p 
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │      475      78.4     451    79.3      926     78.8       
+#>    Yes             │      131      21.6     118    20.7      249     21.2       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .832 
+#>    No              │      334      53.9     316    54.5      650     54.2       
+#>    Yes             │      286      46.1     264    45.5      550     45.8       
+#> 
+#>  Variable          │ Cramer's V 
+#> ───────────────────┼────────────
+#>  smoking           │        .01 
+#>    No              │            
+#>    Yes             │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │        .01 
+#>    No              │            
+#>    Yes             │
+```
+
+`"center"` and `"right"` apply literal alignment.
+
+## Tidying for downstream pipelines
+
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+returns an object that can be coerced to a plain `data.frame` / `tbl_df`
+(stripping the spicy formatting attributes) or piped into
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+for use with `gtsummary`, `modelsummary`, `parameters`, or any other
+tidyverse-stats workflow:
+
+``` r
+out <- table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %     p 
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │      475      78.4     451    79.3      926     78.8       
+#>    Yes             │      131      21.6     118    20.7      249     21.2       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .832 
+#>    No              │      334      53.9     316    54.5      650     54.2       
+#>    Yes             │      286      46.1     264    45.5      550     45.8       
+#> 
+#>  Variable          │ Cramer's V 
+#> ───────────────────┼────────────
+#>  smoking           │        .01 
+#>    No              │            
+#>    Yes             │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │        .01 
+#>    No              │            
+#>    Yes             │
+
+# One row per (variable x level x group) with broom-style columns
+# (outcome, level, group, n, proportion). The synthetic Total
+# margin is excluded so each observation is counted once.
+broom::tidy(out)
+#> # A tibble: 8 × 5
+#>   outcome           level group      n proportion
+#>   <chr>             <chr> <chr>  <int>      <dbl>
+#> 1 smoking           No    Female   475      0.784
+#> 2 smoking           No    Male     451      0.793
+#> 3 smoking           Yes   Female   131      0.216
+#> 4 smoking           Yes   Male     118      0.207
+#> 5 physical_activity No    Female   334      0.539
+#> 6 physical_activity No    Male     316      0.545
+#> 7 physical_activity Yes   Female   286      0.461
+#> 8 physical_activity Yes   Male     264      0.455
+
+# One row per outcome with the omnibus chi-squared test and the
+# chosen association measure (test_type, statistic, df, p.value,
+# assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).
+broom::glance(out)
+#> # A tibble: 2 × 10
+#>   outcome           test_type   statistic    df p.value assoc_type assoc_value
+#>   <chr>             <chr>           <dbl> <int>   <dbl> <chr>            <dbl>
+#> 1 physical_activity chi_squared    0.0452     1   0.832 Cramer's V     0.00614
+#> 2 smoking           chi_squared    0.136      1   0.713 Cramer's V     0.0107 
+#> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
+```
 
 ## Exporting to Excel, Word, or clipboard
 

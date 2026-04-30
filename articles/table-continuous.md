@@ -300,6 +300,43 @@ table_continuous(
 #>                                │ Tertiary
 ```
 
+`effect_size = TRUE` auto-selects the canonical measure for the chosen
+`test` and number of groups: Hedges’ *g* (parametric, 2 groups),
+eta-squared (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
+groups), or epsilon-squared (nonparametric, 3+ groups). To pick a
+specific measure explicitly, pass its character name:
+
+``` r
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  effect_size = "hedges_g",
+  effect_size_ci = TRUE
+)
+#> Descriptive statistics
+#> 
+#>  Variable                      │ Group       M     SD    Min     Max  95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00      65.99 
+#>                                │ Male    71.05  16.23  18.70  100.00      69.73 
+#> 
+#>  Variable                      │ Group   95% CI UL    n      p 
+#> ───────────────────────────────┼───────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female      68.33  620  <.001 
+#>                                │ Male        72.37  580        
+#> 
+#>  Variable                      │ Group                         ES 
+#> ───────────────────────────────┼──────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female  g = -0.25 [-0.36, -0.14] 
+#>                                │ Male
+```
+
+Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
+`"hedges_g"`, `"eta_sq"`, `"r_rb"`, and `"epsilon_sq"`. Incompatible
+explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"` with
+`test = "nonparametric"`) trigger an actionable error.
+
 When you need the underlying columns for further processing, use
 `output = "data.frame"`:
 
@@ -556,6 +593,114 @@ table_continuous(
   output = "word",
   word_path = "table_continuous.docx"
 )
+```
+
+## Display options
+
+The printed ASCII table and every rendered output share the same
+formatting vocabulary as
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+and
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+
+- `align = "decimal"` (default) aligns numeric columns on the decimal
+  mark, matching SPSS / SAS / LaTeX `siunitx` conventions. `"center"`,
+  `"right"`, and the legacy `"auto"` are the alternatives.
+- `p_digits = 3` (default, the APA standard) drives both the displayed
+  precision of the `p` column and the small-*p* threshold
+  (`p_digits = 4` -\> `.0451` and `<.0001`).
+- `show_n = FALSE` and `ci = FALSE` drop the corresponding columns (and
+  the CI spanner / borders) structurally from every output; the
+  underlying `n` and `ci_lower` / `ci_upper` are always present in
+  `output = "data.frame"` / `"long"` for downstream code.
+
+``` r
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  ci = FALSE,
+  show_n = FALSE,
+  p_digits = 4
+)
+#> Descriptive statistics
+#> 
+#>  Variable                      │ Group       M     SD    Min     Max       p 
+#> ───────────────────────────────┼─────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00  <.0001 
+#>                                │ Male    71.05  16.23  18.70  100.00
+```
+
+## Tidying for downstream pipelines
+
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+returns an object that can be coerced to a plain `data.frame` / `tbl_df`
+(stripping the spicy formatting attributes) or piped into
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+for use with `gtsummary`, `modelsummary`, `parameters`, or any other
+tidyverse stats workflow:
+
+``` r
+out <- table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex
+)
+#> Descriptive statistics
+#> 
+#>  Variable                      │ Group       M     SD    Min     Max  95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────────────
+#>  Body mass index               │ Female  25.69   3.78  16.00   38.90      25.39 
+#>                                │ Male    26.20   3.64  16.00   37.70      25.90 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00      65.99 
+#>                                │ Male    71.05  16.23  18.70  100.00      69.73 
+#> 
+#>  Variable                      │ Group   95% CI UL    n      p 
+#> ───────────────────────────────┼───────────────────────────────
+#>  Body mass index               │ Female      25.98  616   .018 
+#>                                │ Male        26.50  572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female      68.33  620  <.001 
+#>                                │ Male        72.37  580
+
+# Long descriptive rows: one per (variable x group) with broom-style
+# columns (outcome, label, group, estimate = mean, std.error,
+# conf.low / conf.high, n, min, max, sd).
+broom::tidy(out)
+#> # A tibble: 4 × 11
+#>   outcome    label group estimate std.error conf.low conf.high     n   min   max
+#>   <chr>      <chr> <chr>    <dbl>     <dbl>    <dbl>     <dbl> <int> <dbl> <dbl>
+#> 1 bmi        Body… Fema…     25.7     0.152     25.4      26.0   616  16    38.9
+#> 2 bmi        Body… Male      26.2     0.152     25.9      26.5   572  16    37.7
+#> 3 wellbeing… WHO-… Fema…     67.2     0.594     66.0      68.3   620  19.6 100  
+#> 4 wellbeing… WHO-… Male      71.0     0.674     69.7      72.4   580  18.7 100  
+#> # ℹ 1 more variable: sd <dbl>
+
+# One row per outcome with the omnibus test + effect-size summary
+# (test_type, statistic, df, df.residual, p.value, es_type, es_value,
+# es_ci_lower / es_ci_upper, n_total).
+broom::glance(out)
+#> # A tibble: 2 × 12
+#>   outcome   label test_type statistic    df df.residual p.value es_type es_value
+#>   <chr>     <chr> <chr>         <dbl> <dbl>       <dbl>   <dbl> <chr>      <dbl>
+#> 1 bmi       Body… welch_t       -2.38 1184.          NA 1.76e-2 NA            NA
+#> 2 wellbein… WHO-… welch_t       -4.33 1169.          NA 1.65e-5 NA            NA
+#> # ℹ 3 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, n_total <int>
+
+# Or just unbox to a plain data.frame (long-format underlying data)
+head(as.data.frame(out))
+#>          variable                         label  group     mean        sd  min
+#> 1             bmi               Body mass index Female 25.68506  3.781113 16.0
+#> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0
+#> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6
+#> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7
+#>     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value
+#> 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2  37.7 25.89808 26.49563 572      <NA>        NA       NA  NA           NA
+#> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 100.0 69.72540 72.37219 580      <NA>        NA       NA  NA           NA
 ```
 
 ## See also

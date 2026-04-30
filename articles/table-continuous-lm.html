@@ -161,13 +161,69 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     4.32  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188</span></span></code></pre></div>
+<p>The <code>HC*</code> family is computed via [sandwich::vcovHC()] and
+includes <code>"HC0"</code>, <code>"HC1"</code>, <code>"HC2"</code>,
+<code>"HC3"</code> (default for small / moderate samples),
+<code>"HC4"</code>, <code>"HC4m"</code>, and <code>"HC5"</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="cluster-robust-standard-errors">Cluster-robust standard errors<a class="anchor" aria-label="anchor" href="#cluster-robust-standard-errors"></a>
+</h2>
+<p>When observations are not independent (repeated measurements per
+individual, students nested in classes, panel data), classical and
+<code>HC*</code> standard errors are biased downward. Use the
+<code>CR*</code> family together with <code>cluster = id_var</code> to
+get cluster-robust inference, dispatched to
+<code>clubSandwich</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sleep</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">extra</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">group</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"CR2"</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="va">ID</span>,</span>
+<span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by group</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20</span></span></code></pre></div>
+<p><code>"CR2"</code> is the recommended default (Bell &amp; McCaffrey
+2002; Pustejovsky &amp; Tipton 2018). It produces fractional
+Satterthwaite degrees of freedom, rendered in the displayed test header
+as e.g. <code>t(8.7)</code> or <code>F(2, 12.4)</code>.
+<code>"CR1"</code> matches Stata’s <code>vce(cluster id)</code>
+default.</p>
+</div>
+<div class="section level2">
+<h2 id="bootstrap-and-jackknife">Bootstrap and jackknife<a class="anchor" aria-label="anchor" href="#bootstrap-and-jackknife"></a>
+</h2>
+<p>For situations where the residual distribution is non-standard or the
+sample is small, <code>vcov = "bootstrap"</code> and
+<code>vcov = "jackknife"</code> provide resampling-based variance
+estimators in pure base R (no dependency added):</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"bootstrap"</span>,</span>
+<span>  boot_n <span class="op">=</span> <span class="fl">1000</span>  <span class="co"># default</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>When <code>cluster</code> is supplied, bootstrap switches to a
+cluster bootstrap (Cameron, Gelbach &amp; Miller 2008) and jackknife to
+leave-one-cluster-out (Quenouille 1956). Both estimators use asymptotic
+inference: <code>z</code> for single-coefficient contrasts and
+<code>chi^2(q)</code> for the global Wald test on <code>k &gt; 2</code>
+categorical predictors, rendered in the displayed test header.</p>
 </div>
 <div class="section level2">
 <h2 id="case-weights">Case weights<a class="anchor" aria-label="anchor" href="#case-weights"></a>
 </h2>
 <p>Use <code>weights</code> when you want weighted estimated means or
 slopes in the same model-based table:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -194,7 +250,7 @@ reporting workflow already relies on weighted linear models.</p>
 </h2>
 <p>If <code>by</code> is numeric, <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>
 reports the slope rather than group means:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -224,7 +280,7 @@ statistic but not the standardized effect size itself).</p>
 <p>Cohen’s <em>d</em> and Hedges’ <em>g</em> are the conventions for
 two-group comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and
 require <code>by</code> to have exactly two non-empty levels:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -246,7 +302,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <code>J = 1 - 3/(4·df_resid - 1)</code>. It is generally preferred over
 raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 2018):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -268,7 +324,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 predictors), use Hays’ <code>omega²</code> for a less biased estimate of
 the population variance explained (Hays 1963; Olejnik and Algina 2003;
 Lakens 2013):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -289,7 +345,7 @@ Lakens 2013):</p>
 <p>Cohen’s <code>f²</code> (= <code>R² / (1 - R²)</code>) is the effect
 size familiar from power-analysis frameworks (e.g. G*Power) and is
 defined for any predictor type:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -330,7 +386,7 @@ approximation that is biased for small samples.</li>
 </ul>
 <p>In the printed and rendered outputs, the effect size is displayed
 with the bracketed CI (article-ready):</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -357,7 +413,7 @@ with the bracketed CI (article-ready):</p>
 <p>The CI level follows <code>ci_level</code> (default
 <code>0.95</code>). For programmatic access, the wide raw output exposes
 separate numeric columns, and the long output always includes them:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
@@ -372,7 +428,7 @@ separate numeric columns, and the long output always includes them:</p>
 <span><span class="co">#&gt; wellbeing_score -3.906437 0.4708504 0.1238546 0.002017481 -0.1098571</span></span>
 <span><span class="co">#&gt;                 effect_size_ci_lower effect_size_ci_upper    n</span></span>
 <span><span class="co">#&gt; wellbeing_score           -0.2497291           0.03006164 1175</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
@@ -399,7 +455,7 @@ appropriate.</p>
 </h2>
 <p>Pretty outcome labels and a comma decimal separator (useful for
 European reporting):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -431,7 +487,7 @@ European reporting):</p>
 summary-table helpers, including <code>tinytable</code>,
 <code>gt</code>, <code>flextable</code>, <code>excel</code>,
 <code>word</code>, and <code>clipboard</code>.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1020,6 +1076,67 @@ summary-table helpers, including <code>tinytable</code>,
 </tbody>
 </table>
 </div>
+</div>
+<div class="section level2">
+<h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
+</h2>
+<p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> returns an object that can be
+coerced to a plain <code>data.frame</code> / <code>tbl_df</code>
+(stripping the spicy formatting attributes) or piped into
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for use with
+<code>gtsummary</code>, <code>modelsummary</code>,
+<code>parameters</code>, or any other tidyverse-stats workflow:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL    p     R²  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.13       5.64     &lt;.001  0.02 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>         g           n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.25 [0.14, 0.36]  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188</span></span>
+<span></span>
+<span><span class="co"># One row per estimated parameter: emmean per level, contrast for</span></span>
+<span><span class="co"># binary predictors, slope for numeric predictors.</span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 10</span></span></span>
+<span><span class="co">#&gt;   outcome        label term  estimate_type estimate std.error conf.low conf.high</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> wellbeing_sco… WHO-… Fema… emmean          67.2       0.623  65.9       68.4  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> wellbeing_sco… WHO-… Male  emmean          71.0       0.644  69.8       72.3  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> wellbeing_sco… WHO-… Male… difference       3.89      0.896   2.13       5.64 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi            Body… Fema… emmean          25.7       0.150  25.4       26.0  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi            Body… Male  emmean          26.2       0.155  25.9       26.5  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bmi            Body… Male… difference       0.512     0.216   0.088<span style="text-decoration: underline;">8</span>     0.935</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: statistic &lt;dbl&gt;, p.value &lt;dbl&gt;</span></span></span>
+<span></span>
+<span><span class="co"># One row per outcome with model-level statistics: r.squared,</span></span>
+<span><span class="co"># adj.r.squared, F / t, df, p.value, nobs, weighted_n, plus the</span></span>
+<span><span class="co"># effect-size summary.</span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 16</span></span></span>
+<span><span class="co">#&gt;   outcome     label predictor_type test_type statistic    df df.residual p.value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> wellbeing_… WHO-… categorical    F             18.8      1        <span style="text-decoration: underline;">1</span>198 1.55<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi         Body… categorical    F              5.64     1        <span style="text-decoration: underline;">1</span>186 1.78<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: r.squared &lt;dbl&gt;, adj.r.squared &lt;dbl&gt;, es_type &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   es_value &lt;dbl&gt;, es_ci_lower &lt;dbl&gt;, es_ci_upper &lt;dbl&gt;, nobs &lt;int&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   weighted_n &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

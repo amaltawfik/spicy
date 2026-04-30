@@ -69,6 +69,62 @@ table_continuous_lm(
 #>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188
 ```
 
+The `HC*` family is computed via \[sandwich::vcovHC()\] and includes
+`"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (default for small / moderate
+samples), `"HC4"`, `"HC4m"`, and `"HC5"`.
+
+## Cluster-robust standard errors
+
+When observations are not independent (repeated measurements per
+individual, students nested in classes, panel data), classical and `HC*`
+standard errors are biased downward. Use the `CR*` family together with
+`cluster = id_var` to get cluster-robust inference, dispatched to
+`clubSandwich`:
+
+``` r
+table_continuous_lm(
+  sleep,
+  select = extra,
+  by = group,
+  vcov = "CR2",
+  cluster = ID,
+  statistic = TRUE
+)
+#> Continuous outcomes by group
+#> 
+#>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  
+#> ──────────┼─────────────────────────────────────────────────────────────────────
+#>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20
+```
+
+`"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
+Tipton 2018). It produces fractional Satterthwaite degrees of freedom,
+rendered in the displayed test header as e.g. `t(8.7)` or `F(2, 12.4)`.
+`"CR1"` matches Stata’s `vce(cluster id)` default.
+
+## Bootstrap and jackknife
+
+For situations where the residual distribution is non-standard or the
+sample is small, `vcov = "bootstrap"` and `vcov = "jackknife"` provide
+resampling-based variance estimators in pure base R (no dependency
+added):
+
+``` r
+table_continuous_lm(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  vcov = "bootstrap",
+  boot_n = 1000  # default
+)
+```
+
+When `cluster` is supplied, bootstrap switches to a cluster bootstrap
+(Cameron, Gelbach & Miller 2008) and jackknife to leave-one-cluster-out
+(Quenouille 1956). Both estimators use asymptotic inference: `z` for
+single-coefficient contrasts and `chi^2(q)` for the global Wald test on
+`k > 2` categorical predictors, rendered in the displayed test header.
+
 ## Case weights
 
 Use `weights` when you want weighted estimated means or slopes in the
@@ -371,6 +427,69 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
+
+## Tidying for downstream pipelines
+
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+returns an object that can be coerced to a plain `data.frame` / `tbl_df`
+(stripping the spicy formatting attributes) or piped into
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+for use with `gtsummary`, `modelsummary`, `parameters`, or any other
+tidyverse-stats workflow:
+
+``` r
+out <- table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  effect_size = "g",
+  effect_size_ci = TRUE
+)
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
+#>  Body mass index               │   25.69      26.20          0.51        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²  
+#> ───────────────────────────────┼───────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02 
+#>  Body mass index               │   0.09       0.93      .018  0.00 
+#> 
+#>  Variable                      │         g           n   
+#> ───────────────────────────────┼─────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 0.25 [0.14, 0.36]  1200 
+#>  Body mass index               │ 0.14 [0.02, 0.25]  1188
+
+# One row per estimated parameter: emmean per level, contrast for
+# binary predictors, slope for numeric predictors.
+broom::tidy(out)
+#> # A tibble: 6 × 10
+#>   outcome        label term  estimate_type estimate std.error conf.low conf.high
+#>   <chr>          <chr> <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 wellbeing_sco… WHO-… Fema… emmean          67.2       0.623  65.9       68.4  
+#> 2 wellbeing_sco… WHO-… Male  emmean          71.0       0.644  69.8       72.3  
+#> 3 wellbeing_sco… WHO-… Male… difference       3.89      0.896   2.13       5.64 
+#> 4 bmi            Body… Fema… emmean          25.7       0.150  25.4       26.0  
+#> 5 bmi            Body… Male  emmean          26.2       0.155  25.9       26.5  
+#> 6 bmi            Body… Male… difference       0.512     0.216   0.0888     0.935
+#> # ℹ 2 more variables: statistic <dbl>, p.value <dbl>
+
+# One row per outcome with model-level statistics: r.squared,
+# adj.r.squared, F / t, df, p.value, nobs, weighted_n, plus the
+# effect-size summary.
+broom::glance(out)
+#> # A tibble: 2 × 16
+#>   outcome     label predictor_type test_type statistic    df df.residual p.value
+#>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <int>   <dbl>
+#> 1 wellbeing_… WHO-… categorical    F             18.8      1        1198 1.55e-5
+#> 2 bmi         Body… categorical    F              5.64     1        1186 1.78e-2
+#> # ℹ 8 more variables: r.squared <dbl>, adj.r.squared <dbl>, es_type <chr>,
+#> #   es_value <dbl>, es_ci_lower <dbl>, es_ci_upper <dbl>, nobs <int>,
+#> #   weighted_n <dbl>
+```
 
 ## See also
 

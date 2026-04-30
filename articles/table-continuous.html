@@ -382,9 +382,46 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  ε² = 0.19 </span></span>
 <span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
 <span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
+<p><code>effect_size = TRUE</code> auto-selects the canonical measure
+for the chosen <code>test</code> and number of groups: Hedges’
+<em>g</em> (parametric, 2 groups), eta-squared (parametric, 3+ groups),
+rank-biserial <em>r</em> (nonparametric, 2 groups), or epsilon-squared
+(nonparametric, 3+ groups). To pick a specific measure explicitly, pass
+its character name:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
+<span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group       M     SD    Min     Max  95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00      65.99 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00      69.73 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group   95% CI UL    n      p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female      68.33  620  &lt;.001 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male        72.37  580        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group                         ES </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  g = -0.25 [-0.36, -0.14] </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male</span></span></code></pre></div>
+<p>Allowed values are <code>"none"</code> (default), <code>"auto"</code>
+(= legacy <code>TRUE</code>), <code>"hedges_g"</code>,
+<code>"eta_sq"</code>, <code>"r_rb"</code>, and
+<code>"epsilon_sq"</code>. Incompatible explicit choices
+(e.g. <code>"eta_sq"</code> with two groups, or <code>"hedges_g"</code>
+with <code>test = "nonparametric"</code>) trigger an actionable
+error.</p>
 <p>When you need the underlying columns for further processing, use
 <code>output = "data.frame"</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -419,7 +456,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <h2 id="selecting-variables">Selecting variables<a class="anchor" aria-label="anchor" href="#selecting-variables"></a>
 </h2>
 <p><code>select</code> supports tidyselect helpers:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>,</span>
@@ -469,7 +506,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  .453 </span></span>
 <span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male</span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="st">"^life_sat"</span>,</span>
@@ -518,7 +555,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt; 12        NA  NA       NA           NA</span></span></code></pre></div>
 <p>Use <code>exclude</code> when you want a broad selection with one or
 two explicit removals:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span>, <span class="va">life_sat_work</span><span class="op">)</span>,</span>
@@ -554,7 +591,7 @@ two explicit removals:</p>
 </h2>
 <p>Use <code>labels</code> to replace technical variable names with
 reporting labels:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1251,7 +1288,7 @@ outputs as <code><a href="../reference/table_categorical.html">table_categorical
 </table>
 <p>For example, <code>tinytable</code> works well in Quarto and R
 Markdown documents:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1443,7 +1480,7 @@ Markdown documents:</p>
 <h2 id="export-to-excel-or-word">Export to Excel or Word<a class="anchor" aria-label="anchor" href="#export-to-excel-or-word"></a>
 </h2>
 <p>Use the same function to export the table directly:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1459,6 +1496,117 @@ Markdown documents:</p>
 <span>  output <span class="op">=</span> <span class="st">"word"</span>,</span>
 <span>  word_path <span class="op">=</span> <span class="st">"table_continuous.docx"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="display-options">Display options<a class="anchor" aria-label="anchor" href="#display-options"></a>
+</h2>
+<p>The printed ASCII table and every rendered output share the same
+formatting vocabulary as <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>:</p>
+<ul>
+<li>
+<code>align = "decimal"</code> (default) aligns numeric columns on
+the decimal mark, matching SPSS / SAS / LaTeX <code>siunitx</code>
+conventions. <code>"center"</code>, <code>"right"</code>, and the legacy
+<code>"auto"</code> are the alternatives.</li>
+<li>
+<code>p_digits = 3</code> (default, the APA standard) drives both
+the displayed precision of the <code>p</code> column and the
+small-<em>p</em> threshold (<code>p_digits = 4</code> -&gt;
+<code>.0451</code> and <code>&lt;.0001</code>).</li>
+<li>
+<code>show_n = FALSE</code> and <code>ci = FALSE</code> drop the
+corresponding columns (and the CI spanner / borders) structurally from
+every output; the underlying <code>n</code> and <code>ci_lower</code> /
+<code>ci_upper</code> are always present in
+<code>output = "data.frame"</code> / <code>"long"</code> for downstream
+code.</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  show_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  p_digits <span class="op">=</span> <span class="fl">4</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group       M     SD    Min     Max       p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00  &lt;.0001 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
+</h2>
+<p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> returns an object that can be coerced
+to a plain <code>data.frame</code> / <code>tbl_df</code> (stripping the
+spicy formatting attributes) or piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> /
+<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for use with <code>gtsummary</code>,
+<code>modelsummary</code>, <code>parameters</code>, or any other
+tidyverse stats workflow:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group       M     SD    Min     Max  95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Female  25.69   3.78  16.00   38.90      25.39 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male    26.20   3.64  16.00   37.70      25.90 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00      65.99 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00      69.73 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group   95% CI UL    n      p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> Female      25.98  616   .018 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male        26.50  572        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female      68.33  620  &lt;.001 </span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male        72.37  580</span></span>
+<span></span>
+<span><span class="co"># Long descriptive rows: one per (variable x group) with broom-style</span></span>
+<span><span class="co"># columns (outcome, label, group, estimate = mean, std.error,</span></span>
+<span><span class="co"># conf.low / conf.high, n, min, max, sd).</span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 11</span></span></span>
+<span><span class="co">#&gt;   outcome    label group estimate std.error conf.low conf.high     n   min   max</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi        Body… Fema…     25.7     0.152     25.4      26.0   616  16    38.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi        Body… Male      26.2     0.152     25.9      26.5   572  16    37.7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> wellbeing… WHO-… Fema…     67.2     0.594     66.0      68.3   620  19.6 100  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> wellbeing… WHO-… Male      71.0     0.674     69.7      72.4   580  18.7 100  </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: sd &lt;dbl&gt;</span></span></span>
+<span></span>
+<span><span class="co"># One row per outcome with the omnibus test + effect-size summary</span></span>
+<span><span class="co"># (test_type, statistic, df, df.residual, p.value, es_type, es_value,</span></span>
+<span><span class="co"># es_ci_lower / es_ci_upper, n_total).</span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 12</span></span></span>
+<span><span class="co">#&gt;   outcome   label test_type statistic    df df.residual p.value es_type es_value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi       Body… welch_t       -<span style="color: #BB0000;">2.38</span> <span style="text-decoration: underline;">1</span>184.          <span style="color: #BB0000;">NA</span> 1.76<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> wellbein… WHO-… welch_t       -<span style="color: #BB0000;">4.33</span> <span style="text-decoration: underline;">1</span>169.          <span style="color: #BB0000;">NA</span> 1.65<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: es_ci_lower &lt;dbl&gt;, es_ci_upper &lt;dbl&gt;, n_total &lt;int&gt;</span></span></span>
+<span></span>
+<span><span class="co"># Or just unbox to a plain data.frame (long-format underlying data)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          variable                         label  group     mean        sd  min</span></span>
+<span><span class="co">#&gt; 1             bmi               Body mass index Female 25.68506  3.781113 16.0</span></span>
+<span><span class="co">#&gt; 2             bmi               Body mass index   Male 26.19685  3.638092 16.0</span></span>
+<span><span class="co">#&gt; 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6</span></span>
+<span><span class="co">#&gt; 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7</span></span>
+<span><span class="co">#&gt;     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value</span></span>
+<span><span class="co">#&gt; 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span></span>
+<span><span class="co">#&gt; 2  37.7 25.89808 26.49563 572      &lt;NA&gt;        NA       NA  NA           NA</span></span>
+<span><span class="co">#&gt; 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span></span>
+<span><span class="co">#&gt; 4 100.0 69.72540 72.37219 580      &lt;NA&gt;        NA       NA  NA           NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
