@@ -5,13 +5,23 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Derive variable labels from column names name&lt;sep&gt;label — label_from_names"><meta name="description" content="Splits each column name at the first occurrence of sep, renames
-the column to the part before sep (the name), and assigns the part
-after sep as a labelled::var_label(). This works even if the label
-itself contains the separator."><meta property="og:description" content="Splits each column name at the first occurrence of sep, renames
-the column to the part before sep (the name), and assigns the part
-after sep as a labelled::var_label(). This works even if the label
-itself contains the separator."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Derive variable labels from column names name&lt;sep&gt;label — label_from_names"><meta name="description" content='Splits each column name at the first occurrence of sep,
+renames the column to the part before sep (the name, trimmed
+of surrounding whitespace), and assigns the part after sep as a
+"label" attribute on the column. The label attribute follows the
+haven convention also used by
+labelled::var_label(), so labelled-aware tooling
+(labelled, haven, varlist(), code_book(), ...) reads it
+transparently. Splitting at the first sep means the label itself
+may contain the separator.'><meta property="og:description" content='Splits each column name at the first occurrence of sep,
+renames the column to the part before sep (the name, trimmed
+of surrounding whitespace), and assigns the part after sep as a
+"label" attribute on the column. The label attribute follows the
+haven convention also used by
+labelled::var_label(), so labelled-aware tooling
+(labelled, haven, varlist(), code_book(), ...) reads it
+transparently. Splitting at the first sep means the label itself
+may contain the separator.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -64,10 +74,15 @@ itself contains the separator."><meta property="og:image" content="https://amalt
     </div>
 
     <div class="ref-description section level2">
-    <p>Splits each column name at the <strong>first</strong> occurrence of <code>sep</code>, renames
-the column to the part before <code>sep</code> (the <em>name</em>), and assigns the part
-after <code>sep</code> as a <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>. This works even if the label
-itself contains the separator.</p>
+    <p>Splits each column name at the <strong>first</strong> occurrence of <code>sep</code>,
+renames the column to the part before <code>sep</code> (the <em>name</em>, trimmed
+of surrounding whitespace), and assigns the part after <code>sep</code> as a
+<code>"label"</code> attribute on the column. The label attribute follows the
+<a href="https://haven.tidyverse.org/" class="external-link">haven</a> convention also used by
+<code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, so labelled-aware tooling
+(<code>labelled</code>, <code>haven</code>, <code><a href="varlist.html">varlist()</a></code>, <code><a href="code_book.html">code_book()</a></code>, ...) reads it
+transparently. Splitting at the first <code>sep</code> means the label itself
+may contain the separator.</p>
     </div>
 
     <div class="section level2">
@@ -81,60 +96,82 @@ itself contains the separator.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A <code>data.frame</code> or tibble with column names of the form
-<code>"name&lt;sep&gt;label"</code> (e.g. "name. label"). (by default from LimeSurvey).</p></dd>
+<code>"name&lt;sep&gt;label"</code> (e.g. <code>"code. question text"</code>).</p></dd>
 
 
 <dt id="arg-sep">sep<a class="anchor" aria-label="anchor" href="#arg-sep"></a></dt>
-<dd><p>Character string used as separator between name and label.
-Default is <code>". "</code> (LimeSurvey's default), but any literal string can be used.</p></dd>
+<dd><p>Character string used as separator between name and
+label. Default <code>". "</code> (LimeSurvey's default); any literal string
+can be used. Matched as a fixed string, so regex metacharacters
+such as <code>.</code> or <code>|</code> carry no special meaning.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A base <code>tibble</code> with column names equal to the <em>names</em> (before <code>sep</code>)
-and <code>var_label</code> attributes equal to the <em>labels</em> (after <code>sep</code>).</p>
+    <p>An object of the <strong>same class as <code>df</code></strong> – a base
+<code>data.frame</code> if <code>df</code> was a base <code>data.frame</code>, a <code>tbl_df</code> if <code>df</code>
+was a tibble. The output has column names equal to the trimmed
+names (before <code>sep</code>) and, for every column whose original name
+contained <code>sep</code>, a <code>"label"</code> attribute equal to the label (after
+<code>sep</code>). Columns whose name does not contain <code>sep</code> are passed
+through unchanged with no label attached.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function is especially useful for <strong>LimeSurvey CSV exports</strong> when using
-<em>Export results</em> → <em>Export format: CSV</em> → <em>Headings: Question code &amp; question text</em>,
-where column names look like <code>"code. question text"</code>. In this case the
-default separator is <code>". "</code>.</p>
+    <p>This is especially useful for <strong>LimeSurvey CSV exports</strong> when
+using <em>Export results -&gt; Export format: CSV -&gt; Headings: Question
+code &amp; question text</em>, where column names look like
+<code>"code. question text"</code>. The default separator is <code>". "</code> to match
+that export.</p>
+<p>LimeSurvey question codes (the part <em>before</em> <code>sep</code>) are restricted
+to alphanumeric characters, must start with a letter, and cannot
+contain spaces or special characters. The column name therefore
+needs to encode both the code <em>and</em> the question text, separated
+by a literal string – there is no way to recover a label from a
+code alone. If your export uses <em>Headings: Question code</em> (codes
+only), re-export with <em>Headings: Question code &amp; question text</em>
+(which inserts the default <code>". "</code> separator) before calling this
+function.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="errors">Errors<a class="anchor" aria-label="anchor" href="#errors"></a></h2>
+
+
+<p>The function raises an actionable error – rather than letting the
+downstream constructor raise a cryptic one – when the split
+produces:</p><ul><li><p>duplicate column names (two original names share the same
+prefix before <code>sep</code>); or</p></li>
+<li><p>an empty column name (the original name starts with <code>sep</code>
+and has nothing before it).</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code> reads the <code>"label"</code> attribute set
+by this function; <code><a href="varlist.html">varlist()</a></code> and <code><a href="code_book.html">code_book()</a></code> surface it in
+their inspection outputs.</p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example with LimeSurvey-style column names</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># LimeSurvey-style column names (default sep = ". ").</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="st">"score. Total score. Manually computed."</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">14</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  check.names <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># sep = ". " by default (LimeSurvey)</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">label_from_names</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">labelled</span><span class="fu">::</span><span class="fu"><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">var_label</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $age</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">age</span>, <span class="st">"label"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Age of respondent"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $score</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">score</span>, <span class="st">"label"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total score. Manually computed."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Example with a custom separator ("|")</span></span></span>
+<span class="r-in"><span><span class="co"># Custom separator.</span></span></span>
 <span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="st">"id|Identifier"</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span></span>
 <span class="r-in"><span>  <span class="st">"score|Total score"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">30</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  check.names <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">out2</span> <span class="op">&lt;-</span> <span class="fu">label_from_names</span><span class="op">(</span><span class="va">df2</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">labelled</span><span class="fu">::</span><span class="fu"><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">var_label</a></span><span class="op">(</span><span class="va">out2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Identifier"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $score</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total score"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -78,7 +78,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (previously hardcoded to 95%).</p></li>
+<ul><li><p><code><a href="../reference/label_from_names.html">label_from_names()</a></code> now raises an actionable error when the split at <code>sep</code> produces duplicate column names or an empty column name (it used to surface a cryptic constructor message). The new column name is trimmed of trailing whitespace and the input class (<code>data.frame</code> or <code>tbl_df</code>) is preserved on output. Internally the function no longer depends on <code>labelled</code> or <code>tibble</code>; the <code>"label"</code> attribute it sets remains the same haven convention read by <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>.</p></li>
+<li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (previously hardcoded to 95%).</p></li>
 <li><p>The categorical-predictor global Wald <em>F</em> degrades to <code>NA</code> (instead of erroring) when the coefficient covariance submatrix is singular.</p></li>
 </ul></div>
 <div class="section level3">

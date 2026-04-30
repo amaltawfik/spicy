@@ -74,6 +74,16 @@
 
 ### Bug fixes
 
+- [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  now raises an actionable error when the split at `sep` produces
+  duplicate column names or an empty column name (it used to surface a
+  cryptic constructor message). The new column name is trimmed of
+  trailing whitespace and the input class (`data.frame` or `tbl_df`) is
+  preserved on output. Internally the function no longer depends on
+  `labelled` or `tibble`; the `"label"` attribute it sets remains the
+  same haven convention read by
+  [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html).
+
 - `table_continuous_lm(output = "data.frame")` names contrast CI columns
   from `ci_level` (previously hardcoded to 95%).
 
