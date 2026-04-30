@@ -422,12 +422,12 @@ pooled within-group SD for the unweighted two-group case);
 1985). The sign matches the displayed \code{Delta (level2 - level1)}.
 For published reports of two-group comparisons, \emph{g} is the
 convention recommended by Hedges and Olkin (1985).
-\item \code{"omega2"}: Hays' \verb{ω²}, computed from weighted sums of
-squares as \code{(SS_effect - df_effect * MSE) / (SS_total + MSE)} and
-truncated at 0 for small or null effects (Hays 1963; Olejnik and
-Algina 2003). Less biased than \verb{η²} (which equals \verb{R²} in this
-single-predictor design) and recommended for reporting variance
-explained in ANOVA-style designs (Olejnik and Algina 2003).
+\item \code{"omega2"}: Hays' \eqn{\omega^2}, computed from weighted
+sums of squares as \code{(SS_effect - df_effect * MSE) / (SS_total + MSE)} and truncated at 0 for small or null effects (Hays
+1963; Olejnik and Algina 2003). Less biased than
+\eqn{\eta^2} (which equals \code{R^2} in this single-predictor
+design) and recommended for reporting variance explained in
+ANOVA-style designs (Olejnik and Algina 2003).
 }
 
 All four effect sizes are point estimates derived from the OLS/WLS fit
@@ -612,7 +612,7 @@ table_continuous_lm(
   effect_size = "f2"
 )
 
-# Hays' ω² for a 3-level predictor (d / g would error here).
+# Hays' omega-squared for a 3-level predictor (d / g would error here).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
