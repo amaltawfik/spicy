@@ -68,23 +68,11 @@
   `@seealso`, and a curated `@references` for
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 
-- [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
-  gains *Effect sizes* and *Confidence intervals for effect sizes*
-  sections.
-
 - `table_continuous_lm(output = "long")` returns `n`, `df1`, and `df2`
   as integer columns; `predictor_label` is now preserved on the
   degenerate-model fallback path.
 
-- Coverage of `R/table_continuous.R` rises from 93% to 99% via mocked
-  tests of the optional-engine
-  [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html) guards.
-
 ### Bug fixes
-
-- Effect-size CI display now uses a semicolon as list separator under
-  `decimal_mark = ","` (e.g. `g = 0,18 [0,07; 0,30]`), removing an
-  ambiguity with the legacy comma.
 
 - `table_continuous_lm(output = "data.frame")` names contrast CI columns
   from `ci_level` (previously hardcoded to 95%).

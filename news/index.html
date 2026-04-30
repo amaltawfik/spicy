@@ -74,14 +74,11 @@
 <li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> gain a <code>p_digits</code> argument (default <code>3</code>, the APA standard) driving both display precision and the small-<em>p</em> threshold.</p></li>
 <li><p><code>table_categorical(labels = ...)</code> accepts a named character vector keyed by column name (e.g. <code>c(bmi = "Body mass index")</code>), matching the API of the other two <code>table_*()</code> functions; positional vectors continue to work.</p></li>
 <li><p>All three <code>table_*()</code> functions get reorganised documentation: markdown <code>@details</code> subsections, <code>@family spicy tables</code>, reciprocal <code>@seealso</code>, and a curated <code>@references</code> for <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>.</p></li>
-<li><p><code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code> gains <em>Effect sizes</em> and <em>Confidence intervals for effect sizes</em> sections.</p></li>
 <li><p><code>table_continuous_lm(output = "long")</code> returns <code>n</code>, <code>df1</code>, and <code>df2</code> as integer columns; <code>predictor_label</code> is now preserved on the degenerate-model fallback path.</p></li>
-<li><p>Coverage of <code>R/table_continuous.R</code> rises from 93% to 99% via mocked tests of the optional-engine <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code> guards.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p>Effect-size CI display now uses a semicolon as list separator under <code>decimal_mark = ","</code> (e.g. <code>g = 0,18 [0,07; 0,30]</code>), removing an ambiguity with the legacy comma.</p></li>
-<li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (previously hardcoded to 95%).</p></li>
+<ul><li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (previously hardcoded to 95%).</p></li>
 <li><p>The categorical-predictor global Wald <em>F</em> degrades to <code>NA</code> (instead of erroring) when the coefficient covariance submatrix is singular.</p></li>
 </ul></div>
 <div class="section level3">
