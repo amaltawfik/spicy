@@ -2,7 +2,7 @@
 
 ## New features
 
-* `table_categorical()` gains an `align` argument (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`) controlling horizontal alignment of numeric columns in the printed ASCII table and in the `tinytable` and `gt` outputs, using the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`. The `flextable`, `word`, `excel`, and `clipboard` engines fall back to right-aligned numerics. Same default and semantics as `table_continuous()` / `table_continuous_lm()`.
+* `table_categorical()` gains an `align` argument (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`) controlling horizontal alignment of numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs. Uses the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`; `flextable` / `word` / `clipboard` get the alignment via leading / trailing space padding plus a monospace body font (`Consolas`) for `flextable` / `word`. The `excel` output keeps the engine default (right-aligned numerics with per-column `numfmt`, which already yields dot-aligned columns). Same default and semantics as `table_continuous()` / `table_continuous_lm()`.
 
 * `table_categorical()` gains four S3 methods mirroring the other `table_*()` companions: `as.data.frame()` and `tibble::as_tibble()` return the underlying wide-format data, `broom::tidy()` returns one row per `(variable x level x group)` with `outcome`, `level`, `group`, `n`, `proportion`, and `broom::glance()` returns one row per variable with the chi-squared test (`statistic`, `df`, `p.value`), the chosen association measure (`assoc_type`, `assoc_value`, `assoc_ci_lower/upper`), and `n_total`.
 
@@ -54,7 +54,7 @@
 
 * `table_continuous_lm()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new `align` argument, default `"decimal"`). This matches the SPSS, SAS, and LaTeX `siunitx` convention and uses the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`. The `excel` output keeps the engine default. Pass `align = "auto"` to restore the previous per-column rule.
 
-* `table_categorical()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable` and `gt` outputs (new `align` argument, default `"decimal"`). The `flextable`, `word`, `excel`, and `clipboard` engines keep the previous right-aligned numeric layout. Pass `align = "auto"` to restore the previous uniform right-alignment everywhere.
+* `table_categorical()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new `align` argument, default `"decimal"`). Pass `align = "auto"` to restore the previous uniform right-alignment.
 
 * `table_continuous_lm(..., output = "long")` now returns `NA` in `es_type` and `es_value` when `effect_size = "none"`. Previously these were populated with `"f2"` regardless of the request. Set `effect_size = "f2"` explicitly to restore.
 

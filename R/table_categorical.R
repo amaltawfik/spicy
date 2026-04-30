@@ -75,23 +75,29 @@
 #'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
-#' @param align Horizontal alignment of numeric columns in the printed
-#'   ASCII table and in the `tinytable` and `gt` outputs. The first
-#'   column (`Variable`) is always left-aligned. One of:
+#' @param align Horizontal alignment of numeric columns in the
+#'   printed ASCII table and in the `tinytable`, `gt`, `flextable`,
+#'   `word`, and `clipboard` outputs. The first column (`Variable`)
+#'   is always left-aligned. One of:
 #'   - `"decimal"` (default): align numeric columns on the decimal
 #'     mark, the standard scientific-publication convention used by
-#'     SPSS, SAS, LaTeX `siunitx`, [gt::cols_align_decimal()] and
-#'     `tinytable::style_tt(align = "d")`. For ASCII print, values
-#'     are pre-padded with leading and trailing spaces so the dots
-#'     line up vertically.
-#'   - `"center"` / `"right"`: literal alignment of numeric columns.
-#'   - `"auto"`: legacy uniform right-alignment.
+#'     SPSS, SAS, LaTeX `siunitx`, and the native primitives of
+#'     [gt::cols_align_decimal()] and `tinytable::style_tt(align = "d")`.
+#'     For engines without a native primitive (`flextable`, `word`,
+#'     `clipboard`, ASCII print), numeric cells are pre-padded with
+#'     leading and trailing spaces so the dots line up vertically;
+#'     the body of the `flextable`/`word` output additionally uses
+#'     a monospace font (`Consolas`) to make character widths uniform.
+#'   - `"center"`: center-align all numeric columns.
+#'   - `"right"`: right-align all numeric columns.
+#'   - `"auto"`: legacy uniform right-alignment used in spicy < 0.11.0.
 #'
-#'   The `flextable`, `word`, `excel`, and `clipboard` engines
-#'   currently fall back to right-aligned numerics regardless of
-#'   `align`; full decimal alignment for those engines is a planned
-#'   follow-up. Same default and semantics as
-#'   [table_continuous()] / [table_continuous_lm()].
+#'   The `excel` output uses the engine's default alignment in any
+#'   case: cell-string padding does not align decimals under
+#'   proportional fonts, and Excel's native right-alignment combined
+#'   with the per-column `numfmt` already produces dot-aligned
+#'   columns. Same default and semantics as [table_continuous()] /
+#'   [table_continuous_lm()].
 #' @param output Output format. One of:
 #'   - `"default"` (a printed ASCII table, returned invisibly)
 #'   - `"data.frame"` (a wide numeric `data.frame`)
@@ -628,6 +634,25 @@ table_categorical <- function(
     x
   }
 
+  # Pre-pad numeric (i.e. non-Variable) columns of a display data
+  # frame with leading / trailing spaces so the decimal mark falls at
+  # the same horizontal position across each column. Used by engines
+  # without a native decimal-alignment primitive (`flextable`, `word`,
+  # `clipboard`, ASCII print). The first column is the variable /
+  # level label and is left untouched. No-op unless `align == "decimal"`.
+  pad_decimal_cols <- function(df) {
+    if (!identical(align, "decimal") || ncol(df) < 2L) {
+      return(df)
+    }
+    for (j in seq_along(df)[-1]) {
+      df[[j]] <- decimal_align_strings_lm(
+        df[[j]],
+        decimal_mark = decimal_mark
+      )
+    }
+    df
+  }
+
   if (!has_group) {
     rows <- list()
     rr <- 1L
@@ -991,6 +1016,7 @@ table_categorical <- function(
       if (!requireNamespace("flextable", quietly = TRUE)) {
         stop("Install package 'flextable'.", call. = FALSE)
       }
+      df <- pad_decimal_cols(df)
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
@@ -1001,7 +1027,36 @@ table_categorical <- function(
       ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
       bd <- spicy_fp_border(color = "black", width = 1)
       ft <- flextable::align(ft, j = 1, part = "all", align = "left")
-      ft <- flextable::align(ft, j = 2:ncol(df), part = "all", align = "right")
+      # Numeric column alignment honours `align`. For "decimal" the
+      # cells were pre-padded above; right-aligning the padded strings
+      # preserves the dot-aligned column. Use a monospace font in the
+      # body so character widths match. For "center" / "right" / "auto"
+      # apply the literal alignment.
+      num_j <- 2:ncol(df)
+      if (identical(align, "decimal") && length(num_j) > 0L) {
+        ft <- flextable::align(
+          ft,
+          j = num_j,
+          part = "header",
+          align = "center"
+        )
+        ft <- flextable::align(
+          ft,
+          j = num_j,
+          part = "body",
+          align = "right"
+        )
+        ft <- flextable::font(
+          ft,
+          j = num_j,
+          part = "body",
+          fontname = "Consolas"
+        )
+      } else if (identical(align, "center") && length(num_j) > 0L) {
+        ft <- flextable::align(ft, j = num_j, part = "all", align = "center")
+      } else {
+        ft <- flextable::align(ft, j = num_j, part = "all", align = "right")
+      }
       ft <- flextable::hline_top(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "body", border = bd)
@@ -1038,7 +1093,11 @@ table_categorical <- function(
       return(invisible(word_path))
     }
 
-    clip_body <- report_wide_char
+    # Clipboard text gets the same pre-padded numeric columns as
+    # flextable / word, so dots line up when the text is pasted into
+    # any monospace-rendered destination (terminal, plain-text email,
+    # markdown code block).
+    clip_body <- pad_decimal_cols(report_wide_char)
     clip_body$Variable <- make_stronger_indent(
       clip_body$Variable,
       indent_text,
@@ -1083,7 +1142,14 @@ table_categorical <- function(
         bottom_border = "thin"
       )
       if (nrow(body_xl) > 0) {
-        # Body alignment
+        # Body alignment. The Variable column is always left-aligned;
+        # numeric columns honour `align`. For "decimal", Excel
+        # already aligns decimal points implicitly via right-alignment
+        # combined with a uniform numfmt (every cell of the column
+        # shares the same number of decimal places), so the visual
+        # result matches the dot-aligned column in print / gt /
+        # tinytable.
+        num_horiz <- if (identical(align, "center")) "center" else "right"
         wb <- openxlsx2::wb_add_cell_style(
           wb,
           dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 1),
@@ -1092,7 +1158,7 @@ table_categorical <- function(
         wb <- openxlsx2::wb_add_cell_style(
           wb,
           dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 2:nc),
-          horizontal = "right"
+          horizontal = num_horiz
         )
         # Number formats: integers (col 2), percentages (col 3)
         wb <- openxlsx2::wb_add_numfmt(
@@ -1914,6 +1980,7 @@ table_categorical <- function(
     if (!requireNamespace("flextable", quietly = TRUE)) {
       stop("Install package 'flextable'.", call. = FALSE)
     }
+    df <- pad_decimal_cols(df)
     ft <- flextable::flextable(df)
 
     map <- data.frame(
@@ -1929,7 +1996,40 @@ table_categorical <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
 
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
-    ft <- flextable::align(ft, j = 2:ncol(df), part = "body", align = "right")
+    # Numeric column alignment honours `align`. For "decimal", cells
+    # were pre-padded above by `pad_decimal_cols()`; right-aligning
+    # the padded strings preserves the dot-aligned column. Use a
+    # monospace font in the body so character widths match. For
+    # "center" / "right" / "auto", apply the literal alignment.
+    num_j <- 2:ncol(df)
+    if (identical(align, "decimal") && length(num_j) > 0L) {
+      ft <- flextable::align(
+        ft,
+        j = num_j,
+        part = "body",
+        align = "right"
+      )
+      ft <- flextable::font(
+        ft,
+        j = num_j,
+        part = "body",
+        fontname = "Consolas"
+      )
+    } else if (identical(align, "center") && length(num_j) > 0L) {
+      ft <- flextable::align(
+        ft,
+        j = num_j,
+        part = "body",
+        align = "center"
+      )
+    } else {
+      ft <- flextable::align(
+        ft,
+        j = num_j,
+        part = "body",
+        align = "right"
+      )
+    }
     # Centre n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
     # Right-align p and association measure in header
@@ -1987,13 +2087,23 @@ table_categorical <- function(
   }
 
   # ---------------- clipboard matrix ----------------
-  clip_body <- report_wide_char
+  # Pre-pad the n / % numeric columns so decimal points line up
+  # vertically in plain-text rendering. The Variable column is
+  # left untouched by `pad_decimal_cols()`. The p / association /
+  # CI columns are wrapped below in Excel-text formulas (`="..."`)
+  # to prevent Excel from auto-parsing leading-`<` strings; the
+  # `to_excel_text()` wrapper trims surrounding whitespace, so the
+  # quoted inner text stays clean and padded-empty cells stay empty.
+  clip_body <- pad_decimal_cols(report_wide_char)
   clip_body$Variable <- make_stronger_indent(
     clip_body$Variable,
     indent_text,
     indent_text_excel_clipboard
   )
-  to_excel_text <- function(x) ifelse(x == "", "", paste0("=\"", x, "\""))
+  to_excel_text <- function(x) {
+    trimmed <- trimws(x)
+    ifelse(!nzchar(trimmed), "", paste0("=\"", trimmed, "\""))
+  }
   clip_body$p <- to_excel_text(clip_body$p)
   if (show_assoc) {
     clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
@@ -2075,7 +2185,12 @@ table_categorical <- function(
       vertical = "center"
     )
     if (nrow(body_xl) > 0) {
-      # Body alignment
+      # Body alignment. The Variable column is always left-aligned;
+      # numeric columns honour `align`. For "decimal", Excel already
+      # aligns decimal points implicitly via right-alignment combined
+      # with a uniform numfmt, so the visual result matches the
+      # dot-aligned column in print / gt / tinytable.
+      num_horiz <- if (identical(align, "center")) "center" else "right"
       wb <- openxlsx2::wb_add_cell_style(
         wb,
         dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 1),
@@ -2084,7 +2199,7 @@ table_categorical <- function(
       wb <- openxlsx2::wb_add_cell_style(
         wb,
         dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 2:nc),
-        horizontal = "right"
+        horizontal = num_horiz
       )
       # Text columns (p, assoc, CI) — force text format
       text_cols <- if (show_assoc && assoc_ci) {

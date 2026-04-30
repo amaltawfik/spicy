@@ -1645,6 +1645,103 @@ test_that("align = 'center' / 'right' / 'auto' all render gt + tinytable", {
   }
 })
 
+test_that("align = 'decimal' / 'center' / 'right' / 'auto' all render flextable", {
+  skip_if_not_installed("flextable")
+  for (a in c("decimal", "center", "right", "auto")) {
+    expect_s3_class(
+      table_categorical(
+        sochealth, select = smoking, by = sex,
+        output = "flextable", align = a
+      ),
+      "flextable"
+    )
+    expect_s3_class(
+      table_categorical(
+        sochealth, select = smoking,
+        output = "flextable", align = a
+      ),
+      "flextable"
+    )
+  }
+})
+
+test_that("align flows to word output (cross-tab + oneway)", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  for (a in c("decimal", "auto")) {
+    tmp <- tempfile(fileext = ".docx")
+    on.exit(unlink(tmp), add = TRUE)
+    res <- table_categorical(
+      sochealth, select = smoking, by = sex,
+      output = "word", word_path = tmp, align = a
+    )
+    expect_equal(res, tmp)
+    expect_true(file.exists(tmp))
+
+    tmp2 <- tempfile(fileext = ".docx")
+    on.exit(unlink(tmp2), add = TRUE)
+    res2 <- table_categorical(
+      sochealth, select = smoking,
+      output = "word", word_path = tmp2, align = a
+    )
+    expect_equal(res2, tmp2)
+    expect_true(file.exists(tmp2))
+  }
+})
+
+test_that("align flows to excel output (cross-tab + oneway, all values)", {
+  skip_if_not_installed("openxlsx2")
+  for (a in c("decimal", "center", "right", "auto")) {
+    tmp <- tempfile(fileext = ".xlsx")
+    on.exit(unlink(tmp), add = TRUE)
+    res <- table_categorical(
+      sochealth, select = smoking, by = sex,
+      output = "excel", excel_path = tmp, align = a
+    )
+    expect_equal(res, tmp)
+    expect_true(file.exists(tmp))
+  }
+})
+
+test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)", {
+  skip_if_not_installed("clipr")
+  captured <- new.env()
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) {
+      captured$text <- text
+      invisible(text)
+    },
+    .package = "clipr"
+  )
+
+  # Oneway: with decimal, the n-column header value "smoking" sits
+  # alongside padded blank cells, making the column dot-aligned for
+  # plain-text consumers. With auto, no padding is applied.
+  table_categorical(
+    sochealth, select = smoking, output = "clipboard", align = "decimal"
+  )
+  txt_dec <- captured$text
+  table_categorical(
+    sochealth, select = smoking, output = "clipboard", align = "auto"
+  )
+  txt_auto <- captured$text
+  expect_true(nchar(txt_dec) > nchar(txt_auto))
+
+  # Cross-tab: the n / % numeric columns are pre-padded; the
+  # Excel-text-wrapped p / Cramer's V columns are NOT padded inside
+  # the quote (trim happens before wrapping), so empty cells remain
+  # truly empty.
+  table_categorical(
+    sochealth, select = smoking, by = sex,
+    output = "clipboard", align = "decimal"
+  )
+  txt_ct_dec <- captured$text
+  expect_match(txt_ct_dec, "=\"\\.\\d+\"")  # wrapped p with no padding
+  # No spaces inside the wrapped quote
+  expect_false(any(grepl("=\"\\s+\\.\\d", strsplit(txt_ct_dec, "\n")[[1]])))
+})
+
+
 # ---- broom S3 methods -----------------------------------------------------
 
 test_that("as.data.frame() strips spicy classes and rendering attrs", {

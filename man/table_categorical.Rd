@@ -117,25 +117,31 @@ Defaults to \code{FALSE}.}
 
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
-\item{align}{Horizontal alignment of numeric columns in the printed
-ASCII table and in the \code{tinytable} and \code{gt} outputs. The first
-column (\code{Variable}) is always left-aligned. One of:
+\item{align}{Horizontal alignment of numeric columns in the
+printed ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable},
+\code{word}, and \code{clipboard} outputs. The first column (\code{Variable})
+is always left-aligned. One of:
 \itemize{
 \item \code{"decimal"} (default): align numeric columns on the decimal
 mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and
-\code{tinytable::style_tt(align = "d")}. For ASCII print, values
-are pre-padded with leading and trailing spaces so the dots
-line up vertically.
-\item \code{"center"} / \code{"right"}: literal alignment of numeric columns.
-\item \code{"auto"}: legacy uniform right-alignment.
+SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
+\code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and \code{tinytable::style_tt(align = "d")}.
+For engines without a native primitive (\code{flextable}, \code{word},
+\code{clipboard}, ASCII print), numeric cells are pre-padded with
+leading and trailing spaces so the dots line up vertically;
+the body of the \code{flextable}/\code{word} output additionally uses
+a monospace font (\code{Consolas}) to make character widths uniform.
+\item \code{"center"}: center-align all numeric columns.
+\item \code{"right"}: right-align all numeric columns.
+\item \code{"auto"}: legacy uniform right-alignment used in spicy < 0.11.0.
 }
 
-The \code{flextable}, \code{word}, \code{excel}, and \code{clipboard} engines
-currently fall back to right-aligned numerics regardless of
-\code{align}; full decimal alignment for those engines is a planned
-follow-up. Same default and semantics as
-\code{\link[=table_continuous]{table_continuous()}} / \code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
+The \code{excel} output uses the engine's default alignment in any
+case: cell-string padding does not align decimals under
+proportional fonts, and Excel's native right-alignment combined
+with the per-column \code{numfmt} already produces dot-aligned
+columns. Same default and semantics as \code{\link[=table_continuous]{table_continuous()}} /
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
 
 \item{output}{Output format. One of:
 \itemize{
