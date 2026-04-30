@@ -81,10 +81,13 @@ Both \code{p_value} and \code{statistic} are independent; either or both
 can be enabled. Defaults to \code{FALSE}. Ignored when \code{by} is not
 used.}
 
-\item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column
-in the rendered outputs and the printed ASCII table (the
-\code{n} column is always present in \code{output = "data.frame"} /
-\code{"long"} for downstream programmatic access). Defaults to \code{TRUE}.}
+\item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n}
+column in the printed ASCII table and in every rendered output
+(\code{tinytable}, \code{gt}, \code{flextable}, \code{word}, \code{excel}, \code{clipboard}).
+Set to \code{FALSE} to drop the \code{n} column structurally from those
+outputs (no empty placeholder, no spanner). The \code{n} column is
+always present in the raw \code{output = "data.frame"} /
+\code{"long"} for downstream programmatic access. Defaults to \code{TRUE}.}
 
 \item{effect_size}{Effect-size measure to include in the rendered
 outputs. One of:
@@ -123,12 +126,16 @@ interval of the effect size in brackets (e.g.,
 ignored with a warning, and the function falls back to
 \code{effect_size = "auto"}. Defaults to \code{FALSE}.}
 
-\item{ci}{Logical. If \code{TRUE}, includes the mean confidence interval
-columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) in the rendered
-outputs and the printed ASCII table. Defaults to \code{TRUE}. The CI
-level is taken from \code{ci_level}. The columns are always present in
-the long output (\code{output = "data.frame"} / \code{"long"}) for
-downstream programmatic access.}
+\item{ci}{Logical. If \code{TRUE}, includes the mean confidence
+interval columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) and their
+spanner in the printed ASCII table and in every rendered output
+(\code{tinytable}, \code{gt}, \code{flextable}, \code{word}, \code{excel}, \code{clipboard}).
+Set to \code{FALSE} to drop both columns and the CI spanner
+structurally from those outputs (no empty placeholders, no
+border lines under an empty header). The CI bounds are always
+present as \code{ci_lower} / \code{ci_upper} in the raw
+\code{output = "data.frame"} / \code{"long"} for downstream programmatic
+access. Defaults to \code{TRUE}. The CI level is taken from \code{ci_level}.}
 
 \item{labels}{An optional named character vector of variable labels.
 Names must match column names in \code{data}. When \code{NULL} (the default),

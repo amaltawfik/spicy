@@ -62,10 +62,13 @@
 #'   Both `p_value` and `statistic` are independent; either or both
 #'   can be enabled. Defaults to `FALSE`. Ignored when `by` is not
 #'   used.
-#' @param show_n Logical. If `TRUE`, includes an unweighted `n` column
-#'   in the rendered outputs and the printed ASCII table (the
-#'   `n` column is always present in `output = "data.frame"` /
-#'   `"long"` for downstream programmatic access). Defaults to `TRUE`.
+#' @param show_n Logical. If `TRUE`, includes an unweighted `n`
+#'   column in the printed ASCII table and in every rendered output
+#'   (`tinytable`, `gt`, `flextable`, `word`, `excel`, `clipboard`).
+#'   Set to `FALSE` to drop the `n` column structurally from those
+#'   outputs (no empty placeholder, no spanner). The `n` column is
+#'   always present in the raw `output = "data.frame"` /
+#'   `"long"` for downstream programmatic access. Defaults to `TRUE`.
 #' @param effect_size Effect-size measure to include in the rendered
 #'   outputs. One of:
 #'   - `"none"` (default): no effect-size column.
@@ -99,12 +102,16 @@
 #'   `effect_size = "none"` is left unchanged, this argument is
 #'   ignored with a warning, and the function falls back to
 #'   `effect_size = "auto"`. Defaults to `FALSE`.
-#' @param ci Logical. If `TRUE`, includes the mean confidence interval
-#'   columns (`<level>% CI LL` / `<level>% CI UL`) in the rendered
-#'   outputs and the printed ASCII table. Defaults to `TRUE`. The CI
-#'   level is taken from `ci_level`. The columns are always present in
-#'   the long output (`output = "data.frame"` / `"long"`) for
-#'   downstream programmatic access.
+#' @param ci Logical. If `TRUE`, includes the mean confidence
+#'   interval columns (`<level>% CI LL` / `<level>% CI UL`) and their
+#'   spanner in the printed ASCII table and in every rendered output
+#'   (`tinytable`, `gt`, `flextable`, `word`, `excel`, `clipboard`).
+#'   Set to `FALSE` to drop both columns and the CI spanner
+#'   structurally from those outputs (no empty placeholders, no
+#'   border lines under an empty header). The CI bounds are always
+#'   present as `ci_lower` / `ci_upper` in the raw
+#'   `output = "data.frame"` / `"long"` for downstream programmatic
+#'   access. Defaults to `TRUE`. The CI level is taken from `ci_level`.
 #' @param labels An optional named character vector of variable labels.
 #'   Names must match column names in `data`. When `NULL` (the default),
 #'   labels are auto-detected from variable attributes (e.g., haven
@@ -1478,35 +1485,6 @@ export_desc_table <- function(
   use_decimal <- identical(align, "decimal")
   needs_padding_engine <- output %in% c("flextable", "word", "clipboard")
 
-  # Phase-1 limitation for rendered engines: the spanner logic in
-  # `tinytable` / `gt` / `flextable` / `word` / `excel` currently
-  # assumes the CI and `n` columns exist. When the user opts out via
-  # `ci = FALSE` / `show_n = FALSE`, fall back to inserting empty
-  # placeholder columns for those engines so the rendered table still
-  # renders. The opt-out has effect for `output = "default"` (ASCII)
-  # and `output = "data.frame"` / `"long"` (the columns are simply
-  # absent there). A follow-up will extend the rendered engines to
-  # honour the opt-out fully.
-  rendered_engines <- c(
-    "tinytable",
-    "gt",
-    "flextable",
-    "word",
-    "excel"
-  )
-  if (output %in% rendered_engines) {
-    if (!has_ci) {
-      empty <- rep("", nrow(display_df))
-      display_df[[ci_ll]] <- empty
-      display_df[[ci_ul]] <- empty
-      has_ci <- TRUE
-    }
-    if (!has_n) {
-      display_df[["n"]] <- rep("", nrow(display_df))
-      has_n <- TRUE
-    }
-  }
-
   if (use_decimal && needs_padding_engine) {
     left_skip <- if (has_group) 2L else 1L
     numeric_cols <- setdiff(seq_along(display_df), seq_len(left_skip))
@@ -1534,44 +1512,53 @@ export_desc_table <- function(
     ll_pos <- which(names(display_df) == "LL")
     ul_pos <- which(names(display_df) == "UL")
 
-    # Sub-row labels: empty for single-col spanners, LL/UL for CI
+    # Sub-row labels: empty for single-col spanners, LL/UL for CI.
+    # When `ci = FALSE` the CI columns are absent (`ll_pos` / `ul_pos`
+    # are integer(0)) and the sub-row stays empty everywhere.
     sub_labels <- rep("", nc)
-    sub_labels[ll_pos] <- "LL"
-    sub_labels[ul_pos] <- "UL"
+    if (has_ci) {
+      sub_labels[ll_pos] <- "LL"
+      sub_labels[ul_pos] <- "UL"
+    }
     colnames(display_df) <- sub_labels
 
-    # Build gspec: all columns as spanners
-    gspec <- list()
-    col_names <- c("Variable")
-    if (has_group) {
-      col_names <- c(col_names, "Group")
-    }
-    col_names <- c(col_names, "M", "SD", "Min", "Max")
+    # Build gspec by walking the actual column names of the display
+    # data frame in order. Single-column spanners use the column name
+    # itself as the label; the CI pair uses a single spanning entry.
+    # This works regardless of which optional columns are present
+    # (`has_ci`, `has_n`, `has_statistic`, `has_p`, `has_es`).
+    col_keys <- c("Variable")
+    if (has_group) col_keys <- c(col_keys, "Group")
+    col_keys <- c(col_keys, "M", "SD", "Min", "Max")
+    if (has_n) col_keys <- c(col_keys, "n")
+    if (has_statistic) col_keys <- c(col_keys, "Test")
+    if (has_p) col_keys <- c(col_keys, "p")
+    if (has_es) col_keys <- c(col_keys, "ES")
 
+    gspec <- list()
     pos <- 1L
-    for (nm in col_names) {
+    for (nm in c("Variable", if (has_group) "Group", "M", "SD", "Min", "Max")) {
       gspec[[nm]] <- pos
       pos <- pos + 1L
     }
-    gspec[[paste0(ci_pct, " CI")]] <- c(ll_pos, ul_pos)
-
-    # n position: after UL, before Test/p
-    n_pos <- which(names(display_df) == "" & seq_len(nc) > ul_pos)[1]
-    if (is.na(n_pos)) {
-      n_pos <- ul_pos + 1L # nocov
+    if (has_ci) {
+      gspec[[paste0(ci_pct, " CI")]] <- c(ll_pos, ul_pos)
+      pos <- ul_pos + 1L
     }
-    gspec[["n"]] <- n_pos
-    next_pos <- n_pos + 1L
+    if (has_n) {
+      gspec[["n"]] <- pos
+      pos <- pos + 1L
+    }
     if (has_statistic) {
-      gspec[["Test"]] <- next_pos
-      next_pos <- next_pos + 1L
+      gspec[["Test"]] <- pos
+      pos <- pos + 1L
     }
     if (has_p) {
-      gspec[["p"]] <- next_pos
-      next_pos <- next_pos + 1L
+      gspec[["p"]] <- pos
+      pos <- pos + 1L
     }
     if (has_es) {
-      gspec[["ES"]] <- next_pos
+      gspec[["ES"]] <- pos
     }
 
     tt <- tinytable::tt(display_df)
@@ -1601,11 +1588,11 @@ export_desc_table <- function(
         tt <- tinytable::style_tt(tt, j = rj, align = "r")
       }
     } else {
-      # "auto": legacy per-column rule -- right for n/p, center for the rest.
-      right_j <- n_pos
-      if (has_p) {
-        right_j <- c(right_j, gspec[["p"]])
-      }
+      # "auto": legacy per-column rule -- right for n/p (when present),
+      # center for the rest.
+      right_j <- integer(0)
+      if (has_n) right_j <- c(right_j, gspec[["n"]])
+      if (has_p) right_j <- c(right_j, gspec[["p"]])
       center_j <- setdiff(numeric_j, right_j)
       if (length(center_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = center_j, align = "c")
@@ -1633,13 +1620,15 @@ export_desc_table <- function(
       line = "t",
       line_width = 0.06
     )
-    tt <- tinytable::style_tt(
-      tt,
-      i = -1,
-      j = c(ll_pos, ul_pos),
-      line = "b",
-      line_width = 0.06
-    )
+    if (has_ci) {
+      tt <- tinytable::style_tt(
+        tt,
+        i = -1,
+        j = c(ll_pos, ul_pos),
+        line = "b",
+        line_width = 0.06
+      )
+    }
     tt <- tinytable::style_tt(
       tt,
       i = 0,
@@ -1679,46 +1668,34 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     tbl <- gt::gt(display_df)
 
-    # Sub-row labels
+    # Sub-row labels: empty for single-col spanners, LL/UL for the
+    # CI pair (when present).
     label_list <- list(
       Variable = "",
       M = "",
       SD = "",
       Min = "",
-      Max = "",
-      LL = "LL",
-      UL = "UL",
-      n = ""
+      Max = ""
     )
-    if (has_group) {
-      label_list[["Group"]] <- ""
+    if (has_group) label_list[["Group"]] <- ""
+    if (has_ci) {
+      label_list[["LL"]] <- "LL"
+      label_list[["UL"]] <- "UL"
     }
-    if (has_statistic) {
-      label_list[["Test"]] <- ""
-    }
-    if (has_p) {
-      label_list[["p"]] <- ""
-    }
-    if (has_es) {
-      label_list[["ES"]] <- ""
-    }
+    if (has_n) label_list[["n"]] <- ""
+    if (has_statistic) label_list[["Test"]] <- ""
+    if (has_p) label_list[["p"]] <- ""
+    if (has_es) label_list[["ES"]] <- ""
     tbl <- gt::cols_label(tbl, .list = label_list)
 
-    # Spanners
+    # Single-column spanners: include only columns that are present.
     single_cols <- c("Variable")
-    if (has_group) {
-      single_cols <- c(single_cols, "Group")
-    }
-    single_cols <- c(single_cols, "M", "SD", "Min", "Max", "n")
-    if (has_statistic) {
-      single_cols <- c(single_cols, "Test")
-    }
-    if (has_p) {
-      single_cols <- c(single_cols, "p")
-    }
-    if (has_es) {
-      single_cols <- c(single_cols, "ES")
-    }
+    if (has_group) single_cols <- c(single_cols, "Group")
+    single_cols <- c(single_cols, "M", "SD", "Min", "Max")
+    if (has_n) single_cols <- c(single_cols, "n")
+    if (has_statistic) single_cols <- c(single_cols, "Test")
+    if (has_p) single_cols <- c(single_cols, "p")
+    if (has_es) single_cols <- c(single_cols, "ES")
 
     for (col in single_cols) {
       tbl <- gt::tab_spanner(
@@ -1728,11 +1705,13 @@ export_desc_table <- function(
         id = paste0("spn_", col)
       )
     }
-    tbl <- gt::tab_spanner(
-      tbl,
-      label = paste0(ci_pct, " CI"),
-      columns = c("LL", "UL")
-    )
+    if (has_ci) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = paste0(ci_pct, " CI"),
+        columns = c("LL", "UL")
+      )
+    }
 
     # Alignment. The Variable / Group columns are always left-aligned;
     # numeric columns honour the `align` argument: "decimal" uses
@@ -1752,20 +1731,19 @@ export_desc_table <- function(
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
     } else {
-      # "auto": legacy per-column rule.
-      center_cols <- c("M", "SD", "Min", "Max", "LL", "UL")
-      if (has_statistic) {
-        center_cols <- c(center_cols, "Test")
-      }
-      if (has_es) {
-        center_cols <- c(center_cols, "ES")
-      }
+      # "auto": legacy per-column rule. Center descriptive / CI cols,
+      # right-align n / p (when present).
+      center_cols <- c("M", "SD", "Min", "Max")
+      if (has_ci) center_cols <- c(center_cols, "LL", "UL")
+      if (has_statistic) center_cols <- c(center_cols, "Test")
+      if (has_es) center_cols <- c(center_cols, "ES")
       tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-      right_cols <- "n"
-      if (has_p) {
-        right_cols <- c(right_cols, "p")
+      right_cols <- character(0)
+      if (has_n) right_cols <- c(right_cols, "n")
+      if (has_p) right_cols <- c(right_cols, "p")
+      if (length(right_cols) > 0L) {
+        tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
       }
-      tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
     }
 
     left_spanners <- "spn_Variable"
@@ -1813,11 +1791,13 @@ export_desc_table <- function(
       style = rule_top,
       locations = gt::cells_column_spanners()
     )
-    tbl <- gt::tab_style(
-      tbl,
-      style = rule_top,
-      locations = gt::cells_column_labels(columns = ci_cols)
-    )
+    if (has_ci) {
+      tbl <- gt::tab_style(
+        tbl,
+        style = rule_top,
+        locations = gt::cells_column_labels(columns = ci_cols)
+      )
+    }
     tbl <- gt::tab_style(
       tbl,
       style = rule,
@@ -1838,17 +1818,23 @@ export_desc_table <- function(
       )
     }
 
-    # CSS overrides
-    ci_css_sel <- paste(
-      vapply(
-        ci_cols,
-        function(id) {
-          sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
-        },
-        character(1)
-      ),
-      collapse = ",\n"
-    )
+    # CSS overrides. The CI-specific selector is only emitted when the
+    # CI columns are present; without CI the column-label-row top
+    # border rule simply doesn't apply (no header rows to draw it on).
+    ci_css_sel <- if (has_ci) {
+      paste(
+        vapply(
+          ci_cols,
+          function(id) {
+            sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
+          },
+          character(1)
+        ),
+        collapse = ",\n"
+      )
+    } else {
+      ""
+    }
     apa_css <- paste(
       ".gt_table thead tr:first-child {",
       "  border-top: 1px solid currentColor !important;",
@@ -1859,9 +1845,9 @@ export_desc_table <- function(
       ".gt_table thead th, .gt_table thead td {",
       "  background-color: transparent !important;",
       "}",
-      paste0(ci_css_sel, " {"),
-      "  border-top: 1px solid currentColor !important;",
-      "}",
+      if (has_ci) paste0(ci_css_sel, " {") else "",
+      if (has_ci) "  border-top: 1px solid currentColor !important;" else "",
+      if (has_ci) "}" else "",
       ".gt_table thead tr:last-child {",
       "  border-bottom: 1px solid currentColor !important;",
       "}",
@@ -1988,15 +1974,18 @@ export_desc_table <- function(
       }
     }
 
-    # APA borders
+    # APA borders. The intermediate header line under the CI spanner
+    # is only drawn when the CI columns are present.
     ft <- flextable::hline_top(ft, part = "header", border = bd)
-    ft <- flextable::hline(
-      ft,
-      i = 1,
-      j = ci_j,
-      part = "header",
-      border = bd
-    )
+    if (length(ci_j) > 0L) {
+      ft <- flextable::hline(
+        ft,
+        i = 1,
+        j = ci_j,
+        part = "header",
+        border = bd
+      )
+    }
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
 
@@ -2062,15 +2051,21 @@ export_desc_table <- function(
       row_names = FALSE
     )
 
-    wb <- openxlsx2::wb_merge_cells(
-      wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = ci_j)
-    )
+    if (length(ci_j) > 0L) {
+      wb <- openxlsx2::wb_merge_cells(
+        wb,
+        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j)
+      )
+    }
     last_row <- 2 + nrow(display_df)
 
-    # Alignment
+    # Alignment. Right-align n / p (when present); centre everything
+    # else except the left-side label columns.
     left_cols <- if (has_group) 1:2 else 1L
-    right_cols <- which(col_keys == "n")
+    right_cols <- integer(0)
+    if (any(col_keys == "n")) {
+      right_cols <- c(right_cols, which(col_keys == "n"))
+    }
     if (has_p) {
       right_cols <- c(right_cols, which(col_keys == "p"))
     }
@@ -2090,23 +2085,28 @@ export_desc_table <- function(
         vertical = "center"
       )
     }
-    wb <- openxlsx2::wb_add_cell_style(
-      wb,
-      dims = openxlsx2::wb_dims(rows = all_rows, cols = right_cols),
-      horizontal = "right"
-    )
+    if (length(right_cols) > 0L) {
+      wb <- openxlsx2::wb_add_cell_style(
+        wb,
+        dims = openxlsx2::wb_dims(rows = all_rows, cols = right_cols),
+        horizontal = "right"
+      )
+    }
 
-    # APA borders
+    # APA borders. The intermediate header line under the CI spanner
+    # is only drawn when the CI columns are present.
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
       top_border = "thin"
     )
-    wb <- openxlsx2::wb_add_border(
-      wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
-      bottom_border = "thin"
-    )
+    if (length(ci_j) > 0L) {
+      wb <- openxlsx2::wb_add_border(
+        wb,
+        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
+        bottom_border = "thin"
+      )
+    }
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),

@@ -2428,3 +2428,180 @@ test_that("glance() without by returns NA test/ES, populated n_total", {
   expect_true(is.na(gl$p.value))
   expect_equal(gl$n_total, 150L)
 })
+
+# ---- ci = FALSE / show_n = FALSE: structural omission across engines -----
+
+test_that("ci = FALSE / show_n = FALSE render across every output (smoke matrix)", {
+  Sys.setenv(CLIPR_ALLOW = "TRUE")
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    .package = "clipr"
+  )
+  cases <- expand.grid(
+    ci = c(TRUE, FALSE),
+    show_n = c(TRUE, FALSE),
+    KEEP.OUT.ATTRS = FALSE
+  )
+  engines_text <- c("default", "data.frame", "long", "clipboard")
+  for (i in seq_len(nrow(cases))) {
+    for (eng in engines_text) {
+      expect_no_error(
+        table_continuous(
+          sleep,
+          select = extra,
+          by = group,
+          ci = cases$ci[i],
+          show_n = cases$show_n[i],
+          output = eng
+        )
+      )
+    }
+  }
+})
+
+test_that("raw data.frame / long outputs always carry analytic ci_lower / ci_upper / n", {
+  # `ci = FALSE` and `show_n = FALSE` only suppress the formatted
+  # display columns; the raw analytic data exposed via
+  # `output = "data.frame"` / `"long"` always carries the underlying
+  # CI bounds and `n` so downstream code (broom::tidy, gtsummary, ...)
+  # has access to them.
+  out_df <- table_continuous(
+    sleep, select = extra, by = group,
+    ci = FALSE, show_n = FALSE, output = "data.frame"
+  )
+  out_lg <- table_continuous(
+    sleep, select = extra, by = group,
+    ci = FALSE, show_n = FALSE, output = "long"
+  )
+  expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_df)))
+  expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_lg)))
+})
+
+test_that("ci = FALSE structurally removes CI cols from the build_display_df output", {
+  out <- table_continuous(sleep, select = extra, by = group, ci = FALSE)
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2, decimal_mark = ".", ci_level = 0.95,
+    show_p = TRUE, show_statistic = FALSE,
+    show_n = TRUE, show_ci = FALSE,
+    show_effect_size = FALSE, show_effect_size_ci = FALSE,
+    p_digits = 3L
+  )
+  expect_false(any(grepl("CI", names(display))))
+})
+
+test_that("show_n = FALSE structurally removes n col from build_display_df output", {
+  out <- table_continuous(sleep, select = extra, by = group, show_n = FALSE)
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2, decimal_mark = ".", ci_level = 0.95,
+    show_p = TRUE, show_statistic = FALSE,
+    show_n = FALSE, show_ci = TRUE,
+    show_effect_size = FALSE, show_effect_size_ci = FALSE,
+    p_digits = 3L
+  )
+  expect_false("n" %in% names(display))
+})
+
+test_that("ci = FALSE renders structurally without CI in tinytable / gt / flextable", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  expect_true(inherits(
+    table_continuous(
+      sleep, select = extra, by = group,
+      ci = FALSE, output = "tinytable"
+    ),
+    "tinytable"
+  ))
+  expect_s3_class(
+    table_continuous(
+      sleep, select = extra, by = group,
+      ci = FALSE, output = "gt"
+    ),
+    "gt_tbl"
+  )
+  expect_s3_class(
+    table_continuous(
+      sleep, select = extra, by = group,
+      ci = FALSE, output = "flextable"
+    ),
+    "flextable"
+  )
+})
+
+test_that("show_n = FALSE renders structurally without n in tinytable / gt / flextable", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  expect_true(inherits(
+    table_continuous(
+      sleep, select = extra, by = group,
+      show_n = FALSE, output = "tinytable"
+    ),
+    "tinytable"
+  ))
+  expect_s3_class(
+    table_continuous(
+      sleep, select = extra, by = group,
+      show_n = FALSE, output = "gt"
+    ),
+    "gt_tbl"
+  )
+  expect_s3_class(
+    table_continuous(
+      sleep, select = extra, by = group,
+      show_n = FALSE, output = "flextable"
+    ),
+    "flextable"
+  )
+})
+
+test_that("ci = FALSE / show_n = FALSE flow to excel and word", {
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  for (ci in c(TRUE, FALSE)) {
+    for (sn in c(TRUE, FALSE)) {
+      tmp_xl <- tempfile(fileext = ".xlsx")
+      tmp_dx <- tempfile(fileext = ".docx")
+      on.exit(unlink(c(tmp_xl, tmp_dx)), add = TRUE)
+      table_continuous(
+        sleep, select = extra, by = group,
+        ci = ci, show_n = sn,
+        output = "excel", excel_path = tmp_xl
+      )
+      table_continuous(
+        sleep, select = extra, by = group,
+        ci = ci, show_n = sn,
+        output = "word", word_path = tmp_dx
+      )
+      expect_true(file.exists(tmp_xl))
+      expect_true(file.exists(tmp_dx))
+    }
+  }
+})
+
+test_that("clipboard text reflects ci = FALSE structurally", {
+  skip_if_not_installed("clipr")
+  Sys.setenv(CLIPR_ALLOW = "TRUE")
+  captured <- new.env()
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) {
+      captured$text <- text
+      invisible(text)
+    },
+    .package = "clipr"
+  )
+  table_continuous(
+    sleep, select = extra, by = group,
+    ci = FALSE, output = "clipboard"
+  )
+  expect_false(grepl("CI", captured$text, fixed = TRUE))
+
+  table_continuous(
+    sleep, select = extra, by = group,
+    ci = TRUE, output = "clipboard"
+  )
+  expect_true(grepl("CI", captured$text, fixed = TRUE))
+})
