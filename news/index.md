@@ -155,6 +155,14 @@
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)’s
+  defensive [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html)
+  guards for the optional output engines (`tinytable`, `gt`,
+  `flextable`, `officer`, `openxlsx2`, `clipr`) are now exercised by
+  mocked tests so the actionable `"Install package 'X'."` messages are
+  protected against silent regressions. Coverage of
+  `R/table_continuous.R` rises from 93% to 99%.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   `labels` argument now also accepts a **named character vector** keyed
   by column name in `data` (e.g. `c(bmi = "Body mass index")`), matching
