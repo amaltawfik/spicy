@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,9 +57,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.11.0" id="spicy-0110">spicy 0.11.0<a class="anchor" aria-label="anchor" href="#spicy-0110"></a></h2>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-11-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-0"></a></h3>
 <ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> gains a <code>cluster</code> argument and four new cluster-robust <code>vcov</code> choices (<code>"CR0"</code> to <code>"CR3"</code>), dispatched to <code>clubSandwich</code> with Satterthwaite degrees of freedom rendered as <code>t(45.3)</code> / <code>F(2, 45.3)</code>. <code>clubSandwich</code> added to <code>Suggests</code>.</p></li>
 <li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> gains <code>vcov = "bootstrap"</code> (nonparametric or cluster) and <code>vcov = "jackknife"</code> (leave-one-out or leave-one-cluster-out) variance estimators in pure base R. New <code>boot_n</code> argument (default <code>1000</code>) controls the bootstrap replicates.</p></li>
 <li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> gains three new <code>effect_size</code> choices alongside <code>"f2"</code>: Cohen’s <code>"d"</code>, Hedges’ <code>"g"</code> (two-group only), and Hays’ <code>"omega2"</code>. New <code>effect_size_ci</code> argument adds noncentral <em>t</em> / <em>F</em> CIs displayed as <code>0.18 [0.07, 0.30]</code>.</p></li>
@@ -69,7 +69,7 @@
 <li><p>All three <code>table_*()</code> functions gain <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> S3 methods for downstream pipelines (<code>gtsummary</code>, <code>modelsummary</code>, <code>parameters</code>, …).</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="improvements-development-version">Improvements<a class="anchor" aria-label="anchor" href="#improvements-development-version"></a></h3>
+<h3 id="improvements-0-11-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-11-0"></a></h3>
 <ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now computes <code>HC*</code> variance estimators via [sandwich::vcovHC()]; rank-deficient fits return a clean rank-by-rank covariance. <code>sandwich</code> added to <code>Imports</code>.</p></li>
 <li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> gain a <code>p_digits</code> argument (default <code>3</code>, the APA standard) driving both display precision and the small-<em>p</em> threshold.</p></li>
 <li><p><code>table_categorical(labels = ...)</code> accepts a named character vector keyed by column name (e.g. <code>c(bmi = "Body mass index")</code>), matching the API of the other two <code>table_*()</code> functions; positional vectors continue to work.</p></li>
@@ -77,13 +77,13 @@
 <li><p><code>table_continuous_lm(output = "long")</code> returns <code>n</code>, <code>df1</code>, and <code>df2</code> as integer columns; <code>predictor_label</code> is now preserved on the degenerate-model fallback path.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-11-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-11-0"></a></h3>
 <ul><li><p><code><a href="../reference/label_from_names.html">label_from_names()</a></code> now raises an actionable error when the split at <code>sep</code> produces duplicate column names or an empty column name (it used to surface a cryptic constructor message). The new column name is trimmed of trailing whitespace and the input class (<code>data.frame</code> or <code>tbl_df</code>) is preserved on output. Internally the function no longer depends on <code>labelled</code> or <code>tibble</code>; the <code>"label"</code> attribute it sets remains the same haven convention read by <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>.</p></li>
 <li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (previously hardcoded to 95%).</p></li>
 <li><p>The categorical-predictor global Wald <em>F</em> degrades to <code>NA</code> (instead of erroring) when the coefficient covariance submatrix is singular.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<h3 id="breaking-changes-0-11-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-11-0"></a></h3>
 <ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_categorical.html">table_categorical()</a></code> default to decimal-point alignment for numeric columns in printed and rendered outputs (new <code>align</code> argument, default <code>"decimal"</code>). Pass <code>align = "auto"</code> to restore the previous behaviour.</p></li>
 <li><p><code>table_continuous_lm(output = "long")</code> returns <code>NA</code> in <code>es_type</code> and <code>es_value</code> when <code>effect_size = "none"</code> (previously populated with <code>"f2"</code> regardless). Set <code>effect_size = "f2"</code> to restore.</p></li>
 <li><p><code>table_continuous_lm(output = "long")</code> renames <code>sum_w</code> to <code>weighted_n</code>, matching the wide and rendered outputs.</p></li>
