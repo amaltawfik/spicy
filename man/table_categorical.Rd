@@ -261,72 +261,125 @@ Optional output engines require suggested packages:
 }
 
 \examples{
-# Long numeric output
-table_categorical(
-  data = sochealth,
-  select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Current smoker", "Physical activity"),
-  output = "long"
-)
+# --- Basic usage ---------------------------------------------------------
 
-# ASCII console output (default)
+# Default: ASCII console table grouped by sex.
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
   by = sex
 )
 
-# One-way frequency-style table
+# One-way frequency-style table (no `by`).
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity)
 )
 
-# Wide numeric data.frame
+# Pretty labels keyed by column name.
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Current smoker", "Physical activity"),
+  labels = c(
+    smoking           = "Current smoker",
+    physical_activity = "Physical activity"
+  )
+)
+
+# Survey weights with rescaling.
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  weights = "weight",
+  rescale = TRUE
+)
+
+# Confidence interval for the association measure.
+table_categorical(
+  sochealth,
+  select = smoking,
+  by = education,
+  assoc_ci = TRUE
+)
+
+# --- Output formats -----------------------------------------------------
+
+# The rendered outputs below all wrap the same call:
+#   table_categorical(sochealth,
+#                     select = c(smoking, physical_activity),
+#                     by = sex)
+# only `output` changes. Assign to a variable to avoid the
+# console-friendly text fallback that some engines fall back to
+# when printed directly in `?` help.
+
+# Wide data.frame (one row per modality).
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
   output = "data.frame"
 )
 
-# Weighted example
+# Long data.frame (one row per (modality x group)).
 table_categorical(
-  data = sochealth,
+  sochealth,
   select = c(smoking, physical_activity),
-  by = education,
-  labels = c("Current smoker", "Physical activity"),
-  weights = "weight",
-  rescale = TRUE,
-  simulate_p = FALSE,
+  by = sex,
   output = "long"
 )
 
 \donttest{
-# Optional output: tinytable
+# Rendered HTML / docx objects -- best viewed inside a
+# Quarto / R Markdown document or a pkgdown article.
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_categorical(
-    data = sochealth,
-    select = c(smoking, physical_activity),
-    by = sex,
-    labels = c("Current smoker", "Physical activity"),
+  tt <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
     output = "tinytable"
   )
 }
-
-# Optional output: Excel
-if (requireNamespace("openxlsx2", quietly = TRUE)) {
-  table_categorical(
-    data = sochealth,
-    select = c(smoking, physical_activity),
-    by = education,
-    labels = c("Current smoker", "Physical activity"),
-    output = "excel",
-    excel_path = tempfile(fileext = ".xlsx")
+if (requireNamespace("gt", quietly = TRUE)) {
+  tbl <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "gt"
   )
 }
+if (requireNamespace("flextable", quietly = TRUE)) {
+  ft <- table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "flextable"
+  )
+}
+
+# Excel and Word: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp <- tempfile(fileext = ".xlsx")
+  table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "excel", excel_path = tmp
+  )
+  unlink(tmp)
+}
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp <- tempfile(fileext = ".docx")
+  table_categorical(
+    sochealth, select = c(smoking, physical_activity), by = sex,
+    output = "word", word_path = tmp
+  )
+  unlink(tmp)
+}
+}
+
+\dontrun{
+# Clipboard: writes to the system clipboard.
+table_categorical(
+  sochealth, select = c(smoking, physical_activity), by = sex,
+  output = "clipboard"
+)
 }
 
 }

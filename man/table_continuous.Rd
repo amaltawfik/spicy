@@ -359,23 +359,22 @@ Optional output engines require suggested packages:
 }
 
 \examples{
+# --- Basic usage ---------------------------------------------------------
+
+# Default: ASCII console table.
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score)
 )
 
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score),
-  output = "data.frame"
-)
-
+# Grouped by education (Welch p-value added by default).
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
   by = education
 )
 
+# Test statistic alongside the p-value.
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
@@ -383,27 +382,38 @@ table_continuous(
   statistic = TRUE
 )
 
-table_continuous(
-  sochealth,
-  select = wellbeing_score,
-  by = education,
-  effect_size_ci = TRUE,
-  effect_size_digits = 3
-)
+# --- Effect sizes -------------------------------------------------------
 
+# Auto-selected effect size with confidence interval (Hedges' g for
+# binary `by`, eta-squared for k > 2).
 table_continuous(
   sochealth,
   select = wellbeing_score,
   by = sex,
+  effect_size = "auto",
   effect_size_ci = TRUE
 )
 
+# Explicit effect-size measure.
+table_continuous(
+  sochealth,
+  select = wellbeing_score,
+  by = education,
+  effect_size = "eta_sq",
+  effect_size_ci = TRUE,
+  effect_size_digits = 3
+)
+
+# --- Selection helpers --------------------------------------------------
+
+# Regex selection.
 table_continuous(
   sochealth,
   select = "^life_sat",
   regex = TRUE
 )
 
+# Pretty labels keyed by column name.
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health),
@@ -413,33 +423,74 @@ table_continuous(
   )
 )
 
+# --- Output formats -----------------------------------------------------
+
+# The rendered outputs below all wrap the same call:
+#   table_continuous(sochealth,
+#                    select = c(bmi, wellbeing_score),
+#                    by = sex)
+# only `output` changes. Assign to a variable to avoid the
+# console-friendly text fallback that some engines fall back to
+# when printed directly in `?` help.
+
+# Wide / long data.frame (synonyms): one row per (variable x group).
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  output = "data.frame"
+)
+
 \donttest{
+# Rendered HTML / docx objects -- best viewed inside a
+# Quarto / R Markdown document or a pkgdown article.
 if (requireNamespace("tinytable", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
+  tt <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
     output = "tinytable"
   )
 }
-
 if (requireNamespace("gt", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
+  tbl <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
     output = "gt"
   )
 }
-
 if (requireNamespace("flextable", quietly = TRUE)) {
-  table_continuous(
-    sochealth,
-    select = starts_with("life_sat"),
-    by = education,
+  ft <- table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
     output = "flextable"
   )
 }
+
+# Excel and Word: write to a temporary file.
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  tmp <- tempfile(fileext = ".xlsx")
+  table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
+    output = "excel", excel_path = tmp
+  )
+  unlink(tmp)
+}
+if (
+  requireNamespace("flextable", quietly = TRUE) &&
+    requireNamespace("officer", quietly = TRUE)
+) {
+  tmp <- tempfile(fileext = ".docx")
+  table_continuous(
+    sochealth, select = c(bmi, wellbeing_score), by = sex,
+    output = "word", word_path = tmp
+  )
+  unlink(tmp)
+}
+}
+
+\dontrun{
+# Clipboard: writes to the system clipboard.
+table_continuous(
+  sochealth, select = c(bmi, wellbeing_score), by = sex,
+  output = "clipboard"
+)
 }
 
 }

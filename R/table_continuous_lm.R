@@ -620,23 +620,6 @@
 #'   by = sex
 #' )
 #'
-#' # Plain wide data.frame (one row per outcome, numeric columns).
-#' table_continuous_lm(
-#'   sochealth,
-#'   select = c(wellbeing_score, bmi),
-#'   by = sex,
-#'   output = "data.frame"
-#' )
-#'
-#' # Long, raw data.frame with one block per outcome
-#' # (useful for downstream programmatic processing).
-#' table_continuous_lm(
-#'   sochealth,
-#'   select = c(wellbeing_score, bmi),
-#'   by = sex,
-#'   output = "long"
-#' )
-#'
 #' # --- Effect sizes -------------------------------------------------------
 #'
 #' # Cohen's d (binary by required).
@@ -734,67 +717,82 @@
 #'   regex = TRUE
 #' )
 #'
-#' \donttest{
-#' # --- Rendered outputs (require Suggests packages) -----------------------
+#' # --- Output formats -----------------------------------------------------
 #'
+#' # The rendered outputs below all wrap the same call:
+#' #   table_continuous_lm(sochealth,
+#' #                       select = c(wellbeing_score, bmi),
+#' #                       by = sex)
+#' # only `output` changes. Assign to a variable to avoid the
+#' # console-friendly text fallback that some engines fall back to
+#' # when printed directly in `?` help.
+#'
+#' # Wide data.frame (one row per outcome).
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
+#'   output = "data.frame"
+#' )
+#'
+#' # Raw long data.frame (one block per outcome).
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
+#'   output = "long"
+#' )
+#'
+#' \donttest{
+#' # Rendered HTML / docx objects -- best viewed inside a
+#' # Quarto / R Markdown document or a pkgdown article.
 #' if (requireNamespace("tinytable", quietly = TRUE)) {
-#'   table_continuous_lm(
-#'     sochealth,
-#'     select = c(wellbeing_score, bmi),
-#'     by = sex,
-#'     effect_size = "g",
+#'   tt <- table_continuous_lm(
+#'     sochealth, select = c(wellbeing_score, bmi), by = sex,
 #'     output = "tinytable"
 #'   )
 #' }
-#'
 #' if (requireNamespace("gt", quietly = TRUE)) {
-#'   table_continuous_lm(
-#'     sochealth,
-#'     select = c(wellbeing_score, bmi),
-#'     by = sex,
+#'   tbl <- table_continuous_lm(
+#'     sochealth, select = c(wellbeing_score, bmi), by = sex,
 #'     output = "gt"
 #'   )
 #' }
-#'
 #' if (requireNamespace("flextable", quietly = TRUE)) {
-#'   table_continuous_lm(
-#'     sochealth,
-#'     select = c(wellbeing_score, bmi),
-#'     by = sex,
+#'   ft <- table_continuous_lm(
+#'     sochealth, select = c(wellbeing_score, bmi), by = sex,
 #'     output = "flextable"
 #'   )
 #' }
 #'
-#' # Excel: write to a temporary file.
+#' # Excel and Word: write to a temporary file.
 #' if (requireNamespace("openxlsx2", quietly = TRUE)) {
-#'   tmp_xlsx <- tempfile(fileext = ".xlsx")
+#'   tmp <- tempfile(fileext = ".xlsx")
 #'   table_continuous_lm(
-#'     sochealth,
-#'     select = c(wellbeing_score, bmi),
-#'     by = sex,
-#'     output = "excel",
-#'     excel_path = tmp_xlsx
+#'     sochealth, select = c(wellbeing_score, bmi), by = sex,
+#'     output = "excel", excel_path = tmp
 #'   )
-#'   file.exists(tmp_xlsx)
-#'   unlink(tmp_xlsx)
+#'   unlink(tmp)
 #' }
-#'
-#' # Word: write to a temporary .docx.
 #' if (
 #'   requireNamespace("flextable", quietly = TRUE) &&
 #'     requireNamespace("officer", quietly = TRUE)
 #' ) {
-#'   tmp_docx <- tempfile(fileext = ".docx")
+#'   tmp <- tempfile(fileext = ".docx")
 #'   table_continuous_lm(
-#'     sochealth,
-#'     select = c(wellbeing_score, bmi),
-#'     by = sex,
-#'     output = "word",
-#'     word_path = tmp_docx
+#'     sochealth, select = c(wellbeing_score, bmi), by = sex,
+#'     output = "word", word_path = tmp
 #'   )
-#'   file.exists(tmp_docx)
-#'   unlink(tmp_docx)
+#'   unlink(tmp)
 #' }
+#' }
+#'
+#' \dontrun{
+#' # Clipboard: writes to the system clipboard.
+#' table_continuous_lm(
+#'   sochealth, select = c(wellbeing_score, bmi), by = sex,
+#'   output = "clipboard"
+#' )
 #' }
 #'
 #' @export
