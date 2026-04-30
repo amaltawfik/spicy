@@ -2,65 +2,94 @@
 
 ## New features
 
-* `table_categorical()` gains an `align` argument (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`) controlling horizontal alignment of numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs. Uses the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`; `flextable` / `word` / `clipboard` get the alignment via leading / trailing space padding plus a monospace body font (`Consolas`) for `flextable` / `word`. The `excel` output keeps the engine default (right-aligned numerics with per-column `numfmt`, which already yields dot-aligned columns). Same default and semantics as `table_continuous()` / `table_continuous_lm()`.
+* `table_continuous_lm()` gains a `cluster` argument and four new
+  cluster-robust `vcov` choices (`"CR0"` to `"CR3"`), dispatched to
+  `clubSandwich` with Satterthwaite degrees of freedom rendered as
+  `t(45.3)` / `F(2, 45.3)`. `clubSandwich` added to `Suggests`.
 
-* `table_categorical()` gains four S3 methods mirroring the other `table_*()` companions: `as.data.frame()` and `tibble::as_tibble()` return the underlying wide-format data, `broom::tidy()` returns one row per `(variable x level x group)` with `outcome`, `level`, `group`, `n`, `proportion`, and `broom::glance()` returns one row per variable with the chi-squared test (`statistic`, `df`, `p.value`), the chosen association measure (`assoc_type`, `assoc_value`, `assoc_ci_lower/upper`), and `n_total`.
+* `table_continuous_lm()` gains `vcov = "bootstrap"` (nonparametric
+  or cluster) and `vcov = "jackknife"` (leave-one-out or
+  leave-one-cluster-out) variance estimators in pure base R. New
+  `boot_n` argument (default `1000`) controls the bootstrap
+  replicates.
 
-* `table_continuous()` is harmonised with `table_continuous_lm()` and gains five new arguments: `p_digits` (APA *p*-value precision, default `3`), `align` (`"decimal"` / `"auto"` / `"center"` / `"right"`, default `"decimal"`), `show_n` (toggle `n` column), `ci` (toggle mean CI columns), and `output = "long"` (synonym of `"data.frame"`). The two functions now share the same reporting vocabulary, decimal mark, and digits convention. `show_n = FALSE` and `ci = FALSE` drop the corresponding columns (and the CI spanner / border lines) structurally from the printed ASCII table and from every rendered output (`tinytable`, `gt`, `flextable`, `word`, `excel`, `clipboard`); the underlying `n` and `ci_lower` / `ci_upper` are always present in `output = "data.frame"` / `"long"` for downstream programmatic access.
+* `table_continuous_lm()` gains three new `effect_size` choices
+  alongside `"f2"`: Cohen's `"d"`, Hedges' `"g"` (two-group only),
+  and Hays' `"omega2"`. New `effect_size_ci` argument adds
+  noncentral *t* / *F* CIs displayed as `0.18 [0.07, 0.30]`.
 
-* `table_continuous()`'s `effect_size` argument is migrated from logical to a character enum: `"none"` (default), `"auto"`, `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`. `"auto"` reproduces the historical auto-selection; explicit names let users override the default measure without changing `test`. Incompatible explicit choices error clearly. `effect_size = TRUE` and `FALSE` are silently coerced to `"auto"` and `"none"` so existing scripts continue to work unchanged.
+* `table_continuous()` is harmonised with `table_continuous_lm()`:
+  new arguments `p_digits`, `align`, `show_n`, `ci`, and
+  `output = "long"`.
 
-* `table_continuous()` gains four S3 methods mirroring `table_continuous_lm()`: `as.data.frame()` and `tibble::as_tibble()` return the underlying long-format data, `broom::tidy()` returns one row per `(variable x group)` with broom-conventional columns, and `broom::glance()` returns one row per variable with the omnibus test and effect-size summary. Output is consumable by `gtsummary`, `modelsummary`, `parameters`, and any other tidyverse-stats pipeline.
+* `table_continuous()`'s `effect_size` argument accepts a character
+  enum (`"hedges_g"`, `"eta_sq"`, `"r_rb"`, `"epsilon_sq"`, plus
+  `"auto"` / `"none"`); legacy `TRUE` / `FALSE` continue to work.
 
-* `table_continuous_lm()` gains a `cluster` argument and four new `vcov` choices (`"CR0"`, `"CR1"`, `"CR2"`, `"CR3"`) for cluster-robust standard errors when observations are not independent (repeated measurements, nested designs, panel data). Dispatches to [clubSandwich::vcovCR()] / [clubSandwich::coef_test()] / [clubSandwich::Wald_test()] with Satterthwaite degrees of freedom; `"CR2"` is the recommended default. The fractional df is rendered as e.g. `t(45.3)` / `F(2, 45.3)`. `clubSandwich` is added to `Suggests`.
+* `table_categorical()` gains an `align` argument matching the
+  other two `table_*()` functions.
 
-* `table_continuous_lm()` gains two resampling-based variance estimators: `vcov = "bootstrap"` (nonparametric or cluster bootstrap) and `vcov = "jackknife"` (leave-one-out or leave-one-cluster-out). Both are implemented in pure base R (no new dependency) and use asymptotic `z` / `chi^2(q)` inference rendered in the displayed test header. A new `boot_n` argument (default `1000`) controls the bootstrap replicates.
-
-* `table_continuous_lm()` gains three new `effect_size` choices alongside `"f2"`: Cohen's `"d"` and Hedges' `"g"` for two-group comparisons, and Hays' `"omega2"` (truncated at 0) for any predictor type. All four are derived from the fitted (possibly weighted) `lm()` and remain invariant to `vcov`.
-
-* `table_continuous_lm()` gains an `effect_size_ci` argument (default `FALSE`). When `TRUE`, the table reports a noncentral-distribution confidence interval at `ci_level`: noncentral *t* inversion for `"d"` / `"g"`, noncentral *F* inversion for `"omega2"` / `"f2"`. The CI is shown bracketed in the rendered outputs (e.g. `0.18 [0.07, 0.30]`) and as `es_ci_lower` / `es_ci_upper` in the long output.
+* All three `table_*()` functions gain `as.data.frame()`,
+  `tibble::as_tibble()`, `broom::tidy()`, and `broom::glance()` S3
+  methods for downstream pipelines (`gtsummary`, `modelsummary`,
+  `parameters`, ...).
 
 ## Improvements
 
-* `table_continuous_lm()` now computes `HC*` heteroskedasticity-consistent variance estimators via [sandwich::vcovHC()] rather than an in-package implementation. Numerical results are unchanged for non-degenerate fits. Rank-deficient fits now return the rank-by-rank covariance of the identifiable coefficients without warnings, replacing the previous full-size matrix with `NA`s. `sandwich` is added to `Imports`.
+* `table_continuous_lm()` now computes `HC*` variance estimators
+  via [sandwich::vcovHC()]; rank-deficient fits return a clean
+  rank-by-rank covariance. `sandwich` added to `Imports`.
 
-* `table_continuous_lm()` gains four S3 methods (`as.data.frame()`, `tibble::as_tibble()`, `broom::tidy()`, `broom::glance()`) for ecosystem integration. `tidy()` returns one row per estimated parameter (`emmean`, `difference`, or `slope`); `glance()` returns one row per outcome with model-level statistics. `broom` is added to `Suggests`.
+* `table_continuous_lm()` and `table_continuous()` gain a
+  `p_digits` argument (default `3`, the APA standard) driving both
+  display precision and the small-*p* threshold.
 
-* `table_continuous_lm()` gains a `p_digits` argument (default `3`, the APA standard) controlling the *p*-value precision. `p_digits = 4` prints `.0451` and `<.0001`; `p_digits = 2` prints `.05` and `<.01`. Useful for genomics / GWAS contexts and for journals using a coarser convention.
+* `table_categorical(labels = ...)` accepts a named character
+  vector keyed by column name (e.g. `c(bmi = "Body mass index")`),
+  matching the API of the other two `table_*()` functions;
+  positional vectors continue to work.
 
-* `table_continuous_lm()` documentation is substantially expanded: markdown subsections in `@details` (Model and outputs / Effect sizes / Robust standard errors / Weights / Display conventions), `@family spicy tables`, and a curated bibliography in `@references` covering the underlying methodology.
+* All three `table_*()` functions get reorganised documentation:
+  markdown `@details` subsections, `@family spicy tables`,
+  reciprocal `@seealso`, and a curated `@references` for
+  `table_continuous_lm()`.
 
-* `table_continuous()` documentation is reorganised to mirror `table_continuous_lm()`'s structure: markdown subsections in `@details` (*Tests* / *Effect sizes* / *Display conventions*), `@family spicy tables`, and reciprocal `@seealso` cross-references between the two functions.
+* `vignette("table-continuous-lm")` gains *Effect sizes* and
+  *Confidence intervals for effect sizes* sections.
 
-* `table_categorical()` documentation is reorganised to mirror its `table_*()` companions: markdown subsections in `@details` (*Tests* / *Display conventions*), `@family spicy tables`, and `@seealso` cross-references to `table_continuous()` and `table_continuous_lm()`.
+* `table_continuous_lm(output = "long")` returns `n`, `df1`, and
+  `df2` as integer columns; `predictor_label` is now preserved on
+  the degenerate-model fallback path.
 
-* `table_continuous()`'s defensive `requireNamespace()` guards for the optional output engines (`tinytable`, `gt`, `flextable`, `officer`, `openxlsx2`, `clipr`) are now exercised by mocked tests so the actionable `"Install package 'X'."` messages are protected against silent regressions. Coverage of `R/table_continuous.R` rises from 93% to 99%.
-
-* `table_categorical()` `labels` argument now also accepts a **named character vector** keyed by column name in `data` (e.g. `c(bmi = "Body mass index")`), matching the API of `table_continuous()` and `table_continuous_lm()`. Only listed columns are relabelled; unlisted ones fall back to their column name. Unknown names error clearly. The legacy positional character vector (length matching `select`) continues to work.
-
-* `table_continuous_lm(..., output = "long")` returns `n`, `df1`, and `df2` as integer columns (previously numeric).
-
-* `table_continuous_lm()` now preserves the `predictor_label` for outcomes that fall through to the degenerate-model path.
-
-* The `vignette("table-continuous-lm")` gains dedicated *Effect sizes* and *Confidence intervals for effect sizes* sections.
+* Coverage of `R/table_continuous.R` rises from 93% to 99% via
+  mocked tests of the optional-engine `requireNamespace()` guards.
 
 ## Bug fixes
 
-* `table_continuous()` and `table_continuous_lm()` now use a semicolon as the list separator inside the bracketed effect-size CI display (e.g. `g = 0,18 [0,07; 0,30]`) when `decimal_mark = ","`. Previously a comma was used in both roles, producing the ambiguous `g = 0,18 [0,07, 0,30]`. The default `decimal_mark = "."` behaviour is unchanged.
+* Effect-size CI display now uses a semicolon as list separator
+  under `decimal_mark = ","` (e.g. `g = 0,18 [0,07; 0,30]`),
+  removing an ambiguity with the legacy comma.
 
-* `table_continuous_lm(..., output = "data.frame")` now names the contrast confidence-interval columns from `ci_level` (e.g. `"99% CI LL"` / `"99% CI UL"` when `ci_level = 0.99`). Previously the wide raw output hardcoded the 95% labels regardless of `ci_level`.
+* `table_continuous_lm(output = "data.frame")` names contrast CI
+  columns from `ci_level` (previously hardcoded to 95%).
 
-* The categorical-predictor global Wald *F* now degrades gracefully to `NA` (instead of erroring) when the coefficient covariance submatrix is singular.
+* The categorical-predictor global Wald *F* degrades to `NA`
+  (instead of erroring) when the coefficient covariance submatrix
+  is singular.
 
 ## Breaking changes
 
-* `table_continuous_lm()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new `align` argument, default `"decimal"`). This matches the SPSS, SAS, and LaTeX `siunitx` convention and uses the native primitives of `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`. The `excel` output keeps the engine default. Pass `align = "auto"` to restore the previous per-column rule.
+* `table_continuous_lm()` and `table_categorical()` default to
+  decimal-point alignment for numeric columns in printed and
+  rendered outputs (new `align` argument, default `"decimal"`).
+  Pass `align = "auto"` to restore the previous behaviour.
 
-* `table_categorical()` now defaults to **decimal-point alignment** for numeric columns in the printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard` outputs (new `align` argument, default `"decimal"`). Pass `align = "auto"` to restore the previous uniform right-alignment.
+* `table_continuous_lm(output = "long")` returns `NA` in `es_type`
+  and `es_value` when `effect_size = "none"` (previously populated
+  with `"f2"` regardless). Set `effect_size = "f2"` to restore.
 
-* `table_continuous_lm(..., output = "long")` now returns `NA` in `es_type` and `es_value` when `effect_size = "none"`. Previously these were populated with `"f2"` regardless of the request. Set `effect_size = "f2"` explicitly to restore.
-
-* `table_continuous_lm(..., output = "long")` renames the `sum_w` column to `weighted_n`, matching the `Weighted n` column in the wide and rendered outputs.
+* `table_continuous_lm(output = "long")` renames `sum_w` to
+  `weighted_n`, matching the wide and rendered outputs.
 
 # spicy 0.10.0
 
