@@ -1,6 +1,7 @@
 # Summary tables for APA-style reporting
 
 ``` r
+
 library(spicy)
 ```
 
@@ -18,11 +19,11 @@ function-specific option.
 
 Use the function that matches the type of variables you want to report:
 
-| Function                                                                                       | Use for                                                                    | Optional `by`                   | Typical additions                                          |
-|:-----------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------|:--------------------------------|:-----------------------------------------------------------|
-| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)     | Factors, labelled categorical variables, grouped frequency-style summaries | Yes                             | Chi-squared test, association measure, confidence interval |
-| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)       | Numeric or continuous variables                                            | Yes                             | Group-comparison test, statistic, effect size              |
-| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework                            | No, requires a single predictor | Robust `HC*` standard errors, model fit, case weights      |
+| Function | Use for | Optional `by` | Typical additions |
+|:---|:---|:---|:---|
+| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Factors, labelled categorical variables, grouped frequency-style summaries | Yes | Chi-squared test, association measure, confidence interval |
+| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric or continuous variables | Yes | Group-comparison test, statistic, effect size |
+| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework | No, requires a single predictor | Robust `HC*` standard errors, model fit, case weights |
 
 In practice:
 
@@ -43,6 +44,7 @@ In practice:
 Both functions use the same core arguments:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -52,17 +54,18 @@ table_categorical(
 )
 ```
 
-| Variable                  | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p      | Cramer's V |
-|---------------------------|-----------------|------|-----------------|------|----------|------|-------|------|--------|------------|
-|                           | n               | %    | n               | %    | n        | %    | n     | %    |        |            |
-| Smoking status            |                 |      |                 |      |          |      |       |      | \<.001 | .14        |
-|     No                    | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |        |            |
-|     Yes                   | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |        |            |
-| Regular physical activity |                 |      |                 |      |          |      |       |      | \<.001 | .21        |
-|     No                    | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |        |            |
-|     Yes                   | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |        |            |
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
+|----|----|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % | n | % |  |  |
+| Smoking status |  |  |  |  |  |  |  |  | \<.001 | .14 |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
+|     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
+| Regular physical activity |  |  |  |  |  |  |  |  | \<.001 | .21 |
+|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |  |  |
+|     Yes | 84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |  |  |
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -76,20 +79,21 @@ table_continuous(
 )
 ```
 
-| Variable                 | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   | p      |
-|--------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|--------|
-|                          |                 |       |       |       |        | LL     | UL    |     |        |
-| Body mass index          | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 | \<.001 |
-|                          | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |        |
-|                          | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |        |
-| Well-being score         | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 | \<.001 |
-|                          | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |        |
-|                          | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |        |
-| Satisfaction with health | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 | \<.001 |
-|                          | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |        |
-|                          | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |        |
+| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
+|----|----|----|----|----|----|----|----|----|----|
+|  |  |  |  |  |  | LL | UL |  |  |
+| Body mass index | Lower secondary | 28.09 | 3.47 | 18.20 | 38.90 | 27.66 | 28.51 | 260 | \<.001 |
+|  | Upper secondary | 26.02 | 3.43 | 16.00 | 37.10 | 25.73 | 26.31 | 534 |  |
+|  | Tertiary | 24.39 | 3.52 | 16.00 | 33.00 | 24.04 | 24.74 | 394 |  |
+| Well-being score | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90 | 55.33 | 59.10 | 261 | \<.001 |
+|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |  |
+|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |  |
+| Satisfaction with health | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57 | 2.86 | 259 | \<.001 |
+|  | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43 | 3.63 | 534 |  |
+|  | Tertiary | 4.11 | 1.04 | 1.00 | 5.00 | 4.01 | 4.21 | 399 |  |
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -130,6 +134,7 @@ behaviors, then summarize continuous well-being indicators.
 ### Categorical variables
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -150,6 +155,7 @@ pkgdown_dark_gt(
 ### Continuous variables
 
 ``` r
+
 pkgdown_dark_gt(
   table_continuous(
     sochealth,
@@ -175,6 +181,7 @@ function that fits each variable type.
 ### Model-based continuous variables
 
 ``` r
+
 pkgdown_dark_gt(
   table_continuous_lm(
     sochealth,
@@ -215,6 +222,7 @@ workflows but can also be rendered in HTML documents, `flextable` is a
 good choice:
 
 ``` r
+
 if (requireNamespace("flextable", quietly = TRUE)) {
   table_continuous(
     sochealth,
@@ -234,6 +242,7 @@ package API.
 Use `gt::` functions when you want to keep the `gt` workflow:
 
 ``` r
+
 tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -258,6 +267,7 @@ Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
 ``` r
+
 tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -276,15 +286,15 @@ tab |>
   )
 ```
 
-| Variable                  | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p      | Cramer's V |
-|---------------------------|-----------------|------|-----------------|------|----------|------|-------|------|--------|------------|
-|                           | n               | %    | n               | %    | n        | %    | n     | %    |        |            |
-| Smoking status            |                 |      |                 |      |          |      |       |      | \<.001 | .14        |
-|     No                    | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |        |            |
-|     Yes                   | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |        |            |
-| Regular physical activity |                 |      |                 |      |          |      |       |      | \<.001 | .21        |
-|     No                    | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |        |            |
-|     Yes                   | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |        |            |
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
+|----|----|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % | n | % |  |  |
+| Smoking status |  |  |  |  |  |  |  |  | \<.001 | .14 |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
+|     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
+| Regular physical activity |  |  |  |  |  |  |  |  | \<.001 | .21 |
+|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |  |  |
+|     Yes | 84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |  |  |
 
 Use `flextable::` functions when you want to keep working toward Office
 or HTML document output. The example is shown as code here because the
@@ -292,6 +302,7 @@ dark pkgdown theme is not a reliable preview of the final `flextable`
 HTML rendering:
 
 ``` r
+
 if (requireNamespace("flextable", quietly = TRUE)) {
   tab <- table_continuous(
     sochealth,

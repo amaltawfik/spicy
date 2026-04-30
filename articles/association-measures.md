@@ -1,6 +1,7 @@
 # Cramer's V, Phi, and association measures for contingency tables in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -14,19 +15,19 @@ p-values for chi-squared-based and rank-based statistics.
 
 The table below summarizes the recommended measures by variable type.
 
-| Variable types                  | Recommended measure     | Function                                                                                       |
-|---------------------------------|-------------------------|------------------------------------------------------------------------------------------------|
-| Nominal x Nominal               | Cramer’s V              | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)                       |
-| Nominal x Nominal               | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)       |
-| Nominal x Nominal (2x2)         | Phi                     | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md)                                 |
-| Ordinal x Ordinal               | Kendall’s Tau-b         | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)             |
-| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c         | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)             |
-| Ordinal x Ordinal               | Goodman-Kruskal Gamma   | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)                       |
-| Ordinal x Ordinal (asymmetric)  | Somers’ D               | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)                       |
-| Nominal (asymmetric, PRE)       | Lambda                  | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)                     |
-| Nominal (asymmetric, PRE)       | Goodman-Kruskal Tau     | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
-| Nominal (asymmetric, PRE)       | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)       |
-| 2x2 table                       | Yule’s Q                | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)                           |
+| Variable types | Recommended measure | Function |
+|----|----|----|
+| Nominal x Nominal | Cramer’s V | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md) |
+| Nominal x Nominal | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md) |
+| Nominal x Nominal (2x2) | Phi | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) |
+| Ordinal x Ordinal | Kendall’s Tau-b | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md) |
+| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md) |
+| Ordinal x Ordinal | Goodman-Kruskal Gamma | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md) |
+| Ordinal x Ordinal (asymmetric) | Somers’ D | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md) |
+| Nominal (asymmetric, PRE) | Lambda | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md) |
+| Nominal (asymmetric, PRE) | Goodman-Kruskal Tau | [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md) |
+| Nominal (asymmetric, PRE) | Uncertainty Coefficient | [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md) |
+| 2x2 table | Yule’s Q | [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md) |
 
 PRE = Proportional Reduction in Error. These measures quantify how much
 knowing one variable reduces prediction error for the other.
@@ -41,6 +42,7 @@ All functions accept a contingency table (class `table`, typically from
 computes all available measures at once:
 
 ``` r
+
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper        p 
@@ -72,6 +74,7 @@ Cramer’s V measures the strength of association between two nominal
 variables. It ranges from 0 (no association) to 1 (perfect association).
 
 ``` r
+
 tbl <- xtabs(~ smoking + education, data = sochealth)
 cramer_v(tbl)
 #> [1] 0.1356677
@@ -82,6 +85,7 @@ p-value tests the null hypothesis of no association using the Pearson
 chi-squared test.
 
 ``` r
+
 cramer_v(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.136     0.079     0.191  < 0.001
@@ -94,6 +98,7 @@ negative when the table is 2x2, indicating the direction of association.
 The p-value tests H0: no association (Pearson chi-squared test).
 
 ``` r
+
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
 #> Estimate  CI lower  CI upper      p
@@ -108,6 +113,7 @@ across tables of different sizes. The p-value tests H0: no association
 (Pearson chi-squared test).
 
 ``` r
+
 contingency_coef(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.134        --        --  < 0.001
@@ -125,6 +131,7 @@ sensitive to the direction of association but tends to overestimate
 strength when there are many ties.
 
 ``` r
+
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
 gamma_gk(tbl_ord, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
@@ -142,6 +149,7 @@ preferred over Gamma for square or near-square tables. The p-value tests
 H0: Tau-b = 0 (Wald z-test).
 
 ``` r
+
 kendall_tau_b(tbl_ord, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.205     0.155     0.254  < 0.001
@@ -154,6 +162,7 @@ number of rows and columns differ. The p-value tests H0: Tau-c = 0 (Wald
 z-test).
 
 ``` r
+
 kendall_tau_c(tbl_ord, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.200     0.151     0.248  < 0.001
@@ -166,6 +175,7 @@ and an independent variable. By default, the row variable is treated as
 dependent (D(R\|C)). The p-value tests H0: D = 0 (Wald z-test).
 
 ``` r
+
 somers_d(tbl_ord, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.208     0.157     0.258  < 0.001
@@ -185,6 +195,7 @@ category does not change across columns. The p-value tests H0: Lambda =
 0 (Wald z-test).
 
 ``` r
+
 tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper      p
@@ -198,6 +209,7 @@ variable from the column variable, using the full distribution (not just
 the mode). The p-value tests H0: Tau = 0 (Wald z-test).
 
 ``` r
+
 goodman_kruskal_tau(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.017     0.008     0.026  < 0.001
@@ -210,6 +222,7 @@ how much knowing one variable reduces uncertainty about the other. The
 p-value tests H0: U = 0 (Wald z-test).
 
 ``` r
+
 uncertainty_coef(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.028     0.016     0.040  < 0.001
@@ -222,6 +235,7 @@ equivalent to Gamma for 2x2 tables. The p-value tests H0: Q = 0 (Wald
 z-test).
 
 ``` r
+
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 yule_q(tbl_22, detail = TRUE)
 #> Estimate  CI lower  CI upper      p
@@ -236,6 +250,7 @@ can automatically select an appropriate measure via
 factors, it picks Kendall’s Tau-b; otherwise it uses Cramer’s V.
 
 ``` r
+
 # Nominal: Cramer's V
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
@@ -286,6 +301,7 @@ cross_tab(sochealth, self_rated_health, education)
 You can override the automatic choice:
 
 ``` r
+
 cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> Crosstable: self_rated_health x education (N)
 #> 
@@ -317,6 +333,7 @@ All functions support confidence intervals via `detail = TRUE`. The
 confidence level defaults to 95% and can be changed with `conf_level`:
 
 ``` r
+
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
 #> Estimate  CI lower  CI upper        p
 #>    0.176     0.103     0.248  < 0.001
@@ -325,6 +342,7 @@ cramer_v(tbl, detail = TRUE, conf_level = 0.99)
 To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 
 ``` r
+
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
 #> Estimate        p
 #>    0.176  < 0.001
@@ -339,6 +357,7 @@ Pass `digits` to change this (the p-value always uses 3 decimal places
 or `< 0.001`):
 
 ``` r
+
 cramer_v(tbl, detail = TRUE, digits = 4)
 #> Estimate  CI lower  CI upper        p
 #>   0.1762    0.1203    0.2309  < 0.001
@@ -348,6 +367,7 @@ The same `digits` argument works for
 [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md):
 
 ``` r
+
 assoc_measures(tbl, digits = 2)
 #> Measure                            Estimate    SE  CI lower  CI upper        p 
 #> Cramer's V                             0.18    --      0.12      0.23  < 0.001 
@@ -371,6 +391,7 @@ You can also store a result and re-display it with a different precision
 without recalculating:
 
 ``` r
+
 res <- cramer_v(tbl, detail = TRUE)
 print(res, digits = 5)
 #> Estimate  CI lower  CI upper        p

@@ -1,6 +1,7 @@
 # Explore variables and build codebooks in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -45,6 +46,7 @@ splits names of the form `name<sep>label`, renames the columns, and
 stores the label as a proper variable label.
 
 ``` r
+
 df <- tibble::tibble(
   "age. Age of respondent" = c(25, 30, 41),
   "edu. Highest education level" = c("Lower", "Upper", "Tertiary"),
@@ -83,6 +85,7 @@ labels, look for specific variables, filter what you want to inspect,
 and review the structure of a dataset before analysis.
 
 ``` r
+
 varlist(sochealth)
 ```
 
@@ -92,12 +95,14 @@ shortcut for
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
 
 ``` r
+
 vl(sochealth)
 ```
 
 If you want the same summary returned as a tibble, use `tbl = TRUE`:
 
 ``` r
+
 varlist(sochealth, tbl = TRUE)
 #> # A tibble: 24 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
@@ -119,6 +124,7 @@ If you want the `Values` column to include explicit missing values, use
 `include_na = TRUE`:
 
 ``` r
+
 head(subset(varlist(sochealth, include_na = TRUE, tbl = TRUE), NAs > 0))
 #> # A tibble: 6 × 7
 #>   Variable           Label                 Values Class N_distinct N_valid   NAs
@@ -136,6 +142,7 @@ column, use `values = TRUE`. This is especially useful for variables
 with a small number of distinct values:
 
 ``` r
+
 head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
 #> # A tibble: 6 × 7
 #>   Variable          Label                  Values Class N_distinct N_valid   NAs
@@ -151,6 +158,7 @@ head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
 For a focused inspection, select only the variables you want to review:
 
 ``` r
+
 varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 #> # A tibble: 3 × 7
 #>   Variable     Label                   Values     Class N_distinct N_valid   NAs
@@ -170,6 +178,7 @@ supports tidyselect, which makes it easy to inspect a subset of
 variables by name pattern or type.
 
 ``` r
+
 varlist(sochealth, starts_with("life_sat"), tbl = TRUE)
 #> # A tibble: 4 × 7
 #>   Variable               Label             Values Class N_distinct N_valid   NAs
@@ -181,6 +190,7 @@ varlist(sochealth, starts_with("life_sat"), tbl = TRUE)
 ```
 
 ``` r
+
 varlist(sochealth, where(is.numeric), tbl = TRUE)
 #> # A tibble: 10 × 7
 #>    Variable               Label            Values Class N_distinct N_valid   NAs
@@ -201,6 +211,7 @@ varlist(sochealth, where(is.numeric), tbl = TRUE)
 works with tidyselect in the same way:
 
 ``` r
+
 vl(sochealth, starts_with("bmi"), tbl = TRUE)
 #> # A tibble: 2 × 7
 #>   Variable     Label           Values             Class N_distinct N_valid   NAs
@@ -217,6 +228,7 @@ or a selected set of variables,
 builds an interactive codebook in the Viewer.
 
 ``` r
+
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth)
 }
@@ -227,6 +239,7 @@ Use the same tidyselect-style selectors as
 to build a focused codebook:
 
 ``` r
+
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(
     sochealth,
@@ -242,6 +255,7 @@ You can also request a fuller display of values or include missing
 values explicitly in the summary:
 
 ``` r
+
 if (requireNamespace("DT", quietly = TRUE)) {
   code_book(sochealth, values = TRUE, include_na = TRUE)
 }

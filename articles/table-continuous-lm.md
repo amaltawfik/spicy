@@ -1,6 +1,7 @@
 # Model-based continuous summary tables in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -19,6 +20,7 @@ Use `select` for one or more continuous outcomes and `by` for the single
 predictor:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi, life_sat_health),
@@ -49,6 +51,7 @@ Use `vcov = "HC*"` when you want heteroskedasticity-consistent standard
 errors and tests:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -82,6 +85,7 @@ standard errors are biased downward. Use the `CR*` family together with
 `clubSandwich`:
 
 ``` r
+
 table_continuous_lm(
   sleep,
   select = extra,
@@ -110,6 +114,7 @@ resampling-based variance estimators in pure base R (no dependency
 added):
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = wellbeing_score,
@@ -131,6 +136,7 @@ Use `weights` when you want weighted estimated means or slopes in the
 same model-based table:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -161,6 +167,7 @@ If `by` is numeric,
 reports the slope rather than group means:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -194,6 +201,7 @@ comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and require
 `by` to have exactly two non-empty levels:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -218,6 +226,7 @@ Hedges’ *g* applies the small-sample correction
 published reports (Goulet-Pelletier and Cousineau 2018):
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -243,6 +252,7 @@ population variance explained (Hays 1963; Olejnik and Algina 2003;
 Lakens 2013):
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -267,6 +277,7 @@ power-analysis frameworks (e.g. G\*Power) and is defined for any
 predictor type:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -307,6 +318,7 @@ In the printed and rendered outputs, the effect size is displayed with
 the bracketed CI (article-ready):
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -337,6 +349,7 @@ access, the wide raw output exposes separate numeric columns, and the
 long output always includes them:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = wellbeing_score,
@@ -354,6 +367,7 @@ table_continuous_lm(
 ```
 
 ``` r
+
 out <- table_continuous_lm(
   sochealth,
   select = wellbeing_score,
@@ -382,6 +396,7 @@ Pretty outcome labels and a comma decimal separator (useful for European
 reporting):
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -414,6 +429,7 @@ helpers, including `tinytable`, `gt`, `flextable`, `excel`, `word`, and
 `clipboard`.
 
 ``` r
+
 pkgdown_dark_gt(
   table_continuous_lm(
     sochealth,
@@ -439,6 +455,7 @@ for use with `gtsummary`, `modelsummary`, `parameters`, or any other
 tidyverse-stats workflow:
 
 ``` r
+
 out <- table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),

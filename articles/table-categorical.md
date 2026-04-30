@@ -1,6 +1,7 @@
 # Categorical summary tables in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -19,6 +20,7 @@ For grouped tables, provide a data frame, one or more selected
 variables, and a grouping variable:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
@@ -78,6 +80,7 @@ frame suitable for further processing.
 Omit `by` to build a frequency-style table for the selected variables:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -119,6 +122,7 @@ The `"gt"` format produces a table with APA-style borders, column
 spanners, and proper alignment:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -134,6 +138,7 @@ pkgdown_dark_gt(
 ### tinytable output
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -159,6 +164,7 @@ modality), or `output = "long"` for a long format (one row per modality
 x group):
 
 ``` r
+
 table_categorical(
   sochealth,
   select = smoking,
@@ -193,6 +199,7 @@ and
   legacy spicy \< 0.11.0 form, kept for backward compatibility.
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -218,6 +225,7 @@ Kendall’s Tau-b when both variables are ordered factors. Override with
 `assoc_measure`:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = smoking,
@@ -227,17 +235,18 @@ table_categorical(
 )
 ```
 
-| Variable | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p      | Lambda |
-|----------|-----------------|------|-----------------|------|----------|------|-------|------|--------|--------|
-|          | n               | %    | n               | %    | n        | %    | n     | %    |        |        |
-| smoking  |                 |      |                 |      |          |      |       |      | \<.001 | .00    |
-|     No   | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |        |        |
-|     Yes  | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |        |        |
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Lambda |
+|----|----|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % | n | % |  |  |
+| smoking |  |  |  |  |  |  |  |  | \<.001 | .00 |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
+|     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -255,6 +264,7 @@ In data formats (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`),
 separate `CI lower` and `CI upper` columns are added:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = smoking,
@@ -279,6 +289,7 @@ Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
 the total weighted N matches the unweighted N:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -299,6 +310,7 @@ By default, rows with missing values are dropped (`drop_na = TRUE`). Set
 `drop_na = FALSE` to display them as a “(Missing)” category:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -319,6 +331,7 @@ specify controls the display order, which is useful for placing
 “(Missing)” first to highlight missingness:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -339,6 +352,7 @@ Control the number of digits for percentages, p-values, and the
 association measure:
 
 ``` r
+
 pkgdown_dark_gt(
   table_categorical(
     sochealth,
@@ -376,6 +390,7 @@ Pass `align = "auto"` to revert to the legacy uniform right-alignment
 used in spicy \< 0.11.0:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -418,6 +433,7 @@ for use with `gtsummary`, `modelsummary`, `parameters`, or any other
 tidyverse-stats workflow:
 
 ``` r
+
 out <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -478,6 +494,7 @@ broom::glance(out)
 For Excel export, provide a file path:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
@@ -490,6 +507,7 @@ table_categorical(
 For Word, use `output = "word"`:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
@@ -503,6 +521,7 @@ You can also copy directly to the clipboard for pasting into a
 spreadsheet or a text editor:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),

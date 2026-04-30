@@ -1,6 +1,7 @@
 # Frequency tables and cross-tabulations in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -18,6 +19,7 @@ out of the box. This vignette covers the main options using the bundled
 Pass a data frame and a variable name to get counts and percentages:
 
 ``` r
+
 freq(sochealth, education)
 #> Frequency table: education
 #> 
@@ -41,6 +43,7 @@ Sort by frequency with `sort = "-"` (decreasing) or `sort = "+"`
 `sort = "name-"`:
 
 ``` r
+
 freq(sochealth, education, sort = "-")
 #> Frequency table: education
 #> 
@@ -60,6 +63,7 @@ freq(sochealth, education, sort = "-")
 Sort alphabetically:
 
 ``` r
+
 freq(sochealth, education, sort = "name+")
 #> Frequency table: education
 #> 
@@ -81,6 +85,7 @@ freq(sochealth, education, sort = "name+")
 Add cumulative columns with `cum = TRUE`:
 
 ``` r
+
 freq(sochealth, smoking, cum = TRUE)
 #> Frequency table: smoking
 #> 
@@ -111,6 +116,7 @@ Supply a weight variable with `weights`. By default, `rescale = TRUE`
 adjusts the weighted total to match the unweighted sample size:
 
 ``` r
+
 freq(sochealth, education, weights = weight)
 #> Frequency table: education
 #> 
@@ -131,6 +137,7 @@ freq(sochealth, education, weights = weight)
 Set `rescale = FALSE` to keep the raw weighted counts:
 
 ``` r
+
 freq(sochealth, education, weights = weight, rescale = FALSE)
 #> Frequency table: education
 #> 
@@ -156,6 +163,7 @@ shows them by default with the `[code] label` format. Control this with
 `labelled_levels`:
 
 ``` r
+
 # Create a labelled version of the smoking variable
 sh <- sochealth
 sh$smoking_lbl <- labelled::labelled(
@@ -214,6 +222,7 @@ freq(sh, smoking_lbl, labelled_levels = "values")
 Treat specific values as missing with `na_val`:
 
 ``` r
+
 freq(sochealth, income_group, na_val = "High")
 #> Frequency table: income_group
 #> 
@@ -239,6 +248,7 @@ Cross two variables to get a contingency table with a chi-squared test
 and effect size:
 
 ``` r
+
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
 #> 
@@ -266,6 +276,7 @@ Use `percent = "row"` or `percent = "col"` to display percentages
 instead of raw counts:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
@@ -290,6 +301,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 ```
 
 ``` r
+
 cross_tab(sochealth, smoking, education, percent = "row")
 #> Crosstable: smoking x education (Row %)
 #> 
@@ -316,6 +328,7 @@ cross_tab(sochealth, smoking, education, percent = "row")
 Stratify the table by a third variable:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, by = sex)
 #> Crosstable: smoking x education (N) | sex = Female
 #> 
@@ -360,6 +373,7 @@ For more than one grouping variable, use
 [`interaction()`](https://rdrr.io/r/base/interaction.html):
 
 ``` r
+
 cross_tab(sochealth, smoking, education,
           by = interaction(sex, age_group))
 #> Crosstable: smoking x education (N) | sex x age_group = Female.25-34
@@ -522,6 +536,7 @@ When both variables are ordered factors,
 automatically switches from Cramer’s V to Kendall’s Tau-b:
 
 ``` r
+
 cross_tab(sochealth, self_rated_health, education)
 #> Crosstable: self_rated_health x education (N)
 #> 
@@ -550,6 +565,7 @@ cross_tab(sochealth, self_rated_health, education)
 You can override the automatic selection with `assoc_measure`:
 
 ``` r
+
 cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> Crosstable: self_rated_health x education (N)
 #> 
@@ -581,6 +597,7 @@ Add a 95% confidence interval for the association measure with
 `assoc_ci = TRUE`:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 #> Crosstable: smoking x education (N)
 #> 
@@ -609,6 +626,7 @@ Weights work the same as in
 Without rescaling, the table shows raw weighted counts:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, weights = weight)
 #> Crosstable: smoking x education (N)
 #> 
@@ -635,6 +653,7 @@ With `rescale = TRUE`, the weighted total matches the unweighted sample
 size:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> Crosstable: smoking x education (N)
 #> 
@@ -662,6 +681,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 When expected cell counts are small, use simulated p-values:
 
 ``` r
+
 cross_tab(sochealth, smoking, education,
           simulate_p = TRUE, simulate_B = 5000)
 #> Crosstable: smoking x education (N)
@@ -689,6 +709,7 @@ cross_tab(sochealth, smoking, education,
 Set `styled = FALSE` to get a plain data frame for further processing:
 
 ``` r
+
 cross_tab(sochealth, smoking, education,
           percent = "col", styled = FALSE)
 #>   Values Lower secondary Upper secondary Tertiary
@@ -703,6 +724,7 @@ You can set package-wide defaults with
 repeat arguments:
 
 ``` r
+
 options(
   spicy.percent   = "column",
   spicy.simulate_p = TRUE,

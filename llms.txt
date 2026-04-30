@@ -59,6 +59,7 @@ with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 Install the current CRAN release, recommended for most users:
 
 ``` r
+
 install.packages("spicy")
 ```
 
@@ -66,6 +67,7 @@ Install the latest [r-universe](https://amaltawfik.r-universe.dev/spicy)
 build:
 
 ``` r
+
 install.packages(
   "spicy",
   repos = c(
@@ -82,6 +84,7 @@ than the current CRAN release.
 Install the development version from GitHub with `pak`:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("amaltawfik/spicy")
 ```
@@ -98,6 +101,7 @@ The examples below use the bundled `sochealth` dataset.
 data](reference/figures/animation_varlist.gif)
 
 ``` r
+
 varlist(sochealth, tbl = TRUE)
 #> # A tibble: 24 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
@@ -116,6 +120,7 @@ varlist(sochealth, tbl = TRUE)
 ```
 
 ``` r
+
 code_book(
   sochealth,
   starts_with("bmi"),
@@ -134,6 +139,7 @@ for more on
 ### Frequency tables and cross-tabulations
 
 ``` r
+
 freq(sochealth, income_group)
 #> Frequency table: income_group
 #> 
@@ -183,6 +189,7 @@ percentages, weights, and tests.
 ### Association measures
 
 ``` r
+
 tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 
 # Quick scalar estimate
@@ -202,6 +209,7 @@ for a guide on choosing the right measure.
 ### Summary tables
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -224,6 +232,7 @@ table_categorical(
 ```
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
@@ -267,6 +276,7 @@ table_categorical(
 ```
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health)
@@ -285,6 +295,7 @@ table_continuous(
 ```
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health),
@@ -324,6 +335,7 @@ table_continuous(
 ```
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -357,6 +369,7 @@ for an overview of summary tables.
 ### Row-wise summaries
 
 ``` r
+
 df <- data.frame(
   x1 = c(10, NA, 30, 40, 50),
   x2 = c(5, NA, 15, NA, 25),
@@ -381,6 +394,7 @@ longer workflow using
 ### Label extraction
 
 ``` r
+
 # LimeSurvey-style headers: "code. label"
 df <- tibble::tibble(
   "age. Age of respondent" = c(25, 30),

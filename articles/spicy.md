@@ -1,6 +1,7 @@
 # Getting started with spicy
 
 ``` r
+
 library(spicy)
 ```
 
@@ -29,6 +30,7 @@ usage in practice. Here we use `tbl = TRUE` to produce static output for
 the vignette:
 
 ``` r
+
 varlist(sochealth, tbl = TRUE)
 #> # A tibble: 24 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
@@ -49,6 +51,7 @@ varlist(sochealth, tbl = TRUE)
 You can also select specific columns with tidyselect syntax:
 
 ``` r
+
 varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 #> # A tibble: 4 × 7
 #>   Variable     Label                       Values Class N_distinct N_valid   NAs
@@ -66,6 +69,7 @@ produces frequency tables with counts, percentages, and (optionally)
 valid and cumulative percentages.
 
 ``` r
+
 freq(sochealth, education)
 #> Frequency table: education
 #> 
@@ -86,6 +90,7 @@ Weighted frequencies use the `weights` argument. With `rescale = TRUE`,
 the total weighted N matches the unweighted N:
 
 ``` r
+
 freq(sochealth, education, weights = weight, rescale = TRUE)
 #> Frequency table: education
 #> 
@@ -110,6 +115,7 @@ crosses two categorical variables. By default it shows counts, a
 chi-squared test, and Cramer’s V:
 
 ``` r
+
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
 #> 
@@ -134,6 +140,7 @@ cross_tab(sochealth, smoking, education)
 Add percentages with `percent`:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
@@ -160,6 +167,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 Group by a third variable with `by`:
 
 ``` r
+
 cross_tab(sochealth, smoking, education, by = sex)
 #> Crosstable: smoking x education (N) | sex = Female
 #> 
@@ -206,6 +214,7 @@ automatically selects an ordinal measure (Kendall’s Tau-b) instead of
 Cramer’s V:
 
 ``` r
+
 cross_tab(sochealth, self_rated_health, education)
 #> Crosstable: self_rated_health x education (N)
 #> 
@@ -238,6 +247,7 @@ contingency table to
 [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md):
 
 ``` r
+
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper        p 
@@ -267,6 +277,7 @@ return a scalar by default. Pass `detail = TRUE` for the confidence
 interval and p-value:
 
 ``` r
+
 cramer_v(tbl, detail = TRUE)
 #> Estimate  CI lower  CI upper        p
 #>    0.136     0.079     0.191  < 0.001
@@ -278,6 +289,7 @@ cramer_v(tbl, detail = TRUE)
 covers grouped or one-way summary tables for categorical variables:
 
 ``` r
+
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
@@ -286,24 +298,25 @@ table_categorical(
 )
 ```
 
-| Variable          | Lower secondary |      | Upper secondary |      | Tertiary |      | Total |      | p      | Cramer's V |
-|-------------------|-----------------|------|-----------------|------|----------|------|-------|------|--------|------------|
-|                   | n               | %    | n               | %    | n        | %    | n     | %    |        |            |
-| smoking           |                 |      |                 |      |          |      |       |      | \<.001 | .14        |
-|     No            | 179             | 69.6 | 415             | 78.7 | 332      | 84.9 | 926   | 78.8 |        |            |
-|     Yes           | 78              | 30.4 | 112             | 21.3 | 59       | 15.1 | 249   | 21.2 |        |            |
-| physical_activity |                 |      |                 |      |          |      |       |      | \<.001 | .21        |
-|     No            | 177             | 67.8 | 310             | 57.5 | 163      | 40.8 | 650   | 54.2 |        |            |
-|     Yes           | 84              | 32.2 | 229             | 42.5 | 237      | 59.2 | 550   | 45.8 |        |            |
-| dentist_12m       |                 |      |                 |      |          |      |       |      | \<.001 | .22        |
-|     No            | 113             | 43.3 | 174             | 32.3 | 67       | 16.8 | 354   | 29.5 |        |            |
-|     Yes           | 148             | 56.7 | 365             | 67.7 | 333      | 83.2 | 846   | 70.5 |        |            |
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
+|----|----|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % | n | % |  |  |
+| smoking |  |  |  |  |  |  |  |  | \<.001 | .14 |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
+|     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
+| physical_activity |  |  |  |  |  |  |  |  | \<.001 | .21 |
+|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |  |  |
+|     Yes | 84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |  |  |
+| dentist_12m |  |  |  |  |  |  |  |  | \<.001 | .22 |
+|     No | 113 | 43.3 | 174 | 32.3 | 67 | 16.8 | 354 | 29.5 |  |  |
+|     Yes | 148 | 56.7 | 365 | 67.7 | 333 | 83.2 | 846 | 70.5 |  |  |
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 summarizes continuous variables, either overall or by a categorical `by`
 variable, and can also add group-comparison tests:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, life_sat_health),
@@ -348,6 +361,7 @@ linear-model framework, for example with robust standard errors or case
 weights:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -382,6 +396,7 @@ compute row-wise statistics across selected columns, with automatic
 handling of missing values.
 
 ``` r
+
 sochealth |>
   dplyr::mutate(
     mean_sat  = mean_n(select = starts_with("life_sat")),

@@ -1,6 +1,7 @@
 # Continuous summary tables in R
 
 ``` r
+
 library(spicy)
 ```
 
@@ -16,6 +17,7 @@ statistics, and effect sizes.
 Use `select` to choose the continuous variables you want to summarize:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health)
@@ -40,6 +42,7 @@ If you omit `select`,
 scans the data frame and keeps numeric columns:
 
 ``` r
+
 table_continuous(sochealth)
 #> Descriptive statistics
 #> 
@@ -89,6 +92,7 @@ Add `by` to summarize the same variables across categories. When `by` is
 supplied, a Welch-test *p*-value column is added automatically:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -150,6 +154,7 @@ heteroskedasticity-consistent standard errors or case weights, use
 instead:
 
 ``` r
+
 table_continuous_lm(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -177,6 +182,7 @@ Grouped tables can also report the test statistic and an effect size
 alongside the default *p*-value column:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -249,6 +255,7 @@ Use `test = "student"` for equal-variance parametric tests or
 `test = "nonparametric"` for rank-based comparisons:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
@@ -307,6 +314,7 @@ groups), or epsilon-squared (nonparametric, 3+ groups). To pick a
 specific measure explicitly, pass its character name:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = wellbeing_score,
@@ -341,6 +349,7 @@ When you need the underlying columns for further processing, use
 `output = "data.frame"`:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
@@ -377,6 +386,7 @@ table_continuous(
 `select` supports tidyselect helpers:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = starts_with("life_sat"),
@@ -430,6 +440,7 @@ table_continuous(
 For more programmatic selection, set `regex = TRUE`:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = "^life_sat",
@@ -482,6 +493,7 @@ Use `exclude` when you want a broad selection with one or two explicit
 removals:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health, life_sat_work),
@@ -518,6 +530,7 @@ table_continuous(
 Use `labels` to replace technical variable names with reporting labels:
 
 ``` r
+
 pkgdown_dark_gt(
   table_continuous(
     sochealth,
@@ -552,6 +565,7 @@ supports the same reporting-oriented outputs as
 For example, `tinytable` works well in Quarto and R Markdown documents:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -560,24 +574,25 @@ table_continuous(
 )
 ```
 
-| Variable                       | Group           | M     | SD    | Min   | Max    | 95% CI |       | n   | p      |
-|--------------------------------|-----------------|-------|-------|-------|--------|--------|-------|-----|--------|
-|                                |                 |       |       |       |        | LL     | UL    |     |        |
-| Body mass index                | Lower secondary | 28.09 | 3.47  | 18.20 | 38.90  | 27.66  | 28.51 | 260 | \<.001 |
-|                                | Upper secondary | 26.02 | 3.43  | 16.00 | 37.10  | 25.73  | 26.31 | 534 |        |
-|                                | Tertiary        | 24.39 | 3.52  | 16.00 | 33.00  | 24.04  | 24.74 | 394 |        |
-| WHO-5 wellbeing index (0-100)  | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90  | 55.33  | 59.10 | 261 | \<.001 |
-|                                | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82  | 70.12 | 539 |        |
-|                                | Tertiary        | 76.85 | 13.23 | 40.40 | 100.00 | 75.55  | 78.15 | 400 |        |
-| Satisfaction with health (1-5) | Lower secondary | 2.71  | 1.20  | 1.00  | 5.00   | 2.57   | 2.86  | 259 | \<.001 |
-|                                | Upper secondary | 3.53  | 1.19  | 1.00  | 5.00   | 3.43   | 3.63  | 534 |        |
-|                                | Tertiary        | 4.11  | 1.04  | 1.00  | 5.00   | 4.01   | 4.21  | 399 |        |
+| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
+|----|----|----|----|----|----|----|----|----|----|
+|  |  |  |  |  |  | LL | UL |  |  |
+| Body mass index | Lower secondary | 28.09 | 3.47 | 18.20 | 38.90 | 27.66 | 28.51 | 260 | \<.001 |
+|  | Upper secondary | 26.02 | 3.43 | 16.00 | 37.10 | 25.73 | 26.31 | 534 |  |
+|  | Tertiary | 24.39 | 3.52 | 16.00 | 33.00 | 24.04 | 24.74 | 394 |  |
+| WHO-5 wellbeing index (0-100) | Lower secondary | 57.22 | 15.44 | 18.70 | 97.90 | 55.33 | 59.10 | 261 | \<.001 |
+|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |  |
+|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |  |
+| Satisfaction with health (1-5) | Lower secondary | 2.71 | 1.20 | 1.00 | 5.00 | 2.57 | 2.86 | 259 | \<.001 |
+|  | Upper secondary | 3.53 | 1.19 | 1.00 | 5.00 | 3.43 | 3.63 | 534 |  |
+|  | Tertiary | 4.11 | 1.04 | 1.00 | 5.00 | 4.01 | 4.21 | 399 |  |
 
 ## Export to Excel or Word
 
 Use the same function to export the table directly:
 
 ``` r
+
 table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score, life_sat_health),
@@ -615,6 +630,7 @@ and
   `output = "data.frame"` / `"long"` for downstream code.
 
 ``` r
+
 table_continuous(
   sochealth,
   select = wellbeing_score,
@@ -642,6 +658,7 @@ for use with `gtsummary`, `modelsummary`, `parameters`, or any other
 tidyverse stats workflow:
 
 ``` r
+
 out <- table_continuous(
   sochealth,
   select = c(bmi, wellbeing_score),
