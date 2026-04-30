@@ -42,7 +42,13 @@
   `"right"`, default `"decimal"`), `show_n` (toggle `n` column), `ci`
   (toggle mean CI columns), and `output = "long"` (synonym of
   `"data.frame"`). The two functions now share the same reporting
-  vocabulary, decimal mark, and digits convention.
+  vocabulary, decimal mark, and digits convention. `show_n = FALSE` and
+  `ci = FALSE` drop the corresponding columns (and the CI spanner /
+  border lines) structurally from the printed ASCII table and from every
+  rendered output (`tinytable`, `gt`, `flextable`, `word`, `excel`,
+  `clipboard`); the underlying `n` and `ci_lower` / `ci_upper` are
+  always present in `output = "data.frame"` / `"long"` for downstream
+  programmatic access.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)’s
   `effect_size` argument is migrated from logical to a character enum:

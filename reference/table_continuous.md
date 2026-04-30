@@ -124,10 +124,13 @@ table_continuous(
 
 - show_n:
 
-  Logical. If `TRUE`, includes an unweighted `n` column in the rendered
-  outputs and the printed ASCII table (the `n` column is always present
-  in `output = "data.frame"` / `"long"` for downstream programmatic
-  access). Defaults to `TRUE`.
+  Logical. If `TRUE`, includes an unweighted `n` column in the printed
+  ASCII table and in every rendered output (`tinytable`, `gt`,
+  `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop the
+  `n` column structurally from those outputs (no empty placeholder, no
+  spanner). The `n` column is always present in the raw
+  `output = "data.frame"` / `"long"` for downstream programmatic access.
+  Defaults to `TRUE`.
 
 - effect_size:
 
@@ -174,11 +177,14 @@ table_continuous(
 - ci:
 
   Logical. If `TRUE`, includes the mean confidence interval columns
-  (`<level>% CI LL` / `<level>% CI UL`) in the rendered outputs and the
-  printed ASCII table. Defaults to `TRUE`. The CI level is taken from
-  `ci_level`. The columns are always present in the long output
-  (`output = "data.frame"` / `"long"`) for downstream programmatic
-  access.
+  (`<level>% CI LL` / `<level>% CI UL`) and their spanner in the printed
+  ASCII table and in every rendered output (`tinytable`, `gt`,
+  `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop
+  both columns and the CI spanner structurally from those outputs (no
+  empty placeholders, no border lines under an empty header). The CI
+  bounds are always present as `ci_lower` / `ci_upper` in the raw
+  `output = "data.frame"` / `"long"` for downstream programmatic access.
+  Defaults to `TRUE`. The CI level is taken from `ci_level`.
 
 - labels:
 
