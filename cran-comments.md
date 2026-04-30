@@ -3,60 +3,75 @@
 0 errors | 0 warnings | 0 notes
 
 * CRAN incoming feasibility may report a NOTE about update frequency
-  (number of updates in the past 6 months). This release follows the
-  recently-accepted 0.10.0 to deliver a substantial extension of
-  `table_continuous_lm()` requested by users for inferential reporting.
-  No further updates are planned in the immediate term.
+  (number of updates in the past 6 months). This release consolidates
+  several months of harmonisation work across the three `table_*()`
+  helpers and is expected to be stable.
 
 ## Comments
 
 This is version 0.11.0 of the **spicy** package.
 
-This release substantially extends `table_continuous_lm()`, the
-model-based bivariate continuous-outcome table:
+The release harmonises the three `table_*()` summary-table helpers
+(`table_continuous()`, `table_continuous_lm()`, `table_categorical()`)
+around a shared reporting vocabulary, and substantially extends the
+model-based variant.
 
-* Three new effect-size choices alongside the existing Cohen's `f²`:
-  Cohen's `d`, Hedges' `g`, and Hays' `omega²`. All four are derived
-  from the fitted (possibly weighted) `lm()` and stay invariant to
-  `vcov`. `d` and `g` error early when `by` is not a two-level
-  categorical predictor.
+### `table_continuous_lm()`
 
-* A new `effect_size_ci` argument adds confidence intervals for the
-  selected effect size, using the modern noncentral-distribution
-  inversion approach (noncentral *t* for `d`/`g`; noncentral *F* for
-  `omega²`/`f²`) — the consensus standard in commercial statistical
-  software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
-  `PROC GLM EFFECTSIZE`) and in mainstream R packages (`effectsize`,
-  `MOTE`, `TOSTER`, `effsize`). Numerical agreement with the
-  `effectsize` package for `d` and `g` is verified by unit tests.
+* New cluster-robust standard errors via `cluster` and four `vcov`
+  choices (`"CR0"` – `"CR3"`), dispatched to `clubSandwich` with
+  Satterthwaite degrees of freedom. `clubSandwich` is added to
+  `Suggests`.
 
-* Documentation has been substantially expanded with SPSS / Stata /
-  SAS-style detail for `by`, `weights`, `vcov`, `contrast`, and `r2`;
-  markdown subsections in `@details`; a `@family spicy tables` block;
-  cross-references via `@seealso` to `sandwich::vcovHC()`,
-  `effectsize::*`, `cobalt::bal.tab()`, and the `survey` package; and
-  20 academic references with DOIs covering the underlying methodology.
+* New `vcov = "bootstrap"` (nonparametric or cluster) and
+  `vcov = "jackknife"` (leave-one-out or leave-one-cluster-out)
+  resampling-based variance estimators, in pure base R. New `boot_n`
+  argument (default `1000`) controls the bootstrap replicates.
 
-* The accompanying `vignette("table-continuous-lm")` gains dedicated
-  *Effect sizes* and *Confidence intervals for effect sizes* sections
-  walking through all four choices with examples.
+* Three new `effect_size` choices alongside the existing `"f2"`:
+  Cohen's `"d"`, Hedges' `"g"` (two-group only), and Hays'
+  `"omega2"`. New `effect_size_ci` argument adds noncentral *t* /
+  *F* CIs displayed inline as `0.18 [0.07, 0.30]`. Numerical
+  agreement with the `effectsize` package for `"d"` and `"g"` is
+  verified by unit tests.
 
-Two breaking changes affect only `output = "long"`: when
-`effect_size = "none"`, the `es_type` and `es_value` columns are now
-`NA` (previously they were silently populated with `"f2"` and the
-corresponding value); and the column previously named `sum_w` is now
-named `weighted_n` to match the existing `Weighted n` column in the
-wide / rendered outputs. Both changes are documented in `NEWS.md` with
-migration guidance.
+* `HC*` variance estimators are now computed via
+  [sandwich::vcovHC()] rather than an in-package implementation;
+  `sandwich` is added to `Imports`.
 
-`effectsize` has been added to `Suggests` solely to provide
-numerical-agreement validation in unit tests; no runtime dependency is
-introduced.
+### Harmonisation across `table_*()`
 
-See `NEWS.md` for the full list of user-facing changes, including
-several quality-of-life improvements (integer typing of `n`/`df1`/`df2`
-in the long output; preservation of `predictor_label` for degenerate
-fits; clearer formatting of internal warnings).
+* `table_continuous()` and `table_categorical()` gain a shared
+  reporting vocabulary with `table_continuous_lm()`: `align`
+  (decimal-point alignment by default), `p_digits` (APA *p*-value
+  precision), and the `labels = c(name = "Label")` named-vector
+  form.
+
+* All three `table_*()` functions gain `as.data.frame()`,
+  `tibble::as_tibble()`, `broom::tidy()`, and `broom::glance()` S3
+  methods. `broom` is added to `Suggests`.
+
+### Other improvements
+
+* `label_from_names()` now raises actionable errors on duplicate or
+  empty new column names (it used to surface a cryptic
+  `tibble::repaired_names()` message), trims trailing whitespace on
+  the new name, preserves the input class, and is internally
+  dependency-free.
+
+### Breaking changes
+
+* `table_continuous_lm()` and `table_categorical()` default to
+  decimal-point alignment for numeric columns in printed and
+  rendered outputs (new `align` argument, default `"decimal"`).
+  Pass `align = "auto"` to restore the previous behaviour.
+
+* `table_continuous_lm(output = "long")` returns `NA` in `es_type`
+  and `es_value` when `effect_size = "none"`, and renames the
+  `sum_w` column to `weighted_n`. Both are documented in `NEWS.md`
+  with migration guidance.
+
+See `NEWS.md` for the full list of user-facing changes.
 
 ### Testing environments
 
