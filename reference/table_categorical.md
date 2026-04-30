@@ -172,25 +172,31 @@ table_categorical(
 - align:
 
   Horizontal alignment of numeric columns in the printed ASCII table and
-  in the `tinytable` and `gt` outputs. The first column (`Variable`) is
-  always left-aligned. One of:
+  in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard`
+  outputs. The first column (`Variable`) is always left-aligned. One of:
 
   - `"decimal"` (default): align numeric columns on the decimal mark,
     the standard scientific-publication convention used by SPSS, SAS,
-    LaTeX `siunitx`,
+    LaTeX `siunitx`, and the native primitives of
     [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
-    and `tinytable::style_tt(align = "d")`. For ASCII print, values are
-    pre-padded with leading and trailing spaces so the dots line up
-    vertically.
+    and `tinytable::style_tt(align = "d")`. For engines without a native
+    primitive (`flextable`, `word`, `clipboard`, ASCII print), numeric
+    cells are pre-padded with leading and trailing spaces so the dots
+    line up vertically; the body of the `flextable`/`word` output
+    additionally uses a monospace font (`Consolas`) to make character
+    widths uniform.
 
-  - `"center"` / `"right"`: literal alignment of numeric columns.
+  - `"center"`: center-align all numeric columns.
 
-  - `"auto"`: legacy uniform right-alignment.
+  - `"right"`: right-align all numeric columns.
 
-  The `flextable`, `word`, `excel`, and `clipboard` engines currently
-  fall back to right-aligned numerics regardless of `align`; full
-  decimal alignment for those engines is a planned follow-up. Same
-  default and semantics as
+  - `"auto"`: legacy uniform right-alignment used in spicy \< 0.11.0.
+
+  The `excel` output uses the engine's default alignment in any case:
+  cell-string padding does not align decimals under proportional fonts,
+  and Excel's native right-alignment combined with the per-column
+  `numfmt` already produces dot-aligned columns. Same default and
+  semantics as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   /
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).

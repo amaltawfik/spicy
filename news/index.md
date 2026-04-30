@@ -7,12 +7,16 @@
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains an `align` argument (`"decimal"` / `"auto"` / `"center"` /
   `"right"`, default `"decimal"`) controlling horizontal alignment of
-  numeric columns in the printed ASCII table and in the `tinytable` and
-  `gt` outputs, using the native primitives of
+  numeric columns in the printed ASCII table and in the `tinytable`,
+  `gt`, `flextable`, `word`, and `clipboard` outputs. Uses the native
+  primitives of
   [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
-  and `tinytable::style_tt(align = "d")`. The `flextable`, `word`,
-  `excel`, and `clipboard` engines fall back to right-aligned numerics.
-  Same default and semantics as
+  and `tinytable::style_tt(align = "d")`; `flextable` / `word` /
+  `clipboard` get the alignment via leading / trailing space padding
+  plus a monospace body font (`Consolas`) for `flextable` / `word`. The
+  `excel` output keeps the engine default (right-aligned numerics with
+  per-column `numfmt`, which already yields dot-aligned columns). Same
+  default and semantics as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   /
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
@@ -204,11 +208,9 @@
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   now defaults to **decimal-point alignment** for numeric columns in the
-  printed ASCII table and in the `tinytable` and `gt` outputs (new
-  `align` argument, default `"decimal"`). The `flextable`, `word`,
-  `excel`, and `clipboard` engines keep the previous right-aligned
-  numeric layout. Pass `align = "auto"` to restore the previous uniform
-  right-alignment everywhere.
+  printed ASCII table and in the `tinytable`, `gt`, `flextable`, `word`,
+  and `clipboard` outputs (new `align` argument, default `"decimal"`).
+  Pass `align = "auto"` to restore the previous uniform right-alignment.
 
 - `table_continuous_lm(..., output = "long")` now returns `NA` in
   `es_type` and `es_value` when `effect_size = "none"`. Previously these

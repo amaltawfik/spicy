@@ -243,21 +243,27 @@ Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
-<dd><p>Horizontal alignment of numeric columns in the printed
-ASCII table and in the <code>tinytable</code> and <code>gt</code> outputs. The first
-column (<code>Variable</code>) is always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
+<dd><p>Horizontal alignment of numeric columns in the
+printed ASCII table and in the <code>tinytable</code>, <code>gt</code>, <code>flextable</code>,
+<code>word</code>, and <code>clipboard</code> outputs. The first column (<code>Variable</code>)
+is always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
 mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX <code>siunitx</code>, <code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and
-<code>tinytable::style_tt(align = "d")</code>. For ASCII print, values
-are pre-padded with leading and trailing spaces so the dots
-line up vertically.</p></li>
-<li><p><code>"center"</code> / <code>"right"</code>: literal alignment of numeric columns.</p></li>
-<li><p><code>"auto"</code>: legacy uniform right-alignment.</p></li>
-</ul><p>The <code>flextable</code>, <code>word</code>, <code>excel</code>, and <code>clipboard</code> engines
-currently fall back to right-aligned numerics regardless of
-<code>align</code>; full decimal alignment for those engines is a planned
-follow-up. Same default and semantics as
-<code><a href="table_continuous.html">table_continuous()</a></code> / <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></dd>
+SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
+<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and <code>tinytable::style_tt(align = "d")</code>.
+For engines without a native primitive (<code>flextable</code>, <code>word</code>,
+<code>clipboard</code>, ASCII print), numeric cells are pre-padded with
+leading and trailing spaces so the dots line up vertically;
+the body of the <code>flextable</code>/<code>word</code> output additionally uses
+a monospace font (<code>Consolas</code>) to make character widths uniform.</p></li>
+<li><p><code>"center"</code>: center-align all numeric columns.</p></li>
+<li><p><code>"right"</code>: right-align all numeric columns.</p></li>
+<li><p><code>"auto"</code>: legacy uniform right-alignment used in spicy &lt; 0.11.0.</p></li>
+</ul><p>The <code>excel</code> output uses the engine's default alignment in any
+case: cell-string padding does not align decimals under
+proportional fonts, and Excel's native right-alignment combined
+with the per-column <code>numfmt</code> already produces dot-aligned
+columns. Same default and semantics as <code><a href="table_continuous.html">table_continuous()</a></code> /
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
