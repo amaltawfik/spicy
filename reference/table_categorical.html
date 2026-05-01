@@ -222,9 +222,30 @@ to <code>2</code>.</p></dd>
 
 
 <dt id="arg-assoc-measure">assoc_measure<a class="anchor" aria-label="anchor" href="#arg-assoc-measure"></a></dt>
-<dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. Which association measure
-to report (<code>"auto"</code>, <code>"cramer_v"</code>, <code>"phi"</code>, <code>"gamma"</code>, <code>"tau_b"</code>,
-<code>"tau_c"</code>, <code>"somers_d"</code>, <code>"lambda"</code>, <code>"none"</code>). Defaults to <code>"auto"</code>.</p></dd>
+<dd><p>Which association measure to report alongside the
+chi-squared <em>p</em>-value. Accepts four input shapes:</p><ul><li><p><code>"none"</code> — drop the column entirely.</p></li>
+<li><p><code>"auto"</code> (the default) — pick a measure per row variable based
+on the variable type: a 2x2 table (binary row variable
+vs. binary <code>by</code>) uses <strong><code>phi</code></strong>, a pair of ordered factors uses
+<strong><code>tau_b</code></strong>, every other case uses <strong><code>cramer_v</code></strong>.</p></li>
+<li><p>a single string from
+<code>c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")</code>
+— applied uniformly to every row variable.</p></li>
+<li><p>a character vector with one entry per row variable. Both
+<strong>named</strong> (<code>c(smoking = "phi", health = "tau_b")</code>, recommended;
+unnamed variables fall back to <code>"auto"</code>) and <strong>unnamed</strong>
+positional (<code>c("phi", "tau_b", "auto")</code>, paired up with
+<code>select</code>) are accepted. Named is more robust to reordering of
+<code>select</code>.</p></li>
+</ul><p>When a single measure is used for every row, the column header is
+that measure's name (e.g. <code>"Cramer's V"</code>). When multiple measures
+are used (typically with <code>"auto"</code> on a heterogeneous <code>select</code>),
+the header collapses to <code>"Effect size"</code> and an APA-style
+<code>Note.</code> line is appended documenting which measure was used for
+which variable.</p>
+<p><code>phi</code> requires a 2x2 table; if explicitly requested for a
+non-2x2 variable, an error is raised so the user can choose
+another measure or fall back to <code>"auto"</code>.</p></dd>
 
 
 <dt id="arg-assoc-ci">assoc_ci<a class="anchor" aria-label="anchor" href="#arg-assoc-ci"></a></dt>
@@ -412,15 +433,15 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>   334       53.9     316     54.5     650     54.2         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>   286       46.1     264     45.5     550     45.8         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Cramer's V </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>    .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>    .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Phi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span> .01 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One-way frequency-style table (no `by`).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -570,7 +591,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2           smoking   Yes      131     21.6    118   20.7     249    21.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 physical_activity    No      334     53.9    316   54.5     650    54.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 physical_activity   Yes      286     46.1    264   45.5     550    45.8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           p  Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           p         Phi</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.7125196 0.010749501</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.7125196 0.010749501</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.8316763 0.006135851</span>
@@ -583,7 +604,7 @@ one-way frequency tables.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level  group   n  pct      chi2 df         p  Cramer's V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable level  group   n  pct      chi2 df         p         Phi</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            smoking    No Female 475 78.4 0.1357733  1 0.7125196 0.010749501</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2            smoking    No   Male 451 79.3 0.1357733  1 0.7125196 0.010749501</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3            smoking    No  Total 926 78.8 0.1357733  1 0.7125196 0.010749501</span>

@@ -147,11 +147,35 @@ table_categorical(
 
 - assoc_measure:
 
-  Passed to
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  Which association measure to report (`"auto"`, `"cramer_v"`, `"phi"`,
-  `"gamma"`, `"tau_b"`, `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`).
-  Defaults to `"auto"`.
+  Which association measure to report alongside the chi-squared
+  *p*-value. Accepts four input shapes:
+
+  - `"none"` — drop the column entirely.
+
+  - `"auto"` (the default) — pick a measure per row variable based on
+    the variable type: a 2x2 table (binary row variable vs. binary `by`)
+    uses **`phi`**, a pair of ordered factors uses **`tau_b`**, every
+    other case uses **`cramer_v`**.
+
+  - a single string from
+    `c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")`
+    — applied uniformly to every row variable.
+
+  - a character vector with one entry per row variable. Both **named**
+    (`c(smoking = "phi", health = "tau_b")`, recommended; unnamed
+    variables fall back to `"auto"`) and **unnamed** positional
+    (`c("phi", "tau_b", "auto")`, paired up with `select`) are accepted.
+    Named is more robust to reordering of `select`.
+
+  When a single measure is used for every row, the column header is that
+  measure's name (e.g. `"Cramer's V"`). When multiple measures are used
+  (typically with `"auto"` on a heterogeneous `select`), the header
+  collapses to `"Effect size"` and an APA-style `Note.` line is appended
+  documenting which measure was used for which variable.
+
+  `phi` requires a 2x2 table; if explicitly requested for a non-2x2
+  variable, an error is raised so the user can choose another measure or
+  fall back to `"auto"`.
 
 - assoc_ci:
 
@@ -379,15 +403,15 @@ table_categorical(
 #>    No              │   334       53.9     316     54.5     650     54.2         
 #>    Yes             │   286       46.1     264     45.5     550     45.8         
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  smoking           │    .01     
-#>    No              │            
-#>    Yes             │            
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │    .01     
-#>    No              │            
-#>    Yes             │            
+#>  Variable          │ Phi 
+#> ───────────────────┼─────
+#>  smoking           │ .01 
+#>    No              │     
+#>    Yes             │     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
+#>  physical_activity │ .01 
+#>    No              │     
+#>    Yes             │     
 
 # One-way frequency-style table (no `by`).
 table_categorical(
@@ -537,7 +561,7 @@ table_categorical(
 #> 2           smoking   Yes      131     21.6    118   20.7     249    21.2
 #> 3 physical_activity    No      334     53.9    316   54.5     650    54.2
 #> 4 physical_activity   Yes      286     46.1    264   45.5     550    45.8
-#>           p  Cramer's V
+#>           p         Phi
 #> 1 0.7125196 0.010749501
 #> 2 0.7125196 0.010749501
 #> 3 0.8316763 0.006135851
@@ -550,7 +574,7 @@ table_categorical(
   by = sex,
   output = "long"
 )
-#>             variable level  group   n  pct      chi2 df         p  Cramer's V
+#>             variable level  group   n  pct      chi2 df         p         Phi
 #> 1            smoking    No Female 475 78.4 0.1357733  1 0.7125196 0.010749501
 #> 2            smoking    No   Male 451 79.3 0.1357733  1 0.7125196 0.010749501
 #> 3            smoking    No  Total 926 78.8 0.1357733  1 0.7125196 0.010749501

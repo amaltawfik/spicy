@@ -970,7 +970,7 @@ column spanners, and proper alignment:</p>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Male</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Total</th>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="8">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">Cramer's V</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">Phi</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
@@ -3659,7 +3659,7 @@ display them as a “(Missing)” category:</p>
         <div class="gt_column_spanner">p</div>
       </th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
-        <div class="gt_column_spanner">Cramer's V</div>
+        <div class="gt_column_spanner">Kendall's Tau-b</div>
       </th>
     </tr>
 <tr class="gt_col_headings">
@@ -3688,7 +3688,7 @@ display them as a “(Missing)” category:</p>
 <td headers="Total_n" class="gt_row gt_right"></td>
 <td headers="Total_pct" class="gt_row gt_right"></td>
 <td headers="p" class="gt_row gt_left">&lt;.001</td>
-<td headers="assoc_col" class="gt_row gt_right">.18</td>
+<td headers="assoc_col" class="gt_row gt_right">-0.01</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">    Low</td>
@@ -4290,7 +4290,7 @@ placing “(Missing)” first to highlight missingness:</p>
         <div class="gt_column_spanner">p</div>
       </th>
       <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
-        <div class="gt_column_spanner">Cramer's V</div>
+        <div class="gt_column_spanner">Kendall's Tau-b</div>
       </th>
     </tr>
 <tr class="gt_col_headings">
@@ -4319,7 +4319,7 @@ placing “(Missing)” first to highlight missingness:</p>
 <td headers="Total_n" class="gt_row gt_right"></td>
 <td headers="Total_pct" class="gt_row gt_right"></td>
 <td headers="p" class="gt_row gt_left">&lt;.001</td>
-<td headers="assoc_col" class="gt_row gt_right">.18</td>
+<td headers="assoc_col" class="gt_row gt_right">-0.01</td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">    (Missing)</td>
@@ -4996,14 +4996,14 @@ right-alignment used in spicy &lt; 0.11.0:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>      334      53.9     316    54.5      650     54.2       </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>      286      46.1     264    45.5      550     45.8       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>        .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>            </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>        .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .01 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p><code>"center"</code> and <code>"right"</code> apply literal
 alignment.</p>
@@ -5035,14 +5035,14 @@ coerced to a plain <code>data.frame</code> / <code>tbl_df</code>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>   334       53.9     316     54.5     650     54.2         </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   286       46.1     264     45.5     550     45.8         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>    .01     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>            </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>    .01     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .01 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span></span></span>
 <span></span>
 <span><span class="co"># One row per (variable x level x group) with broom-style columns</span></span>
@@ -5068,8 +5068,8 @@ coerced to a plain <code>data.frame</code> / <code>tbl_df</code>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
 <span><span class="co">#&gt;   outcome           test_type   statistic    df p.value assoc_type assoc_value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> physical_activity chi_squared    0.045<span style="text-decoration: underline;">2</span>     1   0.832 Cramer's V     0.006<span style="text-decoration: underline;">14</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> smoking           chi_squared    0.136      1   0.713 Cramer's V     0.010<span style="text-decoration: underline;">7</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> physical_activity chi_squared    0.045<span style="text-decoration: underline;">2</span>     1   0.832 Phi            0.006<span style="text-decoration: underline;">14</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> smoking           chi_squared    0.136      1   0.713 Phi            0.010<span style="text-decoration: underline;">7</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: assoc_ci_lower &lt;dbl&gt;, assoc_ci_upper &lt;dbl&gt;, n_total &lt;int&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">

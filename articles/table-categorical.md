@@ -147,15 +147,15 @@ table_categorical(
 )
 ```
 
-| Variable          | Female |      | Male |      | Total |      | p    | Cramer's V |
-|-------------------|--------|------|------|------|-------|------|------|------------|
-|                   | n      | %    | n    | %    | n     | %    |      |            |
-| smoking           |        |      |      |      |       |      | .713 | .01        |
-|     No            | 475    | 78.4 | 451  | 79.3 | 926   | 78.8 |      |            |
-|     Yes           | 131    | 21.6 | 118  | 20.7 | 249   | 21.2 |      |            |
-| physical_activity |        |      |      |      |       |      | .832 | .01        |
-|     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |            |
-|     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |            |
+| Variable          | Female |      | Male |      | Total |      | p    | Phi |
+|-------------------|--------|------|------|------|-------|------|------|-----|
+|                   | n      | %    | n    | %    | n     | %    |      |     |
+| smoking           |        |      |      |      |       |      | .713 | .01 |
+|     No            | 475    | 78.4 | 451  | 79.3 | 926   | 78.8 |      |     |
+|     Yes           | 131    | 21.6 | 118  | 20.7 | 249   | 21.2 |      |     |
+| physical_activity |        |      |      |      |       |      | .832 | .01 |
+|     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
+|     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
 ### Data frame output
 
@@ -409,14 +409,14 @@ table_categorical(
 #>    No              │      334      53.9     316    54.5      650     54.2       
 #>    Yes             │      286      46.1     264    45.5      550     45.8       
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  smoking           │        .01 
-#>    No              │            
-#>    Yes             │            
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │        .01 
-#>    No              │            
+#>  Variable          │ Phi 
+#> ───────────────────┼─────
+#>  smoking           │ .01 
+#>    No              │     
+#>    Yes             │     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
+#>  physical_activity │ .01 
+#>    No              │     
 #>    Yes             │
 ```
 
@@ -451,14 +451,14 @@ out <- table_categorical(
 #>    No              │   334       53.9     316     54.5     650     54.2         
 #>    Yes             │   286       46.1     264     45.5     550     45.8         
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  smoking           │    .01     
-#>    No              │            
-#>    Yes             │            
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │    .01     
-#>    No              │            
+#>  Variable          │ Phi 
+#> ───────────────────┼─────
+#>  smoking           │ .01 
+#>    No              │     
+#>    Yes             │     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
+#>  physical_activity │ .01 
+#>    No              │     
 #>    Yes             │
 
 # One row per (variable x level x group) with broom-style columns
@@ -484,8 +484,8 @@ broom::glance(out)
 #> # A tibble: 2 × 10
 #>   outcome           test_type   statistic    df p.value assoc_type assoc_value
 #>   <chr>             <chr>           <dbl> <int>   <dbl> <chr>            <dbl>
-#> 1 physical_activity chi_squared    0.0452     1   0.832 Cramer's V     0.00614
-#> 2 smoking           chi_squared    0.136      1   0.713 Cramer's V     0.0107 
+#> 1 physical_activity chi_squared    0.0452     1   0.832 Phi            0.00614
+#> 2 smoking           chi_squared    0.136      1   0.713 Phi            0.0107 
 #> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
 ```
 
