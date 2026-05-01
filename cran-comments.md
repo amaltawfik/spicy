@@ -45,7 +45,7 @@ full details are in `NEWS.md`.
   warning) instead of recoding them to zero. Aligns with
   `cross_tab()`.
 
-Three other breaking changes (`align = "decimal"` default,
+Two other breaking changes (`align = "decimal"` default,
 `table_continuous_lm(output = "long")` `es_type` / `sum_w`) are
 documented in `NEWS.md` with migration recipes.
 

@@ -8,19 +8,27 @@
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).
-#' @param min_valid Minimum number of valid (non-NA) values required per row.
-#'   If a proportion, it's applied to the number of selected columns.
-#'   Defaults to `NULL` (all values must be valid).
-#' @param digits Optional number of decimal places to round the result.
-#'   Defaults to `NULL` (no rounding).
+#' @param min_valid Minimum number of valid (non-`NA`) values required
+#'   per row. Accepts:
+#'   * `NULL` (the default) — every selected column must be valid.
+#'   * a proportion in `(0, 1)` — `round(ncol(x) * min_valid)` valid
+#'     columns required (e.g. `min_valid = 0.5` requires at least
+#'     half of the selected columns to be non-`NA`).
+#'   * a non-negative integer count up to the number of selected
+#'     numeric columns.
+#'
+#'   Non-integer values `>= 1` (e.g. `1.5`) and counts greater than
+#'   `ncol(x)` raise an actionable error.
+#' @param digits Optional non-negative integer giving the number of
+#'   decimal places to round the result to. Defaults to `NULL` (no
+#'   rounding).
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers.
 #'   If `TRUE`, the `select` argument is treated as a regular expression.
 #' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
 #'   If `TRUE`, prints a message about non-numeric columns excluded.
 #'
-#' @return A numeric vector of row-wise sums
+#' @return A numeric vector of row-wise sums.
 #'
-#' @importFrom rlang inform
 #' @examples
 #' library(dplyr)
 #'

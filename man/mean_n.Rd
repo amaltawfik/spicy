@@ -22,12 +22,23 @@ If \code{regex = TRUE}, provide a regular expression pattern (character string).
 
 \item{exclude}{Columns to exclude (default: \code{NULL}).}
 
-\item{min_valid}{Minimum number of valid (non-NA) values required per row.
-If a proportion, it's applied to the number of selected columns.
-Defaults to \code{NULL} (all values must be valid).}
+\item{min_valid}{Minimum number of valid (non-\code{NA}) values required
+per row. Accepts:
+\itemize{
+\item \code{NULL} (the default) — every selected column must be valid.
+\item a proportion in \verb{(0, 1)} — \code{round(ncol(x) * min_valid)} valid
+columns required (e.g. \code{min_valid = 0.5} requires at least
+half of the selected columns to be non-\code{NA}).
+\item a non-negative integer count up to the number of selected
+numeric columns.
+}
 
-\item{digits}{Optional number of decimal places to round the result.
-Defaults to \code{NULL} (no rounding).}
+Non-integer values \verb{>= 1} (e.g. \code{1.5}) and counts greater than
+\code{ncol(x)} raise an actionable error.}
+
+\item{digits}{Optional non-negative integer giving the number of
+decimal places to round the result to. Defaults to \code{NULL} (no
+rounding).}
 
 \item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect helpers.
 If \code{TRUE}, the \code{select} argument is treated as a regular expression.}
