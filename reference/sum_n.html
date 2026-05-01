@@ -98,14 +98,21 @@ If <code>regex = TRUE</code>, provide a regular expression pattern (character st
 
 
 <dt id="arg-min-valid">min_valid<a class="anchor" aria-label="anchor" href="#arg-min-valid"></a></dt>
-<dd><p>Minimum number of valid (non-NA) values required per row.
-If a proportion, it's applied to the number of selected columns.
-Defaults to <code>NULL</code> (all values must be valid).</p></dd>
+<dd><p>Minimum number of valid (non-<code>NA</code>) values required
+per row. Accepts:</p><ul><li><p><code>NULL</code> (the default) — every selected column must be valid.</p></li>
+<li><p>a proportion in <code>(0, 1)</code> — <code>round(ncol(x) * min_valid)</code> valid
+columns required (e.g. <code>min_valid = 0.5</code> requires at least
+half of the selected columns to be non-<code>NA</code>).</p></li>
+<li><p>a non-negative integer count up to the number of selected
+numeric columns.</p></li>
+</ul><p>Non-integer values <code>&gt;= 1</code> (e.g. <code>1.5</code>) and counts greater than
+<code>ncol(x)</code> raise an actionable error.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Optional number of decimal places to round the result.
-Defaults to <code>NULL</code> (no rounding).</p></dd>
+<dd><p>Optional non-negative integer giving the number of
+decimal places to round the result to. Defaults to <code>NULL</code> (no
+rounding).</p></dd>
 
 
 <dt id="arg-regex">regex<a class="anchor" aria-label="anchor" href="#arg-regex"></a></dt>
@@ -120,7 +127,7 @@ If <code>TRUE</code>, prints a message about non-numeric columns excluded.</p></
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A numeric vector of row-wise sums</p>
+    <p>A numeric vector of row-wise sums.</p>
     </div>
 
     <div class="section level2">

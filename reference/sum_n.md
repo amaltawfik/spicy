@@ -41,14 +41,24 @@ sum_n(
 
 - min_valid:
 
-  Minimum number of valid (non-NA) values required per row. If a
-  proportion, it's applied to the number of selected columns. Defaults
-  to `NULL` (all values must be valid).
+  Minimum number of valid (non-`NA`) values required per row. Accepts:
+
+  - `NULL` (the default) — every selected column must be valid.
+
+  - a proportion in `(0, 1)` — `round(ncol(x) * min_valid)` valid
+    columns required (e.g. `min_valid = 0.5` requires at least half of
+    the selected columns to be non-`NA`).
+
+  - a non-negative integer count up to the number of selected numeric
+    columns.
+
+  Non-integer values `>= 1` (e.g. `1.5`) and counts greater than
+  `ncol(x)` raise an actionable error.
 
 - digits:
 
-  Optional number of decimal places to round the result. Defaults to
-  `NULL` (no rounding).
+  Optional non-negative integer giving the number of decimal places to
+  round the result to. Defaults to `NULL` (no rounding).
 
 - regex:
 
@@ -62,7 +72,7 @@ sum_n(
 
 ## Value
 
-A numeric vector of row-wise sums
+A numeric vector of row-wise sums.
 
 ## Examples
 

@@ -134,29 +134,15 @@
   `row.names.as.col` warning with `Warning:` for consistency with the
   captured-warning path.
 
-- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
-  and
-  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)’s
-  shared logic (column resolution, numeric filtering, `min_valid`
-  masking, rounding, verbose messages) is centralised in a single
-  internal helper. Both functions become thin wrappers over `rowMeans` /
-  `rowSums`, removing ~200 lines of duplicated code and a class of
-  drift-inducing inconsistencies.
-
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) /
   [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
-  reject non-integer `min_valid` ≥ 1 (`min_valid = 1.5` previously was
-  silently treated as a 150 % proportion, making every row `NA` without
-  a warning), and reject `min_valid` exceeding the number of selected
-  numeric columns with a clear error rather than a silent all-NA result.
-
-- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) /
-  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
-  `digits` validation now requires a non-negative **integer** (matches
+  reject non-integer `min_valid >= 1` (was silently treated as a
+  `> 100 %` proportion, making every row `NA`) and `min_valid > ncol`
+  (was a silent all-`NA` result). Their `digits` argument now requires a
+  non-negative integer, matching
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   / [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) /
-  the `table_*()` family); previously `digits = 1.5` was accepted and
-  forwarded to [`round()`](https://rdrr.io/r/base/Round.html).
+  the `table_*()` family.
 
 ### Breaking changes
 
