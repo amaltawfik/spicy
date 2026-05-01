@@ -76,6 +76,46 @@
   (instead of erroring) when the coefficient covariance submatrix
   is singular.
 
+* The five association measures whose degenerate-table branch
+  (`cramer_v()`, `yule_q()`, `gamma_gk()`, `kendall_tau_b()`,
+  `somers_d()`) used to return a length-1 named vector regardless
+  of `detail` now respect the documented return shape: `NA_real_`
+  scalar by default, fully shaped `spicy_assoc_detail` with NA
+  fields when `detail = TRUE`.
+
+* `uncertainty_coef()` returns a finite estimate (instead of `NaN`)
+  when the table has a row or column with zero marginal total.
+
+* `.validate_table()` (used by every association measure) now
+  rejects tables with NA cells, negative counts, or zero total
+  count with an actionable error instead of silently propagating
+  `NaN` further down the pipeline.
+
+* `cramer_v()` and `phi()` documentation now explicitly states that
+  the confidence interval uses the Fisher z-transformation on the
+  coefficient, which differs from the noncentral chi-squared or
+  bootstrap CIs reported by `DescTools`. The point estimate and
+  p-value remain identical to `DescTools` and SPSS.
+
+* `somers_d(direction = "symmetric")` previously delegated to
+  `kendall_tau_b()`; it now returns the harmonic mean of the two
+  asymmetric Somers' D values, matching the SPSS / PSPP `CROSSTABS`
+  definition. The two quantities often agree to two decimals on
+  square tables but are conceptually distinct.
+
+* `uncertainty_coef()` documentation now states that the entropy
+  terms use the standard `0 log 0 = 0` convention (matching SPSS,
+  PSPP, Stata, and Cover & Thomas) and explains why the point
+  estimate may differ very slightly from `DescTools::UncertCoef()`,
+  which applies an additional Laplace correction.
+
+* All 13 association measures are cross-validated against PSPP
+  `CROSSTABS /STATISTICS=ALL` on four datasets (`mtcars` 3x3 and
+  2x2, `HairEyeColor` 4x4, and the package's `sochealth`); 65 / 65
+  point estimates agree with PSPP to within 1e-7 (the precision of
+  PSPP's CSV output). PSPP-derived reference values are encoded as
+  anti-regression unit tests.
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

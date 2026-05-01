@@ -46,10 +46,12 @@ measuring the strength of association between two categorical variables.
 Cramer's V is computed as
 \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}}, where \eqn{\chi^2}
 is the Pearson chi-squared statistic, \eqn{n} is the total count,
-and \eqn{k = \min(r, c)}.
-The confidence interval uses the Fisher z-transformation.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024).
+and \eqn{k = \min(r, c)}. The point estimate matches the
+DescTools (Signorell et al., 2024) and SPSS implementations.
+The confidence interval uses the Fisher z-transformation
+on \eqn{V} (\eqn{\tanh(\mathrm{atanh}(V) \pm z_{\alpha/2} /
+\sqrt{n - 3})}), which differs from the noncentral chi-squared
+or bootstrap CIs reported by \code{DescTools::CramerV()}.
 }
 \examples{
 tab <- table(sochealth$smoking, sochealth$education)

@@ -59,6 +59,18 @@ model-based variant.
   the new name, preserves the input class, and is internally
   dependency-free.
 
+* The thirteen association measures in `R/assoc.R` are tightened:
+  the degenerate-table branch of `cramer_v()`, `yule_q()`,
+  `gamma_gk()`, `kendall_tau_b()` and `somers_d()` now respects
+  the documented return shape (scalar by default, fully shaped
+  `spicy_assoc_detail` with NA fields when `detail = TRUE`);
+  `uncertainty_coef()` no longer returns `NaN` when a margin is
+  zero; `.validate_table()` rejects NA cells, negative counts and
+  zero-total tables with actionable errors; `cramer_v()` and
+  `phi()` documentation explicitly states that the CI uses the
+  Fisher z-transformation (the point estimate and p-value remain
+  identical to `DescTools` and SPSS).
+
 ### Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

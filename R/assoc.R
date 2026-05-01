@@ -19,6 +19,15 @@
       call. = FALSE
     )
   }
+  if (anyNA(x)) {
+    stop("`x` must not contain NA cells.", call. = FALSE)
+  }
+  if (any(x < 0)) {
+    stop("`x` must contain non-negative counts.", call. = FALSE)
+  }
+  if (sum(x) == 0) {
+    stop("`x` has zero total count; association is undefined.", call. = FALSE)
+  }
   invisible(NULL)
 }
 
@@ -132,6 +141,28 @@ print.spicy_assoc_detail <- function(
 }
 
 
+# Internal: assemble the documented NA return shape, respecting `detail`,
+# `conf_level` and `.include_se`. Used by the degenerate-table branches
+# of `cramer_v()`, `yule_q()`, `gamma_gk()`, `kendall_tau_b()` and
+# `somers_d()` so they keep returning the same shape as the happy path
+# instead of a bare length-1 named vector.
+.na_assoc_result <- function(detail, conf_level, .include_se, digits) {
+  if (!detail) {
+    return(NA_real_)
+  }
+  .assoc_result(
+    NA_real_,
+    NA_real_,
+    conf_level = conf_level,
+    p_value = NA_real_,
+    ci_lower = NA_real_,
+    ci_upper = NA_real_,
+    .include_se = .include_se,
+    digits = digits
+  )
+}
+
+
 .concordance_counts <- function(x) {
   r <- nrow(x)
   k <- ncol(x)
@@ -206,10 +237,12 @@ print.spicy_assoc_detail <- function(
 #' Cramer's V is computed as
 #' \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}}, where \eqn{\chi^2}
 #' is the Pearson chi-squared statistic, \eqn{n} is the total count,
-#' and \eqn{k = \min(r, c)}.
-#' The confidence interval uses the Fisher z-transformation.
-#' Standard error formulas follow the DescTools implementations
-#' (Signorell et al., 2024).
+#' and \eqn{k = \min(r, c)}. The point estimate matches the
+#' DescTools (Signorell et al., 2024) and SPSS implementations.
+#' The confidence interval uses the Fisher z-transformation
+#' on \eqn{V} (\eqn{\tanh(\mathrm{atanh}(V) \pm z_{\alpha/2} /
+#' \sqrt{n - 3})}), which differs from the noncentral chi-squared
+#' or bootstrap CIs reported by `DescTools::CramerV()`.
 #'
 #' @references
 #' Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
@@ -237,13 +270,6 @@ cramer_v <- function(
   .validate_table(x)
   n <- sum(x)
   k <- min(nrow(x), ncol(x)) - 1L
-  if (n <= 0 || k <= 0) {
-    warning(
-      "Cramer's V is undefined for this table; returning NA.",
-      call. = FALSE
-    )
-    return(c(estimate = NA_real_))
-  }
   chi <- suppressWarnings(stats::chisq.test(x, correct = FALSE))
   chi2 <- as.numeric(chi$statistic)
   V <- sqrt(chi2 / (n * k))
@@ -288,10 +314,11 @@ cramer_v <- function(
 #' @details
 #' The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}.
 #' It is equivalent to Cramer's V for 2x2 tables and equals the
-#' Pearson correlation between the two binary variables.
-#' The confidence interval uses the Fisher z-transformation.
-#' Standard error formulas follow the DescTools implementations
-#' (Signorell et al., 2024); see [cramer_v()] for full references.
+#' Pearson correlation between the two binary variables. The point
+#' estimate matches the DescTools (Signorell et al., 2024) and SPSS
+#' implementations.
+#' The confidence interval uses the Fisher z-transformation on
+#' \eqn{\phi}; see [cramer_v()] for the formula and full references.
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$sex)
@@ -448,7 +475,7 @@ yule_q <- function(
       "Yule's Q is undefined when ad + bc = 0; returning NA.",
       call. = FALSE
     )
-    return(c(estimate = NA_real_))
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
   Q <- (ad - bc) / (ad + bc)
@@ -797,8 +824,17 @@ goodman_kruskal_tau <- function(
 #' the joint entropy.
 #' The symmetric version is
 #' \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
-#' Standard error formulas follow the DescTools implementations
-#' (Signorell et al., 2024); see [cramer_v()] for full references.
+#'
+#' The entropy terms use the standard mathematical convention
+#' \eqn{0 \log 0 = 0}, matching SPSS / PSPP `CROSSTABS` and the
+#' definition in Cover & Thomas (2006). Note that
+#' `DescTools::UncertCoef()` applies an additional Laplace
+#' correction (replacing zero cells with \eqn{1/n^2}) before the
+#' entropy computation, which produces slightly different point
+#' estimates on tables with empty cells; that correction is
+#' uncommon in the information-theory literature and is not used
+#' here. The asymptotic standard errors follow the DescTools delta
+#' method; see [cramer_v()] for full references.
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -822,9 +858,12 @@ uncertainty_coef <- function(
   rsum <- rowSums(x)
   csum <- colSums(x)
 
-  # DescTools uses natural log on counts/n
-  H_x <- -sum((rsum * log(rsum / n)) / n)
-  H_y <- -sum((csum * log(csum / n)) / n)
+  # DescTools uses natural log on counts/n. Filter zero margins to avoid
+  # 0 * log(0) = NaN -- the `H_xy` line already guards on cells via x>0.
+  rsum_pos <- rsum[rsum > 0]
+  csum_pos <- csum[csum > 0]
+  H_x <- -sum((rsum_pos * log(rsum_pos / n)) / n)
+  H_y <- -sum((csum_pos * log(csum_pos / n)) / n)
   H_xy <- -sum(x[x > 0] * log(x[x > 0] / n) / n)
 
   mi <- H_x + H_y - H_xy # mutual information
@@ -947,7 +986,7 @@ gamma_gk <- function(
 
   if (C + D == 0) {
     warning("No concordant or discordant pairs; returning NA.", call. = FALSE)
-    return(c(estimate = NA_real_))
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
   G <- (C - D) / (C + D)
@@ -1026,7 +1065,7 @@ kendall_tau_b <- function(
   denom <- sqrt((n0 - n1) * (n0 - n2))
   if (denom == 0) {
     warning("Tau-b is undefined for this table; returning NA.", call. = FALSE)
-    return(c(estimate = NA_real_))
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
   tau_b <- (C - D) / denom
@@ -1111,6 +1150,8 @@ kendall_tau_c <- function(
 ) {
   .validate_table(x)
   n <- sum(x)
+  # `.validate_table()` enforces nrow >= 2 and ncol >= 2, so `m >= 2`
+  # and the `(m - 1)` denominator below is always positive.
   m <- min(nrow(x), ncol(x))
   cd <- .concordance_counts(x)
   C <- cd$C
@@ -1201,12 +1242,31 @@ somers_d <- function(
   ni <- switch(direction, row = csum, column = rsum, symmetric = NULL)
 
   if (direction == "symmetric") {
-    # Symmetric Somers' d equals tau-b
-    return(kendall_tau_b(
-      x,
-      detail = detail,
+    # SPSS/PSPP definition: symmetric Somers' D is the harmonic mean of
+    # the two asymmetric values d(R|C) and d(C|R). It is NOT identical
+    # to Kendall's tau-b (which is the geometric mean of the same two
+    # quantities), although they often agree to two decimals.
+    d_r <- somers_d(x, "row", detail = FALSE)
+    d_c <- somers_d(x, "column", detail = FALSE)
+    if (is.na(d_r) || is.na(d_c) || (d_r + d_c) == 0) {
+      d_sym <- NA_real_
+    } else {
+      d_sym <- 2 * d_r * d_c / (d_r + d_c)
+    }
+    if (!detail) {
+      return(d_sym)
+    }
+    # SE for the symmetric form is not implemented in DescTools either;
+    # we report the estimate without an analytic CI / p-value.
+    return(.assoc_result(
+      d_sym,
+      NA_real_,
       conf_level = conf_level,
-      .include_se = .include_se
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      .include_se = .include_se,
+      digits = digits
     ))
   }
 
@@ -1216,7 +1276,7 @@ somers_d <- function(
       "Somers' d is undefined for this table; returning NA.",
       call. = FALSE
     )
-    return(c(estimate = NA_real_))
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
   d_val <- (C - D) / denom
 

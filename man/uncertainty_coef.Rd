@@ -52,8 +52,17 @@ For \code{direction = "row"}:
 the joint entropy.
 The symmetric version is
 \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
+
+The entropy terms use the standard mathematical convention
+\eqn{0 \log 0 = 0}, matching SPSS / PSPP \code{CROSSTABS} and the
+definition in Cover & Thomas (2006). Note that
+\code{DescTools::UncertCoef()} applies an additional Laplace
+correction (replacing zero cells with \eqn{1/n^2}) before the
+entropy computation, which produces slightly different point
+estimates on tables with empty cells; that correction is
+uncommon in the information-theory literature and is not used
+here. The asymptotic standard errors follow the DescTools delta
+method; see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 tab <- table(sochealth$smoking, sochealth$education)

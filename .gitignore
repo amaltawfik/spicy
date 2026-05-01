@@ -10,3 +10,4 @@ docs
 cobertura.xml
 .claude/
 .vscode/
+tmp_validation/

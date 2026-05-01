@@ -166,11 +166,15 @@ test_that("somers_d matches DescTools for row and column", {
   expect_equal(col[["ci_upper"]], -0.2092240, tolerance = 1e-4)
 })
 
-test_that("somers_d symmetric returns tau-b", {
+test_that("somers_d symmetric matches the harmonic mean of asymmetric (SPSS / PSPP)", {
   tab <- tab_3x3()
-  sym <- suppressWarnings(somers_d(tab, "symmetric", detail = TRUE))
-  tau <- suppressWarnings(kendall_tau_b(tab, detail = TRUE))
-  expect_equal(sym[["estimate"]], tau[["estimate"]], tolerance = 1e-10)
+  sym <- suppressWarnings(somers_d(tab, "symmetric"))
+  d_r <- somers_d(tab, "row")
+  d_c <- somers_d(tab, "column")
+  expected <- 2 * d_r * d_c / (d_r + d_c)
+  expect_equal(sym, expected, tolerance = 1e-10)
+  # PSPP CROSSTABS oracle value on this exact table:
+  expect_equal(sym, -0.5124224, tolerance = 1e-5)
 })
 
 # ── assoc_measures ───────────────────────────────────────────────────────────
@@ -322,10 +326,115 @@ test_that("contingency_coef detail with conf_level = NULL omits CI", {
 
 # ── Degenerate tables ─────────────────────────────────────────────────────
 
-test_that("cramer_v warns on degenerate table", {
+test_that("cramer_v rejects all-zero (n = 0) tables", {
   tab <- matrix(0L, 2, 2)
   class(tab) <- "table"
-  expect_warning(cramer_v(tab, detail = TRUE), "undefined")
+  expect_error(cramer_v(tab), "zero total count")
+})
+
+test_that(".validate_table rejects NA cells", {
+  tab <- matrix(c(NA_integer_, 1L, 2L, 3L), 2, 2)
+  class(tab) <- "table"
+  expect_error(cramer_v(tab), "NA cells")
+})
+
+test_that(".validate_table rejects negative counts", {
+  tab <- matrix(c(-1L, 1L, 2L, 3L), 2, 2)
+  class(tab) <- "table"
+  expect_error(cramer_v(tab), "non-negative")
+})
+
+test_that("uncertainty_coef stays finite when a margin is zero", {
+  tab <- matrix(c(5L, 3L, 0L, 0L, 4L, 2L), nrow = 2, byrow = TRUE)
+  class(tab) <- "table"
+  res <- uncertainty_coef(tab, "row", detail = TRUE)
+  expect_true(is.finite(res[["estimate"]]))
+})
+
+test_that("NA degenerate-table return respects `detail` and `conf_level`", {
+  tab_yq <- matrix(c(0L, 0L, 0L, 5L), 2, 2)
+  class(tab_yq) <- "table"
+  scalar <- suppressWarnings(yule_q(tab_yq))
+  expect_identical(scalar, NA_real_)
+  detail <- suppressWarnings(yule_q(tab_yq, detail = TRUE))
+  expect_s3_class(detail, "spicy_assoc_detail")
+  expect_named(detail, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  expect_true(all(is.na(detail)))
+
+  no_ci <- suppressWarnings(yule_q(tab_yq, detail = TRUE, conf_level = NULL))
+  expect_named(no_ci, c("estimate", "p_value"))
+})
+
+test_that("gamma_gk NA path returns scalar by default and full shape with detail", {
+  tab <- matrix(c(5L, 0L, 3L, 0L), 2, 2)
+  class(tab) <- "table"
+  expect_identical(suppressWarnings(gamma_gk(tab)), NA_real_)
+  d <- suppressWarnings(gamma_gk(tab, detail = TRUE))
+  expect_s3_class(d, "spicy_assoc_detail")
+  expect_length(d, 4L)
+})
+
+
+# Anti-regression: oracle values from PSPP 2.0 CROSSTABS /STATISTICS=ALL.
+# These pin spicy's point estimates to the SPSS/PSPP reference at 1e-6 on
+# four datasets (mtcars 3x3, mtcars 2x2, HairEyeColor 4x4, sochealth).
+# Generated 2026-05-01; see tmp_validation/REPORT.md for the full matrix.
+
+test_that("PSPP oracle: mtcars 3x3 (gear x cyl)", {
+  tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
+  expect_equal(cramer_v(tab),                       0.5308655, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab),               0.6003875, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab),                 -0.5125435, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab),                 -0.4833984, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab),                      -0.6573705, tolerance = 1e-5)
+  expect_equal(suppressWarnings(lambda_gk(tab, "symmetric")), 0.4857143, tolerance = 1e-5)
+  expect_equal(suppressWarnings(lambda_gk(tab, "row")),       0.5294118, tolerance = 1e-5)
+  expect_equal(suppressWarnings(lambda_gk(tab, "column")),    0.4444444, tolerance = 1e-5)
+  expect_equal(goodman_kruskal_tau(tab, "row"),      0.3825603, tolerance = 1e-5)
+  expect_equal(goodman_kruskal_tau(tab, "column"),   0.3386018, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"),   0.3504372, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "row"),         0.3587709, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "column"),      0.3424818, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"),          -0.5124224, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "row"),                -0.5015198, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "column"),             -0.5238095, tolerance = 1e-5)
+})
+
+test_that("PSPP oracle: mtcars 2x2 (vs x am)", {
+  tab <- table(factor(mtcars$vs), factor(mtcars$am))
+  expect_equal(phi(tab),                            0.1683451, tolerance = 1e-5)
+  expect_equal(cramer_v(tab),                       0.1683451, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab),               0.1660092, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab),                  0.1683451, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab),                  0.1640625, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab),                       0.3333333, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0208314, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"),          0.1683367, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "row"),                0.1700405, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "column"),             0.1666667, tolerance = 1e-5)
+})
+
+test_that("PSPP oracle: HairEyeColor 4x4 (Hair x Eye marginalised)", {
+  tab <- margin.table(HairEyeColor, c(1, 2))
+  expect_equal(cramer_v(tab),                       0.2790446, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab),               0.4351585, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab),                  0.2247026, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab),                  0.2046886, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab),                       0.3177721, tolerance = 1e-5)
+  expect_equal(suppressWarnings(lambda_gk(tab, "symmetric")), 0.1430678, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0984203, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"),          0.2246768, tolerance = 1e-5)
+})
+
+test_that("PSPP oracle: sochealth (smoking x education)", {
+  data(sochealth, package = "spicy", envir = environment())
+  tab <- table(sochealth$smoking, sochealth$education)
+  expect_equal(cramer_v(tab),                       0.1356677, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab),               0.1344361, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab),                 -0.1264155, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab),                      -0.2680678, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0114876, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"),         -0.1200077, tolerance = 1e-5)
 })
 
 test_that("yule_q warns when ad + bc = 0", {
