@@ -368,4 +368,18 @@ cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
 #> Chi-2(1) = 0.0, p = .896
 #> Cramer's V = 0.01
 #> Yates continuity correction applied.
+
+# APA-style p-value precision and European decimal mark
+cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
+#> Crosstable: smoking x education (N)
+#> 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │               179                415         332 │     926 
+#>  Yes      │                78                112          59 │     249 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │               257                527         391 │    1175 
+#> 
+#> Chi-2(2) = 21,6, p <,0001
+#> Cramer's V = 0,14
 ```

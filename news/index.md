@@ -173,9 +173,7 @@
   [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
   gain a `total_row_idx` argument that takes precedence over the regex
   fallback used to find the totals row, removing the same false positive
-  on user data containing the word `"Total"`. The default value of
-  `padding` is now `"normal"` (matching the documentation; the previous
-  `match.arg`-derived default of `"compact"` did not match the doc).
+  on user data containing the word `"Total"`.
 
 ### Breaking changes
 

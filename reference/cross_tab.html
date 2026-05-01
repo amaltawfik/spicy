@@ -435,6 +435,20 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.01</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Yates continuity correction applied.</span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># APA-style p-value precision and European decimal mark</span></span></span>
+<span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, decimal_mark <span class="op">=</span> <span class="st">","</span>, p_digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values   <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  No       <span style="color: #9E9E9E;">│</span>               179                415         332 <span style="color: #9E9E9E;">│</span>     926 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Yes      <span style="color: #9E9E9E;">│</span>                78                112          59 <span style="color: #9E9E9E;">│</span>     249 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21,6, p &lt;,0001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0,14</span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -539,6 +539,124 @@ table_categorical(
 #>    No     │                                
 #>    Yes    │                                
 
+# --- Per-variable association measure ----------------------------------
+
+# Default (`assoc_measure = "auto"`): one measure per row variable based on
+# the variable type (2x2 -> Phi, both ordered factors -> Kendall's Tau-b,
+# otherwise Cramer's V). When the chosen measures differ across rows, the
+# column header collapses to `"Effect size"` and an APA-style `Note.` line
+# documents which measure was used for which variable.
+table_categorical(
+  sochealth,
+  select = c(smoking, education),
+  by = sex
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │   475       78.4     451     79.3     926     78.8         
+#>    Yes             │   131       21.6     118     20.7     249     21.2         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │                                                       .344 
+#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
+#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
+#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
+#> 
+#>  Variable          │ Effect size 
+#> ───────────────────┼─────────────
+#>  smoking           │     .01     
+#>    No              │             
+#>    Yes             │             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │     .04     
+#>    Lower secondary │             
+#>    Upper secondary │             
+#>    Tertiary        │             
+#> 
+#> Note. Phi: smoking; Cramer's V: education.
+
+# Force a uniform measure across all row variables.
+table_categorical(
+  sochealth,
+  select = c(smoking, education),
+  by = sex,
+  assoc_measure = "cramer_v"
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │   475       78.4     451     79.3     926     78.8         
+#>    Yes             │   131       21.6     118     20.7     249     21.2         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │                                                       .344 
+#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
+#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
+#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
+#> 
+#>  Variable          │ Cramer's V 
+#> ───────────────────┼────────────
+#>  smoking           │    .01     
+#>    No              │            
+#>    Yes             │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │    .04     
+#>    Lower secondary │            
+#>    Upper secondary │            
+#>    Tertiary        │            
+
+# Per-variable override (recommended named form).
+table_categorical(
+  sochealth,
+  select = c(smoking, education, self_rated_health),
+  by = sex,
+  assoc_measure = c(
+    smoking           = "phi",        # binary x binary
+    education         = "cramer_v",   # multi-category nominal
+    self_rated_health = "tau_b"       # ordinal x binary, Tau-b
+  )
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │   475       78.4     451     79.3     926     78.8         
+#>    Yes             │   131       21.6     118     20.7     249     21.2         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │                                                       .344 
+#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
+#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
+#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health │                                                       .849 
+#>    Poor            │    31        5.1      30      5.3      61      5.2         
+#>    Fair            │   143       23.4     123     21.6     266     22.5         
+#>    Good            │   282       46.2     276     48.4     558     47.3         
+#>    Very good       │   154       25.2     141     24.7     295     25.0         
+#> 
+#>  Variable          │ Effect size 
+#> ───────────────────┼─────────────
+#>  smoking           │     .01     
+#>    No              │             
+#>    Yes             │             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │     .04     
+#>    Lower secondary │             
+#>    Upper secondary │             
+#>    Tertiary        │             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health │     .01     
+#>    Poor            │             
+#>    Fair            │             
+#>    Good            │             
+#>    Very good       │             
+#> 
+#> Note. Phi: smoking; Cramer's V: education; Kendall's Tau-b: self_rated_health.
+
 # --- Output formats -----------------------------------------------------
 
 # The rendered outputs below all wrap the same call:
