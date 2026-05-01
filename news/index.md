@@ -57,26 +57,17 @@
   computed on a sub-table after empty rows / columns are pruned.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-  validate `decimal_mark`, `p_digits`, `simulate_B` and `digits`
-  arguments up front with actionable errors instead of surfacing cryptic
+  validates `decimal_mark`, `p_digits` and `simulate_B` up front;
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  validates `decimal_mark` and tightens `digits` to a non-negative
+  integer. Bad inputs now fail with actionable errors instead of cryptic
   downstream messages.
 
-- [`print.spicy_cross_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
-  identifies the totals / N rows and N column via dedicated attributes
-  set by
+- A user category literally named `"N"` or `"Total"` (e.g. a `Yes`/`No`
+  factor or a `"Sub Total"` label) is no longer mis-rendered as the
+  totals row in
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  (no longer `grep("Total", ...)` / `Values == "N"`), so a user category
-  literally named `"N"` or `"Total"` is no longer mis-rendered.
-
-- `R/assoc.R` point estimates are cross-validated against PSPP 2.0
-  `CROSSTABS /STATISTICS=ALL` on four datasets (`mtcars` 3x3 and 2x2,
-  `HairEyeColor` 4x4, `sochealth`): 65 / 65 estimates agree to PSPP’s
-  printed precision. PSPP-derived oracle values are pinned in the test
-  suite.
-
-- Reorganised documentation across the table family:
-  `@family spicy tables`, reciprocal `@seealso`, curated `@references`.
+  output.
 
 - `table_continuous_lm(output = "long")` returns `n`, `df1`, `df2` as
   integer columns; `predictor_label` preserved on the degenerate-model
@@ -120,9 +111,6 @@
 - [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
   returns a finite estimate (was `NaN`) when a row or column marginal is
   zero.
-
-- `.validate_table()` rejects tables with NA cells, negative counts, or
-  zero total count with an actionable error.
 
 - `somers_d(direction = "symmetric")` previously delegated to
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md);
