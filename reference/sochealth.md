@@ -145,13 +145,13 @@ varlist(sochealth)
 freq(sochealth, education)
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    261     21.8 
-#>           │ Upper secondary    539     44.9 
-#>           │ Tertiary           400     33.3 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Lower secondary              261          21.8 
+#>                │ Upper secondary              539          44.9 
+#>                │ Tertiary                     400          33.3 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1200         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -175,6 +175,6 @@ cross_tab(sochealth, education, self_rated_health)
 #> ──────────────────────┼────────────
 #>  Total                │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
 ```

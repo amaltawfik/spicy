@@ -7,7 +7,7 @@ Prints a formatted SPSS-like crosstable created by
 
 ``` r
 # S3 method for class 'spicy_cross_table'
-print(x, digits = NULL, ...)
+print(x, digits = NULL, decimal_mark = NULL, ...)
 ```
 
 ## Arguments
@@ -18,8 +18,13 @@ print(x, digits = NULL, ...)
 
 - digits:
 
-  Optional integer; number of decimal places to display. Defaults to the
-  value stored in the object.
+  Optional integer; number of decimal places to display for cell values.
+  Defaults to the value stored in the object.
+
+- decimal_mark:
+
+  Optional character (`"."` or `","`) used as the decimal mark. Defaults
+  to the value stored in the object.
 
 - ...:
 

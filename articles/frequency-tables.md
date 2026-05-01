@@ -23,13 +23,13 @@ Pass a data frame and a variable name to get counts and percentages:
 freq(sochealth, education)
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    261     21.8 
-#>           │ Upper secondary    539     44.9 
-#>           │ Tertiary           400     33.3 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Lower secondary              261          21.8 
+#>                │ Upper secondary              539          44.9 
+#>                │ Tertiary                     400          33.3 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1200         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -47,13 +47,13 @@ Sort by frequency with `sort = "-"` (decreasing) or `sort = "+"`
 freq(sochealth, education, sort = "-")
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Upper secondary    539     44.9 
-#>           │ Tertiary           400     33.3 
-#>           │ Lower secondary    261     21.8 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Upper secondary              539          44.9 
+#>                │ Tertiary                     400          33.3 
+#>                │ Lower secondary              261          21.8 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1200         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -67,13 +67,13 @@ Sort alphabetically:
 freq(sochealth, education, sort = "name+")
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    261     21.8 
-#>           │ Tertiary           400     33.3 
-#>           │ Upper secondary    539     44.9 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Lower secondary              261          21.8 
+#>                │ Tertiary                     400          33.3 
+#>                │ Upper secondary              539          44.9 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1200         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -89,21 +89,21 @@ Add cumulative columns with `cum = TRUE`:
 freq(sochealth, smoking, cum = TRUE)
 #> Frequency table: smoking
 #> 
-#>  Category │ Values  Freq.  Percent  Valid Percent  Cum. Percent 
-#> ──────────┼─────────────────────────────────────────────────────
-#>  Valid    │ No        926     77.2           78.8          77.2 
-#>           │ Yes       249     20.8           21.2          97.9 
-#>  Missing  │ NA         25      2.1                        100.0 
-#> ──────────┼─────────────────────────────────────────────────────
-#>  Total    │          1200    100.0          100.0         100.0 
+#>  Category      │ Values            Freq.       Percent       Valid Percent 
+#> ───────────────┼───────────────────────────────────────────────────────────
+#>  Valid         │ No                  926          77.2                78.8 
+#>                │ Yes                 249          20.8                21.2 
+#>  Missing       │ NA                   25           2.1                     
+#> ───────────────┼───────────────────────────────────────────────────────────
+#>  Total         │                    1200         100.0               100.0 
 #> 
-#>  Category │ Values  Cum. Valid Percent 
-#> ──────────┼────────────────────────────
-#>  Valid    │ No                    78.8 
-#>           │ Yes                  100.0 
-#>  Missing  │ NA                         
-#> ──────────┼────────────────────────────
-#>  Total    │                      100.0 
+#>  Category      │ Values            Cum. Percent       Cum. Valid Percent 
+#> ───────────────┼─────────────────────────────────────────────────────────
+#>  Valid         │ No                        77.2                     78.8 
+#>                │ Yes                       97.9                    100.0 
+#>  Missing       │ NA                       100.0                          
+#> ───────────────┼─────────────────────────────────────────────────────────
+#>  Total         │                          100.0                    100.0 
 #> 
 #> Label: Current smoker
 #> Class: factor
@@ -120,13 +120,13 @@ adjusts the weighted total to match the unweighted sample size:
 freq(sochealth, education, weights = weight)
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    259     21.6 
-#>           │ Upper secondary    546     45.5 
-#>           │ Tertiary           395     32.9 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1200    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Lower secondary              259          21.6 
+#>                │ Upper secondary              546          45.5 
+#>                │ Tertiary                     395          32.9 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1200         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -141,13 +141,13 @@ Set `rescale = FALSE` to keep the raw weighted counts:
 freq(sochealth, education, weights = weight, rescale = FALSE)
 #> Frequency table: education
 #> 
-#>  Category │ Values           Freq.  Percent 
-#> ──────────┼─────────────────────────────────
-#>  Valid    │ Lower secondary    258     21.6 
-#>           │ Upper secondary    545     45.5 
-#>           │ Tertiary           394     32.9 
-#> ──────────┼─────────────────────────────────
-#>  Total    │                   1196    100.0 
+#>  Category      │ Values                     Freq.       Percent 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Valid         │ Lower secondary              258          21.6 
+#>                │ Upper secondary              545          45.5 
+#>                │ Tertiary                     394          32.9 
+#> ───────────────┼────────────────────────────────────────────────
+#>  Total         │                             1196         100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -175,13 +175,21 @@ sh$smoking_lbl <- labelled::labelled(
 freq(sh, smoking_lbl)
 #> Frequency table: smoking_lbl
 #> 
-#>  Category │ Values              Freq.  Percent  Valid Percent 
-#> ──────────┼───────────────────────────────────────────────────
-#>  Valid    │ [0] Non-smoker        926     77.2           78.8 
-#>           │ [1] Current smoker    249     20.8           21.2 
-#>  Missing  │ NA                     25      2.1                
-#> ──────────┼───────────────────────────────────────────────────
-#>  Total    │                      1200    100.0          100.0 
+#>  Category      │ Values                        Freq.       Percent 
+#> ───────────────┼───────────────────────────────────────────────────
+#>  Valid         │ [0] Non-smoker                  926          77.2 
+#>                │ [1] Current smoker              249          20.8 
+#>  Missing       │ NA                               25           2.1 
+#> ───────────────┼───────────────────────────────────────────────────
+#>  Total         │                                1200         100.0 
+#> 
+#>  Category      │ Values                        Valid Percent 
+#> ───────────────┼─────────────────────────────────────────────
+#>  Valid         │ [0] Non-smoker                         78.8 
+#>                │ [1] Current smoker                     21.2 
+#>  Missing       │ NA                                          
+#> ───────────────┼─────────────────────────────────────────────
+#>  Total         │                                       100.0 
 #> 
 #> Class: haven_labelled, vctrs_vctr, integer
 #> Data: sh
@@ -190,13 +198,21 @@ freq(sh, smoking_lbl)
 freq(sh, smoking_lbl, labelled_levels = "labels")
 #> Frequency table: smoking_lbl
 #> 
-#>  Category │ Values          Freq.  Percent  Valid Percent 
-#> ──────────┼───────────────────────────────────────────────
-#>  Valid    │ Non-smoker        926     77.2           78.8 
-#>           │ Current smoker    249     20.8           21.2 
-#>  Missing  │ NA                 25      2.1                
-#> ──────────┼───────────────────────────────────────────────
-#>  Total    │                  1200    100.0          100.0 
+#>  Category      │ Values                    Freq.       Percent 
+#> ───────────────┼───────────────────────────────────────────────
+#>  Valid         │ Non-smoker                  926          77.2 
+#>                │ Current smoker              249          20.8 
+#>  Missing       │ NA                           25           2.1 
+#> ───────────────┼───────────────────────────────────────────────
+#>  Total         │                            1200         100.0 
+#> 
+#>  Category      │ Values                    Valid Percent 
+#> ───────────────┼─────────────────────────────────────────
+#>  Valid         │ Non-smoker                         78.8 
+#>                │ Current smoker                     21.2 
+#>  Missing       │ NA                                      
+#> ───────────────┼─────────────────────────────────────────
+#>  Total         │                                   100.0 
 #> 
 #> Class: haven_labelled, vctrs_vctr, integer
 #> Data: sh
@@ -205,13 +221,13 @@ freq(sh, smoking_lbl, labelled_levels = "labels")
 freq(sh, smoking_lbl, labelled_levels = "values")
 #> Frequency table: smoking_lbl
 #> 
-#>  Category │ Values  Freq.  Percent  Valid Percent 
-#> ──────────┼───────────────────────────────────────
-#>  Valid    │ 0         926     77.2           78.8 
-#>           │ 1         249     20.8           21.2 
-#>  Missing  │ NA         25      2.1                
-#> ──────────┼───────────────────────────────────────
-#>  Total    │          1200    100.0          100.0 
+#>  Category      │ Values            Freq.       Percent       Valid Percent 
+#> ───────────────┼───────────────────────────────────────────────────────────
+#>  Valid         │ 0                   926          77.2                78.8 
+#>                │ 1                   249          20.8                21.2 
+#>  Missing       │ NA                   25           2.1                     
+#> ───────────────┼───────────────────────────────────────────────────────────
+#>  Total         │                    1200         100.0               100.0 
 #> 
 #> Class: haven_labelled, vctrs_vctr, integer
 #> Data: sh
@@ -226,14 +242,23 @@ Treat specific values as missing with `na_val`:
 freq(sochealth, income_group, na_val = "High")
 #> Frequency table: income_group
 #> 
-#>  Category │ Values        Freq.  Percent  Valid Percent 
-#> ──────────┼─────────────────────────────────────────────
-#>  Valid    │ Low             247     20.6           25.6 
-#>           │ Lower middle    388     32.3           40.3 
-#>           │ Upper middle    328     27.3           34.1 
-#>  Missing  │ NA              237     19.8                
-#> ──────────┼─────────────────────────────────────────────
-#>  Total    │                1200    100.0          100.0 
+#>  Category      │ Values                  Freq.       Percent 
+#> ───────────────┼─────────────────────────────────────────────
+#>  Valid         │ Low                       247          20.6 
+#>                │ Lower middle              388          32.3 
+#>                │ Upper middle              328          27.3 
+#>  Missing       │ NA                        237          19.8 
+#> ───────────────┼─────────────────────────────────────────────
+#>  Total         │                          1200         100.0 
+#> 
+#>  Category      │ Values                  Valid Percent 
+#> ───────────────┼───────────────────────────────────────
+#>  Valid         │ Low                              25.6 
+#>                │ Lower middle                     40.3 
+#>                │ Upper middle                     34.1 
+#>  Missing       │ NA                                    
+#> ───────────────┼───────────────────────────────────────
+#>  Total         │                                 100.0 
 #> 
 #> Label: Household income group
 #> Class: ordered, factor
@@ -266,7 +291,7 @@ cross_tab(sochealth, smoking, education)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 ```
 
@@ -296,7 +321,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  Total       │      100.0 
 #>  N           │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 ```
 
@@ -319,7 +344,7 @@ cross_tab(sochealth, smoking, education, percent = "row")
 #> ─────────────┼───────────────────────
 #>  Total       │      100.0       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 ```
 
@@ -346,7 +371,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ─────────────┼────────────
 #>  Total       │        606 
 #> 
-#> Chi-2(2) = 7.1, p = 0.029
+#> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
@@ -365,7 +390,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ─────────────┼────────────
 #>  Total       │        569 
 #> 
-#> Chi-2(2) = 15.6, p < 0.001
+#> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
 ```
 
@@ -392,7 +417,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        126 
 #> 
-#> Chi-2(2) = 2.1, p = 0.356
+#> Chi-2(2) = 2.1, p = .356
 #> Cramer's V = 0.13
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
@@ -411,7 +436,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        109 
 #> 
-#> Chi-2(2) = 14.2, p < 0.001
+#> Chi-2(2) = 14.2, p <.001
 #> Cramer's V = 0.36
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
@@ -430,7 +455,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        183 
 #> 
-#> Chi-2(2) = 3.0, p = 0.223
+#> Chi-2(2) = 3.0, p = .223
 #> Cramer's V = 0.13
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
@@ -449,7 +474,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        190 
 #> 
-#> Chi-2(2) = 6.9, p = 0.032
+#> Chi-2(2) = 6.9, p = .032
 #> Cramer's V = 0.19
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
@@ -468,7 +493,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        166 
 #> 
-#> Chi-2(2) = 2.0, p = 0.360
+#> Chi-2(2) = 2.0, p = .360
 #> Cramer's V = 0.11
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
@@ -487,7 +512,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        154 
 #> 
-#> Chi-2(2) = 2.1, p = 0.343
+#> Chi-2(2) = 2.1, p = .343
 #> Cramer's V = 0.12
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
@@ -506,7 +531,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        131 
 #> 
-#> Chi-2(2) = 2.5, p = 0.282
+#> Chi-2(2) = 2.5, p = .282
 #> Cramer's V = 0.14
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.65-75
@@ -525,7 +550,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │        116 
 #> 
-#> Chi-2(2) = 1.4, p = 0.499
+#> Chi-2(2) = 1.4, p = .499
 #> Cramer's V = 0.11
 ```
 
@@ -558,7 +583,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> ────────────────┼────────────
 #>  Total          │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
 ```
 
@@ -587,7 +612,7 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> ────────────────┼────────────
 #>  Total          │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Goodman-Kruskal Gamma = 0.31
 ```
 
@@ -615,7 +640,7 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14, 95% CI [0.08, 0.19]
 ```
 
@@ -644,7 +669,7 @@ cross_tab(sochealth, smoking, education, weights = weight)
 #> ─────────────┼────────────
 #>  Total       │       1170 
 #> 
-#> Chi-2(2) = 21.3, p < 0.001
+#> Chi-2(2) = 21.3, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight
 ```
@@ -671,7 +696,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.4, p < 0.001
+#> Chi-2(2) = 21.4, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
 ```
@@ -700,7 +725,7 @@ cross_tab(sochealth, smoking, education,
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(NA) = 21.6, p < 0.001 (simulated)
+#> Chi-2(NA) = 21.6, p <.001 (simulated)
 #> Cramer's V = 0.14
 ```
 

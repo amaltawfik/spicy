@@ -19,7 +19,7 @@ spicy_print_table(
   x,
   title = attr(x, "title"),
   note = attr(x, "note"),
-  padding = c("compact", "normal", "wide"),
+  padding = c("normal", "compact", "wide"),
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -28,6 +28,7 @@ spicy_print_table(
   align_left_cols = NULL,
   align_center_cols = integer(0),
   group_sep_rows = integer(0),
+  total_row_idx = attr(x, "total_row_idx"),
   ...
 )
 ```
@@ -52,9 +53,9 @@ spicy_print_table(
 
   Character string controlling horizontal spacing between columns:
 
-  - `"compact"` - minimal spacing
+  - `"normal"` - moderate spacing (the default)
 
-  - `"normal"` - moderate spacing (default)
+  - `"compact"` - minimal spacing
 
   - `"wide"` - extra spacing (for wide displays)
 
@@ -94,6 +95,14 @@ spicy_print_table(
 
   Integer vector of row indices before which a light dashed separator
   line is drawn. Defaults to `integer(0)`.
+
+- total_row_idx:
+
+  Optional integer vector of 1-based row indices identifying the totals
+  rows; defaults to the `"total_row_idx"` attribute of `x` (set by
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)).
+  See
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
 
 - ...:
 
@@ -148,13 +157,13 @@ spicy_print_table(df,
 )
 #> Frequency table: Example
 #> 
-#>  Category │ Values  Freq.  Percent 
-#> ──────────┼────────────────────────
-#>  Valid    │ Yes        12     57.1 
-#>           │ No          8     38.1 
-#>  Missing  │ NA          1      4.8 
-#> ──────────┼────────────────────────
-#>  Total    │            21      100 
+#>  Category      │ Values            Freq.       Percent 
+#> ───────────────┼───────────────────────────────────────
+#>  Valid         │ Yes                  12          57.1 
+#>                │ No                    8          38.1 
+#>  Missing       │ NA                    1           4.8 
+#> ───────────────┼───────────────────────────────────────
+#>  Total         │                      21           100 
 #> 
 #> Class: data.frame
 #> Data: demo

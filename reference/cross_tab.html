@@ -101,7 +101,9 @@ use <code><a href="freq.html">freq()</a></code> instead.</p>
 <span>  simulate_B <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  styled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  show_n <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>  p_digits <span class="op">=</span> <span class="fl">3L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -175,7 +177,8 @@ Defaults to <code>2000</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimals. Defaults to <code>1</code> for percentages, <code>0</code> for counts.</p></dd>
+<dd><p>Number of decimals for cell values. Defaults to <code>1</code> for
+percentages, <code>0</code> for counts.</p></dd>
 
 
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
@@ -186,6 +189,21 @@ Defaults to <code>2000</code>.</p></dd>
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (the default), adds marginal N totals when
 <code>percent != "none"</code>.</p></dd>
+
+
+<dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
+<dd><p>Character used as the decimal mark in printed
+numeric values (cells, chi-squared, association estimate, CI
+bounds, p-value). Defaults to <code>"."</code>. Set to <code>","</code> for European
+formatting; matches the <code>decimal_mark</code> argument of the
+<code>table_*()</code> family.</p></dd>
+
+
+<dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
+<dd><p>Integer number of decimals used to format the
+p-value (and to determine the small-<code>p</code> threshold below which
+<code>&lt; .001</code> notation is used). Defaults to <code>3</code> (the APA standard);
+matches the <code>p_digits</code> argument of the <code>table_*()</code> family.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -237,7 +255,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Column percentages</span></span></span>
@@ -260,7 +278,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      100.0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  N           <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Weighted (rescaled)</span></span></span>
@@ -281,7 +299,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: weight (rescaled)</span></span>
 <span class="r-in"><span></span></span>
@@ -303,7 +321,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        606 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = 0.029</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span>
@@ -322,7 +340,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        569 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.17</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by combination of variables</span></span></span>
@@ -343,7 +361,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        126 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = 0.356</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .356</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
@@ -362,7 +380,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        109 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.36</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
@@ -381,7 +399,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = 0.223</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = .223</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
@@ -400,7 +418,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        190 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = 0.032</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = .032</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
@@ -419,7 +437,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        166 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = 0.360</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = .360</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
@@ -438,7 +456,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        154 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = 0.343</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .343</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.12</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
@@ -457,7 +475,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        131 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.5, p = 0.282</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.5, p = .282</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span>
@@ -476,7 +494,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>        116 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = 0.499</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = .499</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Ordinal variables: auto-selects Kendall's Tau-b</span></span></span>
@@ -499,7 +517,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>       1180 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt; 0.001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Kendall's Tau-b = 0.20</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 2x2 table with Yates correction</span></span></span>
@@ -513,7 +531,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼────────────────────┼────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total       <span style="color: #9E9E9E;">│</span>      639       536 <span style="color: #9E9E9E;">│</span>       1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(1) = 0.0, p = 0.896</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(1) = 0.0, p = .896</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.01</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Yates continuity correction applied.</span></span>
 <span class="r-in"><span></span></span>

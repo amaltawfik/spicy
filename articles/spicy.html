@@ -157,13 +157,13 @@ percentages, and (optionally) valid and cumulative percentages.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Category <span style="color: #9E9E9E;">│</span> Values           Freq.  Percent </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Valid    <span style="color: #9E9E9E;">│</span> Lower secondary    261     21.8 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Upper secondary    539     44.9 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Tertiary           400     33.3 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                   1200    100.0 </span></span>
+<span><span class="co">#&gt;  Category      <span style="color: #9E9E9E;">│</span> Values                     Freq.       Percent </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Valid         <span style="color: #9E9E9E;">│</span> Lower secondary              261          21.8 </span></span>
+<span><span class="co">#&gt;                <span style="color: #9E9E9E;">│</span> Upper secondary              539          44.9 </span></span>
+<span><span class="co">#&gt;                <span style="color: #9E9E9E;">│</span> Tertiary                     400          33.3 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Total         <span style="color: #9E9E9E;">│</span>                             1200         100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Label: Highest education level</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Class: ordered, factor</span></span></span>
@@ -175,13 +175,13 @@ N:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Category <span style="color: #9E9E9E;">│</span> Values           Freq.  Percent </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Valid    <span style="color: #9E9E9E;">│</span> Lower secondary    259     21.6 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Upper secondary    546     45.5 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Tertiary           395     32.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                   1200    100.0 </span></span>
+<span><span class="co">#&gt;  Category      <span style="color: #9E9E9E;">│</span> Values                     Freq.       Percent </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Valid         <span style="color: #9E9E9E;">│</span> Lower secondary              259          21.6 </span></span>
+<span><span class="co">#&gt;                <span style="color: #9E9E9E;">│</span> Upper secondary              546          45.5 </span></span>
+<span><span class="co">#&gt;                <span style="color: #9E9E9E;">│</span> Tertiary                     395          32.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Total         <span style="color: #9E9E9E;">│</span>                             1200         100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Label: Highest education level</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Class: ordered, factor</span></span></span>
@@ -211,7 +211,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼────────────</span></span></span>
 <span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>       1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span></code></pre></div>
 <p>Add percentages with <code>percent</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -234,7 +234,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>      100.0 </span></span>
 <span><span class="co">#&gt;  N           <span style="color: #9E9E9E;">│</span>       1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; 0.001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span></code></pre></div>
 <p>Group by a third variable with <code>by</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -255,7 +255,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼────────────</span></span></span>
 <span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>        606 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = 0.029</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.11</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span></span>
@@ -274,7 +274,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼────────────</span></span></span>
 <span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>        569 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; 0.001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt;.001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.17</span></span></span></code></pre></div>
 <p>When both variables are ordered factors, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
 automatically selects an ordinal measure (Kendall’s Tau-b) instead of
@@ -301,7 +301,7 @@ Cramer’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────</span></span></span>
 <span><span class="co">#&gt;  Total          <span style="color: #9E9E9E;">│</span>       1180 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt; 0.001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt;.001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Kendall's Tau-b = 0.20</span></span></span></code></pre></div>
 </div>
 <div class="section level2">

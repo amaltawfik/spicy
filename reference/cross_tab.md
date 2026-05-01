@@ -33,7 +33,9 @@ cross_tab(
   simulate_B = 2000,
   digits = NULL,
   styled = TRUE,
-  show_n = TRUE
+  show_n = TRUE,
+  decimal_mark = ".",
+  p_digits = 3L
 )
 ```
 
@@ -106,7 +108,8 @@ cross_tab(
 
 - digits:
 
-  Number of decimals. Defaults to `1` for percentages, `0` for counts.
+  Number of decimals for cell values. Defaults to `1` for percentages,
+  `0` for counts.
 
 - styled:
 
@@ -117,6 +120,20 @@ cross_tab(
 
   Logical. If `TRUE` (the default), adds marginal N totals when
   `percent != "none"`.
+
+- decimal_mark:
+
+  Character used as the decimal mark in printed numeric values (cells,
+  chi-squared, association estimate, CI bounds, p-value). Defaults to
+  `"."`. Set to `","` for European formatting; matches the
+  `decimal_mark` argument of the `table_*()` family.
+
+- p_digits:
+
+  Integer number of decimals used to format the p-value (and to
+  determine the small-`p` threshold below which `< .001` notation is
+  used). Defaults to `3` (the APA standard); matches the `p_digits`
+  argument of the `table_*()` family.
 
 ## Value
 
@@ -172,7 +189,7 @@ cross_tab(sochealth, smoking, education)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 
 # Column percentages
@@ -195,7 +212,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  Total       │      100.0 
 #>  N           │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 
 # Weighted (rescaled)
@@ -216,7 +233,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.4, p < 0.001
+#> Chi-2(2) = 21.4, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
 
@@ -238,7 +255,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ─────────────┼────────────
 #>  Total       │        606 
 #> 
-#> Chi-2(2) = 7.1, p = 0.029
+#> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
@@ -257,7 +274,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ─────────────┼────────────
 #>  Total       │        569 
 #> 
-#> Chi-2(2) = 15.6, p < 0.001
+#> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
 
 # Grouped by combination of variables
@@ -278,7 +295,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        126 
 #> 
-#> Chi-2(2) = 2.1, p = 0.356
+#> Chi-2(2) = 2.1, p = .356
 #> Cramer's V = 0.13
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
@@ -297,7 +314,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        109 
 #> 
-#> Chi-2(2) = 14.2, p < 0.001
+#> Chi-2(2) = 14.2, p <.001
 #> Cramer's V = 0.36
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
@@ -316,7 +333,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        183 
 #> 
-#> Chi-2(2) = 3.0, p = 0.223
+#> Chi-2(2) = 3.0, p = .223
 #> Cramer's V = 0.13
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
@@ -335,7 +352,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        190 
 #> 
-#> Chi-2(2) = 6.9, p = 0.032
+#> Chi-2(2) = 6.9, p = .032
 #> Cramer's V = 0.19
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
@@ -354,7 +371,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        166 
 #> 
-#> Chi-2(2) = 2.0, p = 0.360
+#> Chi-2(2) = 2.0, p = .360
 #> Cramer's V = 0.11
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
@@ -373,7 +390,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        154 
 #> 
-#> Chi-2(2) = 2.1, p = 0.343
+#> Chi-2(2) = 2.1, p = .343
 #> Cramer's V = 0.12
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
@@ -392,7 +409,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        131 
 #> 
-#> Chi-2(2) = 2.5, p = 0.282
+#> Chi-2(2) = 2.5, p = .282
 #> Cramer's V = 0.14
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.65-75
@@ -411,7 +428,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ─────────────┼────────────
 #>  Total       │        116 
 #> 
-#> Chi-2(2) = 1.4, p = 0.499
+#> Chi-2(2) = 1.4, p = .499
 #> Cramer's V = 0.11
 
 # Ordinal variables: auto-selects Kendall's Tau-b
@@ -434,7 +451,7 @@ cross_tab(sochealth, education, self_rated_health)
 #> ──────────────────────┼────────────
 #>  Total                │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
 
 # 2x2 table with Yates correction
@@ -448,7 +465,7 @@ cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
 #> ─────────────┼────────────────────┼────────────
 #>  Total       │      639       536 │       1175 
 #> 
-#> Chi-2(1) = 0.0, p = 0.896
+#> Chi-2(1) = 0.0, p = .896
 #> Cramer's V = 0.01
 #> Yates continuity correction applied.
 ```

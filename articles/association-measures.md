@@ -269,7 +269,7 @@ cross_tab(sochealth, smoking, education)
 #> ─────────────┼────────────
 #>  Total       │       1175 
 #> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 
 # Ordinal: Kendall's Tau-b (automatic)
@@ -294,7 +294,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> ────────────────┼────────────
 #>  Total          │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
 ```
 
@@ -323,7 +323,7 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> ────────────────┼────────────
 #>  Total          │       1180 
 #> 
-#> Chi-2(6) = 73.2, p < 0.001
+#> Chi-2(6) = 73.2, p <.001
 #> Goodman-Kruskal Gamma = 0.31
 ```
 

@@ -14,7 +14,7 @@ or
 ``` r
 build_ascii_table(
   x,
-  padding = c("compact", "normal", "wide"),
+  padding = c("normal", "compact", "wide"),
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -23,6 +23,7 @@ build_ascii_table(
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
   group_sep_rows = integer(0),
+  total_row_idx = NULL,
   ...
 )
 ```
@@ -39,9 +40,9 @@ build_ascii_table(
 
   Character string controlling horizontal spacing between columns:
 
-  - `"compact"` — minimal spacing
+  - `"normal"` — moderate spacing (the default)
 
-  - `"normal"` — moderate spacing (default)
+  - `"compact"` — minimal spacing
 
   - `"wide"` — extra spacing (for large displays or wide content)
 
@@ -81,6 +82,19 @@ build_ascii_table(
 
   Integer vector of row indices before which a light dashed separator
   line is drawn. Defaults to `integer(0)`.
+
+- total_row_idx:
+
+  Optional integer vector of 1-based row indices identifying the totals
+  rows; a horizontal rule is drawn just before each. When `NULL` (the
+  default), falls back to a regex match on `"Total"` / `"Column_Total"`
+  in the formatted row text, which can mis-fire if a user category is
+  literally named "Total" or "Sub-Total". Cross-tabs and frequency
+  tables built by
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  set this attribute on their result so the print methods are immune to
+  that false positive.
 
 - ...:
 
