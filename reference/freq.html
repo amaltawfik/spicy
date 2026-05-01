@@ -82,7 +82,7 @@ returns a <code>data.frame</code> containing frequencies and proportions.</p>
 <span>  <span class="va">data</span>,</span>
 <span>  x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  digits <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  valid <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  cum <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  sort <span class="op">=</span> <span class="st">""</span>,</span>
@@ -90,6 +90,7 @@ returns a <code>data.frame</code> containing frequencies and proportions.</p>
 <span>  labelled_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prefixed"</span>, <span class="st">"labels"</span>, <span class="st">"values"</span><span class="op">)</span>,</span>
 <span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  styled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -113,8 +114,9 @@ vectors, <code>data</code> is ignored with a warning.</p></dd>
 <dd><p>Optional numeric vector of weights (same length as <code>x</code>).
 The variable may be referenced as a bare name when it belongs to <code>data</code>,
 or as a qualified expression like <code>other$w</code> (evaluated in the calling
-environment), which always takes precedence over <code>data</code> lookup. <code>NA</code>
-weights are treated as zero with a warning; see <code>Details</code>.</p></dd>
+environment), which always takes precedence over <code>data</code> lookup.
+Observations with <code>NA</code> weights are dropped from the table with a
+warning; see <code>Details</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -172,6 +174,14 @@ total equals the unweighted sample size (<code>length(weights)</code>). See
 <code>Details</code> for the interaction with <code>NA</code> weights.</p></dd>
 
 
+<dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
+<dd><p>Character used as the decimal mark in printed
+percentages. Either <code>"."</code> (the default) or <code>","</code>. Matches the
+<code>decimal_mark</code> argument of <code><a href="cross_tab.html">cross_tab()</a></code> and the three
+<code>table_*()</code> helpers, so European-locale users get a consistent
+experience across the package.</p></dd>
+
+
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (default), print the formatted spicy table.
 If <code>FALSE</code>, return a plain <code>data.frame</code> with frequency values.</p></dd>
@@ -219,13 +229,12 @@ computing frequencies, use <code><a href="varlist.html">varlist()</a></code> or 
 computed proportionally to the weights. The argument <code>rescale = TRUE</code>
 normalizes weights so their sum equals the unweighted sample size
 (<code>length(weights)</code>).</p>
-<p>Missing values in <code>weights</code> are treated as zero (with a warning), so
-the corresponding rows contribute nothing to any cell. With
-<code>rescale = TRUE</code>, the remaining weights are normalized so the total
-weighted N still equals <code>length(weights)</code> — the implicit share of the
-zeroed rows is redistributed over the others, mirroring Stata's
-<code>pweight</code> semantics. With <code>rescale = FALSE</code>, the total weighted N is
-the actual sum of non-<code>NA</code> weights.</p>
+<p>Missing values in <code>weights</code> cause those observations to be dropped
+from the table entirely (with a warning), matching the behaviour of
+<code><a href="cross_tab.html">cross_tab()</a></code> in spicy 0.11.0+. With <code>rescale = TRUE</code>, the remaining
+(non-<code>NA</code>-weighted) weights are normalized so the total weighted N
+equals the count of non-<code>NA</code>-weighted rows. With <code>rescale = FALSE</code>,
+the total weighted N is the actual sum of non-<code>NA</code> weights.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

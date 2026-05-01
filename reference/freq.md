@@ -19,7 +19,7 @@ freq(
   data,
   x = NULL,
   weights = NULL,
-  digits = 1,
+  digits = 1L,
   valid = TRUE,
   cum = FALSE,
   sort = "",
@@ -27,6 +27,7 @@ freq(
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
   rescale = TRUE,
+  decimal_mark = ".",
   styled = TRUE,
   ...
 )
@@ -49,8 +50,9 @@ freq(
   Optional numeric vector of weights (same length as `x`). The variable
   may be referenced as a bare name when it belongs to `data`, or as a
   qualified expression like `other$w` (evaluated in the calling
-  environment), which always takes precedence over `data` lookup. `NA`
-  weights are treated as zero with a warning; see `Details`.
+  environment), which always takes precedence over `data` lookup.
+  Observations with `NA` weights are dropped from the table with a
+  warning; see `Details`.
 
 - digits:
 
@@ -119,6 +121,14 @@ freq(
   Logical. If `TRUE` (default), rescale weights so that their total
   equals the unweighted sample size (`length(weights)`). See `Details`
   for the interaction with `NA` weights.
+
+- decimal_mark:
+
+  Character used as the decimal mark in printed percentages. Either
+  `"."` (the default) or `","`. Matches the `decimal_mark` argument of
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and the three `table_*()` helpers, so European-locale users get a
+  consistent experience across the package.
 
 - styled:
 
@@ -190,13 +200,13 @@ are computed proportionally to the weights. The argument
 `rescale = TRUE` normalizes weights so their sum equals the unweighted
 sample size (`length(weights)`).
 
-Missing values in `weights` are treated as zero (with a warning), so the
-corresponding rows contribute nothing to any cell. With
-`rescale = TRUE`, the remaining weights are normalized so the total
-weighted N still equals `length(weights)` — the implicit share of the
-zeroed rows is redistributed over the others, mirroring Stata's
-`pweight` semantics. With `rescale = FALSE`, the total weighted N is the
-actual sum of non-`NA` weights.
+Missing values in `weights` cause those observations to be dropped from
+the table entirely (with a warning), matching the behaviour of
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+in spicy 0.11.0+. With `rescale = TRUE`, the remaining
+(non-`NA`-weighted) weights are normalized so the total weighted N
+equals the count of non-`NA`-weighted rows. With `rescale = FALSE`, the
+total weighted N is the actual sum of non-`NA` weights.
 
 ## See also
 
