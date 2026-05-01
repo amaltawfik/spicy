@@ -1,0 +1,46 @@
+"tmp_validation/mtcars_3x3.sps:17: attention: CROSSTABS: Au moins un cas dans le fichier de données contient une valeur pondérée erronée (valeur utilisateur ou système manquante, nulle ou négative). Ces cas ont été ignorés."
+
+Table: Résumé
+,Observations,,,,,
+,Valide,,Manquant(e),,Total,
+,N,%,N,%,N,%
+gear Ã— cyl,"32,0000000","100,0%",",0000000",",0%","32,0000000","100,0%"
+
+Table: gear Ã— cyl
+,,,cyl,,,Total
+,,,"4,0000000","6,0000000","8,0000000",
+gear,"3,0000000",Nombre,"1,0000000","2,0000000","12,0000000","15,0000000"
+,"4,0000000",Nombre,"8,0000000","4,0000000",",0000000","12,0000000"
+,"5,0000000",Nombre,"2,0000000","1,0000000","2,0000000","5,0000000"
+Total,,Nombre,"11,0000000","7,0000000","14,0000000","32,0000000"
+
+Table: Tests de X²
+,Valeur,df,Sig. asymptotique (bi-variée)
+X² de Pearson,"18,0363636","4,0000000",",001"
+Rapport de vraisemblance,"23,2603550","4,0000000",",000"
+Association linéaire-par-linéaire,"7,5249426","1,0000000",",006"
+Nombre d’observations valides,"32,0000000",,
+
+Table: Mesures de symétrie
+,,Valeur,Erreur standard asymp.,Approx. T
+Valeur Nominale par Valeur Nominale,Phi,",7507572",,
+,V de Cramer,",5308655",,
+,Coefficient de contingence,",6003875",,
+Valeur Ordinale par Valeur Ordinale,Tau-b de Kendall,"-,5125435",",1495818","-3,6595578"
+,Tau-c de Kendall,"-,4833984",",1320920","-3,6595578"
+,Gamma,"-,6573705",",1727847","-3,6595578"
+Nombre d’observations valides,,"32,0000000",,
+
+Table: Mesures directionnelles
+,,,Valeur,Erreur standard asymp.,Approx. T,Sig. approx.
+Valeur Nominale par Valeur Nominale,Lambda,Symétrie,",4857143",",1292016","2,9168167",",004"
+,,Dépendant gear,",5294118",",1562850","2,5487724",",011"
+,,Dépendant cyl,",4444444",",1434438","2,5298221",",011"
+,Tau de Goodman et Kruskal,Dépendant gear,",3825603",,,
+,,Dépendant cyl,",3386018",,,
+,Coefficient d’incertitude,Symétrie,",3504372",",0894061",,
+,,Dépendant gear,",3587709",",0934912","4,2147518",
+,,Dépendant cyl,",3424818",",0873753","4,2147518",
+Valeur Ordinale par Valeur Ordinale,Indice D de Somers,Symétrie,"-,5124224",,"-3,6595578",",000"
+,,Dépendant gear,"-,5015198",",1407720","-3,6595578",",000"
+,,Dépendant cyl,"-,5238095",",1605058","-3,6595578",",000"

@@ -71,6 +71,18 @@ model-based variant.
   Fisher z-transformation (the point estimate and p-value remain
   identical to `DescTools` and SPSS).
 
+### Numerical validation
+
+* Point estimates of all thirteen `assoc.R` measures are
+  cross-validated against PSPP 2.0 (`CROSSTABS /STATISTICS=ALL`)
+  on four datasets (`mtcars` 3x3, `mtcars` 2x2, `HairEyeColor`
+  4x4, and the package's `sochealth`); 65 of 65 estimates agree
+  with PSPP within 1e-5 (the precision of PSPP's printable
+  output). PSPP-derived reference values are pinned in the test
+  suite as anti-regression guards. Independent triangulation
+  against `DescTools`, `vcd` and `Hmisc::somers2` is documented
+  in `tools/validation/REPORT.md` (excluded from the build).
+
 ### Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

@@ -1,0 +1,45 @@
+Table: Résumé
+,Observations,,,,,
+,Valide,,Manquant(e),,Total,
+,N,%,N,%,N,%
+hair Ã— eye,"592,0000000","100,0%",",0000000",",0%","592,0000000","100,0%"
+
+Table: hair Ã— eye
+,,,eye,,,,Total
+,,,"1,0000000","2,0000000","3,0000000","4,0000000",
+hair,"1,0000000",Nombre,"68,0000000","20,0000000","15,0000000","5,0000000","108,0000000"
+,"2,0000000",Nombre,"119,0000000","84,0000000","54,0000000","29,0000000","286,0000000"
+,"3,0000000",Nombre,"26,0000000","17,0000000","14,0000000","14,0000000","71,0000000"
+,"4,0000000",Nombre,"7,0000000","94,0000000","10,0000000","16,0000000","127,0000000"
+Total,,Nombre,"220,0000000","215,0000000","93,0000000","64,0000000","592,0000000"
+
+Table: Tests de X²
+,Valeur,df,Sig. asymptotique (bi-variée)
+X² de Pearson,"138,2898416","9,0000000",",000"
+Rapport de vraisemblance,"146,4435785","9,0000000",",000"
+Association linéaire-par-linéaire,"28,2922978","1,0000000",",000"
+Nombre d’observations valides,"592,0000000",,
+
+Table: Mesures de symétrie
+,,Valeur,Erreur standard asymp.,Approx. T
+Valeur Nominale par Valeur Nominale,Phi,",4833195",,
+,V de Cramer,",2790446",,
+,Coefficient de contingence,",4351585",,
+Valeur Ordinale par Valeur Ordinale,Tau-b de Kendall,",2247026",",0307275","7,3141549"
+,Tau-c de Kendall,",2046886",",0279853","7,3141549"
+,Gamma,",3177721",",0429657","7,3141549"
+Nombre d’observations valides,,"592,0000000",,
+
+Table: Mesures directionnelles
+,,,Valeur,Erreur standard asymp.,Approx. T,Sig. approx.
+Valeur Nominale par Valeur Nominale,Lambda,Symétrie,",1430678",",0297819","4,5670128",",000"
+,,Dépendant hair,",0326797",",0428819",",7498876",",453"
+,,Dépendant eye,",2338710",",0236466","9,2629474",",000"
+,Tau de Goodman et Kruskal,Dépendant hair,",0746087",,,
+,,Dépendant eye,",1136376",,,
+,Coefficient d’incertitude,Symétrie,",0984203",",0145008",,
+,,Dépendant hair,",0992313",",0144683","6,7687767",
+,,Dépendant eye,",0976225",",0146127","6,7687767",
+Valeur Ordinale par Valeur Ordinale,Indice D de Somers,Symétrie,",2246768",,"7,3141549",",000"
+,,Dépendant hair,",2213218",",0309341","7,3141549",",000"
+,,Dépendant eye,",2281350",",0307076","7,3141549",",000"

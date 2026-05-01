@@ -1,0 +1,43 @@
+Table: Résumé
+,Observations,,,,,
+,Valide,,Manquant(e),,Total,
+,N,%,N,%,N,%
+smoking Ã— education,"1175,0000000","100,0%",",0000000",",0%","1175,0000000","100,0%"
+
+Table: smoking Ã— education
+,,,education,,,Total
+,,,"1,0000000","2,0000000","3,0000000",
+smoking,"1,0000000",Nombre,"179,0000000","415,0000000","332,0000000","926,0000000"
+,"2,0000000",Nombre,"78,0000000","112,0000000","59,0000000","249,0000000"
+Total,,Nombre,"257,0000000","527,0000000","391,0000000","1175,0000000"
+
+Table: Tests de X²
+,Valeur,df,Sig. asymptotique (bi-variée)
+X² de Pearson,"21,6267205","2,0000000",",000"
+Rapport de vraisemblance,"21,2552819","2,0000000",",000"
+Association linéaire-par-linéaire,"21,2412238","1,0000000",",000"
+Nombre d’observations valides,"1175,0000000",,
+
+Table: Mesures de symétrie
+,,Valeur,Erreur standard asymp.,Approx. T
+Valeur Nominale par Valeur Nominale,Phi,",1356677",,
+,V de Cramer,",1356677",,
+,Coefficient de contingence,",1344361",,
+Valeur Ordinale par Valeur Ordinale,Tau-b de Kendall,"-,1264155",",0273992","-4,5464863"
+,Tau-c de Kendall,"-,1169210",",0257168","-4,5464863"
+,Gamma,"-,2680678",",0562810","-4,5464863"
+Nombre d’observations valides,,"1175,0000000",,
+
+Table: Mesures directionnelles
+,,,Valeur,Erreur standard asymp.,Approx. T,Sig. approx.
+Valeur Nominale par Valeur Nominale,Lambda,Symétrie,",0000000",",0000000",NaN,NaN
+,,Dépendant smoking,",0000000",",0000000",NaN,NaN
+,,Dépendant education,",0000000",",0000000",NaN,NaN
+,Tau de Goodman et Kruskal,Dépendant smoking,",0184057",,,
+,,Dépendant education,",0076095",,,
+,Coefficient d’incertitude,Symétrie,",0114876",",0049819",,
+,,Dépendant smoking,",0175123",",0075830","2,2999491",
+,,Dépendant education,",0085472",",0037125","2,2999491",
+Valeur Ordinale par Valeur Ordinale,Indice D de Somers,Symétrie,"-,1200077",,"-4,5464863",",000"
+,,Dépendant smoking,"-,0913067",",0200303","-4,5464863",",000"
+,,Dépendant education,"-,1750241",",0378175","-4,5464863",",000"

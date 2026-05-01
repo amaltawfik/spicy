@@ -1,0 +1,45 @@
+Table: Résumé
+,Observations,,,,,
+,Valide,,Manquant(e),,Total,
+,N,%,N,%,N,%
+vs Ã— am,"32,0000000","100,0%",",0000000",",0%","32,0000000","100,0%"
+
+Table: vs Ã— am
+,,,am,,Total
+,,,"1,0000000","2,0000000",
+vs,"1,0000000",Nombre,"12,0000000","6,0000000","18,0000000"
+,"2,0000000",Nombre,"7,0000000","7,0000000","14,0000000"
+Total,,Nombre,"19,0000000","13,0000000","32,0000000"
+
+Table: Tests de X²
+,Valeur,df,Sig. asymptotique (bi-variée),Sig. exacte (bi-variée),Sig. exacte (uni-variée)
+X² de Pearson,",9068826","1,0000000",",341",,
+Rapport de vraisemblance,",9071022","1,0000000",",341",,
+Test exact de Fisher,,,,",473",",278"
+Correction de continuité,",3475355","1,0000000",",556",,
+Association linéaire-par-linéaire,",8785425","1,0000000",",349",,
+Nombre d’observations valides,"32,0000000",,,,
+
+Table: Mesures de symétrie
+,,Valeur,Erreur standard asymp.,Approx. T
+Valeur Nominale par Valeur Nominale,Phi,",1683451",,
+,V de Cramer,",1683451",,
+,Coefficient de contingence,",1660092",,
+Valeur Ordinale par Valeur Ordinale,Tau-b de Kendall,",1683451",",1753244",",9581403"
+,Tau-c de Kendall,",1640625",",1712301",",9581403"
+,Gamma,",3333333",",3253000",",9581403"
+Nombre d’observations valides,,"32,0000000",,
+
+Table: Mesures directionnelles
+,,,Valeur,Erreur standard asymp.,Approx. T,Sig. approx.
+Valeur Nominale par Valeur Nominale,Lambda,Symétrie,",0370370",",1307552",",2776841",",781"
+,,Dépendant vs,",0714286",",2481712",",2776841",",781"
+,,Dépendant am,",0000000",",0000000",NaN,NaN
+,Tau de Goodman et Kruskal,Dépendant vs,",0283401",,,
+,,Dépendant am,",0283401",,,
+,Coefficient d’incertitude,Symétrie,",0208314",",0435046",,
+,,Dépendant vs,",0206817",",0432014",",4786403",
+,,Dépendant am,",0209833",",0438193",",4786403",
+Valeur Ordinale par Valeur Ordinale,Indice D de Somers,Symétrie,",1683367",,",9581403",",338"
+,,Dépendant vs,",1700405",",1770979",",9581403",",338"
+,,Dépendant am,",1666667",",1737896",",9581403",",338"

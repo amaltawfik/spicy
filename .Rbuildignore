@@ -18,4 +18,4 @@
 ^doc$
 ^Meta$
 ^cobertura\.xml$
-^tmp_validation$
+^tools/validation$
