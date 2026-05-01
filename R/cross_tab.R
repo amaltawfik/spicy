@@ -948,7 +948,7 @@ print.spicy_cross_table <- function(x, digits = NULL, decimal_mark = NULL, ...) 
 
   spicy_print_table(
     df_display,
-    padding = "normal",
+    padding = 2L,
     first_column_line = TRUE,
     row_total_line = TRUE,
     column_total_line = TRUE,

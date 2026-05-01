@@ -81,6 +81,16 @@ model-based variant.
   totals rows without grepping the formatted text. `cross_tab.R`
   and `tables_ascii.R` now have 100 % line coverage.
 
+* `build_ascii_table()` and `spicy_print_table()` switch the
+  `padding` argument from a string enum to a single non-negative
+  integer with a Stata-aligned default of `2L` (the previous
+  `"normal"` default mapped to `+5L`, producing visibly airy
+  output relative to the conventions used by SPSS / Stata /
+  `cli` / tibble). All printed tables (`cross_tab()`, `freq()`,
+  `table_categorical()`, `table_continuous()`,
+  `table_continuous_lm()`) are roughly 40 % narrower; legacy
+  string values raise an actionable migration error.
+
 ### Numerical validation
 
 * Point estimates of all thirteen `assoc.R` measures are

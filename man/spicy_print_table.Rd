@@ -8,7 +8,7 @@ spicy_print_table(
   x,
   title = attr(x, "title"),
   note = attr(x, "note"),
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -30,12 +30,11 @@ spicy_print_table(
 \item{note}{Optional note displayed below the table. Defaults to the \code{"note"}
 attribute of \code{x} if present.}
 
-\item{padding}{Character string controlling horizontal spacing between columns:
-\itemize{
-\item \code{"normal"} - moderate spacing (the default)
-\item \code{"compact"} - minimal spacing
-\item \code{"wide"} - extra spacing (for wide displays)
-}}
+\item{padding}{Non-negative integer giving the number of extra
+characters added to each column's auto-computed width
+(max of cell-content width and header width). Defaults to
+\code{2L}. See \code{\link[=build_ascii_table]{build_ascii_table()}} for the precise formula and
+the migration note from the pre-0.11.0 string enum.}
 
 \item{first_column_line}{Logical. If \code{TRUE} (the default), adds a vertical separator
 after the first column.}

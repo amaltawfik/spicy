@@ -75,7 +75,12 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     )
   }
 
-  padding <- "normal"
+  # Auto-select padding: use 0 (compact) when the default 2-char
+  # padding would overflow the console.
+  # Each column in build_ascii_table uses: 1 (gutter) + w[i] + 1
+  # (gutter) chars, plus 1 char for the vertical separator after
+  # column 1; `padding` is added to each w[i].
+  padding <- 2L
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
@@ -84,9 +89,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     numeric(1)
   )
   console_w <- getOption("width", 80L)
-  normal_width <- sum(col_widths + 5L + 2L) + 1L
+  normal_width <- sum(col_widths + padding + 2L) + 1L
   if (normal_width > console_w) {
-    padding <- "compact"
+    padding <- 0L
   }
 
   spicy_print_table(

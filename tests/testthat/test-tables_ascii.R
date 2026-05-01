@@ -33,10 +33,62 @@ test_that("spicy_print_table aligns Category and Values left", {
   expect_true(any(grepl("^ Valid", output)))
 })
 
-test_that("build_ascii_table supports wide padding", {
+test_that("build_ascii_table accepts a numeric `padding` of any non-negative value", {
   df <- data.frame(A = 1:2, B = c("x", "y"))
-  txt <- build_ascii_table(df, padding = "wide")
-  expect_type(txt, "character")
+  txt0 <- build_ascii_table(df, padding = 0L)
+  txt2 <- build_ascii_table(df, padding = 2L)
+  txt9 <- build_ascii_table(df, padding = 9L)
+  expect_type(txt0, "character")
+  expect_type(txt2, "character")
+  expect_type(txt9, "character")
+  # Larger padding -> longer lines
+  width0 <- max(nchar(strsplit(txt0, "\n", fixed = TRUE)[[1]]))
+  width2 <- max(nchar(strsplit(txt2, "\n", fixed = TRUE)[[1]]))
+  width9 <- max(nchar(strsplit(txt9, "\n", fixed = TRUE)[[1]]))
+  expect_lt(width0, width2)
+  expect_lt(width2, width9)
+})
+
+test_that("build_ascii_table rejects the legacy string `padding` choices with a migration error", {
+  df <- data.frame(A = 1:2, B = c("x", "y"))
+  expect_error(
+    build_ascii_table(df, padding = "compact"),
+    "non-negative integer.+removed in spicy 0\\.11\\.0"
+  )
+  expect_error(
+    build_ascii_table(df, padding = "normal"),
+    "non-negative integer.+removed in spicy 0\\.11\\.0"
+  )
+  expect_error(
+    build_ascii_table(df, padding = "wide"),
+    "non-negative integer.+removed in spicy 0\\.11\\.0"
+  )
+})
+
+test_that("build_ascii_table rejects negative or non-finite `padding`", {
+  df <- data.frame(A = 1:2, B = c("x", "y"))
+  expect_error(
+    build_ascii_table(df, padding = -1L),
+    "non-negative integer"
+  )
+  expect_error(
+    build_ascii_table(df, padding = NA_integer_),
+    "non-negative integer"
+  )
+  expect_error(
+    build_ascii_table(df, padding = c(2L, 3L)),
+    "non-negative integer"
+  )
+})
+
+test_that("spicy_print_table forwards the new `padding` semantics", {
+  df <- data.frame(A = 1:2, B = c("x", "y"))
+  expect_no_error(spicy_print_table(df, padding = 0L))
+  expect_no_error(spicy_print_table(df, padding = 5L))
+  expect_error(
+    spicy_print_table(df, padding = "normal"),
+    "non-negative integer.+removed in spicy 0\\.11\\.0"
+  )
 })
 
 test_that("build_ascii_table supports bottom_line", {
@@ -91,7 +143,7 @@ test_that("build_ascii_table honours `total_row_idx` and supports `group_sep_row
   # Explicit total_row_idx places the rule before row 4
   txt <- build_ascii_table(
     df,
-    padding = "compact",
+    padding = 0L,
     total_row_idx = 4L,
     group_sep_rows = 3L
   )
@@ -111,7 +163,7 @@ test_that("`total_row_idx = integer(0)` suppresses the regex fallback", {
     Item = c("Sub Total", "Real total here"),
     Count = c("5", "10")
   )
-  txt <- build_ascii_table(df, padding = "compact", total_row_idx = integer(0))
+  txt <- build_ascii_table(df, padding = 0L, total_row_idx = integer(0))
   expect_type(txt, "character")
   # The output has the header rule but no body separator rules
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1]]
@@ -153,7 +205,7 @@ test_that("spicy_print_table splits wide tables into stacked panels", {
     spicy_print_table(
       df,
       title = NULL,
-      padding = "compact",
+      padding = 0L,
       align_left_cols = c(1L, 2L)
     )
   )

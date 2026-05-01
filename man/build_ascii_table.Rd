@@ -6,7 +6,7 @@
 \usage{
 build_ascii_table(
   x,
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -23,12 +23,18 @@ build_ascii_table(
 \item{x}{A \code{data.frame} or \code{spicy_table} object containing the table to format.
 Typically, this includes columns such as \emph{Category}, \emph{Values}, \emph{Freq.}, \emph{Percent}, etc.}
 
-\item{padding}{Character string controlling horizontal spacing between columns:
-\itemize{
-\item \code{"normal"} — moderate spacing (the default)
-\item \code{"compact"} — minimal spacing
-\item \code{"wide"} — extra spacing (for large displays or wide content)
-}}
+\item{padding}{Non-negative integer giving the number of extra
+characters added to each column's auto-computed width (the
+maximum of the cell-content width and the header width).
+Defaults to \code{2L}, which gives a Stata- / \code{cli}-like compact
+look. Each cell additionally receives a one-space gutter on
+each side, so a \code{padding = 2L} column whose content is at
+most 5 characters wide occupies 9 characters in total
+(\code{1 + 5 + 2 + 1}).
+
+The string choices \code{"compact"}, \code{"normal"} and \code{"wide"} from
+spicy \verb{< 0.11.0} were removed; pass \code{0L}, \code{2L} or \code{4L}
+instead. Passing a string raises an actionable error.}
 
 \item{first_column_line}{Logical. If \code{TRUE} (the default), a vertical separator
 is drawn after the first column (useful for separating categories from data).}
@@ -81,8 +87,7 @@ This function is primarily used internally by higher-level wrappers such as
 \code{build_ascii_table()} is the rendering engine that produces the aligned text
 layout of \strong{spicy-formatted tables}.
 It automatically detects cell widths (including colored text), inserts Unicode
-separators, and applies padding for different display modes (\code{"compact"},
-\code{"normal"}, \code{"wide"}).
+separators, and applies a configurable amount of horizontal padding.
 
 For most users, this function should not be called directly. Instead, use
 \code{\link[=spicy_print_table]{spicy_print_table()}} which adds headers, notes, and alignment logic
@@ -97,7 +102,7 @@ df <- data.frame(
   Percent = c(57.1, 38.1, 4.8, 100.0)
 )
 
-cat(build_ascii_table(df, padding = "compact"))
+cat(build_ascii_table(df, padding = 0L))
 
 }
 \seealso{

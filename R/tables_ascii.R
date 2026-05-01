@@ -1,3 +1,27 @@
+# Internal: validate the `padding` argument shared by `build_ascii_table()`
+# and `spicy_print_table()`. Pre-1.0 spicy switched from a string enum
+# (`"compact" / "normal" / "wide"`) to a single non-negative integer
+# giving the extra characters added to each column's auto-computed
+# width. Passing the legacy strings raises an actionable migration
+# error rather than silently mapping to an integer, so users see the
+# change instead of debugging an unexplained layout shift.
+.validate_padding <- function(padding) {
+  if (is.character(padding)) {
+    stop(
+      "`padding` must be a non-negative integer (e.g. `padding = 2L`).\n",
+      "The string choices `\"compact\"`, `\"normal\"` and `\"wide\"` were ",
+      "removed in spicy 0.11.0; use `0L`, `2L` and `4L` respectively.",
+      call. = FALSE
+    )
+  }
+  padding <- suppressWarnings(as.integer(padding))
+  if (length(padding) != 1L || is.na(padding) || padding < 0L) {
+    stop("`padding` must be a non-negative integer.", call. = FALSE)
+  }
+  padding
+}
+
+
 #' Build a formatted ASCII table
 #'
 #' @description
@@ -12,8 +36,7 @@
 #' `build_ascii_table()` is the rendering engine that produces the aligned text
 #' layout of **spicy-formatted tables**.
 #' It automatically detects cell widths (including colored text), inserts Unicode
-#' separators, and applies padding for different display modes (`"compact"`,
-#' `"normal"`, `"wide"`).
+#' separators, and applies a configurable amount of horizontal padding.
 #'
 #' For most users, this function should not be called directly. Instead, use
 #' [spicy_print_table()] which adds headers, notes, and alignment logic
@@ -21,10 +44,18 @@
 #'
 #' @param x A `data.frame` or `spicy_table` object containing the table to format.
 #'   Typically, this includes columns such as *Category*, *Values*, *Freq.*, *Percent*, etc.
-#' @param padding Character string controlling horizontal spacing between columns:
-#'   * `"normal"` — moderate spacing (the default)
-#'   * `"compact"` — minimal spacing
-#'   * `"wide"` — extra spacing (for large displays or wide content)
+#' @param padding Non-negative integer giving the number of extra
+#'   characters added to each column's auto-computed width (the
+#'   maximum of the cell-content width and the header width).
+#'   Defaults to `2L`, which gives a Stata- / `cli`-like compact
+#'   look. Each cell additionally receives a one-space gutter on
+#'   each side, so a `padding = 2L` column whose content is at
+#'   most 5 characters wide occupies 9 characters in total
+#'   (`1 + 5 + 2 + 1`).
+#'
+#'   The string choices `"compact"`, `"normal"` and `"wide"` from
+#'   spicy `< 0.11.0` were removed; pass `0L`, `2L` or `4L`
+#'   instead. Passing a string raises an actionable error.
 #' @param first_column_line Logical. If `TRUE` (the default), a vertical separator
 #'   is drawn after the first column (useful for separating categories from data).
 #' @param row_total_line,column_total_line Logical. Control horizontal rules
@@ -65,7 +96,7 @@
 #'   Percent = c(57.1, 38.1, 4.8, 100.0)
 #' )
 #'
-#' cat(build_ascii_table(df, padding = "compact"))
+#' cat(build_ascii_table(df, padding = 0L))
 #'
 #' @seealso
 #' [spicy_print_table()] for a user-facing wrapper that adds titles and notes.
@@ -78,7 +109,7 @@
 
 build_ascii_table <- function(
   x,
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -91,7 +122,7 @@ build_ascii_table <- function(
   ...
 ) {
   stopifnot(is.data.frame(x))
-  padding <- match.arg(padding)
+  padding <- .validate_padding(padding)
 
   df <- as.data.frame(x, check.names = FALSE)
   df[] <- lapply(df, as.character)
@@ -250,15 +281,7 @@ ascii_table_widths <- function(df, padding) {
     },
     numeric(1)
   )
-
-  if (identical(padding, "normal")) {
-    widths <- widths + 5L
-  }
-  if (identical(padding, "wide")) {
-    widths <- widths + 9L
-  }
-
-  widths
+  widths + as.integer(padding)
 }
 
 ascii_table_separators <- function(df, first_column_line, row_total_line) {
@@ -384,10 +407,11 @@ ascii_table_panels <- function(
 #'   `"title"` attribute of `x` if present.
 #' @param note Optional note displayed below the table. Defaults to the `"note"`
 #'   attribute of `x` if present.
-#' @param padding Character string controlling horizontal spacing between columns:
-#'   * `"normal"` - moderate spacing (the default)
-#'   * `"compact"` - minimal spacing
-#'   * `"wide"` - extra spacing (for wide displays)
+#' @param padding Non-negative integer giving the number of extra
+#'   characters added to each column's auto-computed width
+#'   (max of cell-content width and header width). Defaults to
+#'   `2L`. See [build_ascii_table()] for the precise formula and
+#'   the migration note from the pre-0.11.0 string enum.
 #' @param first_column_line Logical. If `TRUE` (the default), adds a vertical separator
 #'   after the first column.
 #' @param row_total_line,column_total_line,bottom_line Logical flags controlling
@@ -439,7 +463,7 @@ spicy_print_table <- function(
   x,
   title = attr(x, "title"),
   note = attr(x, "note"),
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -452,7 +476,7 @@ spicy_print_table <- function(
   ...
 ) {
   stopifnot(is.data.frame(x))
-  padding <- match.arg(padding)
+  padding <- .validate_padding(padding)
 
   table_type <- if (any(grepl("^Category$", names(x)))) "freq" else "cross"
 
