@@ -91,6 +91,17 @@ model-based variant.
   `table_continuous_lm()`) are roughly 40 % narrower; legacy
   string values raise an actionable migration error.
 
+* `table_categorical()`'s `assoc_measure` argument is generalised
+  from a single global string to a per-row specification. Four
+  input shapes are accepted: `"none"`, `"auto"` (per-row rule:
+  2x2 -> phi, both ordered -> tau_b, otherwise Cramer's V),
+  a single string for uniform application, and a character vector
+  (named recommended, unnamed positional accepted) with one entry
+  per row variable. When measures differ across rows, the column
+  header collapses to "Effect size" and an APA-style `Note.`
+  line documents which measure was used for which variable.
+  `phi` requested on a non-2x2 raises an actionable error.
+
 ### Numerical validation
 
 * Point estimates of all thirteen `assoc.R` measures are

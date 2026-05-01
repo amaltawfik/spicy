@@ -102,9 +102,35 @@ Defaults to \code{3}.}
 \item{v_digits}{Number of digits for the association measure. Defaults
 to \code{2}.}
 
-\item{assoc_measure}{Passed to \code{\link[=cross_tab]{cross_tab()}}. Which association measure
-to report (\code{"auto"}, \code{"cramer_v"}, \code{"phi"}, \code{"gamma"}, \code{"tau_b"},
-\code{"tau_c"}, \code{"somers_d"}, \code{"lambda"}, \code{"none"}). Defaults to \code{"auto"}.}
+\item{assoc_measure}{Which association measure to report alongside the
+chi-squared \emph{p}-value. Accepts four input shapes:
+\itemize{
+\item \code{"none"} — drop the column entirely.
+\item \code{"auto"} (the default) — pick a measure per row variable based
+on the variable type: a 2x2 table (binary row variable
+vs. binary \code{by}) uses \strong{\code{phi}}, a pair of ordered factors uses
+\strong{\code{tau_b}}, every other case uses \strong{\code{cramer_v}}.
+\item a single string from
+\code{c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")}
+— applied uniformly to every row variable.
+\item a character vector with one entry per row variable. Both
+\strong{named} (\code{c(smoking = "phi", health = "tau_b")}, recommended;
+unnamed variables fall back to \code{"auto"}) and \strong{unnamed}
+positional (\code{c("phi", "tau_b", "auto")}, paired up with
+\code{select}) are accepted. Named is more robust to reordering of
+\code{select}.
+}
+
+When a single measure is used for every row, the column header is
+that measure's name (e.g. \code{"Cramer's V"}). When multiple measures
+are used (typically with \code{"auto"} on a heterogeneous \code{select}),
+the header collapses to \code{"Effect size"} and an APA-style
+\code{Note.} line is appended documenting which measure was used for
+which variable.
+
+\code{phi} requires a 2x2 table; if explicitly requested for a
+non-2x2 variable, an error is raised so the user can choose
+another measure or fall back to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
 confidence interval of the association measure. In wide raw

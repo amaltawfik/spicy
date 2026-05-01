@@ -173,6 +173,34 @@
   than silently mapping to an integer (see `?build_ascii_table`).
   Migration: `"compact" -> 0L`, `"normal" -> 2L`, `"wide" -> 4L`.
 
+* `table_categorical()`'s `assoc_measure` argument is generalised
+  from a single global string to a per-row specification, with
+  four input shapes:
+  * `"none"` — drop the column.
+  * `"auto"` (the default) — pick a measure per row variable
+    based on the variable type: 2x2 table -> `phi`, both
+    ordered factors -> `tau_b`, otherwise -> `cramer_v`.
+  * a single string — applied uniformly.
+  * a character vector with one entry per row variable, either
+    named (`c(smoking = "phi", health = "tau_b")`, recommended)
+    or unnamed positional (`c("phi", "tau_b")`, paired with
+    `select`).
+
+  When all rows share one measure the column header is that
+  measure's name (e.g. `"Phi"`); when rows use a mix, the header
+  collapses to `"Effect size"` and an APA-style `Note.` line is
+  appended documenting which measure was used for which
+  variable. `phi` requested for a non-2x2 variable now raises an
+  actionable error rather than emitting `NA`.
+
+  Companion change: the `"auto"` rule now picks `phi` (instead
+  of `cramer_v`) for binary-by-binary tables. Phi and Cramer's V
+  return the same numeric value for 2x2 (|phi| = V), but `phi`
+  is the conventional APA label for that case. Users who relied
+  on the column being labelled `"Cramer's V"` for 2x2 tables
+  should pass `assoc_measure = "cramer_v"` to restore the old
+  label; the underlying value is unchanged.
+
 * `table_continuous_lm(output = "long")` returns `NA` in `es_type`
   and `es_value` when `effect_size = "none"` (previously populated
   with `"f2"` regardless). Set `effect_size = "f2"` to restore.

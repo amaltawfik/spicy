@@ -19,6 +19,7 @@ print.spicy_categorical_table <- function(x, ...) {
   indent_text <- attr(x, "indent_text") %||% "  "
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
+  assoc_note <- attr(x, "assoc_note")
 
   if (is.null(display_df)) {
     display_df <- x
@@ -92,7 +93,7 @@ print.spicy_categorical_table <- function(x, ...) {
   spicy_print_table(
     display_df,
     title = title,
-    note = NULL,
+    note = assoc_note,
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,

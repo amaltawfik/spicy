@@ -28,8 +28,10 @@ test_that("table_categorical returns expected long raw structure", {
   )
 
   expect_s3_class(out, "data.frame")
+  # 2x2 + 2x2 -> auto rule now picks Phi (was Cramer's V before 0.11.0;
+  # see NEWS).
   expect_true(all(
-    c("variable", "level", "group", "n", "pct", "p", "Cramer's V") %in%
+    c("variable", "level", "group", "n", "pct", "p", "Phi") %in%
       names(out)
   ))
   expect_true(nrow(out) > 0)
@@ -496,7 +498,116 @@ test_that("table_categorical default column is Cramer's V", {
     labels = "Var 1",
     output = "long"
   )
-  expect_true("Cramer's V" %in% names(out))
+  # 2x2 -> auto rule now picks Phi (see NEWS for 0.11.0).
+  expect_true("Phi" %in% names(out))
+})
+
+test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (mixed -> Effect size header)", {
+  # smoking: binary, education: 4-cat nominal, sex: binary
+  # auto-rule: smoking -> phi (2x2), education -> cramer_v (not 2x2)
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    output = "long"
+  )
+  expect_true("Effect size" %in% names(out))
+  expect_false("Phi" %in% names(out))
+  expect_false("Cramer's V" %in% names(out))
+})
+
+test_that("table_categorical accepts a named per-variable `assoc_measure`", {
+  # Same data, but explicit override per variable
+  out_default <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    output = "default"
+  )
+  expect_match(
+    attr(out_default, "assoc_note"),
+    "Note\\. Phi: smoking; Cramer's V: education\\."
+  )
+
+  # Force uniform Cramer's V via single-string -> no note
+  out_uniform <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    assoc_measure = "cramer_v",
+    output = "default"
+  )
+  expect_null(attr(out_uniform, "assoc_note"))
+})
+
+test_that("table_categorical accepts unnamed positional `assoc_measure` and validates length", {
+  # Positional, length matches select -> works
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    assoc_measure = c("phi", "cramer_v"),
+    output = "long"
+  )
+  expect_true("Effect size" %in% names(out))
+
+  # Length mismatch (positional vec longer than select) -> actionable error.
+  # NB: length-1 unnamed is treated as a uniform single-string application,
+  # not as a positional vector, so we use length 3 vs select 2 here.
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = c(smoking, education),
+      by = sex,
+      assoc_measure = c("phi", "cramer_v", "tau_b"),
+      output = "long"
+    ),
+    "Unnamed `assoc_measure` has length 3 but `select` chose 2 variables"
+  )
+})
+
+test_that("table_categorical errors when `assoc_measure = 'phi'` requested on non-2x2", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = education,
+      by = sex,
+      assoc_measure = "phi"
+    ),
+    "requires a 2x2 table"
+  )
+
+  # Same via named per-variable form
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = c(smoking, education),
+      by = sex,
+      assoc_measure = c(education = "phi")
+    ),
+    "education.+requires a 2x2 table"
+  )
+})
+
+test_that("table_categorical rejects unknown `assoc_measure` values and bad keys", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      assoc_measure = "not_a_measure"
+    ),
+    "is not one of"
+  )
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      assoc_measure = c(no_such_var = "phi")
+    ),
+    "keys not found in `select`"
+  )
 })
 
 test_that("table_categorical drops association column when assoc_measure is none", {
@@ -1812,7 +1923,9 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
   expect_true(all(is.finite(gl$statistic)))
   expect_true(all(gl$df >= 1L))
   expect_true(all(gl$p.value >= 0 & gl$p.value <= 1))
-  expect_true(all(gl$assoc_type == "Cramer's V"))
+  # smoking and physical_activity are both binary, sex is binary -> 2x2
+  # auto-rule picks Phi (see NEWS for 0.11.0).
+  expect_true(all(gl$assoc_type == "Phi"))
 })
 
 test_that("glance() returns NA test/ES, populated n_total without by", {

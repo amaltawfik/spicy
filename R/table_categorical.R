@@ -1,3 +1,212 @@
+# ── Internal helpers for per-row association measure ─────────────────────────
+
+# Pretty label for an association measure. Always ASCII so the
+# resulting string is safe to use as a data.frame column name (the
+# `out[["Kendall's Tau-b"]]` contract works on every platform) and as
+# a `glance()` value. A locale-aware Unicode upgrade (`τ`, `γ`)
+# could be added later as a display-only print option without
+# affecting these data-side names.
+.assoc_label <- function(measure) {
+  switch(
+    measure,
+    cramer_v = "Cramer's V",
+    phi = "Phi",
+    tau_b = "Kendall's Tau-b",
+    tau_c = "Stuart's Tau-c",
+    gamma = "Goodman-Kruskal Gamma",
+    somers_d = "Somers' D",
+    lambda = "Lambda",
+    measure
+  )
+}
+
+# Resolve the user-supplied `assoc_measure` into a named character vector
+# of length(select_names): one resolved measure per row variable. Accepts
+# four input shapes:
+#
+#   * `"none"`              -> rep("none", N)
+#   * single string         -> rep(string, N) (uniform application)
+#   * named character vec   -> per-row override; unnamed positions or
+#                              missing names fall back to "auto"
+#   * unnamed character vec -> positional pair-up with `select_names`
+#
+# Then resolves each remaining `"auto"` entry based on the variable type:
+# 2x2 -> phi ; both ordered -> tau_b ; otherwise cramer_v.
+#
+# The strict per-row validation (e.g. phi requires a 2x2 table) lives
+# here so the user gets a clear, early error instead of a silent NA in
+# the cell.
+.resolve_assoc_measures <- function(
+  assoc_measure,
+  select_names,
+  data,
+  by_name
+) {
+  valid <- c(
+    "auto",
+    "none",
+    "cramer_v",
+    "phi",
+    "tau_b",
+    "tau_c",
+    "gamma",
+    "somers_d",
+    "lambda"
+  )
+
+  n <- length(select_names)
+  per_row <- character(n)
+  names(per_row) <- select_names
+
+  if (is.null(assoc_measure)) {
+    assoc_measure <- "auto"
+  }
+  if (!is.character(assoc_measure)) {
+    stop(
+      "`assoc_measure` must be a character string or named/unnamed character vector.",
+      call. = FALSE
+    )
+  }
+
+  has_names <- !is.null(names(assoc_measure)) &&
+    any(nzchar(names(assoc_measure)))
+
+  if (length(assoc_measure) == 1L && !has_names) {
+    if (!assoc_measure %in% valid) {
+      stop(
+        sprintf(
+          "`assoc_measure = \"%s\"` is not one of: %s.",
+          assoc_measure,
+          paste(shQuote(valid), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    per_row[] <- assoc_measure
+  } else if (has_names) {
+    bad_names <- setdiff(names(assoc_measure)[nzchar(names(assoc_measure))],
+                         select_names)
+    if (length(bad_names) > 0L) {
+      stop(
+        sprintf(
+          "`assoc_measure` keys not found in `select`: %s.",
+          paste(shQuote(bad_names), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    bad_vals <- setdiff(unique(assoc_measure), valid)
+    if (length(bad_vals) > 0L) {
+      stop(
+        sprintf(
+          "`assoc_measure` value(s) not recognised: %s.",
+          paste(shQuote(bad_vals), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    per_row[] <- "auto" # default fallback for unnamed variables
+    keyed <- assoc_measure[nzchar(names(assoc_measure))]
+    per_row[names(keyed)] <- as.character(keyed)
+  } else {
+    # Unnamed vector, positional pair-up
+    if (length(assoc_measure) != n) {
+      stop(
+        sprintf(
+          "Unnamed `assoc_measure` has length %d but `select` chose %d variable%s. Either pass a named vector keyed by variable name, or match the lengths.",
+          length(assoc_measure),
+          n,
+          if (n > 1L) "s" else ""
+        ),
+        call. = FALSE
+      )
+    }
+    bad_vals <- setdiff(unique(assoc_measure), valid)
+    if (length(bad_vals) > 0L) {
+      stop(
+        sprintf(
+          "`assoc_measure` value(s) not recognised: %s.",
+          paste(shQuote(bad_vals), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    per_row[] <- as.character(assoc_measure)
+  }
+
+  # Resolve each remaining "auto" based on the variable / by-variable type
+  by_var <- data[[by_name]]
+  by_n_levels <- length(unique(by_var[!is.na(by_var)]))
+  by_ordered <- is.ordered(by_var)
+
+  for (i in seq_along(per_row)) {
+    if (per_row[i] != "auto") {
+      next
+    }
+    var <- data[[select_names[i]]]
+    var_n_levels <- length(unique(var[!is.na(var)]))
+    var_ordered <- is.ordered(var)
+    per_row[i] <- if (var_n_levels == 2L && by_n_levels == 2L) {
+      "phi"
+    } else if (var_ordered && by_ordered) {
+      "tau_b"
+    } else {
+      "cramer_v"
+    }
+  }
+
+  # Strict applicability check: phi only on 2x2.
+  for (i in seq_along(per_row)) {
+    if (per_row[i] != "phi") {
+      next
+    }
+    var <- data[[select_names[i]]]
+    var_n_levels <- length(unique(var[!is.na(var)]))
+    if (var_n_levels != 2L || by_n_levels != 2L) {
+      stop(
+        sprintf(
+          "`assoc_measure[\"%s\"] = \"phi\"` requires a 2x2 table, but `%s` x `by` is %dx%d.",
+          select_names[i],
+          select_names[i],
+          var_n_levels,
+          by_n_levels
+        ),
+        call. = FALSE
+      )
+    }
+  }
+
+  per_row
+}
+
+# Build the APA-style "Note." line listing which measure was used for
+# which variable when the rows of a `table_categorical()` table use
+# more than one association measure.
+#
+# Example output:
+#   "Note. Cramer's V: smoking, education; Kendall's Tau-b: self_rated_health."
+.assoc_note_apa <- function(per_row_measures, labels) {
+  shown <- per_row_measures[per_row_measures != "none"]
+  if (length(shown) == 0L) {
+    return(NULL)
+  }
+  unique_measures <- unique(unname(shown))
+  if (length(unique_measures) <= 1L) {
+    return(NULL)
+  }
+  parts <- vapply(
+    unique_measures,
+    function(m) {
+      vars <- names(shown)[shown == m]
+      lab <- labels[match(vars, names(per_row_measures))]
+      paste0(.assoc_label(m), ": ", paste(lab, collapse = ", "))
+    },
+    character(1)
+  )
+  paste0("Note. ", paste(parts, collapse = "; "), ".")
+}
+
+
 #' Categorical summary table
 #'
 #' @description
@@ -63,9 +272,34 @@
 #'   Defaults to `3`.
 #' @param v_digits Number of digits for the association measure. Defaults
 #'   to `2`.
-#' @param assoc_measure Passed to [cross_tab()]. Which association measure
-#'   to report (`"auto"`, `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`,
-#'   `"tau_c"`, `"somers_d"`, `"lambda"`, `"none"`). Defaults to `"auto"`.
+#' @param assoc_measure Which association measure to report alongside the
+#'   chi-squared *p*-value. Accepts four input shapes:
+#'
+#'   * `"none"` — drop the column entirely.
+#'   * `"auto"` (the default) — pick a measure per row variable based
+#'     on the variable type: a 2x2 table (binary row variable
+#'     vs. binary `by`) uses **`phi`**, a pair of ordered factors uses
+#'     **`tau_b`**, every other case uses **`cramer_v`**.
+#'   * a single string from
+#'     `c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")`
+#'     — applied uniformly to every row variable.
+#'   * a character vector with one entry per row variable. Both
+#'     **named** (`c(smoking = "phi", health = "tau_b")`, recommended;
+#'     unnamed variables fall back to `"auto"`) and **unnamed**
+#'     positional (`c("phi", "tau_b", "auto")`, paired up with
+#'     `select`) are accepted. Named is more robust to reordering of
+#'     `select`.
+#'
+#'   When a single measure is used for every row, the column header is
+#'   that measure's name (e.g. `"Cramer's V"`). When multiple measures
+#'   are used (typically with `"auto"` on a heterogeneous `select`),
+#'   the header collapses to `"Effect size"` and an APA-style
+#'   `Note.` line is appended documenting which measure was used for
+#'   which variable.
+#'
+#'   `phi` requires a 2x2 table; if explicitly requested for a
+#'   non-2x2 variable, an error is raised so the user can choose
+#'   another measure or fall back to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
 #'   confidence interval of the association measure. In wide raw
 #'   outputs (`"data.frame"`, `"excel"`, `"clipboard"`), two extra
@@ -513,7 +747,7 @@ table_categorical <- function(
     if (simulate_p) {
       warning("`simulate_p` is ignored when `by` is not used.", call. = FALSE)
     }
-    if (!identical(assoc_measure, "auto")) {
+    if (!isTRUE(all(as.character(assoc_measure) == "auto"))) {
       warning(
         "`assoc_measure` is ignored when `by` is not used.",
         call. = FALSE
@@ -1251,7 +1485,18 @@ table_categorical <- function(
   }
 
   g0 <- data[[by_name]]
-  show_assoc <- !identical(assoc_measure, "none")
+  # Resolve `assoc_measure` to a named character vector, one entry per
+  # row variable (validates input shape, fills "auto" via the per-row
+  # rule, errors on phi-on-non-2x2). The downstream loop reads from
+  # this vector instead of the raw user input so each row gets its own
+  # measure.
+  assoc_measures_per_row <- .resolve_assoc_measures(
+    assoc_measure,
+    select_names = select_names,
+    data = data,
+    by_name = by_name
+  )
+  show_assoc <- any(assoc_measures_per_row != "none")
   if (!show_assoc) {
     assoc_ci <- FALSE
   }
@@ -1306,6 +1551,7 @@ table_categorical <- function(
       g[is.na(g)] <- missing_label
     }
 
+    this_measure <- assoc_measures_per_row[[select_names[i]]]
     ct_pct <- spicy::cross_tab(
       x,
       g,
@@ -1315,7 +1561,7 @@ table_categorical <- function(
       correct = correct,
       simulate_p = simulate_p,
       simulate_B = simulate_B,
-      assoc_measure = assoc_measure,
+      assoc_measure = this_measure,
       assoc_ci = assoc_ci
     )
     ct_n <- spicy::cross_tab(
@@ -1329,9 +1575,6 @@ table_categorical <- function(
       assoc_measure = "none"
     )
     st <- parse_stats(ct_pct)
-    if (show_assoc && is.null(measure_col)) {
-      measure_col <- st$measure %||% "Cramer's V"
-    }
 
     groups_present <- setdiff(names(ct_n), "Values")
     groups_use <- intersect(group_levels, groups_present)
@@ -1378,8 +1621,10 @@ table_categorical <- function(
           check.names = FALSE
         )
         if (show_assoc) {
+          # Defer the rename `.assoc` -> measure_col to post-loop, where
+          # we know whether all rows used the same measure (uniform
+          # column header) or a mix (collapsed to "Effect size").
           row_df$.assoc <- st$v
-          names(row_df)[names(row_df) == ".assoc"] <- measure_col
         }
         rows[[rr]] <- row_df
         rr <- rr + 1L
@@ -1390,6 +1635,22 @@ table_categorical <- function(
   if (show_assoc && is.null(measure_col)) {
     measure_col <- "Cramer's V"
   }
+
+  # Collapse the per-variable measure vector into the column header
+  # the printed / wide outputs will use:
+  #   * one measure used everywhere -> that measure's pretty label
+  #   * mixed measures              -> generic "Effect size"
+  # Row-level `.assoc` cells are then renamed once, below.
+  shown_measures <- assoc_measures_per_row[assoc_measures_per_row != "none"]
+  unique_shown <- unique(unname(shown_measures))
+  measure_col <- if (length(unique_shown) == 1L) {
+    .assoc_label(unique_shown)
+  } else if (length(unique_shown) > 1L) {
+    "Effect size"
+  } else {
+    "Cramer's V" # show_assoc is FALSE in this branch; placeholder name
+  }
+  assoc_note_text <- .assoc_note_apa(assoc_measures_per_row, labels)
 
   if (length(rows) == 0) {
     long_raw <- data.frame(
@@ -1406,13 +1667,13 @@ table_categorical <- function(
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
-    if (show_assoc) {
-      names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
-    } else {
-      long_raw$.assoc <- NULL
-    }
   } else {
     long_raw <- do.call(rbind, rows)
+  }
+  if (show_assoc) {
+    names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
+  } else {
+    long_raw$.assoc <- NULL
   }
 
   if (nrow(long_raw) > 0) {
@@ -1652,6 +1913,7 @@ table_categorical <- function(
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
     attr(out, "long_data") <- long_raw
+    attr(out, "assoc_note") <- assoc_note_text
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
     print(out)
     return(invisible(out))
