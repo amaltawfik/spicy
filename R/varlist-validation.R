@@ -51,15 +51,13 @@ match_varlist_factor_levels <- function(factor_levels) {
     stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
   }
 
-  if (length(factor_levels) > 1L) {
-    if (
-      length(factor_levels) == length(choices) &&
-        setequal(factor_levels, choices)
-    ) {
-      factor_levels <- factor_levels[[1L]]
-    } else {
-      stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
-    }
+  # When the caller passes the full default vector in either order
+  # (`c("observed", "all")` from `varlist()`, `c("all", "observed")`
+  # from `code_book()`), pick the first element. Otherwise let
+  # `match.arg()` do the partial-match work; the wrapper exists only
+  # to give the consistent in-package error message.
+  if (length(factor_levels) > 1L && setequal(factor_levels, choices)) {
+    factor_levels <- factor_levels[[1L]]
   }
 
   tryCatch(

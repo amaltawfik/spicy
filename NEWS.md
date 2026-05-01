@@ -97,6 +97,12 @@
   `kendall_tau_b()`; it now returns the harmonic mean of the two
   asymmetric values, matching SPSS / PSPP `CROSSTABS`.
 
+* `varlist()` and `code_book()` now honour `factor_levels = "all"`
+  for `haven_labelled` columns: declared-but-unobserved labels
+  (e.g. a `[3] High` code that no one selected) appear in the
+  `Values` summary. The argument was previously silently forced to
+  `"observed"` for labelled inputs.
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

@@ -505,6 +505,42 @@ test_that("varlist() uses labelled value order consistently", {
   expect_equal(unname(res_all$Values), "[1] Low, [2] Mid, [3] High")
 })
 
+test_that("varlist() honours `factor_levels = 'all'` for labelled (declared > observed)", {
+  # spicy 0.11.0 fix: previously labelled columns silently forced
+  # `factor_levels = "observed"` regardless of user input. With
+  # value 3 unobserved, `factor_levels = "all"` must still surface
+  # the [3] High label.
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(
+    c(1, 2, 1, 2),
+    labels = c(Low = 1, Mid = 2, High = 3)
+  )
+  df <- data.frame(v = x)
+
+  res_observed <- varlist(df, tbl = TRUE, factor_levels = "observed")
+  res_all <- varlist(df, tbl = TRUE, factor_levels = "all")
+
+  expect_no_match(res_observed$Values, "High")
+  expect_match(res_all$Values, "[3] High", fixed = TRUE)
+
+  # Same on the values = TRUE path.
+  res_all_full <- varlist(df, tbl = TRUE, values = TRUE, factor_levels = "all")
+  expect_match(res_all_full$Values, "[3] High", fixed = TRUE)
+})
+
+test_that("match_varlist_factor_levels rejects bad inputs with a stable message", {
+  msg <- '`factor_levels` must be "observed" or "all".'
+  expect_error(varlist(mtcars, factor_levels = "foo"), msg, fixed = TRUE)
+  expect_error(varlist(mtcars, factor_levels = NA_character_), msg, fixed = TRUE)
+  expect_error(varlist(mtcars, factor_levels = character()), msg, fixed = TRUE)
+  expect_error(varlist(mtcars, factor_levels = 1L), msg, fixed = TRUE)
+  expect_error(
+    varlist(mtcars, factor_levels = c("foo", "bar")),
+    msg,
+    fixed = TRUE
+  )
+})
+
 test_that("N_distinct counts correctly", {
   df <- data.frame(x = c(1, 1, 2, NA, 2))
   res <- varlist(df, tbl = TRUE)

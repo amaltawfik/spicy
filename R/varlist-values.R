@@ -43,10 +43,14 @@ summarize_values_minmax <- function(
   has_nan <- varlist_has_nan(col)
   max_display <- 4
 
+  # Labelled vectors are converted to factor up front so the same
+  # `factor_values()` path handles `factor_levels = "all"` uniformly
+  # for both `factor` and `labelled` inputs.
   if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
-    unique_vals <- factor_values(col, factor_levels = "observed")
-  } else if (is.factor(col)) {
+  }
+
+  if (is.factor(col)) {
     unique_vals <- factor_values(col, factor_levels = factor_levels)
   } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
     col_no_na <- stats::na.omit(col)
@@ -127,9 +131,12 @@ summarize_values_all <- function(
     paste(all_vals, collapse = ", ")
   }
 
+  # Same labelled-to-factor unification as in `summarize_values_minmax()`:
+  # `factor_levels` is now honoured for labelled vectors, and the original
+  # level order is preserved (sorting prefixed labels alphabetically would
+  # mis-order codes >= 10, e.g. `[10] X` before `[2] X`).
   if (labelled::is.labelled(col)) {
     col <- labelled::to_factor(col, levels = "prefixed")
-    return(show_vals(col))
   }
 
   if (is.factor(col)) {

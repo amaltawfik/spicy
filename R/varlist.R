@@ -73,6 +73,11 @@
 #' - `N_valid`: number of non-missing observations
 #' - `NAs`: number of missing observations
 #'
+#' For matrix and array columns, observations are counted per **row**:
+#' a row is treated as missing if any of its cells is `NA`. `N_valid`
+#' / `NAs` therefore count complete vs. incomplete rows, not
+#' individual cells.
+#'
 #' If `tbl = TRUE`, the tibble is returned. If `tbl = FALSE` and the session is
 #' interactive, the summary is displayed in the Viewer pane and the function
 #' returns invisibly. In non-interactive sessions, a message is displayed and
