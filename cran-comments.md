@@ -81,16 +81,6 @@ model-based variant.
   totals rows without grepping the formatted text. `cross_tab.R`
   and `tables_ascii.R` now have 100 % line coverage.
 
-* `build_ascii_table()` and `spicy_print_table()` switch the
-  `padding` argument from a string enum to a single non-negative
-  integer with a Stata-aligned default of `2L` (the previous
-  `"normal"` default mapped to `+5L`, producing visibly airy
-  output relative to the conventions used by SPSS / Stata /
-  `cli` / tibble). All printed tables (`cross_tab()`, `freq()`,
-  `table_categorical()`, `table_continuous()`,
-  `table_continuous_lm()`) are roughly 40 % narrower; legacy
-  string values raise an actionable migration error.
-
 * `table_categorical()`'s `assoc_measure` argument is generalised
   from a single global string to a per-row specification. Four
   input shapes are accepted: `"none"`, `"auto"` (per-row rule:
@@ -120,6 +110,23 @@ model-based variant.
   decimal-point alignment for numeric columns in printed and
   rendered outputs (new `align` argument, default `"decimal"`).
   Pass `align = "auto"` to restore the previous behaviour.
+
+* `build_ascii_table()` and `spicy_print_table()` (the ASCII
+  rendering engine used by `cross_tab()`, `freq()` and the three
+  `table_*()` print methods) replace the `padding` string enum
+  (`"compact"` / `"normal"` / `"wide"`) with a single non-negative
+  integer giving the extra characters added to each column's
+  auto-computed width (default `2L`, Stata-aligned). All printed
+  tables are roughly 40 % narrower than in 0.10.x; legacy string
+  values raise an actionable migration error pointing to the
+  numeric replacement.
+
+* `table_categorical(assoc_measure = "auto")` on a binary-by-binary
+  table now picks `phi` (was `cramer_v`). The numeric value is
+  unchanged (|phi| = V on 2x2); only the column label changes,
+  matching the conventional APA notation. Users who relied on the
+  literal `"Cramer's V"` column label can pass
+  `assoc_measure = "cramer_v"` to restore it.
 
 * `table_continuous_lm(output = "long")` returns `NA` in `es_type`
   and `es_value` when `effect_size = "none"`, and renames the

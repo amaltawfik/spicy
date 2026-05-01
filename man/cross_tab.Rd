@@ -153,4 +153,7 @@ cross_tab(sochealth, education, self_rated_health)
 # 2x2 table with Yates correction
 cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
 
+# APA-style p-value precision and European decimal mark
+cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
+
 }

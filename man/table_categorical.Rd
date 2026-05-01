@@ -330,6 +330,39 @@ table_categorical(
   assoc_ci = TRUE
 )
 
+# --- Per-variable association measure ----------------------------------
+
+# Default (`assoc_measure = "auto"`): one measure per row variable based on
+# the variable type (2x2 -> Phi, both ordered factors -> Kendall's Tau-b,
+# otherwise Cramer's V). When the chosen measures differ across rows, the
+# column header collapses to `"Effect size"` and an APA-style `Note.` line
+# documents which measure was used for which variable.
+table_categorical(
+  sochealth,
+  select = c(smoking, education),
+  by = sex
+)
+
+# Force a uniform measure across all row variables.
+table_categorical(
+  sochealth,
+  select = c(smoking, education),
+  by = sex,
+  assoc_measure = "cramer_v"
+)
+
+# Per-variable override (recommended named form).
+table_categorical(
+  sochealth,
+  select = c(smoking, education, self_rated_health),
+  by = sex,
+  assoc_measure = c(
+    smoking           = "phi",        # binary x binary
+    education         = "cramer_v",   # multi-category nominal
+    self_rated_health = "tau_b"       # ordinal x binary, Tau-b
+  )
+)
+
 # --- Output formats -----------------------------------------------------
 
 # The rendered outputs below all wrap the same call:
