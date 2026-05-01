@@ -167,7 +167,11 @@ end (controlled via <code>include_na</code>). Literal strings <code>"NA"</code>,
 <li><p><code>N_distinct</code>: number of distinct non-missing values</p></li>
 <li><p><code>N_valid</code>: number of non-missing observations</p></li>
 <li><p><code>NAs</code>: number of missing observations</p></li>
-</ul><p>If <code>tbl = TRUE</code>, the tibble is returned. If <code>tbl = FALSE</code> and the session is
+</ul><p>For matrix and array columns, observations are counted per <strong>row</strong>:
+a row is treated as missing if any of its cells is <code>NA</code>. <code>N_valid</code>
+/ <code>NAs</code> therefore count complete vs. incomplete rows, not
+individual cells.</p>
+<p>If <code>tbl = TRUE</code>, the tibble is returned. If <code>tbl = FALSE</code> and the session is
 interactive, the summary is displayed in the Viewer pane and the function
 returns invisibly. In non-interactive sessions, a message is displayed and
 the function returns invisibly.</p>

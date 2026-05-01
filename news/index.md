@@ -116,6 +116,14 @@
   it now returns the harmonic mean of the two asymmetric values,
   matching SPSS / PSPP `CROSSTABS`.
 
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  now honour `factor_levels = "all"` for `haven_labelled` columns:
+  declared-but-unobserved labels (e.g. a `[3] High` code that no one
+  selected) appear in the `Values` summary. The argument was previously
+  silently forced to `"observed"` for labelled inputs.
+
 ### Breaking changes
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
