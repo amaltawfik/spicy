@@ -170,6 +170,9 @@
 #' # Piped version (tidy syntax) and sort alphabetically descending ("name-")
 #' df |> freq(sex, sort = "name-")
 #'
+#' # European decimal mark (matches `cross_tab()` and the `table_*()` family)
+#' freq(sochealth, education, decimal_mark = ",")
+#'
 #' # Non-styled return (for programmatic use)
 #' f <- freq(df, sex, styled = FALSE)
 #' head(f)

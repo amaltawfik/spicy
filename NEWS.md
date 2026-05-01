@@ -2,229 +2,144 @@
 
 ## New features
 
-* `table_continuous_lm()` gains a `cluster` argument and four new
-  cluster-robust `vcov` choices (`"CR0"` to `"CR3"`), dispatched to
-  `clubSandwich` with Satterthwaite degrees of freedom rendered as
-  `t(45.3)` / `F(2, 45.3)`. `clubSandwich` added to `Suggests`.
+### `table_continuous_lm()`
 
-* `table_continuous_lm()` gains `vcov = "bootstrap"` (nonparametric
-  or cluster) and `vcov = "jackknife"` (leave-one-out or
-  leave-one-cluster-out) variance estimators in pure base R. New
-  `boot_n` argument (default `1000`) controls the bootstrap
-  replicates.
+* Cluster-robust standard errors via `cluster` and four `vcov`
+  choices (`"CR0"`–`"CR3"`), dispatched to `clubSandwich` with
+  Satterthwaite degrees of freedom (`clubSandwich` in `Suggests`).
 
-* `table_continuous_lm()` gains three new `effect_size` choices
-  alongside `"f2"`: Cohen's `"d"`, Hedges' `"g"` (two-group only),
-  and Hays' `"omega2"`. New `effect_size_ci` argument adds
-  noncentral *t* / *F* CIs displayed as `0.18 [0.07, 0.30]`.
+* `vcov = "bootstrap"` (nonparametric or cluster) and
+  `vcov = "jackknife"` (leave-one-out or leave-one-cluster-out)
+  variance estimators in pure base R, controlled by `boot_n`
+  (default `1000`).
 
-* `table_continuous()` is harmonised with `table_continuous_lm()`:
-  new arguments `p_digits`, `align`, `show_n`, `ci`, and
-  `output = "long"`.
+* Three new `effect_size` choices alongside `"f2"`: Cohen's `"d"`,
+  Hedges' `"g"` (two-group only), and Hays' `"omega2"`. New
+  `effect_size_ci` argument adds noncentral *t* / *F* CIs
+  rendered inline as `0.18 [0.07, 0.30]`.
 
-* `table_continuous()`'s `effect_size` argument accepts a character
-  enum (`"hedges_g"`, `"eta_sq"`, `"r_rb"`, `"epsilon_sq"`, plus
-  `"auto"` / `"none"`); legacy `TRUE` / `FALSE` continue to work.
+* `HC*` estimators delegate to `sandwich::vcovHC()` (`sandwich`
+  in `Imports`); rank-deficient fits return a clean rank-by-rank
+  covariance.
 
-* `table_categorical()` gains an `align` argument matching the
-  other two `table_*()` functions.
+### Harmonisation across the table family
+
+* Shared reporting vocabulary (`decimal_mark`, `p_digits`,
+  `align`, named-`labels`) now spans `cross_tab()`, `freq()` and
+  the three `table_*()` helpers. Percentages and statistics flow
+  through the central `format_number()` / `format_p_value()` /
+  `ci_bracket_separator()` helpers in `R/table_helpers.R`.
+
+* `table_categorical()`'s `assoc_measure` accepts a per-variable
+  specification (`"auto"`, single string, or named / unnamed
+  vector). When measures differ across rows, the column collapses
+  to `"Effect size"` and an APA-style `Note.` line documents the
+  per-variable measure. `phi` on a non-2x2 raises an actionable
+  error.
 
 * All three `table_*()` functions gain `as.data.frame()`,
-  `tibble::as_tibble()`, `broom::tidy()`, and `broom::glance()` S3
+  `tibble::as_tibble()`, `broom::tidy()` and `broom::glance()`
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
-  `parameters`, ...).
+  `parameters`, ...). `broom` in `Suggests`.
 
 ## Improvements
 
-* `table_continuous_lm()` now computes `HC*` variance estimators
-  via [sandwich::vcovHC()]; rank-deficient fits return a clean
-  rank-by-rank covariance. `sandwich` added to `Imports`.
+* `cross_tab()` warns when `correct = TRUE` is ignored on a
+  non-2x2 sub-table, when `weights` contains `NA`, and appends a
+  note when statistics are computed on a sub-table after empty
+  rows / columns are pruned.
 
-* `table_continuous_lm()` and `table_continuous()` gain a
-  `p_digits` argument (default `3`, the APA standard) driving both
-  display precision and the small-*p* threshold.
+* `cross_tab()` and `freq()` validate `decimal_mark`, `p_digits`,
+  `simulate_B` and `digits` arguments up front with actionable
+  errors instead of surfacing cryptic downstream messages.
 
-* `table_categorical(labels = ...)` accepts a named character
-  vector keyed by column name (e.g. `c(bmi = "Body mass index")`),
-  matching the API of the other two `table_*()` functions;
-  positional vectors continue to work.
+* `print.spicy_cross_table()` identifies the totals / N rows and
+  N column via dedicated attributes set by `cross_tab()` (no
+  longer `grep("Total", ...)` / `Values == "N"`), so a user
+  category literally named `"N"` or `"Total"` is no longer
+  mis-rendered.
 
-* All three `table_*()` functions get reorganised documentation:
-  markdown `@details` subsections, `@family spicy tables`,
-  reciprocal `@seealso`, and a curated `@references` for
-  `table_continuous_lm()`.
+* `R/assoc.R` point estimates are cross-validated against PSPP 2.0
+  `CROSSTABS /STATISTICS=ALL` on four datasets (`mtcars` 3x3 and
+  2x2, `HairEyeColor` 4x4, `sochealth`): 65 / 65 estimates agree
+  to PSPP's printed precision. PSPP-derived oracle values are
+  pinned in the test suite.
 
-* `table_continuous_lm(output = "long")` returns `n`, `df1`, and
-  `df2` as integer columns; `predictor_label` is now preserved on
-  the degenerate-model fallback path.
+* Reorganised documentation across the table family:
+  `@family spicy tables`, reciprocal `@seealso`, curated
+  `@references`.
+
+* `table_continuous_lm(output = "long")` returns `n`, `df1`, `df2`
+  as integer columns; `predictor_label` preserved on the
+  degenerate-model fallback path.
+
+* `cramer_v()` and `phi()` documentation now states that the CI
+  uses the Fisher z-transformation (the point estimate and
+  p-value remain identical to `DescTools` / SPSS).
+
+* `uncertainty_coef()` documentation states that entropy uses
+  `0 log 0 = 0` (matching SPSS, PSPP, Stata, Cover & Thomas);
+  `DescTools::UncertCoef()` applies an additional Laplace
+  correction that explains the small estimate divergence.
 
 ## Bug fixes
 
-* `label_from_names()` now raises an actionable error when the split
-  at `sep` produces duplicate column names or an empty column name
-  (it used to surface a cryptic constructor message). The new column
-  name is trimmed of trailing whitespace and the input class
-  (`data.frame` or `tbl_df`) is preserved on output. Internally the
-  function no longer depends on `labelled` or `tibble`; the
-  `"label"` attribute it sets remains the same haven convention read
-  by `labelled::var_label()`.
+* `label_from_names()` raises actionable errors on duplicate or
+  empty new column names, trims trailing whitespace, preserves
+  the input class (`data.frame` / `tbl_df`), and is internally
+  dependency-free.
 
 * `table_continuous_lm(output = "data.frame")` names contrast CI
-  columns from `ci_level` (previously hardcoded to 95%).
+  columns from `ci_level` (was hardcoded to 95 %).
 
 * The categorical-predictor global Wald *F* degrades to `NA`
-  (instead of erroring) when the coefficient covariance submatrix
-  is singular.
+  (instead of erroring) on a singular coefficient covariance
+  submatrix.
 
-* The five association measures whose degenerate-table branch
-  (`cramer_v()`, `yule_q()`, `gamma_gk()`, `kendall_tau_b()`,
-  `somers_d()`) used to return a length-1 named vector regardless
-  of `detail` now respect the documented return shape: `NA_real_`
-  scalar by default, fully shaped `spicy_assoc_detail` with NA
-  fields when `detail = TRUE`.
+* The degenerate-table branch of `cramer_v()`, `yule_q()`,
+  `gamma_gk()`, `kendall_tau_b()` and `somers_d()` now respects
+  `detail`: scalar `NA_real_` by default, fully shaped
+  `spicy_assoc_detail` with NA fields when `detail = TRUE`.
 
-* `uncertainty_coef()` returns a finite estimate (instead of `NaN`)
-  when the table has a row or column with zero marginal total.
+* `uncertainty_coef()` returns a finite estimate (was `NaN`) when
+  a row or column marginal is zero.
 
-* `.validate_table()` (used by every association measure) now
-  rejects tables with NA cells, negative counts, or zero total
-  count with an actionable error instead of silently propagating
-  `NaN` further down the pipeline.
-
-* `cramer_v()` and `phi()` documentation now explicitly states that
-  the confidence interval uses the Fisher z-transformation on the
-  coefficient, which differs from the noncentral chi-squared or
-  bootstrap CIs reported by `DescTools`. The point estimate and
-  p-value remain identical to `DescTools` and SPSS.
+* `.validate_table()` rejects tables with NA cells, negative
+  counts, or zero total count with an actionable error.
 
 * `somers_d(direction = "symmetric")` previously delegated to
   `kendall_tau_b()`; it now returns the harmonic mean of the two
-  asymmetric Somers' D values, matching the SPSS / PSPP `CROSSTABS`
-  definition. The two quantities often agree to two decimals on
-  square tables but are conceptually distinct.
-
-* `uncertainty_coef()` documentation now states that the entropy
-  terms use the standard `0 log 0 = 0` convention (matching SPSS,
-  PSPP, Stata, and Cover & Thomas) and explains why the point
-  estimate may differ very slightly from `DescTools::UncertCoef()`,
-  which applies an additional Laplace correction.
-
-* All 13 association measures are cross-validated against PSPP
-  `CROSSTABS /STATISTICS=ALL` on four datasets (`mtcars` 3x3 and
-  2x2, `HairEyeColor` 4x4, and the package's `sochealth`); 65 / 65
-  point estimates agree with PSPP to within 1e-7 (the precision of
-  PSPP's CSV output). PSPP-derived reference values are encoded as
-  anti-regression unit tests.
-
-* `cross_tab()` gains the `decimal_mark` and `p_digits` arguments,
-  matching the harmonised vocabulary of the three `table_*()`
-  helpers, and now reuses `format_p_value()` / `format_number()` /
-  `ci_bracket_separator()` from `R/table_helpers.R` for APA-style
-  p-value notation (`p <.001` / `p = .045`, no leading zero) and
-  locale-aware decimal mark in the chi-squared, Cramer's V,
-  estimate, and 95 % CI text.
-
-* `cross_tab()` now warns when `correct = TRUE` is silently ignored
-  on a non-2x2 sub-table (Yates continuity correction is only
-  defined for 2x2), when `weights` contains `NA` values (the
-  affected observations are now explicitly dropped from the table
-  and from rescaling, instead of being recoded to zero in place),
-  and when statistics are computed on a sub-table after empty
-  rows / columns have been pruned (a note is appended).
-
-* `cross_tab()` now validates `decimal_mark`, `p_digits` and
-  `simulate_B` arguments with actionable errors instead of
-  surfacing cryptic downstream messages.
-
-* `print.spicy_cross_table()` now identifies the totals row, the
-  `N` row, and the `N` column via dedicated attributes set by
-  `cross_tab()` (`total_row_idx`, `n_row_idx`, `n_col_name`)
-  rather than matching `Values == "N"` or
-  `colnames(.) == "N"`. This removes a long-standing fragility
-  whereby a user category literally named `"N"` (e.g. a
-  `Yes` / `No` factor) would have been mis-rendered as the
-  totals row.
-
-* `build_ascii_table()` and `spicy_print_table()` gain a
-  `total_row_idx` argument that takes precedence over the regex
-  fallback used to find the totals row, removing the same false
-  positive on user data containing the word `"Total"`.
-
-* `freq()` joins the harmonised vocabulary of the rest of the
-  spicy 0.11.0 family: new `decimal_mark` argument (default `"."`)
-  matching `cross_tab()` / `table_*()`, and the printed
-  percentages now flow through the shared `format_number()` helper
-  from `R/table_helpers.R` (so European-locale users get a
-  consistent experience across the package).
-
-* `freq()` tightens its `digits` validation to a non-negative
-  integer (matches the convention used by `cross_tab()` and the
-  three `table_*()` helpers); the previous validation accepted
-  fractional values like `1.5` which then leaked through to
-  `format(..., nsmall = 1.5)`.
+  asymmetric values, matching SPSS / PSPP `CROSSTABS`.
 
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to
-  decimal-point alignment for numeric columns in printed and
-  rendered outputs (new `align` argument, default `"decimal"`).
-  Pass `align = "auto"` to restore the previous behaviour.
+  decimal-point alignment for numeric columns (`align = "decimal"`).
+  Pass `align = "auto"` for the previous behaviour.
 
-* `build_ascii_table()` and `spicy_print_table()` (the ASCII
-  rendering engine used by `cross_tab()`, `freq()` and the
-  `table_*()` print methods) replace the `padding` string enum
-  (`"compact"` / `"normal"` / `"wide"`) with a single non-negative
-  integer giving the extra characters added to each column's
-  auto-computed width. The previous `"normal"` default mapped to
-  `+5L`, which produced very airy console output compared to the
-  Stata / SPSS / `cli` / tibble convention; the new default `2L`
-  matches that convention and yields tables roughly 40 % narrower.
-  Passing a string raises an actionable migration error rather
-  than silently mapping to an integer (see `?build_ascii_table`).
-  Migration: `"compact" -> 0L`, `"normal" -> 2L`, `"wide" -> 4L`.
+* `build_ascii_table()` / `spicy_print_table()`: `padding` switches
+  from a string enum (`"compact"` / `"normal"` / `"wide"`) to a
+  non-negative integer giving the extra characters per column.
+  Default `2L` matches Stata / SPSS / `cli` / tibble (vs. previous
+  `+5L`); printed tables are roughly 40 % narrower. String values
+  raise a migration error.
+  **Migration**: `"compact" -> 0L`, `"normal" -> 2L`, `"wide" -> 4L`.
 
-* `table_categorical()`'s `assoc_measure` argument is generalised
-  from a single global string to a per-row specification, with
-  four input shapes:
-  * `"none"` — drop the column.
-  * `"auto"` (the default) — pick a measure per row variable
-    based on the variable type: 2x2 table -> `phi`, both
-    ordered factors -> `tau_b`, otherwise -> `cramer_v`.
-  * a single string — applied uniformly.
-  * a character vector with one entry per row variable, either
-    named (`c(smoking = "phi", health = "tau_b")`, recommended)
-    or unnamed positional (`c("phi", "tau_b")`, paired with
-    `select`).
+* `table_categorical(assoc_measure = "auto")` on a 2x2 table now
+  picks `phi` instead of `cramer_v`. The numeric value is
+  unchanged (|phi| = V on 2x2); only the column label changes,
+  matching the APA convention. Restore the old label with
+  `assoc_measure = "cramer_v"`.
 
-  When all rows share one measure the column header is that
-  measure's name (e.g. `"Phi"`); when rows use a mix, the header
-  collapses to `"Effect size"` and an APA-style `Note.` line is
-  appended documenting which measure was used for which
-  variable. `phi` requested for a non-2x2 variable now raises an
-  actionable error rather than emitting `NA`.
-
-  Companion change: the `"auto"` rule now picks `phi` (instead
-  of `cramer_v`) for binary-by-binary tables. Phi and Cramer's V
-  return the same numeric value for 2x2 (|phi| = V), but `phi`
-  is the conventional APA label for that case. Users who relied
-  on the column being labelled `"Cramer's V"` for 2x2 tables
-  should pass `assoc_measure = "cramer_v"` to restore the old
-  label; the underlying value is unchanged.
+* `freq()` drops observations with `NA` weights from the table
+  (with a warning) instead of recoding them to zero in place.
+  Aligns with `cross_tab()`; removes a silent bias in the
+  `rescale = TRUE` denominator.
 
 * `table_continuous_lm(output = "long")` returns `NA` in `es_type`
-  and `es_value` when `effect_size = "none"` (previously populated
-  with `"f2"` regardless). Set `effect_size = "f2"` to restore.
-
-* `table_continuous_lm(output = "long")` renames `sum_w` to
-  `weighted_n`, matching the wide and rendered outputs.
-
-* `freq()` now drops observations with `NA` weights from the table
-  (with a warning reporting the count) instead of recoding them to
-  zero in place. The previous behaviour kept the rows in the
-  weight vector but with zero contribution, which silently inflated
-  the `rescale = TRUE` denominator (`length(weights)` counted
-  ghost rows). This aligns with the `cross_tab()` 0.11.0 semantics
-  documented above.
+  and `es_value` when `effect_size = "none"` (was `"f2"`
+  regardless), and renames `sum_w` to `weighted_n`. Restore with
+  `effect_size = "f2"`.
 
 # spicy 0.10.0
 
