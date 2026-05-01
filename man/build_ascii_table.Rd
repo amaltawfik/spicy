@@ -6,7 +6,7 @@
 \usage{
 build_ascii_table(
   x,
-  padding = c("compact", "normal", "wide"),
+  padding = c("normal", "compact", "wide"),
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -15,6 +15,7 @@ build_ascii_table(
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
   group_sep_rows = integer(0),
+  total_row_idx = NULL,
   ...
 )
 }
@@ -24,8 +25,8 @@ Typically, this includes columns such as \emph{Category}, \emph{Values}, \emph{F
 
 \item{padding}{Character string controlling horizontal spacing between columns:
 \itemize{
+\item \code{"normal"} — moderate spacing (the default)
 \item \code{"compact"} — minimal spacing
-\item \code{"normal"} — moderate spacing (default)
 \item \code{"wide"} — extra spacing (for large displays or wide content)
 }}
 
@@ -52,6 +53,15 @@ right-aligned.}
 
 \item{group_sep_rows}{Integer vector of row indices before which a
 light dashed separator line is drawn. Defaults to \code{integer(0)}.}
+
+\item{total_row_idx}{Optional integer vector of 1-based row indices
+identifying the totals rows; a horizontal rule is drawn just
+before each. When \code{NULL} (the default), falls back to a regex
+match on \code{"Total"} / \code{"Column_Total"} in the formatted row text,
+which can mis-fire if a user category is literally named "Total"
+or "Sub-Total". Cross-tabs and frequency tables built by
+\code{cross_tab()} and \code{freq()} set this attribute on their result so
+the print methods are immune to that false positive.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

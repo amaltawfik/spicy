@@ -116,6 +116,43 @@
   PSPP's CSV output). PSPP-derived reference values are encoded as
   anti-regression unit tests.
 
+* `cross_tab()` gains the `decimal_mark` and `p_digits` arguments,
+  matching the harmonised vocabulary of the three `table_*()`
+  helpers, and now reuses `format_p_value()` / `format_number()` /
+  `ci_bracket_separator()` from `R/table_helpers.R` for APA-style
+  p-value notation (`p <.001` / `p = .045`, no leading zero) and
+  locale-aware decimal mark in the chi-squared, Cramer's V,
+  estimate, and 95 % CI text.
+
+* `cross_tab()` now warns when `correct = TRUE` is silently ignored
+  on a non-2x2 sub-table (Yates continuity correction is only
+  defined for 2x2), when `weights` contains `NA` values (the
+  affected observations are now explicitly dropped from the table
+  and from rescaling, instead of being recoded to zero in place),
+  and when statistics are computed on a sub-table after empty
+  rows / columns have been pruned (a note is appended).
+
+* `cross_tab()` now validates `decimal_mark`, `p_digits` and
+  `simulate_B` arguments with actionable errors instead of
+  surfacing cryptic downstream messages.
+
+* `print.spicy_cross_table()` now identifies the totals row, the
+  `N` row, and the `N` column via dedicated attributes set by
+  `cross_tab()` (`total_row_idx`, `n_row_idx`, `n_col_name`)
+  rather than matching `Values == "N"` or
+  `colnames(.) == "N"`. This removes a long-standing fragility
+  whereby a user category literally named `"N"` (e.g. a
+  `Yes` / `No` factor) would have been mis-rendered as the
+  totals row.
+
+* `build_ascii_table()` and `spicy_print_table()` gain a
+  `total_row_idx` argument that takes precedence over the regex
+  fallback used to find the totals row, removing the same false
+  positive on user data containing the word `"Total"`. The
+  default value of `padding` is now `"normal"` (matching the
+  documentation; the previous `match.arg`-derived default of
+  `"compact"` did not match the doc).
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

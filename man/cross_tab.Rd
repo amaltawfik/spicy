@@ -21,7 +21,9 @@ cross_tab(
   simulate_B = 2000,
   digits = NULL,
   styled = TRUE,
-  show_n = TRUE
+  show_n = TRUE,
+  decimal_mark = ".",
+  p_digits = 3L
 )
 }
 \arguments{
@@ -64,13 +66,25 @@ If \code{TRUE}, uses Monte Carlo simulation.}
 \item{simulate_B}{Integer. Number of replicates for Monte Carlo simulation.
 Defaults to \code{2000}.}
 
-\item{digits}{Number of decimals. Defaults to \code{1} for percentages, \code{0} for counts.}
+\item{digits}{Number of decimals for cell values. Defaults to \code{1} for
+percentages, \code{0} for counts.}
 
 \item{styled}{Logical. If \code{TRUE} (the default), returns a \code{spicy_cross_table} object
 (for formatted printing). If \code{FALSE}, returns a plain \code{data.frame}.}
 
 \item{show_n}{Logical. If \code{TRUE} (the default), adds marginal N totals when
 \code{percent != "none"}.}
+
+\item{decimal_mark}{Character used as the decimal mark in printed
+numeric values (cells, chi-squared, association estimate, CI
+bounds, p-value). Defaults to \code{"."}. Set to \code{","} for European
+formatting; matches the \code{decimal_mark} argument of the
+\verb{table_*()} family.}
+
+\item{p_digits}{Integer number of decimals used to format the
+p-value (and to determine the small-\code{p} threshold below which
+\verb{< .001} notation is used). Defaults to \code{3} (the APA standard);
+matches the \code{p_digits} argument of the \verb{table_*()} family.}
 }
 \value{
 A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.

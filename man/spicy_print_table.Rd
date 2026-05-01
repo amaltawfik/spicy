@@ -8,7 +8,7 @@ spicy_print_table(
   x,
   title = attr(x, "title"),
   note = attr(x, "note"),
-  padding = c("compact", "normal", "wide"),
+  padding = c("normal", "compact", "wide"),
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -17,6 +17,7 @@ spicy_print_table(
   align_left_cols = NULL,
   align_center_cols = integer(0),
   group_sep_rows = integer(0),
+  total_row_idx = attr(x, "total_row_idx"),
   ...
 )
 }
@@ -31,8 +32,8 @@ attribute of \code{x} if present.}
 
 \item{padding}{Character string controlling horizontal spacing between columns:
 \itemize{
+\item \code{"normal"} - moderate spacing (the default)
 \item \code{"compact"} - minimal spacing
-\item \code{"normal"} - moderate spacing (default)
 \item \code{"wide"} - extra spacing (for wide displays)
 }}
 
@@ -60,6 +61,10 @@ center-align. Defaults to \code{integer(0)}.}
 
 \item{group_sep_rows}{Integer vector of row indices before which a
 light dashed separator line is drawn. Defaults to \code{integer(0)}.}
+
+\item{total_row_idx}{Optional integer vector of 1-based row indices
+identifying the totals rows; defaults to the \code{"total_row_idx"}
+attribute of \code{x} (set by \code{cross_tab()}). See \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

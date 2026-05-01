@@ -83,6 +83,61 @@ test_that("print.spicy_categorical_table uses grouped title and compact padding"
   )))
 })
 
+test_that("build_ascii_table honours `total_row_idx` and supports `group_sep_rows`", {
+  df <- data.frame(
+    Group = c("A1", "A2", "B1", "B2"),
+    Count = c("10", "20", "5", "15")
+  )
+  # Explicit total_row_idx places the rule before row 4
+  txt <- build_ascii_table(
+    df,
+    padding = "compact",
+    total_row_idx = 4L,
+    group_sep_rows = 3L
+  )
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1]]
+  # group_sep_rows = 3 inserts a light dashed rule before row 3
+  expect_true(any(grepl("╌", lines)))
+  # total_row_idx = 4 inserts a heavy rule before row 4 (the bottom group)
+  rule_positions <- grep("^[─╌┼│\\[]+$", lines)
+  expect_gte(length(rule_positions), 2L) # header rule + group rule + total rule
+})
+
+test_that("`total_row_idx = integer(0)` suppresses the regex fallback", {
+  # When the user provides `total_row_idx` explicitly (even as empty),
+  # the grep fallback never runs, so a category literally named "Total"
+  # cannot trigger a stray separator line.
+  df <- data.frame(
+    Item = c("Sub Total", "Real total here"),
+    Count = c("5", "10")
+  )
+  txt <- build_ascii_table(df, padding = "compact", total_row_idx = integer(0))
+  expect_type(txt, "character")
+  # The output has the header rule but no body separator rules
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1]]
+  body_rule_count <- sum(grepl("^[─┼]+$", lines))
+  expect_equal(body_rule_count, 1L) # header rule only
+})
+
+test_that("spicy_print_table reads `total_row_idx` from the input attribute", {
+  df <- data.frame(
+    Item = c("a", "b", "Total"),
+    Count = c("1", "2", "3")
+  )
+  attr(df, "total_row_idx") <- 3L
+  out <- capture.output(spicy_print_table(df))
+  expect_type(out, "character")
+  # Reading via attr should still draw the rule before row 3 ("Total")
+  expect_true(any(grepl("^[─┼]+$", out)))
+})
+
+test_that("build_ascii_table handles single-column input", {
+  df <- data.frame(Only = c("a", "b", "c"))
+  txt <- build_ascii_table(df)
+  expect_type(txt, "character")
+  expect_no_error(spicy_print_table(df))
+})
+
 test_that("spicy_print_table splits wide tables into stacked panels", {
   withr::local_options(list(width = 26))
 

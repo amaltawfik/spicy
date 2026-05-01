@@ -38,11 +38,21 @@
 #'   If `TRUE`, uses Monte Carlo simulation.
 #' @param simulate_B Integer. Number of replicates for Monte Carlo simulation.
 #'   Defaults to `2000`.
-#' @param digits Number of decimals. Defaults to `1` for percentages, `0` for counts.
+#' @param digits Number of decimals for cell values. Defaults to `1` for
+#'   percentages, `0` for counts.
 #' @param styled Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
 #'   (for formatted printing). If `FALSE`, returns a plain `data.frame`.
 #' @param show_n Logical. If `TRUE` (the default), adds marginal N totals when
 #'   `percent != "none"`.
+#' @param decimal_mark Character used as the decimal mark in printed
+#'   numeric values (cells, chi-squared, association estimate, CI
+#'   bounds, p-value). Defaults to `"."`. Set to `","` for European
+#'   formatting; matches the `decimal_mark` argument of the
+#'   `table_*()` family.
+#' @param p_digits Integer number of decimals used to format the
+#'   p-value (and to determine the small-`p` threshold below which
+#'   `< .001` notation is used). Defaults to `3` (the APA standard);
+#'   matches the `p_digits` argument of the `table_*()` family.
 #'
 #' @return
 #' A `data.frame`, list of data.frames, or `spicy_cross_table` object.
@@ -124,11 +134,26 @@ cross_tab <- function(
   simulate_B = 2000,
   digits = NULL,
   styled = TRUE,
-  show_n = TRUE
+  show_n = TRUE,
+  decimal_mark = ".",
+  p_digits = 3L
 ) {
   if (missing(data)) {
     stop("You must provide a dataset or a vector for `data`.", call. = FALSE)
   }
+  if (!is.character(decimal_mark) || length(decimal_mark) != 1L ||
+      !decimal_mark %in% c(".", ",")) {
+    stop("`decimal_mark` must be either `\".\"` or `\",\"`.", call. = FALSE)
+  }
+  p_digits <- as.integer(p_digits)
+  if (length(p_digits) != 1L || is.na(p_digits) || p_digits < 1L) {
+    stop("`p_digits` must be a positive integer.", call. = FALSE)
+  }
+  if (!is.numeric(simulate_B) || length(simulate_B) != 1L ||
+      !is.finite(simulate_B) || simulate_B < 1L) {
+    stop("`simulate_B` must be a positive integer.", call. = FALSE)
+  }
+  simulate_B <- as.integer(simulate_B)
 
   call_x <- substitute(x)
   call_y <- substitute(y)
@@ -348,7 +373,23 @@ cross_tab <- function(
     if (any(w < 0, na.rm = TRUE)) {
       stop("`weights` must be non-negative.", call. = FALSE)
     }
-    w[is.na(w)] <- 0
+    if (anyNA(w)) {
+      n_na <- sum(is.na(w))
+      warning(
+        sprintf(
+          "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
+          n_na,
+          if (n_na > 1L) "s" else ""
+        ),
+        call. = FALSE
+      )
+      # Drop NA-weighted rows up front so they never reach `xtabs()` or
+      # `complete.cases()` (where they would otherwise inflate
+      # `n_complete` during rescale).
+      keep <- !is.na(w)
+      data <- data[keep, , drop = FALSE]
+      w <- w[keep]
+    }
   } else {
     w <- rep(1, nrow(data))
   }
@@ -514,9 +555,20 @@ cross_tab <- function(
       colSums(tab_stats) > 0,
       drop = FALSE
     ]
+    pruned <- !identical(dim(tab_stats), dim(tab_full))
     if (include_stats && all(dim(tab_stats) > 1)) {
       # Yates correction only meaningful for 2x2 tables
       correct_used <- isTRUE(correct) && all(dim(tab_stats) == c(2, 2))
+      if (isTRUE(correct) && !correct_used) {
+        warning(
+          sprintf(
+            "`correct = TRUE` ignored: Yates continuity correction only applies to 2x2 tables (this %dx%d table is not).",
+            nrow(tab_stats),
+            ncol(tab_stats)
+          ),
+          call. = FALSE
+        )
+      }
       chi <- suppressWarnings(stats::chisq.test(
         tab_stats,
         correct = correct_used,
@@ -573,29 +625,42 @@ cross_tab <- function(
         NA_real_
       }
 
-      p_str <- if (pval < 0.001) {
-        "< 0.001"
+      # Reuse the shared formatting helpers from `R/table_helpers.R` so
+      # that `cross_tab()` matches the APA-style p-value notation
+      # (`<.001`, no leading zero), the configured `decimal_mark` and
+      # the locale-aware CI bracket separator used by `table_*()`.
+      p_formatted <- format_p_value(
+        pval,
+        decimal_mark = decimal_mark,
+        digits = p_digits
+      )
+      p_str <- if (substring(p_formatted, 1L, 1L) == "<") {
+        paste0("p ", p_formatted) # "p <.001"
       } else {
-        paste0("= ", formatC(pval, format = "f", digits = 3))
+        paste0("p = ", p_formatted) # "p = .045"
       }
 
-      chi2_str <- ifelse(
-        is.nan(chi2) | is.na(chi2),
-        "NA",
-        formatC(chi2, format = "f", digits = 1)
-      )
+      chi2_str <- if (is.nan(chi2) || is.na(chi2)) {
+        "NA" # nocov
+      } else {
+        format_number(chi2, digits = 1L, decimal_mark = decimal_mark)
+      }
       note <- paste0(
         "Chi-2(",
         df_,
         ") = ",
         chi2_str,
-        ", p ",
+        ", ",
         p_str,
         if (simulate_p) " (simulated)"
       )
 
       if (!is.null(assoc_name) && !is.na(estimate)) {
-        est_str <- formatC(estimate, format = "f", digits = 2)
+        est_str <- format_number(
+          estimate,
+          digits = 2L,
+          decimal_mark = decimal_mark
+        )
         assoc_line <- paste0(assoc_name, " = ", est_str)
         if (isTRUE(assoc_ci) && !is.null(assoc_result)) {
           ci_lo <- assoc_result[["ci_lower"]]
@@ -604,9 +669,9 @@ cross_tab <- function(
             assoc_line <- paste0(
               assoc_line,
               ", 95% CI [",
-              formatC(ci_lo, format = "f", digits = 2),
-              ", ",
-              formatC(ci_hi, format = "f", digits = 2),
+              format_number(ci_lo, digits = 2L, decimal_mark = decimal_mark),
+              ci_bracket_separator(decimal_mark),
+              format_number(ci_hi, digits = 2L, decimal_mark = decimal_mark),
               "]"
             )
           }
@@ -616,6 +681,16 @@ cross_tab <- function(
 
       if (isTRUE(correct_used)) {
         note <- paste0(note, "\nYates continuity correction applied.")
+      }
+      if (pruned) {
+        note <- paste0(
+          note,
+          sprintf(
+            "\nStats computed on %dx%d sub-table after dropping empty rows / columns.",
+            nrow(tab_stats),
+            ncol(tab_stats)
+          )
+        )
       }
 
       # Store numeric attributes
@@ -693,6 +768,33 @@ cross_tab <- function(
     attr(df_out, "note") <- note
     attr(df_out, "n_total") <- total_n
     attr(df_out, "digits") <- digits
+    attr(df_out, "decimal_mark") <- decimal_mark
+    attr(df_out, "p_digits") <- p_digits
+    # Mark the N row / N column position robustly (string-matching on
+    # `Values == "N"` would collide with a user-level literally named
+    # "N", e.g. Yes/No factors).
+    attr(df_out, "n_row_idx") <- if (
+      styled && percent == "column" && show_n
+    ) {
+      nrow(df_out)
+    } else {
+      NA_integer_
+    }
+    attr(df_out, "n_col_name") <- if (styled && percent == "row" && show_n) {
+      "N"
+    } else {
+      NA_character_
+    }
+    # Tell `spicy_print_table()` exactly where the Total row sits so it
+    # does not have to grep the formatted text (and therefore never
+    # mis-fires when a user category is literally named "Total").
+    attr(df_out, "total_row_idx") <- if (styled) {
+      n_row_added <- styled && percent == "column" && show_n
+      total_idx <- nrow(df_out) - as.integer(n_row_added)
+      if (total_idx >= 1L) total_idx else NULL # nocov
+    } else {
+      NULL
+    }
 
     num_cols <- vapply(df_out, is.numeric, logical(1))
     if (any(num_cols)) {
@@ -776,15 +878,18 @@ print.spicy_cross_table_list <- function(x, ...) {
 #' Prints a formatted SPSS-like crosstable created by [cross_tab()].
 #'
 #' @param x A `spicy_cross_table` object.
-#' @param digits Optional integer; number of decimal places to display.
-#'   Defaults to the value stored in the object.
+#' @param digits Optional integer; number of decimal places to display
+#'   for cell values. Defaults to the value stored in the object.
+#' @param decimal_mark Optional character (`"."` or `","`) used as the
+#'   decimal mark. Defaults to the value stored in the object.
 #' @param ... Additional arguments passed to internal formatting functions.
 #'
 #' @keywords internal
 #' @export
-print.spicy_cross_table <- function(x, digits = NULL, ...) {
+print.spicy_cross_table <- function(x, digits = NULL, decimal_mark = NULL, ...) {
   title <- attr(x, "title")
   digits_attr <- attr(x, "digits")
+  decimal_mark_attr <- attr(x, "decimal_mark")
 
   if (is.null(digits)) {
     digits <- if (!is.null(digits_attr)) {
@@ -795,31 +900,42 @@ print.spicy_cross_table <- function(x, digits = NULL, ...) {
       0
     }
   }
+  if (is.null(decimal_mark)) {
+    decimal_mark <- if (!is.null(decimal_mark_attr)) decimal_mark_attr else "."
+  }
 
   df_display <- x
 
-  is_n_row <- if ("Values" %in% names(df_display)) {
-    df_display$Values == "N"
+  # Robust N row / N column markers (set by `cross_tab()`).
+  n_row_idx <- attr(x, "n_row_idx")
+  is_n_row <- if (
+    !is.null(n_row_idx) && length(n_row_idx) == 1L && !is.na(n_row_idx)
+  ) {
+    seq_len(nrow(df_display)) == as.integer(n_row_idx)
   } else {
     rep(FALSE, nrow(df_display))
   }
-  has_n_col <- "N" %in% names(df_display)
+  n_col_name <- attr(x, "n_col_name")
+  has_n_col <- !is.null(n_col_name) &&
+    length(n_col_name) == 1L &&
+    !is.na(n_col_name) &&
+    n_col_name %in% names(df_display)
 
   df_display[] <- Map(
     function(col, name) {
       if (is.numeric(col)) {
-        formatted <- if (has_n_col && name == "N") {
+        formatted <- if (has_n_col && name == n_col_name) {
           # N column: always integers
-          sprintf("%.0f", col)
+          format_number(col, digits = 0L, decimal_mark = decimal_mark)
         } else if (any(is_n_row)) {
           # N row: integers for that row, decimals elsewhere
           ifelse(
             is_n_row,
-            sprintf("%.0f", col),
-            sprintf(paste0("%.", digits, "f"), col)
+            format_number(col, digits = 0L, decimal_mark = decimal_mark),
+            format_number(col, digits = digits, decimal_mark = decimal_mark)
           )
         } else {
-          sprintf(paste0("%.", digits, "f"), col)
+          format_number(col, digits = digits, decimal_mark = decimal_mark)
         }
         ifelse(is.na(col), NA, formatted)
       } else {

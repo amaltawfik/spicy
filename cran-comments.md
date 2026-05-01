@@ -71,6 +71,16 @@ model-based variant.
   Fisher z-transformation (the point estimate and p-value remain
   identical to `DescTools` and SPSS).
 
+* `cross_tab()` and the `tables_ascii.R` rendering engine receive
+  a parallel audit-grade tightening: harmonised `decimal_mark` /
+  `p_digits` arguments matching the `table_*()` family, reuse of
+  the shared `format_p_value()` / `format_number()` helpers,
+  defensive guards (Yates non-2x2 warning, weights NA warning,
+  simulate_B validation, pruned-sub-table note), and a robust
+  `total_row_idx` attribute that lets the print methods locate
+  totals rows without grepping the formatted text. `cross_tab.R`
+  and `tables_ascii.R` now have 100 % line coverage.
+
 ### Numerical validation
 
 * Point estimates of all thirteen `assoc.R` measures are

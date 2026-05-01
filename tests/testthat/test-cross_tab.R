@@ -178,7 +178,12 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
     y = c("k", "l", "k", "l", "k", "l", "k", "k", "l", "l", "k", "k", "l", "l")
   )
 
-  out <- cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE)
+  # Group A is 3x2, so `correct = TRUE` fires the new "Yates ignored"
+  # warning; group B is 2x2 and gets Yates applied. The warning itself
+  # is asserted in the dedicated test below.
+  out <- suppressWarnings(
+    cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE)
+  )
   note_b <- attr(out[["B"]], "note")
 
   expect_true(grepl(
@@ -187,6 +192,18 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
     fixed = TRUE
   ))
   expect_false(grepl("p = NA", note_b, fixed = TRUE))
+})
+
+test_that("cross_tab warns when `correct = TRUE` is ignored on non-2x2 sub-tables", {
+  df <- data.frame(
+    g = c(rep("A", 6), rep("B", 8)),
+    x = c("a", "a", "b", "b", "c", "c", "u", "u", "u", "u", "v", "v", "v", "v"),
+    y = c("k", "l", "k", "l", "k", "l", "k", "k", "l", "l", "k", "k", "l", "l")
+  )
+  expect_warning(
+    cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE),
+    "Yates continuity correction only applies to 2x2 tables"
+  )
 })
 
 # ── Association measure features ───────────────────────────────────────────
@@ -378,6 +395,112 @@ test_that("cross_tab errors with negative weights", {
 test_that("cross_tab errors with infinite weights", {
   df <- data.frame(x = c("A", "B"), y = c("C", "D"), w = c(Inf, 1))
   expect_error(cross_tab(df, x, y, weights = w), "finite")
+})
+
+# ── New 0.11.0 audit-fix coverage ────────────────────────────────────────────
+
+test_that("cross_tab warns when `weights` contain NA values", {
+  df <- data.frame(
+    x = c("A", "B", "A", "B", "A"),
+    y = c("X", "Y", "X", "Y", "X"),
+    w = c(1, 2, NA, NA, 1)
+  )
+  expect_warning(
+    cross_tab(df, x, y, weights = w, styled = FALSE),
+    "NA value.+in `weights`"
+  )
+  # The two NA-weighted rows are excluded -> n_total = 3
+  res <- suppressWarnings(cross_tab(df, x, y, weights = w, styled = FALSE))
+  expect_equal(attr(res, "n_total"), 4) # sum of c(1, 2, 1) = 4
+})
+
+test_that("cross_tab `decimal_mark = ','` propagates to all printed numbers", {
+  data <- mtcars
+  res <- cross_tab(
+    data,
+    cyl,
+    gear,
+    assoc_ci = TRUE,
+    decimal_mark = ",",
+    styled = FALSE
+  )
+  note <- attr(res, "note")
+  # Chi-2 value should use comma decimal
+  expect_match(note, "Chi-2\\(\\d+\\) = \\d+,\\d")
+  # Cramer's V estimate
+  expect_match(note, "Cramer's V = \\d+,\\d{2}")
+  # CI uses ";" separator under decimal_mark = ","
+  expect_match(note, "95% CI \\[\\d+,\\d{2}; \\d+,\\d{2}\\]")
+})
+
+test_that("cross_tab `p_digits` controls p-value precision and threshold", {
+  # mtcars cyl x gear has p ~ 0.0014 (chi-2 = 18.04, df=4) -> with
+  # p_digits = 3, the value is above 0.001 and prints `p = .001`;
+  # with p_digits = 2, the value is below 0.01 and prints `p <.01`.
+  res3 <- cross_tab(mtcars, cyl, gear, p_digits = 3L, styled = FALSE)
+  res2 <- cross_tab(mtcars, cyl, gear, p_digits = 2L, styled = FALSE)
+  # APA format strips the leading zero from the p-value.
+  expect_match(attr(res3, "note"), "p = \\.\\d{3}\\b")
+  expect_match(attr(res2, "note"), "p <\\.\\d{2}\\b")
+})
+
+test_that("cross_tab validates decimal_mark, p_digits and simulate_B", {
+  expect_error(cross_tab(mtcars, cyl, gear, decimal_mark = ";"), "decimal_mark")
+  expect_error(cross_tab(mtcars, cyl, gear, p_digits = 0L), "p_digits")
+  expect_error(cross_tab(mtcars, cyl, gear, simulate_B = 0), "simulate_B")
+  expect_error(cross_tab(mtcars, cyl, gear, simulate_B = -10), "simulate_B")
+})
+
+test_that("cross_tab adds a note when stats are computed on a pruned sub-table", {
+  # `make_levels()` strips unused factor levels, so the by-mode (where
+  # `factor(levels = full_x_levels)` puts in zero-rows for groups that
+  # don't observe every x level) is the natural way to surface pruning.
+  df <- data.frame(
+    g = c("g1", "g1", "g1", "g1", "g2", "g2", "g2", "g2"),
+    x = c("A", "A", "B", "B", "C", "C", "D", "D"),
+    y = c("X", "Y", "X", "Y", "X", "Y", "X", "Y")
+  )
+  res <- suppressWarnings(cross_tab(df, x, y, by = g, styled = FALSE))
+  expect_match(attr(res[["g1"]], "note"), "sub-table after dropping empty rows / columns")
+  expect_match(attr(res[["g2"]], "note"), "sub-table after dropping empty rows / columns")
+})
+
+test_that("cross_tab marks N row via attribute (robust to user level 'N')", {
+  # User data with a level literally called "N" -- the old fragile detection
+  # would have treated it as the totals row.
+  df <- data.frame(
+    x = c("Yes", "No", "Yes", "No", "Yes"),
+    y = c("A", "B", "A", "B", "B")
+  )
+  res <- cross_tab(df, x, y, percent = "column", styled = TRUE)
+  # The N row attribute should point to the LAST row (after Total)
+  expect_equal(attr(res, "n_row_idx"), nrow(res))
+  expect_identical(attr(res, "n_col_name"), NA_character_)
+  # And the user's "No" row should NOT be confused with the N row in the print
+  out <- capture.output(print(res))
+  expect_true(any(grepl("\\bNo\\b", out)))
+  expect_true(any(grepl("\\bN\\b", out)))
+})
+
+test_that("cross_tab marks N column via attribute in row-percent mode", {
+  df <- data.frame(
+    x = c("A", "B", "A", "B", "A"),
+    y = c("X", "Y", "X", "Y", "Y")
+  )
+  res <- cross_tab(df, x, y, percent = "row", styled = TRUE)
+  expect_identical(attr(res, "n_col_name"), "N")
+  expect_true(is.na(attr(res, "n_row_idx")))
+})
+
+test_that("cross_tab decimal_mark / p_digits round-trip through print method", {
+  df <- data.frame(
+    x = c("A", "B", "A", "B"),
+    y = c("X", "Y", "X", "Y")
+  )
+  res <- cross_tab(df, x, y, percent = "column", decimal_mark = ",", styled = TRUE)
+  out <- capture.output(print(res))
+  expect_true(any(grepl(",", out)))
+  expect_false(any(grepl("\\d+\\.\\d+", out)))
 })
 
 # ── Print methods ────────────────────────────────────────────────────────

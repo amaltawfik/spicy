@@ -4,13 +4,16 @@
 \alias{print.spicy_cross_table}
 \title{Print method for spicy_cross_table objects}
 \usage{
-\method{print}{spicy_cross_table}(x, digits = NULL, ...)
+\method{print}{spicy_cross_table}(x, digits = NULL, decimal_mark = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{spicy_cross_table} object.}
 
-\item{digits}{Optional integer; number of decimal places to display.
-Defaults to the value stored in the object.}
+\item{digits}{Optional integer; number of decimal places to display
+for cell values. Defaults to the value stored in the object.}
+
+\item{decimal_mark}{Optional character (\code{"."} or \code{","}) used as the
+decimal mark. Defaults to the value stored in the object.}
 
 \item{...}{Additional arguments passed to internal formatting functions.}
 }
