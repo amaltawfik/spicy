@@ -445,6 +445,22 @@ df |> freq(sex, sort = "name-")
 #> Class: factor
 #> Data: df
 
+# European decimal mark (matches `cross_tab()` and the `table_*()` family)
+freq(sochealth, education, decimal_mark = ",")
+#> Frequency table: education
+#> 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        261       21,8 
+#>             │ Upper secondary        539       44,9 
+#>             │ Tertiary               400       33,3 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100,0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+
 # Non-styled return (for programmatic use)
 f <- freq(df, sex, styled = FALSE)
 head(f)
