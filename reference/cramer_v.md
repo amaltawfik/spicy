@@ -54,9 +54,12 @@ hypothesis of no association (Pearson chi-squared test).
 
 Cramer's V is computed as \\V = \sqrt{\chi^2 / (n \cdot (k - 1))}\\,
 where \\\chi^2\\ is the Pearson chi-squared statistic, \\n\\ is the
-total count, and \\k = \min(r, c)\\. The confidence interval uses the
-Fisher z-transformation. Standard error formulas follow the DescTools
-implementations (Signorell et al., 2024).
+total count, and \\k = \min(r, c)\\. The point estimate matches the
+DescTools (Signorell et al., 2024) and SPSS implementations. The
+confidence interval uses the Fisher z-transformation on \\V\\
+(\\\tanh(\mathrm{atanh}(V) \pm z\_{\alpha/2} / \sqrt{n - 3})\\), which
+differs from the noncentral chi-squared or bootstrap CIs reported by
+`DescTools::CramerV()`.
 
 ## References
 

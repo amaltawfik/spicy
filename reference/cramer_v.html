@@ -120,10 +120,12 @@ The p-value tests the null hypothesis of no association
     <p>Cramer's V is computed as
 \(V = \sqrt{\chi^2 / (n \cdot (k - 1))}\), where \(\chi^2\)
 is the Pearson chi-squared statistic, \(n\) is the total count,
-and \(k = \min(r, c)\).
-The confidence interval uses the Fisher z-transformation.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024).</p>
+and \(k = \min(r, c)\). The point estimate matches the
+DescTools (Signorell et al., 2024) and SPSS implementations.
+The confidence interval uses the Fisher z-transformation
+on \(V\) (\(\tanh(\mathrm{atanh}(V) \pm z_{\alpha/2} /
+\sqrt{n - 3})\)), which differs from the noncentral chi-squared
+or bootstrap CIs reported by <code>DescTools::CramerV()</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -61,8 +61,16 @@ The uncertainty coefficient measures association using Shannon entropy.
 For `direction = "row"`: \\U = (H_X + H_Y - H\_{XY}) / H_X\\, where
 \\H_X\\, \\H_Y\\ are the marginal entropies and \\H\_{XY}\\ is the joint
 entropy. The symmetric version is \\U = 2 (H_X + H_Y - H\_{XY}) / (H_X +
-H_Y)\\. Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see
+H_Y)\\.
+
+The entropy terms use the standard mathematical convention \\0 \log 0 =
+0\\, matching SPSS / PSPP `CROSSTABS` and the definition in Cover &
+Thomas (2006). Note that `DescTools::UncertCoef()` applies an additional
+Laplace correction (replacing zero cells with \\1/n^2\\) before the
+entropy computation, which produces slightly different point estimates
+on tables with empty cells; that correction is uncommon in the
+information-theory literature and is not used here. The asymptotic
+standard errors follow the DescTools delta method; see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 
