@@ -122,3 +122,24 @@ test_that("sum_n with exclude drops columns", {
   df <- tibble::tibble(a = c(10, 20), b = c(30, 40), c = c(50, 60))
   expect_equal(sum_n(df, exclude = c("a", "c")), c(30, 40))
 })
+
+test_that("sum_n() rejects non-integer / out-of-bounds `min_valid` (0.11.0)", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+  expect_error(
+    sum_n(df, min_valid = 1.5),
+    "proportion in \\(0, 1\\) or a non-negative integer count"
+  )
+  expect_error(
+    sum_n(df, min_valid = 100),
+    "exceeds the number of selected numeric columns"
+  )
+  expect_silent(sum_n(df, min_valid = 0.5))
+  expect_silent(sum_n(df, min_valid = 2L))
+})
+
+test_that("sum_n() rejects non-integer `digits` (0.11.0)", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4))
+  expect_error(sum_n(df, digits = 1.5), "non-negative integer")
+  expect_error(sum_n(df, digits = NA_real_), "non-negative integer")
+  expect_silent(sum_n(df, digits = 0L))
+})

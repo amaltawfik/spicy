@@ -112,6 +112,24 @@
   `row.names.as.col` warning with `Warning:` for consistency with
   the captured-warning path.
 
+* `mean_n()` and `sum_n()`'s shared logic (column resolution,
+  numeric filtering, `min_valid` masking, rounding, verbose
+  messages) is centralised in a single internal helper. Both
+  functions become thin wrappers over `rowMeans` / `rowSums`,
+  removing ~200 lines of duplicated code and a class of
+  drift-inducing inconsistencies.
+
+* `mean_n()` / `sum_n()` reject non-integer `min_valid` ≥ 1
+  (`min_valid = 1.5` previously was silently treated as a 150 %
+  proportion, making every row `NA` without a warning), and
+  reject `min_valid` exceeding the number of selected numeric
+  columns with a clear error rather than a silent all-NA result.
+
+* `mean_n()` / `sum_n()` `digits` validation now requires a
+  non-negative **integer** (matches `cross_tab()` / `freq()` /
+  the `table_*()` family); previously `digits = 1.5` was accepted
+  and forwarded to `round()`.
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to

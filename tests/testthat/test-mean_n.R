@@ -122,3 +122,44 @@ test_that("mean_n with exclude drops columns", {
   df <- tibble::tibble(a = c(10, 20), b = c(30, 40), c = c(50, 60))
   expect_equal(mean_n(df, exclude = c("a", "c")), c(30, 40))
 })
+
+test_that("mean_n() rejects non-integer / out-of-bounds `min_valid` (0.11.0)", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+
+  # non-integer count >= 1 is now rejected
+  expect_error(
+    mean_n(df, min_valid = 1.5),
+    "proportion in \\(0, 1\\) or a non-negative integer count"
+  )
+  expect_error(
+    mean_n(df, min_valid = 2.5),
+    "proportion in \\(0, 1\\) or a non-negative integer count"
+  )
+
+  # count exceeding ncol now errors with a clear message instead of
+  # silently making every row NA
+  expect_error(
+    mean_n(df, min_valid = 100),
+    "exceeds the number of selected numeric columns"
+  )
+
+  # non-numeric / NA / negative still rejected
+  expect_error(mean_n(df, min_valid = "two"), "single non-negative number")
+  expect_error(mean_n(df, min_valid = NA_real_), "single non-negative number")
+  expect_error(mean_n(df, min_valid = -1), "single non-negative number")
+
+  # legit cases keep working
+  expect_silent(mean_n(df, min_valid = 0))
+  expect_silent(mean_n(df, min_valid = 1L))
+  expect_silent(mean_n(df, min_valid = 0.5)) # proportion
+  expect_silent(mean_n(df, min_valid = 3L))
+})
+
+test_that("mean_n() rejects non-integer `digits` (matches cross_tab / freq 0.11.0)", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4))
+  expect_error(mean_n(df, digits = 1.5), "non-negative integer")
+  expect_error(mean_n(df, digits = -1), "non-negative integer")
+  expect_error(mean_n(df, digits = NA_real_), "non-negative integer")
+  expect_silent(mean_n(df, digits = 0L))
+  expect_silent(mean_n(df, digits = 3))
+})

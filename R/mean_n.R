@@ -116,107 +116,16 @@ mean_n <- function(
   regex = FALSE,
   verbose = FALSE
 ) {
-  if (!is.null(min_valid)) {
-    if (
-      !is.numeric(min_valid) ||
-        length(min_valid) != 1L ||
-        is.na(min_valid) ||
-        min_valid < 0
-    ) {
-      stop("`min_valid` must be a single non-negative number.", call. = FALSE)
-    }
-  }
-
-  if (!is.null(digits)) {
-    if (!is.numeric(digits) || length(digits) != 1L || digits < 0) {
-      stop("`digits` must be a single non-negative number.", call. = FALSE)
-    }
-  }
-
-  if (is.matrix(data)) {
-    data <- as.data.frame(data)
-  }
-
-  if (is.null(data)) {
-    data <- dplyr::pick(tidyselect::everything())
-  }
-
-  if (regex) {
-    if (missing(select)) {
-      select <- ".*"
-    }
-    if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      stop(
-        "When `regex = TRUE`, `select` must be a single character pattern.",
-        call. = FALSE
-      )
-    }
-    col_names <- names(data)
-    matched <- grep(select, col_names, value = TRUE)
-    data <- data[, matched, drop = FALSE]
-  } else {
-    sel_quo <- rlang::enquo(select)
-    sel_val <- tryCatch(
-      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
-      error = function(e) NULL
-    )
-    if (is.character(sel_val)) {
-      data <- dplyr::select(data, tidyselect::all_of(sel_val))
-    } else {
-      data <- dplyr::select(data, !!sel_quo)
-    }
-  }
-
-  data <- dplyr::select(data, -tidyselect::any_of(exclude))
-
-  all_cols <- names(data)
-  data <- dplyr::select(data, tidyselect::where(is.numeric))
-  numeric_cols <- names(data)
-
-  ignored <- setdiff(all_cols, numeric_cols)
-  if (verbose && length(ignored) > 0) {
-    rlang::inform(
-      message = paste0(
-        "mean_n(): Ignored non-numeric columns: ",
-        paste(ignored, collapse = ", ")
-      )
-    )
-  }
-
-  if (length(numeric_cols) == 0) {
-    warning(
-      "mean_n(): No numeric columns selected; returning NA for all rows.",
-      call. = FALSE
-    )
-    return(rep(NA_real_, nrow(data)))
-  }
-
-  data_mat <- as.matrix(data)
-
-  if (is.null(min_valid)) {
-    min_valid <- ncol(data_mat)
-  } else if (min_valid %% 1 != 0) {
-    min_valid <- round(ncol(data_mat) * min_valid)
-  }
-
-  result <- rowMeans(data_mat, na.rm = TRUE)
-  valid_rows <- rowSums(!is.na(data_mat)) >= min_valid
-  result[!valid_rows] <- NA
-
-  if (!is.null(digits)) {
-    result <- round(result, digits)
-  }
-
-  if (verbose) {
-    rlang::inform(
-      message = paste0(
-        "mean_n(): Row means computed with min_valid = ",
-        min_valid,
-        ", regex = ",
-        regex
-      )
-    )
-  }
-
-  result
+  .row_apply_n(
+    data = data,
+    select_quo = rlang::enquo(select),
+    select_was_missing = missing(select),
+    exclude = exclude,
+    min_valid = min_valid,
+    digits = digits,
+    regex = regex,
+    verbose = verbose,
+    fn = rowMeans,
+    fn_label = "mean_n"
+  )
 }
