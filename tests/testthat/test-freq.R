@@ -450,14 +450,43 @@ test_that("freq() rejects non-finite digits with the same friendly message", {
   # this guard, `digits = NA` would crash inside the validation `if`
   # with "missing value where TRUE/FALSE needed", and `digits = Inf`
   # would crash later in `format(..., nsmall = Inf)`.
+  # Since 0.11.0 the message also mentions "integer" -- digits is now
+  # required to be a non-negative integer for cross-package consistency.
   for (bad in list(NA, NA_real_, NA_integer_, NaN, Inf, -Inf)) {
     expect_error(
       freq(c(1, 2), digits = bad),
-      "non-negative number",
+      "non-negative integer",
       fixed = TRUE,
       info = paste("digits =", deparse(bad))
     )
   }
+})
+
+test_that("freq() rejects non-integer `digits` values", {
+  # 0.11.0 tightens `digits` to a non-negative integer (matches the
+  # rest of the table_*() / cross_tab() family).
+  expect_error(freq(c(1, 2), digits = 1.5), "non-negative integer")
+  expect_error(freq(c(1, 2), digits = -1), "non-negative integer")
+  expect_silent(freq(c(1, 2), digits = 0L, styled = FALSE))
+  expect_silent(freq(c(1, 2), digits = 3, styled = FALSE)) # 3.0 -> 3L OK
+})
+
+test_that("freq() validates `decimal_mark`", {
+  expect_error(
+    freq(c(1, 2), decimal_mark = ";"),
+    "decimal_mark"
+  )
+  expect_error(
+    freq(c(1, 2), decimal_mark = c(".", ",")),
+    "decimal_mark"
+  )
+})
+
+test_that("freq() honours `decimal_mark = ',' in the printed percentages", {
+  out <- capture.output(freq(c(1, 1, 2, 2, 2), decimal_mark = ","))
+  expect_true(any(grepl("60,0", out, fixed = TRUE)))
+  expect_true(any(grepl("40,0", out, fixed = TRUE)))
+  expect_false(any(grepl("\\b\\d+\\.\\d", out)))
 })
 
 test_that("freq() rejects pathological sort values with the friendly message", {
@@ -501,20 +530,19 @@ test_that("freq() validates sort early", {
   expect_error(freq(c(1, 2), sort = "bad"), "Invalid value for 'sort'")
 })
 
-test_that("freq() warns with NA weights", {
+test_that("freq() warns with NA weights and reports the count", {
   df <- data.frame(x = c("A", "B", "C"), w = c(1, NA, 3))
   expect_warning(
     res <- freq(df, x, weights = w, styled = FALSE),
-    "NA values in `weights`"
+    "1 NA value in `weights`"
   )
 })
 
-test_that("freq() rescaled total stays at length(weights) when some are NA", {
-  # Locks in the documented Stata-pweight behavior: NA weights become
-  # zero (the row contributes nothing), but with rescale = TRUE the
-  # remaining weights are normalized so the total weighted N still
-  # equals length(weights). With rescale = FALSE the total reflects
-  # the actual sum of non-NA weights.
+test_that("freq() drops NA-weighted rows and rescales over the remaining (0.11.0)", {
+  # Since spicy 0.11.0 NA-weighted observations are dropped from the
+  # table entirely (matches `cross_tab()`); the previous behaviour
+  # (NA -> 0 with rescale to length(weights)) inflated `n_total` and
+  # biased the rescale denominator.
   df <- data.frame(x = c("A", "B", "C", "D"), w = c(1, 2, NA, NA))
 
   res_rescaled <- suppressWarnings(
@@ -524,14 +552,14 @@ test_that("freq() rescaled total stays at length(weights) when some are NA", {
     freq(df, x, weights = w, rescale = FALSE, styled = FALSE)
   )
 
-  expect_equal(sum(res_rescaled$n), 4)
-  expect_equal(sum(res_unrescaled$n), 3)
+  # Two rows survive (A, B); the NA-weighted C, D are dropped.
+  expect_setequal(res_rescaled$value, c("A", "B"))
+  expect_setequal(res_unrescaled$value, c("A", "B"))
 
-  # The NA-weighted rows contribute nothing in either mode.
-  expect_equal(res_unrescaled$n[res_unrescaled$value == "C"], 0)
-  expect_equal(res_unrescaled$n[res_unrescaled$value == "D"], 0)
-  expect_equal(res_rescaled$n[res_rescaled$value == "C"], 0)
-  expect_equal(res_rescaled$n[res_rescaled$value == "D"], 0)
+  # Rescaled: total weighted N equals number of kept rows = 2.
+  expect_equal(sum(res_rescaled$n), 2)
+  # Unrescaled: total = sum of the surviving (non-NA) weights = 1 + 2 = 3.
+  expect_equal(sum(res_unrescaled$n), 3)
 })
 
 test_that("freq() errors when total frequency is zero", {

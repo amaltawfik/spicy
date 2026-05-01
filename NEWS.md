@@ -150,6 +150,19 @@
   fallback used to find the totals row, removing the same false
   positive on user data containing the word `"Total"`.
 
+* `freq()` joins the harmonised vocabulary of the rest of the
+  spicy 0.11.0 family: new `decimal_mark` argument (default `"."`)
+  matching `cross_tab()` / `table_*()`, and the printed
+  percentages now flow through the shared `format_number()` helper
+  from `R/table_helpers.R` (so European-locale users get a
+  consistent experience across the package).
+
+* `freq()` tightens its `digits` validation to a non-negative
+  integer (matches the convention used by `cross_tab()` and the
+  three `table_*()` helpers); the previous validation accepted
+  fractional values like `1.5` which then leaked through to
+  `format(..., nsmall = 1.5)`.
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to
@@ -204,6 +217,14 @@
 
 * `table_continuous_lm(output = "long")` renames `sum_w` to
   `weighted_n`, matching the wide and rendered outputs.
+
+* `freq()` now drops observations with `NA` weights from the table
+  (with a warning reporting the count) instead of recoding them to
+  zero in place. The previous behaviour kept the rows in the
+  weight vector but with zero contribution, which silently inflated
+  the `rescale = TRUE` denominator (`length(weights)` counted
+  ghost rows). This aligns with the `cross_tab()` 0.11.0 semantics
+  documented above.
 
 # spicy 0.10.0
 

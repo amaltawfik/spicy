@@ -81,6 +81,14 @@ model-based variant.
   totals rows without grepping the formatted text. `cross_tab.R`
   and `tables_ascii.R` now have 100 % line coverage.
 
+* `freq()` joins the same harmonisation effort: new
+  `decimal_mark` argument, percentages flow through the shared
+  `format_number()` helper, `digits` is tightened to a
+  non-negative integer, and `NA` weights now drop the affected
+  observations from the table (with a warning) rather than
+  recoding them to zero in place (which silently inflated the
+  rescale denominator). Behaviour now matches `cross_tab()`.
+
 * `table_categorical()`'s `assoc_measure` argument is generalised
   from a single global string to a per-row specification. Four
   input shapes are accepted: `"none"`, `"auto"` (per-row rule:

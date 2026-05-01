@@ -37,13 +37,12 @@
 #' normalizes weights so their sum equals the unweighted sample size
 #' (`length(weights)`).
 #'
-#' Missing values in `weights` are treated as zero (with a warning), so
-#' the corresponding rows contribute nothing to any cell. With
-#' `rescale = TRUE`, the remaining weights are normalized so the total
-#' weighted N still equals `length(weights)` — the implicit share of the
-#' zeroed rows is redistributed over the others, mirroring Stata's
-#' `pweight` semantics. With `rescale = FALSE`, the total weighted N is
-#' the actual sum of non-`NA` weights.
+#' Missing values in `weights` cause those observations to be dropped
+#' from the table entirely (with a warning), matching the behaviour of
+#' [cross_tab()] in spicy 0.11.0+. With `rescale = TRUE`, the remaining
+#' (non-`NA`-weighted) weights are normalized so the total weighted N
+#' equals the count of non-`NA`-weighted rows. With `rescale = FALSE`,
+#' the total weighted N is the actual sum of non-`NA` weights.
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
@@ -52,8 +51,9 @@
 #' @param weights Optional numeric vector of weights (same length as `x`).
 #'   The variable may be referenced as a bare name when it belongs to `data`,
 #'   or as a qualified expression like `other$w` (evaluated in the calling
-#'   environment), which always takes precedence over `data` lookup. `NA`
-#'   weights are treated as zero with a warning; see `Details`.
+#'   environment), which always takes precedence over `data` lookup.
+#'   Observations with `NA` weights are dropped from the table with a
+#'   warning; see `Details`.
 #' @param digits Number of decimal digits to display for percentages (default: `1`).
 #' @param valid Logical. If `TRUE` (default), display valid percentages
 #'   (excluding missing values).
@@ -90,6 +90,11 @@
 #' @param rescale Logical. If `TRUE` (default), rescale weights so that their
 #'   total equals the unweighted sample size (`length(weights)`). See
 #'   `Details` for the interaction with `NA` weights.
+#' @param decimal_mark Character used as the decimal mark in printed
+#'   percentages. Either `"."` (the default) or `","`. Matches the
+#'   `decimal_mark` argument of [cross_tab()] and the three
+#'   `table_*()` helpers, so European-locale users get a consistent
+#'   experience across the package.
 #' @param styled Logical. If `TRUE` (default), print the formatted spicy table.
 #'   If `FALSE`, return a plain `data.frame` with frequency values.
 #' @param ... Additional arguments passed to [print.spicy_freq_table()].
@@ -181,7 +186,7 @@ freq <- function(
   data,
   x = NULL,
   weights = NULL,
-  digits = 1,
+  digits = 1L,
   valid = TRUE,
   cum = FALSE,
   sort = "",
@@ -189,19 +194,33 @@ freq <- function(
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
   rescale = TRUE,
+  decimal_mark = ".",
   styled = TRUE,
   ...
 ) {
   labelled_levels <- match.arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)
 
+  # B2: tighten `digits` to a non-negative integer (the rest of the
+  # spicy 0.11.0 family does the same). Coerces silently if the user
+  # passes 1.0 / 2L; rejects 1.5, NA, vectors, etc.
   if (
     !is.numeric(digits) ||
       length(digits) != 1L ||
       !is.finite(digits) ||
-      digits < 0
+      digits < 0 ||
+      digits != as.integer(digits)
   ) {
-    stop("`digits` must be a single non-negative number.", call. = FALSE)
+    stop("`digits` must be a single non-negative integer.", call. = FALSE)
+  }
+  digits <- as.integer(digits)
+
+  if (
+    !is.character(decimal_mark) ||
+      length(decimal_mark) != 1L ||
+      !decimal_mark %in% c(".", ",")
+  ) {
+    stop("`decimal_mark` must be either `\".\"` or `\",\"`.", call. = FALSE)
   }
 
   if (
@@ -321,12 +340,27 @@ freq <- function(
       stop("`weights` must contain only finite numeric values.", call. = FALSE)
     }
     if (any(is.na(weights))) {
-      warning("NA values in `weights` are treated as zero.", call. = FALSE)
-      weights[is.na(weights)] <- 0
+      n_na <- sum(is.na(weights))
+      warning(
+        sprintf(
+          "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
+          n_na,
+          if (n_na > 1L) "s" else ""
+        ),
+        call. = FALSE
+      )
+      # Drop NA-weighted rows up front so they never reach `table()` /
+      # `tapply()` (where they would otherwise be retained with weight
+      # zero and inflate the rescale denominator). This matches the
+      # `cross_tab()` 0.11.0 behaviour.
+      keep <- !is.na(weights)
+      x <- x[keep]
+      x_original <- x_original[keep]
+      weights <- weights[keep]
     }
 
     if (rescale) {
-      w_sum <- sum(weights, na.rm = TRUE)
+      w_sum <- sum(weights)
       if (!is.finite(w_sum) || w_sum <= 0) {
         stop(
           "`rescale = TRUE` requires a strictly positive sum of weights.",
@@ -445,6 +479,7 @@ freq <- function(
   }
 
   attr(df, "digits") <- digits
+  attr(df, "decimal_mark") <- decimal_mark
   attr(df, "data_name") <- data_name
   attr(df, "var_name") <- var_name
   attr(df, "var_label") <- attr(x_original, "label", exact = TRUE)

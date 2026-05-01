@@ -8,7 +8,7 @@ freq(
   data,
   x = NULL,
   weights = NULL,
-  digits = 1,
+  digits = 1L,
   valid = TRUE,
   cum = FALSE,
   sort = "",
@@ -16,6 +16,7 @@ freq(
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
   rescale = TRUE,
+  decimal_mark = ".",
   styled = TRUE,
   ...
 )
@@ -30,8 +31,9 @@ vectors, \code{data} is ignored with a warning.}
 \item{weights}{Optional numeric vector of weights (same length as \code{x}).
 The variable may be referenced as a bare name when it belongs to \code{data},
 or as a qualified expression like \code{other$w} (evaluated in the calling
-environment), which always takes precedence over \code{data} lookup. \code{NA}
-weights are treated as zero with a warning; see \code{Details}.}
+environment), which always takes precedence over \code{data} lookup.
+Observations with \code{NA} weights are dropped from the table with a
+warning; see \code{Details}.}
 
 \item{digits}{Number of decimal digits to display for percentages (default: \code{1}).}
 
@@ -79,6 +81,12 @@ with \code{n = 0}.}
 \item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
 total equals the unweighted sample size (\code{length(weights)}). See
 \code{Details} for the interaction with \code{NA} weights.}
+
+\item{decimal_mark}{Character used as the decimal mark in printed
+percentages. Either \code{"."} (the default) or \code{","}. Matches the
+\code{decimal_mark} argument of \code{\link[=cross_tab]{cross_tab()}} and the three
+\verb{table_*()} helpers, so European-locale users get a consistent
+experience across the package.}
 
 \item{styled}{Logical. If \code{TRUE} (default), print the formatted spicy table.
 If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
@@ -141,13 +149,12 @@ computed proportionally to the weights. The argument \code{rescale = TRUE}
 normalizes weights so their sum equals the unweighted sample size
 (\code{length(weights)}).
 
-Missing values in \code{weights} are treated as zero (with a warning), so
-the corresponding rows contribute nothing to any cell. With
-\code{rescale = TRUE}, the remaining weights are normalized so the total
-weighted N still equals \code{length(weights)} — the implicit share of the
-zeroed rows is redistributed over the others, mirroring Stata's
-\code{pweight} semantics. With \code{rescale = FALSE}, the total weighted N is
-the actual sum of non-\code{NA} weights.
+Missing values in \code{weights} cause those observations to be dropped
+from the table entirely (with a warning), matching the behaviour of
+\code{\link[=cross_tab]{cross_tab()}} in spicy 0.11.0+. With \code{rescale = TRUE}, the remaining
+(non-\code{NA}-weighted) weights are normalized so the total weighted N
+equals the count of non-\code{NA}-weighted rows. With \code{rescale = FALSE},
+the total weighted N is the actual sum of non-\code{NA} weights.
 }
 \examples{
 # Frequency table with labelled ordered factor

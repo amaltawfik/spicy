@@ -67,6 +67,7 @@
 print.spicy_freq_table <- function(x, ...) {
   df <- x
   digits <- attr(df, "digits")
+  decimal_mark <- attr(df, "decimal_mark") %||% "."
   data_name <- attr(df, "data_name")
   var_name <- attr(df, "var_name")
   var_label <- attr(df, "var_label")
@@ -84,15 +85,20 @@ print.spicy_freq_table <- function(x, ...) {
 
   show_valid_col <- nrow(missing_block) > 0
 
+  # Use the shared `format_number()` helper from R/table_helpers.R for
+  # locale-aware decimal-mark support, matching cross_tab() and the
+  # table_*() family.
   fmt_pct <- function(p) {
     ifelse(
       is.na(p),
       "NA",
-      format(round(100 * p, digits), nsmall = digits, trim = TRUE)
+      format_number(100 * p, digits = digits, decimal_mark = decimal_mark)
     )
   }
 
-  fmt_int <- function(v) format(round(v, 0), trim = TRUE)
+  fmt_int <- function(v) {
+    format_number(v, digits = 0L, decimal_mark = decimal_mark)
+  }
 
   build_rows <- function(block, category, show_valid_col_block) {
     if (!nrow(block)) {
@@ -131,35 +137,25 @@ print.spicy_freq_table <- function(x, ...) {
   rows_valid <- build_rows(valid_block, "Valid", show_valid_col)
   rows_missing <- build_rows(missing_block, "Missing", FALSE)
 
+  pct_100 <- format_number(100, digits = digits, decimal_mark = decimal_mark)
+
   total_row <- data.frame(
     Category = "Total",
     Values = "",
     `Freq.` = fmt_int(sum(df$n)),
-    Percent = format(round(100, digits), nsmall = digits, trim = TRUE),
+    Percent = pct_100,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
 
   if (show_valid_col) {
-    total_row$`Valid Percent` <- format(
-      round(100, digits),
-      nsmall = digits,
-      trim = TRUE
-    )
+    total_row$`Valid Percent` <- pct_100
   }
 
   if (has_cum) {
-    total_row$`Cum. Percent` <- format(
-      round(100, digits),
-      nsmall = digits,
-      trim = TRUE
-    )
+    total_row$`Cum. Percent` <- pct_100
     if (show_valid_col) {
-      total_row$`Cum. Valid Percent` <- format(
-        round(100, digits),
-        nsmall = digits,
-        trim = TRUE
-      )
+      total_row$`Cum. Valid Percent` <- pct_100
     }
   }
 
