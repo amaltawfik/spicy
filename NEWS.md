@@ -26,9 +26,8 @@
 
 * Shared reporting vocabulary (`decimal_mark`, `p_digits`,
   `align`, named-`labels`) now spans `cross_tab()`, `freq()` and
-  the three `table_*()` helpers. Percentages and statistics flow
-  through the central `format_number()` / `format_p_value()` /
-  `ci_bracket_separator()` helpers in `R/table_helpers.R`.
+  the three `table_*()` helpers, including APA-style p-value
+  notation (`p <.001` / `p = .045`, no leading zero) everywhere.
 
 * `table_categorical()`'s `assoc_measure` accepts a per-variable
   specification (`"auto"`, single string, or named / unnamed
@@ -75,9 +74,9 @@
 ## Bug fixes
 
 * `label_from_names()` raises actionable errors on duplicate or
-  empty new column names, trims trailing whitespace, preserves
-  the input class (`data.frame` / `tbl_df`), and is internally
-  dependency-free.
+  empty new column names (was a cryptic constructor message);
+  trims trailing whitespace and preserves the input class
+  (`data.frame` / `tbl_df`).
 
 * `table_continuous_lm(output = "data.frame")` names contrast CI
   columns from `ci_level` (was hardcoded to 95 %).
