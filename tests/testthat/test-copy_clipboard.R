@@ -227,6 +227,95 @@ test_that("copy_clipboard warns when row.names.as.col is irrelevant", {
   expect_true(any(grepl("is ignored because", out_chr)))
 })
 
+test_that("copy_clipboard rejects multi-element / NA / empty `row.names.as.col`", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  with_mocked_clipr({
+    msg <- "must be either FALSE, TRUE, or a single non-empty character string"
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = c("id", "extra")),
+      msg
+    )
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = c(TRUE, FALSE)),
+      msg
+    )
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = NA),
+      msg
+    )
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = NA_character_),
+      msg
+    )
+    expect_error(
+      copy_clipboard(data.frame(x = 1), row.names.as.col = ""),
+      msg
+    )
+  })
+})
+
+test_that("copy_clipboard accumulates multiple captured messages / warnings", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  out <- capture.output(
+    with_mocked_clipr(
+      copy_clipboard(
+        data.frame(x = 1L),
+        show_message = FALSE,
+        quiet = FALSE
+      ),
+      write_clip = function(x, ...) {
+        message("first message")
+        message("second message")
+        warning("first warning")
+        warning("second warning")
+        invisible(NULL)
+      }
+    )
+  )
+
+  # All four are surfaced, none silently dropped.
+  expect_true(any(grepl("Message: first message", out, fixed = TRUE)))
+  expect_true(any(grepl("Message: second message", out, fixed = TRUE)))
+  expect_true(any(grepl("Warning: first warning", out, fixed = TRUE)))
+  expect_true(any(grepl("Warning: second warning", out, fixed = TRUE)))
+})
+
+test_that("copy_clipboard `Warning:` prefix is consistent for the row.names.as.col warning", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  out <- capture.output(
+    with_mocked_clipr({
+      copy_clipboard(
+        c("a", "b"),
+        row.names.as.col = TRUE,
+        show_message = FALSE,
+        quiet = FALSE
+      )
+    })
+  )
+
+  # The needs_warning message now uses the same "Warning: " prefix as
+  # the captured-warning path (consistency polish).
+  expect_true(any(grepl("Warning: `row.names.as.col = TRUE` has no effect", out, fixed = TRUE)))
+})
+
 test_that("copy_clipboard adds row names column for data frames and matrices", {
   skip_if_not_installed("clipr")
 

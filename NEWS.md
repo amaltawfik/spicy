@@ -103,6 +103,15 @@
   `Values` summary. The argument was previously silently forced to
   `"observed"` for labelled inputs.
 
+* `copy_clipboard()` now rejects `row.names.as.col` vectors of
+  length ≠ 1 and empty strings with an actionable error (was
+  silently truncated to the first element); accumulates **all**
+  messages and warnings emitted by `clipr::write_clip()` instead
+  of overwriting on each call (a backend emitting more than one
+  message would lose every earlier one); and prefixes the
+  `row.names.as.col` warning with `Warning:` for consistency with
+  the captured-warning path.
+
 ## Breaking changes
 
 * `table_continuous_lm()` and `table_categorical()` default to
