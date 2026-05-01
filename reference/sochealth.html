@@ -191,13 +191,13 @@ selection.</p>
 <span class="r-in"><span><span class="fu"><a href="freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Category      <span style="color: #9E9E9E;">│</span> Values                     Freq.       Percent </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid         <span style="color: #9E9E9E;">│</span> Lower secondary              261          21.8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                <span style="color: #9E9E9E;">│</span> Upper secondary              539          44.9 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                <span style="color: #9E9E9E;">│</span> Tertiary                     400          33.3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total         <span style="color: #9E9E9E;">│</span>                             1200         100.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category   <span style="color: #9E9E9E;">│</span> Values               Freq.    Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid      <span style="color: #9E9E9E;">│</span> Lower secondary        261       21.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             <span style="color: #9E9E9E;">│</span> Upper secondary        539       44.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             <span style="color: #9E9E9E;">│</span> Tertiary               400       33.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total      <span style="color: #9E9E9E;">│</span>                       1200      100.0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Label: Highest education level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: ordered, factor</span></span>
@@ -205,21 +205,13 @@ selection.</p>
 <span class="r-in"><span><span class="fu"><a href="cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, <span class="va">self_rated_health</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: education x self_rated_health (N)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values               <span style="color: #9E9E9E;">│</span>      Poor       Fair       Good       Very good </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary      <span style="color: #9E9E9E;">│</span>        28         86        102              44 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary      <span style="color: #9E9E9E;">│</span>        28        118        263             118 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary             <span style="color: #9E9E9E;">│</span>         5         62        193             133 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼─────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>        61        266        558             295 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Values               <span style="color: #9E9E9E;">│</span>      Total </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary      <span style="color: #9E9E9E;">│</span>        260 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary      <span style="color: #9E9E9E;">│</span>        527 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary             <span style="color: #9E9E9E;">│</span>        393 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────┼────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total                <span style="color: #9E9E9E;">│</span>       1180 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Values            <span style="color: #9E9E9E;">│</span>   Poor    Fair    Good    Very good <span style="color: #9E9E9E;">│</span>   Total </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────┼─────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Lower secondary   <span style="color: #9E9E9E;">│</span>     28      86     102           44 <span style="color: #9E9E9E;">│</span>     260 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Upper secondary   <span style="color: #9E9E9E;">│</span>     28     118     263          118 <span style="color: #9E9E9E;">│</span>     527 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Tertiary          <span style="color: #9E9E9E;">│</span>      5      62     193          133 <span style="color: #9E9E9E;">│</span>     393 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────┼─────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total             <span style="color: #9E9E9E;">│</span>     61     266     558          295 <span style="color: #9E9E9E;">│</span>    1180 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Kendall's Tau-b = 0.20</span></span>

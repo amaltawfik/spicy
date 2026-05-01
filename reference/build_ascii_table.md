@@ -14,7 +14,7 @@ or
 ``` r
 build_ascii_table(
   x,
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -38,13 +38,17 @@ build_ascii_table(
 
 - padding:
 
-  Character string controlling horizontal spacing between columns:
+  Non-negative integer giving the number of extra characters added to
+  each column's auto-computed width (the maximum of the cell-content
+  width and the header width). Defaults to `2L`, which gives a Stata- /
+  `cli`-like compact look. Each cell additionally receives a one-space
+  gutter on each side, so a `padding = 2L` column whose content is at
+  most 5 characters wide occupies 9 characters in total
+  (`1 + 5 + 2 + 1`).
 
-  - `"normal"` — moderate spacing (the default)
-
-  - `"compact"` — minimal spacing
-
-  - `"wide"` — extra spacing (for large displays or wide content)
+  The string choices `"compact"`, `"normal"` and `"wide"` from spicy
+  `< 0.11.0` were removed; pass `0L`, `2L` or `4L` instead. Passing a
+  string raises an actionable error.
 
 - first_column_line:
 
@@ -111,7 +115,7 @@ suitable for direct printing with
 `build_ascii_table()` is the rendering engine that produces the aligned
 text layout of **spicy-formatted tables**. It automatically detects cell
 widths (including colored text), inserts Unicode separators, and applies
-padding for different display modes (`"compact"`, `"normal"`, `"wide"`).
+a configurable amount of horizontal padding.
 
 For most users, this function should not be called directly. Instead,
 use
@@ -134,7 +138,7 @@ df <- data.frame(
   Percent = c(57.1, 38.1, 4.8, 100.0)
 )
 
-cat(build_ascii_table(df, padding = "compact"))
+cat(build_ascii_table(df, padding = 0L))
 #>  Category │ Values  Freq.  Percent 
 #> ──────────┼────────────────────────
 #>  Valid    │ Yes        12     57.1 

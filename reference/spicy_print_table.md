@@ -19,7 +19,7 @@ spicy_print_table(
   x,
   title = attr(x, "title"),
   note = attr(x, "note"),
-  padding = c("normal", "compact", "wide"),
+  padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
   column_total_line = TRUE,
@@ -51,13 +51,12 @@ spicy_print_table(
 
 - padding:
 
-  Character string controlling horizontal spacing between columns:
-
-  - `"normal"` - moderate spacing (the default)
-
-  - `"compact"` - minimal spacing
-
-  - `"wide"` - extra spacing (for wide displays)
+  Non-negative integer giving the number of extra characters added to
+  each column's auto-computed width (max of cell-content width and
+  header width). Defaults to `2L`. See
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
+  for the precise formula and the migration note from the pre-0.11.0
+  string enum.
 
 - first_column_line:
 
@@ -157,13 +156,13 @@ spicy_print_table(df,
 )
 #> Frequency table: Example
 #> 
-#>  Category      │ Values            Freq.       Percent 
-#> ───────────────┼───────────────────────────────────────
-#>  Valid         │ Yes                  12          57.1 
-#>                │ No                    8          38.1 
-#>  Missing       │ NA                    1           4.8 
-#> ───────────────┼───────────────────────────────────────
-#>  Total         │                      21           100 
+#>  Category   │ Values      Freq.    Percent 
+#> ────────────┼──────────────────────────────
+#>  Valid      │ Yes            12       57.1 
+#>             │ No              8       38.1 
+#>  Missing    │ NA              1        4.8 
+#> ────────────┼──────────────────────────────
+#>  Total      │                21        100 
 #> 
 #> Class: data.frame
 #> Data: demo

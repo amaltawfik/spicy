@@ -396,15 +396,15 @@ table_categorical(
 )
 #> Categorical table
 #> 
-#>  Variable               │    n          %     
-#> ────────────────────────┼─────────────────────
-#>  smoking                │                     
-#>    No                   │   926       78.8    
-#>    Yes                  │   249       21.2    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity      │                     
-#>    No                   │   650       54.2    
-#>    Yes                  │   550       45.8    
+#>  Variable            │   n      %    
+#> ─────────────────────┼───────────────
+#>  smoking             │               
+#>    No                │  926    78.8  
+#>    Yes               │  249    21.2  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity   │               
+#>    No                │  650    54.2  
+#>    Yes               │  550    45.8  
 
 # Pretty labels keyed by column name.
 table_categorical(

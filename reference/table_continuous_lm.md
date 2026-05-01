@@ -966,10 +966,10 @@ table_continuous_lm(
 )
 #> Continuous outcomes by Age (years)
 #> 
-#>  Variable                      │  B      p     R²    n   
-#> ───────────────────────────────┼─────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 0.04   .176  0.00  1200 
-#>  Body mass index               │ 0.04  <.001  0.02  1188 
+#>  Variable                        │   B        p       R²      n    
+#> ─────────────────────────────────┼─────────────────────────────────
+#>  WHO-5 wellbeing index (0-100)   │  0.04     .176    0.00    1200  
+#>  Body mass index                 │  0.04    <.001    0.02    1188  
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).

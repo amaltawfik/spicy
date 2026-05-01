@@ -212,13 +212,13 @@ for the underlying ASCII rendering engine.
 freq(sochealth, education)
 #> Frequency table: education
 #> 
-#>  Category      │ Values                     Freq.       Percent 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Valid         │ Lower secondary              261          21.8 
-#>                │ Upper secondary              539          44.9 
-#>                │ Tertiary                     400          33.3 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Total         │                             1200         100.0 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        261       21.8 
+#>             │ Upper secondary        539       44.9 
+#>             │ Tertiary               400       33.3 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -226,15 +226,15 @@ freq(sochealth, education)
 freq(sochealth, self_rated_health, sort = "-")
 #> Frequency table: self_rated_health
 #> 
-#>  Category      │ Values               Freq.       Percent       Valid Percent 
-#> ───────────────┼──────────────────────────────────────────────────────────────
-#>  Valid         │ Good                   558          46.5                47.3 
-#>                │ Very good              295          24.6                25.0 
-#>                │ Fair                   266          22.2                22.5 
-#>                │ Poor                    61           5.1                 5.2 
-#>  Missing       │ NA                      20           1.7                     
-#> ───────────────┼──────────────────────────────────────────────────────────────
-#>  Total         │                       1200         100.0               100.0 
+#>  Category   │ Values         Freq.    Percent    Valid Percent 
+#> ────────────┼──────────────────────────────────────────────────
+#>  Valid      │ Good             558       46.5             47.3 
+#>             │ Very good        295       24.6             25.0 
+#>             │ Fair             266       22.2             22.5 
+#>             │ Poor              61        5.1              5.2 
+#>  Missing    │ NA                20        1.7                  
+#> ────────────┼──────────────────────────────────────────────────
+#>  Total      │                 1200      100.0            100.0 
 #> 
 #> Label: Self-rated health
 #> Class: ordered, factor
@@ -247,14 +247,14 @@ x <- c(1, 2, 2, 3, 3, 3, NA)
 freq(x)
 #> Frequency table: x
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ 1                     1          14.3                16.7 
-#>                │ 2                     2          28.6                33.3 
-#>                │ 3                     3          42.9                50.0 
-#>  Missing       │ NA                    1          14.3                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       7         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ 1               1       14.3             16.7 
+#>             │ 2               2       28.6             33.3 
+#>             │ 3               3       42.9             50.0 
+#>  Missing    │ NA              1       14.3                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                 7      100.0            100.0 
 #> 
 #> Class: numeric
 #> Data: x
@@ -263,14 +263,14 @@ freq(x)
 freq(c(1, 2, 3, 99, 99), na_val = 99)
 #> Frequency table: c(1, 2, 3, 99, 99)
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ 1                     1          20.0                33.3 
-#>                │ 2                     1          20.0                33.3 
-#>                │ 3                     1          20.0                33.3 
-#>  Missing       │ NA                    2          40.0                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       5         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ 1               1       20.0             33.3 
+#>             │ 2               1       20.0             33.3 
+#>             │ 3               1       20.0             33.3 
+#>  Missing    │ NA              2       40.0                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                 5      100.0            100.0 
 #> 
 #> Class: numeric
 #> Data: c(1, 2, 3, 99, 99)
@@ -286,13 +286,13 @@ var_label(x_lbl) <- "Satisfaction level"
 freq(x_lbl, na_val = 1)
 #> Frequency table: x_lbl
 #> 
-#>  Category      │ Values                Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────────
-#>  Valid         │ [2] Medium                3          33.3                60.0 
-#>                │ [3] High                  2          22.2                40.0 
-#>  Missing       │ NA                        4          44.4                     
-#> ───────────────┼───────────────────────────────────────────────────────────────
-#>  Total         │                           9         100.0               100.0 
+#>  Category   │ Values          Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────────
+#>  Valid      │ [2] Medium          3       33.3             60.0 
+#>             │ [3] High            2       22.2             40.0 
+#>  Missing    │ NA                  4       44.4                  
+#> ────────────┼───────────────────────────────────────────────────
+#>  Total      │                     9      100.0            100.0 
 #> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
@@ -302,23 +302,23 @@ freq(x_lbl, na_val = 1)
 freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 #> Frequency table: x_lbl
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ Low                   3          33.3                37.5 
-#>                │ Medium                3          33.3                37.5 
-#>                │ High                  2          22.2                25.0 
-#>  Missing       │ NA                    1          11.1                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       9         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent    Cum. Percent 
+#> ────────────┼───────────────────────────────────────────────────────────────
+#>  Valid      │ Low             3       33.3             37.5            33.3 
+#>             │ Medium          3       33.3             37.5            66.7 
+#>             │ High            2       22.2             25.0            88.9 
+#>  Missing    │ NA              1       11.1                            100.0 
+#> ────────────┼───────────────────────────────────────────────────────────────
+#>  Total      │                 9      100.0            100.0           100.0 
 #> 
-#>  Category      │ Values            Cum. Percent       Cum. Valid Percent 
-#> ───────────────┼─────────────────────────────────────────────────────────
-#>  Valid         │ Low                       33.3                     37.5 
-#>                │ Medium                    66.7                     75.0 
-#>                │ High                      88.9                    100.0 
-#>  Missing       │ NA                       100.0                          
-#> ───────────────┼─────────────────────────────────────────────────────────
-#>  Total         │                          100.0                    100.0 
+#>  Category   │ Values      Cum. Valid Percent 
+#> ────────────┼────────────────────────────────
+#>  Valid      │ Low                       37.5 
+#>             │ Medium                    75.0 
+#>             │ High                     100.0 
+#>  Missing    │ NA                             
+#> ────────────┼────────────────────────────────
+#>  Total      │                          100.0 
 #> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
@@ -328,14 +328,14 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 freq(x_lbl, labelled_levels = "values", sort = "-")
 #> Frequency table: x_lbl
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ 1                     3          33.3                37.5 
-#>                │ 2                     3          33.3                37.5 
-#>                │ 3                     2          22.2                25.0 
-#>  Missing       │ NA                    1          11.1                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       9         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ 1               3       33.3             37.5 
+#>             │ 2               3       33.3             37.5 
+#>             │ 3               2       22.2             25.0 
+#>  Missing    │ NA              1       11.1                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                 9      100.0            100.0 
 #> 
 #> Label: Satisfaction level
 #> Class: haven_labelled, vctrs_vctr, double
@@ -347,13 +347,13 @@ f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
 freq(f, factor_levels = "all")
 #> Frequency table: f
 #> 
-#>  Category      │ Values            Freq.       Percent 
-#> ───────────────┼───────────────────────────────────────
-#>  Valid         │ Yes                   2          66.7 
-#>                │ No                    1          33.3 
-#>                │ Maybe                 0           0.0 
-#> ───────────────┼───────────────────────────────────────
-#>  Total         │                       3         100.0 
+#>  Category   │ Values      Freq.    Percent 
+#> ────────────┼──────────────────────────────
+#>  Valid      │ Yes             2       66.7 
+#>             │ No              1       33.3 
+#>             │ Maybe           0        0.0 
+#> ────────────┼──────────────────────────────
+#>  Total      │                 3      100.0 
 #> 
 #> Class: factor
 #> Data: f
@@ -368,13 +368,13 @@ df <- data.frame(
 freq(df, sex, weights = weight, rescale = TRUE)
 #> Frequency table: sex
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ Female                3          44.3                50.0 
-#>                │ Male                  3          44.3                50.0 
-#>  Missing       │ NA                    1          11.5                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       6         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ Female          3       44.3             50.0 
+#>             │ Male            3       44.3             50.0 
+#>  Missing    │ NA              1       11.5                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                 6      100.0            100.0 
 #> 
 #> Class: factor
 #> Data: df
@@ -384,13 +384,13 @@ freq(df, sex, weights = weight, rescale = TRUE)
 freq(df, sex, weights = weight, rescale = FALSE)
 #> Frequency table: sex
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ Female               27          44.3                50.0 
-#>                │ Male                 27          44.3                50.0 
-#>  Missing       │ NA                    7          11.5                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                      61         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ Female         27       44.3             50.0 
+#>             │ Male           27       44.3             50.0 
+#>  Missing    │ NA              7       11.5                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                61      100.0            100.0 
 #> 
 #> Class: factor
 #> Data: df
@@ -400,21 +400,21 @@ freq(df, sex, weights = weight, rescale = FALSE)
 freq(df$sex, weights = df$weight, cum = TRUE)
 #> Frequency table: sex
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ Female                3          44.3                50.0 
-#>                │ Male                  3          44.3                50.0 
-#>  Missing       │ NA                    1          11.5                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       6         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent    Cum. Percent 
+#> ────────────┼───────────────────────────────────────────────────────────────
+#>  Valid      │ Female          3       44.3             50.0            44.3 
+#>             │ Male            3       44.3             50.0            88.5 
+#>  Missing    │ NA              1       11.5                            100.0 
+#> ────────────┼───────────────────────────────────────────────────────────────
+#>  Total      │                 6      100.0            100.0           100.0 
 #> 
-#>  Category      │ Values            Cum. Percent       Cum. Valid Percent 
-#> ───────────────┼─────────────────────────────────────────────────────────
-#>  Valid         │ Female                    44.3                     50.0 
-#>                │ Male                      88.5                    100.0 
-#>  Missing       │ NA                       100.0                          
-#> ───────────────┼─────────────────────────────────────────────────────────
-#>  Total         │                          100.0                    100.0 
+#>  Category   │ Values      Cum. Valid Percent 
+#> ────────────┼────────────────────────────────
+#>  Valid      │ Female                    50.0 
+#>             │ Male                     100.0 
+#>  Missing    │ NA                             
+#> ────────────┼────────────────────────────────
+#>  Total      │                          100.0 
 #> 
 #> Class: factor
 #> Data: df
@@ -424,13 +424,13 @@ freq(df$sex, weights = df$weight, cum = TRUE)
 df |> freq(sex, sort = "name-")
 #> Frequency table: sex
 #> 
-#>  Category      │ Values            Freq.       Percent       Valid Percent 
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Valid         │ Male                  2          33.3                40.0 
-#>                │ Female                3          50.0                60.0 
-#>  Missing       │ NA                    1          16.7                     
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  Total         │                       6         100.0               100.0 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ Male            2       33.3             40.0 
+#>             │ Female          3       50.0             60.0 
+#>  Missing    │ NA              1       16.7                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                 6      100.0            100.0 
 #> 
 #> Class: factor
 #> Data: df

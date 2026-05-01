@@ -85,7 +85,7 @@ of table.</p>
 <span>  <span class="va">x</span>,</span>
 <span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"title"</span><span class="op">)</span>,</span>
 <span>  note <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"note"</span><span class="op">)</span>,</span>
-<span>  padding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"normal"</span>, <span class="st">"compact"</span>, <span class="st">"wide"</span><span class="op">)</span>,</span>
+<span>  padding <span class="op">=</span> <span class="fl">2L</span>,</span>
 <span>  first_column_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  row_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  column_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -118,10 +118,11 @@ attribute of <code>x</code> if present.</p></dd>
 
 
 <dt id="arg-padding">padding<a class="anchor" aria-label="anchor" href="#arg-padding"></a></dt>
-<dd><p>Character string controlling horizontal spacing between columns:</p><ul><li><p><code>"normal"</code> - moderate spacing (the default)</p></li>
-<li><p><code>"compact"</code> - minimal spacing</p></li>
-<li><p><code>"wide"</code> - extra spacing (for wide displays)</p></li>
-</ul></dd>
+<dd><p>Non-negative integer giving the number of extra
+characters added to each column's auto-computed width
+(max of cell-content width and header width). Defaults to
+<code>2L</code>. See <code><a href="build_ascii_table.html">build_ascii_table()</a></code> for the precise formula and
+the migration note from the pre-0.11.0 string enum.</p></dd>
 
 
 <dt id="arg-first-column-line">first_column_line<a class="anchor" aria-label="anchor" href="#arg-first-column-line"></a></dt>
@@ -208,13 +209,13 @@ panels while repeating the left-most identifier columns.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: Example</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Category      <span style="color: #9E9E9E;">│</span> Values            Freq.       Percent </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────┼───────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid         <span style="color: #9E9E9E;">│</span> Yes                  12          57.1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                <span style="color: #9E9E9E;">│</span> No                    8          38.1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Missing       <span style="color: #9E9E9E;">│</span> NA                    1           4.8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────┼───────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total         <span style="color: #9E9E9E;">│</span>                      21           100 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Category   <span style="color: #9E9E9E;">│</span> Values      Freq.    Percent </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼──────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Valid      <span style="color: #9E9E9E;">│</span> Yes            12       57.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             <span style="color: #9E9E9E;">│</span> No              8       38.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Missing    <span style="color: #9E9E9E;">│</span> NA              1        4.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼──────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total      <span style="color: #9E9E9E;">│</span>                21        100 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: data.frame</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: demo</span></span>

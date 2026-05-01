@@ -145,13 +145,13 @@ varlist(sochealth)
 freq(sochealth, education)
 #> Frequency table: education
 #> 
-#>  Category      │ Values                     Freq.       Percent 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Valid         │ Lower secondary              261          21.8 
-#>                │ Upper secondary              539          44.9 
-#>                │ Tertiary                     400          33.3 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Total         │                             1200         100.0 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        261       21.8 
+#>             │ Upper secondary        539       44.9 
+#>             │ Tertiary               400       33.3 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -159,21 +159,13 @@ freq(sochealth, education)
 cross_tab(sochealth, education, self_rated_health)
 #> Crosstable: education x self_rated_health (N)
 #> 
-#>  Values               │      Poor       Fair       Good       Very good 
-#> ──────────────────────┼─────────────────────────────────────────────────
-#>  Lower secondary      │        28         86        102              44 
-#>  Upper secondary      │        28        118        263             118 
-#>  Tertiary             │         5         62        193             133 
-#> ──────────────────────┼─────────────────────────────────────────────────
-#>  Total                │        61        266        558             295 
-#> 
-#>  Values               │      Total 
-#> ──────────────────────┼────────────
-#>  Lower secondary      │        260 
-#>  Upper secondary      │        527 
-#>  Tertiary             │        393 
-#> ──────────────────────┼────────────
-#>  Total                │       1180 
+#>  Values            │   Poor    Fair    Good    Very good │   Total 
+#> ───────────────────┼─────────────────────────────────────┼─────────
+#>  Lower secondary   │     28      86     102           44 │     260 
+#>  Upper secondary   │     28     118     263          118 │     527 
+#>  Tertiary          │      5      62     193          133 │     393 
+#> ───────────────────┼─────────────────────────────────────┼─────────
+#>  Total             │     61     266     558          295 │    1180 
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20

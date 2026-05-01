@@ -73,13 +73,13 @@ valid and cumulative percentages.
 freq(sochealth, education)
 #> Frequency table: education
 #> 
-#>  Category      │ Values                     Freq.       Percent 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Valid         │ Lower secondary              261          21.8 
-#>                │ Upper secondary              539          44.9 
-#>                │ Tertiary                     400          33.3 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Total         │                             1200         100.0 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        261       21.8 
+#>             │ Upper secondary        539       44.9 
+#>             │ Tertiary               400       33.3 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -94,13 +94,13 @@ the total weighted N matches the unweighted N:
 freq(sochealth, education, weights = weight, rescale = TRUE)
 #> Frequency table: education
 #> 
-#>  Category      │ Values                     Freq.       Percent 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Valid         │ Lower secondary              259          21.6 
-#>                │ Upper secondary              546          45.5 
-#>                │ Tertiary                     395          32.9 
-#> ───────────────┼────────────────────────────────────────────────
-#>  Total         │                             1200         100.0 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        259       21.6 
+#>             │ Upper secondary        546       45.5 
+#>             │ Tertiary               395       32.9 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100.0 
 #> 
 #> Label: Highest education level
 #> Class: ordered, factor
@@ -119,19 +119,12 @@ chi-squared test, and Cramer’s V:
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  No          │                  179                   415            332 
-#>  Yes         │                   78                   112             59 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  Total       │                  257                   527            391 
-#> 
-#>  Values      │      Total 
-#> ─────────────┼────────────
-#>  No          │        926 
-#>  Yes         │        249 
-#> ─────────────┼────────────
-#>  Total       │       1175 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │               179                415         332 │     926 
+#>  Yes      │                78                112          59 │     249 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
@@ -144,21 +137,13 @@ Add percentages with `percent`:
 cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  No          │                 69.6                  78.7           84.9 
-#>  Yes         │                 30.4                  21.3           15.1 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  Total       │                100.0                 100.0          100.0 
-#>  N           │                  257                   527            391 
-#> 
-#>  Values      │      Total 
-#> ─────────────┼────────────
-#>  No          │       78.8 
-#>  Yes         │       21.2 
-#> ─────────────┼────────────
-#>  Total       │      100.0 
-#>  N           │       1175 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │              69.6               78.7        84.9 │    78.8 
+#>  Yes      │              30.4               21.3        15.1 │    21.2 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │             100.0              100.0       100.0 │   100.0 
+#>  N        │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
@@ -171,38 +156,24 @@ Group by a third variable with `by`:
 cross_tab(sochealth, smoking, education, by = sex)
 #> Crosstable: smoking x education (N) | sex = Female
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  No          │                   95                   220            160 
-#>  Yes         │                   38                    62             31 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  Total       │                  133                   282            191 
-#> 
-#>  Values      │      Total 
-#> ─────────────┼────────────
-#>  No          │        475 
-#>  Yes         │        131 
-#> ─────────────┼────────────
-#>  Total       │        606 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │                95                220         160 │     475 
+#>  Yes      │                38                 62          31 │     131 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │               133                282         191 │     606 
 #> 
 #> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  No          │                   84                   195            172 
-#>  Yes         │                   40                    50             28 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  Total       │                  124                   245            200 
-#> 
-#>  Values      │      Total 
-#> ─────────────┼────────────
-#>  No          │        451 
-#>  Yes         │        118 
-#> ─────────────┼────────────
-#>  Total       │        569 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │                84                195         172 │     451 
+#>  Yes      │                40                 50          28 │     118 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │               124                245         200 │     569 
 #> 
 #> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
@@ -218,23 +189,14 @@ Cramer’s V:
 cross_tab(sochealth, self_rated_health, education)
 #> Crosstable: self_rated_health x education (N)
 #> 
-#>  Values         │      Lower secondary       Upper secondary       Tertiary 
-#> ────────────────┼───────────────────────────────────────────────────────────
-#>  Poor           │                   28                    28              5 
-#>  Fair           │                   86                   118             62 
-#>  Good           │                  102                   263            193 
-#>  Very good      │                   44                   118            133 
-#> ────────────────┼───────────────────────────────────────────────────────────
-#>  Total          │                  260                   527            393 
-#> 
-#>  Values         │      Total 
-#> ────────────────┼────────────
-#>  Poor           │         61 
-#>  Fair           │        266 
-#>  Good           │        558 
-#>  Very good      │        295 
-#> ────────────────┼────────────
-#>  Total          │       1180 
+#>  Values      │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Poor        │                28                 28           5 │      61 
+#>  Fair        │                86                118          62 │     266 
+#>  Good        │               102                263         193 │     558 
+#>  Very good   │                44                118         133 │     295 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Total       │               260                527         393 │    1180 
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20

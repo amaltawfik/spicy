@@ -186,6 +186,24 @@
   rendered outputs (new `align` argument, default `"decimal"`). Pass
   `align = "auto"` to restore the previous behaviour.
 
+- [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
+  and
+  [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  (the ASCII rendering engine used by
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  the `table_*()` print methods) replace the `padding` string enum
+  (`"compact"` / `"normal"` / `"wide"`) with a single non-negative
+  integer giving the extra characters added to each column’s
+  auto-computed width. The previous `"normal"` default mapped to `+5L`,
+  which produced very airy console output compared to the Stata / SPSS /
+  `cli` / tibble convention; the new default `2L` matches that
+  convention and yields tables roughly 40 % narrower. Passing a string
+  raises an actionable migration error rather than silently mapping to
+  an integer (see
+  [`?build_ascii_table`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)).
+  Migration: `"compact" -> 0L`, `"normal" -> 2L`, `"wide" -> 4L`.
+
 - `table_continuous_lm(output = "long")` returns `NA` in `es_type` and
   `es_value` when `effect_size = "none"` (previously populated with
   `"f2"` regardless). Set `effect_size = "f2"` to restore.
