@@ -184,15 +184,15 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">income_group</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Frequency table: income_group</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Category │ Values        Freq.  Percent  Valid Percent </span></span>
-<span><span class="co">#&gt; ──────────┼─────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Valid    │ Low             247     20.6           20.9 </span></span>
-<span><span class="co">#&gt;           │ Lower middle    388     32.3           32.8 </span></span>
-<span><span class="co">#&gt;           │ Upper middle    328     27.3           27.7 </span></span>
-<span><span class="co">#&gt;           │ High            219     18.2           18.5 </span></span>
-<span><span class="co">#&gt;  Missing  │ NA               18      1.5                </span></span>
-<span><span class="co">#&gt; ──────────┼─────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Total    │                1200    100.0          100.0 </span></span>
+<span><span class="co">#&gt;  Category   │ Values            Freq.    Percent    Valid Percent </span></span>
+<span><span class="co">#&gt; ────────────┼─────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Valid      │ Low                 247       20.6             20.9 </span></span>
+<span><span class="co">#&gt;             │ Lower middle        388       32.3             32.8 </span></span>
+<span><span class="co">#&gt;             │ Upper middle        328       27.3             27.7 </span></span>
+<span><span class="co">#&gt;             │ High                219       18.2             18.5 </span></span>
+<span><span class="co">#&gt;  Missing    │ NA                   18        1.5                  </span></span>
+<span><span class="co">#&gt; ────────────┼─────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Total      │                    1200      100.0            100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Label: Household income group</span></span>
 <span><span class="co">#&gt; Class: ordered, factor</span></span>
@@ -201,23 +201,15 @@
 <span><span class="fu"><a href="reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Crosstable: smoking x education (Column %)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Lower secondary       Upper secondary       Tertiary </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  No          │                 69.6                  78.7           84.9 </span></span>
-<span><span class="co">#&gt;  Yes         │                 30.4                  21.3           15.1 </span></span>
-<span><span class="co">#&gt; ─────────────┼───────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Total       │                100.0                 100.0          100.0 </span></span>
-<span><span class="co">#&gt;  N           │                  257                   527            391 </span></span>
+<span><span class="co">#&gt;  Values   │   Lower secondary    Upper secondary    Tertiary │   Total </span></span>
+<span><span class="co">#&gt; ──────────┼──────────────────────────────────────────────────┼─────────</span></span>
+<span><span class="co">#&gt;  No       │              69.6               78.7        84.9 │    78.8 </span></span>
+<span><span class="co">#&gt;  Yes      │              30.4               21.3        15.1 │    21.2 </span></span>
+<span><span class="co">#&gt; ──────────┼──────────────────────────────────────────────────┼─────────</span></span>
+<span><span class="co">#&gt;  Total    │             100.0              100.0       100.0 │   100.0 </span></span>
+<span><span class="co">#&gt;  N        │               257                527         391 │    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values      │      Total </span></span>
-<span><span class="co">#&gt; ─────────────┼────────────</span></span>
-<span><span class="co">#&gt;  No          │       78.8 </span></span>
-<span><span class="co">#&gt;  Yes         │       21.2 </span></span>
-<span><span class="co">#&gt; ─────────────┼────────────</span></span>
-<span><span class="co">#&gt;  Total       │      100.0 </span></span>
-<span><span class="co">#&gt;  N           │       1175 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; 0.001</span></span>
+<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span><span class="co">#&gt; Cramer's V = 0.14</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
 </div>
@@ -251,15 +243,15 @@
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Categorical table</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               │        n          % </span></span>
-<span><span class="co">#&gt; ────────────────────────┼─────────────────────</span></span>
-<span><span class="co">#&gt;  Current smoker         │                     </span></span>
-<span><span class="co">#&gt;    No                   │      926       78.8 </span></span>
-<span><span class="co">#&gt;    Yes                  │      249       21.2 </span></span>
-<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Physical activity      │                     </span></span>
-<span><span class="co">#&gt;    No                   │      650       54.2 </span></span>
-<span><span class="co">#&gt;    Yes                  │      550       45.8</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable            │   n      %    </span></span>
+<span><span class="co">#&gt; ─────────────────────┼───────────────</span></span>
+<span><span class="co">#&gt;  Current smoker      │               </span></span>
+<span><span class="co">#&gt;    No                │  926    78.8  </span></span>
+<span><span class="co">#&gt;    Yes               │  249    21.2  </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity   │               </span></span>
+<span><span class="co">#&gt;    No                │  650    54.2  </span></span>
+<span><span class="co">#&gt;    Yes               │  550    45.8</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -275,32 +267,32 @@
 <span><span class="co">#&gt;  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; ───────────────────┼─────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  Current smoker    │                                                         </span></span>
-<span><span class="co">#&gt;    No              │               179               69.6                415 </span></span>
-<span><span class="co">#&gt;    Yes             │                78               30.4                112 </span></span>
+<span><span class="co">#&gt;    No              │        179               69.6                415        </span></span>
+<span><span class="co">#&gt;    Yes             │         78               30.4                112        </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  Physical activity │                                                         </span></span>
-<span><span class="co">#&gt;    No              │               177               67.8                310 </span></span>
-<span><span class="co">#&gt;    Yes             │                84               32.2                229 </span></span>
+<span><span class="co">#&gt;    No              │        177               67.8                310        </span></span>
+<span><span class="co">#&gt;    Yes             │         84               32.2                229        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
 <span><span class="co">#&gt; ───────────────────┼────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  Current smoker    │                                                    </span></span>
-<span><span class="co">#&gt;    No              │              78.7         332        84.9      926 </span></span>
-<span><span class="co">#&gt;    Yes             │              21.3          59        15.1      249 </span></span>
+<span><span class="co">#&gt;    No              │       78.7            332         84.9       926   </span></span>
+<span><span class="co">#&gt;    Yes             │       21.3             59         15.1       249   </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  Physical activity │                                                    </span></span>
-<span><span class="co">#&gt;    No              │              57.5         163        40.8      650 </span></span>
-<span><span class="co">#&gt;    Yes             │              42.5         237        59.2      550 </span></span>
+<span><span class="co">#&gt;    No              │       57.5            163         40.8       650   </span></span>
+<span><span class="co">#&gt;    Yes             │       42.5            237         59.2       550   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          │ Total %      p  Cramer's V </span></span>
+<span><span class="co">#&gt;  Variable          │ Total %    p    Cramer's V </span></span>
 <span><span class="co">#&gt; ───────────────────┼────────────────────────────</span></span>
-<span><span class="co">#&gt;  Current smoker    │          &lt;.001         .14 </span></span>
-<span><span class="co">#&gt;    No              │    78.8                    </span></span>
-<span><span class="co">#&gt;    Yes             │    21.2                    </span></span>
+<span><span class="co">#&gt;  Current smoker    │          &lt;.001     .14     </span></span>
+<span><span class="co">#&gt;    No              │  78.8                      </span></span>
+<span><span class="co">#&gt;    Yes             │  21.2                      </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Physical activity │          &lt;.001         .21 </span></span>
-<span><span class="co">#&gt;    No              │    54.2                    </span></span>
-<span><span class="co">#&gt;    Yes             │    45.8</span></span></code></pre></div>
+<span><span class="co">#&gt;  Physical activity │          &lt;.001     .21     </span></span>
+<span><span class="co">#&gt;    No              │  54.2                      </span></span>
+<span><span class="co">#&gt;    Yes             │  45.8</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -308,15 +300,15 @@
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Descriptive statistics</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │     M    SD    Min    Max  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable                       │   M     SD    Min    Max   95% CI LL </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼──────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Body mass index                │ 25.93  3.72  16.00  38.90      25.72 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) │  3.55  1.25   1.00   5.00       3.48 </span></span>
+<span><span class="co">#&gt;  Body mass index                │ 25.93  3.72  16.00  38.90    25.72   </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │  3.55  1.25   1.00   5.00     3.48   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │ 95% CI UL     n </span></span>
+<span><span class="co">#&gt;  Variable                       │ 95% CI UL   n   </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼─────────────────</span></span>
-<span><span class="co">#&gt;  Body mass index                │     26.14  1188 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) │      3.62  1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index                │   26.14    1188 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │    3.62    1192</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -325,7 +317,7 @@
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Descriptive statistics</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │ Group                M    SD    Min    Max </span></span>
+<span><span class="co">#&gt;  Variable                       │ Group              M     SD    Min    Max  </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary  26.02  3.43  16.00  37.10 </span></span>
@@ -335,17 +327,17 @@
 <span><span class="co">#&gt;                                 │ Upper secondary   3.53  1.19   1.00   5.00 </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary          4.11  1.04   1.00   5.00 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │ Group            95% CI LL  95% CI UL    n </span></span>
+<span><span class="co">#&gt;  Variable                       │ Group            95% CI LL  95% CI UL   n  </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;  Body mass index                │ Lower secondary      27.66      28.51  260 </span></span>
-<span><span class="co">#&gt;                                 │ Upper secondary      25.73      26.31  534 </span></span>
-<span><span class="co">#&gt;                                 │ Tertiary             24.04      24.74  394 </span></span>
+<span><span class="co">#&gt;  Body mass index                │ Lower secondary    27.66      28.51    260 </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary    25.73      26.31    534 </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary           24.04      24.74    394 </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary       2.57       2.86  259 </span></span>
-<span><span class="co">#&gt;                                 │ Upper secondary       3.43       3.63  534 </span></span>
-<span><span class="co">#&gt;                                 │ Tertiary              4.01       4.21  399 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary     2.57       2.86    259 </span></span>
+<span><span class="co">#&gt;                                 │ Upper secondary     3.43       3.63    534 </span></span>
+<span><span class="co">#&gt;                                 │ Tertiary            4.01       4.21    399 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │ Group                p </span></span>
+<span><span class="co">#&gt;  Variable                       │ Group              p   </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼────────────────────────</span></span>
 <span><span class="co">#&gt;  Body mass index                │ Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary        </span></span>

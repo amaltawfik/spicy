@@ -143,15 +143,15 @@ for more on
 freq(sochealth, income_group)
 #> Frequency table: income_group
 #> 
-#>  Category │ Values        Freq.  Percent  Valid Percent 
-#> ──────────┼─────────────────────────────────────────────
-#>  Valid    │ Low             247     20.6           20.9 
-#>           │ Lower middle    388     32.3           32.8 
-#>           │ Upper middle    328     27.3           27.7 
-#>           │ High            219     18.2           18.5 
-#>  Missing  │ NA               18      1.5                
-#> ──────────┼─────────────────────────────────────────────
-#>  Total    │                1200    100.0          100.0 
+#>  Category   │ Values            Freq.    Percent    Valid Percent 
+#> ────────────┼─────────────────────────────────────────────────────
+#>  Valid      │ Low                 247       20.6             20.9 
+#>             │ Lower middle        388       32.3             32.8 
+#>             │ Upper middle        328       27.3             27.7 
+#>             │ High                219       18.2             18.5 
+#>  Missing    │ NA                   18        1.5                  
+#> ────────────┼─────────────────────────────────────────────────────
+#>  Total      │                    1200      100.0            100.0 
 #> 
 #> Label: Household income group
 #> Class: ordered, factor
@@ -160,23 +160,15 @@ freq(sochealth, income_group)
 cross_tab(sochealth, smoking, education, percent = "col")
 #> Crosstable: smoking x education (Column %)
 #> 
-#>  Values      │      Lower secondary       Upper secondary       Tertiary 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  No          │                 69.6                  78.7           84.9 
-#>  Yes         │                 30.4                  21.3           15.1 
-#> ─────────────┼───────────────────────────────────────────────────────────
-#>  Total       │                100.0                 100.0          100.0 
-#>  N           │                  257                   527            391 
+#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  No       │              69.6               78.7        84.9 │    78.8 
+#>  Yes      │              30.4               21.3        15.1 │    21.2 
+#> ──────────┼──────────────────────────────────────────────────┼─────────
+#>  Total    │             100.0              100.0       100.0 │   100.0 
+#>  N        │               257                527         391 │    1175 
 #> 
-#>  Values      │      Total 
-#> ─────────────┼────────────
-#>  No          │       78.8 
-#>  Yes         │       21.2 
-#> ─────────────┼────────────
-#>  Total       │      100.0 
-#>  N           │       1175 
-#> 
-#> Chi-2(2) = 21.6, p < 0.001
+#> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
 ```
 
@@ -220,15 +212,15 @@ table_categorical(
 )
 #> Categorical table
 #> 
-#>  Variable               │        n          % 
-#> ────────────────────────┼─────────────────────
-#>  Current smoker         │                     
-#>    No                   │      926       78.8 
-#>    Yes                  │      249       21.2 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity      │                     
-#>    No                   │      650       54.2 
-#>    Yes                  │      550       45.8
+#>  Variable            │   n      %    
+#> ─────────────────────┼───────────────
+#>  Current smoker      │               
+#>    No                │  926    78.8  
+#>    Yes               │  249    21.2  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity   │               
+#>    No                │  650    54.2  
+#>    Yes               │  550    45.8
 ```
 
 ``` r
@@ -247,32 +239,32 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  Current smoker    │                                                         
-#>    No              │               179               69.6                415 
-#>    Yes             │                78               30.4                112 
+#>    No              │        179               69.6                415        
+#>    Yes             │         78               30.4                112        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                         
-#>    No              │               177               67.8                310 
-#>    Yes             │                84               32.2                229 
+#>    No              │        177               67.8                310        
+#>    Yes             │         84               32.2                229        
 #> 
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  Current smoker    │                                                    
-#>    No              │              78.7         332        84.9      926 
-#>    Yes             │              21.3          59        15.1      249 
+#>    No              │       78.7            332         84.9       926   
+#>    Yes             │       21.3             59         15.1       249   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                    
-#>    No              │              57.5         163        40.8      650 
-#>    Yes             │              42.5         237        59.2      550 
+#>    No              │       57.5            163         40.8       650   
+#>    Yes             │       42.5            237         59.2       550   
 #> 
-#>  Variable          │ Total %      p  Cramer's V 
+#>  Variable          │ Total %    p    Cramer's V 
 #> ───────────────────┼────────────────────────────
-#>  Current smoker    │          <.001         .14 
-#>    No              │    78.8                    
-#>    Yes             │    21.2                    
+#>  Current smoker    │          <.001     .14     
+#>    No              │  78.8                      
+#>    Yes             │  21.2                      
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │          <.001         .21 
-#>    No              │    54.2                    
-#>    Yes             │    45.8
+#>  Physical activity │          <.001     .21     
+#>    No              │  54.2                      
+#>    Yes             │  45.8
 ```
 
 ``` r
@@ -283,15 +275,15 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                       │     M    SD    Min    Max  95% CI LL 
+#>  Variable                       │   M     SD    Min    Max   95% CI LL 
 #> ────────────────────────────────┼──────────────────────────────────────
-#>  Body mass index                │ 25.93  3.72  16.00  38.90      25.72 
-#>  Satisfaction with health (1-5) │  3.55  1.25   1.00   5.00       3.48 
+#>  Body mass index                │ 25.93  3.72  16.00  38.90    25.72   
+#>  Satisfaction with health (1-5) │  3.55  1.25   1.00   5.00     3.48   
 #> 
-#>  Variable                       │ 95% CI UL     n 
+#>  Variable                       │ 95% CI UL   n   
 #> ────────────────────────────────┼─────────────────
-#>  Body mass index                │     26.14  1188 
-#>  Satisfaction with health (1-5) │      3.62  1192
+#>  Body mass index                │   26.14    1188 
+#>  Satisfaction with health (1-5) │    3.62    1192
 ```
 
 ``` r
@@ -303,7 +295,7 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                       │ Group                M    SD    Min    Max 
+#>  Variable                       │ Group              M     SD    Min    Max  
 #> ────────────────────────────────┼────────────────────────────────────────────
 #>  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 
 #>                                 │ Upper secondary  26.02  3.43  16.00  37.10 
@@ -313,17 +305,17 @@ table_continuous(
 #>                                 │ Upper secondary   3.53  1.19   1.00   5.00 
 #>                                 │ Tertiary          4.11  1.04   1.00   5.00 
 #> 
-#>  Variable                       │ Group            95% CI LL  95% CI UL    n 
+#>  Variable                       │ Group            95% CI LL  95% CI UL   n  
 #> ────────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index                │ Lower secondary      27.66      28.51  260 
-#>                                 │ Upper secondary      25.73      26.31  534 
-#>                                 │ Tertiary             24.04      24.74  394 
+#>  Body mass index                │ Lower secondary    27.66      28.51    260 
+#>                                 │ Upper secondary    25.73      26.31    534 
+#>                                 │ Tertiary           24.04      24.74    394 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary       2.57       2.86  259 
-#>                                 │ Upper secondary       3.43       3.63  534 
-#>                                 │ Tertiary              4.01       4.21  399 
+#>  Satisfaction with health (1-5) │ Lower secondary     2.57       2.86    259 
+#>                                 │ Upper secondary     3.43       3.63    534 
+#>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group                p 
+#>  Variable                       │ Group              p   
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        

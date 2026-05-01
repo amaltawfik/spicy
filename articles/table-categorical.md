@@ -218,14 +218,24 @@ pkgdown_dark_gt(
 
 ## Association measures and confidence intervals
 
-By default,
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-reports Cramer’s V for nominal variables and automatically switches to
-Kendall’s Tau-b when both variables are ordered factors. Override with
-`assoc_measure`:
+picks the association measure per row variable based on the variable
+type (`assoc_measure = "auto"`, the default):
+
+- **2x2** (binary row variable vs. binary `by`) -\> `phi`,
+- both ordered factors -\> Kendall’s `tau_b`,
+- otherwise -\> Cramer’s `V`.
+
+When the chosen measures differ across rows, the column header collapses
+to `"Effect size"` and an APA-style `Note.` line documents which measure
+was used for each variable.
+
+Override with a single string for uniform application, or with a named
+vector to mix measures per row:
 
 ``` r
 
+# Uniform: same measure for every row variable
 table_categorical(
   sochealth,
   select = smoking,
@@ -241,6 +251,37 @@ table_categorical(
 | smoking |  |  |  |  |  |  |  |  | \<.001 | .00 |
 |     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
 |     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
+
+``` r
+
+# Per-row: pick the right measure for each variable.
+# `smoking` x `education` is 2x3 (binary x ordered) -> Cramer's V;
+# `self_rated_health` x `education` is ordered x ordered -> Tau-b.
+# The mixed result collapses the header to "Effect size" and adds an
+# APA `Note.` line documenting the per-row measure.
+table_categorical(
+  sochealth,
+  select = c(smoking, self_rated_health),
+  by = education,
+  assoc_measure = c(
+    smoking           = "cramer_v",
+    self_rated_health = "tau_b"
+  ),
+  output = "tinytable"
+)
+```
+
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Effect size |
+|----|----|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % | n | % |  |  |
+| smoking |  |  |  |  |  |  |  |  | \<.001 | .14 |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |  |  |
+|     Yes | 78 | 30.4 | 112 | 21.3 | 59 | 15.1 | 249 | 21.2 |  |  |
+| self_rated_health |  |  |  |  |  |  |  |  | \<.001 | .20 |
+|     Poor | 28 | 10.8 | 28 | 5.3 | 5 | 1.3 | 61 | 5.2 |  |  |
+|     Fair | 86 | 33.1 | 118 | 22.4 | 62 | 15.8 | 266 | 22.5 |  |  |
+|     Good | 102 | 39.2 | 263 | 49.9 | 193 | 49.1 | 558 | 47.3 |  |  |
+|     Very good | 44 | 16.9 | 118 | 22.4 | 133 | 33.8 | 295 | 25.0 |  |  |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (gt, tinytable, flextable), the CI is shown inline:
