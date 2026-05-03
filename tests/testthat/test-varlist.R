@@ -163,6 +163,45 @@ test_that("varlist_title() handles magrittr-style pipe calls", {
   expect_equal(varlist_title(quote(df %>% head())), "vl: df*")
 })
 
+test_that("varlist_title() recognises modern dplyr/tidyr verbs (curated)", {
+  # Verbs added to the curated fast-path list. Bare names: quoted
+  # expressions are parsed only, never evaluated, so no namespace is
+  # required at test time.
+  expect_equal(varlist_title(quote(pivot_longer(df, everything()))), "vl: df*")
+  expect_equal(varlist_title(quote(count(df, x))), "vl: df*")
+  expect_equal(varlist_title(quote(slice_head(df, n = 5))), "vl: df*")
+  expect_equal(varlist_title(quote(left_join(df, other))), "vl: df*")
+  expect_equal(varlist_title(quote(bind_rows(df, other))), "vl: df*")
+})
+
+test_that("varlist_is_data_first() fast path hits curated list", {
+  expect_true(varlist_is_data_first("filter"))
+  expect_true(varlist_is_data_first("pivot_longer"))
+  expect_true(varlist_is_data_first("left_join"))
+})
+
+test_that("varlist_is_data_first() slow path introspects loaded verbs", {
+  skip_if_not_installed("dplyr")
+  # Force-load dplyr so the introspection branch sees its namespace
+  loadNamespace("dplyr")
+
+  # `dplyr::pull(.data, var, ...)` -- first formal is `.data`, NOT in
+  # the curated list, so this only succeeds via introspection.
+  expect_false("pull" %in% varlist_data_first_calls())
+  expect_true(varlist_is_data_first("pull"))
+})
+
+test_that("varlist_is_data_first() rejects unknown / non-data-first verbs", {
+  expect_false(varlist_is_data_first("zzz_nonexistent_verb_xyz"))
+
+  # `dplyr::across(.cols, ...)` -- first formal is `.cols`, NOT data-first
+  if (requireNamespace("dplyr", quietly = TRUE)) {
+    loadNamespace("dplyr")
+    expect_false("across" %in% varlist_data_first_calls())
+    expect_false(varlist_is_data_first("across"))
+  }
+})
+
 test_that("varlist_title() avoids ambiguous lookup and call arguments", {
   expect_equal(varlist_title(quote(get(name))), "vl: <data>")
   expect_equal(varlist_title(quote(fun(x, df))), "vl: <data>")
