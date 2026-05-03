@@ -403,14 +403,12 @@ cross_tab <- function(
     }
     if (anyNA(w)) {
       n_na <- sum(is.na(w))
-      warning(
+      spicy_warn(
         sprintf(
           "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
           n_na,
           if (n_na > 1L) "s" else ""
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_dropped_na")
       # Drop NA-weighted rows up front so they never reach `xtabs()` or
       # `complete.cases()` (where they would otherwise inflate
       # `n_complete` during rescale).
@@ -423,10 +421,8 @@ cross_tab <- function(
   }
 
   if (rescale && rlang::quo_is_null(w_expr)) {
-    warning(
-      "`rescale = TRUE` has no effect since no weights provided.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`rescale = TRUE` has no effect since no weights provided.", class = "spicy_ignored_arg")
   }
 
   data$`..spicy_w` <- w
@@ -588,14 +584,12 @@ cross_tab <- function(
       # Yates correction only meaningful for 2x2 tables
       correct_used <- isTRUE(correct) && all(dim(tab_stats) == c(2, 2))
       if (isTRUE(correct) && !correct_used) {
-        warning(
+        spicy_warn(
           sprintf(
             "`correct = TRUE` ignored: Yates continuity correction only applies to 2x2 tables (this %dx%d table is not).",
             nrow(tab_stats),
             ncol(tab_stats)
-          ),
-          call. = FALSE
-        )
+          ), class = "spicy_ignored_arg")
       }
       chi <- suppressWarnings(stats::chisq.test(
         tab_stats,

@@ -587,10 +587,8 @@ table_continuous <- function(
   }
   if ((p_value || statistic) && !has_group) {
     if (p_value_explicit || statistic) {
-      warning(
-        "`p_value` and `statistic` are ignored when `by` is not used.",
-        call. = FALSE
-      )
+      spicy_warn(
+        "`p_value` and `statistic` are ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     p_value <- FALSE
   }
@@ -602,24 +600,18 @@ table_continuous <- function(
       !has_es_request &&
       !effect_size_ci
   ) {
-    warning(
-      "`test` is ignored when both `p_value` and `statistic` are FALSE.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`test` is ignored when both `p_value` and `statistic` are FALSE.", class = "spicy_ignored_arg")
   }
   do_test <- (p_value || statistic) && has_group
 
   if ((has_es_request || effect_size_ci) && !has_group) {
-    warning(
-      "`effect_size` is ignored when `by` is not used.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`effect_size` is ignored when `by` is not used.", class = "spicy_ignored_arg")
   }
   if (effect_size_ci && !has_es_request) {
-    warning(
-      "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.", class = "spicy_ignored_arg")
     effect_size <- "auto"
     has_es_request <- TRUE
   }
@@ -677,7 +669,7 @@ table_continuous <- function(
   }
 
   if (length(numeric_cols) == 0L) {
-    warning("No numeric columns selected.", call. = FALSE)
+    spicy_warn("No numeric columns selected.", class = "spicy_no_selection")
     return(data.frame())
   }
 
@@ -732,14 +724,12 @@ table_continuous <- function(
     groups <- data[[group_col_name]]
     n_na_groups <- sum(is.na(groups))
     if (n_na_groups > 0L) {
-      warning(
+      spicy_warn(
         sprintf(
           "%d observation(s) with NA in `%s` were excluded.",
           n_na_groups,
           group_col_name
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_dropped_na")
     }
     group_levels <- if (is.factor(groups)) {
       levels(groups)

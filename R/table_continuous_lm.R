@@ -959,10 +959,8 @@ table_continuous_lm <- function(
   }
 
   if (isTRUE(effect_size_ci) && identical(effect_size, "none")) {
-    warning(
-      "`effect_size_ci` is ignored when `effect_size = \"none\"`.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`effect_size_ci` is ignored when `effect_size = \"none\"`.", class = "spicy_ignored_arg")
     effect_size_ci <- FALSE
   }
 
@@ -981,10 +979,8 @@ table_continuous_lm <- function(
     }
   }
   if (isTRUE(show_weighted_n) && is.null(weights_vec)) {
-    warning(
-      "`show_weighted_n` is ignored when `weights` is not supplied.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`show_weighted_n` is ignored when `weights` is not supplied.", class = "spicy_ignored_arg")
     show_weighted_n <- FALSE
   }
 
@@ -1081,7 +1077,7 @@ table_continuous_lm <- function(
   }
 
   if (length(numeric_outcomes) == 0L) {
-    warning("No numeric outcome columns selected.", call. = FALSE)
+    spicy_warn("No numeric outcome columns selected.", class = "spicy_no_selection")
     return(data.frame())
   }
 
@@ -1681,7 +1677,7 @@ compute_lm_vcov <- function(
     return(tryCatch(
       sandwich::vcovHC(fit, type = type),
       error = function(e) {
-        warning(
+        spicy_warn(
           sprintf(
             paste0(
               "Robust `vcov = \"%s\"` could not be computed (%s); ",
@@ -1690,9 +1686,7 @@ compute_lm_vcov <- function(
             ),
             type,
             conditionMessage(e)
-          ),
-          call. = FALSE
-        )
+          ), class = "spicy_fallback")
         stats::vcov(fit)
       }
     ))
@@ -1719,7 +1713,7 @@ compute_lm_vcov <- function(
     return(tryCatch(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
       error = function(e) {
-        warning(
+        spicy_warn(
           sprintf(
             paste0(
               "Cluster-robust `vcov = \"%s\"` could not be computed (%s); ",
@@ -1728,9 +1722,7 @@ compute_lm_vcov <- function(
             ),
             type,
             conditionMessage(e)
-          ),
-          call. = FALSE
-        )
+          ), class = "spicy_fallback")
         stats::vcov(fit)
       }
     ))
@@ -1814,7 +1806,7 @@ compute_lm_vcov_bootstrap <- function(
   valid <- stats::complete.cases(beta_boot)
   n_valid <- sum(valid)
   if (n_valid < 10L) {
-    warning(
+    spicy_warn(
       sprintf(
         paste0(
           "Bootstrap: only %d / %d valid replicates; bootstrap vcov ",
@@ -1822,13 +1814,11 @@ compute_lm_vcov_bootstrap <- function(
         ),
         n_valid,
         boot_n
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_fallback")
     return(stats::vcov(fit))
   }
   if (n_valid < boot_n %/% 2L) {
-    warning(
+    spicy_warn(
       sprintf(
         paste0(
           "Bootstrap: %d / %d replicates failed (rank-deficient ",
@@ -1838,9 +1828,7 @@ compute_lm_vcov_bootstrap <- function(
         boot_n - n_valid,
         boot_n,
         n_valid
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_fallback")
   }
 
   beta_boot <- beta_boot[valid, , drop = FALSE]
@@ -1905,13 +1893,11 @@ compute_lm_vcov_jackknife <- function(
   valid <- stats::complete.cases(beta_jack)
   n_valid <- sum(valid)
   if (n_valid < 2L) {
-    warning(
+    spicy_warn(
       paste0(
         "Jackknife: fewer than 2 valid leave-out replicates; ",
         "falling back to the classical OLS variance."
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_fallback")
     return(stats::vcov(fit))
   }
   beta_jack <- beta_jack[valid, , drop = FALSE]

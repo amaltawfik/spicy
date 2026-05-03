@@ -177,10 +177,12 @@
   )
 
   if (ncol(data) == 0L) {
-    warning(
-      fn_label,
-      "(): No numeric columns selected; returning NA for all rows.",
-      call. = FALSE
+    spicy_warn(
+      paste0(
+        fn_label,
+        "(): No numeric columns selected; returning NA for all rows."
+      ),
+      class = "spicy_no_selection"
     )
     return(rep(NA_real_, nrow(data)))
   }

@@ -1090,7 +1090,9 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
     ),
     warning = function(w) w
   )
-  expect_s3_class(w, "simpleWarning")
+  # Spicy classed warnings inherit from `rlang_warning` (a wider class
+  # than base `simpleWarning`); `expect_s3_class` matches either.
+  expect_s3_class(w, "warning")
   expect_null(w$call)
 })
 

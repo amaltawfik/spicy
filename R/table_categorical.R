@@ -750,25 +750,21 @@ table_categorical <- function(
 
   if (!has_group) {
     if (!include_total) {
-      warning(
-        "`include_total` is ignored when `by` is not used.",
-        call. = FALSE
-      )
+      spicy_warn(
+        "`include_total` is ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     if (correct) {
-      warning("`correct` is ignored when `by` is not used.", call. = FALSE)
+      spicy_warn("`correct` is ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     if (simulate_p) {
-      warning("`simulate_p` is ignored when `by` is not used.", call. = FALSE)
+      spicy_warn("`simulate_p` is ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     if (!isTRUE(all(as.character(assoc_measure) == "auto"))) {
-      warning(
-        "`assoc_measure` is ignored when `by` is not used.",
-        call. = FALSE
-      )
+      spicy_warn(
+        "`assoc_measure` is ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     if (assoc_ci) {
-      warning("`assoc_ci` is ignored when `by` is not used.", call. = FALSE)
+      spicy_warn("`assoc_ci` is ignored when `by` is not used.", class = "spicy_ignored_arg")
     }
     include_total <- TRUE
   }
@@ -777,10 +773,8 @@ table_categorical <- function(
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
-    warning(
-      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.", class = "spicy_ignored_arg")
     rescale <- FALSE
   }
 

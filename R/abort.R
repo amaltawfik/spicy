@@ -29,3 +29,35 @@ spicy_abort <- function(
     ...
   )
 }
+
+
+# Symmetric helper for non-fatal conditions. Wraps `rlang::warn()`
+# to attach the package-wide `spicy_warning` parent class. Callers
+# pass the leaf class (e.g., `"spicy_ignored_arg"`); this helper
+# guarantees `spicy_warning` is always present so consumers can
+# catch any spicy warning with
+# `withCallingHandlers(spicy_warning = ...)`.
+#
+# Class hierarchy (mirror of the error one):
+#   spicy_warning              (root -- catch-all)
+#   |- spicy_undefined_stat    (statistic is undefined for this input,
+#                               returning NA -- e.g., Tau-b on a table
+#                               with all-zero marginals)
+#   |- spicy_dropped_na        (NA observations silently excluded from
+#                               the computation, e.g., NA weights)
+#   |- spicy_ignored_arg       (an argument is ignored due to context,
+#                               e.g., `correct = TRUE` on a non-2x2)
+#   |- spicy_no_selection      (a selection produced an empty set;
+#                               returning an empty result rather than
+#                               erroring)
+#   |- spicy_fallback          (the requested computation failed;
+#                               falling back to a simpler estimator)
+#   |- spicy_summary_failed    (varlist() could not summarize one
+#                               column; the rest of the table is fine)
+spicy_warn <- function(message, class = NULL, ...) {
+  rlang::warn(
+    message = message,
+    class = c(class, "spicy_warning"),
+    ...
+  )
+}

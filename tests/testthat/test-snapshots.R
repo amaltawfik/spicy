@@ -83,6 +83,44 @@ test_that("print.spicy_continuous_table: numeric + group", {
   )
 })
 
+# ---- Classed conditions (D1 + D5 hierarchy) -------------------------------
+
+test_that("spicy errors carry the documented class hierarchy", {
+  # spicy_invalid_input
+  expect_error(
+    freq(1, decimal_mark = "x"),
+    class = "spicy_invalid_input"
+  )
+  # spicy_invalid_data
+  expect_error(
+    varlist(list(1, 2, 3)),
+    class = "spicy_invalid_data"
+  )
+  # spicy_unsupported
+  tab <- as.table(matrix(1:6, nrow = 2L))
+  expect_error(phi(tab), class = "spicy_unsupported")
+  # Every leaf class also inherits from `spicy_error`
+  expect_error(freq(1, decimal_mark = "x"), class = "spicy_error")
+})
+
+test_that("spicy warnings carry the documented class hierarchy", {
+  # spicy_no_selection -- empty tidyselect match
+  expect_warning(
+    varlist(mtcars, starts_with("zzz_no_match"), tbl = TRUE),
+    class = "spicy_no_selection"
+  )
+  # spicy_dropped_na -- NA weights
+  expect_warning(
+    freq(c(1, 2, 3), weights = c(1, NA, 1), styled = FALSE),
+    class = "spicy_dropped_na"
+  )
+  # Every leaf also inherits from `spicy_warning`
+  expect_warning(
+    varlist(mtcars, starts_with("zzz"), tbl = TRUE),
+    class = "spicy_warning"
+  )
+})
+
 # ---- assoc family ----------------------------------------------------------
 
 test_that("print.spicy_assoc_table: omnibus 2x3 table", {

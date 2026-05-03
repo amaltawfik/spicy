@@ -36,12 +36,14 @@ summarize_varlist_column <- function(
     },
     error = function(e) {
       msg <- trimws(gsub("\\s+", " ", conditionMessage(e)))
-      warning(
-        "Could not summarize column `",
-        name,
-        "`: ",
-        msg,
-        call. = FALSE
+      spicy_warn(
+        paste0(
+          "Could not summarize column `",
+          name,
+          "`: ",
+          msg
+        ),
+        class = "spicy_summary_failed"
       )
       paste0("<error: ", msg, ">")
     }

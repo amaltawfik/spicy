@@ -228,19 +228,15 @@ base_count_n <- function(
     }
     has_na <- vapply(count, is.na, logical(1))
     if (any(has_na)) {
-      warning(
-        "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.",
-        call. = FALSE
-      )
+      spicy_warn(
+        "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.", class = "spicy_ignored_arg")
       count <- count[!has_na]
     }
   }
 
   if (!is.null(special) && !is.null(count)) {
-    warning(
-      "Both `special` and `count` supplied; `count` is ignored.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "Both `special` and `count` supplied; `count` is ignored.", class = "spicy_ignored_arg")
   }
 
   data <- data[, select, drop = FALSE]

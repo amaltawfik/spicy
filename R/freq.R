@@ -264,10 +264,8 @@ freq <- function(
     data_name <- var_name
     x <- data
   } else {
-    warning(
-      "Both `data` and `x` are vectors; `data` is ignored.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "Both `data` and `x` are vectors; `data` is ignored.", class = "spicy_ignored_arg")
     # `x` is what gets analyzed here — mirror the `!is_df && missing(x)`
     # branch above so the printed footer (`Data: ...`) does not surface
     # the name of the vector that was just declared "ignored".
@@ -360,14 +358,12 @@ freq <- function(
     }
     if (any(is.na(weights))) {
       n_na <- sum(is.na(weights))
-      warning(
+      spicy_warn(
         sprintf(
           "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
           n_na,
           if (n_na > 1L) "s" else ""
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_dropped_na")
       # Drop NA-weighted rows up front so they never reach `table()` /
       # `tapply()` (where they would otherwise be retained with weight
       # zero and inflate the rescale denominator). This matches the
@@ -392,10 +388,8 @@ freq <- function(
 
   if (labelled::is.labelled(x)) {
     if (!is.null(na_val) && !is.numeric(na_val)) {
-      warning(
-        "For labelled variables, 'na_val' should match the underlying numeric value (e.g., 1), not the label.",
-        call. = FALSE
-      )
+      spicy_warn(
+        "For labelled variables, 'na_val' should match the underlying numeric value (e.g., 1), not the label.", class = "spicy_ignored_arg")
     }
 
     if (!is.null(na_val)) {

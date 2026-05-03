@@ -497,10 +497,8 @@ yule_q <- function(
   bc <- b * c_
 
   if (ad + bc == 0) {
-    warning(
-      "Yule's Q is undefined when ad + bc = 0; returning NA.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "Yule's Q is undefined when ad + bc = 0; returning NA.", class = "spicy_undefined_stat")
     return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
@@ -1011,7 +1009,7 @@ gamma_gk <- function(
   D <- cd$D
 
   if (C + D == 0) {
-    warning("No concordant or discordant pairs; returning NA.", call. = FALSE)
+    spicy_warn("No concordant or discordant pairs; returning NA.", class = "spicy_undefined_stat")
     return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
@@ -1090,7 +1088,7 @@ kendall_tau_b <- function(
 
   denom <- sqrt((n0 - n1) * (n0 - n2))
   if (denom == 0) {
-    warning("Tau-b is undefined for this table; returning NA.", call. = FALSE)
+    spicy_warn("Tau-b is undefined for this table; returning NA.", class = "spicy_undefined_stat")
     return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
 
@@ -1298,10 +1296,8 @@ somers_d <- function(
 
   denom <- n0 - switch(direction, row = n2, column = n1)
   if (denom == 0) {
-    warning(
-      "Somers' d is undefined for this table; returning NA.",
-      call. = FALSE
-    )
+    spicy_warn(
+      "Somers' d is undefined for this table; returning NA.", class = "spicy_undefined_stat")
     return(.na_assoc_result(detail, conf_level, .include_se, digits))
   }
   d_val <- (C - D) / denom

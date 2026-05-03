@@ -162,7 +162,7 @@ varlist_impl <- function(
   validate_varlist_selectors(selectors, x)
 
   if (length(selectors) == 0) {
-    warning("No columns selected.", call. = FALSE)
+    spicy_warn("No columns selected.", class = "spicy_no_selection")
     res <- tibble::tibble(
       Variable = character(),
       Label = character(),
