@@ -89,7 +89,7 @@
 #' @importFrom tidyselect eval_select everything
 #' @importFrom rlang expr
 #' @importFrom stats na.omit
-#' @importFrom utils head tail
+#' @importFrom utils tail
 #'
 #' @export
 #'

@@ -7,8 +7,6 @@
 #' @importFrom dplyr select
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
-#' @importFrom labelled var_label
-#' @importFrom labelled var_label<-
 #' @importFrom rlang enquo
 #' @importFrom rlang eval_tidy
 #' @importFrom rlang inform
@@ -26,8 +24,6 @@
 #' @importFrom tidyselect eval_select
 #' @importFrom tidyselect everything
 #' @importFrom tidyselect where
-#' @importFrom utils capture.output
-#' @importFrom utils head
 #' @importFrom utils tail
 ## usethis namespace: end
 NULL
