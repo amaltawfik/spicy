@@ -435,8 +435,6 @@
 #' )
 #' }
 #'
-#' @importFrom stats qt qnorm qf pf sd var t.test oneway.test wilcox.test kruskal.test quantile
-#' @importFrom rlang enquo eval_tidy quo_get_env inform
 #' @export
 table_continuous <- function(
   data,

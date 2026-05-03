@@ -83,14 +83,6 @@
 #' returns invisibly. In non-interactive sessions, a message is displayed and
 #' the function returns invisibly.
 #'
-#' @importFrom labelled is.labelled
-#' @importFrom labelled to_factor
-#' @importFrom tibble as_tibble view
-#' @importFrom tidyselect eval_select everything
-#' @importFrom rlang expr
-#' @importFrom stats na.omit
-#' @importFrom utils tail
-#'
 #' @export
 #'
 #' @examples
@@ -159,7 +151,11 @@ varlist_impl <- function(
   factor_levels <- match_varlist_factor_levels(factor_levels)
 
   selectors <- if (missing(...)) {
-    tidyselect::eval_select(rlang::expr(everything()), data = x)
+    # Qualify `everything()` so that R CMD check's static analysis sees
+    # the source -- no NOTE about an undefined global. Functionally
+    # identical: `tidyselect::eval_select` evaluates the captured
+    # expression in the tidyselect data mask either way.
+    tidyselect::eval_select(rlang::expr(tidyselect::everything()), data = x)
   } else {
     tidyselect::eval_select(rlang::expr(c(...)), data = x)
   }

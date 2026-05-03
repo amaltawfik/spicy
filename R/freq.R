@@ -181,8 +181,6 @@
 #' [print.spicy_freq_table()] for formatted printing.
 #' [spicy_print_table()] for the underlying ASCII rendering engine.
 #'
-#' @importFrom labelled is.labelled to_factor
-#'
 #' @export
 
 freq <- function(

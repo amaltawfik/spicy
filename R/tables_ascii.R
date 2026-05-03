@@ -101,9 +101,6 @@
 #' @seealso
 #' [spicy_print_table()] for a user-facing wrapper that adds titles and notes.
 #'
-#' @importFrom crayon has_color make_style col_nchar
-#' @importFrom stringr str_pad
-#'
 #' @keywords internal
 #' @export
 
@@ -454,8 +451,6 @@ ascii_table_panels <- function(
 #' @seealso
 #' [build_ascii_table()] for the underlying text rendering engine.
 #' [print.spicy_freq_table()] for the specialized printing method used by [freq()].
-#'
-#' @importFrom crayon has_color make_style
 #'
 #' @export
 

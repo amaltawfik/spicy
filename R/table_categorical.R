@@ -587,7 +587,6 @@
 #' )
 #' }
 #'
-#' @importFrom rlang enquo eval_tidy quo_get_env quo_is_null
 #' @export
 table_categorical <- function(
   data,

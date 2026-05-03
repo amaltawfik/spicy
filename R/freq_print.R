@@ -60,8 +60,6 @@
 #' [freq()] for the main frequency table generator.
 #' [spicy_print_table()] for the generic ASCII table renderer.
 #'
-#' @importFrom stats na.omit
-#'
 #' @keywords internal
 #' @export
 print.spicy_freq_table <- function(x, ...) {

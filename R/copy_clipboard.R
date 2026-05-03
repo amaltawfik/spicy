@@ -19,7 +19,6 @@
 #'
 #' @returns Invisibly returns the object `x`. The main purpose is the side effect of copying data to the clipboard.
 #'
-#' @importFrom tibble rownames_to_column
 #' @export
 #'
 #' @examples
