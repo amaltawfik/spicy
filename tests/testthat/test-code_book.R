@@ -221,6 +221,22 @@ test_that("code_book() sanitizes export filenames", {
   expect_equal(code_book_filenames(cb), rep("Resume_final", 3))
 })
 
+test_that("code_book_sanitize_filename truncates names over 120 chars", {
+  long <- paste(rep("a", 200L), collapse = "")
+  out <- code_book_sanitize_filename(long, arg = "title", fallback = "Codebook")
+  expect_equal(nchar(out), 120L)
+})
+
+test_that("code_book_sanitize_filename: empty after sanitisation + NULL fallback errors", {
+  # `???` is non-ASCII punctuation that gets stripped to nothing; with
+  # `fallback = NULL`, the function must raise an actionable error
+  # rather than returning an empty filename.
+  expect_error(
+    code_book_sanitize_filename("???", arg = "filename", fallback = NULL),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("code_book() works with labelled data", {
   skip_if_not_installed("DT")
   skip_if_not_installed("labelled")
