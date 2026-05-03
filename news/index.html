@@ -73,6 +73,24 @@
 <li><p><code><a href="../reference/table_categorical.html">table_categorical()</a></code>’s <code>assoc_measure</code> accepts a per-variable specification (<code>"auto"</code>, single string, or named / unnamed vector). When measures differ across rows, the column collapses to <code>"Effect size"</code> and an APA-style <code>Note.</code> line documents the per-variable measure. <code>phi</code> on a non-2x2 raises an actionable error.</p></li>
 <li><p>All three <code>table_*()</code> functions gain <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods for downstream pipelines (<code>gtsummary</code>, <code>modelsummary</code>, <code>parameters</code>, …). <code>broom</code> in <code>Suggests</code>.</p></li>
 </ul></div>
+<div class="section level4">
+<h4 id="classed-errors-0-11-0">Classed errors<a class="anchor" aria-label="anchor" href="#classed-errors-0-11-0"></a></h4>
+<ul><li>All user-facing errors are now <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code>-typed conditions with a stable class hierarchy, so downstream code (Shiny apps, R Markdown reports, pipelines) can dispatch on class instead of matching message strings:
+<ul><li>
+<code>spicy_error</code> — root, catches every spicy error</li>
+<li>
+<code>spicy_invalid_input</code> — bad argument value or type</li>
+<li>
+<code>spicy_invalid_data</code> — bad data shape (not a data frame, NA cells where forbidden, length mismatch)</li>
+<li>
+<code>spicy_missing_pkg</code> — a <code>Suggests</code> dependency is not installed</li>
+<li>
+<code>spicy_missing_column</code> — a referenced column is not in the data</li>
+<li>
+<code>spicy_unsupported</code> — operation not applicable to this input (e.g. <code><a href="../reference/phi.html">phi()</a></code> on a non-2x2 table)</li>
+</ul>
+Example: <code>tryCatch(freq(...), spicy_missing_column = function(e) ...)</code>.</li>
+</ul></div>
 </div>
 <div class="section level3">
 <h3 id="improvements-0-11-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-11-0"></a></h3>
