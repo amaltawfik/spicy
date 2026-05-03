@@ -177,7 +177,7 @@ as.data.frame.spicy_continuous_lm_table <- function(
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_continuous_lm_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
-    stop("Install package 'tibble'.", call. = FALSE)
+    spicy_abort("Install package 'tibble'.", class = "spicy_invalid_input")
   }
   tibble::as_tibble(unclass_spicy_continuous_lm_table(x), ...)
 }

@@ -482,7 +482,7 @@ table_continuous <- function(
 ) {
   # --- validation ---
   if (!is.data.frame(data)) {
-    stop("`data` must be a data.frame.", call. = FALSE)
+    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
   }
   if (
     !is.numeric(ci_level) ||
@@ -491,7 +491,7 @@ table_continuous <- function(
       ci_level <= 0 ||
       ci_level >= 1
   ) {
-    stop("`ci_level` must be a single number between 0 and 1.", call. = FALSE)
+    spicy_abort("`ci_level` must be a single number between 0 and 1.", class = "spicy_invalid_input")
   }
   if (
     !is.numeric(digits) ||
@@ -499,7 +499,7 @@ table_continuous <- function(
       is.na(digits) ||
       digits < 0
   ) {
-    stop("`digits` must be a single non-negative number.", call. = FALSE)
+    spicy_abort("`digits` must be a single non-negative number.", class = "spicy_invalid_input")
   }
   digits <- as.integer(digits)
   if (
@@ -508,10 +508,8 @@ table_continuous <- function(
       is.na(effect_size_digits) ||
       effect_size_digits < 0
   ) {
-    stop(
-      "`effect_size_digits` must be a single non-negative number.",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`effect_size_digits` must be a single non-negative number.", class = "spicy_invalid_input")
   }
   effect_size_digits <- as.integer(effect_size_digits)
   if (
@@ -520,17 +518,15 @@ table_continuous <- function(
       is.na(p_digits) ||
       p_digits < 1
   ) {
-    stop(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
   }
   p_digits <- as.integer(p_digits)
   if (!decimal_mark %in% c(".", ",")) {
-    stop('`decimal_mark` must be "." or ","', call. = FALSE)
+    spicy_abort('`decimal_mark` must be "." or ","', class = "spicy_invalid_input")
   }
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    stop("`labels` must be a named character vector.", call. = FALSE)
+    spicy_abort("`labels` must be a named character vector.", class = "spicy_invalid_input")
   }
   for (.lname in c(
     "statistic",
@@ -542,7 +538,7 @@ table_continuous <- function(
   )) {
     .lval <- get(.lname)
     if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      stop(sprintf("`%s` must be TRUE/FALSE.", .lname), call. = FALSE)
+      spicy_abort(sprintf("`%s` must be TRUE/FALSE.", .lname), class = "spicy_invalid_input")
     }
   }
 
@@ -552,9 +548,7 @@ table_continuous <- function(
   # logical FALSE maps to "none". Character values are validated below.
   if (is.logical(effect_size)) {
     if (length(effect_size) != 1L || is.na(effect_size)) {
-      stop("`effect_size` must be a single TRUE/FALSE or character value.",
-        call. = FALSE
-      )
+      spicy_abort("`effect_size` must be a single TRUE/FALSE or character value.", class = "spicy_invalid_input")
     }
     effect_size <- if (isTRUE(effect_size)) "auto" else "none"
   }
@@ -565,7 +559,7 @@ table_continuous <- function(
     !is.null(p_value) &&
       (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
   ) {
-    stop("`p_value` must be TRUE, FALSE, or NULL.", call. = FALSE)
+    spicy_abort("`p_value` must be TRUE, FALSE, or NULL.", class = "spicy_invalid_input")
   }
   output <- match.arg(output)
   test_explicit <- !missing(test)
@@ -581,10 +575,8 @@ table_continuous <- function(
     group_col_name <- tryCatch(
       resolve_single_column_selection(group_quo, data, "by"),
       error = function(e) {
-        stop(
-          "`by` must be a single column name in `data`.",
-          call. = FALSE
-        )
+        spicy_abort(
+          "`by` must be a single column name in `data`.", class = "spicy_invalid_input")
       }
     )
   }
@@ -648,10 +640,8 @@ table_continuous <- function(
       select <- ".*"
     }
     if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      stop(
-        "When `regex = TRUE`, `select` must be a single character pattern.",
-        call. = FALSE
-      )
+      spicy_abort(
+        "When `regex = TRUE`, `select` must be a single character pattern.", class = "spicy_invalid_input")
     }
     matched <- grep(select, names(work), value = TRUE)
     work <- work[, matched, drop = FALSE]
@@ -1031,23 +1021,19 @@ resolve_effect_size_choice <- function(
 
   if (is_parametric && effect_size %in% np_es) {
     if (!explicit) return(auto_choice)
-    stop(
+    spicy_abort(
       sprintf(
         "Effect size `%s` is a nonparametric measure; switch `test = \"nonparametric\"` or pick `\"hedges_g\"` / `\"eta_sq\"`.",
         effect_size
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
   if (!is_parametric && effect_size %in% parametric_es) {
     if (!explicit) return(auto_choice)
-    stop(
+    spicy_abort(
       sprintf(
         "Effect size `%s` is a parametric measure; switch `test` to `\"welch\"` / `\"student\"` or pick `\"r_rb\"` / `\"epsilon_sq\"`.",
         effect_size
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   two_group_only <- c("hedges_g", "r_rb")
@@ -1055,24 +1041,20 @@ resolve_effect_size_choice <- function(
 
   if (n_groups == 2L && effect_size %in% multi_group_only) {
     if (!explicit) return(auto_choice)
-    stop(
+    spicy_abort(
       sprintf(
         "Effect size `%s` requires more than two groups; with two groups, pick `\"hedges_g\"` (parametric) or `\"r_rb\"` (nonparametric).",
         effect_size
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
   if (n_groups > 2L && effect_size %in% two_group_only) {
     if (!explicit) return(auto_choice)
-    stop(
+    spicy_abort(
       sprintf(
         "Effect size `%s` requires exactly two groups; with %d groups, pick `\"eta_sq\"` (parametric) or `\"epsilon_sq\"` (nonparametric).",
         effect_size,
         n_groups
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   effect_size
@@ -1179,7 +1161,7 @@ compute_effect_size <- function(
     row$es_ci_lower <- ci[1]
     row$es_ci_upper <- ci[2]
   } else {
-    stop(sprintf("Unknown effect-size type `%s`.", type), call. = FALSE)
+    spicy_abort(sprintf("Unknown effect-size type `%s`.", type), class = "spicy_invalid_input")
   }
 
   row
@@ -1547,7 +1529,7 @@ export_desc_table <- function(
   # ---- tinytable ----
   if (output == "tinytable") {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
-      stop("Install package 'tinytable'.", call. = FALSE)
+      spicy_abort("Install package 'tinytable'.", class = "spicy_missing_pkg")
     }
 
     old_tt_opt <- getOption("tinytable_print_output")
@@ -1708,7 +1690,7 @@ export_desc_table <- function(
   # ---- gt ----
   if (output == "gt") {
     if (!requireNamespace("gt", quietly = TRUE)) {
-      stop("Install package 'gt'.", call. = FALSE)
+      spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
     }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
@@ -1914,10 +1896,10 @@ export_desc_table <- function(
   # ---- flextable / word ----
   if (output %in% c("flextable", "word")) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      stop("Install package 'flextable'.", call. = FALSE)
+      spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
     }
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
-      stop("Install package 'officer'.", call. = FALSE)
+      spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
     }
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
@@ -2047,7 +2029,7 @@ export_desc_table <- function(
 
     if (output == "word") {
       if (is.null(word_path) || !nzchar(word_path)) {
-        stop("Provide `word_path` for output = 'word'.", call. = FALSE)
+        spicy_abort("Provide `word_path` for output = 'word'.", class = "spicy_invalid_input")
       }
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
@@ -2059,10 +2041,10 @@ export_desc_table <- function(
   # ---- excel ----
   if (output == "excel") {
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
-      stop("Install package 'openxlsx2'.", call. = FALSE)
+      spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
     }
     if (is.null(excel_path) || !nzchar(excel_path)) {
-      stop("Provide `excel_path` for output = 'excel'.", call. = FALSE)
+      spicy_abort("Provide `excel_path` for output = 'excel'.", class = "spicy_invalid_input")
     }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
@@ -2179,7 +2161,7 @@ export_desc_table <- function(
   # ---- clipboard ----
   if (output == "clipboard") {
     if (!requireNamespace("clipr", quietly = TRUE)) {
-      stop("Install package 'clipr'.", call. = FALSE)
+      spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
     }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
@@ -2197,5 +2179,5 @@ export_desc_table <- function(
     return(invisible(display_df))
   }
 
-  stop("Unknown output format: ", output, call. = FALSE) # nocov
+  spicy_abort(paste0("Unknown output format: ", output), class = "spicy_invalid_input") # nocov
 }

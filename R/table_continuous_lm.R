@@ -847,7 +847,7 @@ table_continuous_lm <- function(
   verbose = FALSE
 ) {
   if (!is.data.frame(data)) {
-    stop("`data` must be a data.frame.", call. = FALSE)
+    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
   }
   if (
     !is.numeric(ci_level) ||
@@ -856,7 +856,7 @@ table_continuous_lm <- function(
       ci_level <= 0 ||
       ci_level >= 1
   ) {
-    stop("`ci_level` must be a single number between 0 and 1.", call. = FALSE)
+    spicy_abort("`ci_level` must be a single number between 0 and 1.", class = "spicy_invalid_input")
   }
   if (
     !is.numeric(digits) ||
@@ -864,7 +864,7 @@ table_continuous_lm <- function(
       is.na(digits) ||
       digits < 0
   ) {
-    stop("`digits` must be a single non-negative number.", call. = FALSE)
+    spicy_abort("`digits` must be a single non-negative number.", class = "spicy_invalid_input")
   }
   digits <- as.integer(digits)
   if (
@@ -873,7 +873,7 @@ table_continuous_lm <- function(
       is.na(fit_digits) ||
       fit_digits < 0
   ) {
-    stop("`fit_digits` must be a single non-negative number.", call. = FALSE)
+    spicy_abort("`fit_digits` must be a single non-negative number.", class = "spicy_invalid_input")
   }
   fit_digits <- as.integer(fit_digits)
   if (
@@ -882,10 +882,8 @@ table_continuous_lm <- function(
       is.na(effect_size_digits) ||
       effect_size_digits < 0
   ) {
-    stop(
-      "`effect_size_digits` must be a single non-negative number.",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`effect_size_digits` must be a single non-negative number.", class = "spicy_invalid_input")
   }
   effect_size_digits <- as.integer(effect_size_digits)
   if (
@@ -894,10 +892,8 @@ table_continuous_lm <- function(
       is.na(p_digits) ||
       p_digits < 1
   ) {
-    stop(
-      "`p_digits` must be a single positive integer (>= 1).",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`p_digits` must be a single positive integer (>= 1).", class = "spicy_invalid_input")
   }
   p_digits <- as.integer(p_digits)
   if (
@@ -906,17 +902,15 @@ table_continuous_lm <- function(
       is.na(boot_n) ||
       boot_n < 50
   ) {
-    stop(
-      "`boot_n` must be a single positive integer (>= 50).",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`boot_n` must be a single positive integer (>= 50).", class = "spicy_invalid_input")
   }
   boot_n <- as.integer(boot_n)
   if (!decimal_mark %in% c(".", ",")) {
-    stop('`decimal_mark` must be "." or ",".', call. = FALSE)
+    spicy_abort('`decimal_mark` must be "." or ",".', class = "spicy_invalid_input")
   }
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    stop("`labels` must be a named character vector.", call. = FALSE)
+    spicy_abort("`labels` must be a named character vector.", class = "spicy_invalid_input")
   }
   for (.arg in c(
     "regex",
@@ -930,7 +924,7 @@ table_continuous_lm <- function(
   )) {
     .val <- get(.arg)
     if (!is.logical(.val) || length(.val) != 1L || is.na(.val)) {
-      stop(sprintf("`%s` must be TRUE/FALSE.", .arg), call. = FALSE)
+      spicy_abort(sprintf("`%s` must be TRUE/FALSE.", .arg), class = "spicy_invalid_input")
     }
   }
 
@@ -945,26 +939,22 @@ table_continuous_lm <- function(
   by_name <- resolve_single_column_selection(by_quo, data, "by")
   by_vector <- data[[by_name]]
   if (!is_supported_lm_predictor(by_vector)) {
-    stop(
-      "`by` must be numeric, logical, character, or factor.",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`by` must be numeric, logical, character, or factor.", class = "spicy_invalid_input")
   }
 
   if (effect_size %in% c("d", "g")) {
     is_two_level <- !is.numeric(by_vector) &&
       nlevels(droplevels(coerce_lm_factor(by_vector))) == 2L
     if (!is_two_level) {
-      stop(
+      spicy_abort(
         sprintf(
           paste0(
             "`effect_size = \"%s\"` requires `by` to be a categorical ",
             "predictor with exactly two non-empty levels."
           ),
           effect_size
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_invalid_input")
     }
   }
 
@@ -981,13 +971,13 @@ table_continuous_lm <- function(
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
   if (!is.null(weights_vec)) {
     if (any(!is.finite(weights_vec), na.rm = TRUE)) {
-      stop("`weights` must contain only finite values.", call. = FALSE)
+      spicy_abort("`weights` must contain only finite values.", class = "spicy_invalid_input")
     }
     if (any(weights_vec < 0, na.rm = TRUE)) {
-      stop("`weights` must be non-negative.", call. = FALSE)
+      spicy_abort("`weights` must be non-negative.", class = "spicy_invalid_input")
     }
     if (all(is.na(weights_vec) | weights_vec == 0)) {
-      stop("`weights` must contain at least one positive value.", call. = FALSE)
+      spicy_abort("`weights` must contain at least one positive value.", class = "spicy_invalid_input")
     }
   }
   if (isTRUE(show_weighted_n) && is.null(weights_vec)) {
@@ -1007,19 +997,17 @@ table_continuous_lm <- function(
   cluster_allowed <- is_cr_vcov || is_resampling_vcov
 
   if (is_cr_vcov && is.null(cluster_vec)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "`vcov = \"%s\"` requires `cluster` to be specified ",
           "(an atomic vector or a single column name in `data`)."
         ),
         vcov
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
   if (!cluster_allowed && !is.null(cluster_vec)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "`cluster` is only used when `vcov` is one of the cluster-",
@@ -1027,28 +1015,22 @@ table_continuous_lm <- function(
           "\"bootstrap\", or \"jackknife\". Got `vcov = \"%s\"`."
         ),
         vcov
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
   if (is_cr_vcov && !requireNamespace("clubSandwich", quietly = TRUE)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
           "Install it with install.packages(\"clubSandwich\")."
         ),
         vcov
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
   if (!is.null(cluster_vec) &&
         length(unique(stats::na.omit(cluster_vec))) < 2L) {
-    stop(
-      "`cluster` must contain at least two distinct non-missing values.",
-      call. = FALSE
-    )
+    spicy_abort(
+      "`cluster` must contain at least two distinct non-missing values.", class = "spicy_invalid_input")
   }
 
   available_names <- names(data)
@@ -1067,10 +1049,8 @@ table_continuous_lm <- function(
     if (
       !is.character(select_val) || length(select_val) != 1L || is.na(select_val)
     ) {
-      stop(
-        "When `regex = TRUE`, `select` must be a single regex pattern.",
-        call. = FALSE
-      )
+      spicy_abort(
+        "When `regex = TRUE`, `select` must be a single regex pattern.", class = "spicy_invalid_input")
     }
     selected_names <- grep(select_val, available_names, value = TRUE)
   } else {
@@ -1078,7 +1058,7 @@ table_continuous_lm <- function(
     selected_pos <- tryCatch(
       tidyselect::eval_select(select_quo, data),
       error = function(e) {
-        stop("`select` must select columns in `data`.", call. = FALSE)
+        spicy_abort("`select` must select columns in `data`.", class = "spicy_invalid_input")
       }
     )
     selected_names <- names(selected_pos)
@@ -1613,16 +1593,14 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   )
 
   if (identical(val, sentinel)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "`%s` must be NULL, an atomic vector, or a single column ",
           "name in `data`."
         ),
         arg
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   if (is.null(val)) {
@@ -1630,7 +1608,7 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   }
 
   if (is.list(val) && !is.atomic(val)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "Multi-way clustering (`%s` as a list / data.frame) is not ",
@@ -1640,9 +1618,7 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
           "`lm()`."
         ),
         arg
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   if (is.character(val) && length(val) == 1L && val %in% names(data)) {
@@ -1650,28 +1626,24 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   }
 
   if (!is.atomic(val)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "`%s` must be NULL, an atomic vector, or a single column ",
           "name in `data`."
         ),
         arg
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   if (length(val) != nrow(data)) {
-    stop(
+    spicy_abort(
       sprintf(
         "Cluster `%s` must have length `nrow(data)` (got %d, expected %d).",
         arg,
         length(val),
         nrow(data)
-      ),
-      call. = FALSE
-    )
+      ), class = "spicy_invalid_input")
   }
 
   val
@@ -1728,25 +1700,21 @@ compute_lm_vcov <- function(
 
   if (startsWith(type, "CR")) {
     if (is.null(cluster)) {
-      stop(
+      spicy_abort(
         sprintf(
           "`vcov = \"%s\"` requires `cluster` to be specified.",
           type
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_invalid_input")
     }
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
-      stop(
+      spicy_abort(
         sprintf(
           paste0(
             "`vcov = \"%s\"` requires the 'clubSandwich' package. ",
             "Install it with install.packages(\"clubSandwich\")."
           ),
           type
-        ),
-        call. = FALSE
-      )
+        ), class = "spicy_invalid_input")
     }
     return(tryCatch(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
@@ -1768,10 +1736,8 @@ compute_lm_vcov <- function(
     ))
   }
 
-  stop(
-    sprintf("Unknown `vcov` type \"%s\".", type),
-    call. = FALSE
-  )
+  spicy_abort(
+    sprintf("Unknown `vcov` type \"%s\".", type), class = "spicy_invalid_input")
 }
 
 # Internal: nonparametric / cluster bootstrap variance-covariance
@@ -2238,7 +2204,7 @@ pick_es_value_lm <- function(model_stats, effect_size) {
     d = model_stats$d,
     g = model_stats$g,
     omega2 = model_stats$omega2,
-    stop("Unknown `effect_size`: ", effect_size, call. = FALSE)
+    spicy_abort(paste0("Unknown `effect_size`: ", effect_size), class = "spicy_invalid_input")
   )
 }
 
@@ -2436,7 +2402,7 @@ compute_es_ci_lm <- function(fit, effect_size, ci_level) {
     d = compute_smd_ci_lm(fit, ci_level, hedges_correct = FALSE),
     g = compute_smd_ci_lm(fit, ci_level, hedges_correct = TRUE),
     omega2 = compute_omega2_ci_lm(fit, ci_level),
-    stop("Unknown `effect_size`: ", effect_size, call. = FALSE)
+    spicy_abort(paste0("Unknown `effect_size`: ", effect_size), class = "spicy_invalid_input")
   )
 }
 
@@ -2790,7 +2756,7 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "tinytable")) {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
-      stop("Install package 'tinytable'.", call. = FALSE)
+      spicy_abort("Install package 'tinytable'.", class = "spicy_missing_pkg")
     }
     old_tt_opt <- getOption("tinytable_print_output")
     options(tinytable_print_output = "html")
@@ -2897,7 +2863,7 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "gt")) {
     if (!requireNamespace("gt", quietly = TRUE)) {
-      stop("Install package 'gt'.", call. = FALSE)
+      spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -3062,13 +3028,13 @@ export_continuous_lm_table <- function(
 
   if (output %in% c("flextable", "word")) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      stop("Install package 'flextable'.", call. = FALSE)
+      spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
     }
     if (
       identical(output, "word") &&
         !requireNamespace("officer", quietly = TRUE)
     ) {
-      stop("Install package 'officer'.", call. = FALSE)
+      spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -3151,10 +3117,8 @@ export_continuous_lm_table <- function(
 
     if (identical(output, "word")) {
       if (is.null(word_path) || !nzchar(word_path)) {
-        stop(
-          "`word_path` must be provided for `output = \"word\"`.",
-          call. = FALSE
-        )
+        spicy_abort(
+          "`word_path` must be provided for `output = \"word\"`.", class = "spicy_invalid_input")
       }
       flextable::save_as_docx(ft, path = word_path)
       return(word_path)
@@ -3165,13 +3129,11 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "excel")) {
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
-      stop("Install package 'openxlsx2'.", call. = FALSE)
+      spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
     }
     if (is.null(excel_path) || !nzchar(excel_path)) {
-      stop(
-        "`excel_path` must be provided for `output = \"excel\"`.",
-        call. = FALSE
-      )
+      spicy_abort(
+        "`excel_path` must be provided for `output = \"excel\"`.", class = "spicy_invalid_input")
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -3282,7 +3244,7 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "clipboard")) {
     if (!requireNamespace("clipr", quietly = TRUE)) {
-      stop("Install package 'clipr'.", call. = FALSE)
+      spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -3297,7 +3259,7 @@ export_continuous_lm_table <- function(
     return(invisible(display_df))
   }
 
-  stop("Unknown output format.", call. = FALSE)
+  spicy_abort("Unknown output format.", class = "spicy_invalid_input")
 }
 
 rename_ci_cols_lm <- function(display_df, ci_ll, ci_ul) {

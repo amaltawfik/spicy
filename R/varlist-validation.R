@@ -1,6 +1,9 @@
 validate_varlist_logical <- function(x, arg) {
   if (!is.logical(x) || length(x) != 1L || is.na(x)) {
-    stop("`", arg, "` must be TRUE or FALSE.", call. = FALSE)
+    spicy_abort(
+      paste0("`", arg, "` must be TRUE or FALSE."),
+      class = "spicy_invalid_input"
+    )
   }
 
   invisible(x)
@@ -11,15 +14,21 @@ validate_varlist_names <- function(x) {
   nms <- names(x)
 
   if (is.null(nms)) {
-    stop("`x` must have column names.", call. = FALSE)
+    spicy_abort("`x` must have column names.", class = "spicy_invalid_data")
   }
 
   if (anyNA(nms) || any(!nzchar(nms))) {
-    stop("`x` must have non-empty column names.", call. = FALSE)
+    spicy_abort(
+      "`x` must have non-empty column names.",
+      class = "spicy_invalid_data"
+    )
   }
 
   if (anyDuplicated(nms)) {
-    stop("`x` must have unique column names.", call. = FALSE)
+    spicy_abort(
+      "`x` must have unique column names.",
+      class = "spicy_invalid_data"
+    )
   }
 
   invisible(x)
@@ -30,9 +39,9 @@ validate_varlist_selectors <- function(selectors, x) {
   selected_names <- names(x)[unname(selectors)]
 
   if (!identical(names(selectors), selected_names)) {
-    stop(
+    spicy_abort(
       "`...` can select columns but cannot rename them in varlist().",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -48,7 +57,10 @@ match_varlist_factor_levels <- function(factor_levels) {
       length(factor_levels) < 1L ||
       anyNA(factor_levels)
   ) {
-    stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
+    spicy_abort(
+      '`factor_levels` must be "observed" or "all".',
+      class = "spicy_invalid_input"
+    )
   }
 
   # When the caller passes the full default vector in either order
@@ -63,7 +75,10 @@ match_varlist_factor_levels <- function(factor_levels) {
   tryCatch(
     match.arg(factor_levels, choices = choices),
     error = function(e) {
-      stop('`factor_levels` must be "observed" or "all".', call. = FALSE)
+      spicy_abort(
+        '`factor_levels` must be "observed" or "all".',
+        class = "spicy_invalid_input"
+      )
     }
   )
 }

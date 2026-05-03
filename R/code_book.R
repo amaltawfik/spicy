@@ -102,7 +102,10 @@ code_book <- function(
   factor_levels = c("all", "observed")
 ) {
   if (!is.data.frame(x)) {
-    stop("`x` must be a data frame or tibble.", call. = FALSE)
+    spicy_abort(
+      "`x` must be a data frame or tibble.",
+      class = "spicy_invalid_data"
+    )
   }
 
   dots <- rlang::enquos(..., .named = FALSE)
@@ -115,9 +118,9 @@ code_book <- function(
   factor_levels <- match_varlist_factor_levels(factor_levels)
 
   if (!requireNamespace("DT", quietly = TRUE)) {
-    stop(
+    spicy_abort(
       "Package 'DT' is required for code_book(). Please install it.",
-      call. = FALSE
+      class = "spicy_missing_pkg"
     )
   }
 
@@ -131,9 +134,9 @@ code_book <- function(
   )
 
   if (!inherits(res, "data.frame")) {
-    stop(
+    spicy_abort(
       "`varlist()` did not return a data frame. Check your input.",
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
 

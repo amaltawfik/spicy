@@ -9,9 +9,9 @@ validate_code_book_title <- function(title) {
       is.na(title) ||
       !nzchar(trimws(title))
   ) {
-    stop(
+    spicy_abort(
       "`title` must be NULL or a single non-empty character string.",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -30,9 +30,9 @@ validate_code_book_filename_arg <- function(filename) {
       is.na(filename) ||
       !nzchar(trimws(filename))
   ) {
-    stop(
+    spicy_abort(
       "`filename` must be NULL or a single non-empty character string.",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -74,15 +74,17 @@ validate_code_book_control_dots <- function(dots) {
   if (length(suspect_idx) > 0L) {
     arg <- named_dots[[suspect_idx[[1L]]]]
     option <- controls[startsWith(controls, arg)][[1L]]
-    stop(
-      "`",
-      arg,
-      "` was supplied through `...`. ",
-      "Use `",
-      option,
-      " = ...` exactly for this `code_book()` option; ",
-      "`...` is reserved for tidyselect column selectors.",
-      call. = FALSE
+    spicy_abort(
+      paste0(
+        "`",
+        arg,
+        "` was supplied through `...`. ",
+        "Use `",
+        option,
+        " = ...` exactly for this `code_book()` option; ",
+        "`...` is reserved for tidyselect column selectors."
+      ),
+      class = "spicy_invalid_input"
     )
   }
 

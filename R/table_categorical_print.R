@@ -177,7 +177,7 @@ as.data.frame.spicy_categorical_table <- function(
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_categorical_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
-    stop("Install package 'tibble'.", call. = FALSE)
+    spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
   tibble::as_tibble(unclass_spicy_categorical_table(x), ...)
 }
@@ -225,10 +225,12 @@ NULL
 tidy.spicy_categorical_table <- function(x, ...) {
   long <- attr(x, "long_data", exact = TRUE)
   if (is.null(long)) {
-    stop(
-      "`tidy()` requires the long-format data attached by ",
-      "`table_categorical(output = \"default\")`.",
-      call. = FALSE
+    spicy_abort(
+      paste0(
+        "`tidy()` requires the long-format data attached by ",
+        "`table_categorical(output = \"default\")`."
+      ),
+      class = "spicy_invalid_data"
     )
   }
   has_group <- "group" %in% names(long)
@@ -277,10 +279,12 @@ tidy.spicy_categorical_table <- function(x, ...) {
 glance.spicy_categorical_table <- function(x, ...) {
   long <- attr(x, "long_data", exact = TRUE)
   if (is.null(long)) {
-    stop(
-      "`glance()` requires the long-format data attached by ",
-      "`table_categorical(output = \"default\")`.",
-      call. = FALSE
+    spicy_abort(
+      paste0(
+        "`glance()` requires the long-format data attached by ",
+        "`table_categorical(output = \"default\")`."
+      ),
+      class = "spicy_invalid_data"
     )
   }
   # The cross-tab path stores `chi2`, `df`, `p` (added by parse_stats)

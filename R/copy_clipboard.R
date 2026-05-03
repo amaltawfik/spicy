@@ -65,14 +65,17 @@ copy_clipboard <- function(
   ...
 ) {
   if (!requireNamespace("clipr", quietly = TRUE)) {
-    stop(
+    spicy_abort(
       "Package 'clipr' is required for copy_clipboard(). Please install it.",
-      call. = FALSE
+      class = "spicy_missing_pkg"
     )
   }
 
   if (!clipr::clipr_available()) {
-    stop("Clipboard is not available on this system.", call. = FALSE)
+    spicy_abort(
+      "Clipboard is not available on this system.",
+      class = "spicy_unsupported"
+    )
   }
 
   is_df <- is.data.frame(x)
@@ -87,9 +90,9 @@ copy_clipboard <- function(
 
   if (is.logical(row.names.as.col)) {
     if (length(row.names.as.col) != 1L || is.na(row.names.as.col)) {
-      stop(
+      spicy_abort(
         "`row.names.as.col` must be either FALSE, TRUE, or a single non-empty character string.",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
     if (isTRUE(row.names.as.col)) {
@@ -108,9 +111,9 @@ copy_clipboard <- function(
         is.na(row.names.as.col) ||
         !nzchar(row.names.as.col)
     ) {
-      stop(
+      spicy_abort(
         "`row.names.as.col` must be either FALSE, TRUE, or a single non-empty character string.",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
     if (is_df) {
@@ -125,9 +128,9 @@ copy_clipboard <- function(
       warn_msg <- "`row.names.as.col` is ignored because `x` is not a data frame or matrix."
     }
   } else if (!identical(row.names.as.col, FALSE)) {
-    stop(
+    spicy_abort(
       "`row.names.as.col` must be either FALSE, TRUE, or a single non-empty character string.",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 

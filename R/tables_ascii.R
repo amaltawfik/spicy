@@ -7,16 +7,21 @@
 # change instead of debugging an unexplained layout shift.
 .validate_padding <- function(padding) {
   if (is.character(padding)) {
-    stop(
-      "`padding` must be a non-negative integer (e.g. `padding = 2L`).\n",
-      "The string choices `\"compact\"`, `\"normal\"` and `\"wide\"` were ",
-      "removed in spicy 0.11.0; use `0L`, `2L` and `4L` respectively.",
-      call. = FALSE
+    spicy_abort(
+      paste0(
+        "`padding` must be a non-negative integer (e.g. `padding = 2L`).\n",
+        "The string choices `\"compact\"`, `\"normal\"` and `\"wide\"` were ",
+        "removed in spicy 0.11.0; use `0L`, `2L` and `4L` respectively."
+      ),
+      class = "spicy_invalid_input"
     )
   }
   padding <- suppressWarnings(as.integer(padding))
   if (length(padding) != 1L || is.na(padding) || padding < 0L) {
-    stop("`padding` must be a non-negative integer.", call. = FALSE)
+    spicy_abort(
+      "`padding` must be a non-negative integer.",
+      class = "spicy_invalid_input"
+    )
   }
   padding
 }

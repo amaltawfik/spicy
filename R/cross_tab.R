@@ -142,19 +142,31 @@ cross_tab <- function(
   p_digits = 3L
 ) {
   if (missing(data)) {
-    stop("You must provide a dataset or a vector for `data`.", call. = FALSE)
+    spicy_abort(
+      "You must provide a dataset or a vector for `data`.",
+      class = "spicy_invalid_input"
+    )
   }
   if (!is.character(decimal_mark) || length(decimal_mark) != 1L ||
       !decimal_mark %in% c(".", ",")) {
-    stop("`decimal_mark` must be either `\".\"` or `\",\"`.", call. = FALSE)
+    spicy_abort(
+      "`decimal_mark` must be either `\".\"` or `\",\"`.",
+      class = "spicy_invalid_input"
+    )
   }
   p_digits <- as.integer(p_digits)
   if (length(p_digits) != 1L || is.na(p_digits) || p_digits < 1L) {
-    stop("`p_digits` must be a positive integer.", call. = FALSE)
+    spicy_abort(
+      "`p_digits` must be a positive integer.",
+      class = "spicy_invalid_input"
+    )
   }
   if (!is.numeric(simulate_B) || length(simulate_B) != 1L ||
       !is.finite(simulate_B) || simulate_B < 1L) {
-    stop("`simulate_B` must be a positive integer.", call. = FALSE)
+    spicy_abort(
+      "`simulate_B` must be a positive integer.",
+      class = "spicy_invalid_input"
+    )
   }
   simulate_B <- as.integer(simulate_B)
 
@@ -170,28 +182,31 @@ cross_tab <- function(
 
   if (is.data.frame(data)) {
     if (missing(x)) {
-      stop(
+      spicy_abort(
         "You must specify at least one variable name for `x` (e.g., cross_tab(data, x, y)).",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
     if (missing(y) || identical(call_y, quote(NULL))) {
-      stop(
+      spicy_abort(
         "You must specify a `y` variable (e.g., cross_tab(data, x, y)).",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
   }
 
   if (is_vector_input) {
     if (missing(x) || identical(call_x, quote(NULL))) {
-      stop(
+      spicy_abort(
         "When using vector input, you must provide both x and y vectors of the same length (e.g., cross_tab(data$x, data$y)).",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
     if (length(data) != length(x)) {
-      stop("Vectors `x` and `y` must have the same length.", call. = FALSE)
+      spicy_abort(
+        "Vectors `x` and `y` must have the same length.",
+        class = "spicy_invalid_data"
+      )
     }
   }
 
@@ -283,15 +298,15 @@ cross_tab <- function(
     # Weight
     if (!is.null(weights)) {
       if (!is.numeric(weights)) {
-        stop(
+        spicy_abort(
           "When using vector input, `weights` must be a numeric vector.",
-          call. = FALSE
+          class = "spicy_invalid_input"
         )
       }
       if (length(weights) != length(x_vals)) {
-        stop(
+        spicy_abort(
           "`weights` must have the same length as `x` and `y` in vector mode.",
-          call. = FALSE
+          class = "spicy_invalid_data"
         )
       }
       w_vals <- weights
@@ -303,9 +318,9 @@ cross_tab <- function(
     if (!is.null(by)) {
       by_vals <- by
       if (length(by_vals) != length(x_vals)) {
-        stop(
+        spicy_abort(
           "`by` must be the same length as `x` when using vector input.",
-          call. = FALSE
+          class = "spicy_invalid_data"
         )
       }
     } else {
@@ -362,19 +377,25 @@ cross_tab <- function(
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
     if (!is.numeric(w)) {
-      stop("`weights` must be numeric.", call. = FALSE)
+      spicy_abort("`weights` must be numeric.", class = "spicy_invalid_input")
     }
     if (length(w) != nrow(data)) {
-      stop(
+      spicy_abort(
         "`weights` must have the same length as the number of rows.",
-        call. = FALSE
+        class = "spicy_invalid_data"
       )
     }
     if (any(!is.finite(w[!is.na(w)]))) {
-      stop("`weights` must contain only finite numeric values.", call. = FALSE)
+      spicy_abort(
+        "`weights` must contain only finite numeric values.",
+        class = "spicy_invalid_input"
+      )
     }
     if (any(w < 0, na.rm = TRUE)) {
-      stop("`weights` must be non-negative.", call. = FALSE)
+      spicy_abort(
+        "`weights` must be non-negative.",
+        class = "spicy_invalid_input"
+      )
     }
     if (anyNA(w)) {
       n_na <- sum(is.na(w))
@@ -453,9 +474,9 @@ cross_tab <- function(
       n_complete <- sum(complete)
       w_sum_complete <- sum(df_sub$w_val[complete], na.rm = TRUE)
       if (!is.finite(w_sum_complete) || w_sum_complete <= 0) {
-        stop(
+        spicy_abort(
           "`rescale = TRUE` requires a strictly positive sum of weights.",
-          call. = FALSE
+          class = "spicy_invalid_input"
         )
       }
       df_sub$w_val <- df_sub$w_val * n_complete / w_sum_complete

@@ -212,7 +212,10 @@ freq <- function(
       digits < 0 ||
       digits != as.integer(digits)
   ) {
-    stop("`digits` must be a single non-negative integer.", call. = FALSE)
+    spicy_abort(
+      "`digits` must be a single non-negative integer.",
+      class = "spicy_invalid_input"
+    )
   }
   digits <- as.integer(digits)
 
@@ -221,7 +224,10 @@ freq <- function(
       length(decimal_mark) != 1L ||
       !decimal_mark %in% c(".", ",")
   ) {
-    stop("`decimal_mark` must be either `\".\"` or `\",\"`.", call. = FALSE)
+    spicy_abort(
+      "`decimal_mark` must be either `\".\"` or `\",\"`.",
+      class = "spicy_invalid_input"
+    )
   }
 
   if (
@@ -230,9 +236,9 @@ freq <- function(
       is.na(sort) ||
       !sort %in% c("", "+", "-", "name+", "name-")
   ) {
-    stop(
+    spicy_abort(
       "Invalid value for 'sort'. Use '+', '-', 'name+', or 'name-'.",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -243,9 +249,9 @@ freq <- function(
 
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
-    stop(
+    spicy_abort(
       "When `data` is a data frame, you must supply `x` (e.g., freq(data, x)).",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -303,13 +309,13 @@ freq <- function(
       )
 
       if (identical(weights, not_found)) {
-        stop(
+        spicy_abort(
           paste0(
             "The weighting variable '",
             weight_name,
             "' was not found either in the data frame or in the global environment."
           ),
-          call. = FALSE
+          class = "spicy_missing_column"
         )
       }
 
@@ -329,16 +335,28 @@ freq <- function(
     # TRUE/FALSE coerce naturally to 1/0 — a common shorthand for
     # "include / exclude" weighting.
     if (!is.numeric(weights) && !is.logical(weights)) {
-      stop("`weights` must be a numeric or logical vector.", call. = FALSE)
+      spicy_abort(
+        "`weights` must be a numeric or logical vector.",
+        class = "spicy_invalid_input"
+      )
     }
     if (length(weights) != length(x)) {
-      stop("`weights` must have the same length as `x`.", call. = FALSE)
+      spicy_abort(
+        "`weights` must have the same length as `x`.",
+        class = "spicy_invalid_data"
+      )
     }
     if (any(weights < 0, na.rm = TRUE)) {
-      stop("`weights` must be non-negative.", call. = FALSE)
+      spicy_abort(
+        "`weights` must be non-negative.",
+        class = "spicy_invalid_input"
+      )
     }
     if (any(!is.finite(weights[!is.na(weights)]))) {
-      stop("`weights` must contain only finite numeric values.", call. = FALSE)
+      spicy_abort(
+        "`weights` must contain only finite numeric values.",
+        class = "spicy_invalid_input"
+      )
     }
     if (any(is.na(weights))) {
       n_na <- sum(is.na(weights))
@@ -363,9 +381,9 @@ freq <- function(
     if (rescale) {
       w_sum <- sum(weights)
       if (!is.finite(w_sum) || w_sum <= 0) {
-        stop(
+        spicy_abort(
           "`rescale = TRUE` requires a strictly positive sum of weights.",
-          call. = FALSE
+          class = "spicy_invalid_input"
         )
       }
       weights <- weights * length(weights) / w_sum
@@ -407,7 +425,10 @@ freq <- function(
   n_valid <- n_total - n_missing
 
   if (n_total == 0) {
-    stop("Total frequency is zero; cannot compute proportions.", call. = FALSE)
+    spicy_abort(
+      "Total frequency is zero; cannot compute proportions.",
+      class = "spicy_invalid_data"
+    )
   }
 
   if (is.null(weights)) {

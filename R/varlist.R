@@ -138,9 +138,9 @@ varlist_impl <- function(
   raw_expr = substitute(x)
 ) {
   if (!is.data.frame(x)) {
-    stop(
+    spicy_abort(
       "varlist() only works with named data frames or transformations of them.",
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
 

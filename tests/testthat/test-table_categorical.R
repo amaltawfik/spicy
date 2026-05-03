@@ -1496,7 +1496,7 @@ test_that("table_categorical errors for missing tinytable package", {
       if (pkg == "tinytable") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1512,7 +1512,7 @@ test_that("table_categorical errors for missing gt package", {
       if (pkg == "gt") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1528,7 +1528,7 @@ test_that("table_categorical errors for missing flextable package", {
       if (pkg == "flextable") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1544,7 +1544,7 @@ test_that("table_categorical errors for missing openxlsx2 package", {
       if (pkg == "openxlsx2") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1565,7 +1565,7 @@ test_that("table_categorical errors for missing clipr package", {
       if (pkg == "clipr") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1604,7 +1604,7 @@ test_that("table_categorical grouped errors for missing tinytable", {
       if (pkg == "tinytable") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1625,7 +1625,7 @@ test_that("table_categorical grouped errors for missing gt", {
       if (pkg == "gt") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1641,7 +1641,7 @@ test_that("table_categorical grouped errors for missing flextable", {
       if (pkg == "flextable") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1662,7 +1662,7 @@ test_that("table_categorical grouped errors for missing openxlsx2", {
       if (pkg == "openxlsx2") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )
@@ -1684,7 +1684,7 @@ test_that("table_categorical grouped errors for missing clipr", {
       if (pkg == "clipr") {
         return(FALSE)
       }
-      base::requireNamespace(pkg, ...)
+      TRUE
     },
     .package = "base"
   )

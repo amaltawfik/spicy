@@ -8,25 +8,40 @@
 
 .validate_table <- function(x, min_dim = c(2L, 2L)) {
   if (!inherits(x, "table")) {
-    stop("`x` must be a contingency table (class `table`).", call. = FALSE)
+    spicy_abort(
+      "`x` must be a contingency table (class `table`).",
+      class = "spicy_invalid_data"
+    )
   }
   if (length(dim(x)) != 2L) {
-    stop("`x` must be a two-dimensional table.", call. = FALSE)
+    spicy_abort(
+      "`x` must be a two-dimensional table.",
+      class = "spicy_invalid_data"
+    )
   }
   if (nrow(x) < min_dim[1] || ncol(x) < min_dim[2]) {
-    stop(
+    spicy_abort(
       sprintf("`x` must be at least %dx%d.", min_dim[1], min_dim[2]),
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
   if (anyNA(x)) {
-    stop("`x` must not contain NA cells.", call. = FALSE)
+    spicy_abort(
+      "`x` must not contain NA cells.",
+      class = "spicy_invalid_data"
+    )
   }
   if (any(x < 0)) {
-    stop("`x` must contain non-negative counts.", call. = FALSE)
+    spicy_abort(
+      "`x` must contain non-negative counts.",
+      class = "spicy_invalid_data"
+    )
   }
   if (sum(x) == 0) {
-    stop("`x` has zero total count; association is undefined.", call. = FALSE)
+    spicy_abort(
+      "`x` has zero total count; association is undefined.",
+      class = "spicy_invalid_data"
+    )
   }
   invisible(NULL)
 }
@@ -341,7 +356,10 @@ phi <- function(
 ) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
-    stop("`x` must be a 2x2 table for the phi coefficient.", call. = FALSE)
+    spicy_abort(
+      "`x` must be a 2x2 table for the phi coefficient.",
+      class = "spicy_unsupported"
+    )
   }
   n <- sum(x)
   chi <- suppressWarnings(stats::chisq.test(x, correct = FALSE))
@@ -466,7 +484,10 @@ yule_q <- function(
 ) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
-    stop("`x` must be a 2x2 table for Yule's Q.", call. = FALSE)
+    spicy_abort(
+      "`x` must be a 2x2 table for Yule's Q.",
+      class = "spicy_unsupported"
+    )
   }
   a <- x[1, 1]
   b <- x[1, 2]

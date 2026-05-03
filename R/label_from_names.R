@@ -77,7 +77,10 @@
 #' @export
 label_from_names <- function(df, sep = ". ") {
   if (!is.data.frame(df)) {
-    stop("`df` must be a data.frame or tibble.", call. = FALSE)
+    spicy_abort(
+      "`df` must be a data.frame or tibble.",
+      class = "spicy_invalid_data"
+    )
   }
   if (
     !is.character(sep) ||
@@ -85,7 +88,10 @@ label_from_names <- function(df, sep = ". ") {
       is.na(sep) ||
       !nzchar(sep)
   ) {
-    stop("`sep` must be a single non-empty character string.", call. = FALSE)
+    spicy_abort(
+      "`sep` must be a single non-empty character string.",
+      class = "spicy_invalid_input"
+    )
   }
 
   old_names <- names(df)
@@ -122,7 +128,7 @@ label_from_names <- function(df, sep = ". ") {
   # rather than at the user's actual data.
   empty <- has_sep & !nzchar(new_names)
   if (any(empty)) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "Splitting at `sep` produced %d empty column name(s) ",
@@ -133,12 +139,12 @@ label_from_names <- function(df, sep = ". ") {
         paste(which(empty), collapse = ", "),
         paste(sQuote(old_names[empty]), collapse = ", ")
       ),
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
   dup <- unique(new_names[duplicated(new_names)])
   if (length(dup) > 0L) {
-    stop(
+    spicy_abort(
       sprintf(
         paste0(
           "Splitting at `sep` produced duplicate column names: %s. ",
@@ -147,7 +153,7 @@ label_from_names <- function(df, sep = ". ") {
         ),
         paste(sQuote(dup), collapse = ", ")
       ),
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
 

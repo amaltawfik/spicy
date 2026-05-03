@@ -41,6 +41,23 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, ...). `broom` in `Suggests`.
 
+### Classed errors
+
+* All user-facing errors are now `rlang::abort()`-typed conditions
+  with a stable class hierarchy, so downstream code (Shiny apps,
+  R Markdown reports, pipelines) can dispatch on class instead of
+  matching message strings:
+  * `spicy_error` — root, catches every spicy error
+  * `spicy_invalid_input` — bad argument value or type
+  * `spicy_invalid_data` — bad data shape (not a data frame, NA
+    cells where forbidden, length mismatch)
+  * `spicy_missing_pkg` — a `Suggests` dependency is not installed
+  * `spicy_missing_column` — a referenced column is not in the data
+  * `spicy_unsupported` — operation not applicable to this input
+    (e.g. `phi()` on a non-2x2 table)
+
+  Example: `tryCatch(freq(...), spicy_missing_column = function(e) ...)`.
+
 ## Improvements
 
 * `cross_tab()` warns when `correct = TRUE` is ignored on a

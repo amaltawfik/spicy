@@ -11,9 +11,9 @@ resolve_single_column_selection <- function(quo, data, arg) {
 
   if (is.character(val)) {
     if (length(val) != 1L || !val %in% names(data)) {
-      stop(
+      spicy_abort(
         sprintf("`%s` must select exactly one column in `data`.", arg),
-        call. = FALSE
+        class = "spicy_missing_column"
       )
     }
     return(val)
@@ -22,17 +22,17 @@ resolve_single_column_selection <- function(quo, data, arg) {
   pos <- tryCatch(
     tidyselect::eval_select(quo, data),
     error = function(e) {
-      stop(
+      spicy_abort(
         sprintf("`%s` must select exactly one column in `data`.", arg),
-        call. = FALSE
+        class = "spicy_missing_column"
       )
     }
   )
 
   if (length(pos) != 1L) {
-    stop(
+    spicy_abort(
       sprintf("`%s` must select exactly one column in `data`.", arg),
-      call. = FALSE
+      class = "spicy_missing_column"
     )
   }
 
@@ -66,9 +66,9 @@ resolve_multi_column_selection <- function(quo, data, arg) {
   pos <- tryCatch(
     tidyselect::eval_select(quo, data),
     error = function(e) {
-      stop(
+      spicy_abort(
         sprintf("`%s` must select columns in `data`.", arg),
-        call. = FALSE
+        class = "spicy_missing_column"
       )
     }
   )
@@ -97,12 +97,12 @@ resolve_weights_argument <- function(quo, data, arg = "weights") {
   )
 
   if (identical(val, sentinel)) {
-    stop(
+    spicy_abort(
       sprintf(
         "`%s` must be NULL, numeric vector, or a single column name.",
         arg
       ),
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
@@ -112,31 +112,31 @@ resolve_weights_argument <- function(quo, data, arg = "weights") {
 
   if (is.character(val)) {
     if (length(val) != 1L || !val %in% names(data)) {
-      stop(
+      spicy_abort(
         sprintf(
           "When character, `%s` must be a column name in `data`.",
           arg
         ),
-        call. = FALSE
+        class = "spicy_missing_column"
       )
     }
     val <- data[[val]]
   }
 
   if (!is.numeric(val)) {
-    stop(
+    spicy_abort(
       sprintf(
         "`%s` must be NULL, numeric vector, or a single column name.",
         arg
       ),
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
 
   if (length(val) != nrow(data)) {
-    stop(
+    spicy_abort(
       sprintf("Numeric `%s` must have length `nrow(data)`.", arg),
-      call. = FALSE
+      class = "spicy_invalid_data"
     )
   }
 

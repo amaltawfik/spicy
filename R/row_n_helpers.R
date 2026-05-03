@@ -31,31 +31,31 @@
       !is.finite(min_valid) ||
       min_valid < 0
   ) {
-    stop(
+    spicy_abort(
       "`min_valid` must be a single non-negative number.",
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
   if (min_valid > 0 && min_valid < 1) {
     return(as.integer(round(ncol_data * min_valid)))
   }
   if (min_valid != as.integer(min_valid)) {
-    stop(
+    spicy_abort(
       sprintf(
         "`min_valid = %s`: provide a proportion in (0, 1) or a non-negative integer count.",
         format(min_valid)
       ),
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
   if (min_valid > ncol_data) {
-    stop(
+    spicy_abort(
       sprintf(
         "`min_valid = %s` exceeds the number of selected numeric columns (%d).",
         format(min_valid),
         ncol_data
       ),
-      call. = FALSE
+      class = "spicy_invalid_input"
     )
   }
   as.integer(min_valid)
@@ -76,7 +76,10 @@
       digits < 0 ||
       digits != as.integer(digits)
   ) {
-    stop("`digits` must be a single non-negative integer.", call. = FALSE)
+    spicy_abort(
+      "`digits` must be a single non-negative integer.",
+      class = "spicy_invalid_input"
+    )
   }
   as.integer(digits)
 }
@@ -101,9 +104,9 @@
   if (regex) {
     select <- if (select_was_missing) ".*" else rlang::eval_tidy(select_quo)
     if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      stop(
+      spicy_abort(
         "When `regex = TRUE`, `select` must be a single character pattern.",
-        call. = FALSE
+        class = "spicy_invalid_input"
       )
     }
     matched <- grep(select, names(data), value = TRUE)
