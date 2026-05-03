@@ -124,7 +124,7 @@ Like \code{\link[datawizard:row_count]{datawizard::row_count()}}, this function 
 \examples{
 library(dplyr)
 library(tibble)
-library(haven)
+library(labelled)
 
 # Basic usage
 df <- tibble(

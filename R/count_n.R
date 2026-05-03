@@ -89,7 +89,7 @@
 #' @examples
 #' library(dplyr)
 #' library(tibble)
-#' library(haven)
+#' library(labelled)
 #'
 #' # Basic usage
 #' df <- tibble(

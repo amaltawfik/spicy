@@ -5,7 +5,6 @@
 #' @importFrom dplyr pick
 #' @importFrom dplyr pull
 #' @importFrom dplyr select
-#' @importFrom haven labelled
 #' @importFrom labelled is.labelled
 #' @importFrom labelled to_factor
 #' @importFrom labelled var_label

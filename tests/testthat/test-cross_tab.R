@@ -106,6 +106,7 @@ test_that("cross_tab returns spicy_cross_table or list when styled = TRUE", {
 })
 
 test_that("cross_tab accepts labelled vectors in vector mode", {
+  skip_if_not_installed("haven")
   x <- haven::labelled(
     c(1, 2, 1, 2, 1, 2),
     labels = c(Non = 1, Oui = 2)
