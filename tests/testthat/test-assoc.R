@@ -483,12 +483,37 @@ test_that("print.spicy_assoc_detail formats NA as --", {
   expect_true(any(grepl("--", out)))
 })
 
-test_that("print.spicy_assoc_detail formats p < 0.001", {
+test_that("print.spicy_assoc_detail formats small p-values in APA style (<.001)", {
+  # Since spicy 0.11.0 the print method routes the p-value through
+  # `format_p_value()`, the same helper used by `cross_tab()` and the
+  # `table_*()` family: APA-strict `<.001` (no leading zero, no space).
   tab <- matrix(c(50L, 0L, 0L, 50L), 2, 2)
   class(tab) <- "table"
   res <- cramer_v(tab, detail = TRUE)
   out <- capture.output(print(res))
-  expect_true(any(grepl("< 0.001", out)))
+  expect_true(any(grepl("<.001", out, fixed = TRUE)))
+  expect_false(any(grepl("< 0.001", out, fixed = TRUE)))
+})
+
+test_that("print.spicy_assoc_detail p-value matches `format_p_value()` output", {
+  # The p-value column should be rendered byte-for-byte by the same
+  # `format_p_value()` helper used by `cross_tab()` and the
+  # `table_*()` family -- this locks in the APA convention (no
+  # leading zero) for non-tiny p-values too.
+  tab <- table(c("A", "A", "A", "B", "B"), c("X", "Y", "X", "Y", "X"))
+  res <- suppressWarnings(yule_q(tab, detail = TRUE))
+  out <- capture.output(print(res))
+  expected_p <- spicy:::format_p_value(res[["p_value"]], ".", 3L)
+  expect_true(any(grepl(expected_p, out, fixed = TRUE)))
+})
+
+test_that("print.spicy_assoc_table also uses APA p-value format", {
+  tab <- matrix(c(50L, 0L, 0L, 50L), 2, 2)
+  class(tab) <- "table"
+  res <- assoc_measures(tab)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("<.001", out, fixed = TRUE)))
+  expect_false(any(grepl("< 0.001", out, fixed = TRUE)))
 })
 
 test_that(".assoc_result detail = FALSE returns scalar", {

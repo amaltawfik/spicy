@@ -97,6 +97,13 @@
   `kendall_tau_b()`; it now returns the harmonic mean of the two
   asymmetric values, matching SPSS / PSPP `CROSSTABS`.
 
+* `print.spicy_assoc_detail()` and `print.spicy_assoc_table()`
+  (returned by `cramer_v(detail = TRUE)`, `assoc_measures()`, etc.)
+  now format p-values via the shared `format_p_value()` helper:
+  APA-strict `<.001` / `.045` notation (no leading zero), matching
+  `cross_tab()` and the `table_*()` family. Replaces the previous
+  `< 0.001` / `0.045` rendering.
+
 * `varlist()` and `code_book()` now honour `factor_levels = "all"`
   for `haven_labelled` columns: declared-but-unobserved labels
   (e.g. a `[3] High` code that no one selected) appear in the

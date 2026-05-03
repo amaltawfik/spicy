@@ -90,7 +90,10 @@
 #' @param x A `spicy_assoc_detail` object.
 #' @param digits Number of decimal places for the estimate, SE, and
 #'   confidence interval. Defaults to 3. The p-value is always
-#'   formatted separately (`< 0.001` or three decimal places).
+#'   formatted separately using APA notation (`<.001` or three
+#'   decimal places, no leading zero), via the shared
+#'   `format_p_value()` helper used by `cross_tab()` and the
+#'   `table_*()` family.
 #' @param ... Ignored.
 #' @return `x`, invisibly.
 #'
@@ -120,7 +123,9 @@ print.spicy_assoc_detail <- function(
         return("--")
       }
       if (nm == "p_value") {
-        if (v < 0.001) "< 0.001" else formatC(v, format = "f", digits = 3)
+        # APA-style: `<.001` / `.045`, no leading zero. Same helper
+        # as `cross_tab()` and the `table_*()` family.
+        format_p_value(v, decimal_mark = ".", digits = 3L)
       } else {
         formatC(v, format = "f", digits = digits)
       }
@@ -1552,12 +1557,16 @@ assoc_measures <- function(
 #'
 #' Formats a `spicy_assoc_table` data frame (returned by
 #' [assoc_measures()]) with fixed decimal places, aligned columns,
-#' and `< 0.001` notation for small p-values.
+#' and APA-style `<.001` notation for small p-values (same helper as
+#' `cross_tab()` and the `table_*()` family).
 #'
 #' @param x A `spicy_assoc_table` object.
 #' @param digits Number of decimal places for estimates, SE, and
 #'   confidence intervals. Defaults to 3. The p-value is always
-#'   formatted separately (`< 0.001` or three decimal places).
+#'   formatted separately using APA notation (`<.001` or three
+#'   decimal places, no leading zero), via the shared
+#'   `format_p_value()` helper used by `cross_tab()` and the
+#'   `table_*()` family.
 #' @param ... Ignored.
 #' @return `x`, invisibly.
 #'
@@ -1573,11 +1582,16 @@ print.spicy_assoc_table <- function(
   fmt_num <- function(v) {
     ifelse(is.na(v), "--", formatC(v, format = "f", digits = digits))
   }
+  # APA-style p-value via the shared `format_p_value()` helper:
+  # `<.001` / `.045`, no leading zero. `vapply` rather than `ifelse`
+  # because `format_p_value()` is scalar-only.
   fmt_p <- function(v) {
-    ifelse(
-      is.na(v),
-      "--",
-      ifelse(v < 0.001, "< 0.001", formatC(v, format = "f", digits = 3))
+    vapply(
+      v,
+      function(p) {
+        if (is.na(p)) "--" else format_p_value(p, decimal_mark = ".", digits = 3L)
+      },
+      character(1)
     )
   }
   cols <- list(

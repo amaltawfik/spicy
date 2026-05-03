@@ -11,7 +11,10 @@
 
 \item{digits}{Number of decimal places for estimates, SE, and
 confidence intervals. Defaults to 3. The p-value is always
-formatted separately (\verb{< 0.001} or three decimal places).}
+formatted separately using APA notation (\verb{<.001} or three
+decimal places, no leading zero), via the shared
+\code{format_p_value()} helper used by \code{cross_tab()} and the
+\verb{table_*()} family.}
 
 \item{...}{Ignored.}
 }
@@ -21,7 +24,8 @@ formatted separately (\verb{< 0.001} or three decimal places).}
 \description{
 Formats a \code{spicy_assoc_table} data frame (returned by
 \code{\link[=assoc_measures]{assoc_measures()}}) with fixed decimal places, aligned columns,
-and \verb{< 0.001} notation for small p-values.
+and APA-style \verb{<.001} notation for small p-values (same helper as
+\code{cross_tab()} and the \verb{table_*()} family).
 }
 \seealso{
 \code{\link[=assoc_measures]{assoc_measures()}}
