@@ -48,6 +48,26 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, …). `broom` in `Suggests`.
 
+#### Locale-independent ordering
+
+- Sorting of category labels in
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  /
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  (the `Values` column),
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  (default category sort),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  (factor level construction), and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  /
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (within-table row ordering) now uses `method = "radix"`. Output is
+  byte-stable across locales and platforms, matching the determinism
+  guarantees of Stata and SPSS: the same data produces the same printed
+  table whether the user’s `LC_COLLATE` is `C`, `en_US.UTF-8`,
+  `fr_FR.UTF-8` or unset.
+
 #### Classed errors
 
 - All user-facing errors are now
