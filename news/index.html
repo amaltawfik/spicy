@@ -74,6 +74,13 @@
 <li><p>All three <code>table_*()</code> functions gain <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods for downstream pipelines (<code>gtsummary</code>, <code>modelsummary</code>, <code>parameters</code>, …). <code>broom</code> in <code>Suggests</code>.</p></li>
 </ul></div>
 <div class="section level4">
+<h4 id="edge-case-hardening-0-11-0">Edge-case hardening<a class="anchor" aria-label="anchor" href="#edge-case-hardening-0-11-0"></a></h4>
+<ul><li>
+<code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> no longer crash on zero-length or all-NA <code>Date</code> / <code>POSIXct</code> / <code>character</code> columns, on factors with no observed levels, or on <code>difftime</code> columns. R 4.6.0’s <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> segfaults on these inputs; a centralised <code>safe_sort_unique()</code> helper short-circuits when the deduplicated input has 0 or 1 values, avoiding the crash and preserving deterministic output.</li>
+<li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> and <code><a href="../reference/freq.html">freq()</a></code> apply the same length-guarded radix sort to their internal level construction, so they also survive these inputs.</li>
+</ul></div>
+<div class="section level4">
 <h4 id="snapshot-tests-for-printed-output-0-11-0">Snapshot tests for printed output<a class="anchor" aria-label="anchor" href="#snapshot-tests-for-printed-output-0-11-0"></a></h4>
 <ul><li>
 <code>tests/testthat/test-snapshots.R</code> pins the exact console rendering of <code>print.spicy_freq_table</code>, <code>print.spicy_cross_tab</code>, <code>print.spicy_categorical_table</code>, <code>print.spicy_continuous_table</code>, <code>print.spicy_assoc_table</code> and <code>print.spicy_assoc_detail</code>. Any unintentional drift in alignment, separators, decimal-mark handling or footer wording surfaces as a <code>_snaps/snapshots.md</code> diff in the PR.</li>

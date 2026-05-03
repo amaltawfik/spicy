@@ -48,6 +48,23 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, …). `broom` in `Suggests`.
 
+#### Edge-case hardening
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  /
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  no longer crash on zero-length or all-NA `Date` / `POSIXct` /
+  `character` columns, on factors with no observed levels, or on
+  `difftime` columns. R 4.6.0’s
+  [`sort()`](https://rdrr.io/r/base/sort.html) segfaults on these
+  inputs; a centralised `safe_sort_unique()` helper short-circuits when
+  the deduplicated input has 0 or 1 values, avoiding the crash and
+  preserving deterministic output.
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  apply the same length-guarded radix sort to their internal level
+  construction, so they also survive these inputs.
+
 #### Snapshot tests for printed output
 
 - `tests/testthat/test-snapshots.R` pins the exact console rendering of
