@@ -48,6 +48,15 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, …). `broom` in `Suggests`.
 
+#### Snapshot tests for printed output
+
+- `tests/testthat/test-snapshots.R` pins the exact console rendering of
+  `print.spicy_freq_table`, `print.spicy_cross_tab`,
+  `print.spicy_categorical_table`, `print.spicy_continuous_table`,
+  `print.spicy_assoc_table` and `print.spicy_assoc_detail`. Any
+  unintentional drift in alignment, separators, decimal-mark handling or
+  footer wording surfaces as a `_snaps/snapshots.md` diff in the PR.
+
 #### Locale-independent ordering
 
 - Sorting of category labels in
