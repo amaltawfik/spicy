@@ -101,6 +101,7 @@
   conditions with a stable class hierarchy, so downstream code (Shiny
   apps, R Markdown reports, pipelines) can dispatch on class instead of
   matching message strings:
+
   - `spicy_error` — root, catches every spicy error
   - `spicy_invalid_input` — bad argument value or type
   - `spicy_invalid_data` — bad data shape (not a data frame, NA cells
@@ -113,6 +114,28 @@
 
   Example:
   `tryCatch(freq(...), spicy_missing_column = function(e) ...)`.
+
+- The 35 in-package [`warning()`](https://rdrr.io/r/base/warning.html)
+  calls received the same treatment via a sibling `spicy_warn()` helper.
+  Hierarchy:
+
+  - `spicy_warning` — root, catches every spicy warning
+  - `spicy_undefined_stat` — statistic returns `NA` because the input is
+    degenerate (e.g. Tau-b on a table with all-zero marginals)
+  - `spicy_dropped_na` — `NA` observations silently excluded from the
+    computation (e.g. `NA` `weights`)
+  - `spicy_ignored_arg` — an argument is ignored due to context
+    (e.g. `correct = TRUE` on a non-2x2 table)
+  - `spicy_no_selection` — a selection produced an empty set; returning
+    an empty result rather than erroring
+  - `spicy_fallback` — the requested computation failed, falling back to
+    a simpler estimator (e.g. cluster-robust vcov -\> classical OLS)
+  - `spicy_summary_failed` —
+    [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+    could not summarise one column; the rest of the table is fine
+
+  Example:
+  `withCallingHandlers(table_continuous_lm(...), spicy_fallback = function(w) log_robust_failure(w))`.
 
 ### Improvements
 

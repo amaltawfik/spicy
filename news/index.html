@@ -91,7 +91,8 @@
 </ul></div>
 <div class="section level4">
 <h4 id="classed-errors-0-11-0">Classed errors<a class="anchor" aria-label="anchor" href="#classed-errors-0-11-0"></a></h4>
-<ul><li>All user-facing errors are now <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code>-typed conditions with a stable class hierarchy, so downstream code (Shiny apps, R Markdown reports, pipelines) can dispatch on class instead of matching message strings:
+<ul><li>
+<p>All user-facing errors are now <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code>-typed conditions with a stable class hierarchy, so downstream code (Shiny apps, R Markdown reports, pipelines) can dispatch on class instead of matching message strings:</p>
 <ul><li>
 <code>spicy_error</code> — root, catches every spicy error</li>
 <li>
@@ -104,8 +105,26 @@
 <code>spicy_missing_column</code> — a referenced column is not in the data</li>
 <li>
 <code>spicy_unsupported</code> — operation not applicable to this input (e.g. <code><a href="../reference/phi.html">phi()</a></code> on a non-2x2 table)</li>
-</ul>
-Example: <code>tryCatch(freq(...), spicy_missing_column = function(e) ...)</code>.</li>
+</ul><p>Example: <code>tryCatch(freq(...), spicy_missing_column = function(e) ...)</code>.</p>
+</li>
+<li>
+<p>The 35 in-package <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code> calls received the same treatment via a sibling <code>spicy_warn()</code> helper. Hierarchy:</p>
+<ul><li>
+<code>spicy_warning</code> — root, catches every spicy warning</li>
+<li>
+<code>spicy_undefined_stat</code> — statistic returns <code>NA</code> because the input is degenerate (e.g. Tau-b on a table with all-zero marginals)</li>
+<li>
+<code>spicy_dropped_na</code> — <code>NA</code> observations silently excluded from the computation (e.g. <code>NA</code> <code>weights</code>)</li>
+<li>
+<code>spicy_ignored_arg</code> — an argument is ignored due to context (e.g. <code>correct = TRUE</code> on a non-2x2 table)</li>
+<li>
+<code>spicy_no_selection</code> — a selection produced an empty set; returning an empty result rather than erroring</li>
+<li>
+<code>spicy_fallback</code> — the requested computation failed, falling back to a simpler estimator (e.g. cluster-robust vcov -&gt; classical OLS)</li>
+<li>
+<code>spicy_summary_failed</code> — <code><a href="../reference/varlist.html">varlist()</a></code> could not summarise one column; the rest of the table is fine</li>
+</ul><p>Example: <code>withCallingHandlers(table_continuous_lm(...), spicy_fallback = function(w) log_robust_failure(w))</code>.</p>
+</li>
 </ul></div>
 </div>
 <div class="section level3">
