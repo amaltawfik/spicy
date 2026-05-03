@@ -202,7 +202,7 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(tibble)
-library(haven)
+library(labelled)
 
 # Basic usage
 df <- tibble(
