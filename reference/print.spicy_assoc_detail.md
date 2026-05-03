@@ -21,7 +21,10 @@ print(x, digits = attr(x, "digits") %||% 3L, ...)
 
   Number of decimal places for the estimate, SE, and confidence
   interval. Defaults to 3. The p-value is always formatted separately
-  (`< 0.001` or three decimal places).
+  using APA notation (`<.001` or three decimal places, no leading zero),
+  via the shared `format_p_value()` helper used by
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and the `table_*()` family.
 
 - ...:
 

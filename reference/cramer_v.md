@@ -83,9 +83,9 @@ tab <- table(sochealth$smoking, sochealth$education)
 cramer_v(tab)
 #> [1] 0.1356677
 cramer_v(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper        p
-#>    0.136     0.079     0.191  < 0.001
+#> Estimate  CI lower  CI upper      p
+#>    0.136     0.079     0.191  <.001
 cramer_v(tab, detail = TRUE, conf_level = NULL)
-#> Estimate        p
-#>    0.136  < 0.001
+#> Estimate      p
+#>    0.136  <.001
 ```

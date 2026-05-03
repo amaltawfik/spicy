@@ -66,6 +66,6 @@ tab <- table(sochealth$smoking, sochealth$sex)
 phi(tab)
 #> [1] 0.0107495
 phi(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.011     0.000     0.068  0.713
+#> Estimate  CI lower  CI upper     p
+#>    0.011     0.000     0.068  .713
 ```

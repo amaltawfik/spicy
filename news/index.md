@@ -116,6 +116,17 @@
   it now returns the harmonic mean of the two asymmetric values,
   matching SPSS / PSPP `CROSSTABS`.
 
+- [`print.spicy_assoc_detail()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
+  and
+  [`print.spicy_assoc_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
+  (returned by `cramer_v(detail = TRUE)`,
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md),
+  etc.) now format p-values via the shared `format_p_value()` helper:
+  APA-strict `<.001` / `.045` notation (no leading zero), matching
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and the `table_*()` family. Replaces the previous `< 0.001` / `0.045`
+  rendering.
+
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)

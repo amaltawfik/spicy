@@ -84,7 +84,10 @@ functions with <code>detail = TRUE</code>) with fixed decimal places and
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Number of decimal places for the estimate, SE, and
 confidence interval. Defaults to 3. The p-value is always
-formatted separately (<code>&lt; 0.001</code> or three decimal places).</p></dd>
+formatted separately using APA notation (<code>&lt;.001</code> or three
+decimal places, no leading zero), via the shared
+<code>format_p_value()</code> helper used by <code><a href="cross_tab.html">cross_tab()</a></code> and the
+<code>table_*()</code> family.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

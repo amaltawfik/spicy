@@ -87,6 +87,6 @@ tab <- table(sochealth$smoking, sochealth$education)
 uncertainty_coef(tab)
 #> [1] 0.01148762
 uncertainty_coef(tab, direction = "row", detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.018     0.003     0.032  0.021
+#> Estimate  CI lower  CI upper     p
+#>    0.018     0.003     0.032  .021
 ```

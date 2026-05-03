@@ -274,30 +274,30 @@ contingency table to <code><a href="../reference/assoc_measures.html">assoc_meas
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper        p </span></span>
-<span><span class="co">#&gt; Cramer's V                            0.136     --     0.079     0.191  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Contingency Coefficient               0.134     --        --        --  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000       -- </span></span>
-<span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000       -- </span></span>
-<span><span class="co">#&gt; Lambda C|R                            0.000  0.000     0.000     0.000       -- </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034    0.023 </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014    0.022 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021    0.021 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient R|C           0.018  0.008     0.003     0.032    0.021 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016    0.021 </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Somers' D R|C                        -0.091  0.020    -0.131    -0.052  &lt; 0.001 </span></span>
-<span><span class="co">#&gt; Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt; 0.001</span></span></code></pre></div>
+<span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper      p </span></span>
+<span><span class="co">#&gt; Cramer's V                            0.136     --     0.079     0.191  &lt;.001 </span></span>
+<span><span class="co">#&gt; Contingency Coefficient               0.134     --        --        --  &lt;.001 </span></span>
+<span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000     -- </span></span>
+<span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000     -- </span></span>
+<span><span class="co">#&gt; Lambda C|R                            0.000  0.000     0.000     0.000     -- </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient R|C           0.018  0.008     0.003     0.032   .021 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016   .021 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  &lt;.001 </span></span>
+<span><span class="co">#&gt; Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  &lt;.001 </span></span>
+<span><span class="co">#&gt; Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  &lt;.001 </span></span>
+<span><span class="co">#&gt; Somers' D R|C                        -0.091  0.020    -0.131    -0.052  &lt;.001 </span></span>
+<span><span class="co">#&gt; Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt;.001</span></span></code></pre></div>
 <p>Individual functions such as <code><a href="../reference/cramer_v.html">cramer_v()</a></code>,
 <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, or <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> return a scalar
 by default. Pass <code>detail = TRUE</code> for the confidence interval
 and p-value:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper        p</span></span>
-<span><span class="co">#&gt;    0.136     0.079     0.191  &lt; 0.001</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
+<span><span class="co">#&gt;    0.136     0.079     0.191  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
