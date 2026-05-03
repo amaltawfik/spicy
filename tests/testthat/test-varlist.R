@@ -207,6 +207,29 @@ test_that("varlist_title() avoids ambiguous lookup and call arguments", {
   expect_equal(varlist_title(quote(fun(x, df))), "vl: <data>")
 })
 
+test_that("varlist() handles exotic / empty column types without crashing", {
+  # Each row probes a column type that can crash R's `sort()` (Date /
+  # POSIXct / character of length 0 segfault on R 4.6.0 dev) or that
+  # historically tripped up the `Values` summary path. The radix sort
+  # helper short-circuits on length <= 1 to keep these inputs safe.
+  exotic <- list(
+    empty_int       = integer(0),
+    empty_char      = character(0),
+    empty_factor    = factor(character(0)),
+    all_na_date     = as.Date(c(NA, NA, NA)),
+    all_na_posix    = as.POSIXct(c(NA_character_, NA_character_)),
+    difftime_days   = structure(c(1, 2, 3), class = "difftime", units = "days"),
+    factor_unused   = factor(c("a", "a"), levels = c("a", "b", "c"))
+  )
+  for (nm in names(exotic)) {
+    df <- data.frame(x = exotic[[nm]])
+    out <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+    expect_true(inherits(out, "tbl_df"), info = nm)
+    expect_equal(nrow(out), 1L, info = nm)
+    expect_equal(out$Variable, "x", info = nm)
+  }
+})
+
 test_that("varlist() Values column ordering is locale-independent", {
   # Strings whose collation order depends on `LC_COLLATE`: under the
   # POSIX `C` locale the output is uppercase-first ASCII order

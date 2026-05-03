@@ -459,7 +459,10 @@ freq <- function(
   }
 
   # --- Sort
-  if (sort != "") {
+  # `nrow(df) > 1L` guards against an R 4.6.0 `order()` segfault on a
+  # zero-length vector for some classes; sorting a length-0 / 1 frame
+  # is a no-op anyway.
+  if (sort != "" && nrow(df) > 1L) {
     decreasing <- sort %in% c("-", "name-")
     sort_col <- if (sort %in% c("+", "-")) "n" else "value"
     df <- df[order(df[[sort_col]], decreasing = decreasing, method = "radix"), ]

@@ -41,6 +41,18 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, ...). `broom` in `Suggests`.
 
+### Edge-case hardening
+
+* `varlist()` / `code_book()` no longer crash on zero-length or
+  all-NA `Date` / `POSIXct` / `character` columns, on factors with
+  no observed levels, or on `difftime` columns. R 4.6.0's `sort()`
+  segfaults on these inputs; a centralised `safe_sort_unique()`
+  helper short-circuits when the deduplicated input has 0 or 1
+  values, avoiding the crash and preserving deterministic output.
+* `cross_tab()` and `freq()` apply the same length-guarded radix
+  sort to their internal level construction, so they also survive
+  these inputs.
+
 ### Snapshot tests for printed output
 
 * `tests/testthat/test-snapshots.R` pins the exact console

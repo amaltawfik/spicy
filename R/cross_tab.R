@@ -281,7 +281,11 @@ cross_tab <- function(
 
   make_levels <- function(v) {
     vals <- unique(v[!is.na(v)])
-    if (length(vals) == 0) {
+    # `length(vals) > 1L` guards against an R 4.6.0 sort() segfault on
+    # zero-length Date / POSIXct / character vectors, and is
+    # mathematically equivalent to a length-0 / length-1 short-circuit
+    # (both are already sorted).
+    if (length(vals) <= 1L) {
       return(vals)
     }
     tryCatch(sort(vals, method = "radix"), error = function(e) vals)
@@ -836,7 +840,12 @@ cross_tab <- function(
     if (is.factor(by_vals)) {
       f <- droplevels(by_vals)
     } else {
-      unique_levels <- sort(unique(by_vals), na.last = TRUE, method = "radix")
+      unique_vals_by <- unique(by_vals)
+      unique_levels <- if (length(unique_vals_by) > 1L) {
+        sort(unique_vals_by, na.last = TRUE, method = "radix")
+      } else {
+        unique_vals_by
+      }
       f <- factor(by_vals, levels = unique_levels)
     }
 
