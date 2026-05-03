@@ -91,6 +91,8 @@
 <strong>Snapshot-locked rendering.</strong> <code>tests/testthat/test-snapshots.R</code> pins the exact console output of every spicy print method, so any unintended formatting drift surfaces as a PR diff.</li>
 <li>
 <strong>API stability contract.</strong> <code><a href="../reference/spicy-package.html">?spicy</a></code> documents which exports are stable, stabilising or internal. pkgdown reference groups exports via four <code>@family</code> tags.</li>
+<li>
+<strong>Cross-software validation.</strong> All 13 association measures agree with PSPP 2.0 (<code>CROSSTABS /STATISTICS=ALL</code>, 65 / 65 statistics on four datasets); Cohen’s <em>d</em> and Hedges’ <em>g</em> noncentral CIs are tested numerically against <code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::cohens_d()</a></code> / <code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::hedges_g()</a></code> (<code>tolerance = 1e-6</code>); point-estimate formulas and asymptotic standard errors follow <code>DescTools</code> (Signorell et al.).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-0-11-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-11-0"></a></h3>

@@ -75,6 +75,15 @@
   [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
   documents which exports are stable, stabilising or internal. pkgdown
   reference groups exports via four `@family` tags.
+- **Cross-software validation.** All 13 association measures agree with
+  PSPP 2.0 (`CROSSTABS /STATISTICS=ALL`, 65 / 65 statistics on four
+  datasets); Cohen’s *d* and Hedges’ *g* noncentral CIs are tested
+  numerically against
+  [`effectsize::cohens_d()`](https://easystats.github.io/effectsize/reference/cohens_d.html)
+  /
+  [`effectsize::hedges_g()`](https://easystats.github.io/effectsize/reference/cohens_d.html)
+  (`tolerance = 1e-6`); point-estimate formulas and asymptotic standard
+  errors follow `DescTools` (Signorell et al.).
 
 ### Improvements
 
