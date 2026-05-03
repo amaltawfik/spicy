@@ -28,3 +28,9 @@ Useful links:
 **Maintainer**: Amal Tawfik <amal.tawfik@hesav.ch>
 ([ORCID](https://orcid.org/0009-0006-2422-1555))
 ([ROR](https://ror.org/04j47fz63)) \[copyright holder\]
+
+Authors:
+
+- Amal Tawfik <amal.tawfik@hesav.ch>
+  ([ORCID](https://orcid.org/0009-0006-2422-1555))
+  ([ROR](https://ror.org/04j47fz63)) \[copyright holder\]

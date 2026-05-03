@@ -1,9 +1,8 @@
 # Tidying methods for a `spicy_categorical_table`
 
 Standard
-[`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html)
-and
-[`broom::glance()`](https://broom.tidymodels.org/reference/reexports.html)
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
 interfaces for an object returned by
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 They re-shape the underlying long-format data (stored on the object as
@@ -31,9 +30,8 @@ glance(x, ...)
 - ...:
 
   Currently ignored. Present for compatibility with the
-  [`broom::tidy()`](https://broom.tidymodels.org/reference/reexports.html)
-  /
-  [`broom::glance()`](https://broom.tidymodels.org/reference/reexports.html)
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
   generics.
 
 ## Value
