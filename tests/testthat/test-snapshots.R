@@ -42,6 +42,27 @@ test_that("print.spicy_freq_table: weighted with rescale", {
   )
 })
 
+test_that("print.spicy_freq_table: valid = FALSE drops Valid Percent column", {
+  expect_snapshot(
+    freq(c(1, 2, 2, 3, 3, 3, NA), valid = FALSE)
+  )
+})
+
+test_that("print.spicy_freq_table: cumulative on a complete (no-NA) vector", {
+  expect_snapshot(
+    freq(c("a", "b", "b", "c", "c", "c"), cum = TRUE)
+  )
+})
+
+test_that("print.spicy_freq_table: factor with unused declared level", {
+  # `factor_levels = "all"` keeps the unused "C" level (n = 0),
+  # matching SPSS FREQUENCIES; the snapshot pins that rendering.
+  f <- factor(c("A", "A", "B"), levels = c("A", "B", "C"))
+  expect_snapshot(
+    freq(f, factor_levels = "all")
+  )
+})
+
 # ---- cross_tab() -----------------------------------------------------------
 
 test_that("print.spicy_cross_tab: vector mode, default", {
@@ -59,6 +80,19 @@ test_that("print.spicy_cross_tab: data.frame with row percentages", {
   )
   expect_snapshot(
     cross_tab(df, grp, out, percent = "row")
+  )
+})
+
+test_that("print.spicy_cross_tab: weighted + by interaction", {
+  set.seed(1L)
+  df <- data.frame(
+    grp = rep(c("A", "B"), each = 6L),
+    out = rep(c("hi", "lo", "lo"), times = 4L),
+    sex = rep(c("F", "M"), times = 6L),
+    w   = c(1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2)
+  )
+  expect_snapshot(
+    cross_tab(df, grp, out, by = sex, weights = w, percent = "column")
   )
 })
 
@@ -80,6 +114,35 @@ test_that("print.spicy_continuous_table: numeric + group", {
   )
   expect_snapshot(
     table_continuous(df, select = "age", by = sex)
+  )
+})
+
+test_that("print.spicy_categorical_table: by + auto assoc_measure (APA Note)", {
+  # Two row variables of different types -> assoc_measure = "auto"
+  # picks per-row measures, the "Effect size" column header collapses
+  # and an APA-style `Note.` line documents the per-variable measure.
+  df <- data.frame(
+    grp     = factor(rep(c("F", "M"), each = 6L)),
+    smoking = factor(rep(c("No", "Yes"), times = 6L)),
+    health  = factor(
+      rep(c("low", "mid", "hi"), times = 4L),
+      levels = c("low", "mid", "hi"),
+      ordered = TRUE
+    )
+  )
+  expect_snapshot(
+    table_categorical(df, select = c("smoking", "health"), by = grp)
+  )
+})
+
+test_that("print.spicy_continuous_lm_table: bivariate fit by group", {
+  set.seed(1L)
+  df <- data.frame(
+    score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
+    sex   = factor(rep(c("F", "M"), each = 8L))
+  )
+  expect_snapshot(
+    table_continuous_lm(df, select = "score", by = sex)
   )
 })
 

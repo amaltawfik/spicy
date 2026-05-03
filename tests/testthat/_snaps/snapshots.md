@@ -83,6 +83,61 @@
       Data: df
       Weight: w (rescaled)
 
+# print.spicy_freq_table: valid = FALSE drops Valid Percent column
+
+    Code
+      freq(c(1, 2, 2, 3, 3, 3, NA), valid = FALSE)
+    Output
+      Frequency table: c(1, 2, 2, 3, 3, 3, NA)
+      
+       Category   │ Values      Freq.    Percent    Valid Percent 
+      ────────────┼───────────────────────────────────────────────
+       Valid      │ 1               1       14.3               NA 
+                  │ 2               2       28.6               NA 
+                  │ 3               3       42.9               NA 
+       Missing    │ NA              1       14.3                  
+      ────────────┼───────────────────────────────────────────────
+       Total      │                 7      100.0            100.0 
+      
+      Class: numeric
+      Data: c(1, 2, 2, 3, 3, 3, NA)
+
+# print.spicy_freq_table: cumulative on a complete (no-NA) vector
+
+    Code
+      freq(c("a", "b", "b", "c", "c", "c"), cum = TRUE)
+    Output
+      Frequency table: c("a", "b", "b", "c", "c", "c")
+      
+       Category   │ Values      Freq.    Percent    Cum. Percent 
+      ────────────┼──────────────────────────────────────────────
+       Valid      │ a               1       16.7            16.7 
+                  │ b               2       33.3            50.0 
+                  │ c               3       50.0           100.0 
+      ────────────┼──────────────────────────────────────────────
+       Total      │                 6      100.0           100.0 
+      
+      Class: character
+      Data: c("a", "b", "b", "c", "c", "c")
+
+# print.spicy_freq_table: factor with unused declared level
+
+    Code
+      freq(f, factor_levels = "all")
+    Output
+      Frequency table: f
+      
+       Category   │ Values      Freq.    Percent 
+      ────────────┼──────────────────────────────
+       Valid      │ A               2       66.7 
+                  │ B               1       33.3 
+                  │ C               0        0.0 
+      ────────────┼──────────────────────────────
+       Total      │                 3      100.0 
+      
+      Class: factor
+      Data: f
+
 # print.spicy_cross_tab: vector mode, default
 
     Code
@@ -121,6 +176,41 @@
       Cramer's V = 0.00
       Warning: 6 expected cells < 5 (100%). Minimum expected = 2. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
+# print.spicy_cross_tab: weighted + by interaction
+
+    Code
+      cross_tab(df, grp, out, by = sex, weights = w, percent = "column")
+    Output
+      Crosstable: grp x out (Column %) | sex = F
+      
+       Values   │      hi       lo │   Total 
+      ──────────┼──────────────────┼─────────
+       A        │    50.0     50.0 │    50.0 
+       B        │    50.0     50.0 │    50.0 
+      ──────────┼──────────────────┼─────────
+       Total    │   100.0    100.0 │   100.0 
+       N        │       2        6 │       8 
+      
+      Chi-2(1) = 0.0, p = 1.000
+      Cramer's V = 0.00
+      Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+      Weight: w
+      
+      Crosstable: grp x out (Column %) | sex = M
+      
+       Values   │      hi       lo │   Total 
+      ──────────┼──────────────────┼─────────
+       A        │    50.0     50.0 │    50.0 
+       B        │    50.0     50.0 │    50.0 
+      ──────────┼──────────────────┼─────────
+       Total    │   100.0    100.0 │   100.0 
+       N        │       2        6 │       8 
+      
+      Chi-2(1) = 0.0, p = 1.000
+      Cramer's V = 0.00
+      Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+      Weight: w
+
 # print.spicy_categorical_table: single variable, no grouping
 
     Code
@@ -145,6 +235,37 @@
       ──────────┼─────────────────────────────────────────────────────────────────
        age      │ F      25.60  4.83  20.00  31.00    19.61      31.59    5  .001 
                 │ M      41.60  5.41  35.00  50.00    34.88      48.32    5       
+
+# print.spicy_categorical_table: by + auto assoc_measure (APA Note)
+
+    Code
+      table_categorical(df, select = c("smoking", "health"), by = grp)
+    Output
+      Categorical table by grp
+      
+       Variable │ F n  F %   M n  M %   Total n  Total %    p    Effect size 
+      ──────────┼────────────────────────────────────────────────────────────
+       smoking  │                                         1.000      .00     
+         No     │  3   50.0   3   50.0     6      50.0                       
+         Yes    │  3   50.0   3   50.0     6      50.0                       
+      ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       health   │                                         1.000      .00     
+         low    │  2   33.3   2   33.3     4      33.3                       
+         mid    │  2   33.3   2   33.3     4      33.3                       
+         hi     │  2   33.3   2   33.3     4      33.3                       
+      
+      Note. Phi: smoking; Cramer's V: health.
+
+# print.spicy_continuous_lm_table: bivariate fit by group
+
+    Code
+      table_continuous_lm(df, select = "score", by = sex)
+    Output
+      Continuous outcomes by sex
+      
+       Variable │ M (F)  M (M)  Δ (M - F)  95% CI LL  95% CI UL   p     R²   n  
+      ──────────┼───────────────────────────────────────────────────────────────
+       score    │ 70.66  75.26    4.60       -0.85      10.06    .092  0.19  16 
 
 # print.spicy_assoc_table: omnibus 2x3 table
 
