@@ -880,16 +880,16 @@ sandwich estimators, used internally for \code{vcov = "HC*"});
 \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}} (the canonical R implementation of
 cluster-robust variance and Satterthwaite-style inference, used
 internally for \code{vcov = "CR*"}); \code{\link[effectsize:cohens_d]{effectsize::cohens_d()}},
-\code{\link[effectsize:cohens_d]{effectsize::hedges_g()}}, and \code{\link[effectsize:eta_squared]{effectsize::omega_squared()}}
+\code{\link[effectsize:hedges_g]{effectsize::hedges_g()}}, and \code{\link[effectsize:omega_squared]{effectsize::omega_squared()}}
 (alternative effect-size computations and CIs); \code{\link[cobalt:bal.tab]{cobalt::bal.tab()}}
 for propensity-score covariate balance with weighted standardized
 mean differences (Austin and Stuart 2015); the
 \href{https://CRAN.R-project.org/package=survey}{\code{survey}} package for
 design-based inference on complex-survey samples.
 
-Other spicy tables: 
+Other spicy tables:
 \code{\link{spicy_tables}},
-\code{\link{table_categorical}()},
-\code{\link{table_continuous}()}
+\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}}
 }
 \concept{spicy tables}

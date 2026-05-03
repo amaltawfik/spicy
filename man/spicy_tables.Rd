@@ -44,10 +44,10 @@ when the terminal allows ANSI color output (via the \strong{crayon} package).
 \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for the specialized frequency display method.
 \code{\link[labelled:to_factor]{labelled::to_factor()}} and \code{\link[dplyr:pull]{dplyr::pull()}} for data transformations.
 
-Other spicy tables: 
-\code{\link{table_categorical}()},
-\code{\link{table_continuous}()},
-\code{\link{table_continuous_lm}()}
+Other spicy tables:
+\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}
 }
 \concept{spicy tables}
 \keyword{descriptive}

@@ -502,9 +502,9 @@ contrasts, fitted means);
 \code{\link[=freq]{freq()}} for one-way frequency tables;
 \code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations.
 
-Other spicy tables: 
+Other spicy tables:
 \code{\link{spicy_tables}},
-\code{\link{table_categorical}()},
-\code{\link{table_continuous_lm}()}
+\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}
 }
 \concept{spicy tables}

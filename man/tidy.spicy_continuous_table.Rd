@@ -13,14 +13,14 @@
 \item{x}{A \code{spicy_continuous_table} returned by \code{\link[=table_continuous]{table_continuous()}}.}
 
 \item{...}{Currently ignored. Present for compatibility with the
-\code{\link[broom:reexports]{broom::tidy()}} / \code{\link[broom:reexports]{broom::glance()}} generics.}
+\code{\link[broom:tidy]{broom::tidy()}} / \code{\link[broom:glance]{broom::glance()}} generics.}
 }
 \value{
 A \code{tbl_df} (when \code{tibble} is installed) or a plain
 \code{data.frame}.
 }
 \description{
-Standard \code{\link[broom:reexports]{broom::tidy()}} and \code{\link[broom:reexports]{broom::glance()}} interfaces for an
+Standard \code{\link[broom:tidy]{broom::tidy()}} and \code{\link[broom:glance]{broom::glance()}} interfaces for an
 object returned by \code{\link[=table_continuous]{table_continuous()}}. They re-shape the
 underlying long-format data into the two canonical broom views so
 the descriptive table can be consumed by \code{gtsummary},

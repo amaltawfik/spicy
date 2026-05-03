@@ -450,9 +450,9 @@ bootstrap / jackknife SE, fitted means, weighted contrasts);
 \code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations; \code{\link[=freq]{freq()}} for
 one-way frequency tables.
 
-Other spicy tables: 
+Other spicy tables:
 \code{\link{spicy_tables}},
-\code{\link{table_continuous}()},
-\code{\link{table_continuous_lm}()}
+\code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}
 }
 \concept{spicy tables}
