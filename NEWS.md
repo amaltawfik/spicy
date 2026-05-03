@@ -41,6 +41,17 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, ...). `broom` in `Suggests`.
 
+### Locale-independent ordering
+
+* Sorting of category labels in `varlist()` / `code_book()` (the
+  `Values` column), `freq()` (default category sort), `cross_tab()`
+  (factor level construction), and `table_categorical()` /
+  `table_continuous()` (within-table row ordering) now uses
+  `method = "radix"`. Output is byte-stable across locales and
+  platforms, matching the determinism guarantees of Stata and SPSS:
+  the same data produces the same printed table whether the user's
+  `LC_COLLATE` is `C`, `en_US.UTF-8`, `fr_FR.UTF-8` or unset.
+
 ### Classed errors
 
 * All user-facing errors are now `rlang::abort()`-typed conditions

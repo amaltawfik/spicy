@@ -462,7 +462,7 @@ freq <- function(
   if (sort != "") {
     decreasing <- sort %in% c("-", "name-")
     sort_col <- if (sort %in% c("+", "-")) "n" else "value"
-    df <- df[order(df[[sort_col]], decreasing = decreasing), ]
+    df <- df[order(df[[sort_col]], decreasing = decreasing, method = "radix"), ]
   }
 
   # Move missing-value rows to the end so cumulative columns match the

@@ -207,6 +207,25 @@ test_that("varlist_title() avoids ambiguous lookup and call arguments", {
   expect_equal(varlist_title(quote(fun(x, df))), "vl: <data>")
 })
 
+test_that("varlist() Values column ordering is locale-independent", {
+  # Strings whose collation order depends on `LC_COLLATE`: under the
+  # POSIX `C` locale the output is uppercase-first ASCII order
+  # (`A, B, a, b`), under most non-C locales it is case-insensitive
+  # (`A, a, B, b`). The radix sort used internally guarantees the
+  # POSIX ordering on every platform, so the same dataset produces
+  # the same `Values` cell on Linux, macOS and Windows regardless of
+  # the user's locale.
+  df <- data.frame(grp = c("B", "a", "A", "b"))
+  withr::with_collate("en_US.UTF-8", {
+    out_locale <- varlist(df, tbl = TRUE, values = TRUE)$Values
+  })
+  withr::with_collate("C", {
+    out_c <- varlist(df, tbl = TRUE, values = TRUE)$Values
+  })
+  expect_identical(out_locale, out_c)
+  expect_identical(out_locale, "A, B, a, b")
+})
+
 test_that("varlist_title() returns fallback for non-symbol expressions", {
   expect_equal(varlist_title(1L), "vl: <data>")
 })

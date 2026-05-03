@@ -284,7 +284,7 @@ cross_tab <- function(
     if (length(vals) == 0) {
       return(vals)
     }
-    tryCatch(sort(vals), error = function(e) vals)
+    tryCatch(sort(vals, method = "radix"), error = function(e) vals)
   }
 
   # Call mode detection
@@ -836,7 +836,7 @@ cross_tab <- function(
     if (is.factor(by_vals)) {
       f <- droplevels(by_vals)
     } else {
-      unique_levels <- sort(unique(by_vals), na.last = TRUE)
+      unique_levels <- sort(unique(by_vals), na.last = TRUE, method = "radix")
       f <- factor(by_vals, levels = unique_levels)
     }
 

@@ -744,7 +744,7 @@ table_continuous <- function(
     group_levels <- if (is.factor(groups)) {
       levels(groups)
     } else {
-      sort(unique(groups[!is.na(groups)]))
+      sort(unique(groups[!is.na(groups)]), method = "radix")
     }
     n_groups <- length(group_levels)
     rows <- list()
@@ -1091,7 +1091,7 @@ compute_effect_size <- function(
 
   if (identical(type, "r_rb")) {
     # Rank-biserial r from Wilcoxon W
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
     n1 <- sum(gvec == grp_levels[1])
     n2 <- sum(gvec == grp_levels[2])
     wt <- stats::wilcox.test(xvec ~ gvec)
@@ -1121,7 +1121,7 @@ compute_effect_size <- function(
     row$es_ci_upper <- ci[2]
   } else if (identical(type, "hedges_g")) {
     # Hedges' g (bias-corrected standardised mean difference)
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
     x1 <- xvec[gvec == grp_levels[1]]
     x2 <- xvec[gvec == grp_levels[2]]
     n1 <- length(x1)
@@ -1142,7 +1142,7 @@ compute_effect_size <- function(
   } else if (identical(type, "eta_sq")) {
     # Eta-squared from one-way ANOVA (SS_between / SS_total)
     grand_mean <- mean(xvec)
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec))
+    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
     ss_between <- 0
     for (g in grp_levels) {
       xg <- xvec[gvec == g]

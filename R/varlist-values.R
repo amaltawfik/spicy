@@ -54,7 +54,7 @@ summarize_values_minmax <- function(
     unique_vals <- factor_values(col, factor_levels = factor_levels)
   } else if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
     col_no_na <- stats::na.omit(col)
-    unique_vals <- sort(unique(col_no_na))
+    unique_vals <- sort(unique(col_no_na), method = "radix")
   } else if (varlist_is_array_column(col)) {
     return(summarize_varlist_array(col, include_na = include_na))
   } else if (is.list(col)) {
@@ -65,7 +65,7 @@ summarize_values_minmax <- function(
     ))
   } else {
     col_no_na <- stats::na.omit(col)
-    unique_vals <- sort(unique(col_no_na))
+    unique_vals <- sort(unique(col_no_na), method = "radix")
   }
 
   unique_vals <- format_varlist_values(unique_vals)
@@ -110,7 +110,7 @@ summarize_values_all <- function(
       {
         vals <- unique(v)
         if (sort_values) {
-          sort(vals)
+          sort(vals, method = "radix")
         } else {
           vals
         }
@@ -212,7 +212,7 @@ summarize_varlist_list <- function(col, values = FALSE, include_na = FALSE) {
   base <- paste0("List(", length(col), ")")
 
   if (values && length(col) > 0L) {
-    types <- sort(unique(vapply(col, typeof, character(1))))
+    types <- sort(unique(vapply(col, typeof, character(1))), method = "radix")
     base <- paste0(base, ": ", paste(types, collapse = ", "))
   }
 

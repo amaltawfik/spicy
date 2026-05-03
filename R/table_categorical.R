@@ -1055,7 +1055,7 @@ table_categorical <- function(
         )
       }
       long_raw <- long_raw[
-        order(long_raw$variable, long_raw$level),
+        order(long_raw$variable, long_raw$level, method = "radix"),
         ,
         drop = FALSE
       ]
@@ -1705,7 +1705,7 @@ table_categorical <- function(
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
     long_raw <- long_raw[
-      order(long_raw$variable, long_raw$level, long_raw$group),
+      order(long_raw$variable, long_raw$level, long_raw$group, method = "radix"),
       ,
       drop = FALSE
     ]
