@@ -74,6 +74,7 @@
 #' @seealso [labelled::var_label()] reads the `"label"` attribute set
 #'   by this function; [varlist()] and [code_book()] surface it in
 #'   their inspection outputs.
+#' @family variable inspection
 #' @export
 label_from_names <- function(df, sep = ". ") {
   if (!is.data.frame(df)) {

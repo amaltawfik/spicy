@@ -1678,15 +1678,16 @@ compute_lm_vcov <- function(
       sandwich::vcovHC(fit, type = type),
       error = function(e) {
         spicy_warn(
-          sprintf(
-            paste0(
-              "Robust `vcov = \"%s\"` could not be computed (%s); ",
-              "falling back to the classical OLS variance, ",
-              "which may contain NA."
+          c(
+            sprintf(
+              "Robust `vcov = \"%s\"` could not be computed.",
+              type
             ),
-            type,
-            conditionMessage(e)
-          ), class = "spicy_fallback")
+            "x" = paste0("Underlying error: ", conditionMessage(e)),
+            "i" = "Falling back to the classical OLS variance; the result may contain NA."
+          ),
+          class = "spicy_fallback"
+        )
         stats::vcov(fit)
       }
     ))
@@ -1714,15 +1715,16 @@ compute_lm_vcov <- function(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
       error = function(e) {
         spicy_warn(
-          sprintf(
-            paste0(
-              "Cluster-robust `vcov = \"%s\"` could not be computed (%s); ",
-              "falling back to the classical OLS variance, ",
-              "which may contain NA."
+          c(
+            sprintf(
+              "Cluster-robust `vcov = \"%s\"` could not be computed.",
+              type
             ),
-            type,
-            conditionMessage(e)
-          ), class = "spicy_fallback")
+            "x" = paste0("Underlying error: ", conditionMessage(e)),
+            "i" = "Falling back to the classical OLS variance; the result may contain NA."
+          ),
+          class = "spicy_fallback"
+        )
         stats::vcov(fit)
       }
     ))
@@ -1807,28 +1809,33 @@ compute_lm_vcov_bootstrap <- function(
   n_valid <- sum(valid)
   if (n_valid < 10L) {
     spicy_warn(
-      sprintf(
-        paste0(
-          "Bootstrap: only %d / %d valid replicates; bootstrap vcov ",
-          "is unreliable. Falling back to the classical OLS variance."
+      c(
+        sprintf(
+          "Bootstrap: only %d / %d replicates were valid; the bootstrap vcov is unreliable.",
+          n_valid,
+          boot_n
         ),
-        n_valid,
-        boot_n
-      ), class = "spicy_fallback")
+        "i" = "Falling back to the classical OLS variance."
+      ),
+      class = "spicy_fallback"
+    )
     return(stats::vcov(fit))
   }
   if (n_valid < boot_n %/% 2L) {
     spicy_warn(
-      sprintf(
-        paste0(
-          "Bootstrap: %d / %d replicates failed (rank-deficient ",
-          "resamples?). The bootstrap vcov is computed from the ",
-          "%d valid replicates."
+      c(
+        sprintf(
+          "Bootstrap: %d / %d replicates failed (likely rank-deficient resamples).",
+          boot_n - n_valid,
+          boot_n
         ),
-        boot_n - n_valid,
-        boot_n,
-        n_valid
-      ), class = "spicy_fallback")
+        "i" = sprintf(
+          "The bootstrap vcov is computed from the %d valid replicates.",
+          n_valid
+        )
+      ),
+      class = "spicy_fallback"
+    )
   }
 
   beta_boot <- beta_boot[valid, , drop = FALSE]
@@ -1894,10 +1901,12 @@ compute_lm_vcov_jackknife <- function(
   n_valid <- sum(valid)
   if (n_valid < 2L) {
     spicy_warn(
-      paste0(
-        "Jackknife: fewer than 2 valid leave-out replicates; ",
-        "falling back to the classical OLS variance."
-      ), class = "spicy_fallback")
+      c(
+        "Jackknife: fewer than 2 valid leave-out replicates.",
+        "i" = "Falling back to the classical OLS variance."
+      ),
+      class = "spicy_fallback"
+    )
     return(stats::vcov(fit))
   }
   beta_jack <- beta_jack[valid, , drop = FALSE]

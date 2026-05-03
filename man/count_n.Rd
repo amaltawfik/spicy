@@ -181,3 +181,9 @@ count_n(df, count = "b", allow_coercion = FALSE)
 count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
 
 }
+\seealso{
+Other row-wise summaries:
+\code{\link[=mean_n]{mean_n()}},
+\code{\link[=sum_n]{sum_n()}}
+}
+\concept{row-wise summaries}

@@ -114,6 +114,7 @@
 #' mat
 #' mat |> mean_n(min_valid = 2)
 #'
+#' @family row-wise summaries
 #' @export
 mean_n <- function(
   data = NULL,

@@ -144,3 +144,9 @@ sochealth |> vl(tbl = TRUE)
 vl(sochealth, starts_with("bmi"), tbl = TRUE)
 vl(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 }
+\seealso{
+Other variable inspection:
+\code{\link[=code_book]{code_book()}},
+\code{\link[=label_from_names]{label_from_names()}}
+}
+\concept{variable inspection}

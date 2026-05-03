@@ -140,3 +140,9 @@ mat
 mat |> mean_n(min_valid = 2)
 
 }
+\seealso{
+Other row-wise summaries:
+\code{\link[=count_n]{count_n()}},
+\code{\link[=sum_n]{sum_n()}}
+}
+\concept{row-wise summaries}

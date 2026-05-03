@@ -678,10 +678,13 @@ table_categorical <- function(
     } else {
       if (length(labels) != length(select_names)) {
         spicy_abort(
-          paste0(
-            "Positional `labels` must have the same length as `select`. ",
-            "Pass a named character vector keyed by column name in `data` ",
-            "to relabel only specific variables."
+          c(
+            sprintf(
+              "Positional `labels` has length %d but `select` chose %d variable(s).",
+              length(labels),
+              length(select_names)
+            ),
+            "i" = "Pass a named character vector keyed by column name in `data` to relabel only specific variables."
           ),
           class = "spicy_invalid_input"
         )

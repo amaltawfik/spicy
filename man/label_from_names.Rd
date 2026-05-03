@@ -89,4 +89,9 @@ out2 <- label_from_names(df2, sep = "|")
 \code{\link[labelled:var_label]{labelled::var_label()}} reads the \code{"label"} attribute set
 by this function; \code{\link[=varlist]{varlist()}} and \code{\link[=code_book]{code_book()}} surface it in
 their inspection outputs.
+
+Other variable inspection:
+\code{\link[=code_book]{code_book()}},
+\code{\link[=varlist]{varlist()}}
 }
+\concept{variable inspection}

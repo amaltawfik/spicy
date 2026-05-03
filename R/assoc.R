@@ -279,6 +279,7 @@ print.spicy_assoc_detail <- function(
 #' cramer_v(tab, detail = TRUE, conf_level = NULL)
 #'
 #' @seealso [phi()], [contingency_coef()], [assoc_measures()]
+#' @family association measures
 #' @export
 cramer_v <- function(
   x,
@@ -346,6 +347,7 @@ cramer_v <- function(
 #' phi(tab, detail = TRUE)
 #'
 #' @seealso [cramer_v()], [yule_q()], [assoc_measures()]
+#' @family association measures
 #' @export
 phi <- function(
   x,
@@ -417,6 +419,7 @@ phi <- function(
 #' contingency_coef(tab)
 #'
 #' @seealso [cramer_v()], [assoc_measures()]
+#' @family association measures
 #' @export
 contingency_coef <- function(
   x,
@@ -474,6 +477,7 @@ contingency_coef <- function(
 #' yule_q(tab)
 #'
 #' @seealso [phi()], [gamma_gk()], [assoc_measures()]
+#' @family association measures
 #' @export
 yule_q <- function(
   x,
@@ -561,6 +565,7 @@ yule_q <- function(
 #'
 #' @seealso [goodman_kruskal_tau()], [uncertainty_coef()],
 #'   [assoc_measures()]
+#' @family association measures
 #' @export
 lambda_gk <- function(
   x,
@@ -698,6 +703,7 @@ lambda_gk <- function(
 #' goodman_kruskal_tau(tab, direction = "column", detail = TRUE)
 #'
 #' @seealso [lambda_gk()], [uncertainty_coef()], [assoc_measures()]
+#' @family association measures
 #' @export
 goodman_kruskal_tau <- function(
   x,
@@ -866,6 +872,7 @@ goodman_kruskal_tau <- function(
 #' uncertainty_coef(tab, direction = "row", detail = TRUE)
 #'
 #' @seealso [lambda_gk()], [goodman_kruskal_tau()], [assoc_measures()]
+#' @family association measures
 #' @export
 uncertainty_coef <- function(
   x,
@@ -995,6 +1002,7 @@ uncertainty_coef <- function(
 #'
 #' @seealso [kendall_tau_b()], [kendall_tau_c()], [somers_d()],
 #'   [assoc_measures()]
+#' @family association measures
 #' @export
 gamma_gk <- function(
   x,
@@ -1065,6 +1073,7 @@ gamma_gk <- function(
 #'
 #' @seealso [kendall_tau_c()], [gamma_gk()], [somers_d()],
 #'   [assoc_measures()]
+#' @family association measures
 #' @export
 kendall_tau_b <- function(
   x,
@@ -1164,6 +1173,7 @@ kendall_tau_b <- function(
 #'
 #' @seealso [kendall_tau_b()], [gamma_gk()], [somers_d()],
 #'   [assoc_measures()]
+#' @family association measures
 #' @export
 kendall_tau_c <- function(
   x,
@@ -1239,6 +1249,7 @@ kendall_tau_c <- function(
 #' somers_d(tab, direction = "column", detail = TRUE)
 #'
 #' @seealso [kendall_tau_b()], [gamma_gk()], [assoc_measures()]
+#' @family association measures
 #' @export
 somers_d <- function(
   x,
@@ -1393,6 +1404,7 @@ somers_d <- function(
 #' Statistics*. R package.
 #'
 #' @seealso [cramer_v()], [gamma_gk()], [kendall_tau_b()]
+#' @family association measures
 #' @export
 assoc_measures <- function(
   x,

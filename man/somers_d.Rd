@@ -60,4 +60,18 @@ somers_d(tab, direction = "column", detail = TRUE)
 }
 \seealso{
 \code{\link[=kendall_tau_b]{kendall_tau_b()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=assoc_measures]{assoc_measures()}}
+
+Other association measures:
+\code{\link[=assoc_measures]{assoc_measures()}},
+\code{\link[=contingency_coef]{contingency_coef()}},
+\code{\link[=cramer_v]{cramer_v()}},
+\code{\link[=gamma_gk]{gamma_gk()}},
+\code{\link[=goodman_kruskal_tau]{goodman_kruskal_tau()}},
+\code{\link[=kendall_tau_b]{kendall_tau_b()}},
+\code{\link[=kendall_tau_c]{kendall_tau_c()}},
+\code{\link[=lambda_gk]{lambda_gk()}},
+\code{\link[=phi]{phi()}},
+\code{\link[=uncertainty_coef]{uncertainty_coef()}},
+\code{\link[=yule_q]{yule_q()}}
 }
+\concept{association measures}

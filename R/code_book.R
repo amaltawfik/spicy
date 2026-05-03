@@ -91,6 +91,7 @@
 #' @seealso
 #' [varlist()] for generating the underlying variable summaries.
 #'
+#' @family variable inspection
 #' @export
 code_book <- function(
   x,

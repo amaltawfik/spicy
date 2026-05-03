@@ -41,6 +41,38 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, ...). `broom` in `Suggests`.
 
+### API stability
+
+* New `?spicy` (package help) documents the **API stability**
+  contract: **stable** surface (`freq()`, `cross_tab()`, `varlist()`,
+  `vl()`, `code_book()`, `label_from_names()`, `mean_n()`,
+  `sum_n()`, `count_n()`, `copy_clipboard()`, all 11 association
+  measures); **stabilising** (`table_categorical()`,
+  `table_continuous()`, `table_continuous_lm()`,
+  `assoc_measures()`); **internal** (`build_ascii_table()`,
+  `spicy_print_table()`). Breaking changes to stable functions
+  always accompanied by a NEWS entry.
+
+* `pkgdown` reference index now groups exports via three
+  `@family` tags: `association measures` (12 entries),
+  `variable inspection` (4: `varlist`, `vl`, `code_book`,
+  `label_from_names`), `row-wise summaries` (3: `mean_n`,
+  `sum_n`, `count_n`), and the existing `spicy tables`
+  (4: the three `table_*()` plus the shared `?spicy_tables`
+  topic).
+
+### Structured (cli) error and warning messages
+
+* `rlang (>= 1.1.0)` is now a hard requirement (was unspecified)
+  so multi-line errors and warnings render as cli bullets in
+  modern R sessions: a header line, an `x` bullet for the
+  underlying cause and an `i` bullet for the recommended action
+  or fallback. Applied to the multi-paragraph messages that
+  benefit most from structure (HC*/CR* `vcov` fallbacks,
+  bootstrap/jackknife replicate failures, `padding =
+  "compact"` legacy migration error, `labels`/`select` length
+  mismatch). Single-line validators are unchanged.
+
 ### Edge-case hardening
 
 * `varlist()` / `code_book()` no longer crash on zero-length or

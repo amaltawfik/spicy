@@ -776,7 +776,7 @@ test_that("table_categorical validates labels length", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", labels = c("a", "b")),
-    "Positional `labels` must have the same length"
+    class = "spicy_invalid_input"
   )
 })
 
@@ -2087,7 +2087,7 @@ test_that("positional labels with wrong length error clearly", {
       select = c(smoking, physical_activity),
       labels = c("A", "B", "C")
     ),
-    "Positional `labels` must have the same length"
+    class = "spicy_invalid_input"
   )
 })
 

@@ -114,6 +114,7 @@
 #' mat
 #' mat |> sum_n(min_valid = 2)
 #'
+#' @family row-wise summaries
 #' @export
 sum_n <- function(
   data = NULL,

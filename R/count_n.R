@@ -145,6 +145,7 @@
 #' # Strict match with factor value: works only where levels match
 #' count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
 #'
+#' @family row-wise summaries
 #' @export
 count_n <- function(
   data = NULL,

@@ -4,12 +4,62 @@
 \name{spicy-package}
 \alias{spicy}
 \alias{spicy-package}
-\title{spicy: Descriptive Statistics, Summary Tables, and Data Management Tools}
+\title{spicy: descriptive statistics, summary tables, and data management}
 \description{
-\if{html}{\figure{logo.svg}{options: style='float: right' alt='logo' width='120'}}
-
-Provides tools for descriptive data analysis, variable inspection, data management, and tabulation workflows in 'R'. Summarizes variable metadata, labels, classes, missing values, and representative values, with support for readable frequency tables, cross-tabulations, association measures for contingency tables (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D, and others), categorical and continuous summary tables, and model-based bivariate tables for continuous outcomes, including APA-style reporting outputs. Includes helpers for interactive codebooks, variable label extraction, clipboard export, and row-wise descriptive summaries. Designed to make descriptive analysis and reporting faster, clearer, and easier to work with in practice.
+spicy provides a small set of opinionated, Stata-/SPSS-grade
+tools for descriptive analysis: frequency tables, cross-
+tabulations, association measures, variable inspection, and
+publication-ready summary tables.
 }
+\section{API stability}{
+
+spicy is in active pre-1.0 development. Per the policy
+documented in \code{NEWS.md} and the package roadmap, breaking
+changes are made deliberately at minor-version bumps and are
+always announced in \code{NEWS.md}. The API surface is partitioned
+as follows; users planning to embed spicy in production
+pipelines or downstream packages should rely on the \strong{stable}
+surface.
+
+\strong{Stable} (signature and behaviour preserved across 0.y.z and
+into 1.0.0; documented changes only):
+\itemize{
+\item Frequency / cross-tabs: \code{\link[=freq]{freq()}}, \code{\link[=cross_tab]{cross_tab()}}
+\item Variable inspection: \code{\link[=varlist]{varlist()}} / \code{\link[=vl]{vl()}},
+\code{\link[=code_book]{code_book()}}, \code{\link[=label_from_names]{label_from_names()}}
+\item Row-wise summaries: \code{\link[=mean_n]{mean_n()}}, \code{\link[=sum_n]{sum_n()}}, \code{\link[=count_n]{count_n()}}
+\item Clipboard export: \code{\link[=copy_clipboard]{copy_clipboard()}}
+\item Association measures (point estimates and
+documented CIs): \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=phi]{phi()}},
+\code{\link[=contingency_coef]{contingency_coef()}}, \code{\link[=yule_q]{yule_q()}}, \code{\link[=gamma_gk]{gamma_gk()}},
+\code{\link[=kendall_tau_b]{kendall_tau_b()}}, \code{\link[=kendall_tau_c]{kendall_tau_c()}}, \code{\link[=somers_d]{somers_d()}},
+\code{\link[=lambda_gk]{lambda_gk()}}, \code{\link[=goodman_kruskal_tau]{goodman_kruskal_tau()}},
+\code{\link[=uncertainty_coef]{uncertainty_coef()}}
+}
+
+\strong{Stabilising} (still maturing; argument names may be tightened
+before 1.0 with a \code{NEWS.md} entry, but no silent behavioural
+changes):
+\itemize{
+\item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}
+\item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
+}
+
+\strong{Internal API} (not part of the public surface; can change
+without notice -- avoid calling directly from downstream code):
+\itemize{
+\item ASCII rendering primitives: \code{\link[=build_ascii_table]{build_ascii_table()}},
+\code{\link[=spicy_print_table]{spicy_print_table()}}
+}
+
+All errors and warnings emitted by the stable / stabilising
+surfaces use the documented \code{spicy_error} / \code{spicy_warning}
+class hierarchies (see \code{NEWS.md}), so downstream code can
+dispatch on class via \code{tryCatch()} / \code{withCallingHandlers()}
+instead of matching message strings.
+}
+
 \seealso{
 Useful links:
 \itemize{

@@ -25,7 +25,7 @@ Imports:
     crayon,
     dplyr,
     labelled,
-    rlang,
+    rlang (>= 1.1.0),
     sandwich,
     stats,
     stringr,

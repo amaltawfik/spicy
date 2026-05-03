@@ -83,6 +83,7 @@
 #' returns invisibly. In non-interactive sessions, a message is displayed and
 #' the function returns invisibly.
 #'
+#' @family variable inspection
 #' @export
 #'
 #' @examples

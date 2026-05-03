@@ -118,4 +118,9 @@ if (requireNamespace("DT", quietly = TRUE)) {
 }
 \seealso{
 \code{\link[=varlist]{varlist()}} for generating the underlying variable summaries.
+
+Other variable inspection:
+\code{\link[=label_from_names]{label_from_names()}},
+\code{\link[=varlist]{varlist()}}
 }
+\concept{variable inspection}

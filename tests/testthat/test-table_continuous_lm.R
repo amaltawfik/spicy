@@ -2664,7 +2664,7 @@ test_that("compute_lm_vcov_bootstrap warns on too few valid replicates", {
     warning = function(w) conditionMessage(w)
   )
   expect_true(is.character(msg))
-  expect_match(msg, "valid replicates")
+  expect_match(msg, "replicates were valid")
 })
 
 # ---- end additional coverage ----
@@ -2993,7 +2993,8 @@ test_that("compute_lm_vcov falls back to classical vcov when sandwich errors", {
   expect_true(is.character(msg))
   expect_match(msg, "Robust `vcov = \"HC4m\"`")
   expect_match(msg, "synthetic test failure")
-  expect_match(msg, "falling back to the classical OLS variance")
+  # cli-style bullet wording: "Falling back to the classical OLS variance"
+  expect_match(msg, "Falling back to the classical OLS variance")
 })
 
 test_that("compute_lm_vcov matches sandwich::vcovHC numerically", {
@@ -3124,7 +3125,7 @@ test_that("compute_lm_vcov_bootstrap warns when fewer than 10 valid replicates",
     spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 20L),
     warning = function(w) conditionMessage(w)
   )
-  expect_match(msg, "only 0 / 20 valid replicates")
+  expect_match(msg, "only 0 / 20 replicates were valid")
   expect_match(msg, "unreliable")
 })
 

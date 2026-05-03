@@ -8,10 +8,10 @@
 .validate_padding <- function(padding) {
   if (is.character(padding)) {
     spicy_abort(
-      paste0(
-        "`padding` must be a non-negative integer (e.g. `padding = 2L`).\n",
-        "The string choices `\"compact\"`, `\"normal\"` and `\"wide\"` were ",
-        "removed in spicy 0.11.0; use `0L`, `2L` and `4L` respectively."
+      c(
+        "`padding` must be a non-negative integer (e.g. `padding = 2L`).",
+        "x" = "The string choices `\"compact\"`, `\"normal\"` and `\"wide\"` were removed in spicy 0.11.0.",
+        "i" = "Use `0L`, `2L` and `4L` respectively."
       ),
       class = "spicy_invalid_input"
     )

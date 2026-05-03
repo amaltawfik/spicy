@@ -48,4 +48,18 @@ phi(tab, detail = TRUE)
 }
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=yule_q]{yule_q()}}, \code{\link[=assoc_measures]{assoc_measures()}}
+
+Other association measures:
+\code{\link[=assoc_measures]{assoc_measures()}},
+\code{\link[=contingency_coef]{contingency_coef()}},
+\code{\link[=cramer_v]{cramer_v()}},
+\code{\link[=gamma_gk]{gamma_gk()}},
+\code{\link[=goodman_kruskal_tau]{goodman_kruskal_tau()}},
+\code{\link[=kendall_tau_b]{kendall_tau_b()}},
+\code{\link[=kendall_tau_c]{kendall_tau_c()}},
+\code{\link[=lambda_gk]{lambda_gk()}},
+\code{\link[=somers_d]{somers_d()}},
+\code{\link[=uncertainty_coef]{uncertainty_coef()}},
+\code{\link[=yule_q]{yule_q()}}
 }
+\concept{association measures}
