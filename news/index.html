@@ -62,110 +62,83 @@
 <h3 id="new-features-0-11-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-0"></a></h3>
 <div class="section level4">
 <h4 id="table_continuous_lm-0-11-0"><code>table_continuous_lm()</code><a class="anchor" aria-label="anchor" href="#table_continuous_lm-0-11-0"></a></h4>
-<ul><li><p>Cluster-robust standard errors via <code>cluster</code> and four <code>vcov</code> choices (<code>"CR0"</code>–<code>"CR3"</code>), dispatched to <code>clubSandwich</code> with Satterthwaite degrees of freedom (<code>clubSandwich</code> in <code>Suggests</code>).</p></li>
-<li><p><code>vcov = "bootstrap"</code> (nonparametric or cluster) and <code>vcov = "jackknife"</code> (leave-one-out or leave-one-cluster-out) variance estimators in pure base R, controlled by <code>boot_n</code> (default <code>1000</code>).</p></li>
-<li><p>Three new <code>effect_size</code> choices alongside <code>"f2"</code>: Cohen’s <code>"d"</code>, Hedges’ <code>"g"</code> (two-group only), and Hays’ <code>"omega2"</code>. New <code>effect_size_ci</code> argument adds noncentral <em>t</em> / <em>F</em> CIs rendered inline as <code>0.18 [0.07, 0.30]</code>.</p></li>
-<li><p><code>HC*</code> estimators delegate to <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (<code>sandwich</code> in <code>Imports</code>); rank-deficient fits return a clean rank-by-rank covariance.</p></li>
+<ul><li>Cluster-robust SEs via <code>cluster</code> and four <code>vcov</code> choices (<code>"CR0"</code>–<code>"CR3"</code>), dispatched to <code>clubSandwich</code> with Satterthwaite df (<code>clubSandwich</code> in <code>Suggests</code>).</li>
+<li>
+<code>vcov = "bootstrap"</code> (nonparametric or cluster) and <code>vcov = "jackknife"</code> (leave-one-out / leave-one-cluster-out) variance estimators in pure base R, controlled by <code>boot_n</code>.</li>
+<li>Three new <code>effect_size</code> choices alongside <code>"f2"</code>: Cohen’s <code>"d"</code>, Hedges’ <code>"g"</code> (two-group only), Hays’ <code>"omega2"</code>. New <code>effect_size_ci</code> adds noncentral <em>t</em> / <em>F</em> CIs rendered inline as <code>0.18 [0.07, 0.30]</code>.</li>
+<li>
+<code>HC*</code> estimators delegate to <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
 </ul></div>
 <div class="section level4">
 <h4 id="harmonisation-across-the-table-family-0-11-0">Harmonisation across the table family<a class="anchor" aria-label="anchor" href="#harmonisation-across-the-table-family-0-11-0"></a></h4>
-<ul><li><p>Shared reporting vocabulary (<code>decimal_mark</code>, <code>p_digits</code>, <code>align</code>, named-<code>labels</code>) now spans <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code> and the three <code>table_*()</code> helpers, including APA-style p-value notation (<code>p &lt;.001</code> / <code>p = .045</code>, no leading zero) everywhere.</p></li>
-<li><p><code><a href="../reference/table_categorical.html">table_categorical()</a></code>’s <code>assoc_measure</code> accepts a per-variable specification (<code>"auto"</code>, single string, or named / unnamed vector). When measures differ across rows, the column collapses to <code>"Effect size"</code> and an APA-style <code>Note.</code> line documents the per-variable measure. <code>phi</code> on a non-2x2 raises an actionable error.</p></li>
-<li><p>All three <code>table_*()</code> functions gain <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods for downstream pipelines (<code>gtsummary</code>, <code>modelsummary</code>, <code>parameters</code>, …). <code>broom</code> in <code>Suggests</code>.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="api-stability-0-11-0">API stability<a class="anchor" aria-label="anchor" href="#api-stability-0-11-0"></a></h4>
-<ul><li><p>New <code><a href="../reference/spicy-package.html">?spicy</a></code> (package help) documents the <strong>API stability</strong> contract: <strong>stable</strong> surface (<code><a href="../reference/freq.html">freq()</a></code>, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/varlist.html">vl()</a></code>, <code><a href="../reference/code_book.html">code_book()</a></code>, <code><a href="../reference/label_from_names.html">label_from_names()</a></code>, <code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, <code><a href="../reference/count_n.html">count_n()</a></code>, <code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code>, all 11 association measures); <strong>stabilising</strong> (<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>); <strong>internal</strong> (<code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code>, <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code>). Breaking changes to stable functions always accompanied by a NEWS entry.</p></li>
-<li><p><code>pkgdown</code> reference index now groups exports via three <code>@family</code> tags: <code>association measures</code> (12 entries), <code>variable inspection</code> (4: <code>varlist</code>, <code>vl</code>, <code>code_book</code>, <code>label_from_names</code>), <code>row-wise summaries</code> (3: <code>mean_n</code>, <code>sum_n</code>, <code>count_n</code>), and the existing <code>spicy tables</code> (4: the three <code>table_*()</code> plus the shared <code><a href="../reference/spicy_tables.html">?spicy_tables</a></code> topic).</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="structured-cli-error-and-warning-messages-0-11-0">Structured (cli) error and warning messages<a class="anchor" aria-label="anchor" href="#structured-cli-error-and-warning-messages-0-11-0"></a></h4>
-<ul><li>
-<code>rlang (&gt;= 1.1.0)</code> is now a hard requirement (was unspecified) so multi-line errors and warnings render as cli bullets in modern R sessions: a header line, an <code>x</code> bullet for the underlying cause and an <code>i</code> bullet for the recommended action or fallback. Applied to the multi-paragraph messages that benefit most from structure (HC<em>/CR</em> <code>vcov</code> fallbacks, bootstrap/jackknife replicate failures, <code>padding = "compact"</code> legacy migration error, <code>labels</code>/<code>select</code> length mismatch). Single-line validators are unchanged.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="edge-case-hardening-0-11-0">Edge-case hardening<a class="anchor" aria-label="anchor" href="#edge-case-hardening-0-11-0"></a></h4>
-<ul><li>
-<code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> no longer crash on zero-length or all-NA <code>Date</code> / <code>POSIXct</code> / <code>character</code> columns, on factors with no observed levels, or on <code>difftime</code> columns. R 4.6.0’s <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> segfaults on these inputs; a centralised <code>safe_sort_unique()</code> helper short-circuits when the deduplicated input has 0 or 1 values, avoiding the crash and preserving deterministic output.</li>
+<ul><li>Shared reporting vocabulary (<code>decimal_mark</code>, <code>p_digits</code>, <code>align</code>, named-<code>labels</code>) now spans <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code> and the three <code>table_*()</code> helpers, including APA-style p-value notation (<code>&lt;.001</code> / <code>.045</code>, no leading zero).</li>
 <li>
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code> and <code><a href="../reference/freq.html">freq()</a></code> apply the same length-guarded radix sort to their internal level construction, so they also survive these inputs.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="snapshot-tests-for-printed-output-0-11-0">Snapshot tests for printed output<a class="anchor" aria-label="anchor" href="#snapshot-tests-for-printed-output-0-11-0"></a></h4>
-<ul><li>
-<code>tests/testthat/test-snapshots.R</code> pins the exact console rendering of <code>print.spicy_freq_table</code>, <code>print.spicy_cross_tab</code>, <code>print.spicy_categorical_table</code>, <code>print.spicy_continuous_table</code>, <code>print.spicy_assoc_table</code> and <code>print.spicy_assoc_detail</code>. Any unintentional drift in alignment, separators, decimal-mark handling or footer wording surfaces as a <code>_snaps/snapshots.md</code> diff in the PR.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="locale-independent-ordering-0-11-0">Locale-independent ordering<a class="anchor" aria-label="anchor" href="#locale-independent-ordering-0-11-0"></a></h4>
-<ul><li>Sorting of category labels in <code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> (the <code>Values</code> column), <code><a href="../reference/freq.html">freq()</a></code> (default category sort), <code><a href="../reference/cross_tab.html">cross_tab()</a></code> (factor level construction), and <code><a href="../reference/table_categorical.html">table_categorical()</a></code> / <code><a href="../reference/table_continuous.html">table_continuous()</a></code> (within-table row ordering) now uses <code>method = "radix"</code>. Output is byte-stable across locales and platforms, matching the determinism guarantees of Stata and SPSS: the same data produces the same printed table whether the user’s <code>LC_COLLATE</code> is <code>C</code>, <code>en_US.UTF-8</code>, <code>fr_FR.UTF-8</code> or unset.</li>
-</ul></div>
-<div class="section level4">
-<h4 id="classed-errors-0-11-0">Classed errors<a class="anchor" aria-label="anchor" href="#classed-errors-0-11-0"></a></h4>
-<ul><li>
-<p>All user-facing errors are now <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code>-typed conditions with a stable class hierarchy, so downstream code (Shiny apps, R Markdown reports, pipelines) can dispatch on class instead of matching message strings:</p>
-<ul><li>
-<code>spicy_error</code> — root, catches every spicy error</li>
-<li>
-<code>spicy_invalid_input</code> — bad argument value or type</li>
-<li>
-<code>spicy_invalid_data</code> — bad data shape (not a data frame, NA cells where forbidden, length mismatch)</li>
-<li>
-<code>spicy_missing_pkg</code> — a <code>Suggests</code> dependency is not installed</li>
-<li>
-<code>spicy_missing_column</code> — a referenced column is not in the data</li>
-<li>
-<code>spicy_unsupported</code> — operation not applicable to this input (e.g. <code><a href="../reference/phi.html">phi()</a></code> on a non-2x2 table)</li>
-</ul><p>Example: <code>tryCatch(freq(...), spicy_missing_column = function(e) ...)</code>.</p>
-</li>
-<li>
-<p>The 35 in-package <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code> calls received the same treatment via a sibling <code>spicy_warn()</code> helper. Hierarchy:</p>
-<ul><li>
-<code>spicy_warning</code> — root, catches every spicy warning</li>
-<li>
-<code>spicy_undefined_stat</code> — statistic returns <code>NA</code> because the input is degenerate (e.g. Tau-b on a table with all-zero marginals)</li>
-<li>
-<code>spicy_dropped_na</code> — <code>NA</code> observations silently excluded from the computation (e.g. <code>NA</code> <code>weights</code>)</li>
-<li>
-<code>spicy_ignored_arg</code> — an argument is ignored due to context (e.g. <code>correct = TRUE</code> on a non-2x2 table)</li>
-<li>
-<code>spicy_no_selection</code> — a selection produced an empty set; returning an empty result rather than erroring</li>
-<li>
-<code>spicy_fallback</code> — the requested computation failed, falling back to a simpler estimator (e.g. cluster-robust vcov -&gt; classical OLS)</li>
-<li>
-<code>spicy_summary_failed</code> — <code><a href="../reference/varlist.html">varlist()</a></code> could not summarise one column; the rest of the table is fine</li>
-</ul><p>Example: <code>withCallingHandlers(table_continuous_lm(...), spicy_fallback = function(w) log_robust_failure(w))</code>.</p>
-</li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>’s <code>assoc_measure</code> accepts a per-variable spec. When measures differ across rows the column collapses to <code>"Effect size"</code> and an APA-style <code>Note.</code> line documents the per-variable measure; <code>phi</code> on a non-2x2 errors.</li>
+<li>All three <code>table_*()</code> functions gain <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods (<code>broom</code> in <code>Suggests</code>).</li>
 </ul></div>
 </div>
 <div class="section level3">
+<h3 id="quality-and-robustness-0-11-0">Quality and robustness<a class="anchor" aria-label="anchor" href="#quality-and-robustness-0-11-0"></a></h3>
+<ul><li>
+<strong>Classed conditions.</strong> Errors and warnings now carry stable classes (<code>spicy_error</code> / <code>spicy_warning</code> plus 11 leaf classes documented in <code><a href="../reference/spicy-package.html">?spicy</a></code>), so downstream code can dispatch via <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> / <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code> instead of matching message strings. <code>rlang (&gt;= 1.1.0)</code> required.</li>
+<li>
+<strong>Structured cli messages.</strong> Multi-line errors and warnings (vcov fallbacks, bootstrap/jackknife failures, <code>padding</code> migration, <code>labels</code> length mismatch) render as cli bullets.</li>
+<li>
+<strong>Locale-deterministic ordering.</strong> Sorts in <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/freq.html">freq()</a></code>, <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and <code>table_*()</code> use <code>method = "radix"</code>. Output is byte-stable across locales and platforms, matching Stata / SPSS guarantees.</li>
+<li>
+<strong>Edge-case hardening.</strong> <code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/freq.html">freq()</a></code> no longer crash on zero-length or all-NA <code>Date</code> / <code>POSIXct</code> / <code>character</code> columns or factors with no observed levels (R 4.6.0 <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> segfaults on these inputs).</li>
+<li>
+<strong>Snapshot-locked rendering.</strong> <code>tests/testthat/test-snapshots.R</code> pins the exact console output of every spicy print method, so any unintended formatting drift surfaces as a PR diff.</li>
+<li>
+<strong>API stability contract.</strong> <code><a href="../reference/spicy-package.html">?spicy</a></code> documents which exports are stable, stabilising or internal. pkgdown reference groups exports via four <code>@family</code> tags.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="improvements-0-11-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-11-0"></a></h3>
-<ul><li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> warns when <code>correct = TRUE</code> is ignored on a non-2x2 sub-table, when <code>weights</code> contains <code>NA</code>, and appends a note when statistics are computed on a sub-table after empty rows / columns are pruned.</p></li>
-<li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> validates <code>decimal_mark</code>, <code>p_digits</code> and <code>simulate_B</code> up front; <code><a href="../reference/freq.html">freq()</a></code> validates <code>decimal_mark</code> and tightens <code>digits</code> to a non-negative integer. Bad inputs now fail with actionable errors instead of cryptic downstream messages.</p></li>
-<li><p>A user category literally named <code>"N"</code> or <code>"Total"</code> (e.g. a <code>Yes</code>/<code>No</code> factor or a <code>"Sub Total"</code> label) is no longer mis-rendered as the totals row in <code><a href="../reference/cross_tab.html">cross_tab()</a></code> output.</p></li>
-<li><p><code>table_continuous_lm(output = "long")</code> returns <code>n</code>, <code>df1</code>, <code>df2</code> as integer columns; <code>predictor_label</code> preserved on the degenerate-model fallback path.</p></li>
-<li><p><code><a href="../reference/cramer_v.html">cramer_v()</a></code> and <code><a href="../reference/phi.html">phi()</a></code> documentation now states that the CI uses the Fisher z-transformation (the point estimate and p-value remain identical to <code>DescTools</code> / SPSS).</p></li>
-<li><p><code><a href="../reference/uncertainty_coef.html">uncertainty_coef()</a></code> documentation states that entropy uses <code>0 log 0 = 0</code> (matching SPSS, PSPP, Stata, Cover &amp; Thomas); <code>DescTools::UncertCoef()</code> applies an additional Laplace correction that explains the small estimate divergence.</p></li>
+<ul><li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> warns when <code>correct = TRUE</code> is ignored on a non-2x2 sub-table, when <code>weights</code> contains <code>NA</code>, and notes statistics computed on a sub-table after empty rows / columns are pruned.</li>
+<li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> validates <code>decimal_mark</code>, <code>p_digits</code> and <code>simulate_B</code> up front; <code><a href="../reference/freq.html">freq()</a></code> validates <code>decimal_mark</code> and tightens <code>digits</code> to a non-negative integer.</li>
+<li>A user category literally named <code>"N"</code> or <code>"Total"</code> is no longer mis-rendered as the totals row in <code><a href="../reference/cross_tab.html">cross_tab()</a></code>.</li>
+<li>
+<code>table_continuous_lm(output = "long")</code> returns <code>n</code>, <code>df1</code>, <code>df2</code> as integer columns; <code>predictor_label</code> preserved on the degenerate-model fallback path.</li>
+<li>
+<code><a href="../reference/cramer_v.html">cramer_v()</a></code> / <code><a href="../reference/phi.html">phi()</a></code> doc states the CI uses the Fisher z-transformation (point estimate and p-value identical to <code>DescTools</code> / SPSS).</li>
+<li>
+<code><a href="../reference/uncertainty_coef.html">uncertainty_coef()</a></code> doc states entropy uses <code>0 log 0 = 0</code> (matching SPSS, PSPP, Stata, Cover &amp; Thomas).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-0-11-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-11-0"></a></h3>
-<ul><li><p><code><a href="../reference/label_from_names.html">label_from_names()</a></code> raises actionable errors on duplicate or empty new column names (was a cryptic constructor message); trims trailing whitespace and preserves the input class (<code>data.frame</code> / <code>tbl_df</code>).</p></li>
-<li><p><code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (was hardcoded to 95 %).</p></li>
-<li><p>The categorical-predictor global Wald <em>F</em> degrades to <code>NA</code> (instead of erroring) on a singular coefficient covariance submatrix.</p></li>
-<li><p>The degenerate-table branch of <code><a href="../reference/cramer_v.html">cramer_v()</a></code>, <code><a href="../reference/yule_q.html">yule_q()</a></code>, <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> and <code><a href="../reference/somers_d.html">somers_d()</a></code> now respects <code>detail</code>: scalar <code>NA_real_</code> by default, fully shaped <code>spicy_assoc_detail</code> with NA fields when <code>detail = TRUE</code>.</p></li>
-<li><p><code><a href="../reference/uncertainty_coef.html">uncertainty_coef()</a></code> returns a finite estimate (was <code>NaN</code>) when a row or column marginal is zero.</p></li>
-<li><p><code>somers_d(direction = "symmetric")</code> previously delegated to <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code>; it now returns the harmonic mean of the two asymmetric values, matching SPSS / PSPP <code>CROSSTABS</code>.</p></li>
-<li><p><code><a href="../reference/print.spicy_assoc_detail.html">print.spicy_assoc_detail()</a></code> and <code><a href="../reference/print.spicy_assoc_table.html">print.spicy_assoc_table()</a></code> (returned by <code>cramer_v(detail = TRUE)</code>, <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>, etc.) now format p-values via the shared <code>format_p_value()</code> helper: APA-strict <code>&lt;.001</code> / <code>.045</code> notation (no leading zero), matching <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and the <code>table_*()</code> family. Replaces the previous <code>&lt; 0.001</code> / <code>0.045</code> rendering.</p></li>
-<li><p><code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/code_book.html">code_book()</a></code> now honour <code>factor_levels = "all"</code> for <code>haven_labelled</code> columns: declared-but-unobserved labels (e.g. a <code>[3] High</code> code that no one selected) appear in the <code>Values</code> summary. The argument was previously silently forced to <code>"observed"</code> for labelled inputs.</p></li>
-<li><p><code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> now rejects <code>row.names.as.col</code> vectors of length ≠ 1 and empty strings with an actionable error (was silently truncated to the first element); accumulates <strong>all</strong> messages and warnings emitted by <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code> instead of overwriting on each call (a backend emitting more than one message would lose every earlier one); and prefixes the <code>row.names.as.col</code> warning with <code>Warning:</code> for consistency with the captured-warning path.</p></li>
-<li><p><code><a href="../reference/mean_n.html">mean_n()</a></code> / <code><a href="../reference/sum_n.html">sum_n()</a></code> reject non-integer <code>min_valid &gt;= 1</code> (was silently treated as a <code>&gt; 100 %</code> proportion, making every row <code>NA</code>) and <code>min_valid &gt; ncol</code> (was a silent all-<code>NA</code> result). Their <code>digits</code> argument now requires a non-negative integer, matching <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/freq.html">freq()</a></code> / the <code>table_*()</code> family.</p></li>
+<ul><li>
+<code><a href="../reference/label_from_names.html">label_from_names()</a></code> raises actionable errors on duplicate or empty new column names; trims whitespace and preserves the input class.</li>
+<li>
+<code>table_continuous_lm(output = "data.frame")</code> names contrast CI columns from <code>ci_level</code> (was hardcoded to 95 %).</li>
+<li>The categorical-predictor global Wald <em>F</em> degrades to <code>NA</code> on a singular coefficient covariance submatrix.</li>
+<li>The degenerate-table branch of <code><a href="../reference/cramer_v.html">cramer_v()</a></code>, <code><a href="../reference/yule_q.html">yule_q()</a></code>, <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> and <code><a href="../reference/somers_d.html">somers_d()</a></code> respects <code>detail</code>: scalar <code>NA_real_</code> by default, fully shaped <code>spicy_assoc_detail</code> when <code>detail = TRUE</code>.</li>
+<li>
+<code><a href="../reference/uncertainty_coef.html">uncertainty_coef()</a></code> returns a finite estimate (was <code>NaN</code>) when a marginal is zero.</li>
+<li>
+<code>somers_d(direction = "symmetric")</code> returns the harmonic mean of the two asymmetric values, matching SPSS / PSPP <code>CROSSTABS</code>.</li>
+<li>
+<code><a href="../reference/print.spicy_assoc_detail.html">print.spicy_assoc_detail()</a></code> / <code><a href="../reference/print.spicy_assoc_table.html">print.spicy_assoc_table()</a></code> use APA-strict <code>&lt;.001</code> / <code>.045</code> notation, matching the rest of the package.</li>
+<li>
+<code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> honour <code>factor_levels = "all"</code> for <code>haven_labelled</code> columns: declared-but-unobserved labels appear in the <code>Values</code> summary.</li>
+<li>
+<code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> rejects <code>row.names.as.col</code> vectors of length ≠ 1 and empty strings; accumulates all messages from <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code> instead of overwriting.</li>
+<li>
+<code><a href="../reference/mean_n.html">mean_n()</a></code> / <code><a href="../reference/sum_n.html">sum_n()</a></code> reject non-integer <code>min_valid &gt;= 1</code> and <code>min_valid &gt; ncol</code>; their <code>digits</code> requires a non-negative integer.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-0-11-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-11-0"></a></h3>
-<ul><li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_categorical.html">table_categorical()</a></code> default to decimal-point alignment for numeric columns (<code>align = "decimal"</code>). Pass <code>align = "auto"</code> for the previous behaviour.</p></li>
-<li><p><code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code> / <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code>: <code>padding</code> switches from a string enum (<code>"compact"</code> / <code>"normal"</code> / <code>"wide"</code>) to a non-negative integer giving the extra characters per column. Default <code>2L</code> matches Stata / SPSS / <code>cli</code> / tibble (vs. previous <code>+5L</code>); printed tables are roughly 40 % narrower. String values raise a migration error. <strong>Migration</strong>: <code>"compact" -&gt; 0L</code>, <code>"normal" -&gt; 2L</code>, <code>"wide" -&gt; 4L</code>.</p></li>
-<li><p><code>table_categorical(assoc_measure = "auto")</code> on a 2x2 table now picks <code>phi</code> instead of <code>cramer_v</code>. The numeric value is unchanged (|phi| = V on 2x2); only the column label changes, matching the APA convention. Restore the old label with <code>assoc_measure = "cramer_v"</code>.</p></li>
-<li><p><code><a href="../reference/freq.html">freq()</a></code> drops observations with <code>NA</code> weights from the table (with a warning) instead of recoding them to zero in place. Aligns with <code><a href="../reference/cross_tab.html">cross_tab()</a></code>; removes a silent bias in the <code>rescale = TRUE</code> denominator.</p></li>
-<li><p><code>table_continuous_lm(output = "long")</code> returns <code>NA</code> in <code>es_type</code> and <code>es_value</code> when <code>effect_size = "none"</code> (was <code>"f2"</code> regardless), and renames <code>sum_w</code> to <code>weighted_n</code>. Restore with <code>effect_size = "f2"</code>.</p></li>
+<ul><li>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_categorical.html">table_categorical()</a></code> default to decimal-point alignment for numeric columns (<code>align = "decimal"</code>). Pass <code>align = "auto"</code> for the previous behaviour.</li>
+<li>
+<code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code> / <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code>: <code>padding</code> switches from a string enum to a non-negative integer. Default <code>2L</code> (was <code>+5L</code>); printed tables are roughly 40 % narrower. <strong>Migration</strong>: <code>"compact" -&gt; 0L</code>, <code>"normal" -&gt; 2L</code>, <code>"wide" -&gt; 4L</code>.</li>
+<li>
+<code>table_categorical(assoc_measure = "auto")</code> on a 2x2 table picks <code>phi</code> instead of <code>cramer_v</code>. Numeric value unchanged (|phi| = V on 2x2); only the column label changes.</li>
+<li>
+<code><a href="../reference/freq.html">freq()</a></code> drops observations with <code>NA</code> weights (with a warning) instead of recoding them to zero. Aligns with <code><a href="../reference/cross_tab.html">cross_tab()</a></code>.</li>
+<li>
+<code>table_continuous_lm(output = "long")</code> returns <code>NA</code> in <code>es_type</code> / <code>es_value</code> when <code>effect_size = "none"</code> (was <code>"f2"</code>), and renames <code>sum_w</code> to <code>weighted_n</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
