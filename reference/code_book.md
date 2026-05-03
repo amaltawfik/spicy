@@ -116,6 +116,10 @@ Requires the following package:
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
 for generating the underlying variable summaries.
 
+Other variable inspection:
+[`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+
 ## Examples
 
 ``` r

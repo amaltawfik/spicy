@@ -189,6 +189,12 @@ Like
 this function also supports regex-based column selection,
 case-insensitive string comparison, and column exclusion.
 
+## See also
+
+Other row-wise summaries:
+[`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+[`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+
 ## Examples
 
 ``` r

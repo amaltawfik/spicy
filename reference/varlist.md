@@ -135,6 +135,12 @@ what is actually present. By contrast,
 defaults to `"all"` to document the declared schema, including unused
 levels. Pass `factor_levels` explicitly to override either default.
 
+## See also
+
+Other variable inspection:
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+[`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+
 ## Examples
 
 ``` r

@@ -48,6 +48,52 @@
   methods for downstream pipelines (`gtsummary`, `modelsummary`,
   `parameters`, …). `broom` in `Suggests`.
 
+#### API stability
+
+- New
+  [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
+  (package help) documents the **API stability** contract: **stable**
+  surface
+  ([`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+  [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md),
+  all 11 association measures); **stabilising**
+  ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md));
+  **internal**
+  ([`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md),
+  [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)).
+  Breaking changes to stable functions always accompanied by a NEWS
+  entry.
+
+- `pkgdown` reference index now groups exports via three `@family` tags:
+  `association measures` (12 entries), `variable inspection` (4:
+  `varlist`, `vl`, `code_book`, `label_from_names`),
+  `row-wise summaries` (3: `mean_n`, `sum_n`, `count_n`), and the
+  existing `spicy tables` (4: the three `table_*()` plus the shared
+  [`?spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
+  topic).
+
+#### Structured (cli) error and warning messages
+
+- `rlang (>= 1.1.0)` is now a hard requirement (was unspecified) so
+  multi-line errors and warnings render as cli bullets in modern R
+  sessions: a header line, an `x` bullet for the underlying cause and an
+  `i` bullet for the recommended action or fallback. Applied to the
+  multi-paragraph messages that benefit most from structure (HC*/CR*
+  `vcov` fallbacks, bootstrap/jackknife replicate failures,
+  `padding = "compact"` legacy migration error, `labels`/`select` length
+  mismatch). Single-line validators are unchanged.
+
 #### Edge-case hardening
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)

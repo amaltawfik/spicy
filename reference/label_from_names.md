@@ -77,6 +77,10 @@ and
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 surface it in their inspection outputs.
 
+Other variable inspection:
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+
 ## Examples
 
 ``` r

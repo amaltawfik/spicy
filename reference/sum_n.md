@@ -74,6 +74,12 @@ sum_n(
 
 A numeric vector of row-wise sums.
 
+## See also
+
+Other row-wise summaries:
+[`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+[`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+
 ## Examples
 
 ``` r

@@ -80,6 +80,19 @@ for full references.
 [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
 [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
+Other association measures:
+[`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md),
+[`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md),
+[`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
+[`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
+[`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
+[`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
+[`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md),
+[`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
+[`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
+[`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
+[`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)
+
 ## Examples
 
 ``` r
