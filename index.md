@@ -29,8 +29,10 @@ With spicy, you can:
   [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),
   [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
-  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md),
-  and related functions.
+  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+  and 8 other coefficients; use
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  to compute the full set at once.
 - **Build categorical summary tables in R** with
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   for gt, tinytable, flextable, Excel, Word, or clipboard export.
@@ -40,9 +42,11 @@ With spicy, you can:
   output.
 - **Build model-based continuous summary tables in R** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  for linear regression reporting, robust standard errors, weighted mean
-  comparisons, and console, gt, tinytable, flextable, Excel, Word, or
-  clipboard output.
+  for linear regression reporting: classical / HC\* / cluster-robust /
+  bootstrap / jackknife variance, four effect-size families (f², Cohen’s
+  d, Hedges’ g, Hays’ omega²) with noncentral CIs, weighted comparisons,
+  and console, gt, tinytable, flextable, Excel, Word, or clipboard
+  output.
 - **Generate interactive and exportable codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   for labelled and survey-style datasets.
