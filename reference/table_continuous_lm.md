@@ -186,7 +186,7 @@ table_continuous_lm(
     Inference is asymptotic (`z` / `chi^2(q)`).
 
   The `HC*` variants are computed via
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html).
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html).
   Coefficients (means, contrasts, slopes), `R²`, and the standardized
   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
   OLS/WLS fit and are not affected by `vcov`; only their standard
@@ -214,7 +214,7 @@ table_continuous_lm(
   least two distinct non-missing cluster values are required. Multi-way
   clustering (a list / data.frame of multiple cluster vectors) is not
   supported; use
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
+  [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
   or
   [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
   directly on the fitted model for that case.
@@ -578,7 +578,7 @@ sizes) are more appropriate.
 When `vcov` is one of the `HC*` variants, the standard errors, CIs, and
 Wald test statistics use a heteroskedasticity-consistent sandwich
 estimator computed via
-[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
 (Zeileis 2004), the canonical R implementation. For a brief guide:
 
 - `"HC0"` is the original White (1980) form; `"HC1"` adds the
@@ -587,7 +587,7 @@ estimator computed via
 
 - `"HC2"` and `"HC3"` use leverage-based residual rescalings (MacKinnon
   and White 1985); `"HC3"` is the
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
   default for small to moderate samples (Long and Ervin 2000).
 
 - `"HC4"` adapts the leverage exponent for influential observations
@@ -796,7 +796,7 @@ matrix estimators. *Journal of Statistical Software*, **11**(10), 1–17.
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 For broader workflows on the same statistical building blocks:
-[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
 (the canonical R implementation of the `HC*` sandwich estimators, used
 internally for `vcov = "HC*"`);
 [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md),

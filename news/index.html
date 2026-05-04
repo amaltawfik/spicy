@@ -58,6 +58,20 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<div class="section level3">
+<h3 id="internal-development-version">Internal<a class="anchor" aria-label="anchor" href="#internal-development-version"></a></h3>
+<ul><li>
+<p><code>R/table_continuous_lm.R</code> (3394 lines) split into four files on a strict shared / specific naming convention, so the upcoming <code>table_regression()</code> (planned for 0.13) can reuse the inferential backbone without duplication. No behaviour change, no rename, no signature change; only file moves.</p>
+<ul><li>
+<code>R/lm_compute.R</code> (shared) — vcov family (classical, <code>HC*</code>, <code>CR*</code>, bootstrap, jackknife), single-coef and Wald inference, model stats, noncentral effect-size CIs.</li>
+<li>
+<code>R/lm_helpers.R</code> (shared) — input-resolution helpers (<code>is_supported_lm_predictor</code>, <code>coerce_lm_factor</code>, <code>detect_weights_column_name</code>, <code>resolve_cluster_argument</code>).</li>
+<li>
+<code>R/table_continuous_lm_render.R</code> (specific) — bivariate-layout rendering (raw / display data frames + 8 output formats).</li>
+<li>
+<code>R/table_continuous_lm.R</code> (specific) — public <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> + per-outcome / per-predictor row orchestrators.</li>
+</ul></li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.0" id="spicy-0110">spicy 0.11.0<a class="anchor" aria-label="anchor" href="#spicy-0110"></a></h2><p class="text-muted">CRAN release: 2026-05-04</p>
@@ -70,7 +84,7 @@
 <code>vcov = "bootstrap"</code> (nonparametric or cluster) and <code>vcov = "jackknife"</code> (leave-one-out / leave-one-cluster-out) variance estimators in pure base R, controlled by <code>boot_n</code>.</li>
 <li>Three new <code>effect_size</code> choices alongside <code>"f2"</code>: Cohen’s <code>"d"</code>, Hedges’ <code>"g"</code> (two-group only), Hays’ <code>"omega2"</code>. New <code>effect_size_ci</code> adds noncentral <em>t</em> / <em>F</em> CIs rendered inline as <code>0.18 [0.07, 0.30]</code>.</li>
 <li>
-<code>HC*</code> estimators delegate to <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
+<code>HC*</code> estimators delegate to <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
 </ul></div>
 <div class="section level4">
 <h4 id="harmonisation-across-the-table-family-0-11-0">Harmonisation across the table family<a class="anchor" aria-label="anchor" href="#harmonisation-across-the-table-family-0-11-0"></a></h4>

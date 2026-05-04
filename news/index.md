@@ -2,6 +2,26 @@
 
 ## spicy (development version)
 
+### Internal
+
+- `R/table_continuous_lm.R` (3394 lines) split into four files on a
+  strict shared / specific naming convention, so the upcoming
+  `table_regression()` (planned for 0.13) can reuse the inferential
+  backbone without duplication. No behaviour change, no rename, no
+  signature change; only file moves.
+
+  - `R/lm_compute.R` (shared) — vcov family (classical, `HC*`, `CR*`,
+    bootstrap, jackknife), single-coef and Wald inference, model stats,
+    noncentral effect-size CIs.
+  - `R/lm_helpers.R` (shared) — input-resolution helpers
+    (`is_supported_lm_predictor`, `coerce_lm_factor`,
+    `detect_weights_column_name`, `resolve_cluster_argument`).
+  - `R/table_continuous_lm_render.R` (specific) — bivariate-layout
+    rendering (raw / display data frames + 8 output formats).
+  - `R/table_continuous_lm.R` (specific) — public
+    [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) +
+    per-outcome / per-predictor row orchestrators.
+
 ## spicy 0.11.0
 
 CRAN release: 2026-05-04
@@ -20,7 +40,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonisation across the table family
