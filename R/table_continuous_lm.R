@@ -38,6 +38,39 @@
 #'
 #'   Rows with `NA` in `by` are excluded from the analytic sample for each
 #'   outcome (NAs in `y` and `weights` are also excluded; see Details).
+#' @param covariates Optional additive covariates to adjust each per-outcome
+#'   linear model for. Accepts a tidyselect expression (e.g.
+#'   `covariates = c(age, sex)`, `covariates = tidyselect::all_of(cov_vec)`,
+#'   `covariates = tidyselect::starts_with("control_")`) or a literal
+#'   character vector of column names. Each covariate must be numeric,
+#'   integer, logical, factor, or character; covariates that also appear
+#'   in `select` are silently auto-excluded from the outcome list (a
+#'   variable cannot be both outcome and adjustment), and a covariate
+#'   that equals `by` raises an error (a variable cannot be both
+#'   predictor and adjustment).
+#'
+#'   When non-empty, each model is fitted as `lm(y ~ by + cov1 + cov2 + ...)`
+#'   and the reported estimate / SE / p-value / CI on `by` are
+#'   covariate-adjusted via the focal coefficient. For categorical `by`,
+#'   the displayed `emmean` is the **covariate-adjusted estimated marginal
+#'   mean** (covariates fixed at their sample mean for numeric / logical,
+#'   first level for factor / character — the convention used by SPSS
+#'   UNIANOVA and Stata `margins`). The omnibus test is the partial F
+#'   restricted to `by` (computed via `stats::drop1()`).
+#'
+#'   Effect sizes that have no defined extension under adjustment
+#'   (`effect_size = "d"` and `"g"`) raise a `spicy_unsupported` error
+#'   when covariates are present; use `effect_size = "f2"` or `"omega2"`
+#'   instead — these generalise to partial effect sizes via partial F.
+#'
+#'   v1 supports additive covariates only. Formula syntax with
+#'   interactions or transforms (`covariates = ~ age * sex`,
+#'   `covariates = ~ I(age^2)`) is reserved for a future release; passing
+#'   a formula raises a `spicy_unsupported` error with a migration hint.
+#'
+#'   Rows with `NA` in any covariate are dropped from the analytic
+#'   sample for each outcome (complete-cases per outcome, matching the
+#'   existing `by` / `weights` NA handling).
 #' @param exclude Columns to exclude from `select`. Supports tidyselect syntax
 #'   and character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers. If
@@ -801,6 +834,7 @@ table_continuous_lm <- function(
   data,
   select = tidyselect::everything(),
   by,
+  covariates = NULL,
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
@@ -1076,9 +1110,44 @@ table_continuous_lm <- function(
     )
   }
 
+  # Resolve `covariates` (additive only in v1; tidyselect / character).
+  # Auto-exclude covariates from `numeric_outcomes` -- a variable
+  # cannot be both outcome and adjustment. Mirrors the silent
+  # auto-exclusion of `by` from `select` above.
+  covariates_quo <- rlang::enquo(covariates)
+  covariates_names <- resolve_covariates_argument(
+    covariates_quo,
+    data,
+    select_names = numeric_outcomes,
+    by_name = by_name
+  )
+  numeric_outcomes <- setdiff(numeric_outcomes, covariates_names)
+
+  # Cohen's d / Hedges' g are undefined under covariate adjustment.
+  # Reject up front so the user gets a clean error rather than a
+  # silent dispatch to an inappropriate formula.
+  if (length(covariates_names) > 0L && effect_size %in% c("d", "g")) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`effect_size = \"%s\"` is undefined for covariate-adjusted models.",
+          effect_size
+        ),
+        "i" = "Use `effect_size = \"f2\"` or `\"omega2\"` instead (both generalise to partial effect sizes via partial F)."
+      ),
+      class = "spicy_unsupported"
+    )
+  }
+
   if (length(numeric_outcomes) == 0L) {
     spicy_warn("No numeric outcome columns selected.", class = "spicy_no_selection")
     return(data.frame())
+  }
+
+  covariates_df <- if (length(covariates_names) > 0L) {
+    data[, covariates_names, drop = FALSE]
+  } else {
+    NULL
   }
 
   outcome_labels <- vapply(
@@ -1103,6 +1172,7 @@ table_continuous_lm <- function(
       fit_outcome_lm_rows(
         y = data[[numeric_outcomes[i]]],
         predictor = by_vector,
+        covariates = covariates_df,
         weights = weights_vec,
         cluster = cluster_vec,
         outcome_name = numeric_outcomes[i],
@@ -1129,6 +1199,7 @@ table_continuous_lm <- function(
   attr(result, "by_label") <- by_label
   attr(result, "vcov_type") <- vcov
   attr(result, "contrast") <- contrast
+  attr(result, "covariates") <- covariates_names
   attr(result, "weights_used") <- !is.null(weights_vec)
   attr(result, "show_statistic") <- statistic
   attr(result, "show_p_value") <- p_value
@@ -1204,6 +1275,7 @@ table_continuous_lm <- function(
 fit_outcome_lm_rows <- function(
   y,
   predictor,
+  covariates = NULL,
   weights,
   cluster = NULL,
   outcome_name,
@@ -1222,17 +1294,26 @@ fit_outcome_lm_rows <- function(
   if (!is.null(cluster)) {
     keep <- keep & !is.na(cluster)
   }
+  if (!is.null(covariates) && ncol(covariates) > 0L) {
+    keep <- keep & stats::complete.cases(covariates)
+  }
 
   y <- y[keep]
   predictor <- predictor[keep]
   weights <- if (is.null(weights)) NULL else weights[keep]
   cluster <- if (is.null(cluster)) NULL else cluster[keep]
+  covariates <- if (is.null(covariates)) {
+    NULL
+  } else {
+    covariates[keep, , drop = FALSE]
+  }
 
   if (is.numeric(predictor)) {
     return(
       fit_numeric_predictor_lm_rows(
         y = y,
         x = predictor,
+        covariates = covariates,
         weights = weights,
         cluster = cluster,
         outcome_name = outcome_name,
@@ -1249,6 +1330,7 @@ fit_outcome_lm_rows <- function(
   fit_categorical_predictor_lm_rows(
     y = y,
     x = predictor,
+    covariates = covariates,
     weights = weights,
     cluster = cluster,
     outcome_name = outcome_name,
@@ -1265,6 +1347,7 @@ fit_outcome_lm_rows <- function(
 fit_numeric_predictor_lm_rows <- function(
   y,
   x,
+  covariates = NULL,
   weights,
   cluster = NULL,
   outcome_name,
@@ -1284,11 +1367,19 @@ fit_numeric_predictor_lm_rows <- function(
     ))
   }
 
-  model_df <- data.frame(y = y, x = x)
-  fit <- if (is.null(weights)) {
-    stats::lm(y ~ x, data = model_df)
+  has_covs <- !is.null(covariates) && ncol(covariates) > 0L
+  model_df <- if (has_covs) {
+    cbind(data.frame(y = y, x = x), covariates)
   } else {
-    stats::lm(y ~ x, data = model_df, weights = weights)
+    data.frame(y = y, x = x)
+  }
+  rhs_terms <- if (has_covs) c("x", names(covariates)) else "x"
+  formula <- stats::reformulate(rhs_terms, response = "y")
+
+  fit <- if (is.null(weights)) {
+    stats::lm(formula, data = model_df)
+  } else {
+    stats::lm(formula, data = model_df, weights = weights)
   }
 
   vc <- compute_lm_vcov(
@@ -1298,8 +1389,19 @@ fit_numeric_predictor_lm_rows <- function(
     weights = weights,
     boot_n = boot_n
   )
-  model_stats <- compute_lm_model_stats(fit)
 
+  # `focal_term = "x"` activates the partial-F path in
+  # compute_lm_model_stats / compute_es_ci_lm so f² and ω² are
+  # restricted to x and ignore covariate contributions to R². When
+  # there are no covariates the model is bivariate and focal_term
+  # is NULL; the model-level F coincides with the focal F.
+  focal_term <- if (has_covs) "x" else NULL
+  model_stats <- compute_lm_model_stats(fit, focal_term = focal_term)
+
+  # `coef_idx = 2L`: x is always the 2nd coefficient (after the
+  # intercept). When covariates are present they come AFTER x in the
+  # design matrix because `reformulate(c("x", cov_names))` orders
+  # terms left-to-right, so position 2 still picks out x.
   inf <- compute_lm_coef_inference(
     fit,
     coef_idx = 2L,
@@ -1309,7 +1411,7 @@ fit_numeric_predictor_lm_rows <- function(
     ci_level = ci_level
   )
 
-  es_ci <- compute_es_ci_lm(fit, effect_size, ci_level)
+  es_ci <- compute_es_ci_lm(fit, effect_size, ci_level, focal_term = focal_term)
 
   data.frame(
     variable = outcome_name,
@@ -1347,6 +1449,7 @@ fit_numeric_predictor_lm_rows <- function(
 fit_categorical_predictor_lm_rows <- function(
   y,
   x,
+  covariates = NULL,
   weights,
   cluster = NULL,
   outcome_name,
@@ -1368,11 +1471,19 @@ fit_categorical_predictor_lm_rows <- function(
     ))
   }
 
-  model_df <- data.frame(y = y, x = x)
-  fit <- if (is.null(weights)) {
-    stats::lm(y ~ x, data = model_df)
+  has_covs <- !is.null(covariates) && ncol(covariates) > 0L
+  model_df <- if (has_covs) {
+    cbind(data.frame(y = y, x = x), covariates)
   } else {
-    stats::lm(y ~ x, data = model_df, weights = weights)
+    data.frame(y = y, x = x)
+  }
+  rhs_terms <- if (has_covs) c("x", names(covariates)) else "x"
+  formula <- stats::reformulate(rhs_terms, response = "y")
+
+  fit <- if (is.null(weights)) {
+    stats::lm(formula, data = model_df)
+  } else {
+    stats::lm(formula, data = model_df, weights = weights)
   }
 
   vc <- compute_lm_vcov(
@@ -1389,10 +1500,34 @@ fit_categorical_predictor_lm_rows <- function(
   } else {
     stats::qnorm(1 - (1 - ci_level) / 2)
   }
-  model_stats <- compute_lm_model_stats(fit)
+  focal_term <- if (has_covs) "x" else NULL
+  model_stats <- compute_lm_model_stats(fit, focal_term = focal_term)
 
+  # Estimated marginal means (emmeans). Without covariates,
+  # `predict(lm(y ~ x), newdata = each level)` = group mean. With
+  # covariates, the same machinery requires `newdata` to specify
+  # values for ALL terms in `terms(fit)`; we fix continuous covs at
+  # their sample mean and factor / character covs at their first
+  # observed level (the standard "covariate-adjusted marginal mean"
+  # convention used by SPSS UNIANOVA / Stata `margins`). Logical is
+  # treated as numeric (mean threshold > 0.5 -> TRUE).
   levs <- levels(x)
   newdata <- data.frame(x = factor(levs, levels = levs))
+  if (has_covs) {
+    for (cov_name in names(covariates)) {
+      cov_vec <- covariates[[cov_name]]
+      newdata[[cov_name]] <- if (is.numeric(cov_vec)) {
+        rep(mean(cov_vec, na.rm = TRUE), length(levs))
+      } else if (is.logical(cov_vec)) {
+        rep(mean(cov_vec, na.rm = TRUE) >= 0.5, length(levs))
+      } else if (is.factor(cov_vec)) {
+        factor(rep(levels(cov_vec)[1L], length(levs)), levels = levels(cov_vec))
+      } else {
+        # character coerced to factor by lm; pick first observed
+        rep(unique(stats::na.omit(cov_vec))[1L], length(levs))
+      }
+    }
+  }
   design <- stats::model.matrix(
     stats::delete.response(stats::terms(fit)),
     newdata
@@ -1400,11 +1535,19 @@ fit_categorical_predictor_lm_rows <- function(
   emmean <- as.vector(design %*% cf)
   emmean_se <- sqrt(rowSums((design %*% vc) * design))
 
-  # Global Wald F (k > 2 ANOVA-style, or t² for binary). Dispatches
-  # to clubSandwich::Wald_test() with HTZ/Satterthwaite for CR mode.
+  # Global Wald F restricted to the focal term `x`. With covariates,
+  # `seq_along(cf)[-1]` would also pick up covariate coefficients,
+  # producing an omnibus F that mixes the focal effect with covariate
+  # nuisance — wrong. Restrict to coefficients whose term assignment
+  # equals the position of `x` in the model's term list.
+  x_coef_idx <- which(stats::model.matrix(fit) |>
+    attr("assign") == which(attr(stats::terms(fit), "term.labels") == "x"))
+  if (length(x_coef_idx) == 0L) {
+    x_coef_idx <- seq_along(cf)[-1]
+  }
   wald <- compute_lm_wald_test(
     fit,
-    coef_idx_set = seq_along(cf)[-1],
+    coef_idx_set = x_coef_idx,
     vc = vc,
     vcov_type = vcov_type,
     cluster = cluster
@@ -1412,7 +1555,7 @@ fit_categorical_predictor_lm_rows <- function(
 
   show_reference <- identical(contrast, "auto") && nlevels(x) == 2L
 
-  es_ci <- compute_es_ci_lm(fit, effect_size, ci_level)
+  es_ci <- compute_es_ci_lm(fit, effect_size, ci_level, focal_term = focal_term)
 
   out <- data.frame(
     variable = rep(outcome_name, length(levs)),

@@ -470,37 +470,98 @@ compute_lm_wald_test <- function(
   )
 }
 
-compute_lm_model_stats <- function(fit) {
+compute_lm_model_stats <- function(fit, focal_term = NULL) {
   sm <- summary(fit)
-  r2 <- unname(sm$r.squared)
-  adj_r2 <- unname(sm$adj.r.squared)
+  r2 <- unname(sm$r.squared)         # always overall R² (model-level)
+  adj_r2 <- unname(sm$adj.r.squared) # always overall adj. R²
   sigma_hat <- unname(sm$sigma)
   df_resid <- stats::df.residual(fit)
   cf <- stats::coef(fit)
-  df_effect <- length(cf) - 1L
 
-  f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
-
-  d <- if (
-    length(cf) < 2L ||
-      !is.finite(sigma_hat) ||
-      sigma_hat <= 0 ||
-      anyNA(cf[2])
-  ) {
-    NA_real_
+  if (is.null(focal_term)) {
+    # Bivariate path: every non-intercept coef belongs to the focal
+    # predictor, so the model-level f² / ω² coincide with the
+    # focal-term effect size.
+    df_effect <- length(cf) - 1L
+    f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
+    d <- if (
+      length(cf) < 2L ||
+        !is.finite(sigma_hat) ||
+        sigma_hat <= 0 ||
+        anyNA(cf[2])
+    ) {
+      NA_real_
+    } else {
+      unname(cf[2]) / sigma_hat
+    }
+    g <- if (is.na(d) || !is.finite(df_resid) || df_resid <= 1) {
+      NA_real_
+    } else {
+      (1 - 3 / (4 * df_resid - 1)) * d
+    }
+    omega2 <- compute_lm_omega2(fit, df_effect, df_resid)
   } else {
-    unname(cf[2]) / sigma_hat
+    # Covariate-adjusted path: f² and ω² are restricted to the focal
+    # term via partial F (see `extract_lm_focal_f_stat`). Cohen's d
+    # and Hedges' g are undefined under adjustment and the public
+    # API rejects them upstream; we still set them to NA defensively
+    # in case this helper is reached on an unexpected path.
+    fs <- extract_lm_focal_f_stat(fit, focal_term)
+    if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
+      f2 <- NA_real_
+      omega2 <- NA_real_
+    } else {
+      # Partial f² = F * df1 / df_resid. Equivalent to
+      # SS_focal / SS_residual where SS_focal = F * df1 * MSE_full.
+      f2 <- fs$f_obs * fs$df1 / fs$df2
+      omega2 <- compute_lm_partial_omega2(fit, fs)
+    }
+    d <- NA_real_
+    g <- NA_real_
   }
-
-  g <- if (is.na(d) || !is.finite(df_resid) || df_resid <= 1) {
-    NA_real_
-  } else {
-    (1 - 3 / (4 * df_resid - 1)) * d
-  }
-
-  omega2 <- compute_lm_omega2(fit, df_effect, df_resid)
 
   list(r2 = r2, adj_r2 = adj_r2, f2 = f2, d = d, g = g, omega2 = omega2)
+}
+
+# Internal: partial ω² computation for a focal term, given the
+# partial F-stat already extracted via `extract_lm_focal_f_stat`.
+# Mirrors `compute_lm_omega2()`'s formula but uses focal-term
+# SS_effect = F × df_focal × MSE_full instead of the model-level
+# SS_effect implied by the global F.
+compute_lm_partial_omega2 <- function(fit, fs) {
+  rss_full <- stats::deviance(fit)
+  if (!is.finite(rss_full) || rss_full <= 0) {
+    return(NA_real_)
+  }
+  mse_full <- rss_full / fs$df2
+  ss_focal <- fs$f_obs * fs$df1 * mse_full
+
+  y <- stats::model.response(stats::model.frame(fit))
+  if (!is.numeric(y)) {
+    return(NA_real_)
+  }
+  w <- stats::weights(fit)
+  if (is.null(w)) {
+    w <- rep(1, length(y))
+  }
+  if (length(w) != length(y)) {
+    return(NA_real_)
+  }
+  sw <- sum(w)
+  if (!is.finite(sw) || sw <= 0) {
+    return(NA_real_)
+  }
+  y_bar_w <- sum(w * y) / sw
+  ss_total <- sum(w * (y - y_bar_w)^2)
+  if (!is.finite(ss_total) || ss_total <= 0) {
+    return(NA_real_)
+  }
+
+  omega2 <- (ss_focal - fs$df1 * mse_full) / (ss_total + mse_full)
+  if (!is.finite(omega2)) {
+    return(NA_real_)
+  }
+  max(0, omega2)
 }
 
 compute_lm_omega2 <- function(fit, df_effect, df_resid) {
@@ -714,8 +775,45 @@ extract_lm_f_stat <- function(fit) {
   )
 }
 
-compute_omega2_ci_lm <- function(fit, ci_level) {
-  fs <- extract_lm_f_stat(fit)
+# Internal: F-stat restricted to a single focal term (partial F via
+# `drop1`). When `focal_term = NULL`, returns the model-level F via
+# `extract_lm_f_stat()`, which for a bivariate `y ~ x` model coincides
+# with the focal-term F. With covariates (`y ~ x + cov1 + cov2`),
+# `focal_term = "x"` returns the partial F restricted to x — the
+# correct quantity for partial f² / partial ω² CI inversion under
+# adjustment.
+extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
+  if (is.null(focal_term)) {
+    return(extract_lm_f_stat(fit))
+  }
+  d1 <- tryCatch(
+    suppressWarnings(
+      stats::drop1(fit, scope = stats::reformulate(focal_term), test = "F")
+    ),
+    error = function(e) NULL
+  )
+  if (
+    is.null(d1) ||
+      nrow(d1) < 2L ||
+      !"F value" %in% names(d1) ||
+      !"Df" %in% names(d1)
+  ) {
+    return(NULL)
+  }
+  f_obs <- d1[["F value"]][2]
+  df1 <- d1[["Df"]][2]
+  if (!is.finite(f_obs) || !is.finite(df1) || df1 < 1L) {
+    return(NULL)
+  }
+  list(
+    f_obs = f_obs,
+    df1 = df1,
+    df2 = stats::df.residual(fit)
+  )
+}
+
+compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
+  fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
     return(c(NA_real_, NA_real_))
   }
@@ -730,8 +828,8 @@ compute_omega2_ci_lm <- function(fit, ci_level) {
   pmax(0, bounds)
 }
 
-compute_f2_ci_lm <- function(fit, ci_level) {
-  fs <- extract_lm_f_stat(fit)
+compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
+  fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
     return(c(NA_real_, NA_real_))
   }
@@ -745,16 +843,16 @@ compute_f2_ci_lm <- function(fit, ci_level) {
   c(ncp_lo, ncp_hi) / n_total
 }
 
-compute_es_ci_lm <- function(fit, effect_size, ci_level) {
+compute_es_ci_lm <- function(fit, effect_size, ci_level, focal_term = NULL) {
   if (identical(effect_size, "none")) {
     return(c(NA_real_, NA_real_))
   }
   switch(
     effect_size,
-    f2 = compute_f2_ci_lm(fit, ci_level),
+    f2 = compute_f2_ci_lm(fit, ci_level, focal_term = focal_term),
     d = compute_smd_ci_lm(fit, ci_level, hedges_correct = FALSE),
     g = compute_smd_ci_lm(fit, ci_level, hedges_correct = TRUE),
-    omega2 = compute_omega2_ci_lm(fit, ci_level),
+    omega2 = compute_omega2_ci_lm(fit, ci_level, focal_term = focal_term),
     spicy_abort(paste0("Unknown `effect_size`: ", effect_size), class = "spicy_invalid_input")
   )
 }

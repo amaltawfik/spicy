@@ -180,15 +180,18 @@ test_that("resolve_covariates_argument: overlap with `by` rejected", {
   )
 })
 
-test_that("resolve_covariates_argument: overlap with `select` (outcomes) rejected", {
+test_that("resolve_covariates_argument: overlap with `select` is allowed (orchestrator deduplicates)", {
+  # By convention the orchestrator silently excludes covariates from
+  # the outcome list (mirroring the existing `by` auto-exclusion), so
+  # the helper itself does not error on this overlap.
   data <- data.frame(bmi = 1:3, age = 1:3, sex = c("F", "M", "F"))
-  expect_error(
+  expect_identical(
     spicy:::resolve_covariates_argument(
       rlang::quo(c(age, bmi)),
       data,
       select_names = "bmi"
     ),
-    class = "spicy_invalid_input"
+    c("age", "bmi")
   )
 })
 
@@ -219,4 +222,176 @@ test_that("resolve_covariates_argument: every error inherits from spicy_error", 
     ),
     class = "spicy_error"
   )
+})
+
+# ---- table_continuous_lm() end-to-end with covariates ---------------------
+
+test_that("table_continuous_lm: numeric outcome by 2-level factor adjusted for one covariate", {
+  set.seed(1L)
+  n <- 80
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = bmi,
+    by = sex,
+    covariates = age,
+    output = "long"
+  )
+  expect_equal(nrow(out), 2L) # one row per level of sex
+  expect_identical(attr(out, "covariates"), "age")
+  # Adjusted emmeans must differ from raw group means (covariate
+  # shifts the predicted means away from the marginal averages).
+  raw_means <- tapply(df$bmi, df$sex, mean)
+  expect_false(isTRUE(all.equal(unname(raw_means), out$emmean)))
+})
+
+test_that("table_continuous_lm: covariate auto-excluded from `select = everything()`", {
+  set.seed(2L)
+  n <- 60
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    age = rnorm(n, 50),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = tidyselect::where(is.numeric),
+    by = sex,
+    covariates = age,
+    output = "long"
+  )
+  # `age` would normally be in select via where(is.numeric); the
+  # orchestrator must auto-exclude it because it is a covariate.
+  expect_false("age" %in% out$variable)
+  expect_true("bmi" %in% out$variable)
+})
+
+test_that("table_continuous_lm: numeric `by` adjusted for a categorical covariate", {
+  set.seed(3L)
+  n <- 90
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    group = factor(rep(c("A", "B", "C"), each = n / 3))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = bmi,
+    by = age,
+    covariates = group,
+    output = "long"
+  )
+  expect_equal(nrow(out), 1L) # numeric by -> single slope row
+  expect_identical(attr(out, "covariates"), "group")
+  # Slope of age changes once we adjust for group: compare to raw lm
+  fit <- stats::lm(bmi ~ age + group, data = df)
+  expect_equal(out$estimate[1], unname(stats::coef(fit)["age"]))
+})
+
+test_that("table_continuous_lm: 3-level `by` with a covariate uses partial F", {
+  set.seed(4L)
+  n <- 90
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    group = factor(rep(c("A", "B", "C"), each = n / 3))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = bmi,
+    by = group,
+    covariates = age,
+    output = "long",
+    effect_size = "f2"
+  )
+  # Partial F via drop1 -- compare to an independent computation.
+  fit <- stats::lm(bmi ~ group + age, data = df)
+  d1 <- stats::drop1(fit, scope = ~group, test = "F")
+  partial_f <- d1[["F value"]][2]
+  partial_df1 <- d1[["Df"]][2]
+  expected_f2 <- partial_f * partial_df1 / stats::df.residual(fit)
+  expect_equal(out$es_value[1], expected_f2, tolerance = 1e-9)
+})
+
+test_that("table_continuous_lm: effect_size = \"d\" + covariates errors with spicy_unsupported", {
+  set.seed(5L)
+  n <- 60
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    age = rnorm(n, 50),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  expect_error(
+    table_continuous_lm(
+      df,
+      select = bmi,
+      by = sex,
+      covariates = age,
+      effect_size = "d"
+    ),
+    class = "spicy_unsupported"
+  )
+})
+
+test_that("table_continuous_lm: effect_size = \"g\" + covariates errors with spicy_unsupported", {
+  set.seed(6L)
+  n <- 60
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    age = rnorm(n, 50),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  expect_error(
+    table_continuous_lm(
+      df,
+      select = bmi,
+      by = sex,
+      covariates = age,
+      effect_size = "g"
+    ),
+    class = "spicy_unsupported"
+  )
+})
+
+test_that("table_continuous_lm: NA in covariate triggers complete-cases drop", {
+  set.seed(7L)
+  n <- 60
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    age = c(NA, NA, NA, rnorm(n - 3L, 50)),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = bmi,
+    by = sex,
+    covariates = age,
+    output = "long"
+  )
+  expect_equal(out$n[1], n - 3L)
+})
+
+test_that("table_continuous_lm: covariates attribute round-trips through default print path", {
+  set.seed(8L)
+  n <- 60
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    age = rnorm(n, 50),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out <- table_continuous_lm(
+    df,
+    select = bmi,
+    by = sex,
+    covariates = age,
+    output = "long"
+  )
+  # The render layer (Commit C) will read this attribute to emit
+  # the "Adjusted for: ..." footer.
+  expect_identical(attr(out, "covariates"), "age")
+  expect_identical(attr(out, "covariates"), c("age"))
 })

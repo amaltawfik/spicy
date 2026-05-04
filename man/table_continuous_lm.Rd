@@ -8,6 +8,7 @@ table_continuous_lm(
   data,
   select = tidyselect::everything(),
   by,
+  covariates = NULL,
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
@@ -68,6 +69,40 @@ so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
 
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
 outcome (NAs in \code{y} and \code{weights} are also excluded; see Details).}
+
+\item{covariates}{Optional additive covariates to adjust each per-outcome
+linear model for. Accepts a tidyselect expression (e.g.
+\code{covariates = c(age, sex)}, \code{covariates = tidyselect::all_of(cov_vec)},
+\code{covariates = tidyselect::starts_with("control_")}) or a literal
+character vector of column names. Each covariate must be numeric,
+integer, logical, factor, or character; covariates that also appear
+in \code{select} are silently auto-excluded from the outcome list (a
+variable cannot be both outcome and adjustment), and a covariate
+that equals \code{by} raises an error (a variable cannot be both
+predictor and adjustment).
+
+When non-empty, each model is fitted as \code{lm(y ~ by + cov1 + cov2 + ...)}
+and the reported estimate / SE / p-value / CI on \code{by} are
+covariate-adjusted via the focal coefficient. For categorical \code{by},
+the displayed \code{emmean} is the \strong{covariate-adjusted estimated marginal
+mean} (covariates fixed at their sample mean for numeric / logical,
+first level for factor / character — the convention used by SPSS
+UNIANOVA and Stata \code{margins}). The omnibus test is the partial F
+restricted to \code{by} (computed via \code{stats::drop1()}).
+
+Effect sizes that have no defined extension under adjustment
+(\code{effect_size = "d"} and \code{"g"}) raise a \code{spicy_unsupported} error
+when covariates are present; use \code{effect_size = "f2"} or \code{"omega2"}
+instead — these generalise to partial effect sizes via partial F.
+
+v1 supports additive covariates only. Formula syntax with
+interactions or transforms (\code{covariates = ~ age * sex},
+\code{covariates = ~ I(age^2)}) is reserved for a future release; passing
+a formula raises a \code{spicy_unsupported} error with a migration hint.
+
+Rows with \code{NA} in any covariate are dropped from the analytic
+sample for each outcome (complete-cases per outcome, matching the
+existing \code{by} / \code{weights} NA handling).}
 
 \item{exclude}{Columns to exclude from \code{select}. Supports tidyselect syntax
 and character vectors of column names.}

@@ -137,11 +137,18 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
 #   * must exist in `data`
 #   * must be lm-compatible (numeric / integer / logical / factor /
 #     character; the latter is auto-coerced to factor by `lm()`)
-#   * must NOT overlap with the outcome columns (`select_names`)
-#     -- a variable cannot be both outcome and covariate
-#   * must NOT overlap with the predictor (`by_name`)
-#     -- a variable cannot be both predictor and covariate (would
-#     shadow the focal term and produce a rank-deficient model)
+#   * must NOT overlap with the predictor (`by_name`) -- a variable
+#     cannot be both predictor and covariate (would shadow the focal
+#     term and produce a rank-deficient model)
+#
+# Overlap with the outcome columns (`select_names`) is NOT a hard
+# error here: by convention, the orchestrator silently excludes any
+# covariate that also appears in `select` (mirroring how `by` is
+# auto-excluded from `select`). This keeps the natural workflow
+# `select = everything(), covariates = c(age)` working without
+# requiring the user to write a manual `!` exclusion in `select`.
+# `select_names` is still accepted for forward compatibility but is
+# currently unused.
 #
 # Missing-value handling is intentionally NOT done here; it
 # happens at fit time via `model.frame()` / `na.action`. The job of
@@ -265,23 +272,10 @@ resolve_covariates_argument <- function(
     )
   }
 
-  # Overlap with outcomes (select). A variable cannot be both
-  # outcome and covariate -- the resulting model would have the
-  # outcome on the right-hand side, which is meaningless.
-  bad_outcome <- intersect(cov_names, select_names)
-  if (length(bad_outcome) > 0L) {
-    spicy_abort(
-      sprintf(
-        paste0(
-          "`%s` overlaps with `select` (outcomes): %s. ",
-          "A variable cannot be both outcome and covariate."
-        ),
-        arg,
-        paste(shQuote(bad_outcome), collapse = ", ")
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  # NB: overlap with `select_names` is intentionally NOT a hard error
+  # here -- the orchestrator silently excludes covariates from the
+  # outcome list, mirroring the existing `by` auto-exclusion. See
+  # the helper-level comment block above.
 
   # Overlap with predictor (by). A variable cannot be both `by`
   # and a covariate -- duplicating it produces a rank-deficient
