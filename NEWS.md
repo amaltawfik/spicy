@@ -1,5 +1,26 @@
 # spicy (development version)
 
+## Internal
+
+* `R/table_continuous_lm.R` (3394 lines) split into four files on
+  a strict shared / specific naming convention, so the upcoming
+  `table_regression()` (planned for 0.13) can reuse the
+  inferential backbone without duplication. No behaviour change,
+  no rename, no signature change; only file moves.
+
+  * `R/lm_compute.R` (shared) — vcov family (classical, `HC*`,
+    `CR*`, bootstrap, jackknife), single-coef and Wald inference,
+    model stats, noncentral effect-size CIs.
+  * `R/lm_helpers.R` (shared) — input-resolution helpers
+    (`is_supported_lm_predictor`, `coerce_lm_factor`,
+    `detect_weights_column_name`, `resolve_cluster_argument`).
+  * `R/table_continuous_lm_render.R` (specific) —
+    bivariate-layout rendering (raw / display data frames + 8
+    output formats).
+  * `R/table_continuous_lm.R` (specific) — public
+    `table_continuous_lm()` + per-outcome / per-predictor row
+    orchestrators.
+
 # spicy 0.11.0
 
 ## New features
