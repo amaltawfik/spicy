@@ -23,6 +23,7 @@ table_continuous_lm(
   select = tidyselect::everything(),
   by,
   covariates = NULL,
+  adjustment = c("proportional", "balanced"),
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
@@ -133,6 +134,40 @@ table_continuous_lm(
   Rows with `NA` in any covariate are dropped from the analytic sample
   for each outcome (complete-cases per outcome, matching the existing
   `by` / `weights` NA handling).
+
+- adjustment:
+
+  How the covariate-adjusted estimated marginal means (the `emmean` /
+  `emmean_se` / `emmean_ci_*` columns) are computed when `covariates` is
+  non-empty. One of:
+
+  - `"proportional"` (the default; matches Stata `margins` and
+    [`marginaleffects::avg_predictions()`](https://rdrr.io/pkg/marginaleffects/man/predictions.html)):
+    G-computation on the observed sample. For each focal level of `by`,
+    the model predicts at every observation with `by` set to that level
+    (covariates kept at their observed values), and the predictions are
+    averaged. Population-weighted by construction – the empirical joint
+    distribution of covariates is the reference. Best when the goal is
+    "what is the predicted mean in *this* population if everyone had
+    `by = lvl`".
+
+  - `"balanced"` (matches
+    [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
+    default and the SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions):
+    synthetic grid of factor-covariate level combinations × numeric
+    covariates fixed at their sample mean, with each grid cell weighted
+    equally. Treats the design as if covariates were balanced – the
+    "marginal mean assuming a balanced design" estimand. Best when the
+    goal is to report a covariate-purified comparison independent of the
+    empirical covariate distribution.
+
+  Both methods reduce to the same linear-contrast formula
+  `emmean = avg_row %*% beta` and inherit the spicy variance pipeline
+  (HC\* / CR\* / bootstrap / jackknife). They give the same answer when
+  there are no covariates, and also when all covariates are numeric /
+  logical (no factor levels to expand over). The two estimands diverge
+  only when at least one factor / character covariate has non-uniform
+  observed proportions.
 
 - exclude:
 

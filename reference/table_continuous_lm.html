@@ -101,6 +101,7 @@ and its confidence interval.</p>
 <span>  select <span class="op">=</span> <span class="fu">tidyselect</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">by</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  adjustment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"proportional"</span>, <span class="st">"balanced"</span><span class="op">)</span>,</span>
 <span>  exclude <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regex <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -198,6 +199,36 @@ a formula raises a <code>spicy_unsupported</code> error with a migration hint.</
 <p>Rows with <code>NA</code> in any covariate are dropped from the analytic
 sample for each outcome (complete-cases per outcome, matching the
 existing <code>by</code> / <code>weights</code> NA handling).</p></dd>
+
+
+<dt id="arg-adjustment">adjustment<a class="anchor" aria-label="anchor" href="#arg-adjustment"></a></dt>
+<dd><p>How the covariate-adjusted estimated marginal
+means (the <code>emmean</code> / <code>emmean_se</code> / <code>emmean_ci_*</code> columns) are
+computed when <code>covariates</code> is non-empty. One of:</p><ul><li><p><code>"proportional"</code> (the default; matches Stata <code>margins</code> and
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/predictions.html" class="external-link">marginaleffects::avg_predictions()</a></code>): G-computation on the
+observed sample. For each focal level of <code>by</code>, the model
+predicts at every observation with <code>by</code> set to that level
+(covariates kept at their observed values), and the
+predictions are averaged. Population-weighted by construction
+– the empirical joint distribution of covariates is the
+reference. Best when the goal is "what is the predicted
+mean in <em>this</em> population if everyone had <code>by = lvl</code>".</p></li>
+<li><p><code>"balanced"</code> (matches <code><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans::emmeans()</a></code> default and the
+SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
+grid of factor-covariate level combinations × numeric
+covariates fixed at their sample mean, with each grid cell
+weighted equally. Treats the design as if covariates were
+balanced – the "marginal mean assuming a balanced design"
+estimand. Best when the goal is to report a covariate-purified
+comparison independent of the empirical covariate distribution.</p></li>
+</ul><p>Both methods reduce to the same linear-contrast formula
+<code>emmean = avg_row %*% beta</code> and inherit the spicy variance
+pipeline (HC* / CR* / bootstrap / jackknife). They give the
+same answer when there are no covariates, and also when all
+covariates are numeric / logical (no factor levels to expand
+over). The two estimands diverge only when at least one
+factor / character covariate has non-uniform observed
+proportions.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
