@@ -167,6 +167,106 @@ When you need the underlying returned data for further processing, use
 `output = "data.frame"` for the wide raw table or `output = "long"` for
 the analytic long table.
 
+## Covariate adjustment
+
+When the comparison of `by`-group means is potentially confounded by
+other variables, supply them through `covariates`. Each per-outcome
+linear model becomes
+`lm(outcome ~ by + covariate1 + covariate2 + ...)`, and the reported
+`Δ` (categorical `by`) or slope (numeric `by`), its CI, *p*, R² and
+effect size are all **adjusted for** the covariates. The default
+ASCII print emits an APA-style footer naming the adjustment so the
+reader knows which estimand they are reading.
+
+```{r adjustment-basic}
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  covariates = c(age, education),
+  vcov = "HC3"
+)
+```
+
+`covariates` accepts the full tidyselect vocabulary
+(`c(age, sex)`, `tidyselect::starts_with("life_sat_")`,
+`tidyselect::all_of(cov_names)`) or a literal character vector. A
+covariate that also appears in `select` is silently auto-excluded
+from the outcome list (mirroring how `by` / `weights` are excluded
+from `select`); a covariate equal to `by` is rejected up front.
+
+### Two estimands for the adjusted marginal means
+
+Two methodologically distinct conventions exist for computing the
+covariate-adjusted estimated marginal means (the `emmean` /
+`emmean_se` columns) when `by` is categorical. `table_continuous_lm()`
+exposes the choice via `adjustment`; both are valid but produce
+different numerical answers when at least one factor covariate has
+non-uniform observed proportions.
+
+* `adjustment = "proportional"` (the **default**) — G-computation /
+  population-weighted standardisation. For each focal level of `by`,
+  predictions are evaluated at every observation in the data with
+  `by` replaced by that level (covariates kept at their observed
+  values), then averaged. This is the convention of Stata's
+  `margins` and `marginaleffects::avg_predictions(variables)`.
+  Interpretation: *"What is the predicted mean in this population
+  if everyone had `by = lvl`, holding their actual covariate
+  profile?"*. Best for causal / counterfactual reporting.
+
+* `adjustment = "balanced"` — equal-weight averaging on a synthetic
+  grid. Factor-covariate level combinations are crossed and weighted
+  uniformly (`1 / k`); numeric covariates are fixed at their sample
+  mean. This is the convention of `emmeans::emmeans()` (default),
+  SPSS UNIANOVA EMMEANS, and SAS LSMEANS. Interpretation:
+  *"What is the predicted mean assuming a balanced covariate
+  design?"*. Best for descriptive / ANOVA-style APA reporting.
+
+The two methods coincide trivially when `covariates` is `NULL`, and
+also when all covariates are numeric or logical (no factor levels
+to expand over). They diverge only when categorical covariate
+proportions are skewed in the observed data.
+
+```{r adjustment-balanced}
+# Same model, balanced (emmeans-style) marginal means:
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  covariates = c(age, education),
+  adjustment = "balanced",
+  vcov = "HC3"
+)
+```
+
+### Effect sizes under adjustment
+
+Adding covariates changes which effect sizes remain meaningful:
+
+* `effect_size = "f2"` and `"omega2"` are reported as **partial**
+  *f²* / partial *ω²* via `stats::drop1()` restricted to the focal
+  term — the correct generalisation of the bivariate effect size to
+  a covariate-adjusted model.
+* `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen's
+  *d* and Hedges' *g* have no defined extension under adjustment
+  (the pooled SD has no canonical analogue). The error message
+  points to `f2` / `omega2` as the partial-F generalisations.
+
+Both effect-size variants and their noncentral CIs (when
+`effect_size_ci = TRUE`) are computed from the same fitted model as
+the displayed coefficients and remain invariant to `vcov` (HC* /
+CR* / bootstrap / jackknife only affect the contrast SE).
+
+### Scope: additive only in v1
+
+`covariates` accepts additive terms only. Formula syntax with
+interactions or transforms (`covariates = ~ age * sex`,
+`covariates = ~ I(age^2)`) raises `spicy_unsupported` with a
+migration hint. Interactions and polynomials are reserved for a
+future spicy release alongside `table_regression()`. To fit a
+fully-specified model right now, do so with `lm()` directly and
+inspect via `summary()`, `broom::tidy()`, or `gtsummary`.
+
 ## Effect sizes
 
 `table_continuous_lm()` supports four effect sizes via the
