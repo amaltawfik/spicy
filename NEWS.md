@@ -47,11 +47,10 @@
   `freq()`, `cross_tab()` and `table_*()` use
   `method = "radix"`. Output is byte-stable across locales and
   platforms, matching Stata / SPSS guarantees.
-* **Edge-case hardening.** `varlist()` / `code_book()` /
-  `cross_tab()` / `freq()` no longer crash on zero-length or
-  all-NA `Date` / `POSIXct` / `character` columns or factors
-  with no observed levels (R 4.6.0 `sort()` segfaults on these
-  inputs).
+* **Edge-case hardening.** A new length-guarded sort helper makes
+  `varlist()` / `code_book()` / `cross_tab()` / `freq()` survive
+  zero-length or all-NA `Date` / `POSIXct` / `character` columns
+  and factors with no observed levels.
 * **Snapshot-locked rendering.** `tests/testthat/test-snapshots.R`
   pins the exact console output of every spicy print method, so
   any unintended formatting drift surfaces as a PR diff.
