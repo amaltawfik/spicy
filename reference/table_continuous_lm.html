@@ -5,29 +5,47 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Continuous-outcome linear-model table — table_continuous_lm"><meta name="description" content='Builds APA-style summary tables from a series of simple linear models for
-one or many continuous outcomes selected with tidyselect syntax.
-A single predictor is supplied with by, and each selected numeric
-outcome is fit as lm(outcome ~ by, ...). When by is categorical, the
-function returns a model-based mean-comparison table with fitted means by
-level derived from the linear model, plus an optional single difference for
-dichotomous predictors. When by is numeric, the table reports the slope
-and its confidence interval.
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Continuous-outcome linear-model table — table_continuous_lm"><meta name="description" content="Builds APA-style summary tables from a series of linear models for one
+or many continuous outcomes selected with tidyselect syntax.
+A single focal predictor is supplied with by; each selected numeric
+outcome is fit as lm(outcome ~ by, ...), optionally extended with
+additive covariates via covariates and case weights via weights.
+Categorical by produces model-based estimated marginal means by
+level (covariate-adjusted via adjustment when covariates are
+present), plus an optional single difference for dichotomous
+predictors. Numeric by produces the slope and its confidence
+interval.
+Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
+(heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
+requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
+Effect sizes (Cohen's &quot;d&quot;, Hedges' &quot;g&quot;, Hays' &quot;omega2&quot;,
+Cohen's &quot;f2&quot;) are reported with optional noncentral t / F
+confidence intervals via effect_size_ci, and adapt under
+covariate adjustment (see effect_size).
 Multiple output formats are available via output: a printed ASCII table
-("default"), a plain wide data.frame ("data.frame"), a raw long
-data.frame ("long"), or rendered outputs ("tinytable", "gt",
-"flextable", "excel", "clipboard", "word").'><meta property="og:description" content='Builds APA-style summary tables from a series of simple linear models for
-one or many continuous outcomes selected with tidyselect syntax.
-A single predictor is supplied with by, and each selected numeric
-outcome is fit as lm(outcome ~ by, ...). When by is categorical, the
-function returns a model-based mean-comparison table with fitted means by
-level derived from the linear model, plus an optional single difference for
-dichotomous predictors. When by is numeric, the table reports the slope
-and its confidence interval.
+(&quot;default&quot;), a plain wide data.frame (&quot;data.frame&quot;), a raw long
+data.frame (&quot;long&quot;), or rendered outputs (&quot;tinytable&quot;, &quot;gt&quot;,
+&quot;flextable&quot;, &quot;excel&quot;, &quot;clipboard&quot;, &quot;word&quot;)."><meta property="og:description" content="Builds APA-style summary tables from a series of linear models for one
+or many continuous outcomes selected with tidyselect syntax.
+A single focal predictor is supplied with by; each selected numeric
+outcome is fit as lm(outcome ~ by, ...), optionally extended with
+additive covariates via covariates and case weights via weights.
+Categorical by produces model-based estimated marginal means by
+level (covariate-adjusted via adjustment when covariates are
+present), plus an optional single difference for dichotomous
+predictors. Numeric by produces the slope and its confidence
+interval.
+Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
+(heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
+requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
+Effect sizes (Cohen's &quot;d&quot;, Hedges' &quot;g&quot;, Hays' &quot;omega2&quot;,
+Cohen's &quot;f2&quot;) are reported with optional noncentral t / F
+confidence intervals via effect_size_ci, and adapt under
+covariate adjustment (see effect_size).
 Multiple output formats are available via output: a printed ASCII table
-("default"), a plain wide data.frame ("data.frame"), a raw long
-data.frame ("long"), or rendered outputs ("tinytable", "gt",
-"flextable", "excel", "clipboard", "word").'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+(&quot;default&quot;), a plain wide data.frame (&quot;data.frame&quot;), a raw long
+data.frame (&quot;long&quot;), or rendered outputs (&quot;tinytable&quot;, &quot;gt&quot;,
+&quot;flextable&quot;, &quot;excel&quot;, &quot;clipboard&quot;, &quot;word&quot;)."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -80,14 +98,23 @@ data.frame ("long"), or rendered outputs ("tinytable", "gt",
     </div>
 
     <div class="ref-description section level2">
-    <p>Builds APA-style summary tables from a series of simple linear models for
-one or many continuous outcomes selected with tidyselect syntax.</p>
-<p>A single predictor is supplied with <code>by</code>, and each selected numeric
-outcome is fit as <code>lm(outcome ~ by, ...)</code>. When <code>by</code> is categorical, the
-function returns a model-based mean-comparison table with fitted means by
-level derived from the linear model, plus an optional single difference for
-dichotomous predictors. When <code>by</code> is numeric, the table reports the slope
-and its confidence interval.</p>
+    <p>Builds APA-style summary tables from a series of linear models for one
+or many continuous outcomes selected with tidyselect syntax.</p>
+<p>A single focal predictor is supplied with <code>by</code>; each selected numeric
+outcome is fit as <code>lm(outcome ~ by, ...)</code>, optionally extended with
+additive covariates via <code>covariates</code> and case weights via <code>weights</code>.
+Categorical <code>by</code> produces model-based estimated marginal means by
+level (covariate-adjusted via <code>adjustment</code> when covariates are
+present), plus an optional single difference for dichotomous
+predictors. Numeric <code>by</code> produces the slope and its confidence
+interval.</p>
+<p>Inference adapts via <code>vcov</code>: classical OLS, <code>"HC0"</code>-<code>"HC5"</code>
+(heteroscedasticity-consistent), <code>"CR0"</code>-<code>"CR3"</code> (cluster-robust,
+requires <code>cluster</code>), or <code>"bootstrap"</code> / <code>"jackknife"</code> resampling.
+Effect sizes (Cohen's <code>"d"</code>, Hedges' <code>"g"</code>, Hays' <code>"omega2"</code>,
+Cohen's <code>"f2"</code>) are reported with optional noncentral <em>t</em> / <em>F</em>
+confidence intervals via <code>effect_size_ci</code>, and adapt under
+covariate adjustment (see <code>effect_size</code>).</p>
 <p>Multiple output formats are available via <code>output</code>: a printed ASCII table
 (<code>"default"</code>), a plain wide <code>data.frame</code> (<code>"data.frame"</code>), a raw long
 <code>data.frame</code> (<code>"long"</code>), or rendered outputs (<code>"tinytable"</code>, <code>"gt"</code>,
@@ -153,8 +180,8 @@ pattern (character string).</p></dd>
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>A single predictor column. Accepts an unquoted column name or a
-single character column name. The predictor can be:</p><ul><li><p><strong>numeric</strong> (continuous): treated as a covariate. The table reports
-the slope and its CI from <code>lm(y ~ by)</code>.</p></li>
+single character column name. The predictor can be:</p><ul><li><p><strong>numeric</strong> (continuous): treated as a continuous regressor. The
+table reports the slope of <code>by</code> and its CI from <code>lm(y ~ by, ...)</code>.</p></li>
 <li><p><strong>factor</strong> or <strong>ordered factor</strong>: treated as categorical. Level order
 is preserved as declared; the <strong>first level</strong> is the reference for
 the displayed contrast (R's default treatment-contrast convention).</p></li>
@@ -183,15 +210,14 @@ predictor and adjustment).</p>
 <p>When non-empty, each model is fitted as <code>lm(y ~ by + cov1 + cov2 + ...)</code>
 and the reported estimate / SE / p-value / CI on <code>by</code> are
 covariate-adjusted via the focal coefficient. For categorical <code>by</code>,
-the displayed <code>emmean</code> is the <strong>covariate-adjusted estimated marginal
-mean</strong> (covariates fixed at their sample mean for numeric / logical,
-first level for factor / character — the convention used by SPSS
-UNIANOVA and Stata <code>margins</code>). The omnibus test is the partial F
-restricted to <code>by</code> (computed via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code>).</p>
-<p>Effect sizes that have no defined extension under adjustment
-(<code>effect_size = "d"</code> and <code>"g"</code>) raise a <code>spicy_unsupported</code> error
-when covariates are present; use <code>effect_size = "f2"</code> or <code>"omega2"</code>
-instead — these generalise to partial effect sizes via partial F.</p>
+the displayed <code>emmean</code> is the covariate-adjusted estimated marginal
+mean — see <code>adjustment</code> for the choice of estimand
+(G-computation by default vs. equal-weight averaging). The omnibus
+test of <code>by</code> is the Wald <em>F</em> restricted to the focal coefficients
+(computed via <code>sandwich</code> / <code>clubSandwich</code> for HC* / CR* mode), so
+adding covariates does not contaminate the omnibus statistic with
+covariate contributions. Effect sizes adapt automatically — see
+<code>effect_size</code>.</p>
 <p>v1 supports additive covariates only. Formula syntax with
 interactions or transforms (<code>covariates = ~ age * sex</code>,
 <code>covariates = ~ I(age^2)</code>) is reserved for a future release; passing
@@ -383,7 +409,17 @@ the weighted least-squares fit (using weighted sums of squares and the
 model's weighted residual standard deviation), keeping them consistent
 with the weighted contrast and its CI shown in the table. All effect
 sizes are point estimates derived from the OLS/WLS fit and are <strong>not</strong>
-affected by <code>vcov</code>.</p></dd>
+affected by <code>vcov</code>.</p>
+<p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty):</p><ul><li><p><code>"f2"</code> and <code>"omega2"</code> become the <strong>partial</strong> <em>f²</em> / partial <em>ω²</em>,
+derived from the partial <em>F</em> of <code>by</code> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> —
+the correctly-defined effect size when the model is adjusted.
+For numeric <code>by</code>, partial <em>f²</em> equals the squared partial
+correlation of <code>by</code> with the outcome, divided by <code>(1 - r²_partial)</code>.</p></li>
+<li><p><code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: Cohen's <em>d</em>
+and Hedges' <em>g</em> have no canonical extension to adjusted models
+(the pooled SD is undefined under adjustment). Use <code>"f2"</code> or
+<code>"omega2"</code> instead — both generalise via partial <em>F</em>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-effect-size-ci">effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-ci"></a></dt>
@@ -555,18 +591,22 @@ and <code>regex</code>, the function emits a warning and returns an empty
     </div>
     <div class="section level2">
     <h2 id="model-and-outputs">Model and outputs<a class="anchor" aria-label="anchor" href="#model-and-outputs"></a></h2>
-    <p><code>table_continuous_lm()</code> is designed for article-style bivariate reporting:
-a single predictor supplied with <code>by</code>, and one simple model per selected
-continuous outcome. The model fit is always <code>lm(outcome ~ by, ...)</code>,
-optionally with <code>weights</code>. For categorical predictors, the reported means
-are model-based fitted means for each level of <code>by</code>, and contrasts are
-derived from the same fitted linear model. For an unweighted
-<code>lm(y ~ factor)</code> with classical variance, the fitted means coincide
-numerically with empirical subgroup means; the <em>model-based</em> qualifier
-matters because (a) under <code>weights</code> the means become weighted
-least-squares estimates, (b) their CIs are derived from the model <code>vcov</code>
-(classical or <code>HC*</code>), and (c) tests, <em>p</em>-values, and effect sizes all
-come from the same fitted model, keeping the table internally consistent.</p>
+    <p><code>table_continuous_lm()</code> is designed for article-style reporting around
+a single focal predictor: one model per selected continuous outcome,
+fitted as <code>lm(outcome ~ by, ...)</code> and optionally extended with case
+<code>weights</code> and additive <code>covariates</code> (<code>lm(outcome ~ by + cov1 + ...)</code>).
+For categorical <code>by</code>, the reported means are model-based fitted means
+(or covariate-adjusted estimated marginal means; see <code>adjustment</code>) for
+each level, and contrasts come from the same fitted linear model. For
+an unweighted <code>lm(y ~ factor)</code> with classical variance and no
+covariates, the fitted means coincide numerically with empirical
+subgroup means; the <em>model-based</em> qualifier matters because (a) under
+<code>weights</code> the means become weighted least-squares estimates, (b) their
+CIs derive from the model <code>vcov</code> (classical, <code>HC*</code>, <code>CR*</code>,
+bootstrap or jackknife), (c) under <code>covariates</code> they become
+adjusted marginal means, and (d) tests, <em>p</em>-values and effect sizes
+all come from the same fitted model, keeping the table internally
+consistent.</p>
 <p>Compared with <code><a href="table_continuous.html">table_continuous()</a></code>, this function is the model-based
 companion: choose it when you want heteroskedasticity-consistent standard
 errors (<code>vcov = "HC*"</code>), model fit statistics, or case weights via
@@ -603,6 +643,13 @@ ANOVA-style designs (Olejnik and Algina 2003).</p></li>
 and are <strong>invariant to <code>vcov</code></strong>: choosing <code>HC*</code> changes the SE, CI, and
 test statistic of the contrast but not the standardized magnitude
 itself.</p>
+<p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty), <code>"f2"</code> and
+<code>"omega2"</code> become the partial <em>f²</em> / partial <em>ω²</em> of <code>by</code>, derived
+from the partial <em>F</em> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted to the focal
+term. <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: the pooled
+standard deviation has no canonical extension under adjustment, so
+Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
+<code>effect_size</code> for the full dispatch.</p>
 <p>Confidence intervals for the effect size are available via
 <code>effect_size_ci = TRUE</code> and use the modern noncentral-distribution
 inversion approach, the consensus standard in commercial statistical
@@ -710,6 +757,9 @@ with more than two levels, no single contrast or contrast CI is shown
 in the wide outputs; instead, the table reports level-specific means
 plus the overall <code>F</code> test when <code>statistic = TRUE</code> (or <code>F(df1, df2)</code>
 when the degrees of freedom are constant across outcomes).</p>
+<p>When <code>covariates</code> is non-empty, the printed ASCII table appends an
+APA-style footer naming the covariates and the chosen estimand, e.g.
+<code>Note. Adjusted for age, education (proportional).</code></p>
 <p>Optional output engines require the corresponding suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
 <li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
 <li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>
@@ -1062,7 +1112,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="co"># d / g are undefined under adjustment and raise spicy_unsupported.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">education</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"f2"</span>,</span></span>
@@ -1073,14 +1123,17 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL    p     R²  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.09       5.22     &lt;.001  0.22 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span>        f²           n   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.02 [0.01, 0.04]  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 0.01 [0.00, 0.02]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional).</span></span>
 <span class="r-in"><span></span></span>

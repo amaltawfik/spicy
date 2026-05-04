@@ -1,14 +1,23 @@
 # Continuous-outcome linear-model table
 
-Builds APA-style summary tables from a series of simple linear models
-for one or many continuous outcomes selected with tidyselect syntax.
+Builds APA-style summary tables from a series of linear models for one
+or many continuous outcomes selected with tidyselect syntax.
 
-A single predictor is supplied with `by`, and each selected numeric
-outcome is fit as `lm(outcome ~ by, ...)`. When `by` is categorical, the
-function returns a model-based mean-comparison table with fitted means
-by level derived from the linear model, plus an optional single
-difference for dichotomous predictors. When `by` is numeric, the table
-reports the slope and its confidence interval.
+A single focal predictor is supplied with `by`; each selected numeric
+outcome is fit as `lm(outcome ~ by, ...)`, optionally extended with
+additive covariates via `covariates` and case weights via `weights`.
+Categorical `by` produces model-based estimated marginal means by level
+(covariate-adjusted via `adjustment` when covariates are present), plus
+an optional single difference for dichotomous predictors. Numeric `by`
+produces the slope and its confidence interval.
+
+Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
+(heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
+requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling. Effect
+sizes (Cohen's `"d"`, Hedges' `"g"`, Hays' `"omega2"`, Cohen's `"f2"`)
+are reported with optional noncentral *t* / *F* confidence intervals via
+`effect_size_ci`, and adapt under covariate adjustment (see
+`effect_size`).
 
 Multiple output formats are available via `output`: a printed ASCII
 table (`"default"`), a plain wide `data.frame` (`"data.frame"`), a raw
@@ -77,8 +86,8 @@ table_continuous_lm(
   A single predictor column. Accepts an unquoted column name or a single
   character column name. The predictor can be:
 
-  - **numeric** (continuous): treated as a covariate. The table reports
-    the slope and its CI from `lm(y ~ by)`.
+  - **numeric** (continuous): treated as a continuous regressor. The
+    table reports the slope of `by` and its CI from `lm(y ~ by, ...)`.
 
   - **factor** or **ordered factor**: treated as categorical. Level
     order is preserved as declared; the **first level** is the reference
@@ -114,17 +123,14 @@ table_continuous_lm(
   When non-empty, each model is fitted as
   `lm(y ~ by + cov1 + cov2 + ...)` and the reported estimate / SE /
   p-value / CI on `by` are covariate-adjusted via the focal coefficient.
-  For categorical `by`, the displayed `emmean` is the
-  **covariate-adjusted estimated marginal mean** (covariates fixed at
-  their sample mean for numeric / logical, first level for factor /
-  character — the convention used by SPSS UNIANOVA and Stata `margins`).
-  The omnibus test is the partial F restricted to `by` (computed via
-  [`stats::drop1()`](https://rdrr.io/r/stats/add1.html)).
-
-  Effect sizes that have no defined extension under adjustment
-  (`effect_size = "d"` and `"g"`) raise a `spicy_unsupported` error when
-  covariates are present; use `effect_size = "f2"` or `"omega2"` instead
-  — these generalise to partial effect sizes via partial F.
+  For categorical `by`, the displayed `emmean` is the covariate-adjusted
+  estimated marginal mean — see `adjustment` for the choice of estimand
+  (G-computation by default vs. equal-weight averaging). The omnibus
+  test of `by` is the Wald *F* restricted to the focal coefficients
+  (computed via `sandwich` / `clubSandwich` for HC\* / CR\* mode), so
+  adding covariates does not contaminate the omnibus statistic with
+  covariate contributions. Effect sizes adapt automatically — see
+  `effect_size`.
 
   v1 supports additive covariates only. Formula syntax with interactions
   or transforms (`covariates = ~ age * sex`, `covariates = ~ I(age^2)`)
@@ -368,6 +374,20 @@ table_continuous_lm(
   All effect sizes are point estimates derived from the OLS/WLS fit and
   are **not** affected by `vcov`.
 
+  **Under covariate adjustment** (`covariates` non-empty):
+
+  - `"f2"` and `"omega2"` become the **partial** *f²* / partial *ω²*,
+    derived from the partial *F* of `by` via
+    [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) — the
+    correctly-defined effect size when the model is adjusted. For
+    numeric `by`, partial *f²* equals the squared partial correlation of
+    `by` with the outcome, divided by `(1 - r²_partial)`.
+
+  - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d* and
+    Hedges' *g* have no canonical extension to adjusted models (the
+    pooled SD is undefined under adjustment). Use `"f2"` or `"omega2"`
+    instead — both generalise via partial *F*.
+
 - effect_size_ci:
 
   Logical. If `TRUE` and `effect_size != "none"`, adds a confidence
@@ -564,19 +584,21 @@ and `regex`, the function emits a warning and returns an empty
 
 ## Model and outputs
 
-`table_continuous_lm()` is designed for article-style bivariate
-reporting: a single predictor supplied with `by`, and one simple model
-per selected continuous outcome. The model fit is always
-`lm(outcome ~ by, ...)`, optionally with `weights`. For categorical
-predictors, the reported means are model-based fitted means for each
-level of `by`, and contrasts are derived from the same fitted linear
-model. For an unweighted `lm(y ~ factor)` with classical variance, the
-fitted means coincide numerically with empirical subgroup means; the
+`table_continuous_lm()` is designed for article-style reporting around a
+single focal predictor: one model per selected continuous outcome,
+fitted as `lm(outcome ~ by, ...)` and optionally extended with case
+`weights` and additive `covariates` (`lm(outcome ~ by + cov1 + ...)`).
+For categorical `by`, the reported means are model-based fitted means
+(or covariate-adjusted estimated marginal means; see `adjustment`) for
+each level, and contrasts come from the same fitted linear model. For an
+unweighted `lm(y ~ factor)` with classical variance and no covariates,
+the fitted means coincide numerically with empirical subgroup means; the
 *model-based* qualifier matters because (a) under `weights` the means
-become weighted least-squares estimates, (b) their CIs are derived from
-the model `vcov` (classical or `HC*`), and (c) tests, *p*-values, and
-effect sizes all come from the same fitted model, keeping the table
-internally consistent.
+become weighted least-squares estimates, (b) their CIs derive from the
+model `vcov` (classical, `HC*`, `CR*`, bootstrap or jackknife), (c)
+under `covariates` they become adjusted marginal means, and (d) tests,
+*p*-values and effect sizes all come from the same fitted model, keeping
+the table internally consistent.
 
 Compared with
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -619,6 +641,15 @@ All four effect sizes are point estimates derived from the OLS/WLS fit
 and are **invariant to `vcov`**: choosing `HC*` changes the SE, CI, and
 test statistic of the contrast but not the standardized magnitude
 itself.
+
+**Under covariate adjustment** (`covariates` non-empty), `"f2"` and
+`"omega2"` become the partial *f²* / partial *ω²* of `by`, derived from
+the partial *F* via
+[`stats::drop1()`](https://rdrr.io/r/stats/add1.html) restricted to the
+focal term. `"d"` and `"g"` raise a `spicy_unsupported` error: the
+pooled standard deviation has no canonical extension under adjustment,
+so Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
+`effect_size` for the full dispatch.
 
 Confidence intervals for the effect size are available via
 `effect_size_ci = TRUE` and use the modern noncentral-distribution
@@ -739,6 +770,10 @@ two levels, no single contrast or contrast CI is shown in the wide
 outputs; instead, the table reports level-specific means plus the
 overall `F` test when `statistic = TRUE` (or `F(df1, df2)` when the
 degrees of freedom are constant across outcomes).
+
+When `covariates` is non-empty, the printed ASCII table appends an
+APA-style footer naming the covariates and the chosen estimand, e.g.
+`Note. Adjusted for age, education (proportional).`
 
 Optional output engines require the corresponding suggested packages:
 
@@ -1117,7 +1152,7 @@ table_continuous_lm(
 # d / g are undefined under adjustment and raise spicy_unsupported.
 table_continuous_lm(
   sochealth,
-  select = wellbeing_score,
+  select = c(wellbeing_score, bmi),
   by = sex,
   covariates = c(age, education),
   effect_size = "f2",
@@ -1128,14 +1163,17 @@ table_continuous_lm(
 #>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   67.27      70.93          3.65        
+#>  Body mass index               │   25.65      26.23          0.58        
 #> 
 #>  Variable                      │ 95% CI LL  95% CI UL    p     R²  
 #> ───────────────────────────────┼───────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.09       5.22     <.001  0.22 
+#>  Body mass index               │   0.19       0.97      .004  0.16 
 #> 
 #>  Variable                      │        f²           n   
 #> ───────────────────────────────┼─────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.02 [0.01, 0.04]  1200 
+#>  Body mass index               │ 0.01 [0.00, 0.02]  1188 
 #> 
 #> Note. Adjusted for age, education (proportional).
 
