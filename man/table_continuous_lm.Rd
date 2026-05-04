@@ -54,8 +54,8 @@ pattern (character string).}
 \item{by}{A single predictor column. Accepts an unquoted column name or a
 single character column name. The predictor can be:
 \itemize{
-\item \strong{numeric} (continuous): treated as a covariate. The table reports
-the slope and its CI from \code{lm(y ~ by)}.
+\item \strong{numeric} (continuous): treated as a continuous regressor. The
+table reports the slope of \code{by} and its CI from \code{lm(y ~ by, ...)}.
 \item \strong{factor} or \strong{ordered factor}: treated as categorical. Level order
 is preserved as declared; the \strong{first level} is the reference for
 the displayed contrast (R's default treatment-contrast convention).
@@ -85,16 +85,14 @@ predictor and adjustment).
 When non-empty, each model is fitted as \code{lm(y ~ by + cov1 + cov2 + ...)}
 and the reported estimate / SE / p-value / CI on \code{by} are
 covariate-adjusted via the focal coefficient. For categorical \code{by},
-the displayed \code{emmean} is the \strong{covariate-adjusted estimated marginal
-mean} (covariates fixed at their sample mean for numeric / logical,
-first level for factor / character — the convention used by SPSS
-UNIANOVA and Stata \code{margins}). The omnibus test is the partial F
-restricted to \code{by} (computed via \code{stats::drop1()}).
-
-Effect sizes that have no defined extension under adjustment
-(\code{effect_size = "d"} and \code{"g"}) raise a \code{spicy_unsupported} error
-when covariates are present; use \code{effect_size = "f2"} or \code{"omega2"}
-instead — these generalise to partial effect sizes via partial F.
+the displayed \code{emmean} is the covariate-adjusted estimated marginal
+mean — see \code{adjustment} for the choice of estimand
+(G-computation by default vs. equal-weight averaging). The omnibus
+test of \code{by} is the Wald \emph{F} restricted to the focal coefficients
+(computed via \code{sandwich} / \code{clubSandwich} for HC* / CR* mode), so
+adding covariates does not contaminate the omnibus statistic with
+covariate contributions. Effect sizes adapt automatically — see
+\code{effect_size}.
 
 v1 supports additive covariates only. Formula syntax with
 interactions or transforms (\code{covariates = ~ age * sex},
@@ -284,7 +282,20 @@ the weighted least-squares fit (using weighted sums of squares and the
 model's weighted residual standard deviation), keeping them consistent
 with the weighted contrast and its CI shown in the table. All effect
 sizes are point estimates derived from the OLS/WLS fit and are \strong{not}
-affected by \code{vcov}.}
+affected by \code{vcov}.
+
+\strong{Under covariate adjustment} (\code{covariates} non-empty):
+\itemize{
+\item \code{"f2"} and \code{"omega2"} become the \strong{partial} \emph{f²} / partial \emph{ω²},
+derived from the partial \emph{F} of \code{by} via \code{\link[stats:drop1]{stats::drop1()}} —
+the correctly-defined effect size when the model is adjusted.
+For numeric \code{by}, partial \emph{f²} equals the squared partial
+correlation of \code{by} with the outcome, divided by \verb{(1 - r²_partial)}.
+\item \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: Cohen's \emph{d}
+and Hedges' \emph{g} have no canonical extension to adjusted models
+(the pooled SD is undefined under adjustment). Use \code{"f2"} or
+\code{"omega2"} instead — both generalise via partial \emph{F}.
+}}
 
 \item{effect_size_ci}{Logical. If \code{TRUE} and \code{effect_size != "none"}, adds
 a confidence interval for the effect size derived from inversion of the
@@ -433,15 +444,25 @@ and \code{regex}, the function emits a warning and returns an empty
 \code{data.frame()} regardless of \code{output}.
 }
 \description{
-Builds APA-style summary tables from a series of simple linear models for
-one or many continuous outcomes selected with tidyselect syntax.
+Builds APA-style summary tables from a series of linear models for one
+or many continuous outcomes selected with tidyselect syntax.
 
-A single predictor is supplied with \code{by}, and each selected numeric
-outcome is fit as \code{lm(outcome ~ by, ...)}. When \code{by} is categorical, the
-function returns a model-based mean-comparison table with fitted means by
-level derived from the linear model, plus an optional single difference for
-dichotomous predictors. When \code{by} is numeric, the table reports the slope
-and its confidence interval.
+A single focal predictor is supplied with \code{by}; each selected numeric
+outcome is fit as \code{lm(outcome ~ by, ...)}, optionally extended with
+additive covariates via \code{covariates} and case weights via \code{weights}.
+Categorical \code{by} produces model-based estimated marginal means by
+level (covariate-adjusted via \code{adjustment} when covariates are
+present), plus an optional single difference for dichotomous
+predictors. Numeric \code{by} produces the slope and its confidence
+interval.
+
+Inference adapts via \code{vcov}: classical OLS, \code{"HC0"}-\code{"HC5"}
+(heteroscedasticity-consistent), \code{"CR0"}-\code{"CR3"} (cluster-robust,
+requires \code{cluster}), or \code{"bootstrap"} / \code{"jackknife"} resampling.
+Effect sizes (Cohen's \code{"d"}, Hedges' \code{"g"}, Hays' \code{"omega2"},
+Cohen's \code{"f2"}) are reported with optional noncentral \emph{t} / \emph{F}
+confidence intervals via \code{effect_size_ci}, and adapt under
+covariate adjustment (see \code{effect_size}).
 
 Multiple output formats are available via \code{output}: a printed ASCII table
 (\code{"default"}), a plain wide \code{data.frame} (\code{"data.frame"}), a raw long
@@ -449,18 +470,22 @@ Multiple output formats are available via \code{output}: a printed ASCII table
 \code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}).
 }
 \section{Model and outputs}{
-\code{table_continuous_lm()} is designed for article-style bivariate reporting:
-a single predictor supplied with \code{by}, and one simple model per selected
-continuous outcome. The model fit is always \code{lm(outcome ~ by, ...)},
-optionally with \code{weights}. For categorical predictors, the reported means
-are model-based fitted means for each level of \code{by}, and contrasts are
-derived from the same fitted linear model. For an unweighted
-\code{lm(y ~ factor)} with classical variance, the fitted means coincide
-numerically with empirical subgroup means; the \emph{model-based} qualifier
-matters because (a) under \code{weights} the means become weighted
-least-squares estimates, (b) their CIs are derived from the model \code{vcov}
-(classical or \verb{HC*}), and (c) tests, \emph{p}-values, and effect sizes all
-come from the same fitted model, keeping the table internally consistent.
+\code{table_continuous_lm()} is designed for article-style reporting around
+a single focal predictor: one model per selected continuous outcome,
+fitted as \code{lm(outcome ~ by, ...)} and optionally extended with case
+\code{weights} and additive \code{covariates} (\code{lm(outcome ~ by + cov1 + ...)}).
+For categorical \code{by}, the reported means are model-based fitted means
+(or covariate-adjusted estimated marginal means; see \code{adjustment}) for
+each level, and contrasts come from the same fitted linear model. For
+an unweighted \code{lm(y ~ factor)} with classical variance and no
+covariates, the fitted means coincide numerically with empirical
+subgroup means; the \emph{model-based} qualifier matters because (a) under
+\code{weights} the means become weighted least-squares estimates, (b) their
+CIs derive from the model \code{vcov} (classical, \verb{HC*}, \verb{CR*},
+bootstrap or jackknife), (c) under \code{covariates} they become
+adjusted marginal means, and (d) tests, \emph{p}-values and effect sizes
+all come from the same fitted model, keeping the table internally
+consistent.
 
 Compared with \code{\link[=table_continuous]{table_continuous()}}, this function is the model-based
 companion: choose it when you want heteroskedasticity-consistent standard
@@ -502,6 +527,14 @@ All four effect sizes are point estimates derived from the OLS/WLS fit
 and are \strong{invariant to \code{vcov}}: choosing \verb{HC*} changes the SE, CI, and
 test statistic of the contrast but not the standardized magnitude
 itself.
+
+\strong{Under covariate adjustment} (\code{covariates} non-empty), \code{"f2"} and
+\code{"omega2"} become the partial \emph{f²} / partial \emph{ω²} of \code{by}, derived
+from the partial \emph{F} via \code{\link[stats:drop1]{stats::drop1()}} restricted to the focal
+term. \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: the pooled
+standard deviation has no canonical extension under adjustment, so
+Cohen's \emph{d} and Hedges' \emph{g} are undefined for adjusted models. See
+\code{effect_size} for the full dispatch.
 
 Confidence intervals for the effect size are available via
 \code{effect_size_ci = TRUE} and use the modern noncentral-distribution
@@ -621,6 +654,10 @@ in the wide outputs; instead, the table reports level-specific means
 plus the overall \code{F} test when \code{statistic = TRUE} (or \code{F(df1, df2)}
 when the degrees of freedom are constant across outcomes).
 
+When \code{covariates} is non-empty, the printed ASCII table appends an
+APA-style footer naming the covariates and the chosen estimand, e.g.
+\verb{Note. Adjusted for age, education (proportional).}
+
 Optional output engines require the corresponding suggested packages:
 \itemize{
 \item \pkg{tinytable} for \code{output = "tinytable"}
@@ -738,7 +775,7 @@ table_continuous_lm(
 # d / g are undefined under adjustment and raise spicy_unsupported.
 table_continuous_lm(
   sochealth,
-  select = wellbeing_score,
+  select = c(wellbeing_score, bmi),
   by = sex,
   covariates = c(age, education),
   effect_size = "f2",
