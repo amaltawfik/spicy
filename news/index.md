@@ -6,77 +6,39 @@
 
 #### Covariate adjustment in `table_continuous_lm()`
 
-- New `covariates` argument adds **additive covariates** to every
-  per-outcome model. Each model is fitted as
-  `lm(y ~ by + cov1 + cov2 + ...)` and the reported estimate / SE /
-  p-value / CI on `by` are covariate-adjusted via the focal coefficient.
-  Accepts tidyselect (`c(age, sex)`,
-  `tidyselect::starts_with("control_")`, `tidyselect::all_of(cov_vec)`)
-  or a literal character vector. Covariates that also appear in `select`
-  are silently auto-excluded from the outcome list (mirroring `by` /
-  `weights`); a covariate equal to `by` is rejected.
-
-- New `adjustment` argument controls how covariate-adjusted estimated
-  marginal means (the `emmean` / `emmean_se` / `emmean_ci_*` columns)
-  are computed when `covariates` is non-empty:
-
-  - `"proportional"` (default) — G-computation over the observed sample.
-    Matches Stata `margins` and
-    `marginaleffects::avg_predictions(variables)`. Each focal level of
-    `by` gives the predicted mean averaged across the empirical joint
-    distribution of covariates. Population-weighted.
-  - `"balanced"` — synthetic-grid equal-weight averaging. Matches
-    [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
-    default, SPSS UNIANOVA EMMEANS, SAS LSMEANS. Treats the design as if
-    covariates were balanced.
-
-  The two methods coincide when `covariates` is `NULL` or contains only
-  numeric / logical covariates. They diverge only when at least one
-  factor / character covariate has non-uniform observed proportions. The
-  default `"proportional"` aligns spicy with the modern causal-inference
-  convention; the `"balanced"` opt-in matches the historical APA / SPSS
-  reporting tradition.
-
-- Effect-size dispatch under adjustment:
-
-  - `effect_size = "f2"` and `"omega2"` are computed as **partial** f² /
-    partial ω² via [`stats::drop1()`](https://rdrr.io/r/stats/add1.html)
-    restricted to the focal term (`by`) — the correctly-defined effect
-    size for an adjusted model.
-  - `effect_size = "d"` and `"g"` raise a `spicy_unsupported` error:
-    Cohen’s d and Hedges’ g are undefined for covariate-adjusted models
-    (no defined extension of the pooled SD under adjustment). The error
-    message points to `f2` / `omega2` as the partial-F generalisations.
-
-- When the model is covariate-adjusted, the default ASCII print emits an
-  APA-style footer: `Note. Adjusted for <cov_names> (<adjustment>).` The
-  method tag is mandatory because the interpretation of the displayed
-  `emmean` column changes between `proportional` and `balanced`.
-
-- New attributes carried on the result (consumed by the print and
-  available to downstream code): `attr(out, "covariates")` — character
-  vector of resolved covariate names; `attr(out, "adjustment")` —
-  effective method (`"proportional"`, `"balanced"`, or `NA_character_`
-  when `covariates` is empty).
-
-- Implementation notes: the Wald F restricted to the focal term uses the
-  design-matrix `assign` attribute so adding categorical covariates does
-  not contaminate the omnibus statistic with covariate coefficients;
-  spicy’s emmean SE is computed analytically via the exact quadratic
-  form `avg_row %*% V %*% avg_row^T` (see test-lm_helpers.R for the
-  cross-validation triangulation against manual computation,
+- New `covariates` argument adds **additive covariates** to each
+  per-outcome model (`lm(y ~ by + cov1 + cov2 + ...)`). Estimate, SE,
+  *p*-value and CI on `by` become covariate-adjusted; effect sizes adapt
+  accordingly (see below). Accepts tidyselect expressions or a literal
+  character vector; covariates that overlap `select` are auto-excluded
+  from the outcome list. v1 supports additive terms only — formula
+  syntax with interactions / transforms raises `spicy_unsupported`.
+- New `adjustment` argument selects the estimand for the
+  covariate-adjusted marginal means (the `emmean*` columns):
+  `"proportional"` (default) for G-computation over the observed
+  covariate distribution (matches Stata `margins`,
+  `marginaleffects::avg_predictions(variables)`), or `"balanced"` for
+  synthetic-grid equal-weight averaging (matches
   [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
-  and
-  [`marginaleffects::avg_predictions()`](https://rdrr.io/pkg/marginaleffects/man/predictions.html)).
-
-- `emmeans` and `marginaleffects` added to `Suggests` for oracle tests
-  only (no runtime dependency change).
-
-- v1 supports **additive covariates only**. Formula syntax with
-  interactions or transforms (`covariates = ~ age * sex`,
-  `covariates = ~ I(age^2)`) raises a `spicy_unsupported` error with a
-  migration hint; reserved for a future release alongside
-  `table_regression()`.
+  default, SPSS UNIANOVA, SAS LSMEANS). The two methods coincide when
+  there are no factor covariates or non-uniform proportions.
+- Effect-size dispatch under adjustment: `"f2"` and `"omega2"` become
+  **partial** *f²* / *ω²* via
+  [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) restricted to
+  the focal term; `"d"` and `"g"` are undefined under adjustment and
+  raise `spicy_unsupported` with a pointer to the partial-F
+  generalisations.
+- The default ASCII print emits an APA footer
+  `Note. Adjusted for <covs> (<method>).` whenever the model is
+  covariate-adjusted. New result attributes `covariates` and
+  `adjustment` carry the metadata downstream.
+- See
+  [`?table_continuous_lm`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and the *Covariate adjustment* section of
+  [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+  for the full semantics, defaults rationale, and runnable examples.
+- `emmeans` and `marginaleffects` added to `Suggests` as oracle packages
+  for the cross-validation tests (no runtime dependency change).
 
 ### Internal
 

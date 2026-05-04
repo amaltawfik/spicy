@@ -1062,6 +1062,83 @@ table_continuous_lm(
 #> ──────────┼───────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
 
+# --- Covariate adjustment ----------------------------------------------
+
+# Adjust the comparison of `wellbeing_score` and `bmi` by `sex` for `age`
+# and `education`. The footer surfaces the adjustment estimand
+# ("proportional" by default = G-computation, matching Stata `margins`).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  covariates = c(age, education),
+  vcov = "HC3"
+)
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.27      70.93          3.65        
+#>  Body mass index               │   25.65      26.23          0.58        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.08       5.23     <.001  0.22  1200 
+#>  Body mass index               │   0.19       0.97      .004  0.16  1188 
+#> 
+#> Note. Adjusted for age, education (proportional).
+
+# Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
+# marginal means on a synthetic covariate grid).
+table_continuous_lm(
+  sochealth,
+  select = c(wellbeing_score, bmi),
+  by = sex,
+  covariates = c(age, education),
+  adjustment = "balanced",
+  vcov = "HC3"
+)
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   69.93      73.59          3.65        
+#>  Body mass index               │   25.04      25.62          0.58        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.08       5.23     <.001  0.22  1200 
+#>  Body mass index               │   0.19       0.97      .004  0.16  1188 
+#> 
+#> Note. Adjusted for age, education (balanced).
+
+# Effect sizes adjust automatically: f2 / omega2 become partial
+# effect sizes via partial F (drop1) restricted to the focal `by`.
+# d / g are undefined under adjustment and raise spicy_unsupported.
+table_continuous_lm(
+  sochealth,
+  select = wellbeing_score,
+  by = sex,
+  covariates = c(age, education),
+  effect_size = "f2",
+  effect_size_ci = TRUE
+)
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.27      70.93          3.65        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL    p     R²  
+#> ───────────────────────────────┼───────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.09       5.22     <.001  0.22 
+#> 
+#>  Variable                      │        f²           n   
+#> ───────────────────────────────┼─────────────────────────
+#>  WHO-5 wellbeing index (0-100) │ 0.02 [0.01, 0.04]  1200 
+#> 
+#> Note. Adjusted for age, education (proportional).
+
 # --- Article-style polish -----------------------------------------------
 
 # Pretty outcome labels and adjusted R².

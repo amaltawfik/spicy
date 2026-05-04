@@ -44,7 +44,9 @@ With spicy, you can:
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear regression reporting: classical / HC\* / cluster-robust /
   bootstrap / jackknife variance, four effect-size families (f², Cohen’s
-  d, Hedges’ g, Hays’ omega²) with noncentral CIs, weighted comparisons,
+  d, Hedges’ g, Hays’ omega²) with noncentral CIs, optional **additive
+  covariate adjustment** with G-computation (Stata `margins` style) or
+  equal-weight (`emmeans` style) marginal means, weighted comparisons,
   and console, gt, tinytable, flextable, Excel, Word, or clipboard
   output.
 - **Generate interactive and exportable codebooks** with
