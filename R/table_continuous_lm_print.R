@@ -30,6 +30,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   r2_type <- attr(x, "r2_type") %||% "r2"
   show_ci <- attr(x, "show_ci") %||% TRUE
   align <- attr(x, "align") %||% "decimal"
+  covariates <- attr(x, "covariates") %||% character()
+  adjustment <- attr(x, "adjustment") %||% NA_character_
 
   display_df <- build_wide_display_df_continuous_lm(
     x,
@@ -94,10 +96,27 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     padding <- 0L
   }
 
+  # APA-style footer when the model is covariate-adjusted. Names the
+  # covariate(s) and the adjustment estimand explicitly because the
+  # interpretation of the displayed `emmean` column changes with the
+  # method: "proportional" = G-computation over the observed
+  # covariate distribution; "balanced" = synthetic-grid equal-weight
+  # marginal means. Without the method tag the user cannot tell
+  # which estimand they are reading.
+  note <- if (length(covariates) > 0L && !is.na(adjustment)) {
+    paste0(
+      "Note. Adjusted for ",
+      paste(covariates, collapse = ", "),
+      " (", adjustment, ")."
+    )
+  } else {
+    NULL
+  }
+
   spicy_print_table(
     display_df,
     title = paste0("Continuous outcomes by ", by_label),
-    note = NULL,
+    note = note,
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,

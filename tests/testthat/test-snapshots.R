@@ -146,6 +146,37 @@ test_that("print.spicy_continuous_lm_table: bivariate fit by group", {
   )
 })
 
+test_that("print.spicy_continuous_lm_table: covariate-adjusted footer (proportional)", {
+  set.seed(2L)
+  df <- data.frame(
+    score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
+    age   = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
+    sex   = factor(rep(c("F", "M"), each = 8L))
+  )
+  expect_snapshot(
+    table_continuous_lm(
+      df, select = "score", by = sex,
+      covariates = age, adjustment = "proportional"
+    )
+  )
+})
+
+test_that("print.spicy_continuous_lm_table: covariate-adjusted footer (balanced)", {
+  set.seed(3L)
+  df <- data.frame(
+    score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
+    age   = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
+    race  = factor(c(rep("A", 12L), rep("B", 4L))),
+    sex   = factor(rep(c("F", "M"), each = 8L))
+  )
+  expect_snapshot(
+    table_continuous_lm(
+      df, select = "score", by = sex,
+      covariates = c(age, race), adjustment = "balanced"
+    )
+  )
+})
+
 # ---- Classed conditions (D1 + D5 hierarchy) -------------------------------
 
 test_that("spicy errors carry the documented class hierarchy", {

@@ -609,6 +609,56 @@ test_that("adjustment balanced: oracle match against emmeans::emmeans default", 
   expect_equal(spicy_out$emmean_se, emm_out$SE[ord], tolerance = 1e-8)
 })
 
+test_that("print method emits Adjusted for footer iff covariates non-empty", {
+  set.seed(201L)
+  df <- data.frame(
+    score = rnorm(40, 50, 5),
+    age   = rnorm(40, 30, 5),
+    sex   = factor(rep(c("F", "M"), each = 20L))
+  )
+
+  # Without covariates: NO "Adjusted for" line.
+  out_unadj <- table_continuous_lm(df, select = "score", by = sex)
+  txt_unadj <- paste(
+    capture.output(print(out_unadj)),
+    collapse = "\n"
+  )
+  expect_false(grepl("Adjusted for", txt_unadj, fixed = TRUE))
+
+  # With covariate: footer present and names the cov + method.
+  out_p <- table_continuous_lm(
+    df, select = "score", by = sex,
+    covariates = age, adjustment = "proportional"
+  )
+  txt_p <- paste(capture.output(print(out_p)), collapse = "\n")
+  expect_true(grepl("Adjusted for age", txt_p, fixed = TRUE))
+  expect_true(grepl("(proportional)", txt_p, fixed = TRUE))
+
+  out_b <- table_continuous_lm(
+    df, select = "score", by = sex,
+    covariates = age, adjustment = "balanced"
+  )
+  txt_b <- paste(capture.output(print(out_b)), collapse = "\n")
+  expect_true(grepl("Adjusted for age", txt_b, fixed = TRUE))
+  expect_true(grepl("(balanced)", txt_b, fixed = TRUE))
+})
+
+test_that("print footer lists multiple covariates separated by commas", {
+  set.seed(202L)
+  df <- data.frame(
+    score = rnorm(40, 50, 5),
+    age   = rnorm(40, 30, 5),
+    weight = rnorm(40, 70, 10),
+    sex   = factor(rep(c("F", "M"), each = 20L))
+  )
+  out <- table_continuous_lm(
+    df, select = "score", by = sex,
+    covariates = c(age, weight)
+  )
+  txt <- paste(capture.output(print(out)), collapse = "\n")
+  expect_true(grepl("Adjusted for age, weight", txt, fixed = TRUE))
+})
+
 test_that("adjustment: invalid value rejected by match.arg", {
   set.seed(108L)
   n <- 40
