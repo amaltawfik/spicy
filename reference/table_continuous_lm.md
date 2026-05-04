@@ -22,6 +22,7 @@ table_continuous_lm(
   data,
   select = tidyselect::everything(),
   by,
+  covariates = NULL,
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
@@ -95,6 +96,43 @@ table_continuous_lm(
 
   Rows with `NA` in `by` are excluded from the analytic sample for each
   outcome (NAs in `y` and `weights` are also excluded; see Details).
+
+- covariates:
+
+  Optional additive covariates to adjust each per-outcome linear model
+  for. Accepts a tidyselect expression (e.g. `covariates = c(age, sex)`,
+  `covariates = tidyselect::all_of(cov_vec)`,
+  `covariates = tidyselect::starts_with("control_")`) or a literal
+  character vector of column names. Each covariate must be numeric,
+  integer, logical, factor, or character; covariates that also appear in
+  `select` are silently auto-excluded from the outcome list (a variable
+  cannot be both outcome and adjustment), and a covariate that equals
+  `by` raises an error (a variable cannot be both predictor and
+  adjustment).
+
+  When non-empty, each model is fitted as
+  `lm(y ~ by + cov1 + cov2 + ...)` and the reported estimate / SE /
+  p-value / CI on `by` are covariate-adjusted via the focal coefficient.
+  For categorical `by`, the displayed `emmean` is the
+  **covariate-adjusted estimated marginal mean** (covariates fixed at
+  their sample mean for numeric / logical, first level for factor /
+  character — the convention used by SPSS UNIANOVA and Stata `margins`).
+  The omnibus test is the partial F restricted to `by` (computed via
+  [`stats::drop1()`](https://rdrr.io/r/stats/add1.html)).
+
+  Effect sizes that have no defined extension under adjustment
+  (`effect_size = "d"` and `"g"`) raise a `spicy_unsupported` error when
+  covariates are present; use `effect_size = "f2"` or `"omega2"` instead
+  — these generalise to partial effect sizes via partial F.
+
+  v1 supports additive covariates only. Formula syntax with interactions
+  or transforms (`covariates = ~ age * sex`, `covariates = ~ I(age^2)`)
+  is reserved for a future release; passing a formula raises a
+  `spicy_unsupported` error with a migration hint.
+
+  Rows with `NA` in any covariate are dropped from the analytic sample
+  for each outcome (complete-cases per outcome, matching the existing
+  `by` / `weights` NA handling).
 
 - exclude:
 

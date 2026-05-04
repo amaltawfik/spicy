@@ -100,6 +100,7 @@ and its confidence interval.</p>
 <span>  <span class="va">data</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu">tidyselect</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">by</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regex <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -165,6 +166,38 @@ that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"F
 so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
 </ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
 outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details).</p></dd>
+
+
+<dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
+<dd><p>Optional additive covariates to adjust each per-outcome
+linear model for. Accepts a tidyselect expression (e.g.
+<code>covariates = c(age, sex)</code>, <code>covariates = tidyselect::all_of(cov_vec)</code>,
+<code>covariates = tidyselect::starts_with("control_")</code>) or a literal
+character vector of column names. Each covariate must be numeric,
+integer, logical, factor, or character; covariates that also appear
+in <code>select</code> are silently auto-excluded from the outcome list (a
+variable cannot be both outcome and adjustment), and a covariate
+that equals <code>by</code> raises an error (a variable cannot be both
+predictor and adjustment).</p>
+<p>When non-empty, each model is fitted as <code>lm(y ~ by + cov1 + cov2 + ...)</code>
+and the reported estimate / SE / p-value / CI on <code>by</code> are
+covariate-adjusted via the focal coefficient. For categorical <code>by</code>,
+the displayed <code>emmean</code> is the <strong>covariate-adjusted estimated marginal
+mean</strong> (covariates fixed at their sample mean for numeric / logical,
+first level for factor / character — the convention used by SPSS
+UNIANOVA and Stata <code>margins</code>). The omnibus test is the partial F
+restricted to <code>by</code> (computed via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code>).</p>
+<p>Effect sizes that have no defined extension under adjustment
+(<code>effect_size = "d"</code> and <code>"g"</code>) raise a <code>spicy_unsupported</code> error
+when covariates are present; use <code>effect_size = "f2"</code> or <code>"omega2"</code>
+instead — these generalise to partial effect sizes via partial F.</p>
+<p>v1 supports additive covariates only. Formula syntax with
+interactions or transforms (<code>covariates = ~ age * sex</code>,
+<code>covariates = ~ I(age^2)</code>) is reserved for a future release; passing
+a formula raises a <code>spicy_unsupported</code> error with a migration hint.</p>
+<p>Rows with <code>NA</code> in any covariate are dropped from the analytic
+sample for each outcome (complete-cases per outcome, matching the
+existing <code>by</code> / <code>weights</code> NA handling).</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
