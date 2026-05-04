@@ -1,5 +1,7 @@
 # Changelog
 
+## spicy (development version)
+
 ## spicy 0.11.0
 
 CRAN release: 2026-05-04
@@ -59,17 +61,15 @@ CRAN release: 2026-05-04
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   and `table_*()` use `method = "radix"`. Output is byte-stable across
   locales and platforms, matching Stata / SPSS guarantees.
-- **Edge-case hardening.**
+- **Edge-case hardening.** A new length-guarded sort helper makes
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   /
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   /
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  / [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) no
-  longer crash on zero-length or all-NA `Date` / `POSIXct` / `character`
-  columns or factors with no observed levels (R 4.6.0
-  [`sort()`](https://rdrr.io/r/base/sort.html) segfaults on these
-  inputs).
+  / [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  survive zero-length or all-NA `Date` / `POSIXct` / `character` columns
+  and factors with no observed levels.
 - **Snapshot-locked rendering.** `tests/testthat/test-snapshots.R` pins
   the exact console output of every spicy print method, so any
   unintended formatting drift surfaces as a PR diff.

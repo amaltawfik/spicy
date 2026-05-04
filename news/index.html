@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,9 +53,12 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/amaltawfik/spicy/blob/v0.11.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/amaltawfik/spicy/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.0" id="spicy-0110">spicy 0.11.0<a class="anchor" aria-label="anchor" href="#spicy-0110"></a></h2><p class="text-muted">CRAN release: 2026-05-04</p>
 <div class="section level3">
@@ -86,7 +89,7 @@
 <li>
 <strong>Locale-deterministic ordering.</strong> Sorts in <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/freq.html">freq()</a></code>, <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and <code>table_*()</code> use <code>method = "radix"</code>. Output is byte-stable across locales and platforms, matching Stata / SPSS guarantees.</li>
 <li>
-<strong>Edge-case hardening.</strong> <code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/freq.html">freq()</a></code> no longer crash on zero-length or all-NA <code>Date</code> / <code>POSIXct</code> / <code>character</code> columns or factors with no observed levels (R 4.6.0 <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> segfaults on these inputs).</li>
+<strong>Edge-case hardening.</strong> A new length-guarded sort helper makes <code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/freq.html">freq()</a></code> survive zero-length or all-NA <code>Date</code> / <code>POSIXct</code> / <code>character</code> columns and factors with no observed levels.</li>
 <li>
 <strong>Snapshot-locked rendering.</strong> <code>tests/testthat/test-snapshots.R</code> pins the exact console output of every spicy print method, so any unintended formatting drift surfaces as a PR diff.</li>
 <li>
