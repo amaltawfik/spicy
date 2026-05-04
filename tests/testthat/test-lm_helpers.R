@@ -390,8 +390,239 @@ test_that("table_continuous_lm: covariates attribute round-trips through default
     covariates = age,
     output = "long"
   )
-  # The render layer (Commit C) will read this attribute to emit
-  # the "Adjusted for: ..." footer.
+  # The render layer (Commit C) will read these attributes to emit
+  # the "Adjusted for: ..." footer with the chosen estimand.
   expect_identical(attr(out, "covariates"), "age")
-  expect_identical(attr(out, "covariates"), c("age"))
+  expect_identical(attr(out, "adjustment"), "proportional")
+})
+
+# ---- adjustment dispatch (proportional vs balanced) -----------------------
+
+test_that("adjustment: NULL covariates -> attr is NA, both methods identical", {
+  set.seed(101L)
+  n <- 40
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out_p <- table_continuous_lm(
+    df, select = bmi, by = sex,
+    adjustment = "proportional", output = "long"
+  )
+  out_b <- table_continuous_lm(
+    df, select = bmi, by = sex,
+    adjustment = "balanced", output = "long"
+  )
+  expect_identical(attr(out_p, "adjustment"), NA_character_)
+  expect_identical(attr(out_b, "adjustment"), NA_character_)
+  # No covariates -> emmean = group mean, emmean_method has no effect
+  expect_equal(out_p$emmean, out_b$emmean, tolerance = 1e-12)
+})
+
+test_that("adjustment: numeric-only covariates -> proportional == balanced", {
+  set.seed(102L)
+  n <- 80
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    weight = rnorm(n, 70, 12),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  out_p <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(age, weight),
+    adjustment = "proportional", output = "long"
+  )
+  out_b <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(age, weight),
+    adjustment = "balanced", output = "long"
+  )
+  # With purely numeric covariates the two methods coincide because
+  # `mean(numeric)` is the same regardless of weighting.
+  expect_equal(out_p$emmean, out_b$emmean, tolerance = 1e-12)
+  expect_equal(out_p$emmean_se, out_b$emmean_se, tolerance = 1e-12)
+})
+
+test_that("adjustment: factor covariate makes proportional and balanced diverge", {
+  # Skewed observed proportions (75/25) so equal-weight (1/2 each)
+  # differs visibly from proportional (0.75 / 0.25).
+  set.seed(103L)
+  n <- 120
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 90L), rep("B", 30L)))
+  )
+  out_p <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = race,
+    adjustment = "proportional", output = "long"
+  )
+  out_b <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = race,
+    adjustment = "balanced", output = "long"
+  )
+  # The emmeans must differ -- proof the dispatch actually does
+  # something different rather than silently no-op.
+  expect_false(isTRUE(all.equal(out_p$emmean, out_b$emmean)))
+})
+
+test_that("adjustment proportional: matches manual G-computation", {
+  set.seed(104L)
+  n <- 100
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 70L), rep("B", 30L)))
+  )
+  fit <- stats::lm(bmi ~ sex + race, data = df)
+
+  manual <- vapply(levels(df$sex), function(lvl) {
+    tmp <- df
+    tmp$sex <- factor(lvl, levels = levels(df$sex))
+    mean(stats::predict(fit, newdata = tmp))
+  }, numeric(1))
+
+  out <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = race,
+    adjustment = "proportional", output = "long"
+  )
+  expect_equal(out$emmean, unname(manual), tolerance = 1e-9)
+})
+
+test_that("adjustment balanced: matches manual equal-weight grid average", {
+  set.seed(105L)
+  n <- 100
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 70L), rep("B", 30L)))
+  )
+  fit <- stats::lm(bmi ~ sex + race + age, data = df)
+
+  # Manual balanced: cross-product of factor cov levels
+  # × numeric covs at sample mean. Race has 2 levels A / B,
+  # so the grid for each focal sex is {(A, mean(age)), (B, mean(age))},
+  # both with equal weight 1/2.
+  manual <- vapply(levels(df$sex), function(lvl) {
+    grid <- data.frame(
+      sex = factor(lvl, levels = levels(df$sex)),
+      race = factor(levels(df$race), levels = levels(df$race)),
+      age = mean(df$age)
+    )
+    mean(stats::predict(fit, newdata = grid))
+  }, numeric(1))
+
+  out <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(race, age),
+    adjustment = "balanced", output = "long"
+  )
+  expect_equal(out$emmean, unname(manual), tolerance = 1e-9)
+})
+
+test_that("adjustment proportional: oracle match against marginaleffects (point estimates)", {
+  skip_if_not_installed("marginaleffects")
+  set.seed(106L)
+  n <- 200
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 140L), rep("B", 60L)))
+  )
+  fit <- stats::lm(bmi ~ sex + race + age, data = df)
+
+  spicy_out <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(race, age),
+    adjustment = "proportional", output = "long"
+  )
+
+  # G-computation counterfactual: replicate the data once per focal
+  # level of `sex`, predict, then average within level. This is what
+  # `avg_predictions(variables = "sex")` does (NOT `by = "sex"`,
+  # which only groups predictions at observed levels without setting
+  # the counterfactual).
+  me_out <- as.data.frame(
+    marginaleffects::avg_predictions(fit, variables = "sex")
+  )
+  ord <- match(spicy_out$level, as.character(me_out$sex))
+  expect_equal(spicy_out$emmean, me_out$estimate[ord], tolerance = 1e-8)
+
+  # NB on SEs: spicy computes SE analytically via the exact
+  # quadratic form `avg_row %*% V %*% avg_row^T`, while
+  # marginaleffects derives it via the numerical delta method
+  # (`numDeriv`). The two agree to ~1e-5 in practice but the
+  # numerical method is less precise, so this test only pins the
+  # point estimates. spicy SE correctness is verified analytically
+  # in the manual-reference and emmeans-oracle tests below.
+})
+
+test_that("adjustment proportional: SE matches manual quadratic form", {
+  set.seed(109L)
+  n <- 100
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 70L), rep("B", 30L)))
+  )
+
+  spicy_out <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(race, age),
+    adjustment = "proportional", output = "long"
+  )
+
+  # Manual SE: the linear contrast that defines the proportional
+  # emmean for each focal level is `avg_row = colMeans(design)` of
+  # the design matrix built with `sex` set to the focal level for
+  # all observed rows. SE = sqrt(avg_row %*% vcov(fit) %*% avg_row^T).
+  fit <- stats::lm(bmi ~ sex + race + age, data = df)
+  vc <- stats::vcov(fit)
+  manual_se <- vapply(levels(df$sex), function(lvl) {
+    nd <- df
+    nd$sex <- factor(lvl, levels = levels(df$sex))
+    X <- stats::model.matrix(stats::delete.response(stats::terms(fit)), nd)
+    avg <- colMeans(X)
+    sqrt(sum((avg %*% vc) * avg))
+  }, numeric(1))
+  expect_equal(spicy_out$emmean_se, unname(manual_se), tolerance = 1e-12)
+})
+
+test_that("adjustment balanced: oracle match against emmeans::emmeans default", {
+  skip_if_not_installed("emmeans")
+  set.seed(107L)
+  n <- 200
+  df <- data.frame(
+    bmi = rnorm(n, 25, 4),
+    age = rnorm(n, 50, 10),
+    sex = factor(rep(c("F", "M"), each = n / 2)),
+    race = factor(c(rep("A", 140L), rep("B", 60L)))
+  )
+  fit <- stats::lm(bmi ~ sex + race + age, data = df)
+
+  spicy_out <- table_continuous_lm(
+    df, select = bmi, by = sex, covariates = c(race, age),
+    adjustment = "balanced", output = "long"
+  )
+  emm_out <- as.data.frame(emmeans::emmeans(fit, ~ sex))
+  ord <- match(spicy_out$level, as.character(emm_out$sex))
+  expect_equal(spicy_out$emmean, emm_out$emmean[ord], tolerance = 1e-8)
+  expect_equal(spicy_out$emmean_se, emm_out$SE[ord], tolerance = 1e-8)
+})
+
+test_that("adjustment: invalid value rejected by match.arg", {
+  set.seed(108L)
+  n <- 40
+  df <- data.frame(
+    bmi = rnorm(n, 25),
+    sex = factor(rep(c("F", "M"), each = n / 2))
+  )
+  # `match.arg()` is base R; its error message is "'arg' should be
+  # one of ...". This test confirms the rejection path activates.
+  expect_error(
+    table_continuous_lm(
+      df, select = bmi, by = sex,
+      adjustment = "bogus"
+    ),
+    "should be one of"
+  )
 })

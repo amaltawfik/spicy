@@ -71,6 +71,35 @@
 #'   Rows with `NA` in any covariate are dropped from the analytic
 #'   sample for each outcome (complete-cases per outcome, matching the
 #'   existing `by` / `weights` NA handling).
+#' @param adjustment How the covariate-adjusted estimated marginal
+#'   means (the `emmean` / `emmean_se` / `emmean_ci_*` columns) are
+#'   computed when `covariates` is non-empty. One of:
+#'   - `"proportional"` (the default; matches Stata `margins` and
+#'     [marginaleffects::avg_predictions()]): G-computation on the
+#'     observed sample. For each focal level of `by`, the model
+#'     predicts at every observation with `by` set to that level
+#'     (covariates kept at their observed values), and the
+#'     predictions are averaged. Population-weighted by construction
+#'     -- the empirical joint distribution of covariates is the
+#'     reference. Best when the goal is "what is the predicted
+#'     mean in *this* population if everyone had `by = lvl`".
+#'   - `"balanced"` (matches [emmeans::emmeans()] default and the
+#'     SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
+#'     grid of factor-covariate level combinations × numeric
+#'     covariates fixed at their sample mean, with each grid cell
+#'     weighted equally. Treats the design as if covariates were
+#'     balanced -- the "marginal mean assuming a balanced design"
+#'     estimand. Best when the goal is to report a covariate-purified
+#'     comparison independent of the empirical covariate distribution.
+#'
+#'   Both methods reduce to the same linear-contrast formula
+#'   `emmean = avg_row %*% beta` and inherit the spicy variance
+#'   pipeline (HC* / CR* / bootstrap / jackknife). They give the
+#'   same answer when there are no covariates, and also when all
+#'   covariates are numeric / logical (no factor levels to expand
+#'   over). The two estimands diverge only when at least one
+#'   factor / character covariate has non-uniform observed
+#'   proportions.
 #' @param exclude Columns to exclude from `select`. Supports tidyselect syntax
 #'   and character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers. If
@@ -835,6 +864,7 @@ table_continuous_lm <- function(
   select = tidyselect::everything(),
   by,
   covariates = NULL,
+  adjustment = c("proportional", "balanced"),
   exclude = NULL,
   regex = FALSE,
   weights = NULL,
@@ -968,6 +998,7 @@ table_continuous_lm <- function(
   effect_size <- match.arg(effect_size)
   r2 <- match.arg(r2)
   align <- match.arg(align)
+  adjustment <- match.arg(adjustment)
 
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")
@@ -1182,7 +1213,8 @@ table_continuous_lm <- function(
         contrast = contrast,
         ci_level = ci_level,
         effect_size = effect_size,
-        boot_n = boot_n
+        boot_n = boot_n,
+        adjustment = adjustment
       )
     }
   )
@@ -1200,6 +1232,11 @@ table_continuous_lm <- function(
   attr(result, "vcov_type") <- vcov
   attr(result, "contrast") <- contrast
   attr(result, "covariates") <- covariates_names
+  attr(result, "adjustment") <- if (length(covariates_names) > 0L) {
+    adjustment
+  } else {
+    NA_character_
+  }
   attr(result, "weights_used") <- !is.null(weights_vec)
   attr(result, "show_statistic") <- statistic
   attr(result, "show_p_value") <- p_value
@@ -1285,8 +1322,10 @@ fit_outcome_lm_rows <- function(
   contrast,
   ci_level,
   effect_size = "none",
-  boot_n = 1000L
+  boot_n = 1000L,
+  adjustment = c("proportional", "balanced")
 ) {
+  adjustment <- match.arg(adjustment)
   keep <- !is.na(y) & !is.na(predictor)
   if (!is.null(weights)) {
     keep <- keep & !is.na(weights)
@@ -1340,7 +1379,8 @@ fit_outcome_lm_rows <- function(
     contrast = contrast,
     ci_level = ci_level,
     effect_size = effect_size,
-    boot_n = boot_n
+    boot_n = boot_n,
+    adjustment = adjustment
   )
 }
 
@@ -1459,8 +1499,10 @@ fit_categorical_predictor_lm_rows <- function(
   contrast,
   ci_level,
   effect_size = "none",
-  boot_n = 1000L
+  boot_n = 1000L,
+  adjustment = c("proportional", "balanced")
 ) {
+  adjustment <- match.arg(adjustment)
   x <- droplevels(coerce_lm_factor(x))
   if (length(y) < 2L || nlevels(x) < 2L) {
     return(make_empty_lm_rows(
@@ -1503,37 +1545,48 @@ fit_categorical_predictor_lm_rows <- function(
   focal_term <- if (has_covs) "x" else NULL
   model_stats <- compute_lm_model_stats(fit, focal_term = focal_term)
 
-  # Estimated marginal means (emmeans). Without covariates,
-  # `predict(lm(y ~ x), newdata = each level)` = group mean. With
-  # covariates, the same machinery requires `newdata` to specify
-  # values for ALL terms in `terms(fit)`; we fix continuous covs at
-  # their sample mean and factor / character covs at their first
-  # observed level (the standard "covariate-adjusted marginal mean"
-  # convention used by SPSS UNIANOVA / Stata `margins`). Logical is
-  # treated as numeric (mean threshold > 0.5 -> TRUE).
+  # Covariate-adjusted estimated marginal means.
+  #
+  # Without covariates: bivariate fast path -- a single `newdata`
+  # containing one row per level of `x`, vectorised through
+  # `model.matrix()` and a single matrix multiplication. emmean =
+  # group mean.
+  #
+  # With covariates: the per-level `avg_row` is built by
+  # `build_emmean_avg_row()`, which dispatches on `adjustment`:
+  #   * `"proportional"` (default; G-computation) averages the
+  #     observed covariate distribution with `x` set to the focal
+  #     level. Matches Stata `margins` and
+  #     `marginaleffects::avg_predictions()`.
+  #   * `"balanced"` averages a synthetic grid of factor-covariate
+  #     levels × numeric covariates at the sample mean. Matches
+  #     `emmeans::emmeans()` default and SPSS UNIANOVA EMMEANS.
+  # Both reduce to the same linear-contrast formula
+  # (`avg_row %*% cf`); only `avg_row` differs.
   levs <- levels(x)
-  newdata <- data.frame(x = factor(levs, levels = levs))
-  if (has_covs) {
-    for (cov_name in names(covariates)) {
-      cov_vec <- covariates[[cov_name]]
-      newdata[[cov_name]] <- if (is.numeric(cov_vec)) {
-        rep(mean(cov_vec, na.rm = TRUE), length(levs))
-      } else if (is.logical(cov_vec)) {
-        rep(mean(cov_vec, na.rm = TRUE) >= 0.5, length(levs))
-      } else if (is.factor(cov_vec)) {
-        factor(rep(levels(cov_vec)[1L], length(levs)), levels = levels(cov_vec))
-      } else {
-        # character coerced to factor by lm; pick first observed
-        rep(unique(stats::na.omit(cov_vec))[1L], length(levs))
-      }
+  if (!has_covs) {
+    newdata <- data.frame(x = factor(levs, levels = levs))
+    design <- stats::model.matrix(
+      stats::delete.response(stats::terms(fit)),
+      newdata
+    )
+    emmean <- as.vector(design %*% cf)
+    emmean_se <- sqrt(rowSums((design %*% vc) * design))
+  } else {
+    emmean <- numeric(length(levs))
+    emmean_se <- numeric(length(levs))
+    for (i in seq_along(levs)) {
+      avg_row <- build_emmean_avg_row(
+        fit,
+        x_focal_level = levs[i],
+        x_levels = levs,
+        covariates_observed = covariates,
+        method = adjustment
+      )
+      emmean[i] <- sum(avg_row * cf)
+      emmean_se[i] <- sqrt(sum((avg_row %*% vc) * avg_row))
     }
   }
-  design <- stats::model.matrix(
-    stats::delete.response(stats::terms(fit)),
-    newdata
-  )
-  emmean <- as.vector(design %*% cf)
-  emmean_se <- sqrt(rowSums((design %*% vc) * design))
 
   # Global Wald F restricted to the focal term `x`. With covariates,
   # `seq_along(cf)[-1]` would also pick up covariate coefficients,

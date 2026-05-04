@@ -843,6 +843,123 @@ compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   c(ncp_lo, ncp_hi) / n_total
 }
 
+# Internal: build the "average design row" used to compute a single
+# covariate-adjusted estimated marginal mean (emmean). Both supported
+# methods reduce to the same linear-contrast formula
+#   emmean = avg_row %*% beta_hat
+#   SE     = sqrt(avg_row %*% V %*% t(avg_row))
+# The methods differ only in WHAT is averaged to obtain `avg_row`:
+#
+#   * `"proportional"` (spicy 0.12+ default; matches Stata `margins`
+#     and `marginaleffects::avg_predictions(by = "x")`):
+#     newdata = the OBSERVED data with `x` set to the focal level.
+#     Predictions are averaged over the empirical joint distribution
+#     of covariates -- the G-computation / standardisation estimand.
+#     Population-weighted by construction.
+#
+#   * `"balanced"` (matches `emmeans::emmeans()` default, SPSS
+#     UNIANOVA EMMEANS, SAS LSMEANS): newdata = synthetic grid of
+#     factor-covariate level combinations × numeric covariates fixed
+#     at their sample mean. Each grid cell weighted equally (1 / k).
+#     Treats the design as if covariates were balanced -- the
+#     "marginal mean assuming a balanced design" estimand.
+#
+# Behaviour collapses to the bivariate fast path (just `x = focal`)
+# when there are no covariates -- both methods coincide trivially.
+# When all covariates are numeric / logical (no factor levels to
+# expand over), the two methods also coincide because the mean of a
+# numeric / logical column is the same regardless of weighting.
+#
+# The user-facing argument in `table_continuous_lm()` is
+# `adjustment`, which dispatches to this helper's `method`. The
+# internal name avoids tying the helper to one paradigm vocabulary.
+build_emmean_avg_row <- function(
+  fit,
+  x_focal_level,
+  x_levels,
+  covariates_observed,
+  method = c("proportional", "balanced")
+) {
+  method <- match.arg(method)
+  has_covs <- !is.null(covariates_observed) &&
+    ncol(covariates_observed) > 0L
+
+  if (!has_covs) {
+    newdata <- data.frame(
+      x = factor(x_focal_level, levels = x_levels)
+    )
+  } else if (method == "proportional") {
+    newdata <- covariates_observed
+    newdata$x <- factor(
+      rep(x_focal_level, nrow(newdata)),
+      levels = x_levels
+    )
+  } else {
+    # `"balanced"`: factor / character covariates expanded over their
+    # observed level cross-product; numeric / logical covariates
+    # fixed at the sample mean. R's `lm()` treats logical as numeric
+    # (TRUE -> 1, FALSE -> 0), so we DO NOT expand them as factors:
+    # their mean is the proportion of TRUE in the observed data,
+    # which matches what `model.matrix()` would produce for a single
+    # representative row. This means a logical covariate behaves
+    # identically under "proportional" and "balanced".
+    factor_idx <- vapply(
+      covariates_observed,
+      function(z) is.factor(z) || is.character(z),
+      logical(1)
+    )
+    factor_covs <- covariates_observed[, factor_idx, drop = FALSE]
+    numeric_covs <- covariates_observed[, !factor_idx, drop = FALSE]
+
+    if (ncol(factor_covs) == 0L) {
+      grid <- data.frame(.row = 1L)
+      grid$.row <- NULL
+    } else {
+      level_lists <- lapply(factor_covs, function(z) {
+        if (is.factor(z)) {
+          levels(droplevels(z))
+        } else {
+          sort(unique(stats::na.omit(as.character(z))))
+        }
+      })
+      grid <- do.call(
+        expand.grid,
+        c(
+          level_lists,
+          list(stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
+        )
+      )
+      # Restore original factor encoding so `model.matrix()`
+      # produces the same contrast columns as the fitted model.
+      for (nm in names(factor_covs)) {
+        if (is.factor(covariates_observed[[nm]])) {
+          grid[[nm]] <- factor(
+            grid[[nm]],
+            levels = levels(covariates_observed[[nm]])
+          )
+        }
+      }
+    }
+
+    n_grid <- max(1L, nrow(grid))
+    for (nm in names(numeric_covs)) {
+      grid[[nm]] <- mean(numeric_covs[[nm]], na.rm = TRUE)
+    }
+    grid$x <- factor(
+      rep(x_focal_level, n_grid),
+      levels = x_levels
+    )
+    newdata <- grid
+  }
+
+  design <- stats::model.matrix(
+    stats::delete.response(stats::terms(fit)),
+    newdata
+  )
+  colMeans(design)
+}
+
+
 compute_es_ci_lm <- function(fit, effect_size, ci_level, focal_term = NULL) {
   if (identical(effect_size, "none")) {
     return(c(NA_real_, NA_real_))
