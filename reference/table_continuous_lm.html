@@ -75,7 +75,7 @@ data.frame ("long"), or rendered outputs ("tinytable", "gt",
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Continuous-outcome linear-model table</h1>
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/R/table_continuous_lm.R" class="external-link"><code>R/table_continuous_lm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/v0.11.0/R/table_continuous_lm.R" class="external-link"><code>R/table_continuous_lm.R</code></a></small>
       <div class="d-none name"><code>table_continuous_lm.Rd</code></div>
     </div>
 
@@ -231,7 +231,7 @@ Wald test); CIs are Wald-type around the point estimate.</p></li>
 <li><p><code>"jackknife"</code>: leave-one-out variance, or leave-one-cluster-out
 when <code>cluster</code> is supplied (Quenouille 1956; MacKinnon and White
 1985). Inference is asymptotic (<code>z</code> / <code>chi^2(q)</code>).</p></li>
-</ul><p>The <code>HC*</code> variants are computed via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
+</ul><p>The <code>HC*</code> variants are computed via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
 Coefficients (means, contrasts, slopes), <code>R²</code>, and the standardized
 effect sizes (<code>f2</code>, <code>d</code>, <code>g</code>, <code>omega2</code>) are point estimates from the
 OLS/WLS fit and are not affected by <code>vcov</code>; only their standard errors,
@@ -252,7 +252,7 @@ environment (factor, character, integer, etc.).</p></li>
 for each outcome (alongside rows with <code>NA</code> in <code>y</code>, <code>by</code>, or
 <code>weights</code>). At least two distinct non-missing cluster values are
 required. Multi-way clustering (a list / data.frame of multiple
-cluster vectors) is not supported; use <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
+cluster vectors) is not supported; use <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> directly on the fitted model for that case.</p></dd>
 
 
@@ -565,12 +565,12 @@ sizes) are more appropriate.</p>
     <h2 id="robust-standard-errors">Robust standard errors<a class="anchor" aria-label="anchor" href="#robust-standard-errors"></a></h2>
     <p>When <code>vcov</code> is one of the <code>HC*</code> variants, the standard errors, CIs, and
 Wald test statistics use a heteroskedasticity-consistent sandwich
-estimator computed via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (Zeileis 2004), the
+estimator computed via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (Zeileis 2004), the
 canonical R implementation. For a brief guide:</p><ul><li><p><code>"HC0"</code> is the original White (1980) form; <code>"HC1"</code> adds the
 <code>n / (n - p)</code> correction (MacKinnon and White 1985), Stata's
 <code>, robust</code> default.</p></li>
 <li><p><code>"HC2"</code> and <code>"HC3"</code> use leverage-based residual rescalings
-(MacKinnon and White 1985); <code>"HC3"</code> is the <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
+(MacKinnon and White 1985); <code>"HC3"</code> is the <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
 default for small to moderate samples (Long and Ervin 2000).</p></li>
 <li><p><code>"HC4"</code> adapts the leverage exponent for influential
 observations (Cribari-Neto 2004); <code>"HC4m"</code> is a modified-exponent
@@ -757,7 +757,7 @@ Econometric computing with HC and HAC covariance matrix estimators.
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>.
 For broader workflows on the same statistical building blocks:
-<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (the canonical R implementation of the <code>HC*</code>
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (the canonical R implementation of the <code>HC*</code>
 sandwich estimators, used internally for <code>vcov = "HC*"</code>);
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>, <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> and
 <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (the canonical R implementation of

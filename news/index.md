@@ -2,6 +2,8 @@
 
 ## spicy 0.11.0
 
+CRAN release: 2026-05-04
+
 ### New features
 
 #### `table_continuous_lm()`
@@ -16,7 +18,7 @@
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html);
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonisation across the table family
