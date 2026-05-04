@@ -750,6 +750,42 @@
 #'   vcov = "CR2"
 #' )
 #'
+#' # --- Covariate adjustment ----------------------------------------------
+#'
+#' # Adjust the comparison of `wellbeing_score` and `bmi` by `sex` for `age`
+#' # and `education`. The footer surfaces the adjustment estimand
+#' # ("proportional" by default = G-computation, matching Stata `margins`).
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
+#'   covariates = c(age, education),
+#'   vcov = "HC3"
+#' )
+#'
+#' # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
+#' # marginal means on a synthetic covariate grid).
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = c(wellbeing_score, bmi),
+#'   by = sex,
+#'   covariates = c(age, education),
+#'   adjustment = "balanced",
+#'   vcov = "HC3"
+#' )
+#'
+#' # Effect sizes adjust automatically: f2 / omega2 become partial
+#' # effect sizes via partial F (drop1) restricted to the focal `by`.
+#' # d / g are undefined under adjustment and raise spicy_unsupported.
+#' table_continuous_lm(
+#'   sochealth,
+#'   select = wellbeing_score,
+#'   by = sex,
+#'   covariates = c(age, education),
+#'   effect_size = "f2",
+#'   effect_size_ci = TRUE
+#' )
+#'
 #' # --- Article-style polish -----------------------------------------------
 #'
 #' # Pretty outcome labels and adjusted R².
