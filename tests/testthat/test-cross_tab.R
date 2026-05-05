@@ -770,4 +770,29 @@ test_that("cross_tab auto-renames internal Total/N margin columns on collision",
   expect_no_warning(
     cross_tab(df_yn, group, answer, percent = "column")
   )
+
+  # User-level "Values" collides with the row-identifier column.
+  # Without the fix, R's data.frame() auto-renamed the user's
+  # column to "Values.1" silently AND make_named_row() then
+  # overwrote the totals row's identifier label with the
+  # percentage value of the y-level (because both keyed on
+  # "Values"). Now the row-identifier is renamed to "Values_1"
+  # explicitly and the user's "Values" column carries the
+  # correct percentages.
+  df_values <- data.frame(
+    group = c("A", "A", "A", "B", "B", "B"),
+    answer = c("Yes", "Values", "Yes", "Values", "Yes", "Values")
+  )
+  expect_warning(
+    res3 <- cross_tab(df_values, group, answer, percent = "row"),
+    class = "spicy_renamed_column"
+  )
+  expect_true("Values" %in% names(res3))    # user's y-level data preserved
+  expect_true("Values_1" %in% names(res3))  # row identifier renamed
+  # User's "Values" column holds the % of "Values" answers per row.
+  expect_equal(res3$Values[res3$Values_1 == "A"], 33.3)
+  expect_equal(res3$Values[res3$Values_1 == "B"], 66.7)
+  # Row identifier column carries the x-levels and the "Total"
+  # summary label, untouched by the y-level data.
+  expect_equal(res3$Values_1, c("A", "B", "Total"))
 })

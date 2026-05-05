@@ -539,60 +539,85 @@ cross_tab <- function(
       round(tab_perc, digits),
       stringsAsFactors = FALSE
     )
+
+    # Resolve unique internal column names BEFORE prepending the
+    # row-identifier or appending margin columns. Three names are
+    # spicy-internal: "Values" (the row-identifier column, always
+    # added), "Total" (the margin column, added when styled and
+    # percent != "none"), and "N" (the sample-size column, added
+    # only when styled, percent = "row" and show_n = TRUE). When a
+    # y-variable level already occupies one of those names (e.g.
+    # "N" from a Y/N answer coding, "Total" from a literal "Total"
+    # category, "Values" from an unusual but possible y-level), the
+    # default name would silently overwrite the user's column or
+    # the row-identifier label. spicy auto-picks the first
+    # non-colliding alternative (`"Values_1"`, `"Total_1"`,
+    # `"N_1"`, then `_2`, `_3`, ...) so the user's data column is
+    # preserved intact and the function still produces a usable
+    # table. A single `spicy_renamed_column` warning at the end
+    # lists every rename that happened so the user can revert by
+    # renaming the conflicting level upstream.
+    y_level_cols <- names(df_out)
+    identifier_col <- make_unique_col_name("Values", y_level_cols)
+    total_col <- make_unique_col_name(
+      "Total",
+      c(y_level_cols, identifier_col)
+    )
+    n_col <- if (styled && percent == "row" && show_n) {
+      make_unique_col_name(
+        "N",
+        c(y_level_cols, identifier_col, total_col)
+      )
+    } else {
+      "N"
+    }
+
     df_out <- data.frame(
-      Values = rownames(df_out),
+      stats::setNames(list(rownames(df_out)), identifier_col),
       df_out,
       row.names = NULL,
       check.names = FALSE,
       stringsAsFactors = FALSE
     )
 
-    if (styled) {
-      # Resolve the names of the internal totals / N margin columns.
-      # When a y-variable level already uses one of those names
-      # (`"N"` from a Y/N coding, `"Total"` from a literal "Total"
-      # category), auto-pick a non-conflicting alternative
-      # (`"N_1"`, `"Total_1"`, ...) so the user's data column is
-      # preserved intact and the function still produces a usable
-      # table. A `spicy_renamed_column` warning surfaces the rename
-      # so the user can rename the conflicting level back to the
-      # default if they prefer.
-      total_col <- make_unique_col_name("Total", names(df_out))
-      n_col <- if (percent == "row" && show_n) {
-        make_unique_col_name("N", c(names(df_out), total_col))
-      } else {
-        "N"
-      }
-      renamed <- character()
-      if (total_col != "Total") {
-        renamed <- c(
-          renamed,
-          sprintf("\"Total\" (margin) -> \"%s\"", total_col)
-        )
-      }
-      if (
+    renamed <- character()
+    if (identifier_col != "Values") {
+      renamed <- c(
+        renamed,
+        sprintf("\"Values\" (row identifier) -> \"%s\"", identifier_col)
+      )
+    }
+    if (styled && total_col != "Total") {
+      renamed <- c(
+        renamed,
+        sprintf("\"Total\" (margin) -> \"%s\"", total_col)
+      )
+    }
+    if (
+      styled &&
         percent == "row" &&
-          show_n &&
-          n_col != "N"
-      ) {
-        renamed <- c(
-          renamed,
-          sprintf("\"N\" (sample size) -> \"%s\"", n_col)
-        )
-      }
-      if (length(renamed) > 0L) {
-        spicy_warn(
-          c(
-            sprintf(
-              "y-variable level(s) collide with the default cross_tab() margin column name(s); auto-renamed: %s.",
-              paste(renamed, collapse = ", ")
-            ),
-            "i" = "Rename the conflicting level (e.g. `factor(y, levels = c(\"Yes\", \"No\"))` instead of `c(\"Y\", \"N\")`) to restore the default labels."
+        show_n &&
+        n_col != "N"
+    ) {
+      renamed <- c(
+        renamed,
+        sprintf("\"N\" (sample size) -> \"%s\"", n_col)
+      )
+    }
+    if (length(renamed) > 0L) {
+      spicy_warn(
+        c(
+          sprintf(
+            "y-variable level(s) collide with cross_tab() reserved column name(s); auto-renamed: %s.",
+            paste(renamed, collapse = "; ")
           ),
-          class = "spicy_renamed_column"
-        )
-      }
+          "i" = "Rename the conflicting y-level(s) (e.g. `factor(y, levels = c(\"Yes\", \"No\"))` instead of `c(\"Y\", \"N\")`) to restore the default labels."
+        ),
+        class = "spicy_renamed_column"
+      )
+    }
 
+    if (styled) {
       if (percent == "column") {
         total_values <- colSums(tab_perc, na.rm = TRUE)
         n_values <- colSums(tab_full, na.rm = TRUE)
@@ -605,7 +630,7 @@ cross_tab <- function(
         total_row <- make_named_row(
           df_out,
           c(
-            list(Values = "Total"),
+            stats::setNames(list("Total"), identifier_col),
             as.list(round(total_values, digits)),
             stats::setNames(list(100), total_col)
           )
@@ -614,7 +639,7 @@ cross_tab <- function(
           make_named_row(
             df_out,
             c(
-              list(Values = "N"),
+              stats::setNames(list("N"), identifier_col),
               as.list(round(n_values, 0)),
               stats::setNames(list(sum(tab_full)), total_col)
             )
@@ -635,7 +660,7 @@ cross_tab <- function(
         names(col_perc) <- names(col_tot)
 
         total_values <- c(
-          list(Values = "Total"),
+          stats::setNames(list("Total"), identifier_col),
           as.list(col_perc),
           stats::setNames(list(100), total_col)
         )
@@ -653,7 +678,7 @@ cross_tab <- function(
         grand_total <- make_named_row(
           df_out,
           c(
-            list(Values = "Total"),
+            stats::setNames(list("Total"), identifier_col),
             as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE))
           )
         )
