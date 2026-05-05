@@ -53,11 +53,11 @@ code_book(
 - include_na:
 
   Logical. If `TRUE`, unique missing value markers (`<NA>`, `<NaN>`) are
-  appended at the end of the `Values` summary when present in the
-  variable. This applies to all variable types. Literal strings `"NA"`,
-  `"NaN"`, and `""` are quoted to distinguish them from missing markers.
-  If `FALSE` (the default), missing values are omitted from `Values` but
-  still counted in the `NAs` column.
+  explicitly appended at the end of the `Values` summary when present in
+  the variable. This applies to all variable types. Literal strings
+  `"NA"`, `"NaN"`, and `""` are quoted to distinguish them from missing
+  markers. If `FALSE` (the default), missing values are omitted from
+  `Values` but still counted in the `NAs` column.
 
 - title:
 
@@ -89,21 +89,14 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 ## Details
 
 - The interactive `datatable` supports column sorting, global searching,
-  and client-side export to various formats.
+  and client-side export (copy, print, CSV, Excel, PDF) directly from
+  the Viewer.
 
 - Variable selection uses the same tidyselect interface as
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md).
-
-- By default, factor variables document all declared levels, including
-  unused levels — appropriate for a schema-oriented codebook. This
-  differs from
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
-  which defaults to `"observed"` to summarize observed data only. Pass
-  `factor_levels = "observed"` to mirror
-  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)'s
-  default.
-
-- All exports occur client-side through the Viewer or Tab.
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md);
+  the underlying summary tibble is built by
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  with `tbl = TRUE`.
 
 ## Dependencies
 

@@ -6,20 +6,16 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Cross-tabulation — cross_tab"><meta name="description" content="Computes a two-way cross-tabulation with optional weights, grouping
-(including combinations of multiple variables), percentage displays,
-and inferential statistics.
-cross_tab() produces weighted or unweighted contingency tables with
-row or column percentages, optional grouping via by, and associated
-Chi-squared tests with an association measure and diagnostic information.
-Both x and y variables are required. For one-way frequency tables,
-use freq() instead."><meta property="og:description" content="Computes a two-way cross-tabulation with optional weights, grouping
-(including combinations of multiple variables), percentage displays,
-and inferential statistics.
-cross_tab() produces weighted or unweighted contingency tables with
-row or column percentages, optional grouping via by, and associated
-Chi-squared tests with an association measure and diagnostic information.
-Both x and y variables are required. For one-way frequency tables,
-use freq() instead."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+(including combinations of multiple variables via interaction()),
+row / column percentages, and inferential statistics (Chi-squared
+test with an APA-style association measure).
+Both x and y are required; for one-way frequency tables, use
+freq()."><meta property="og:description" content="Computes a two-way cross-tabulation with optional weights, grouping
+(including combinations of multiple variables via interaction()),
+row / column percentages, and inferential statistics (Chi-squared
+test with an APA-style association measure).
+Both x and y are required; for one-way frequency tables, use
+freq()."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -73,13 +69,11 @@ use freq() instead."><meta property="og:image" content="https://amaltawfik.githu
 
     <div class="ref-description section level2">
     <p>Computes a two-way cross-tabulation with optional weights, grouping
-(including combinations of multiple variables), percentage displays,
-and inferential statistics.</p>
-<p><code>cross_tab()</code> produces weighted or unweighted contingency tables with
-row or column percentages, optional grouping via <code>by</code>, and associated
-Chi-squared tests with an association measure and diagnostic information.</p>
-<p>Both <code>x</code> and <code>y</code> variables are required. For one-way frequency tables,
-use <code><a href="freq.html">freq()</a></code> instead.</p>
+(including combinations of multiple variables via <code><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction()</a></code>),
+row / column percentages, and inferential statistics (Chi-squared
+test with an APA-style association measure).</p>
+<p>Both <code>x</code> and <code>y</code> are required; for one-way frequency tables, use
+<code><a href="freq.html">freq()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -121,7 +115,9 @@ vector-based interface.</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>Column variable (unquoted). Mandatory; for one-way tables, use <code><a href="freq.html">freq()</a></code>.</p></dd>
+<dd><p>Column variable (unquoted). Required; the <code>NULL</code> default
+in the signature is a placeholder and triggers an error if left
+unset (use <code><a href="freq.html">freq()</a></code> for one-way tables).</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -139,8 +135,8 @@ If <code>TRUE</code>, rescales weights so total weighted N matches raw N.</p></d
 
 
 <dt id="arg-percent">percent<a class="anchor" aria-label="anchor" href="#arg-percent"></a></dt>
-<dd><p>One of <code>"none"</code> (the default), <code>"row"</code>, <code>"column"</code>.
-Unique abbreviations are accepted (e.g. <code>"n"</code>, <code>"r"</code>, <code>"c"</code>).</p></dd>
+<dd><p>One of <code>"none"</code> (the default), <code>"column"</code>, or <code>"row"</code>.
+Unique abbreviations are accepted (e.g. <code>"n"</code>, <code>"c"</code>, <code>"r"</code>).</p></dd>
 
 
 <dt id="arg-include-stats">include_stats<a class="anchor" aria-label="anchor" href="#arg-include-stats"></a></dt>
@@ -177,8 +173,9 @@ Defaults to <code>2000</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimals for cell values. Defaults to <code>1</code> for
-percentages, <code>0</code> for counts.</p></dd>
+<dd><p>Number of decimals for cell values. Defaults to
+<code>NULL</code>, which is resolved to <code>1</code> when <code>percent != "none"</code> and
+<code>0</code> when <code>percent = "none"</code> (counts are always integers).</p></dd>
 
 
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
@@ -208,8 +205,25 @@ matches the <code>p_digits</code> argument of the <code>table_*()</code> family.
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>data.frame</code>, list of data.frames, or <code>spicy_cross_table</code> object.
-When <code>by</code> is used, returns a <code>spicy_cross_table_list</code>.</p>
+    <p>Depends on <code>styled</code> and <code>by</code>:</p><ul><li><p><code>styled = TRUE</code>, no <code>by</code>: a <code>spicy_cross_table</code> object
+(a <code>data.frame</code> carrying rendering metadata as attributes:
+<code>title</code>, <code>digits</code>, <code>decimal_mark</code>, <code>n_row_idx</code>, <code>n_col_name</code>,
+and the inferential block when <code>include_stats = TRUE</code>).
+Printing dispatches to <code><a href="print.spicy_cross_table.html">print.spicy_cross_table()</a></code>.</p></li>
+<li><p><code>styled = TRUE</code>, <code>by</code> supplied: a <code>spicy_cross_table_list</code>,
+i.e. a named list of <code>spicy_cross_table</code> objects (one element
+per group level, named by that level). Printing dispatches to
+<code><a href="print.spicy_cross_table_list.html">print.spicy_cross_table_list()</a></code> which renders each table in
+turn separated by a blank line.</p></li>
+<li><p><code>styled = FALSE</code>: the same payload returned as a plain
+<code>data.frame</code> (or named list of <code>data.frame</code>s with <code>by</code>),
+stripped of the <code>spicy_*</code> classes for downstream programmatic
+use.</p></li>
+</ul><p>Cell columns are the levels of <code>y</code>; rows are the levels of <code>x</code>.
+When <code>percent != "none"</code>, the <code>N</code> column (or <code>N</code> row) is added
+according to <code>show_n</code>. When <code>include_stats = TRUE</code>, the result
+carries a Chi-squared row (statistic, df, <em>p</em>) and an
+association-measure row (estimate, optional CI via <code>assoc_ci</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="global-options">Global Options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>

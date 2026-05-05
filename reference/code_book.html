@@ -107,12 +107,12 @@ or reordered, but renaming selections is not supported.</p></dd>
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), displays a compact
-summary of the variable's values. For numeric, character, date/time,
-labelled, and factor variables, all unique non-missing values are shown
-when there are at most four; otherwise the first three values, an ellipsis
-(<code>...</code>), and the last value are shown. Values are sorted when appropriate
-(e.g., numeric, character, date).
+<dd><p>Logical. If <code>FALSE</code> (the default), displays a compact summary
+of the variable's values. For numeric, character, date/time, labelled, and
+factor variables, all unique non-missing values are shown when there are
+at most four; otherwise the first three values, an ellipsis (<code>...</code>), and
+the last value are shown. Values are sorted when appropriate (e.g.,
+numeric, character, date).
 For factors, <code>factor_levels</code> controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -122,11 +122,11 @@ If <code>TRUE</code>, all unique non-missing values are displayed.</p></dd>
 
 <dt id="arg-include-na">include_na<a class="anchor" aria-label="anchor" href="#arg-include-na"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, unique missing value markers
-(<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are appended at the end of the <code>Values</code> summary when
-present in the variable. This applies to all variable types. Literal
-strings <code>"NA"</code>, <code>"NaN"</code>, and <code>""</code> are quoted to distinguish them from
-missing markers. If <code>FALSE</code> (the default), missing values are omitted from
-<code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
+(<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are explicitly appended at the end of the <code>Values</code>
+summary when present in the variable. This applies to all variable types.
+Literal strings <code>"NA"</code>, <code>"NaN"</code>, and <code>""</code> are quoted to distinguish them
+from missing markers. If <code>FALSE</code> (the default), missing values are omitted
+from <code>Values</code> but still counted in the <code>NAs</code> column.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
@@ -157,15 +157,12 @@ levels present in the data, preserving factor level order.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
 
-<ul><li><p>The interactive <code>datatable</code> supports column sorting, global searching, and
-client-side export to various formats.</p></li>
-<li><p>Variable selection uses the same tidyselect interface as <code><a href="varlist.html">varlist()</a></code>.</p></li>
-<li><p>By default, factor variables document all declared levels, including
-unused levels — appropriate for a schema-oriented codebook. This differs
-from <code><a href="varlist.html">varlist()</a></code>, which defaults to <code>"observed"</code> to summarize observed
-data only. Pass <code>factor_levels = "observed"</code> to mirror <code><a href="varlist.html">varlist()</a></code>'s
-default.</p></li>
-<li><p>All exports occur client-side through the Viewer or Tab.</p></li>
+<ul><li><p>The interactive <code>datatable</code> supports column sorting, global
+searching, and client-side export (copy, print, CSV, Excel,
+PDF) directly from the Viewer.</p></li>
+<li><p>Variable selection uses the same tidyselect interface as
+<code><a href="varlist.html">varlist()</a></code>; the underlying summary tibble is built by
+<code><a href="varlist.html">varlist()</a></code> with <code>tbl = TRUE</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a></h2>

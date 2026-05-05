@@ -208,37 +208,29 @@ console and invisibly returns a <code>spicy_freq_table</code> object: the same
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function is designed to mimic common frequency procedures from
-statistical software such as SPSS or Stata, while integrating the
-flexibility of R's data structures.</p>
-<p>It automatically detects the type of input (<code>vector</code>, <code>factor</code>, or
-<code>labelled</code>) and applies appropriate transformations, including:</p><ul><li><p>Handling of labelled variables via <strong>labelled</strong> or <strong>haven</strong></p></li>
-<li><p>Optional recoding of specific values as missing (<code>na_val</code>)</p></li>
-<li><p>Optional weighting with a rescaling mechanism</p></li>
-<li><p>Support for cumulative percentages (<code>cum = TRUE</code>)</p></li>
-<li><p>Multiple display modes for labels via <code>labelled_levels</code></p></li>
-<li><p>Schema-vs-observed level display via <code>factor_levels</code></p></li>
-</ul><p>For factor and labelled inputs, the <code>factor_levels</code> argument
-controls whether declared-but-unobserved levels appear in the
-output. The default <code>"observed"</code> drops them (Stata <code>tab</code> behavior);
-<code>"all"</code> keeps them with <code>n = 0</code>, matching SPSS <code>FREQUENCIES</code> and
-<code><a href="code_book.html">code_book()</a></code>'s default. For schema-level inspection without
-computing frequencies, use <code><a href="varlist.html">varlist()</a></code> or <code><a href="code_book.html">code_book()</a></code> with
-<code>factor_levels = "all"</code>.</p>
-<p>When weighting is applied (<code>weights</code>), the frequencies and percentages are
-computed proportionally to the weights. The argument <code>rescale = TRUE</code>
-normalizes weights so their sum equals the unweighted sample size
-(<code>length(weights)</code>).</p>
-<p>Missing values in <code>weights</code> cause those observations to be dropped
-from the table entirely (with a warning), matching the behaviour of
-<code><a href="cross_tab.html">cross_tab()</a></code> in spicy 0.11.0+. With <code>rescale = TRUE</code>, the remaining
-(non-<code>NA</code>-weighted) weights are normalized so the total weighted N
-equals the count of non-<code>NA</code>-weighted rows. With <code>rescale = FALSE</code>,
-the total weighted N is the actual sum of non-<code>NA</code> weights.</p>
+    <p>Designed to mimic common frequency procedures from SPSS or Stata
+while integrating the flexibility of R's data structures. The
+input type (<code>vector</code>, <code>factor</code>, <code>labelled</code>) is auto-detected; see
+<code>@param labelled_levels</code> and <code>@param factor_levels</code> for the
+schema-vs-observed level controls, and <code>@param na_val</code> for
+optional sentinel-value recoding.</p>
+<p>Weighting (<code>weights</code>): frequencies and percentages are computed
+proportionally to the weights. Missing values in <code>weights</code> cause
+those observations to be dropped from the table entirely (with a
+warning), matching the behaviour of <code><a href="cross_tab.html">cross_tab()</a></code> in spicy
+0.11.0+. With <code>rescale = TRUE</code>, the remaining (non-<code>NA</code>-weighted)
+weights are normalised so the total weighted N equals the count
+of non-<code>NA</code>-weighted rows. With <code>rescale = FALSE</code>, the total
+weighted N is the actual sum of non-<code>NA</code> weights.</p>
+<p>For schema-level inspection without computing frequencies, use
+<code><a href="varlist.html">varlist()</a></code> or <code><a href="code_book.html">code_book()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="print.spicy_freq_table.html">print.spicy_freq_table()</a></code> for formatted printing.
+    <div class="dont-index"><p><code><a href="cross_tab.html">cross_tab()</a></code> for two-way cross-tabulations;
+<code><a href="table_categorical.html">table_categorical()</a></code> for multi-variable categorical summary
+tables; <code><a href="varlist.html">varlist()</a></code> / <code><a href="code_book.html">code_book()</a></code> for variable inspection;
+<code><a href="print.spicy_freq_table.html">print.spicy_freq_table()</a></code> for formatted printing;
 <code><a href="spicy_print_table.html">spicy_print_table()</a></code> for the underlying ASCII rendering engine.</p></div>
     </div>
 

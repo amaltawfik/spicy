@@ -1,17 +1,13 @@
 # Cross-tabulation
 
 Computes a two-way cross-tabulation with optional weights, grouping
-(including combinations of multiple variables), percentage displays, and
-inferential statistics.
+(including combinations of multiple variables via
+[`interaction()`](https://rdrr.io/r/base/interaction.html)), row /
+column percentages, and inferential statistics (Chi-squared test with an
+APA-style association measure).
 
-`cross_tab()` produces weighted or unweighted contingency tables with
-row or column percentages, optional grouping via `by`, and associated
-Chi-squared tests with an association measure and diagnostic
-information.
-
-Both `x` and `y` variables are required. For one-way frequency tables,
-use [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-instead.
+Both `x` and `y` are required; for one-way frequency tables, use
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
 
 ## Usage
 
@@ -52,8 +48,10 @@ cross_tab(
 
 - y:
 
-  Column variable (unquoted). Mandatory; for one-way tables, use
-  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+  Column variable (unquoted). Required; the `NULL` default in the
+  signature is a placeholder and triggers an error if left unset (use
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) for
+  one-way tables).
 
 - by:
 
@@ -71,8 +69,8 @@ cross_tab(
 
 - percent:
 
-  One of `"none"` (the default), `"row"`, `"column"`. Unique
-  abbreviations are accepted (e.g. `"n"`, `"r"`, `"c"`).
+  One of `"none"` (the default), `"column"`, or `"row"`. Unique
+  abbreviations are accepted (e.g. `"n"`, `"c"`, `"r"`).
 
 - include_stats:
 
@@ -108,8 +106,9 @@ cross_tab(
 
 - digits:
 
-  Number of decimals for cell values. Defaults to `1` for percentages,
-  `0` for counts.
+  Number of decimals for cell values. Defaults to `NULL`, which is
+  resolved to `1` when `percent != "none"` and `0` when
+  `percent = "none"` (counts are always integers).
 
 - styled:
 
@@ -137,8 +136,29 @@ cross_tab(
 
 ## Value
 
-A `data.frame`, list of data.frames, or `spicy_cross_table` object. When
-`by` is used, returns a `spicy_cross_table_list`.
+Depends on `styled` and `by`:
+
+- `styled = TRUE`, no `by`: a `spicy_cross_table` object (a `data.frame`
+  carrying rendering metadata as attributes: `title`, `digits`,
+  `decimal_mark`, `n_row_idx`, `n_col_name`, and the inferential block
+  when `include_stats = TRUE`). Printing dispatches to
+  [`print.spicy_cross_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md).
+
+- `styled = TRUE`, `by` supplied: a `spicy_cross_table_list`, i.e. a
+  named list of `spicy_cross_table` objects (one element per group
+  level, named by that level). Printing dispatches to
+  [`print.spicy_cross_table_list()`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table_list.md)
+  which renders each table in turn separated by a blank line.
+
+- `styled = FALSE`: the same payload returned as a plain `data.frame`
+  (or named list of `data.frame`s with `by`), stripped of the `spicy_*`
+  classes for downstream programmatic use.
+
+Cell columns are the levels of `y`; rows are the levels of `x`. When
+`percent != "none"`, the `N` column (or `N` row) is added according to
+`show_n`. When `include_stats = TRUE`, the result carries a Chi-squared
+row (statistic, df, *p*) and an association-measure row (estimate,
+optional CI via `assoc_ci`).
 
 ## Global Options
 
