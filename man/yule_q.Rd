@@ -33,10 +33,18 @@ contingency table.
 }
 \details{
 For a 2x2 table with cells \eqn{a, b, c, d}, Yule's Q is
-\eqn{Q = (ad - bc) / (ad + bc)}.
-It is equivalent to the Goodman-Kruskal Gamma for 2x2 tables.
-The asymptotic standard error is
+\eqn{Q = (ad - bc) / (ad + bc)}. It is equivalent to the
+Goodman-Kruskal Gamma for 2x2 tables. The asymptotic standard
+error is
 \eqn{SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}}.
+
+Edge cases: when \code{ad + bc = 0}, Q itself is undefined and the
+function returns \code{NA} with a \code{spicy_undefined_stat} warning.
+When any cell is zero (and \code{ad + bc > 0}), Q is well-defined
+but the SE formula divides by zero -- the point estimate is
+returned, and \code{se}, \code{ci_lower}, \code{ci_upper}, and \code{p_value} are
+all \code{NA}.
+
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }

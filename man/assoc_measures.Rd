@@ -26,10 +26,23 @@ result (default \code{3}).}
 }
 \value{
 A data frame with columns \code{measure}, \code{estimate}, \code{se},
-\code{ci_lower}, \code{ci_upper}, and \code{p_value}. For nominal measures
-(Cramer's V, Phi, Contingency Coef.), the p-value comes from
-the Pearson chi-squared test of independence. For all other
-measures, it is a Wald z-test of H0: measure = 0.
+\code{ci_lower}, \code{ci_upper}, and \code{p_value}. The \code{p_value} comes
+from two test families:
+\itemize{
+\item \strong{Pearson chi-squared test of independence} for
+Cramer's V, Phi, and the Contingency Coefficient (the
+three chi-squared-derived nominal measures). All three
+carry the same chi-squared \emph{p}-value on a given table.
+\item \strong{Wald z-test of H0: measure = 0} for every other
+measure: Yule's Q, Lambda, Goodman-Kruskal's Tau, the
+Uncertainty Coefficient, and all ordinal measures
+(Gamma, Tau-b, Tau-c, Somers' D).
+}
+Direction-dependent measures (\code{lambda_gk()},
+\code{goodman_kruskal_tau()}, \code{uncertainty_coef()}, \code{somers_d()})
+contribute one row per direction (\code{symmetric} / \code{R|C} / \code{C|R}
+where applicable), so the output has more rows than the
+number of helper functions.
 }
 \description{
 \code{assoc_measures()} computes a range of association measures for a

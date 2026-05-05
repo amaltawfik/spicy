@@ -44,14 +44,18 @@ The p-value tests H0: U = 0 (Wald z-test).
 information entropy.
 }
 \details{
-The uncertainty coefficient measures association using
-Shannon entropy.
-For \code{direction = "row"}:
-\eqn{U = (H_X + H_Y - H_{XY}) / H_X}, where \eqn{H_X},
-\eqn{H_Y} are the marginal entropies and \eqn{H_{XY}} is
-the joint entropy.
-The symmetric version is
+The uncertainty coefficient measures association using Shannon
+entropy. Let \eqn{H_X} and \eqn{H_Y} be the marginal entropies
+of the \strong{row} and \strong{column} variables respectively, and
+\eqn{H_{XY}} the joint entropy.
+\itemize{
+\item \code{direction = "row"} (column predicts row):
+\eqn{U = (H_X + H_Y - H_{XY}) / H_X}.
+\item \code{direction = "column"} (row predicts column):
+\eqn{U = (H_X + H_Y - H_{XY}) / H_Y}.
+\item \code{direction = "symmetric"}:
 \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
+}
 
 The entropy terms use the standard mathematical convention
 \eqn{0 \log 0 = 0}, matching SPSS / PSPP \code{CROSSTABS} and the

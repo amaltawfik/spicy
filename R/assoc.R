@@ -465,10 +465,18 @@ contingency_coef <- function(
 #'
 #' @details
 #' For a 2x2 table with cells \eqn{a, b, c, d}, Yule's Q is
-#' \eqn{Q = (ad - bc) / (ad + bc)}.
-#' It is equivalent to the Goodman-Kruskal Gamma for 2x2 tables.
-#' The asymptotic standard error is
+#' \eqn{Q = (ad - bc) / (ad + bc)}. It is equivalent to the
+#' Goodman-Kruskal Gamma for 2x2 tables. The asymptotic standard
+#' error is
 #' \eqn{SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}}.
+#'
+#' Edge cases: when `ad + bc = 0`, Q itself is undefined and the
+#' function returns `NA` with a `spicy_undefined_stat` warning.
+#' When any cell is zero (and `ad + bc > 0`), Q is well-defined
+#' but the SE formula divides by zero -- the point estimate is
+#' returned, and `se`, `ci_lower`, `ci_upper`, and `p_value` are
+#' all `NA`.
+#'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -693,7 +701,12 @@ lambda_gk <- function(
 #' @details
 #' Unlike [lambda_gk()], Goodman-Kruskal's Tau uses all cell
 #' frequencies rather than only the modal categories, making it
-#' more sensitive to association patterns where lambda may be zero.
+#' more sensitive to association patterns where lambda may be
+#' zero. Goodman-Kruskal's Tau is intrinsically directional and
+#' has no canonical symmetric form (unlike [lambda_gk()] or
+#' [uncertainty_coef()]); only `"row"` and `"column"` are
+#' supported.
+#'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -846,14 +859,18 @@ goodman_kruskal_tau <- function(
 #'   The p-value tests H0: U = 0 (Wald z-test).
 #'
 #' @details
-#' The uncertainty coefficient measures association using
-#' Shannon entropy.
-#' For `direction = "row"`:
-#' \eqn{U = (H_X + H_Y - H_{XY}) / H_X}, where \eqn{H_X},
-#' \eqn{H_Y} are the marginal entropies and \eqn{H_{XY}} is
-#' the joint entropy.
-#' The symmetric version is
-#' \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
+#' The uncertainty coefficient measures association using Shannon
+#' entropy. Let \eqn{H_X} and \eqn{H_Y} be the marginal entropies
+#' of the **row** and **column** variables respectively, and
+#' \eqn{H_{XY}} the joint entropy.
+#' \itemize{
+#'   \item `direction = "row"` (column predicts row):
+#'     \eqn{U = (H_X + H_Y - H_{XY}) / H_X}.
+#'   \item `direction = "column"` (row predicts column):
+#'     \eqn{U = (H_X + H_Y - H_{XY}) / H_Y}.
+#'   \item `direction = "symmetric"`:
+#'     \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
+#' }
 #'
 #' The entropy terms use the standard mathematical convention
 #' \eqn{0 \log 0 = 0}, matching SPSS / PSPP `CROSSTABS` and the
@@ -1375,10 +1392,23 @@ somers_d <- function(
 #'   result (default `3`).
 #'
 #' @return A data frame with columns `measure`, `estimate`, `se`,
-#'   `ci_lower`, `ci_upper`, and `p_value`. For nominal measures
-#'   (Cramer's V, Phi, Contingency Coef.), the p-value comes from
-#'   the Pearson chi-squared test of independence. For all other
-#'   measures, it is a Wald z-test of H0: measure = 0.
+#'   `ci_lower`, `ci_upper`, and `p_value`. The `p_value` comes
+#'   from two test families:
+#'   \itemize{
+#'     \item **Pearson chi-squared test of independence** for
+#'       Cramer's V, Phi, and the Contingency Coefficient (the
+#'       three chi-squared-derived nominal measures). All three
+#'       carry the same chi-squared *p*-value on a given table.
+#'     \item **Wald z-test of H0: measure = 0** for every other
+#'       measure: Yule's Q, Lambda, Goodman-Kruskal's Tau, the
+#'       Uncertainty Coefficient, and all ordinal measures
+#'       (Gamma, Tau-b, Tau-c, Somers' D).
+#'   }
+#'   Direction-dependent measures (`lambda_gk()`,
+#'   `goodman_kruskal_tau()`, `uncertainty_coef()`, `somers_d()`)
+#'   contribute one row per direction (`symmetric` / `R|C` / `C|R`
+#'   where applicable), so the output has more rows than the
+#'   number of helper functions.
 #'
 #' @details
 #' `type = "all"` (the default) returns all nominal and ordinal

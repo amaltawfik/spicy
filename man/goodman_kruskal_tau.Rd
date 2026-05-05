@@ -46,7 +46,12 @@ variables.
 \details{
 Unlike \code{\link[=lambda_gk]{lambda_gk()}}, Goodman-Kruskal's Tau uses all cell
 frequencies rather than only the modal categories, making it
-more sensitive to association patterns where lambda may be zero.
+more sensitive to association patterns where lambda may be
+zero. Goodman-Kruskal's Tau is intrinsically directional and
+has no canonical symmetric form (unlike \code{\link[=lambda_gk]{lambda_gk()}} or
+\code{\link[=uncertainty_coef]{uncertainty_coef()}}); only \code{"row"} and \code{"column"} are
+supported.
+
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }
