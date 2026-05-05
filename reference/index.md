@@ -103,7 +103,7 @@
 - [`print(`*`<spicy_freq_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
   :
 
-  Styled print method for
+  Print method for
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
 
