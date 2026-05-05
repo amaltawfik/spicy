@@ -40,10 +40,11 @@
 ## Internal
 
 * `R/table_continuous_lm.R` (3394 lines) split into four files on
-  a strict shared / specific naming convention, so the upcoming
-  `table_regression()` (planned for 0.13) can reuse the
-  inferential backbone without duplication. No behaviour change,
-  no rename, no signature change; only file moves.
+  a strict shared / specific naming convention, so the
+  inferential backbone (vcov family, single-coef inference, model
+  stats, noncentral effect-size CIs) can be reused by future
+  regression-table builders without duplication. No behaviour
+  change, no rename, no signature change; only file moves.
 
   * `R/lm_compute.R` (shared) — vcov family (classical, `HC*`,
     `CR*`, bootstrap, jackknife), single-coef and Wald inference,
@@ -411,7 +412,6 @@
 * `freq()` now dispatches printing correctly via S3.
 * Removed unused `collapse` and `stringi` from `Imports`.
 
-
 # spicy 0.4.2
 
 * `cross_tab()` hardening: improved vector-mode detection (including labelled vectors), stricter weight validation, safer rescaling, and clearer early errors (e.g., explicit `y = NULL`).
@@ -423,7 +423,6 @@
 * `cramer_v()` now returns `NA` with warning for degenerate tables.
 * Dependency optimization: `DT` and `clipr` moved to `Suggests`; optional runtime checks added in `code_book()` and `copy_clipboard()`.
 * Tests expanded with regression coverage for all the above edge cases.
-
 
 # spicy 0.4.1
 
@@ -452,7 +451,6 @@
 * Minor cosmetic improvement: ASCII table output no longer includes a closing
   bottom rule by default.
 
-
 # spicy 0.3.0
 
 * New function `code_book()`, which generates a comprehensive variable
@@ -479,10 +477,10 @@
 * Introduces a collection of tools for variable inspection, descriptive
   summaries, and data exploration.
 * Provides functions to:
-  - Extract variable metadata and display compact summaries (`varlist()`).
-  - Compute frequency tables (`freq()`), cross-tabulations (`cross_tab()`),
+  * Extract variable metadata and display compact summaries (`varlist()`).
+  * Compute frequency tables (`freq()`), cross-tabulations (`cross_tab()`),
     and Cramer's V for categorical associations (`cramer_v()`).
-  - Generate descriptive statistics such as means (`mean_n()`), sums
+  * Generate descriptive statistics such as means (`mean_n()`), sums
     (`sum_n()`), and counts (`count_n()`) with automatic handling of
     missing data.
-  - Copy data (`copy_clipboard()`) directly to the clipboard for quick export.
+  * Copy data (`copy_clipboard()`) directly to the clipboard for quick export.
