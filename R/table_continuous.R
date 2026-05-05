@@ -19,20 +19,21 @@
 #' `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
 #'
 #' This is the descriptive companion to [table_continuous_lm()]. The
-#' two functions share their argument vocabulary (`select`, `by`,
-#' `weights` / `vcov` exclusively in the model variant, `effect_size`,
-#' `ci_level`, `digits`, `p_digits`, `decimal_mark`, `align`, ...) so a
-#' descriptive analysis and a model-based analysis of the same data
-#' use the same table layout, decimal mark, and reporting precision.
+#' two functions share their layout, alignment, and reporting precision
+#' so descriptive and model-based analyses of the same data look
+#' uniform side by side. Use [table_continuous_lm()] when you need
+#' robust SE, weighted contrasts, fitted means, or covariate
+#' adjustment.
 #'
 #' @param data A `data.frame`.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax or a character vector of column names (default:
 #'   `tidyselect::everything()`). If `regex = TRUE`, provide a regular
 #'   expression pattern (character string).
-#' @param by Optional grouping column. Accepts an unquoted column name or
-#'   a single character column name. The column does not need to be
-#'   numeric.
+#' @param by Optional grouping column. Accepts an unquoted column name
+#'   or a single character column name. Coerced to factor for
+#'   grouping; non-numeric grouping columns (factor, character,
+#'   logical) are supported as-is.
 #' @param exclude Columns to exclude. Supports tidyselect syntax and
 #'   character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect
@@ -76,7 +77,7 @@
 #'     `test` and group count -- Hedges' *g* (parametric, 2 groups),
 #'     eta-squared (parametric, 3+ groups), rank-biserial *r*
 #'     (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
-#'     groups). This is the historical behaviour of `effect_size = TRUE`.
+#'     groups).
 #'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardised mean
 #'     difference, 2 groups, parametric). CI via the Hedges & Olkin
 #'     normal approximation.
@@ -98,10 +99,10 @@
 #'   triggers an actionable error. Ignored when `by` is not used.
 #' @param effect_size_ci Logical. If `TRUE`, appends the confidence
 #'   interval of the effect size in brackets (e.g.,
-#'   `g = 0.45 [0.22, 0.68]`). Implies a non-`"none"` effect size; if
-#'   `effect_size = "none"` is left unchanged, this argument is
-#'   ignored with a warning, and the function falls back to
-#'   `effect_size = "auto"`. Defaults to `FALSE`.
+#'   `g = 0.45 [0.22, 0.68]`). Implies a non-`"none"` effect size: if
+#'   left at the default `effect_size = "none"`, the function warns
+#'   and promotes `effect_size` to `"auto"` so the requested CI can
+#'   be shown. Defaults to `FALSE`.
 #' @param ci Logical. If `TRUE`, includes the mean confidence
 #'   interval columns (`<level>% CI LL` / `<level>% CI UL`) and their
 #'   spanner in the printed ASCII table and in every rendered output
@@ -217,80 +218,40 @@
 #' # Tests
 #'
 #' The omnibus test is computed only when `by` is supplied and at
-#' least two groups have two or more observations. Choice driven by
-#' `test`:
-#' \itemize{
-#'   \item `"welch"` (default): Welch *t*-test for two groups
-#'     (`stats::t.test(var.equal = FALSE)`); Welch one-way ANOVA for
-#'     three or more (`stats::oneway.test(var.equal = FALSE)`). Does
-#'     not assume equal variances.
-#'   \item `"student"`: Student *t*-test (`var.equal = TRUE`) /
-#'     classical ANOVA (`stats::oneway.test(var.equal = TRUE)`).
-#'   \item `"nonparametric"`: Wilcoxon rank-sum / Mann-Whitney *U*
-#'     for two groups (`stats::wilcox.test`); Kruskal-Wallis *H* for
-#'     three or more (`stats::kruskal.test`).
-#' }
+#' least two groups remain after dropping `NA`s, with every group
+#' contributing at least two observations. Choice of test family is
+#' driven by `test` (see the `@param` entry for the full dispatch
+#' and the underlying `stats::` functions called).
 #'
 #' For model-based contrasts (heteroskedasticity-consistent SE,
-#' cluster-robust SE, weighted contrasts, fitted means, etc.), use
-#' [table_continuous_lm()].
+#' cluster-robust SE, weighted contrasts, fitted means, covariate
+#' adjustment), use [table_continuous_lm()].
 #'
 #' # Effect sizes
 #'
-#' Effect size is selected via `effect_size`. The default is `"none"`
-#' (no column). `"auto"` mirrors the historical `effect_size = TRUE`
-#' behaviour and chooses the canonical measure for the active
-#' (`test`, `n_groups`) combination:
-#' \itemize{
-#'   \item Parametric, 2 groups -> Hedges' *g* (Hedges & Olkin 1985).
-#'   \item Parametric, 3+ groups -> Eta-squared (\eqn{\eta^2}).
-#'   \item Nonparametric, 2 groups -> Rank-biserial *r*.
-#'   \item Nonparametric, 3+ groups -> Epsilon-squared
-#'     (\eqn{\varepsilon^2}).
-#' }
-#' Explicit choices (`"hedges_g"`, `"eta_sq"`, `"r_rb"`,
-#' `"epsilon_sq"`) are validated against (`test`, `n_groups`); an
-#' incompatible request triggers a clear error rather than a silent
-#' fallback. The model-based companion [table_continuous_lm()] adds
-#' Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}, all
-#' derived from the fitted (possibly weighted) `lm()`. CIs are
-#' available via `effect_size_ci = TRUE`: noncentral *F* inversion
-#' for \eqn{\eta^2}, Hedges-Olkin normal approximation for *g*,
-#' Fisher *z*-transform for *r*, and percentile bootstrap (2 000
-#' replicates) for \eqn{\varepsilon^2}.
+#' See `@param effect_size` for the dispatch table (canonical
+#' measure for each (`test`, `n_groups`) combination) and the
+#' validation rules applied to explicit requests.
+#'
+#' Confidence intervals (enabled with `effect_size_ci = TRUE`) use
+#' noncentral *F* inversion for \eqn{\eta^2}, the Hedges-Olkin
+#' normal approximation for *g*, the Fisher *z*-transform for *r*,
+#' and percentile bootstrap (2,000 replicates) for
+#' \eqn{\varepsilon^2}.
+#'
+#' For Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}
+#' (derived from a fitted, possibly weighted `lm()`), use the
+#' model-based companion [table_continuous_lm()].
 #'
 #' # Display conventions
 #'
-#' By default (`align = "decimal"`) numeric columns are aligned on
-#' the decimal mark, the standard scientific-publication convention
-#' used by SPSS, SAS, LaTeX `siunitx`, and the native primitives of
-#' [gt::cols_align_decimal()] / `tinytable::style_tt(align = "d")`.
-#' For engines without a native primitive (`flextable`, `word`,
-#' `clipboard`, ASCII print), values are pre-padded with leading and
-#' trailing spaces so dots line up vertically; `flextable`/`word`
-#' additionally use a monospace font in the body. Pass
-#' `align = "auto"` to revert to the legacy per-column rule (centre
-#' for the descriptive columns, right for `n` and `p`).
-#'
-#' *p*-values are formatted with `p_digits` decimal places (default
-#' 3, the APA standard). The threshold below which the column shows
-#' `<.001` is `10^{-p_digits}`; setting `p_digits = 4` shifts both
-#' the displayed precision and the threshold accordingly. Leading
-#' zeros on *p* are always stripped (`.045`, not `0.045`).
+#' Decimal alignment, *p*-value formatting, and required suggested
+#' packages per output engine are documented under `@param align`,
+#' `@param p_digits`, and `@param output` respectively.
 #'
 #' Non-numeric columns are silently dropped (set `verbose = TRUE` to
-#' see which columns were excluded). When a single constant column is
+#' see which columns were excluded). When a constant column is
 #' passed, SD and CI are shown as `"--"` in the ASCII table.
-#'
-#' Optional output engines require suggested packages:
-#' \itemize{
-#'   \item \pkg{tinytable} for `output = "tinytable"`
-#'   \item \pkg{gt} for `output = "gt"`
-#'   \item \pkg{flextable} for `output = "flextable"`
-#'   \item \pkg{flextable} + \pkg{officer} for `output = "word"`
-#'   \item \pkg{openxlsx2} for `output = "excel"`
-#'   \item \pkg{clipr} for `output = "clipboard"`
-#' }
 #'
 #' @family spicy tables
 #' @seealso [table_continuous_lm()] for the model-based companion
@@ -371,9 +332,9 @@
 #' #   table_continuous(sochealth,
 #' #                    select = c(bmi, wellbeing_score),
 #' #                    by = sex)
-#' # only `output` changes. Assign to a variable to avoid the
-#' # console-friendly text fallback that some engines fall back to
-#' # when printed directly in `?` help.
+#' # only `output` changes. Assign each result to a variable -- some
+#' # engines auto-print as a console-friendly text fallback inside
+#' # the `?` help viewer.
 #'
 #' # Wide / long data.frame (synonyms): one row per (variable x group).
 #' table_continuous(

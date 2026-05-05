@@ -41,9 +41,10 @@ syntax or a character vector of column names (default:
 \code{tidyselect::everything()}). If \code{regex = TRUE}, provide a regular
 expression pattern (character string).}
 
-\item{by}{Optional grouping column. Accepts an unquoted column name or
-a single character column name. The column does not need to be
-numeric.}
+\item{by}{Optional grouping column. Accepts an unquoted column name
+or a single character column name. Coerced to factor for
+grouping; non-numeric grouping columns (factor, character,
+logical) are supported as-is.}
 
 \item{exclude}{Columns to exclude. Supports tidyselect syntax and
 character vectors of column names.}
@@ -97,7 +98,7 @@ outputs. One of:
 \code{test} and group count -- Hedges' \emph{g} (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial \emph{r}
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
-groups). This is the historical behaviour of \code{effect_size = TRUE}.
+groups).
 \item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardised mean
 difference, 2 groups, parametric). CI via the Hedges & Olkin
 normal approximation.
@@ -121,10 +122,10 @@ triggers an actionable error. Ignored when \code{by} is not used.}
 
 \item{effect_size_ci}{Logical. If \code{TRUE}, appends the confidence
 interval of the effect size in brackets (e.g.,
-\code{g = 0.45 [0.22, 0.68]}). Implies a non-\code{"none"} effect size; if
-\code{effect_size = "none"} is left unchanged, this argument is
-ignored with a warning, and the function falls back to
-\code{effect_size = "auto"}. Defaults to \code{FALSE}.}
+\code{g = 0.45 [0.22, 0.68]}). Implies a non-\code{"none"} effect size: if
+left at the default \code{effect_size = "none"}, the function warns
+and promotes \code{effect_size} to \code{"auto"} so the requested CI can
+be shown. Defaults to \code{FALSE}.}
 
 \item{ci}{Logical. If \code{TRUE}, includes the mean confidence
 interval columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) and their
@@ -274,88 +275,48 @@ Details), or publication-ready tables (\code{"tinytable"}, \code{"gt"},
 \code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}).
 
 This is the descriptive companion to \code{\link[=table_continuous_lm]{table_continuous_lm()}}. The
-two functions share their argument vocabulary (\code{select}, \code{by},
-\code{weights} / \code{vcov} exclusively in the model variant, \code{effect_size},
-\code{ci_level}, \code{digits}, \code{p_digits}, \code{decimal_mark}, \code{align}, ...) so a
-descriptive analysis and a model-based analysis of the same data
-use the same table layout, decimal mark, and reporting precision.
+two functions share their layout, alignment, and reporting precision
+so descriptive and model-based analyses of the same data look
+uniform side by side. Use \code{\link[=table_continuous_lm]{table_continuous_lm()}} when you need
+robust SE, weighted contrasts, fitted means, or covariate
+adjustment.
 }
 \section{Tests}{
 The omnibus test is computed only when \code{by} is supplied and at
-least two groups have two or more observations. Choice driven by
-\code{test}:
-\itemize{
-\item \code{"welch"} (default): Welch \emph{t}-test for two groups
-(\code{stats::t.test(var.equal = FALSE)}); Welch one-way ANOVA for
-three or more (\code{stats::oneway.test(var.equal = FALSE)}). Does
-not assume equal variances.
-\item \code{"student"}: Student \emph{t}-test (\code{var.equal = TRUE}) /
-classical ANOVA (\code{stats::oneway.test(var.equal = TRUE)}).
-\item \code{"nonparametric"}: Wilcoxon rank-sum / Mann-Whitney \emph{U}
-for two groups (\code{stats::wilcox.test}); Kruskal-Wallis \emph{H} for
-three or more (\code{stats::kruskal.test}).
-}
+least two groups remain after dropping \code{NA}s, with every group
+contributing at least two observations. Choice of test family is
+driven by \code{test} (see the \verb{@param} entry for the full dispatch
+and the underlying \verb{stats::} functions called).
 
 For model-based contrasts (heteroskedasticity-consistent SE,
-cluster-robust SE, weighted contrasts, fitted means, etc.), use
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}.
+cluster-robust SE, weighted contrasts, fitted means, covariate
+adjustment), use \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 }
 
 \section{Effect sizes}{
-Effect size is selected via \code{effect_size}. The default is \code{"none"}
-(no column). \code{"auto"} mirrors the historical \code{effect_size = TRUE}
-behaviour and chooses the canonical measure for the active
-(\code{test}, \code{n_groups}) combination:
-\itemize{
-\item Parametric, 2 groups -> Hedges' \emph{g} (Hedges & Olkin 1985).
-\item Parametric, 3+ groups -> Eta-squared (\eqn{\eta^2}).
-\item Nonparametric, 2 groups -> Rank-biserial \emph{r}.
-\item Nonparametric, 3+ groups -> Epsilon-squared
-(\eqn{\varepsilon^2}).
-}
-Explicit choices (\code{"hedges_g"}, \code{"eta_sq"}, \code{"r_rb"},
-\code{"epsilon_sq"}) are validated against (\code{test}, \code{n_groups}); an
-incompatible request triggers a clear error rather than a silent
-fallback. The model-based companion \code{\link[=table_continuous_lm]{table_continuous_lm()}} adds
-Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}, all
-derived from the fitted (possibly weighted) \code{lm()}. CIs are
-available via \code{effect_size_ci = TRUE}: noncentral \emph{F} inversion
-for \eqn{\eta^2}, Hedges-Olkin normal approximation for \emph{g},
-Fisher \emph{z}-transform for \emph{r}, and percentile bootstrap (2 000
-replicates) for \eqn{\varepsilon^2}.
+See \verb{@param effect_size} for the dispatch table (canonical
+measure for each (\code{test}, \code{n_groups}) combination) and the
+validation rules applied to explicit requests.
+
+Confidence intervals (enabled with \code{effect_size_ci = TRUE}) use
+noncentral \emph{F} inversion for \eqn{\eta^2}, the Hedges-Olkin
+normal approximation for \emph{g}, the Fisher \emph{z}-transform for \emph{r},
+and percentile bootstrap (2,000 replicates) for
+\eqn{\varepsilon^2}.
+
+For Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}
+(derived from a fitted, possibly weighted \code{lm()}), use the
+model-based companion \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 }
 
 \section{Display conventions}{
-By default (\code{align = "decimal"}) numeric columns are aligned on
-the decimal mark, the standard scientific-publication convention
-used by SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
-\code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} / \code{tinytable::style_tt(align = "d")}.
-For engines without a native primitive (\code{flextable}, \code{word},
-\code{clipboard}, ASCII print), values are pre-padded with leading and
-trailing spaces so dots line up vertically; \code{flextable}/\code{word}
-additionally use a monospace font in the body. Pass
-\code{align = "auto"} to revert to the legacy per-column rule (centre
-for the descriptive columns, right for \code{n} and \code{p}).
-
-\emph{p}-values are formatted with \code{p_digits} decimal places (default
-3, the APA standard). The threshold below which the column shows
-\verb{<.001} is \code{10^{-p_digits}}; setting \code{p_digits = 4} shifts both
-the displayed precision and the threshold accordingly. Leading
-zeros on \emph{p} are always stripped (\code{.045}, not \code{0.045}).
+Decimal alignment, \emph{p}-value formatting, and required suggested
+packages per output engine are documented under \verb{@param align},
+\verb{@param p_digits}, and \verb{@param output} respectively.
 
 Non-numeric columns are silently dropped (set \code{verbose = TRUE} to
-see which columns were excluded). When a single constant column is
+see which columns were excluded). When a constant column is
 passed, SD and CI are shown as \code{"--"} in the ASCII table.
-
-Optional output engines require suggested packages:
-\itemize{
-\item \pkg{tinytable} for \code{output = "tinytable"}
-\item \pkg{gt} for \code{output = "gt"}
-\item \pkg{flextable} for \code{output = "flextable"}
-\item \pkg{flextable} + \pkg{officer} for \code{output = "word"}
-\item \pkg{openxlsx2} for \code{output = "excel"}
-\item \pkg{clipr} for \code{output = "clipboard"}
-}
 }
 
 \examples{
@@ -429,9 +390,9 @@ table_continuous(
 #   table_continuous(sochealth,
 #                    select = c(bmi, wellbeing_score),
 #                    by = sex)
-# only `output` changes. Assign to a variable to avoid the
-# console-friendly text fallback that some engines fall back to
-# when printed directly in `?` help.
+# only `output` changes. Assign each result to a variable -- some
+# engines auto-print as a console-friendly text fallback inside
+# the `?` help viewer.
 
 # Wide / long data.frame (synonyms): one row per (variable x group).
 table_continuous(

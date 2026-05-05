@@ -96,8 +96,13 @@ If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}.}
 
-\item{p_digits}{Number of digits for p-values (except \verb{< .001}).
-Defaults to \code{3}.}
+\item{p_digits}{Integer >= 1. Number of decimal places used to
+render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
+Publication Manual standard). Both the displayed precision and
+the small-\emph{p} threshold derive from this argument: \code{p_digits = 3}
+prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
+\verb{<.0001}. Leading zeros are always stripped, following APA
+convention.}
 
 \item{v_digits}{Number of digits for the association measure. Defaults
 to \code{2}.}
@@ -245,15 +250,14 @@ table (\code{"default"}), a wide or long numeric \code{data.frame}
 }
 \section{Tests}{
 When \code{by} is used, each selected variable is cross-tabulated
-against the grouping variable with \code{\link[=cross_tab]{cross_tab()}}. The omnibus
-chi-squared test (with optional Yates continuity correction or
-Monte Carlo \emph{p}-value, see \code{correct} / \code{simulate_p}) is computed
-and reported in the \code{p} column. The chosen association measure
-(\code{assoc_measure}, with \code{"auto"} selecting Cramer's V for nominal
-variables and Kendall's Tau-b when both are ordered) is reported
-alongside, with optional CI via \code{assoc_ci}. Without \code{by}, the
-table reports the marginal frequency distribution of each variable
-with no inferential statistics.
+against the grouping variable with \code{\link[=cross_tab]{cross_tab()}} and the omnibus
+chi-squared \emph{p}-value is reported in the \code{p} column. See
+\verb{@param correct} / \code{simulate_p} to switch on Yates' continuity
+correction or Monte Carlo \emph{p}-values, and \verb{@param assoc_measure}
+for the per-row dispatch table used by \code{"auto"} (2x2 -> Phi,
+both ordered -> Kendall's Tau-b, otherwise Cramer's V). Without
+\code{by}, the table reports the marginal frequency distribution of
+each variable with no inferential statistics.
 
 For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
@@ -262,28 +266,9 @@ For descriptive (empirical) comparisons on continuous outcomes, see
 }
 
 \section{Display conventions}{
-By default (\code{align = "decimal"}) numeric columns are aligned on
-the decimal mark, the standard scientific-publication convention
-used by SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
-\code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} / \code{tinytable::style_tt(align = "d")}.
-For the printed ASCII table the alignment is achieved by padding
-numeric cells with leading and trailing spaces so dots line up
-vertically. Pass \code{align = "auto"} to revert to the legacy uniform
-right-alignment used in spicy < 0.11.0.
-
-\emph{p}-values are formatted with \code{p_digits} decimal places (default
-3, the APA standard). Leading zeros on \emph{p} are always stripped
-(\code{.045}, not \code{0.045}).
-
-Optional output engines require suggested packages:
-\itemize{
-\item \pkg{tinytable} for \code{output = "tinytable"}
-\item \pkg{gt} for \code{output = "gt"}
-\item \pkg{flextable} for \code{output = "flextable"}
-\item \pkg{flextable} + \pkg{officer} for \code{output = "word"}
-\item \pkg{openxlsx2} for \code{output = "excel"}
-\item \pkg{clipr} for \code{output = "clipboard"}
-}
+Decimal alignment, \emph{p}-value formatting, and required suggested
+packages per output engine are documented under \verb{@param align},
+\verb{@param p_digits}, and \verb{@param output} respectively.
 }
 
 \examples{
@@ -369,9 +354,9 @@ table_categorical(
 #   table_categorical(sochealth,
 #                     select = c(smoking, physical_activity),
 #                     by = sex)
-# only `output` changes. Assign to a variable to avoid the
-# console-friendly text fallback that some engines fall back to
-# when printed directly in `?` help.
+# only `output` changes. Assign each result to a variable -- some
+# engines auto-print as a console-friendly text fallback inside
+# the `?` help viewer.
 
 # Wide data.frame (one row per modality).
 table_categorical(
