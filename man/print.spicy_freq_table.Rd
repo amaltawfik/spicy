@@ -2,77 +2,25 @@
 % Please edit documentation in R/freq_print.R
 \name{print.spicy_freq_table}
 \alias{print.spicy_freq_table}
-\title{Styled print method for \code{freq()} tables}
+\title{Print method for \code{freq()} tables}
 \usage{
 \method{print}{spicy_freq_table}(x, ...)
 }
 \arguments{
-\item{x}{A \code{data.frame} returned by \code{\link[=freq]{freq()}} with attached attributes:
-\itemize{
-\item \code{"digits"}: number of decimal digits to display
-\item \code{"data_name"}: name of the source dataset
-\item \code{"var_name"}: name of the variable
-\item \code{"var_label"}: variable label, if defined
-\item \code{"class_name"}: original class of the variable
-\item \code{"weighted"}, \code{"rescaled"}, \code{"weight_var"}: weighting metadata
-}}
+\item{x}{A \code{data.frame} of class \code{"spicy_freq_table"} as returned
+by \code{\link[=freq]{freq()}} (with the default \code{styled = TRUE}). Rendering
+metadata is read from attributes set by \code{freq()}.}
 
-\item{...}{Additional arguments (ignored, required for S3 method compatibility)}
+\item{...}{Additional arguments (currently ignored).}
 }
 \value{
-Invisibly returns \code{x} after printing the formatted table.
+Invisibly returns \code{x}.
 }
 \description{
-Internal print method used by \code{\link[=freq]{freq()}} to display a styled, spicy-formatted
-frequency table in the console.
-It formats valid, missing, and total rows; handles cumulative and valid
-percentages; and appends a labeled footer including metadata such as
-variable label, class, dataset name, and weighting information.
-}
-\details{
-This function is part of the \emph{spicy table rendering engine}.
-It is automatically called when printing the result of \code{\link[=freq]{freq()}} with
-\code{styled = TRUE}.
-The output uses \code{\link[=spicy_print_table]{spicy_print_table()}} internally to render a colorized ASCII
-table with consistent alignment and separators.
-
-The printed table includes:
-\itemize{
-\item Valid and missing value sections (if applicable)
-\item Optional cumulative and valid percentages
-\item A final 'Total' row shown in the \strong{Category} column
-\item A footer summarizing metadata (variable label, data source, weights)
-}
-}
-\section{Output structure}{
-
-The printed table includes the following columns:
-\itemize{
-\item \strong{Category}: Sections such as "Valid", "Missing", and "Total"
-\item \strong{Values}: Observed categories or levels
-\item \strong{Freq.}: Frequency count (weighted if applicable)
-\item \strong{Percent}: Percentage of total
-\item \strong{Valid Percent}: Percentage among valid values (optional)
-\item \strong{Cum. Percent}: Cumulative percentage (optional)
-\item \strong{Cum. Valid Percent}: Cumulative valid percentage (optional)
-}
-}
-
-\examples{
-# Example using labelled data
-library(labelled)
-x <- labelled(
-  c(1, 2, 3, 1, 2, 3, 1, 2, NA),
-  labels = c("Low" = 1, "Medium" = 2, "High" = 3)
-)
-var_label(x) <- "Satisfaction level"
-# Capture result without printing, then print explicitly
-df <- spicy::freq(x, styled = FALSE)
-print(df) # dispatches to print.spicy_freq_table()
-
+Formats and prints a \code{spicy_freq_table} object as a styled ASCII
+table using \code{\link[=spicy_print_table]{spicy_print_table()}}.
 }
 \seealso{
-\code{\link[=freq]{freq()}} for the main frequency table generator.
-\code{\link[=spicy_print_table]{spicy_print_table()}} for the generic ASCII table renderer.
+\code{\link[=freq]{freq()}}, \code{\link[=spicy_print_table]{spicy_print_table()}}
 }
 \keyword{internal}

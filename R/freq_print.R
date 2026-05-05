@@ -1,65 +1,17 @@
-#' Styled print method for `freq()` tables
+#' Print method for `freq()` tables
 #'
 #' @description
-#' Internal print method used by [freq()] to display a styled, spicy-formatted
-#' frequency table in the console.
-#' It formats valid, missing, and total rows; handles cumulative and valid
-#' percentages; and appends a labeled footer including metadata such as
-#' variable label, class, dataset name, and weighting information.
+#' Formats and prints a `spicy_freq_table` object as a styled ASCII
+#' table using [spicy_print_table()].
 #'
-#' @details
-#' This function is part of the *spicy table rendering engine*.
-#' It is automatically called when printing the result of [freq()] with
-#' `styled = TRUE`.
-#' The output uses [spicy_print_table()] internally to render a colorized ASCII
-#' table with consistent alignment and separators.
+#' @param x A `data.frame` of class `"spicy_freq_table"` as returned
+#'   by [freq()] (with the default `styled = TRUE`). Rendering
+#'   metadata is read from attributes set by `freq()`.
+#' @param ... Additional arguments (currently ignored).
 #'
-#' The printed table includes:
-#' * Valid and missing value sections (if applicable)
-#' * Optional cumulative and valid percentages
-#' * A final 'Total' row shown in the **Category** column
-#' * A footer summarizing metadata (variable label, data source, weights)
+#' @return Invisibly returns `x`.
 #'
-#' @param x A `data.frame` returned by [freq()] with attached attributes:
-#'   - `"digits"`: number of decimal digits to display
-#'   - `"data_name"`: name of the source dataset
-#'   - `"var_name"`: name of the variable
-#'   - `"var_label"`: variable label, if defined
-#'   - `"class_name"`: original class of the variable
-#'   - `"weighted"`, `"rescaled"`, `"weight_var"`: weighting metadata
-#'
-#' @param ... Additional arguments (ignored, required for S3 method compatibility)
-#'
-#' @return Invisibly returns `x` after printing the formatted table.
-#'
-#' @section Output structure:
-#' The printed table includes the following columns:
-#' \itemize{
-#'   \item \strong{Category}: Sections such as "Valid", "Missing", and "Total"
-#'   \item \strong{Values}: Observed categories or levels
-#'   \item \strong{Freq.}: Frequency count (weighted if applicable)
-#'   \item \strong{Percent}: Percentage of total
-#'   \item \strong{Valid Percent}: Percentage among valid values (optional)
-#'   \item \strong{Cum. Percent}: Cumulative percentage (optional)
-#'   \item \strong{Cum. Valid Percent}: Cumulative valid percentage (optional)
-#' }
-#'
-#' @examples
-#' # Example using labelled data
-#' library(labelled)
-#' x <- labelled(
-#'   c(1, 2, 3, 1, 2, 3, 1, 2, NA),
-#'   labels = c("Low" = 1, "Medium" = 2, "High" = 3)
-#' )
-#' var_label(x) <- "Satisfaction level"
-#' # Capture result without printing, then print explicitly
-#' df <- spicy::freq(x, styled = FALSE)
-#' print(df) # dispatches to print.spicy_freq_table()
-#'
-#' @seealso
-#' [freq()] for the main frequency table generator.
-#' [spicy_print_table()] for the generic ASCII table renderer.
-#'
+#' @seealso [freq()], [spicy_print_table()]
 #' @keywords internal
 #' @export
 print.spicy_freq_table <- function(x, ...) {
