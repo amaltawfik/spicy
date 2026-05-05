@@ -14,17 +14,35 @@ input or output.
   stripping on R column names (where leading or trailing
   whitespace would force backtick quoting throughout downstream
   user code). Labels, titles, and filenames are kept verbatim.
-* **Loud failures over silent mutations.** When the package
-  cannot fulfil the user's request as stated, fail noisily via
-  `spicy_abort()` with a classed condition (the `spicy_error`
-  parent class together with a leaf class), or surface the
-  underlying OS / library error -- rather than silently shorten,
-  coerce, or substitute. Users can
-  recover from a noisy error by correcting the input; they
-  cannot recover from a silent mutation they did not see.
-  *Past application*: `code_book()` no longer truncates filenames
-  to 120 chars; instead, an over-long title surfaces as a
-  browser download error.
+* **Loud signals over silent mutations.** Silent mutation is
+  forbidden -- the user must always be able to see what the
+  package did to their input. The visible signal scales with
+  the response, in this order of preference:
+
+    1. **Succeed silently** when the request is fulfilled
+       exactly as stated, with no compromise (e.g.
+       `label_from_names()` preserves labels verbatim).
+    2. **Succeed with a `spicy_warning`** when there is a
+       small unambiguous adjustment that lets the function
+       continue (e.g. `cross_tab()` auto-renames a margin
+       column that would collide with a y-level named "N" or
+       "Total", and emits `spicy_renamed_column` pointing at
+       the rename). Prefer this over option 3 whenever the
+       adjustment is mechanical and reversible by the user.
+    3. **Fail with `spicy_abort()`** when there is no clean
+       adjustment -- the user must correct the input. Use a
+       classed condition (the `spicy_error` parent plus a
+       leaf class) so downstream code can dispatch
+       (e.g. `code_book()` does not truncate over-long
+       filenames; the browser download error surfaces and the
+       user shortens the title).
+
+  Tests that observe these signals must dispatch on **class**,
+  not on regex over the message string. `sQuote()`, `cli`
+  formatting, and locale settings vary across platforms; a
+  test that asserts `'N'` will fail under Windows fancy-quote
+  output where the same test using
+  `class = "spicy_renamed_column"` passes.
 
 ## Key commands
 
