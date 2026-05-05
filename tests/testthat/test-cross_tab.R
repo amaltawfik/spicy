@@ -715,63 +715,59 @@ test_that("cross_tab print uses digits=0 for count titles", {
   expect_true(length(out) > 0)
 })
 
-test_that("cross_tab errors when a y-level collides with internal Total/N columns", {
+test_that("cross_tab auto-renames internal Total/N margin columns on collision", {
   # Anti-regression for a silent data-corruption bug: when a y
   # level was literally named "N" or "Total", `cross_tab(percent
-  # = "row")` and `percent = "column"` overwrote that user
-  # column with row totals, producing a plausible-looking but
-  # corrupt table. Now the function fails loudly with a
-  # `spicy_unsupported` condition and an actionable hint.
+  # = "row")` and `percent = "column"` overwrote that user column
+  # with row totals, producing a plausible-looking but corrupt
+  # table. Now the function auto-picks a non-conflicting margin
+  # column name (e.g. "N_1", "Total_1") and emits a
+  # `spicy_renamed_column` warning, leaving the user's data
+  # intact.
 
-  # Y/N coding collides with the internal "N" sample-size column
+  # Y/N coding: the user's "N" level (% of "No") is preserved;
+  # the sample-size column gets renamed to "N_1".
   df_yn <- data.frame(
-    group = c("A", "A", "B", "B"),
-    answer = c("Y", "N", "Y", "N")
+    group = c("A", "A", "A", "B", "B", "B"),
+    answer = c("Y", "N", "Y", "N", "Y", "N")
   )
-  expect_error(
-    cross_tab(df_yn, group, answer, percent = "row"),
-    class = "spicy_unsupported"
+  expect_warning(
+    res <- cross_tab(df_yn, group, answer, percent = "row"),
+    class = "spicy_renamed_column"
   )
-  expect_error(
-    cross_tab(df_yn, group, answer, percent = "row"),
-    "y-variable already has level\\(s\\) named 'N'"
-  )
+  expect_true("N" %in% names(res))     # user data preserved
+  expect_true("N_1" %in% names(res))   # margin column renamed
+  expect_true("Total" %in% names(res)) # default margin name kept
+  # User's "N" column holds the % of "No" answers (not row totals).
+  # Group A: 1 N out of 3 -> 33.3%; Group B: 2 N out of 3 -> 66.7%.
+  expect_equal(res$N[res$Values == "A"], 33.3)
+  expect_equal(res$N[res$Values == "B"], 66.7)
+  # Sample-size column ("N_1") holds the row counts.
+  expect_equal(res$N_1[res$Values == "A"], 3)
+  expect_equal(res$N_1[res$Values == "B"], 3)
 
-  # User-level "Total" collides with the internal "Total" column
+  # User-level "Total": the user's Total level data preserved;
+  # the margin column gets renamed to "Total_1".
   df_total <- data.frame(
     group = c("A", "A", "B", "B"),
     answer = c("Sub", "Total", "Sub", "Total")
   )
-  expect_error(
-    cross_tab(df_total, group, answer, percent = "column"),
-    class = "spicy_unsupported"
+  expect_warning(
+    res2 <- cross_tab(df_total, group, answer, percent = "column"),
+    class = "spicy_renamed_column"
   )
-  expect_error(
-    cross_tab(df_total, group, answer, percent = "row"),
-    class = "spicy_unsupported"
-  )
+  expect_true("Total" %in% names(res2))   # user data preserved
+  expect_true("Total_1" %in% names(res2)) # margin renamed
 
-  # Escape hatches still work: `percent = "none"` skips the
-  # totals column, and `show_n = FALSE` suppresses the N column
-  # so a y-level "N" passes when the user does not also have a
-  # "Total" level.
-  expect_no_error(
+  # `percent = "none"` does not touch the user's columns.
+  expect_no_warning(
     cross_tab(df_yn, group, answer, percent = "none")
   )
-  df_n_only <- data.frame(
-    group = c("A", "A", "B", "B"),
-    answer = c("Yes", "N", "Yes", "N")  # "N" but no "Total"
+
+  # `percent = "column"` with a Y/N coding does NOT trigger a
+  # rename: only "Total" is reserved as a column there (the "N"
+  # for sample size is a row label in this layout, not a column).
+  expect_no_warning(
+    cross_tab(df_yn, group, answer, percent = "column")
   )
-  expect_error(
-    # `percent = "row"` still adds a "Total" column unconditionally,
-    # but no "N" sample-size column when `show_n = FALSE`. The
-    # user's "N" level then survives.
-    res <- cross_tab(
-      df_n_only, group, answer,
-      percent = "row", show_n = FALSE,
-      styled = FALSE
-    ),
-    NA
-  )
-  expect_true("N" %in% names(res))
 })

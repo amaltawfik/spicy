@@ -311,6 +311,27 @@ cross_tab <- function(
     tryCatch(sort(vals, method = "radix"), error = function(e) vals)
   }
 
+  # Return `base` if it is not in `taken`; otherwise the first
+  # `paste0(base, "_", i)` (i = 1, 2, ...) that is unused. Used to
+  # pick a non-conflicting name for the internal "Total" / "N"
+  # margin columns when the user's y-variable has a level whose
+  # name happens to match one of those defaults.
+  make_unique_col_name <- function(base, taken) {
+    if (!base %in% taken) {
+      return(base)
+    }
+    for (i in seq_len(99L)) {
+      candidate <- paste0(base, "_", i)
+      if (!candidate %in% taken) {
+        return(candidate)
+      }
+    }
+    # Defensive fallback: with 99 numbered suffixes already taken,
+    # something pathological is going on; produce a guaranteed-unique
+    # name from the system clock and move on.
+    paste0(base, "_", as.integer(Sys.time())) # nocov
+  }
+
   # Call mode detection
   is_vector_mode <- is_vector_input
 
@@ -527,29 +548,48 @@ cross_tab <- function(
     )
 
     if (styled) {
-      # Detect upfront when a y-variable level would collide with the
-      # internal totals columns added below (`df_out$Total <- ...` and,
-      # for `percent = "row"`, `df_out$N <- ...`). Without this guard
-      # the assignment silently overwrites the user's column with row
-      # totals, producing a plausible-looking but corrupt table -- the
-      # exact silent-mutation pattern that spicy's design principle
-      # forbids (see AGENTS.md).
-      reserved_cols <- c(
-        "Total",
-        if (percent == "row" && show_n) "N"
-      )
-      collisions <- intersect(reserved_cols, names(df_out))
-      if (length(collisions) > 0L) {
-        spicy_abort(
+      # Resolve the names of the internal totals / N margin columns.
+      # When a y-variable level already uses one of those names
+      # (`"N"` from a Y/N coding, `"Total"` from a literal "Total"
+      # category), auto-pick a non-conflicting alternative
+      # (`"N_1"`, `"Total_1"`, ...) so the user's data column is
+      # preserved intact and the function still produces a usable
+      # table. A `spicy_renamed_column` warning surfaces the rename
+      # so the user can rename the conflicting level back to the
+      # default if they prefer.
+      total_col <- make_unique_col_name("Total", names(df_out))
+      n_col <- if (percent == "row" && show_n) {
+        make_unique_col_name("N", c(names(df_out), total_col))
+      } else {
+        "N"
+      }
+      renamed <- character()
+      if (total_col != "Total") {
+        renamed <- c(
+          renamed,
+          sprintf("\"Total\" (margin) -> \"%s\"", total_col)
+        )
+      }
+      if (
+        percent == "row" &&
+          show_n &&
+          n_col != "N"
+      ) {
+        renamed <- c(
+          renamed,
+          sprintf("\"N\" (sample size) -> \"%s\"", n_col)
+        )
+      }
+      if (length(renamed) > 0L) {
+        spicy_warn(
           c(
             sprintf(
-              "Cannot add internal totals column(s): the y-variable already has level(s) named %s.",
-              paste(sQuote(collisions), collapse = ", ")
+              "y-variable level(s) collide with the default cross_tab() margin column name(s); auto-renamed: %s.",
+              paste(renamed, collapse = ", ")
             ),
-            "i" = "Rename the conflicting level(s) (e.g. `factor(y, levels = c(\"Yes\", \"No\"))` instead of `c(\"Y\", \"N\")`).",
-            "i" = "Or set `percent = \"none\"` (no Total / N columns added) and, if a count column is needed, add it explicitly downstream."
+            "i" = "Rename the conflicting level (e.g. `factor(y, levels = c(\"Yes\", \"No\"))` instead of `c(\"Y\", \"N\")`) to restore the default labels."
           ),
-          class = "spicy_unsupported"
+          class = "spicy_renamed_column"
         )
       }
 
@@ -557,7 +597,7 @@ cross_tab <- function(
         total_values <- colSums(tab_perc, na.rm = TRUE)
         n_values <- colSums(tab_full, na.rm = TRUE)
 
-        df_out$Total <- round(
+        df_out[[total_col]] <- round(
           rowSums(tab_full, na.rm = TRUE) / sum(tab_full) * 100,
           digits
         )
@@ -567,7 +607,7 @@ cross_tab <- function(
           c(
             list(Values = "Total"),
             as.list(round(total_values, digits)),
-            list(Total = 100)
+            stats::setNames(list(100), total_col)
           )
         )
         n_row <- if (show_n) {
@@ -576,7 +616,7 @@ cross_tab <- function(
             c(
               list(Values = "N"),
               as.list(round(n_values, 0)),
-              list(Total = sum(tab_full))
+              stats::setNames(list(sum(tab_full)), total_col)
             )
           )
         } else {
@@ -585,9 +625,9 @@ cross_tab <- function(
 
         df_out <- append_rows(df_out, list(total_row, n_row))
       } else if (percent == "row") {
-        df_out$Total <- round(rowSums(tab_perc, na.rm = TRUE), digits)
+        df_out[[total_col]] <- round(rowSums(tab_perc, na.rm = TRUE), digits)
         if (show_n) {
-          df_out$N <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+          df_out[[n_col]] <- as.numeric(rowSums(tab_full, na.rm = TRUE))
         }
 
         col_tot <- colSums(tab_full, na.rm = TRUE)
@@ -597,16 +637,19 @@ cross_tab <- function(
         total_values <- c(
           list(Values = "Total"),
           as.list(col_perc),
-          list(Total = 100)
+          stats::setNames(list(100), total_col)
         )
         if (show_n) {
-          total_values <- c(total_values, list(N = sum(tab_full)))
+          total_values <- c(
+            total_values,
+            stats::setNames(list(sum(tab_full)), n_col)
+          )
         }
         total_row <- make_named_row(df_out, total_values)
 
         df_out <- append_rows(df_out, total_row)
       } else {
-        df_out$Total <- as.numeric(rowSums(tab_full, na.rm = TRUE))
+        df_out[[total_col]] <- as.numeric(rowSums(tab_full, na.rm = TRUE))
         grand_total <- make_named_row(
           df_out,
           c(
@@ -849,7 +892,7 @@ cross_tab <- function(
       NA_integer_
     }
     attr(df_out, "n_col_name") <- if (styled && percent == "row" && show_n) {
-      "N"
+      n_col
     } else {
       NA_character_
     }
