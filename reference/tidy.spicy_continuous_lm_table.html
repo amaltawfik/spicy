@@ -115,11 +115,12 @@ numeric predictors, with <code>term = predictor_label</code>.</p></li>
 <code>statistic</code>, <code>p.value</code>. The <code>outcome</code> column carries the original
 variable name; <code>label</code> carries the human-readable label.</p>
 <p><code>glance()</code> returns one row per outcome with model-level
-statistics: <code>r.squared</code>, <code>adj.r.squared</code>, <code>statistic</code>, <code>df</code>,
-<code>df.residual</code>, <code>p.value</code>, <code>nobs</code>, <code>weighted_n</code>, plus the
-effect-size summary <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
-<code>es_ci_upper</code>, and the test type used for <code>statistic</code>
-(<code>"F"</code> for categorical predictors, <code>"t"</code> for numeric ones).</p>
+statistics. Columns: <code>outcome</code>, <code>label</code>, <code>predictor_type</code>
+(<code>"categorical"</code> or <code>"continuous"</code>), <code>test_type</code> (<code>"F"</code> for
+categorical predictors, <code>"t"</code> for continuous ones),
+<code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>r.squared</code>,
+<code>adj.r.squared</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
+<code>es_ci_upper</code>, <code>nobs</code>, <code>weighted_n</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

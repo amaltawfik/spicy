@@ -112,12 +112,12 @@ empirical mean), <code>std.error</code> (<code>sd / sqrt(n)</code>), <code>conf.
 <code>conf.high</code> (the mean confidence interval at <code>ci_level</code>), <code>n</code>,
 <code>min</code>, <code>max</code>, <code>sd</code>. The <code>outcome</code> column carries the variable name
 and <code>label</code> the human-readable label.</p>
-<p><code>glance()</code> returns one row per <code>variable</code> with the omnibus group
-comparison (when <code>by</code> is used) and the requested effect size:
-<code>outcome</code>, <code>label</code>, <code>test_type</code>, <code>statistic</code>, <code>df</code>, <code>df.residual</code>,
-<code>p.value</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>,
-<code>n_total</code>. Without <code>by</code>, only <code>outcome</code>, <code>label</code>, and <code>n_total</code>
-are populated; the other columns are <code>NA</code>.</p>
+<p><code>glance()</code> returns one row per outcome with the omnibus group
+comparison (when <code>by</code> is used) and the requested effect size.
+Columns: <code>outcome</code>, <code>label</code>, <code>test_type</code>, <code>statistic</code>, <code>df</code>,
+<code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
+<code>es_ci_upper</code>, <code>n_total</code>. Without <code>by</code>, only <code>outcome</code>, <code>label</code>,
+and <code>n_total</code> are populated; the other columns are <code>NA</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

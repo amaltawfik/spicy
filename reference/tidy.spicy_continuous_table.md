@@ -47,8 +47,8 @@ confidence interval at `ci_level`), `n`, `min`, `max`, `sd`. The
 `outcome` column carries the variable name and `label` the
 human-readable label.
 
-`glance()` returns one row per `variable` with the omnibus group
-comparison (when `by` is used) and the requested effect size: `outcome`,
+`glance()` returns one row per outcome with the omnibus group comparison
+(when `by` is used) and the requested effect size. Columns: `outcome`,
 `label`, `test_type`, `statistic`, `df`, `df.residual`, `p.value`,
 `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`, `n_total`. Without
 `by`, only `outcome`, `label`, and `n_total` are populated; the other

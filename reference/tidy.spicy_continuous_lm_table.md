@@ -56,11 +56,12 @@ Standard broom columns: `outcome`, `label`, `term`, `estimate_type`,
 `p.value`. The `outcome` column carries the original variable name;
 `label` carries the human-readable label.
 
-`glance()` returns one row per outcome with model-level statistics:
-`r.squared`, `adj.r.squared`, `statistic`, `df`, `df.residual`,
-`p.value`, `nobs`, `weighted_n`, plus the effect-size summary `es_type`,
-`es_value`, `es_ci_lower`, `es_ci_upper`, and the test type used for
-`statistic` (`"F"` for categorical predictors, `"t"` for numeric ones).
+`glance()` returns one row per outcome with model-level statistics.
+Columns: `outcome`, `label`, `predictor_type` (`"categorical"` or
+`"continuous"`), `test_type` (`"F"` for categorical predictors, `"t"`
+for continuous ones), `statistic`, `df`, `df.residual`, `p.value`,
+`r.squared`, `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,
+`es_ci_upper`, `nobs`, `weighted_n`.
 
 ## See also
 
