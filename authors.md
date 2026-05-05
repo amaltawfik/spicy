@@ -11,7 +11,9 @@ Source:
 [`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/main/inst/CITATION)
 
 Tawfik A (2026). *spicy: Descriptive Statistics, Summary Tables, and
-Data Management Tools*. R package version 0.11.0.9000. CRAN:
+Data Management Tools*.
+[doi:10.32614/CRAN.package.spicy](https://doi.org/10.32614/CRAN.package.spicy).
+R package version 0.11.0.9000. CRAN:
 https://CRAN.R-project.org/package=spicy. DOI:
 10.32614/CRAN.package.spicy, <https://CRAN.R-project.org/package=spicy>.
 
@@ -21,4 +23,5 @@ https://CRAN.R-project.org/package=spicy. DOI:
       year = {2026},
       note = {R package version 0.11.0.9000. CRAN: https://CRAN.R-project.org/package=spicy. DOI: 10.32614/CRAN.package.spicy},
       url = {https://CRAN.R-project.org/package=spicy},
+      doi = {10.32614/CRAN.package.spicy},
     }

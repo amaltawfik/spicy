@@ -75,7 +75,7 @@
 <div class="section level3">
 <h3 id="internal-development-version">Internal<a class="anchor" aria-label="anchor" href="#internal-development-version"></a></h3>
 <ul><li>
-<p><code>R/table_continuous_lm.R</code> (3394 lines) split into four files on a strict shared / specific naming convention, so the upcoming <code>table_regression()</code> (planned for 0.13) can reuse the inferential backbone without duplication. No behaviour change, no rename, no signature change; only file moves.</p>
+<p><code>R/table_continuous_lm.R</code> (3394 lines) split into four files on a strict shared / specific naming convention, so the inferential backbone (vcov family, single-coef inference, model stats, noncentral effect-size CIs) can be reused by future regression-table builders without duplication. No behaviour change, no rename, no signature change; only file moves.</p>
 <ul><li>
 <code>R/lm_compute.R</code> (shared) — vcov family (classical, <code>HC*</code>, <code>CR*</code>, bootstrap, jackknife), single-coef and Wald inference, model stats, noncentral effect-size CIs.</li>
 <li>
