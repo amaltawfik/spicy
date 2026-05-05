@@ -1,10 +1,16 @@
-#' Row Means with Optional Minimum Valid Values
+#' Row means with an optional minimum-valid-values rule
 #'
-#' `mean_n()` computes row means from a `data.frame` or `matrix`, handling missing values (`NA`s) automatically.
-#' Row-wise means are calculated across selected numeric columns, with an optional condition on the minimum number (or proportion) of valid (non-missing) values required for a row to be included.
-#' Non-numeric columns are excluded automatically and reported.
+#' Computes row-wise means across selected numeric columns of a
+#' `data.frame` or `matrix`. Missing values are handled per row via
+#' `min_valid` (an integer count or proportion of non-`NA` values
+#' required); rows that fail the rule return `NA`. Non-numeric
+#' columns are dropped silently (set `verbose = TRUE` to see which).
+#' Designed to flow inside `dplyr::mutate()`: when called without
+#' an explicit `data` argument, the current data context is used.
 #'
-#' @param data A `data.frame` or `matrix`.
+#' @param data A `data.frame` or `matrix`. Optional inside
+#'   `dplyr::mutate()`, where the current grouping/data context is
+#'   used automatically.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).

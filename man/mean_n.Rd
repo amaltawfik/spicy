@@ -2,7 +2,7 @@
 % Please edit documentation in R/mean_n.R
 \name{mean_n}
 \alias{mean_n}
-\title{Row Means with Optional Minimum Valid Values}
+\title{Row means with an optional minimum-valid-values rule}
 \usage{
 mean_n(
   data = NULL,
@@ -15,7 +15,9 @@ mean_n(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{matrix}.}
+\item{data}{A \code{data.frame} or \code{matrix}. Optional inside
+\code{dplyr::mutate()}, where the current grouping/data context is
+used automatically.}
 
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect syntax (default: \code{tidyselect::everything()}).
 If \code{regex = TRUE}, provide a regular expression pattern (character string).}
@@ -50,9 +52,13 @@ If \code{TRUE}, prints a message about non-numeric columns excluded.}
 A numeric vector of row-wise means.
 }
 \description{
-\code{mean_n()} computes row means from a \code{data.frame} or \code{matrix}, handling missing values (\code{NA}s) automatically.
-Row-wise means are calculated across selected numeric columns, with an optional condition on the minimum number (or proportion) of valid (non-missing) values required for a row to be included.
-Non-numeric columns are excluded automatically and reported.
+Computes row-wise means across selected numeric columns of a
+\code{data.frame} or \code{matrix}. Missing values are handled per row via
+\code{min_valid} (an integer count or proportion of non-\code{NA} values
+required); rows that fail the rule return \code{NA}. Non-numeric
+columns are dropped silently (set \code{verbose = TRUE} to see which).
+Designed to flow inside \code{dplyr::mutate()}: when called without
+an explicit \code{data} argument, the current data context is used.
 }
 \examples{
 library(dplyr)

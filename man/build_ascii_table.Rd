@@ -49,8 +49,10 @@ If \code{TRUE}, draws a closing line at the bottom of the table.}
 The color is applied only when ANSI color support is available
 (see \code{\link[crayon:has_color]{crayon::has_color()}}).}
 
-\item{align_left_cols}{Integer vector of column indices to left-align.
-Defaults to \code{c(1, 2)} for frequency tables (Category + Values).}
+\item{align_left_cols}{Integer vector of column indices to
+left-align. Defaults to \code{c(1L, 2L)} (the layout used by
+\code{freq()}-style tables); pass an explicit vector for other
+layouts.}
 
 \item{align_center_cols}{Integer vector of column indices to
 center-align. Defaults to \code{integer(0)} (no centered columns).
@@ -76,22 +78,19 @@ A single character string containing the full ASCII-formatted table,
 suitable for direct printing with \code{cat()}.
 }
 \description{
-Low-level internal function that constructs a visually aligned ASCII table
-from a \code{data.frame}.
-It supports Unicode characters, ANSI colors, dynamic width adjustment,
-left/right alignment, and spacing control.
-This function is primarily used internally by higher-level wrappers such as
-\code{\link[=spicy_print_table]{spicy_print_table()}} or \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.
+Low-level rendering engine that constructs a visually aligned
+ASCII table from a \code{data.frame}. Supports Unicode line-drawing
+characters, ANSI colors via \pkg{crayon}, automatic
+colored-text-aware width detection, configurable padding, and
+per-column alignment.
 }
 \details{
-\code{build_ascii_table()} is the rendering engine that produces the aligned text
-layout of \strong{spicy-formatted tables}.
-It automatically detects cell widths (including colored text), inserts Unicode
-separators, and applies a configurable amount of horizontal padding.
-
-For most users, this function should not be called directly. Instead, use
-\code{\link[=spicy_print_table]{spicy_print_table()}} which adds headers, notes, and alignment logic
-automatically.
+Most users should not call this directly: it is wrapped by
+\code{\link[=spicy_print_table]{spicy_print_table()}} and the internal \verb{print.spicy_*} methods,
+which add titles, notes, and table-type-aware alignment defaults.
+Reach for \code{build_ascii_table()} only when you need to render an
+arbitrary \code{data.frame} to a string with the same look as
+spicy's tables.
 }
 \examples{
 # Internal usage example (for developers)

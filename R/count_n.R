@@ -1,14 +1,16 @@
-#' Row-wise Count of Specific or Special Values
+#' Row-wise count of specific or special values
 #'
-#' `count_n()` counts, for each row of a data frame or matrix, how many times one or more values appear across selected columns.
-#' It supports type-safe comparison, case-insensitive string matching, and detection of special values such as `NA`, `NaN`, `Inf`, and `-Inf`.
+#' @description
+#' Counts, for each row of a `data.frame` or `matrix`, how many
+#' times one or more values appear across selected columns. Supports
+#' type-safe comparison (`allow_coercion = FALSE`), case-insensitive
+#' string matching (`ignore_case = TRUE`), and detection of special
+#' values (`NA`, `NaN`, `Inf`, `-Inf`) via `special`. Designed to
+#' flow inside `dplyr::mutate()` pipelines.
 #'
-#' This function is particularly useful for summarizing data quality or patterns in row-wise structures,
-#' and is designed to work fluently inside `dplyr::mutate()` pipelines.
-#'
-#' Internally, `count_n()` wraps the stable and dependency-free base function `base_count_n()`, allowing high flexibility and testability.
-#'
-#' @param data A data frame or matrix. Optional inside `mutate()`.
+#' @param data A `data.frame` or `matrix`. Optional inside
+#'   `dplyr::mutate()`, where the current data context is used
+#'   automatically.
 #' @param select Columns to include. Defaults to `tidyselect::everything()`.
 #'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.
 #'   If `regex = TRUE`, `select` is treated as a regex string.
@@ -32,59 +34,36 @@
 #' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
 #'   If `TRUE`, prints processing messages.
 #'
-#' @return A numeric vector of row-wise counts (unnamed).
+#' @return A numeric vector of row-wise counts (unnamed), of length
+#'   `nrow(data)`.
 #'
-#' @note
-#' This function is inspired by [datawizard::row_count()], but provides additional flexibility:
+#' @details
+#' # Strict matching (`allow_coercion = FALSE`)
 #'
-#' * **Element-wise type-safe matching** using `identical()` when `allow_coercion = FALSE`. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.
-#' * **Support for multiple values in `count`**, allowing queries like `count = c(2, 3)` or `count = c("yes", "no")` to count any of several values per row.
-#' * **Detection of special values** such as `NA`, `NaN`, `Inf`, and `-Inf` through the `special` argument — a feature not available in `row_count()`.
-#' * **Tidyverse-native behavior**: can be used inside `mutate()` without explicitly passing a `data` argument.
+#' Comparison falls back to `identical()` when types differ, which
+#' also inspects factor levels. Two consequences:
+#' \itemize{
+#'   \item `count = "b"` does not match a factor `"b"` value: pass a
+#'     factor, e.g. `count = factor("b", levels = levels(df$x))`.
+#'   \item Even with a factor `count`, comparisons against columns
+#'     whose level set differs will return `0`. To guarantee a
+#'     perfect match (label *and* levels), reuse a value taken from
+#'     the data itself (e.g. `df$x[2]`).
+#' }
 #'
-#' ### Value coercion behavior
-#' R automatically coerces mixed-type vectors passed to `count` into a common type.
-#' For example, `count = c(2, "2")` becomes `c("2", "2")`, because R converts numeric and character values to a unified type.
-#' This means that mixed-type checks are not possible at runtime once `count` is passed to the function.
-#' To ensure accurate type-sensitive matching, users should avoid mixing types in `count` explicitly.
+#' # Case-insensitive matching (`ignore_case = TRUE`)
 #'
-#' ### Strict matching mode (`allow_coercion = FALSE`)
-#' When strict matching is enabled, each value in `count` must match the type of the target column exactly.
+#' All values are converted to lowercase via `tolower()` before
+#' matching; factor columns are first coerced to character. This
+#' mode takes precedence over `allow_coercion`: equality becomes
+#' lowercase string equality, so `"b"` and `"B"` match even when
+#' `allow_coercion = FALSE`.
 #'
-#' For factor columns, this means that `count` must also be a factor. Supplying `count = "b"` (a character string) will not match a factor value, even if the label appears identical.
+#' # Coercion of `count` itself
 #'
-#' A common and intuitive approach is to use `count = factor("b")`, which works in many cases. However, `identical()` — used internally for strict comparisons — also checks the internal structure of the factor, including the order and content of its levels.
-#' As a result, comparisons may still fail if the levels differ, even when the label is the same.
-#'
-#' To ensure a perfect match (label **and** levels), you can reuse a value taken directly from the data (e.g., `df$x[2]`). This guarantees that both the class and the factor levels align. However, this approach only works reliably if all selected columns have the same factor structure.
-#'
-#' ### Case-insensitive matching (`ignore_case = TRUE`)
-#' When `ignore_case = TRUE`, all values involved in the comparison are converted to lowercase using `tolower()` before matching.
-#' This behavior applies to both character and factor columns. Factors are first converted to character internally.
-#'
-#' Importantly, this case-insensitive mode takes precedence over strict type comparison: values are no longer compared using `identical()`, but rather using lowercase string equality. This enables more flexible matching — for example, `"b"` and `"B"` will match even when `allow_coercion = FALSE`.
-#'
-#' #### Example: strict vs. case-insensitive matching with factors
-#' ```r
-#' df <- tibble::tibble(
-#'   x = factor(c("a", "b", "c")),
-#'   y = factor(c("b", "B", "a"))
-#' )
-#'
-#' # Strict match fails with character input
-#' count_n(df, count = "b", allow_coercion = FALSE)
-#' #> [1] 0 0 0
-#'
-#' # Match works only where factor levels match exactly
-#' count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
-#' #> [1] 0 1 0
-#'
-#' # Case-insensitive match succeeds for both "b" and "B"
-#' count_n(df, count = "b", ignore_case = TRUE)
-#' #> [1] 1 2 0
-#' ```
-#'
-#' Like [datawizard::row_count()], this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
+#' R coerces mixed-type vectors at construction time: `count = c(2,
+#' "2")` becomes `c("2", "2")` before the function ever sees it.
+#' To get type-sensitive matching, keep `count` homogeneous.
 #'
 #' @examples
 #' library(dplyr)
@@ -144,6 +123,10 @@
 #'
 #' # Strict match with factor value: works only where levels match
 #' count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
+#'
+#' @seealso [datawizard::row_count()] for a closely related row-wise
+#'   counter; `count_n()` adds element-wise type-safe matching,
+#'   multi-value `count`, and special-value detection.
 #'
 #' @family row-wise summaries
 #' @export

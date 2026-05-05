@@ -1,31 +1,14 @@
-#' Row Sums with Optional Minimum Valid Values
+#' Row sums with an optional minimum-valid-values rule
 #'
-#' `sum_n()` computes row sums from a `data.frame` or `matrix`, handling missing values (`NA`s) automatically.
-#' Row-wise sums are calculated across selected numeric columns, with an optional condition on the minimum number (or proportion) of valid (non-missing) values required for a row to be included.
-#' Non-numeric columns are excluded automatically and reported.
+#' Computes row-wise sums across selected numeric columns of a
+#' `data.frame` or `matrix`. Missing values are handled per row via
+#' `min_valid` (an integer count or proportion of non-`NA` values
+#' required); rows that fail the rule return `NA`. Non-numeric
+#' columns are dropped silently (set `verbose = TRUE` to see which).
+#' Designed to flow inside `dplyr::mutate()`: when called without
+#' an explicit `data` argument, the current data context is used.
 #'
-#' @param data A `data.frame` or `matrix`.
-#' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
-#' If `regex = TRUE`, provide a regular expression pattern (character string).
-#' @param exclude Columns to exclude (default: `NULL`).
-#' @param min_valid Minimum number of valid (non-`NA`) values required
-#'   per row. Accepts:
-#'   * `NULL` (the default) — every selected column must be valid.
-#'   * a proportion in `(0, 1)` — `round(ncol(x) * min_valid)` valid
-#'     columns required (e.g. `min_valid = 0.5` requires at least
-#'     half of the selected columns to be non-`NA`).
-#'   * a non-negative integer count up to the number of selected
-#'     numeric columns.
-#'
-#'   Non-integer values `>= 1` (e.g. `1.5`) and counts greater than
-#'   `ncol(x)` raise an actionable error.
-#' @param digits Optional non-negative integer giving the number of
-#'   decimal places to round the result to. Defaults to `NULL` (no
-#'   rounding).
-#' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers.
-#'   If `TRUE`, the `select` argument is treated as a regular expression.
-#' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
-#'   If `TRUE`, prints a message about non-numeric columns excluded.
+#' @inheritParams mean_n
 #'
 #' @return A numeric vector of row-wise sums.
 #'

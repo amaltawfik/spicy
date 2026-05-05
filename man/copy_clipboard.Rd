@@ -15,33 +15,54 @@ copy_clipboard(
 )
 }
 \arguments{
-\item{x}{A data frame, matrix, 2D array, 3D array, table, or atomic vector to be copied.}
+\item{x}{A \code{data.frame}, matrix, 2D array, 3D array, table, or
+atomic vector to be copied.}
 
-\item{row.names.as.col}{Logical or character. If \code{FALSE} (the default), row names are not added as a column. If \code{TRUE}, a column named \code{"rownames"} is prepended. If a character string is supplied, it is used as the column name for row names.}
+\item{row.names.as.col}{Logical or character. If \code{FALSE} (the
+default), row names are not added as a column. If \code{TRUE}, a
+column named \code{"rownames"} is prepended. If a character string,
+it is used as the column name for the promoted row names.
+Ignored (with a warning) when \code{x} is neither a \code{data.frame}
+nor a strict matrix.}
 
-\item{row.names}{Logical. If \code{TRUE} (the default), includes row names in the clipboard output. If \code{FALSE}, row names are omitted.}
+\item{row.names}{Logical. If \code{TRUE} (the default), row names are
+included in the clipboard output; \code{FALSE} omits them.}
 
-\item{col.names}{Logical. If \code{TRUE} (the default), includes column names in the clipboard output. If \code{FALSE}, column names are omitted.}
+\item{col.names}{Logical. If \code{TRUE} (the default), column names
+are included in the clipboard output; \code{FALSE} omits them.}
 
-\item{show_message}{Logical. If \code{TRUE} (the default), displays a success message after copying. If \code{FALSE}, no success message is printed.}
+\item{show_message}{Logical. If \code{TRUE} (the default), prints a
+success message after copying.}
 
-\item{quiet}{Logical. If \code{FALSE} (the default), messages are shown. If \code{TRUE}, suppresses all messages, including success, coercion notices, and warnings.}
+\item{quiet}{Logical. If \code{FALSE} (the default), messages are
+shown. If \code{TRUE}, suppresses all messages, including the
+success message, coercion notices, and warnings.}
 
 \item{...}{Additional arguments passed to \code{\link[clipr:write_clip]{clipr::write_clip()}}.}
 }
 \value{
-Invisibly returns the object \code{x}. The main purpose is the side effect of copying data to the clipboard.
+Invisibly returns \code{x}; the function is called for its
+clipboard side effect.
 }
 \description{
-\code{copy_clipboard()} copies a data frame, matrix, array (2D or higher), table or vector to the clipboard.
-You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a spreadsheet (e.g. Excel, LibreOffice Calc), or a word processor (e.g. Word).
+Copies a \code{data.frame}, matrix, 2D or higher array, table, or
+atomic vector to the system clipboard, ready to paste into a
+text editor, spreadsheet, or word processor. Wraps
+\code{\link[clipr:write_clip]{clipr::write_clip()}} (a Suggests dependency); requires \code{clipr}
+to be installed and a clipboard backend to be available on the
+platform.
 }
 \details{
-Note: Objects that are not data frames or 2D matrices (e.g. atomic vectors, arrays, tables) are automatically converted to character
-when copied to the clipboard, as required by \code{\link[clipr:write_clip]{clipr::write_clip()}}. The original object in R remains unchanged.
+Objects that are not \code{data.frame}s or 2D matrices (atomic
+vectors, arrays, tables) are automatically coerced to character
+on the way to the clipboard, as required by
+\code{\link[clipr:write_clip]{clipr::write_clip()}}. The R-side object passed to \code{x} is never
+mutated.
 
-For multidimensional arrays (e.g. 3D arrays), the entire array is flattened into a 1D character vector, with each element on a new line.
-To preserve a tabular structure, you should extract a 2D slice before copying. For example: \code{copy_clipboard(my_array[, , 1])}.
+Multidimensional arrays (3D and higher) are flattened to a 1D
+character vector with one element per line. To preserve a
+tabular layout, extract a 2D slice first, e.g.
+\code{copy_clipboard(my_array[, , 1])}.
 }
 \examples{
 \donttest{

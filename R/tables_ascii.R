@@ -30,22 +30,19 @@
 #' Build a formatted ASCII table
 #'
 #' @description
-#' Low-level internal function that constructs a visually aligned ASCII table
-#' from a `data.frame`.
-#' It supports Unicode characters, ANSI colors, dynamic width adjustment,
-#' left/right alignment, and spacing control.
-#' This function is primarily used internally by higher-level wrappers such as
-#' [spicy_print_table()] or [print.spicy_freq_table()].
+#' Low-level rendering engine that constructs a visually aligned
+#' ASCII table from a `data.frame`. Supports Unicode line-drawing
+#' characters, ANSI colors via \pkg{crayon}, automatic
+#' colored-text-aware width detection, configurable padding, and
+#' per-column alignment.
 #'
 #' @details
-#' `build_ascii_table()` is the rendering engine that produces the aligned text
-#' layout of **spicy-formatted tables**.
-#' It automatically detects cell widths (including colored text), inserts Unicode
-#' separators, and applies a configurable amount of horizontal padding.
-#'
-#' For most users, this function should not be called directly. Instead, use
-#' [spicy_print_table()] which adds headers, notes, and alignment logic
-#' automatically.
+#' Most users should not call this directly: it is wrapped by
+#' [spicy_print_table()] and the internal `print.spicy_*` methods,
+#' which add titles, notes, and table-type-aware alignment defaults.
+#' Reach for `build_ascii_table()` only when you need to render an
+#' arbitrary `data.frame` to a string with the same look as
+#' spicy's tables.
 #'
 #' @param x A `data.frame` or `spicy_table` object containing the table to format.
 #'   Typically, this includes columns such as *Category*, *Values*, *Freq.*, *Percent*, etc.
@@ -70,8 +67,10 @@
 #' @param lines_color Character. Color used for table separators. Defaults to `"darkgrey"`.
 #'   The color is applied only when ANSI color support is available
 #'   (see [crayon::has_color()]).
-#' @param align_left_cols Integer vector of column indices to left-align.
-#'   Defaults to `c(1, 2)` for frequency tables (Category + Values).
+#' @param align_left_cols Integer vector of column indices to
+#'   left-align. Defaults to `c(1L, 2L)` (the layout used by
+#'   `freq()`-style tables); pass an explicit vector for other
+#'   layouts.
 #' @param align_center_cols Integer vector of column indices to
 #'   center-align. Defaults to `integer(0)` (no centered columns).
 #'   Columns not in `align_left_cols` or `align_center_cols` are
@@ -381,28 +380,26 @@ ascii_table_panels <- function(
 #' Print a spicy-formatted ASCII table
 #'
 #' @description
-#' User-facing helper that prints a visually aligned, spicy-styled ASCII table
-#' created by functions such as [freq()] or [cross_tab()].
-#' It automatically adjusts column alignment, spacing, and separators for
-#' improved readability in console outputs.
-#'
-#' This function wraps the internal renderer [build_ascii_table()], adding
-#' optional titles, notes, and automatic alignment rules depending on the type
-#' of table.
+#' User-facing helper that prints a spicy-styled ASCII table to the
+#' console with optional title and note, table-type-aware alignment
+#' defaults, and automatic horizontal panelling when the table is
+#' wider than the console. Wraps the internal renderer
+#' [build_ascii_table()].
 #'
 #' @details
-#' `spicy_print_table()` detects whether the table represents frequencies
-#' (`freq`-style) or cross-tabulations (`cross`-style) and adjusts formatting
-#' accordingly:
-#' * For **frequency tables**, the first two columns (*Category* and *Values*)
-#'   are left-aligned.
-#' * For **cross tables**, only the first column (row variable) is left-aligned.
+#' Table type is auto-detected from `x` and drives the default
+#' alignment when `align_left_cols = NULL`:
+#' * **frequency table** (a `Category` column is present): the
+#'   first two columns (`Category`, `Values`) are left-aligned.
+#' * **cross table** (otherwise): only the first column (row
+#'   variable) is left-aligned.
 #'
-#' The function supports Unicode line-drawing characters and colored separators
-#' using the **crayon** package, with graceful fallback to monochrome output when
-#' color is not supported.
-#' If the table exceeds the console width, it is split into stacked horizontal
-#' panels while repeating the left-most identifier columns.
+#' If the table is wider than the console, it is split into stacked
+#' horizontal panels with the left-most identifier columns repeated
+#' on each panel. Unicode line-drawing characters are used by
+#' default; coloured separators are drawn when the terminal supports
+#' ANSI colour ([crayon::has_color()]) and fall back to monochrome
+#' otherwise.
 #'
 #' @param x A `spicy_table` or `data.frame` to be printed.
 #' @param title Optional title displayed above the table. Defaults to the

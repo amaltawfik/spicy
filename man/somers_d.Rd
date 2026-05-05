@@ -46,11 +46,17 @@ table of ordinal variables.
 \details{
 Somers' D is an asymmetric ordinal measure defined as
 \eqn{d = (C - D) / (C + D + T)}, where \eqn{T} is the
-number of pairs tied on the independent variable.
-The symmetric version is the harmonic mean of the two
-asymmetric values.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
+number of pairs tied on the independent variable. The
+symmetric version (\code{direction = "symmetric"}) is the
+\emph{harmonic} mean of the two asymmetric values, matching the
+SPSS / PSPP convention; this is \strong{not} identical to
+Kendall's Tau-b (which is the \emph{geometric} mean of the same
+two quantities), although the two often agree to two
+decimals. No analytic SE / CI is reported for the symmetric
+form (DescTools follows the same convention).
+Standard error formulas for the asymmetric directions follow
+the DescTools implementations (Signorell et al., 2024); see
+\code{\link[=cramer_v]{cramer_v()}} for full references.
 }
 \examples{
 tab <- table(sochealth$education, sochealth$self_rated_health)

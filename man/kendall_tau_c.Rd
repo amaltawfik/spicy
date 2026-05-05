@@ -41,9 +41,9 @@ variables.
 \details{
 Stuart's Tau-c is computed as
 \eqn{\tau_c = 2m(C - D) / (n^2(m - 1))}, where
-\eqn{m = \min(r, c)}. It is appropriate for rectangular
-tables and is not restricted to the range \eqn{[-1, 1]} only for
-square tables.
+\eqn{m = \min(r, c)}. It is designed for rectangular tables;
+the estimate is bounded by \eqn{[-1, 1]} only when the table is
+square, and may fall outside that range otherwise.
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }

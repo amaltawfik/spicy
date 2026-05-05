@@ -1161,9 +1161,9 @@ kendall_tau_b <- function(
 #' @details
 #' Stuart's Tau-c is computed as
 #' \eqn{\tau_c = 2m(C - D) / (n^2(m - 1))}, where
-#' \eqn{m = \min(r, c)}. It is appropriate for rectangular
-#' tables and is not restricted to the range \eqn{[-1, 1]} only for
-#' square tables.
+#' \eqn{m = \min(r, c)}. It is designed for rectangular tables;
+#' the estimate is bounded by \eqn{[-1, 1]} only when the table is
+#' square, and may fall outside that range otherwise.
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -1237,11 +1237,17 @@ kendall_tau_c <- function(
 #' @details
 #' Somers' D is an asymmetric ordinal measure defined as
 #' \eqn{d = (C - D) / (C + D + T)}, where \eqn{T} is the
-#' number of pairs tied on the independent variable.
-#' The symmetric version is the harmonic mean of the two
-#' asymmetric values.
-#' Standard error formulas follow the DescTools implementations
-#' (Signorell et al., 2024); see [cramer_v()] for full references.
+#' number of pairs tied on the independent variable. The
+#' symmetric version (`direction = "symmetric"`) is the
+#' *harmonic* mean of the two asymmetric values, matching the
+#' SPSS / PSPP convention; this is **not** identical to
+#' Kendall's Tau-b (which is the *geometric* mean of the same
+#' two quantities), although the two often agree to two
+#' decimals. No analytic SE / CI is reported for the symmetric
+#' form (DescTools follows the same convention).
+#' Standard error formulas for the asymmetric directions follow
+#' the DescTools implementations (Signorell et al., 2024); see
+#' [cramer_v()] for full references.
 #'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)

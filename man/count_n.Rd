@@ -2,7 +2,7 @@
 % Please edit documentation in R/count_n.R
 \name{count_n}
 \alias{count_n}
-\title{Row-wise Count of Specific or Special Values}
+\title{Row-wise count of specific or special values}
 \usage{
 count_n(
   data = NULL,
@@ -17,7 +17,9 @@ count_n(
 )
 }
 \arguments{
-\item{data}{A data frame or matrix. Optional inside \code{mutate()}.}
+\item{data}{A \code{data.frame} or \code{matrix}. Optional inside
+\code{dplyr::mutate()}, where the current data context is used
+automatically.}
 
 \item{select}{Columns to include. Defaults to \code{tidyselect::everything()}.
 Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.
@@ -50,77 +52,43 @@ If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
 If \code{TRUE}, prints processing messages.}
 }
 \value{
-A numeric vector of row-wise counts (unnamed).
+A numeric vector of row-wise counts (unnamed), of length
+\code{nrow(data)}.
 }
 \description{
-\code{count_n()} counts, for each row of a data frame or matrix, how many times one or more values appear across selected columns.
-It supports type-safe comparison, case-insensitive string matching, and detection of special values such as \code{NA}, \code{NaN}, \code{Inf}, and \code{-Inf}.
+Counts, for each row of a \code{data.frame} or \code{matrix}, how many
+times one or more values appear across selected columns. Supports
+type-safe comparison (\code{allow_coercion = FALSE}), case-insensitive
+string matching (\code{ignore_case = TRUE}), and detection of special
+values (\code{NA}, \code{NaN}, \code{Inf}, \code{-Inf}) via \code{special}. Designed to
+flow inside \code{dplyr::mutate()} pipelines.
 }
-\details{
-This function is particularly useful for summarizing data quality or patterns in row-wise structures,
-and is designed to work fluently inside \code{dplyr::mutate()} pipelines.
-
-Internally, \code{count_n()} wraps the stable and dependency-free base function \code{base_count_n()}, allowing high flexibility and testability.
-}
-\note{
-This function is inspired by \code{\link[datawizard:row_count]{datawizard::row_count()}}, but provides additional flexibility:
+\section{Strict matching (\code{allow_coercion = FALSE})}{
+Comparison falls back to \code{identical()} when types differ, which
+also inspects factor levels. Two consequences:
 \itemize{
-\item \strong{Element-wise type-safe matching} using \code{identical()} when \code{allow_coercion = FALSE}. This ensures that both the value and its type match exactly, enabling precise comparisons in mixed-type columns.
-\item \strong{Support for multiple values in \code{count}}, allowing queries like \code{count = c(2, 3)} or \code{count = c("yes", "no")} to count any of several values per row.
-\item \strong{Detection of special values} such as \code{NA}, \code{NaN}, \code{Inf}, and \code{-Inf} through the \code{special} argument — a feature not available in \code{row_count()}.
-\item \strong{Tidyverse-native behavior}: can be used inside \code{mutate()} without explicitly passing a \code{data} argument.
-}
-\subsection{Value coercion behavior}{
-
-R automatically coerces mixed-type vectors passed to \code{count} into a common type.
-For example, \code{count = c(2, "2")} becomes \code{c("2", "2")}, because R converts numeric and character values to a unified type.
-This means that mixed-type checks are not possible at runtime once \code{count} is passed to the function.
-To ensure accurate type-sensitive matching, users should avoid mixing types in \code{count} explicitly.
-}
-
-\subsection{Strict matching mode (\code{allow_coercion = FALSE})}{
-
-When strict matching is enabled, each value in \code{count} must match the type of the target column exactly.
-
-For factor columns, this means that \code{count} must also be a factor. Supplying \code{count = "b"} (a character string) will not match a factor value, even if the label appears identical.
-
-A common and intuitive approach is to use \code{count = factor("b")}, which works in many cases. However, \code{identical()} — used internally for strict comparisons — also checks the internal structure of the factor, including the order and content of its levels.
-As a result, comparisons may still fail if the levels differ, even when the label is the same.
-
-To ensure a perfect match (label \strong{and} levels), you can reuse a value taken directly from the data (e.g., \code{df$x[2]}). This guarantees that both the class and the factor levels align. However, this approach only works reliably if all selected columns have the same factor structure.
-}
-
-\subsection{Case-insensitive matching (\code{ignore_case = TRUE})}{
-
-When \code{ignore_case = TRUE}, all values involved in the comparison are converted to lowercase using \code{tolower()} before matching.
-This behavior applies to both character and factor columns. Factors are first converted to character internally.
-
-Importantly, this case-insensitive mode takes precedence over strict type comparison: values are no longer compared using \code{identical()}, but rather using lowercase string equality. This enables more flexible matching — for example, \code{"b"} and \code{"B"} will match even when \code{allow_coercion = FALSE}.
-\subsection{Example: strict vs. case-insensitive matching with factors}{
-
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{df <- tibble::tibble(
-  x = factor(c("a", "b", "c")),
-  y = factor(c("b", "B", "a"))
-)
-
-# Strict match fails with character input
-count_n(df, count = "b", allow_coercion = FALSE)
-#> [1] 0 0 0
-
-# Match works only where factor levels match exactly
-count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
-#> [1] 0 1 0
-
-# Case-insensitive match succeeds for both "b" and "B"
-count_n(df, count = "b", ignore_case = TRUE)
-#> [1] 1 2 0
-}\if{html}{\out{</div>}}
-
-Like \code{\link[datawizard:row_count]{datawizard::row_count()}}, this function also supports regex-based column selection, case-insensitive string comparison, and column exclusion.
-}
-
+\item \code{count = "b"} does not match a factor \code{"b"} value: pass a
+factor, e.g. \code{count = factor("b", levels = levels(df$x))}.
+\item Even with a factor \code{count}, comparisons against columns
+whose level set differs will return \code{0}. To guarantee a
+perfect match (label \emph{and} levels), reuse a value taken from
+the data itself (e.g. \code{df$x[2]}).
 }
 }
+
+\section{Case-insensitive matching (\code{ignore_case = TRUE})}{
+All values are converted to lowercase via \code{tolower()} before
+matching; factor columns are first coerced to character. This
+mode takes precedence over \code{allow_coercion}: equality becomes
+lowercase string equality, so \code{"b"} and \code{"B"} match even when
+\code{allow_coercion = FALSE}.
+}
+
+\section{Coercion of \code{count} itself}{
+R coerces mixed-type vectors at construction time: \code{count = c(2, "2")} becomes \code{c("2", "2")} before the function ever sees it.
+To get type-sensitive matching, keep \code{count} homogeneous.
+}
+
 \examples{
 library(dplyr)
 library(tibble)
@@ -182,6 +150,10 @@ count_n(df, count = factor("b", levels = levels(df$x)), allow_coercion = FALSE)
 
 }
 \seealso{
+\code{\link[datawizard:row_count]{datawizard::row_count()}} for a closely related row-wise
+counter; \code{count_n()} adds element-wise type-safe matching,
+multi-value \code{count}, and special-value detection.
+
 Other row-wise summaries:
 \code{\link[=mean_n]{mean_n()}},
 \code{\link[=sum_n]{sum_n()}}

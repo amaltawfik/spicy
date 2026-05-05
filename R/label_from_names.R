@@ -1,30 +1,29 @@
 #' Derive variable labels from column names \verb{name<sep>label}
 #'
+#' @description
 #' Splits each column name at the **first** occurrence of `sep`,
 #' renames the column to the part before `sep` (the *name*, trimmed
 #' of surrounding whitespace), and assigns the part after `sep` as a
-#' `"label"` attribute on the column. The label attribute follows the
-#' [haven](https://haven.tidyverse.org/) convention also used by
-#' [`labelled::var_label()`], so labelled-aware tooling
+#' `"label"` attribute on the column. The label attribute follows
+#' the [haven](https://haven.tidyverse.org/) convention also used
+#' by [`labelled::var_label()`], so labelled-aware tooling
 #' (`labelled`, `haven`, `varlist()`, `code_book()`, ...) reads it
-#' transparently. Splitting at the first `sep` means the label itself
-#' may contain the separator.
+#' transparently. Splitting at the *first* `sep` means the label
+#' itself may contain the separator.
 #'
-#' This is especially useful for **LimeSurvey CSV exports** when
-#' using *Export results -> Export format: CSV -> Headings: Question
-#' code & question text*, where column names look like
-#' `"code. question text"`. The default separator is `". "` to match
+#' @details
+#' Designed primarily for **LimeSurvey CSV exports** with *Headings:
+#' Question code & question text*, which produce column names like
+#' `"code. question text"`. The default separator `". "` matches
 #' that export.
 #'
-#' LimeSurvey question codes (the part *before* `sep`) are restricted
-#' to alphanumeric characters, must start with a letter, and cannot
-#' contain spaces or special characters. The column name therefore
-#' needs to encode both the code *and* the question text, separated
-#' by a literal string -- there is no way to recover a label from a
-#' code alone. If your export uses *Headings: Question code* (codes
-#' only), re-export with *Headings: Question code & question text*
-#' (which inserts the default `". "` separator) before calling this
-#' function.
+#' LimeSurvey question codes (the part *before* `sep`) are
+#' restricted to alphanumerics, must start with a letter, and
+#' contain no spaces -- so the column name has to carry both the
+#' code and the question text. If your export uses *Headings:
+#' Question code* (codes only), re-export with *Question code &
+#' question text* before calling this function; there is no way to
+#' recover a label from a code alone.
 #'
 #' @param df A `data.frame` or tibble with column names of the form
 #'   \verb{"name<sep>label"} (e.g. `"code. question text"`).
