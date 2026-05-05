@@ -1,5 +1,10 @@
 # R package development
 
+For design principles, coding conventions, testing rules,
+documentation rules, and the full release workflow, see
+[`AGENTS.md`](AGENTS.md). The notes below are Claude-specific
+overrides that take precedence within Claude Code sessions.
+
 ## Package architecture
 
 - `R/freq.R` / `R/cross_tab.R` - core tabulation functions

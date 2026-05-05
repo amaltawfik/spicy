@@ -1,5 +1,31 @@
 # R package development
 
+## Design principles
+
+These two principles override convenience when they conflict.
+Reach for them first when reviewing any change to user-facing
+input or output.
+
+* **Verbatim user identifiers.** Never silently mutate
+  user-supplied filenames, column names, labels, or titles.
+  Convention follows Stata `label variable` and SPSS
+  `VARIABLE LABELS`: input is preserved exactly as the user
+  typed it. The only sanctioned exception is whitespace
+  stripping on R column names (where leading or trailing
+  whitespace would force backtick quoting throughout downstream
+  user code). Labels, titles, and filenames are kept verbatim.
+* **Loud failures over silent mutations.** When the package
+  cannot fulfil the user's request as stated, fail noisily via
+  `spicy_abort()` with a classed condition (the `spicy_error`
+  parent class together with a leaf class), or surface the
+  underlying OS / library error -- rather than silently shorten,
+  coerce, or substitute. Users can
+  recover from a noisy error by correcting the input; they
+  cannot recover from a silent mutation they did not see.
+  *Past application*: `code_book()` no longer truncates filenames
+  to 120 chars; instead, an over-long title surfaces as a
+  browser download error.
+
 ## Key commands
 
 ```sh
