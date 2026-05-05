@@ -714,3 +714,64 @@ test_that("cross_tab print uses digits=0 for count titles", {
   out <- capture.output(print(res))
   expect_true(length(out) > 0)
 })
+
+test_that("cross_tab errors when a y-level collides with internal Total/N columns", {
+  # Anti-regression for a silent data-corruption bug: when a y
+  # level was literally named "N" or "Total", `cross_tab(percent
+  # = "row")` and `percent = "column"` overwrote that user
+  # column with row totals, producing a plausible-looking but
+  # corrupt table. Now the function fails loudly with a
+  # `spicy_unsupported` condition and an actionable hint.
+
+  # Y/N coding collides with the internal "N" sample-size column
+  df_yn <- data.frame(
+    group = c("A", "A", "B", "B"),
+    answer = c("Y", "N", "Y", "N")
+  )
+  expect_error(
+    cross_tab(df_yn, group, answer, percent = "row"),
+    class = "spicy_unsupported"
+  )
+  expect_error(
+    cross_tab(df_yn, group, answer, percent = "row"),
+    "y-variable already has level\\(s\\) named 'N'"
+  )
+
+  # User-level "Total" collides with the internal "Total" column
+  df_total <- data.frame(
+    group = c("A", "A", "B", "B"),
+    answer = c("Sub", "Total", "Sub", "Total")
+  )
+  expect_error(
+    cross_tab(df_total, group, answer, percent = "column"),
+    class = "spicy_unsupported"
+  )
+  expect_error(
+    cross_tab(df_total, group, answer, percent = "row"),
+    class = "spicy_unsupported"
+  )
+
+  # Escape hatches still work: `percent = "none"` skips the
+  # totals column, and `show_n = FALSE` suppresses the N column
+  # so a y-level "N" passes when the user does not also have a
+  # "Total" level.
+  expect_no_error(
+    cross_tab(df_yn, group, answer, percent = "none")
+  )
+  df_n_only <- data.frame(
+    group = c("A", "A", "B", "B"),
+    answer = c("Yes", "N", "Yes", "N")  # "N" but no "Total"
+  )
+  expect_error(
+    # `percent = "row"` still adds a "Total" column unconditionally,
+    # but no "N" sample-size column when `show_n = FALSE`. The
+    # user's "N" level then survives.
+    res <- cross_tab(
+      df_n_only, group, answer,
+      percent = "row", show_n = FALSE,
+      styled = FALSE
+    ),
+    NA
+  )
+  expect_true("N" %in% names(res))
+})

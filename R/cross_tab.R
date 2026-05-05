@@ -302,10 +302,9 @@ cross_tab <- function(
 
   make_levels <- function(v) {
     vals <- unique(v[!is.na(v)])
-    # `length(vals) > 1L` guards against an R 4.6.0 sort() segfault on
-    # zero-length Date / POSIXct / character vectors, and is
-    # mathematically equivalent to a length-0 / length-1 short-circuit
-    # (both are already sorted).
+    # Short-circuit when there are fewer than two distinct values:
+    # the result is already in sorted order and `sort()` would be a
+    # no-op.
     if (length(vals) <= 1L) {
       return(vals)
     }
@@ -528,6 +527,32 @@ cross_tab <- function(
     )
 
     if (styled) {
+      # Detect upfront when a y-variable level would collide with the
+      # internal totals columns added below (`df_out$Total <- ...` and,
+      # for `percent = "row"`, `df_out$N <- ...`). Without this guard
+      # the assignment silently overwrites the user's column with row
+      # totals, producing a plausible-looking but corrupt table -- the
+      # exact silent-mutation pattern that spicy's design principle
+      # forbids (see AGENTS.md).
+      reserved_cols <- c(
+        "Total",
+        if (percent == "row" && show_n) "N"
+      )
+      collisions <- intersect(reserved_cols, names(df_out))
+      if (length(collisions) > 0L) {
+        spicy_abort(
+          c(
+            sprintf(
+              "Cannot add internal totals column(s): the y-variable already has level(s) named %s.",
+              paste(sQuote(collisions), collapse = ", ")
+            ),
+            "i" = "Rename the conflicting level(s) (e.g. `factor(y, levels = c(\"Yes\", \"No\"))` instead of `c(\"Y\", \"N\")`).",
+            "i" = "Or set `percent = \"none\"` (no Total / N columns added) and, if a count column is needed, add it explicitly downstream."
+          ),
+          class = "spicy_unsupported"
+        )
+      }
+
       if (percent == "column") {
         total_values <- colSums(tab_perc, na.rm = TRUE)
         n_values <- colSums(tab_full, na.rm = TRUE)

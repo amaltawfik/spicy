@@ -441,9 +441,9 @@ freq <- function(
   }
 
   # --- Sort
-  # `nrow(df) > 1L` guards against an R 4.6.0 `order()` segfault on a
-  # zero-length vector for some classes; sorting a length-0 / 1 frame
-  # is a no-op anyway.
+  # `nrow(df) > 1L` short-circuits the `order()` step when the frame
+  # has zero or one row -- sorting it would be a no-op anyway and the
+  # guard keeps the call site small.
   if (sort != "" && nrow(df) > 1L) {
     decreasing <- sort %in% c("-", "name-")
     sort_col <- if (sort %in% c("+", "-")) "n" else "value"
