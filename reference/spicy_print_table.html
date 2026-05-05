@@ -5,19 +5,15 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Print a spicy-formatted ASCII table — spicy_print_table"><meta name="description" content="User-facing helper that prints a visually aligned, spicy-styled ASCII table
-created by functions such as freq() or cross_tab().
-It automatically adjusts column alignment, spacing, and separators for
-improved readability in console outputs.
-This function wraps the internal renderer build_ascii_table(), adding
-optional titles, notes, and automatic alignment rules depending on the type
-of table."><meta property="og:description" content="User-facing helper that prints a visually aligned, spicy-styled ASCII table
-created by functions such as freq() or cross_tab().
-It automatically adjusts column alignment, spacing, and separators for
-improved readability in console outputs.
-This function wraps the internal renderer build_ascii_table(), adding
-optional titles, notes, and automatic alignment rules depending on the type
-of table."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Print a spicy-formatted ASCII table — spicy_print_table"><meta name="description" content="User-facing helper that prints a spicy-styled ASCII table to the
+console with optional title and note, table-type-aware alignment
+defaults, and automatic horizontal panelling when the table is
+wider than the console. Wraps the internal renderer
+build_ascii_table()."><meta property="og:description" content="User-facing helper that prints a spicy-styled ASCII table to the
+console with optional title and note, table-type-aware alignment
+defaults, and automatic horizontal panelling when the table is
+wider than the console. Wraps the internal renderer
+build_ascii_table()."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -70,13 +66,11 @@ of table."><meta property="og:image" content="https://amaltawfik.github.io/spicy
     </div>
 
     <div class="ref-description section level2">
-    <p>User-facing helper that prints a visually aligned, spicy-styled ASCII table
-created by functions such as <code><a href="freq.html">freq()</a></code> or <code><a href="cross_tab.html">cross_tab()</a></code>.
-It automatically adjusts column alignment, spacing, and separators for
-improved readability in console outputs.</p>
-<p>This function wraps the internal renderer <code><a href="build_ascii_table.html">build_ascii_table()</a></code>, adding
-optional titles, notes, and automatic alignment rules depending on the type
-of table.</p>
+    <p>User-facing helper that prints a spicy-styled ASCII table to the
+console with optional title and note, table-type-aware alignment
+defaults, and automatic horizontal panelling when the table is
+wider than the console. Wraps the internal renderer
+<code><a href="build_ascii_table.html">build_ascii_table()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -176,16 +170,17 @@ attribute of <code>x</code> (set by <code><a href="cross_tab.html">cross_tab()</
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>spicy_print_table()</code> detects whether the table represents frequencies
-(<code>freq</code>-style) or cross-tabulations (<code>cross</code>-style) and adjusts formatting
-accordingly:</p><ul><li><p>For <strong>frequency tables</strong>, the first two columns (<em>Category</em> and <em>Values</em>)
-are left-aligned.</p></li>
-<li><p>For <strong>cross tables</strong>, only the first column (row variable) is left-aligned.</p></li>
-</ul><p>The function supports Unicode line-drawing characters and colored separators
-using the <strong>crayon</strong> package, with graceful fallback to monochrome output when
-color is not supported.
-If the table exceeds the console width, it is split into stacked horizontal
-panels while repeating the left-most identifier columns.</p>
+    <p>Table type is auto-detected from <code>x</code> and drives the default
+alignment when <code>align_left_cols = NULL</code>:</p><ul><li><p><strong>frequency table</strong> (a <code>Category</code> column is present): the
+first two columns (<code>Category</code>, <code>Values</code>) are left-aligned.</p></li>
+<li><p><strong>cross table</strong> (otherwise): only the first column (row
+variable) is left-aligned.</p></li>
+</ul><p>If the table is wider than the console, it is split into stacked
+horizontal panels with the left-most identifier columns repeated
+on each panel. Unicode line-drawing characters are used by
+default; coloured separators are drawn when the terminal supports
+ANSI colour (<code><a href="http://r-lib.github.io/crayon/reference/has_color.html" class="external-link">crayon::has_color()</a></code>) and fall back to monochrome
+otherwise.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

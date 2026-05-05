@@ -1,9 +1,11 @@
 # Copy data to the clipboard
 
-`copy_clipboard()` copies a data frame, matrix, array (2D or higher),
-table or vector to the clipboard. You can paste the result into a text
-editor (e.g. Notepad++, Sublime Text), a spreadsheet (e.g. Excel,
-LibreOffice Calc), or a word processor (e.g. Word).
+Copies a `data.frame`, matrix, 2D or higher array, table, or atomic
+vector to the system clipboard, ready to paste into a text editor,
+spreadsheet, or word processor. Wraps
+[`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md)
+(a Suggests dependency); requires `clipr` to be installed and a
+clipboard backend to be available on the platform.
 
 ## Usage
 
@@ -23,36 +25,37 @@ copy_clipboard(
 
 - x:
 
-  A data frame, matrix, 2D array, 3D array, table, or atomic vector to
+  A `data.frame`, matrix, 2D array, 3D array, table, or atomic vector to
   be copied.
 
 - row.names.as.col:
 
   Logical or character. If `FALSE` (the default), row names are not
   added as a column. If `TRUE`, a column named `"rownames"` is
-  prepended. If a character string is supplied, it is used as the column
-  name for row names.
+  prepended. If a character string, it is used as the column name for
+  the promoted row names. Ignored (with a warning) when `x` is neither a
+  `data.frame` nor a strict matrix.
 
 - row.names:
 
-  Logical. If `TRUE` (the default), includes row names in the clipboard
-  output. If `FALSE`, row names are omitted.
+  Logical. If `TRUE` (the default), row names are included in the
+  clipboard output; `FALSE` omits them.
 
 - col.names:
 
-  Logical. If `TRUE` (the default), includes column names in the
-  clipboard output. If `FALSE`, column names are omitted.
+  Logical. If `TRUE` (the default), column names are included in the
+  clipboard output; `FALSE` omits them.
 
 - show_message:
 
-  Logical. If `TRUE` (the default), displays a success message after
-  copying. If `FALSE`, no success message is printed.
+  Logical. If `TRUE` (the default), prints a success message after
+  copying.
 
 - quiet:
 
   Logical. If `FALSE` (the default), messages are shown. If `TRUE`,
-  suppresses all messages, including success, coercion notices, and
-  warnings.
+  suppresses all messages, including the success message, coercion
+  notices, and warnings.
 
 - ...:
 
@@ -61,21 +64,20 @@ copy_clipboard(
 
 ## Value
 
-Invisibly returns the object `x`. The main purpose is the side effect of
-copying data to the clipboard.
+Invisibly returns `x`; the function is called for its clipboard side
+effect.
 
 ## Details
 
-Note: Objects that are not data frames or 2D matrices (e.g. atomic
-vectors, arrays, tables) are automatically converted to character when
-copied to the clipboard, as required by
+Objects that are not `data.frame`s or 2D matrices (atomic vectors,
+arrays, tables) are automatically coerced to character on the way to the
+clipboard, as required by
 [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
-The original object in R remains unchanged.
+The R-side object passed to `x` is never mutated.
 
-For multidimensional arrays (e.g. 3D arrays), the entire array is
-flattened into a 1D character vector, with each element on a new line.
-To preserve a tabular structure, you should extract a 2D slice before
-copying. For example: `copy_clipboard(my_array[, , 1])`.
+Multidimensional arrays (3D and higher) are flattened to a 1D character
+vector with one element per line. To preserve a tabular layout, extract
+a 2D slice first, e.g. `copy_clipboard(my_array[, , 1])`.
 
 ## Examples
 

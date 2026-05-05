@@ -5,9 +5,17 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Copy data to the clipboard — copy_clipboard"><meta name="description" content="copy_clipboard() copies a data frame, matrix, array (2D or higher), table or vector to the clipboard.
-You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a spreadsheet (e.g. Excel, LibreOffice Calc), or a word processor (e.g. Word)."><meta property="og:description" content="copy_clipboard() copies a data frame, matrix, array (2D or higher), table or vector to the clipboard.
-You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a spreadsheet (e.g. Excel, LibreOffice Calc), or a word processor (e.g. Word)."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Copy data to the clipboard — copy_clipboard"><meta name="description" content="Copies a data.frame, matrix, 2D or higher array, table, or
+atomic vector to the system clipboard, ready to paste into a
+text editor, spreadsheet, or word processor. Wraps
+clipr::write_clip() (a Suggests dependency); requires clipr
+to be installed and a clipboard backend to be available on the
+platform."><meta property="og:description" content="Copies a data.frame, matrix, 2D or higher array, table, or
+atomic vector to the system clipboard, ready to paste into a
+text editor, spreadsheet, or word processor. Wraps
+clipr::write_clip() (a Suggests dependency); requires clipr
+to be installed and a clipboard backend to be available on the
+platform."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -60,8 +68,12 @@ You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a sp
     </div>
 
     <div class="ref-description section level2">
-    <p><code>copy_clipboard()</code> copies a data frame, matrix, array (2D or higher), table or vector to the clipboard.
-You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a spreadsheet (e.g. Excel, LibreOffice Calc), or a word processor (e.g. Word).</p>
+    <p>Copies a <code>data.frame</code>, matrix, 2D or higher array, table, or
+atomic vector to the system clipboard, ready to paste into a
+text editor, spreadsheet, or word processor. Wraps
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code> (a Suggests dependency); requires <code>clipr</code>
+to be installed and a clipboard backend to be available on the
+platform.</p>
     </div>
 
     <div class="section level2">
@@ -82,27 +94,38 @@ You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a sp
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A data frame, matrix, 2D array, 3D array, table, or atomic vector to be copied.</p></dd>
+<dd><p>A <code>data.frame</code>, matrix, 2D array, 3D array, table, or
+atomic vector to be copied.</p></dd>
 
 
 <dt id="arg-row-names-as-col">row.names.as.col<a class="anchor" aria-label="anchor" href="#arg-row-names-as-col"></a></dt>
-<dd><p>Logical or character. If <code>FALSE</code> (the default), row names are not added as a column. If <code>TRUE</code>, a column named <code>"rownames"</code> is prepended. If a character string is supplied, it is used as the column name for row names.</p></dd>
+<dd><p>Logical or character. If <code>FALSE</code> (the
+default), row names are not added as a column. If <code>TRUE</code>, a
+column named <code>"rownames"</code> is prepended. If a character string,
+it is used as the column name for the promoted row names.
+Ignored (with a warning) when <code>x</code> is neither a <code>data.frame</code>
+nor a strict matrix.</p></dd>
 
 
 <dt id="arg-row-names">row.names<a class="anchor" aria-label="anchor" href="#arg-row-names"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (the default), includes row names in the clipboard output. If <code>FALSE</code>, row names are omitted.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), row names are
+included in the clipboard output; <code>FALSE</code> omits them.</p></dd>
 
 
 <dt id="arg-col-names">col.names<a class="anchor" aria-label="anchor" href="#arg-col-names"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (the default), includes column names in the clipboard output. If <code>FALSE</code>, column names are omitted.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), column names
+are included in the clipboard output; <code>FALSE</code> omits them.</p></dd>
 
 
 <dt id="arg-show-message">show_message<a class="anchor" aria-label="anchor" href="#arg-show-message"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (the default), displays a success message after copying. If <code>FALSE</code>, no success message is printed.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), prints a
+success message after copying.</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), messages are shown. If <code>TRUE</code>, suppresses all messages, including success, coercion notices, and warnings.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), messages are
+shown. If <code>TRUE</code>, suppresses all messages, including the
+success message, coercion notices, and warnings.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -111,14 +134,20 @@ You can paste the result into a text editor (e.g. Notepad++, Sublime Text), a sp
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Invisibly returns the object <code>x</code>. The main purpose is the side effect of copying data to the clipboard.</p>
+    <p>Invisibly returns <code>x</code>; the function is called for its
+clipboard side effect.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Note: Objects that are not data frames or 2D matrices (e.g. atomic vectors, arrays, tables) are automatically converted to character
-when copied to the clipboard, as required by <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The original object in R remains unchanged.</p>
-<p>For multidimensional arrays (e.g. 3D arrays), the entire array is flattened into a 1D character vector, with each element on a new line.
-To preserve a tabular structure, you should extract a 2D slice before copying. For example: <code>copy_clipboard(my_array[, , 1])</code>.</p>
+    <p>Objects that are not <code>data.frame</code>s or 2D matrices (atomic
+vectors, arrays, tables) are automatically coerced to character
+on the way to the clipboard, as required by
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The R-side object passed to <code>x</code> is never
+mutated.</p>
+<p>Multidimensional arrays (3D and higher) are flattened to a 1D
+character vector with one element per line. To preserve a
+tabular layout, extract a 2D slice first, e.g.
+<code>copy_clipboard(my_array[, , 1])</code>.</p>
     </div>
 
     <div class="section level2">

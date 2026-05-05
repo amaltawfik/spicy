@@ -60,9 +60,14 @@ p-value tests H0: D = 0 (Wald z-test).
 
 Somers' D is an asymmetric ordinal measure defined as \\d = (C - D) /
 (C + D + T)\\, where \\T\\ is the number of pairs tied on the
-independent variable. The symmetric version is the harmonic mean of the
-two asymmetric values. Standard error formulas follow the DescTools
-implementations (Signorell et al., 2024); see
+independent variable. The symmetric version (`direction = "symmetric"`)
+is the *harmonic* mean of the two asymmetric values, matching the SPSS /
+PSPP convention; this is **not** identical to Kendall's Tau-b (which is
+the *geometric* mean of the same two quantities), although the two often
+agree to two decimals. No analytic SE / CI is reported for the symmetric
+form (DescTools follows the same convention). Standard error formulas
+for the asymmetric directions follow the DescTools implementations
+(Signorell et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

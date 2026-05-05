@@ -1,13 +1,9 @@
 # Build a formatted ASCII table
 
-Low-level internal function that constructs a visually aligned ASCII
-table from a `data.frame`. It supports Unicode characters, ANSI colors,
-dynamic width adjustment, left/right alignment, and spacing control.
-This function is primarily used internally by higher-level wrappers such
-as
-[`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
-or
-[`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md).
+Low-level rendering engine that constructs a visually aligned ASCII
+table from a `data.frame`. Supports Unicode line-drawing characters,
+ANSI colors via crayon, automatic colored-text-aware width detection,
+configurable padding, and per-column alignment.
 
 ## Usage
 
@@ -73,8 +69,10 @@ build_ascii_table(
 
 - align_left_cols:
 
-  Integer vector of column indices to left-align. Defaults to `c(1, 2)`
-  for frequency tables (Category + Values).
+  Integer vector of column indices to left-align. Defaults to
+  `c(1L, 2L)` (the layout used by
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)-style
+  tables); pass an explicit vector for other layouts.
 
 - align_center_cols:
 
@@ -112,15 +110,12 @@ suitable for direct printing with
 
 ## Details
 
-`build_ascii_table()` is the rendering engine that produces the aligned
-text layout of **spicy-formatted tables**. It automatically detects cell
-widths (including colored text), inserts Unicode separators, and applies
-a configurable amount of horizontal padding.
-
-For most users, this function should not be called directly. Instead,
-use
+Most users should not call this directly: it is wrapped by
 [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
-which adds headers, notes, and alignment logic automatically.
+and the internal `print.spicy_*` methods, which add titles, notes, and
+table-type-aware alignment defaults. Reach for `build_ascii_table()`
+only when you need to render an arbitrary `data.frame` to a string with
+the same look as spicy's tables.
 
 ## See also
 

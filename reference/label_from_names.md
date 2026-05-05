@@ -9,7 +9,7 @@ on the column. The label attribute follows the
 so labelled-aware tooling (`labelled`, `haven`,
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
-...) reads it transparently. Splitting at the first `sep` means the
+...) reads it transparently. Splitting at the *first* `sep` means the
 label itself may contain the separator.
 
 ## Usage
@@ -43,19 +43,17 @@ are passed through unchanged with no label attached.
 
 ## Details
 
-This is especially useful for **LimeSurvey CSV exports** when using
-*Export results -\> Export format: CSV -\> Headings: Question code &
-question text*, where column names look like `"code. question text"`.
-The default separator is `". "` to match that export.
+Designed primarily for **LimeSurvey CSV exports** with *Headings:
+Question code & question text*, which produce column names like
+`"code. question text"`. The default separator `". "` matches that
+export.
 
 LimeSurvey question codes (the part *before* `sep`) are restricted to
-alphanumeric characters, must start with a letter, and cannot contain
-spaces or special characters. The column name therefore needs to encode
-both the code *and* the question text, separated by a literal string –
-there is no way to recover a label from a code alone. If your export
-uses *Headings: Question code* (codes only), re-export with *Headings:
-Question code & question text* (which inserts the default `". "`
-separator) before calling this function.
+alphanumerics, must start with a letter, and contain no spaces – so the
+column name has to carry both the code and the question text. If your
+export uses *Headings: Question code* (codes only), re-export with
+*Question code & question text* before calling this function; there is
+no way to recover a label from a code alone.
 
 ## Errors
 

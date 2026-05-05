@@ -1,16 +1,10 @@
 # Print a spicy-formatted ASCII table
 
-User-facing helper that prints a visually aligned, spicy-styled ASCII
-table created by functions such as
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) or
-[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-It automatically adjusts column alignment, spacing, and separators for
-improved readability in console outputs.
-
-This function wraps the internal renderer
-[`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md),
-adding optional titles, notes, and automatic alignment rules depending
-on the type of table.
+User-facing helper that prints a spicy-styled ASCII table to the console
+with optional title and note, table-type-aware alignment defaults, and
+automatic horizontal panelling when the table is wider than the console.
+Wraps the internal renderer
+[`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
 
 ## Usage
 
@@ -115,21 +109,21 @@ console.
 
 ## Details
 
-`spicy_print_table()` detects whether the table represents frequencies
-(`freq`-style) or cross-tabulations (`cross`-style) and adjusts
-formatting accordingly:
+Table type is auto-detected from `x` and drives the default alignment
+when `align_left_cols = NULL`:
 
-- For **frequency tables**, the first two columns (*Category* and
-  *Values*) are left-aligned.
+- **frequency table** (a `Category` column is present): the first two
+  columns (`Category`, `Values`) are left-aligned.
 
-- For **cross tables**, only the first column (row variable) is
+- **cross table** (otherwise): only the first column (row variable) is
   left-aligned.
 
-The function supports Unicode line-drawing characters and colored
-separators using the **crayon** package, with graceful fallback to
-monochrome output when color is not supported. If the table exceeds the
-console width, it is split into stacked horizontal panels while
-repeating the left-most identifier columns.
+If the table is wider than the console, it is split into stacked
+horizontal panels with the left-most identifier columns repeated on each
+panel. Unicode line-drawing characters are used by default; coloured
+separators are drawn when the terminal supports ANSI colour
+([`crayon::has_color()`](http://r-lib.github.io/crayon/reference/has_color.md))
+and fall back to monochrome otherwise.
 
 ## See also
 

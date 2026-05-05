@@ -122,11 +122,17 @@ The p-value tests H0: D = 0 (Wald z-test).</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Somers' D is an asymmetric ordinal measure defined as
 \(d = (C - D) / (C + D + T)\), where \(T\) is the
-number of pairs tied on the independent variable.
-The symmetric version is the harmonic mean of the two
-asymmetric values.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
+number of pairs tied on the independent variable. The
+symmetric version (<code>direction = "symmetric"</code>) is the
+<em>harmonic</em> mean of the two asymmetric values, matching the
+SPSS / PSPP convention; this is <strong>not</strong> identical to
+Kendall's Tau-b (which is the <em>geometric</em> mean of the same
+two quantities), although the two often agree to two
+decimals. No analytic SE / CI is reported for the symmetric
+form (DescTools follows the same convention).
+Standard error formulas for the asymmetric directions follow
+the DescTools implementations (Signorell et al., 2024); see
+<code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

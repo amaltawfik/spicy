@@ -5,17 +5,15 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Build a formatted ASCII table — build_ascii_table"><meta name="description" content="Low-level internal function that constructs a visually aligned ASCII table
-from a data.frame.
-It supports Unicode characters, ANSI colors, dynamic width adjustment,
-left/right alignment, and spacing control.
-This function is primarily used internally by higher-level wrappers such as
-spicy_print_table() or print.spicy_freq_table()."><meta property="og:description" content="Low-level internal function that constructs a visually aligned ASCII table
-from a data.frame.
-It supports Unicode characters, ANSI colors, dynamic width adjustment,
-left/right alignment, and spacing control.
-This function is primarily used internally by higher-level wrappers such as
-spicy_print_table() or print.spicy_freq_table()."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Build a formatted ASCII table — build_ascii_table"><meta name="description" content="Low-level rendering engine that constructs a visually aligned
+ASCII table from a data.frame. Supports Unicode line-drawing
+characters, ANSI colors via crayon, automatic
+colored-text-aware width detection, configurable padding, and
+per-column alignment."><meta property="og:description" content="Low-level rendering engine that constructs a visually aligned
+ASCII table from a data.frame. Supports Unicode line-drawing
+characters, ANSI colors via crayon, automatic
+colored-text-aware width detection, configurable padding, and
+per-column alignment."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -68,12 +66,11 @@ spicy_print_table() or print.spicy_freq_table()."><meta property="og:image" cont
     </div>
 
     <div class="ref-description section level2">
-    <p>Low-level internal function that constructs a visually aligned ASCII table
-from a <code>data.frame</code>.
-It supports Unicode characters, ANSI colors, dynamic width adjustment,
-left/right alignment, and spacing control.
-This function is primarily used internally by higher-level wrappers such as
-<code><a href="spicy_print_table.html">spicy_print_table()</a></code> or <code><a href="print.spicy_freq_table.html">print.spicy_freq_table()</a></code>.</p>
+    <p>Low-level rendering engine that constructs a visually aligned
+ASCII table from a <code>data.frame</code>. Supports Unicode line-drawing
+characters, ANSI colors via <span class="pkg">crayon</span>, automatic
+colored-text-aware width detection, configurable padding, and
+per-column alignment.</p>
     </div>
 
     <div class="section level2">
@@ -139,8 +136,10 @@ The color is applied only when ANSI color support is available
 
 
 <dt id="arg-align-left-cols">align_left_cols<a class="anchor" aria-label="anchor" href="#arg-align-left-cols"></a></dt>
-<dd><p>Integer vector of column indices to left-align.
-Defaults to <code>c(1, 2)</code> for frequency tables (Category + Values).</p></dd>
+<dd><p>Integer vector of column indices to
+left-align. Defaults to <code>c(1L, 2L)</code> (the layout used by
+<code><a href="freq.html">freq()</a></code>-style tables); pass an explicit vector for other
+layouts.</p></dd>
 
 
 <dt id="arg-align-center-cols">align_center_cols<a class="anchor" aria-label="anchor" href="#arg-align-center-cols"></a></dt>
@@ -177,13 +176,12 @@ suitable for direct printing with <code><a href="https://rdrr.io/r/base/cat.html
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>build_ascii_table()</code> is the rendering engine that produces the aligned text
-layout of <strong>spicy-formatted tables</strong>.
-It automatically detects cell widths (including colored text), inserts Unicode
-separators, and applies a configurable amount of horizontal padding.</p>
-<p>For most users, this function should not be called directly. Instead, use
-<code><a href="spicy_print_table.html">spicy_print_table()</a></code> which adds headers, notes, and alignment logic
-automatically.</p>
+    <p>Most users should not call this directly: it is wrapped by
+<code><a href="spicy_print_table.html">spicy_print_table()</a></code> and the internal <code>print.spicy_*</code> methods,
+which add titles, notes, and table-type-aware alignment defaults.
+Reach for <code>build_ascii_table()</code> only when you need to render an
+arbitrary <code>data.frame</code> to a string with the same look as
+spicy's tables.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

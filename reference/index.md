@@ -17,15 +17,15 @@
 ## Tabulation
 
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-  : Row-wise Count of Specific or Special Values
+  : Row-wise count of specific or special values
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) :
-  Row Means with Optional Minimum Valid Values
+  Row means with an optional minimum-valid-values rule
 - [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) :
-  Row Sums with Optional Minimum Valid Values
+  Row sums with an optional minimum-valid-values rule
 
 ## Measures of Association
 
