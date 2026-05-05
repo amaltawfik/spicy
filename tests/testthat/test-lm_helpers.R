@@ -1,7 +1,7 @@
 # Unit tests for the shared lm-input-resolution helpers in
-# `R/lm_helpers.R`. These helpers are reused by `table_continuous_lm()`
-# and (in 0.13.0) `table_regression()`, so their contract must hold
-# independently of either consumer.
+# `R/lm_helpers.R`. These helpers are designed to be reused by
+# future regression-table builders, so their contract is tested
+# independently of any specific consumer.
 
 # ---- resolve_covariates_argument ------------------------------------------
 

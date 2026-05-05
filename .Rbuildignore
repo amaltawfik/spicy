@@ -19,3 +19,6 @@
 ^Meta$
 ^cobertura\.xml$
 ^tools/validation$
+^\.Rhistory$
+^\.Rdata$
+^\.DS_Store$
