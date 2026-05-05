@@ -108,4 +108,4 @@
   tables
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
-  : Spicy Table Engine: Frequency and Cross-tabulation Rendering
+  : Spicy table engine

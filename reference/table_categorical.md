@@ -357,7 +357,6 @@ for two-way cross-tabulations;
 one-way frequency tables.
 
 Other spicy tables:
-[`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 

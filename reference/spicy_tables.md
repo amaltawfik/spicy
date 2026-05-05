@@ -1,60 +1,39 @@
-# Spicy Table Engine: Frequency and Cross-tabulation Rendering
+# Spicy table engine
 
-The *spicy table engine* provides a cohesive set of tools for creating
-and printing formatted ASCII tables in R, designed for descriptive
-statistics.
+Index page for the ASCII rendering engine that produces every spicy
+console table
+([`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+the `table_*()` family, and the association-measure printers). The
+engine supports Unicode line drawing, ANSI colours via crayon (with
+monochrome fallback), automatic colour-aware width detection,
+configurable integer padding (`0L` / `2L` / `4L`), per-column alignment,
+and horizontal panelling for tables wider than the console.
 
-Functions in this family include:
+## User-facing entry points
 
-- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) —
-  frequency tables with support for weights, labelled data, and
-  cumulative percentages
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) –
+  one-way frequency tables
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  – two-way cross-tabulations
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  – multi-variable summary tables
+
+## Rendering primitives (internal API)
 
 - [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
-  — general-purpose ASCII table printer
+  – user-facing wrapper that adds title, note, table-type-aware
+  alignment defaults, and panelling.
 
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
-  — internal rendering engine for column alignment and formatting
-
-## Details
-
-All functions in this family share a common philosophy:
-
-- Console-friendly display with Unicode box-drawing characters
-
-- Consistent alignment and spacing across outputs
-
-- Automatic detection of variable type (`factor`, `labelled`, `numeric`)
-
-- Optional integration of variable labels and weighting information
-
-## Core functions
-
-- **[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)** —
-  Main entry point for generating frequency tables.
-
-- **[`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)**
-  — Applies formatting and optional titles or notes.
-
-- **[`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)**
-  — Internal engine handling padding, alignment, and box rules.
-
-## Output styling
-
-The spicy table engine supports multiple padding options via `padding`:
-`"compact"` (default), `"normal"`, and `"wide"`. Horizontal and vertical
-rules can be customized, and colors are supported when the terminal
-allows ANSI color output (via the **crayon** package).
+  – the underlying string renderer.
 
 ## See also
 
-[`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
-for the specialized frequency display method.
-[`labelled::to_factor()`](https://larmarange.github.io/labelled/reference/to_factor.html)
-and [`dplyr::pull()`](https://dplyr.tidyverse.org/reference/pull.html)
-for data transformations.
-
-Other spicy tables:
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+[spicy](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
+for the full package overview, including the API stability tiers and the
+classed-condition taxonomy.
