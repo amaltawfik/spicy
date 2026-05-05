@@ -221,10 +221,14 @@ test_that("code_book() sanitizes export filenames", {
   expect_equal(code_book_filenames(cb), rep("Resume_final", 3))
 })
 
-test_that("code_book_sanitize_filename truncates names over 120 chars", {
+test_that("code_book_sanitize_filename preserves long names verbatim", {
+  # Stata / SPSS convention: never silently truncate user-supplied
+  # identifiers. Filenames that overflow the platform limit surface
+  # as a noisy OS-level download error from the browser rather than
+  # as a silently-truncated file.
   long <- paste(rep("a", 200L), collapse = "")
   out <- code_book_sanitize_filename(long, arg = "title", fallback = "Codebook")
-  expect_equal(nchar(out), 120L)
+  expect_equal(out, long)
 })
 
 test_that("code_book_sanitize_filename: empty after sanitisation + NULL fallback errors", {

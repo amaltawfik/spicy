@@ -48,6 +48,16 @@ code and the question text. If your export uses \emph{Headings:
 Question code} (codes only), re-export with \emph{Question code &
 question text} before calling this function; there is no way to
 recover a label from a code alone.
+
+Whitespace handling: the \strong{name} (left of \code{sep}) is trimmed
+of surrounding whitespace, because R column names are intended
+to be referenced bare (without backticks) and leading / trailing
+whitespace would force quoting throughout the user's downstream
+code. The \strong{label} (right of \code{sep}) is preserved verbatim,
+following the Stata / SPSS convention that variable labels are
+faithful user content -- spicy does not silently mutate label
+strings. To trim labels yourself, post-process with
+\code{labelled::var_label(df) <- lapply(labelled::var_label(df), trimws)}.
 }
 \section{Errors}{
 

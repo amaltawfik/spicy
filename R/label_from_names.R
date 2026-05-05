@@ -25,6 +25,17 @@
 #' question text* before calling this function; there is no way to
 #' recover a label from a code alone.
 #'
+#' Whitespace handling: the **name** (left of `sep`) is trimmed
+#' of surrounding whitespace, because R column names are intended
+#' to be referenced bare (without backticks) and leading / trailing
+#' whitespace would force quoting throughout the user's downstream
+#' code. The **label** (right of `sep`) is preserved verbatim,
+#' following the Stata / SPSS convention that variable labels are
+#' faithful user content -- spicy does not silently mutate label
+#' strings. To trim labels yourself, post-process with
+#' `labelled::var_label(df) <- lapply(labelled::var_label(df),
+#' trimws)`.
+#'
 #' @param df A `data.frame` or tibble with column names of the form
 #'   \verb{"name<sep>label"} (e.g. `"code. question text"`).
 #' @param sep Character string used as separator between name and

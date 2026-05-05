@@ -46,12 +46,13 @@ code_book_sanitize_filename <- function(filename, arg, fallback = NULL) {
     )
   }
 
-  max_length <- 120L
-  if (nchar(filename, type = "chars") > max_length) {
-    filename <- substr(filename, 1L, max_length)
-    filename <- gsub("_+$", "", filename, perl = TRUE)
-  }
-
+  # No length cap. spicy follows the Stata / SPSS convention of
+  # never silently mutating user-supplied identifiers: a title or
+  # filename so long that it overflows the platform filename limit
+  # (Windows MAX_PATH 260, macOS / ext4 255 bytes per component)
+  # surfaces as a noisy OS-level download error from the browser
+  # rather than as a silently-truncated file. Users diagnose and
+  # rename; the package never lies about what it produced.
   filename
 }
 

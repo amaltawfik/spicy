@@ -37,6 +37,19 @@
   packages for the cross-validation tests (no runtime dependency
   change).
 
+## Breaking changes
+
+* `code_book()` no longer silently truncates the export filename
+  to 120 characters. spicy now follows the Stata / SPSS
+  convention of preserving user-supplied identifiers verbatim:
+  if a `title` or `filename` produces a basename so long that the
+  platform filename limit (Windows MAX_PATH 260 incl. path,
+  macOS / ext4 255 bytes per component) is exceeded, the
+  download surfaces a noisy OS-level error instead of a
+  silently-shortened file. **Migration**: shorten very long
+  titles explicitly, or pass an explicit `filename =` to
+  `code_book()`.
+
 ## Internal
 
 * `R/table_continuous_lm.R` (3394 lines) split into four files on
