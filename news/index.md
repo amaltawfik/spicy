@@ -40,6 +40,24 @@
 - `emmeans` and `marginaleffects` added to `Suggests` as oracle packages
   for the cross-validation tests (no runtime dependency change).
 
+### Bug fixes
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  no longer silently overwrites a user’s y-variable level when that
+  level is literally named `"N"` or `"Total"`. With `percent = "row"`
+  the internal sample-size column was assigned via `df_out$N <- ...`,
+  clobbering a y-level called `N` (e.g. a Y/N answer coding); the
+  parallel `df_out$Total <- ...` had the same problem with a y-level
+  named `Total`. Both produced plausible-looking but corrupt output. The
+  function now auto-renames the conflicting **margin** column
+  (e.g. `"N"` -\> `"N_1"`, `"Total"` -\> `"Total_1"`) so the user’s data
+  column is preserved intact, and emits a `spicy_renamed_column` warning
+  pointing at the rename and at the recommended fix (rename the
+  conflicting y-level back to a non-clashing name to restore the default
+  `"N"` / `"Total"` margin labels). Companion to the 0.11.0 fix that
+  made the same situation safe at the row level via `total_row_idx` /
+  `n_row_idx` attributes; this commit closes the column-level twin.
+
 ### Breaking changes
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)

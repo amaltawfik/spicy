@@ -73,6 +73,11 @@
 </ul></div>
 </div>
 <div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> no longer silently overwrites a user’s y-variable level when that level is literally named <code>"N"</code> or <code>"Total"</code>. With <code>percent = "row"</code> the internal sample-size column was assigned via <code>df_out$N &lt;- ...</code>, clobbering a y-level called <code>N</code> (e.g. a Y/N answer coding); the parallel <code>df_out$Total &lt;- ...</code> had the same problem with a y-level named <code>Total</code>. Both produced plausible-looking but corrupt output. The function now auto-renames the conflicting <strong>margin</strong> column (e.g. <code>"N"</code> -&gt; <code>"N_1"</code>, <code>"Total"</code> -&gt; <code>"Total_1"</code>) so the user’s data column is preserved intact, and emits a <code>spicy_renamed_column</code> warning pointing at the rename and at the recommended fix (rename the conflicting y-level back to a non-clashing name to restore the default <code>"N"</code> / <code>"Total"</code> margin labels). Companion to the 0.11.0 fix that made the same situation safe at the row level via <code>total_row_idx</code> / <code>n_row_idx</code> attributes; this commit closes the column-level twin.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/code_book.html">code_book()</a></code> no longer silently truncates the export filename to 120 characters. spicy now follows the Stata / SPSS convention of preserving user-supplied identifiers verbatim: if a <code>title</code> or <code>filename</code> produces a basename so long that the platform filename limit (Windows MAX_PATH 260 incl. path, macOS / ext4 255 bytes per component) is exceeded, the download surfaces a noisy OS-level error instead of a silently-shortened file. <strong>Migration</strong>: shorten very long titles explicitly, or pass an explicit <code>filename =</code> to <code><a href="../reference/code_book.html">code_book()</a></code>.</li>
