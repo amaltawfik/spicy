@@ -97,13 +97,6 @@
 
       <dl><dt>
 
-          <code><a href="count_n.html">count_n()</a></code>
-
-        </dt>
-        <dd>Row-wise count of specific or special values</dd>
-
-        <dt>
-
           <code><a href="cross_tab.html">cross_tab()</a></code>
 
         </dt>
@@ -115,6 +108,22 @@
 
         </dt>
         <dd>Frequency Table</dd>
+      </dl></div><div class="section level2">
+      <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="count_n.html">count_n()</a></code>
+
+        </dt>
+        <dd>Row-wise count of specific or special values</dd>
 
         <dt>
 
@@ -310,7 +319,7 @@
       </dl></div><div class="section level2">
       <h2 id="advanced-s-methods">Advanced S3 methods<a class="anchor" aria-label="anchor" href="#advanced-s-methods"></a></h2>
 
-
+      <div class="section-desc"><p>Exported S3 methods. Most users dispatch them implicitly (<code>print(x)</code>, <code>broom::tidy(x)</code>, <code>as.data.frame(x)</code>, <code>tibble::as_tibble(x)</code>). Documented here for direct invocation with custom arguments (e.g., <code>print(..., digits = 2)</code>).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -361,10 +370,59 @@
 
         <dt>
 
+          <code><a href="print.spicy_cross_table_list.html">print(<i>&lt;spicy_cross_table_list&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Internal print method for lists of cross-tab tables</dd>
+
+        <dt>
+
           <code><a href="print.spicy_freq_table.html">print(<i>&lt;spicy_freq_table&gt;</i>)</a></code>
 
         </dt>
         <dd>Print method for <code><a href="../reference/freq.html">freq()</a></code> tables</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_categorical_table.html">as.data.frame(<i>&lt;spicy_categorical_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_categorical_table.html">as_tibble(<i>&lt;spicy_categorical_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_categorical_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_continuous_lm_table.html">as.data.frame(<i>&lt;spicy_continuous_lm_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_continuous_lm_table.html">as_tibble(<i>&lt;spicy_continuous_lm_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_continuous_lm_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame(<i>&lt;spicy_continuous_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_continuous_table.html">as_tibble(<i>&lt;spicy_continuous_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_continuous_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_categorical_table.html">tidy(<i>&lt;spicy_categorical_table&gt;</i>)</a></code> <code><a href="tidy.spicy_categorical_table.html">glance(<i>&lt;spicy_categorical_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_categorical_table</code></dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_continuous_lm_table.html">tidy(<i>&lt;spicy_continuous_lm_table&gt;</i>)</a></code> <code><a href="tidy.spicy_continuous_lm_table.html">glance(<i>&lt;spicy_continuous_lm_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_continuous_lm_table</code></dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_continuous_table.html">tidy(<i>&lt;spicy_continuous_table&gt;</i>)</a></code> <code><a href="tidy.spicy_continuous_table.html">glance(<i>&lt;spicy_continuous_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_continuous_table</code></dd>
 
         <dt>
 

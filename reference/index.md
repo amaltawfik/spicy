@@ -16,12 +16,15 @@
 
 ## Tabulation
 
-- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-  : Row-wise count of specific or special values
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   : Cross-tabulation
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) :
   Frequency Table
+
+## Row-wise summaries
+
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  : Row-wise count of specific or special values
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) :
   Row means with an optional minimum-valid-values rule
 - [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) :
@@ -82,6 +85,11 @@
 
 ## Advanced S3 methods
 
+Exported S3 methods. Most users dispatch them implicitly (`print(x)`,
+`broom::tidy(x)`, `as.data.frame(x)`, `tibble::as_tibble(x)`).
+Documented here for direct invocation with custom arguments (e.g.,
+`print(..., digits = 2)`).
+
 - [`print(`*`<spicy_assoc_detail>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_detail.md)
   : Print a detailed association measure result
 
@@ -100,12 +108,51 @@
 - [`print(`*`<spicy_cross_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md)
   : Print method for spicy_cross_table objects
 
+- [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table_list.md)
+  : Internal print method for lists of cross-tab tables
+
 - [`print(`*`<spicy_freq_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
   :
 
   Print method for
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
+
+- [`as.data.frame(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.md)
+  [`as_tibble(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.md)
+  :
+
+  Coerce a `spicy_categorical_table` to a plain data frame or tibble
+
+- [`as.data.frame(`*`<spicy_continuous_lm_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.md)
+  [`as_tibble(`*`<spicy_continuous_lm_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.md)
+  :
+
+  Coerce a `spicy_continuous_lm_table` to a plain data frame or tibble
+
+- [`as.data.frame(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
+  [`as_tibble(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
+  :
+
+  Coerce a `spicy_continuous_table` to a plain data frame or tibble
+
+- [`tidy(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
+  [`glance(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
+  :
+
+  Tidying methods for a `spicy_categorical_table`
+
+- [`tidy(`*`<spicy_continuous_lm_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.md)
+  [`glance(`*`<spicy_continuous_lm_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.md)
+  :
+
+  Tidying methods for a `spicy_continuous_lm_table`
+
+- [`tidy(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.md)
+  [`glance(`*`<spicy_continuous_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.md)
+  :
+
+  Tidying methods for a `spicy_continuous_table`
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy table engine

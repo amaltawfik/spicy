@@ -30,12 +30,13 @@ With spicy, you can:
   [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
   [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
-  and 8 other coefficients; use
+  and 6 other coefficients; use
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   to compute the full set at once.
 - **Build categorical summary tables in R** with
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  for gt, tinytable, flextable, Excel, Word, or clipboard export.
+  for console, gt, tinytable, flextable, Excel, Word, or clipboard
+  output.
 - **Build continuous summary tables in R** with
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for console, gt, tinytable, flextable, Excel, Word, or clipboard
