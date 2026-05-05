@@ -39,10 +39,11 @@ With spicy, you can:
 - **Create cross-tabulations in R** with `cross_tab()`, including
   percentages, chi-squared tests, and effect sizes.
 - **Measure associations** with `cramer_v()`, `phi()`, `gamma_gk()`,
-  `kendall_tau_b()`, `somers_d()` and 8 other coefficients; use
+  `kendall_tau_b()`, `somers_d()` and 6 other coefficients; use
   `assoc_measures()` to compute the full set at once.
 - **Build categorical summary tables in R** with `table_categorical()`
-  for gt, tinytable, flextable, Excel, Word, or clipboard export.
+  for console, gt, tinytable, flextable, Excel, Word, or clipboard
+  output.
 - **Build continuous summary tables in R** with `table_continuous()` for
   console, gt, tinytable, flextable, Excel, Word, or clipboard output.
 - **Build model-based continuous summary tables in R** with

@@ -87,9 +87,11 @@ reference:
       - vl
   - title: Tabulation
     contents:
-      - count_n
       - cross_tab
       - freq
+  - title: Row-wise summaries
+    contents:
+      - count_n
       - mean_n
       - sum_n
   - title: Measures of Association
@@ -122,6 +124,12 @@ reference:
       - build_ascii_table
       - spicy_print_table
   - title: Advanced S3 methods
+    desc: >
+      Exported S3 methods. Most users dispatch them implicitly
+      (`print(x)`, `broom::tidy(x)`, `as.data.frame(x)`,
+      `tibble::as_tibble(x)`). Documented here for direct
+      invocation with custom arguments (e.g., `print(...,
+      digits = 2)`).
     contents:
       - print.spicy_assoc_detail
       - print.spicy_assoc_table
@@ -129,5 +137,12 @@ reference:
       - print.spicy_continuous_lm_table
       - print.spicy_continuous_table
       - print.spicy_cross_table
+      - print.spicy_cross_table_list
       - print.spicy_freq_table
+      - as.data.frame.spicy_categorical_table
+      - as.data.frame.spicy_continuous_lm_table
+      - as.data.frame.spicy_continuous_table
+      - tidy.spicy_categorical_table
+      - tidy.spicy_continuous_lm_table
+      - tidy.spicy_continuous_table
       - spicy_tables
