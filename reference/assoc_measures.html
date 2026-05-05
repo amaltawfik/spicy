@@ -101,10 +101,20 @@ result (default <code>3</code>).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data frame with columns <code>measure</code>, <code>estimate</code>, <code>se</code>,
-<code>ci_lower</code>, <code>ci_upper</code>, and <code>p_value</code>. For nominal measures
-(Cramer's V, Phi, Contingency Coef.), the p-value comes from
-the Pearson chi-squared test of independence. For all other
-measures, it is a Wald z-test of H0: measure = 0.</p>
+<code>ci_lower</code>, <code>ci_upper</code>, and <code>p_value</code>. The <code>p_value</code> comes
+from two test families:</p><ul><li><p><strong>Pearson chi-squared test of independence</strong> for
+Cramer's V, Phi, and the Contingency Coefficient (the
+three chi-squared-derived nominal measures). All three
+carry the same chi-squared <em>p</em>-value on a given table.</p></li>
+<li><p><strong>Wald z-test of H0: measure = 0</strong> for every other
+measure: Yule's Q, Lambda, Goodman-Kruskal's Tau, the
+Uncertainty Coefficient, and all ordinal measures
+(Gamma, Tau-b, Tau-c, Somers' D).</p></li>
+</ul><p>Direction-dependent measures (<code><a href="lambda_gk.html">lambda_gk()</a></code>,
+<code><a href="goodman_kruskal_tau.html">goodman_kruskal_tau()</a></code>, <code><a href="uncertainty_coef.html">uncertainty_coef()</a></code>, <code><a href="somers_d.html">somers_d()</a></code>)
+contribute one row per direction (<code>symmetric</code> / <code>R|C</code> / <code>C|R</code>
+where applicable), so the output has more rows than the
+number of helper functions.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

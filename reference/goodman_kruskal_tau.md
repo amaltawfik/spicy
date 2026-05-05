@@ -61,8 +61,15 @@ Unlike
 [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
 Goodman-Kruskal's Tau uses all cell frequencies rather than only the
 modal categories, making it more sensitive to association patterns where
-lambda may be zero. Standard error formulas follow the DescTools
-implementations (Signorell et al., 2024); see
+lambda may be zero. Goodman-Kruskal's Tau is intrinsically directional
+and has no canonical symmetric form (unlike
+[`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
+or
+[`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md));
+only `"row"` and `"column"` are supported.
+
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

@@ -48,8 +48,16 @@ p-value tests H0: Q = 0 (Wald z-test).
 For a 2x2 table with cells \\a, b, c, d\\, Yule's Q is \\Q = (ad - bc) /
 (ad + bc)\\. It is equivalent to the Goodman-Kruskal Gamma for 2x2
 tables. The asymptotic standard error is \\SE = 0.5 (1 - Q^2)
-\sqrt{1/a + 1/b + 1/c + 1/d}\\. Standard error formulas follow the
-DescTools implementations (Signorell et al., 2024); see
+\sqrt{1/a + 1/b + 1/c + 1/d}\\.
+
+Edge cases: when `ad + bc = 0`, Q itself is undefined and the function
+returns `NA` with a `spicy_undefined_stat` warning. When any cell is
+zero (and `ad + bc > 0`), Q is well-defined but the SE formula divides
+by zero – the point estimate is returned, and `se`, `ci_lower`,
+`ci_upper`, and `p_value` are all `NA`.
+
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

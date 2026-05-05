@@ -1,13 +1,16 @@
 # spicy: descriptive statistics, summary tables, and data management
 
-spicy provides a small set of opinionated, Stata-/SPSS-grade tools for
-descriptive analysis: frequency tables, cross- tabulations, association
-measures, variable inspection, and publication-ready summary tables.
+spicy provides tools for descriptive data analysis, variable inspection,
+and tabulation workflows: frequency tables, cross-tabulations with
+chi-squared tests and effect sizes, association measures for contingency
+tables, categorical and continuous summary tables, model-based
+linear-regression tables with optional additive covariate adjustment,
+row-wise descriptive summaries, interactive codebooks, variable-label
+extraction, and clipboard export.
 
 ## API stability
 
-spicy is in active pre-1.0 development. Per the policy documented in
-`NEWS.md` and the package roadmap, breaking changes are made
+spicy is in active pre-1.0 development. Breaking changes are made
 deliberately at minor-version bumps and are always announced in
 `NEWS.md`. The API surface is partitioned as follows; users planning to
 embed spicy in production pipelines or downstream packages should rely
@@ -65,12 +68,55 @@ notice – avoid calling directly from downstream code):
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md),
   [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
 
-All errors and warnings emitted by the stable / stabilising surfaces use
-the documented `spicy_error` / `spicy_warning` class hierarchies (see
-`NEWS.md`), so downstream code can dispatch on class via
+## Classed conditions
+
+All errors and warnings emitted by the stable / stabilising surfaces
+carry classed conditions so downstream code can dispatch on class via
 [`tryCatch()`](https://rdrr.io/r/base/conditions.html) /
 [`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html)
-instead of matching message strings.
+instead of matching message strings. Each condition has a package-wide
+parent class plus a leaf class describing the specific cause:
+
+- `spicy_error`:
+
+  Catch-all parent for every error raised by spicy. Leaves:
+
+  - `spicy_invalid_input` – bad argument value or type.
+
+  - `spicy_invalid_data` – bad data shape (not a data.frame, NA cells
+    where forbidden, length mismatch).
+
+  - `spicy_missing_pkg` – a Suggests dependency is required by the
+    requested operation but not installed.
+
+  - `spicy_missing_column` – a referenced column is not in `data`.
+
+  - `spicy_unsupported` – the operation is not applicable to this input
+    (e.g., Phi requested on a non-2x2 table).
+
+- `spicy_warning`:
+
+  Catch-all parent for every warning. Leaves:
+
+  - `spicy_undefined_stat` – the requested statistic is undefined for
+    this input; result is `NA` (e.g., Tau-b on a table with all-zero
+    marginals).
+
+  - `spicy_dropped_na` – `NA` observations were silently excluded from
+    the computation (e.g., `NA` weights).
+
+  - `spicy_ignored_arg` – an argument was ignored due to context (e.g.,
+    `correct = TRUE` on a non-2x2 table).
+
+  - `spicy_no_selection` – a column selector produced an empty set; an
+    empty result is returned rather than erroring.
+
+  - `spicy_fallback` – the requested computation failed; a simpler
+    estimator was used instead.
+
+  - `spicy_summary_failed` –
+    [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+    could not summarise one column; the rest of the table is fine.
 
 ## See also
 

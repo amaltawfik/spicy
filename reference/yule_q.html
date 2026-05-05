@@ -107,11 +107,17 @@ The p-value tests H0: Q = 0 (Wald z-test).</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>For a 2x2 table with cells \(a, b, c, d\), Yule's Q is
-\(Q = (ad - bc) / (ad + bc)\).
-It is equivalent to the Goodman-Kruskal Gamma for 2x2 tables.
-The asymptotic standard error is
-\(SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}\).
-Standard error formulas follow the DescTools implementations
+\(Q = (ad - bc) / (ad + bc)\). It is equivalent to the
+Goodman-Kruskal Gamma for 2x2 tables. The asymptotic standard
+error is
+\(SE = 0.5 (1 - Q^2) \sqrt{1/a + 1/b + 1/c + 1/d}\).</p>
+<p>Edge cases: when <code>ad + bc = 0</code>, Q itself is undefined and the
+function returns <code>NA</code> with a <code>spicy_undefined_stat</code> warning.
+When any cell is zero (and <code>ad + bc &gt; 0</code>), Q is well-defined
+but the SE formula divides by zero – the point estimate is
+returned, and <code>se</code>, <code>ci_lower</code>, <code>ci_upper</code>, and <code>p_value</code> are
+all <code>NA</code>.</p>
+<p>Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
     </div>
     <div class="section level2">

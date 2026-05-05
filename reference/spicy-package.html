@@ -5,13 +5,21 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="spicy: descriptive statistics, summary tables, and data management — spicy-package"><meta name="description" content="spicy provides a small set of opinionated, Stata-/SPSS-grade
-tools for descriptive analysis: frequency tables, cross-
-tabulations, association measures, variable inspection, and
-publication-ready summary tables."><meta property="og:description" content="spicy provides a small set of opinionated, Stata-/SPSS-grade
-tools for descriptive analysis: frequency tables, cross-
-tabulations, association measures, variable inspection, and
-publication-ready summary tables."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="spicy: descriptive statistics, summary tables, and data management — spicy-package"><meta name="description" content="spicy provides tools for descriptive data analysis, variable
+inspection, and tabulation workflows: frequency tables,
+cross-tabulations with chi-squared tests and effect sizes,
+association measures for contingency tables, categorical and
+continuous summary tables, model-based linear-regression tables
+with optional additive covariate adjustment, row-wise
+descriptive summaries, interactive codebooks, variable-label
+extraction, and clipboard export."><meta property="og:description" content="spicy provides tools for descriptive data analysis, variable
+inspection, and tabulation workflows: frequency tables,
+cross-tabulations with chi-squared tests and effect sizes,
+association measures for contingency tables, categorical and
+continuous summary tables, model-based linear-regression tables
+with optional additive covariate adjustment, row-wise
+descriptive summaries, interactive codebooks, variable-label
+extraction, and clipboard export."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -64,10 +72,14 @@ publication-ready summary tables."><meta property="og:image" content="https://am
     </div>
 
     <div class="ref-description section level2">
-    <p>spicy provides a small set of opinionated, Stata-/SPSS-grade
-tools for descriptive analysis: frequency tables, cross-
-tabulations, association measures, variable inspection, and
-publication-ready summary tables.</p>
+    <p>spicy provides tools for descriptive data analysis, variable
+inspection, and tabulation workflows: frequency tables,
+cross-tabulations with chi-squared tests and effect sizes,
+association measures for contingency tables, categorical and
+continuous summary tables, model-based linear-regression tables
+with optional additive covariate adjustment, row-wise
+descriptive summaries, interactive codebooks, variable-label
+extraction, and clipboard export.</p>
     </div>
 
 
@@ -75,13 +87,11 @@ publication-ready summary tables.</p>
     <h2 id="api-stability">API stability<a class="anchor" aria-label="anchor" href="#api-stability"></a></h2>
 
 
-<p>spicy is in active pre-1.0 development. Per the policy
-documented in <code>NEWS.md</code> and the package roadmap, breaking
-changes are made deliberately at minor-version bumps and are
-always announced in <code>NEWS.md</code>. The API surface is partitioned
-as follows; users planning to embed spicy in production
-pipelines or downstream packages should rely on the <strong>stable</strong>
-surface.</p>
+<p>spicy is in active pre-1.0 development. Breaking changes are
+made deliberately at minor-version bumps and are always
+announced in <code>NEWS.md</code>. The API surface is partitioned as
+follows; users planning to embed spicy in production pipelines
+or downstream packages should rely on the <strong>stable</strong> surface.</p>
 <p><strong>Stable</strong> (signature and behaviour preserved across 0.y.z and
 into 1.0.0; documented changes only):</p><ul><li><p>Frequency / cross-tabs: <code><a href="freq.html">freq()</a></code>, <code><a href="cross_tab.html">cross_tab()</a></code></p></li>
 <li><p>Variable inspection: <code><a href="varlist.html">varlist()</a></code> / <code><a href="varlist.html">vl()</a></code>,
@@ -102,12 +112,53 @@ changes):</p><ul><li><p>Summary table builders: <code><a href="table_categorical
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
 without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitives: <code><a href="build_ascii_table.html">build_ascii_table()</a></code>,
 <code><a href="spicy_print_table.html">spicy_print_table()</a></code></p></li>
-</ul><p>All errors and warnings emitted by the stable / stabilising
-surfaces use the documented <code>spicy_error</code> / <code>spicy_warning</code>
-class hierarchies (see <code>NEWS.md</code>), so downstream code can
+</ul></div>
+    <div class="section level2">
+    <h2 id="classed-conditions">Classed conditions<a class="anchor" aria-label="anchor" href="#classed-conditions"></a></h2>
+
+
+<p>All errors and warnings emitted by the stable / stabilising
+surfaces carry classed conditions so downstream code can
 dispatch on class via <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> / <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code>
-instead of matching message strings.</p>
-    </div>
+instead of matching message strings. Each condition has a
+package-wide parent class plus a leaf class describing the
+specific cause:</p>
+<dl><dt><code>spicy_error</code></dt>
+<dd><p>Catch-all parent for every error
+raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad argument value or type.</p></li>
+<li><p><code>spicy_invalid_data</code> – bad data shape (not a
+data.frame, NA cells where forbidden, length mismatch).</p></li>
+<li><p><code>spicy_missing_pkg</code> – a Suggests dependency
+is required by the requested operation but not installed.</p></li>
+<li><p><code>spicy_missing_column</code> – a referenced column
+is not in <code>data</code>.</p></li>
+<li><p><code>spicy_unsupported</code> – the operation is not
+applicable to this input (e.g., Phi requested on a
+non-2x2 table).</p></li>
+</ul></dd>
+
+<dt><code>spicy_warning</code></dt>
+<dd><p>Catch-all parent for every warning.
+Leaves:</p><ul><li><p><code>spicy_undefined_stat</code> – the requested
+statistic is undefined for this input; result is <code>NA</code>
+(e.g., Tau-b on a table with all-zero marginals).</p></li>
+<li><p><code>spicy_dropped_na</code> – <code>NA</code> observations were
+silently excluded from the computation (e.g., <code>NA</code>
+weights).</p></li>
+<li><p><code>spicy_ignored_arg</code> – an argument was ignored
+due to context (e.g., <code>correct = TRUE</code> on a non-2x2
+table).</p></li>
+<li><p><code>spicy_no_selection</code> – a column selector
+produced an empty set; an empty result is returned
+rather than erroring.</p></li>
+<li><p><code>spicy_fallback</code> – the requested computation
+failed; a simpler estimator was used instead.</p></li>
+<li><p><code>spicy_summary_failed</code> – <code><a href="varlist.html">varlist()</a></code> could not
+summarise one column; the rest of the table is fine.</p></li>
+</ul></dd>
+
+
+</dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Useful links:</p><ul><li><p><a href="https://github.com/amaltawfik/spicy/" class="external-link">https://github.com/amaltawfik/spicy/</a></p></li>

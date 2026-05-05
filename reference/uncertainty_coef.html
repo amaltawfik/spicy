@@ -122,15 +122,16 @@ The p-value tests H0: U = 0 (Wald z-test).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The uncertainty coefficient measures association using
-Shannon entropy.
-For <code>direction = "row"</code>:
-\(U = (H_X + H_Y - H_{XY}) / H_X\), where \(H_X\),
-\(H_Y\) are the marginal entropies and \(H_{XY}\) is
-the joint entropy.
-The symmetric version is
-\(U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)\).</p>
-<p>The entropy terms use the standard mathematical convention
+    <p>The uncertainty coefficient measures association using Shannon
+entropy. Let \(H_X\) and \(H_Y\) be the marginal entropies
+of the <strong>row</strong> and <strong>column</strong> variables respectively, and
+\(H_{XY}\) the joint entropy.</p><ul><li><p><code>direction = "row"</code> (column predicts row):
+\(U = (H_X + H_Y - H_{XY}) / H_X\).</p></li>
+<li><p><code>direction = "column"</code> (row predicts column):
+\(U = (H_X + H_Y - H_{XY}) / H_Y\).</p></li>
+<li><p><code>direction = "symmetric"</code>:
+\(U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)\).</p></li>
+</ul><p>The entropy terms use the standard mathematical convention
 \(0 \log 0 = 0\), matching SPSS / PSPP <code>CROSSTABS</code> and the
 definition in Cover &amp; Thomas (2006). Note that
 <code>DescTools::UncertCoef()</code> applies an additional Laplace

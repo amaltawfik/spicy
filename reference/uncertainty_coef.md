@@ -58,10 +58,17 @@ p-value tests H0: U = 0 (Wald z-test).
 ## Details
 
 The uncertainty coefficient measures association using Shannon entropy.
-For `direction = "row"`: \\U = (H_X + H_Y - H\_{XY}) / H_X\\, where
-\\H_X\\, \\H_Y\\ are the marginal entropies and \\H\_{XY}\\ is the joint
-entropy. The symmetric version is \\U = 2 (H_X + H_Y - H\_{XY}) / (H_X +
-H_Y)\\.
+Let \\H_X\\ and \\H_Y\\ be the marginal entropies of the **row** and
+**column** variables respectively, and \\H\_{XY}\\ the joint entropy.
+
+- `direction = "row"` (column predicts row): \\U = (H_X + H_Y - H\_{XY})
+  / H_X\\.
+
+- `direction = "column"` (row predicts column): \\U = (H_X + H_Y -
+  H\_{XY}) / H_Y\\.
+
+- `direction = "symmetric"`: \\U = 2 (H_X + H_Y - H\_{XY}) / (H_X +
+  H_Y)\\.
 
 The entropy terms use the standard mathematical convention \\0 \log 0 =
 0\\, matching SPSS / PSPP `CROSSTABS` and the definition in Cover &

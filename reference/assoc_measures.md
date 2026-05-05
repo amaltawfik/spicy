@@ -37,10 +37,25 @@ assoc_measures(
 ## Value
 
 A data frame with columns `measure`, `estimate`, `se`, `ci_lower`,
-`ci_upper`, and `p_value`. For nominal measures (Cramer's V, Phi,
-Contingency Coef.), the p-value comes from the Pearson chi-squared test
-of independence. For all other measures, it is a Wald z-test of H0:
-measure = 0.
+`ci_upper`, and `p_value`. The `p_value` comes from two test families:
+
+- **Pearson chi-squared test of independence** for Cramer's V, Phi, and
+  the Contingency Coefficient (the three chi-squared-derived nominal
+  measures). All three carry the same chi-squared *p*-value on a given
+  table.
+
+- **Wald z-test of H0: measure = 0** for every other measure: Yule's Q,
+  Lambda, Goodman-Kruskal's Tau, the Uncertainty Coefficient, and all
+  ordinal measures (Gamma, Tau-b, Tau-c, Somers' D).
+
+Direction-dependent measures
+([`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md),
+[`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
+[`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md),
+[`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md))
+contribute one row per direction (`symmetric` / `R|C` / `C|R` where
+applicable), so the output has more rows than the number of helper
+functions.
 
 ## Details
 
