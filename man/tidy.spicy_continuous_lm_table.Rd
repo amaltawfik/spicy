@@ -44,11 +44,12 @@ Standard broom columns: \code{outcome}, \code{label}, \code{term},
 variable name; \code{label} carries the human-readable label.
 
 \code{glance()} returns one row per outcome with model-level
-statistics: \code{r.squared}, \code{adj.r.squared}, \code{statistic}, \code{df},
-\code{df.residual}, \code{p.value}, \code{nobs}, \code{weighted_n}, plus the
-effect-size summary \code{es_type}, \code{es_value}, \code{es_ci_lower},
-\code{es_ci_upper}, and the test type used for \code{statistic}
-(\code{"F"} for categorical predictors, \code{"t"} for numeric ones).
+statistics. Columns: \code{outcome}, \code{label}, \code{predictor_type}
+(\code{"categorical"} or \code{"continuous"}), \code{test_type} (\code{"F"} for
+categorical predictors, \code{"t"} for continuous ones),
+\code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{r.squared},
+\code{adj.r.squared}, \code{es_type}, \code{es_value}, \code{es_ci_lower},
+\code{es_ci_upper}, \code{nobs}, \code{weighted_n}.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame.spicy_continuous_lm_table()}} for the raw

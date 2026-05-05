@@ -196,7 +196,7 @@ as.data.frame.spicy_continuous_lm_table <- function(
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_continuous_lm_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
-    spicy_abort("Install package 'tibble'.", class = "spicy_invalid_input")
+    spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
   tibble::as_tibble(unclass_spicy_continuous_lm_table(x), ...)
 }
@@ -228,11 +228,12 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #' variable name; `label` carries the human-readable label.
 #'
 #' `glance()` returns one row per outcome with model-level
-#' statistics: `r.squared`, `adj.r.squared`, `statistic`, `df`,
-#' `df.residual`, `p.value`, `nobs`, `weighted_n`, plus the
-#' effect-size summary `es_type`, `es_value`, `es_ci_lower`,
-#' `es_ci_upper`, and the test type used for `statistic`
-#' (`"F"` for categorical predictors, `"t"` for numeric ones).
+#' statistics. Columns: `outcome`, `label`, `predictor_type`
+#' (`"categorical"` or `"continuous"`), `test_type` (`"F"` for
+#' categorical predictors, `"t"` for continuous ones),
+#' `statistic`, `df`, `df.residual`, `p.value`, `r.squared`,
+#' `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,
+#' `es_ci_upper`, `nobs`, `weighted_n`.
 #'
 #' @param x A `spicy_continuous_lm_table` returned by
 #'   [table_continuous_lm()].

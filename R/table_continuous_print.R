@@ -205,7 +205,7 @@ as.data.frame.spicy_continuous_table <- function(
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_continuous_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
-    spicy_abort("Install package 'tibble'.", class = "spicy_invalid_input")
+    spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
   tibble::as_tibble(unclass_spicy_continuous_table(x), ...)
 }
@@ -229,12 +229,12 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' `min`, `max`, `sd`. The `outcome` column carries the variable name
 #' and `label` the human-readable label.
 #'
-#' `glance()` returns one row per `variable` with the omnibus group
-#' comparison (when `by` is used) and the requested effect size:
-#' `outcome`, `label`, `test_type`, `statistic`, `df`, `df.residual`,
-#' `p.value`, `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`,
-#' `n_total`. Without `by`, only `outcome`, `label`, and `n_total`
-#' are populated; the other columns are `NA`.
+#' `glance()` returns one row per outcome with the omnibus group
+#' comparison (when `by` is used) and the requested effect size.
+#' Columns: `outcome`, `label`, `test_type`, `statistic`, `df`,
+#' `df.residual`, `p.value`, `es_type`, `es_value`, `es_ci_lower`,
+#' `es_ci_upper`, `n_total`. Without `by`, only `outcome`, `label`,
+#' and `n_total` are populated; the other columns are `NA`.
 #'
 #' @param x A `spicy_continuous_table` returned by [table_continuous()].
 #' @param ... Currently ignored. Present for compatibility with the
