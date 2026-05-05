@@ -319,8 +319,8 @@ table_continuous(
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 covers the same reporting territory when you want to stay in a
-linear-model framework, for example with robust standard errors or case
-weights:
+linear-model framework, for example with robust or cluster-robust
+standard errors, case weights, or additive covariate adjustment:
 
 ``` r
 
@@ -389,10 +389,18 @@ sochealth |>
 - See
   [`?varlist`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   to inspect variables, labels, values, and missing data.
+- See [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  for one-way frequency tables (weights, sorting, custom missing values,
+  labelled-data display modes).
 - See
   [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   for the full list of arguments (weights, simulation, association
   measures).
+- See
+  [`?assoc_measures`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  for the complete list of association statistics;
+  [`?cramer_v`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
+  for the canonical entry point.
 - See
   [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   for grouped or one-way categorical tables.
@@ -401,11 +409,17 @@ sochealth |>
   for continuous summaries and group comparisons.
 - See
   [`?table_continuous_lm`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  for model-based mean-comparison tables with robust standard errors or
-  case weights.
+  for model-based mean-comparison tables with robust / cluster-robust /
+  bootstrap / jackknife SE, case weights, or additive covariate
+  adjustment.
 - See
-  [`?assoc_measures`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
-  for the complete list of association statistics.
+  [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`?sum_n`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  [`?count_n`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  for row-wise summaries with optional minimum-valid-values rules.
 - See
   [`?code_book`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  to generate an interactive HTML codebook.
+  to generate an interactive HTML codebook;
+  [`?label_from_names`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
+  to derive variable labels from `"code. label"`-style column names
+  (e.g., LimeSurvey exports).

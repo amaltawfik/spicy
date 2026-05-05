@@ -149,7 +149,8 @@ groups such as education, sex, treatment arm, or survey wave. Pass
 strictly descriptive.
 
 If you want the same outcomes reported in a linear-model workflow, with
-heteroskedasticity-consistent standard errors or case weights, use
+heteroskedasticity-consistent or cluster-robust standard errors, case
+weights, or additive covariate adjustment, use
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 instead:
 
@@ -188,10 +189,9 @@ table_continuous(
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
   statistic = TRUE,
+  effect_size = "auto",
   effect_size_ci = TRUE
 )
-#> Warning: `effect_size_ci` implies `effect_size != "none"`. Defaulting to
-#> `effect_size = "auto"`.
 #> Descriptive statistics
 #> 
 #>  Variable                       │ Group              M     SD     Min    Max   
@@ -552,15 +552,16 @@ pkgdown_dark_gt(
 supports the same reporting-oriented outputs as
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
 
-| `output` value | Returned object            |
-|:---------------|:---------------------------|
-| `"default"`    | Styled ASCII console table |
-| `"tinytable"`  | Formatted tinytable        |
-| `"gt"`         | Formatted gt table         |
-| `"flextable"`  | Formatted flextable        |
-| `"excel"`      | Written `.xlsx` file       |
-| `"clipboard"`  | Copied text table          |
-| `"word"`       | Written `.docx` file       |
+| `output` value | Returned object |
+|:---|:---|
+| `"default"` | Styled ASCII console table |
+| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
+| `"tinytable"` | Formatted tinytable |
+| `"gt"` | Formatted gt table |
+| `"flextable"` | Formatted flextable |
+| `"excel"` | Written `.xlsx` file |
+| `"clipboard"` | Copied text table |
+| `"word"` | Written `.docx` file |
 
 For example, `tinytable` works well in Quarto and R Markdown documents:
 

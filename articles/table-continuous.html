@@ -235,7 +235,8 @@ groups such as education, sex, treatment arm, or survey wave. Pass
 <code>p_value = FALSE</code> to suppress the test column and keep the
 output strictly descriptive.</p>
 <p>If you want the same outcomes reported in a linear-model workflow,
-with heteroskedasticity-consistent standard errors or case weights, use
+with heteroskedasticity-consistent or cluster-robust standard errors,
+case weights, or additive covariate adjustment, use
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> instead:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
@@ -269,10 +270,9 @@ alongside the default <em>p</em>-value column:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `effect_size_ci` implies `effect_size != "none"`. Defaulting to</span></span>
-<span><span class="co">#&gt; `effect_size = "auto"`.</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
@@ -1250,6 +1250,10 @@ reporting labels:</p>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> supports the same reporting-oriented
 outputs as <code><a href="../reference/table_categorical.html">table_categorical()</a></code>:</p>
 <table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">
 <code>output</code> value</th>
@@ -1261,26 +1265,34 @@ outputs as <code><a href="../reference/table_categorical.html">table_categorical
 <td align="left">Styled ASCII console table</td>
 </tr>
 <tr class="even">
+<td align="left">
+<code>"data.frame"</code> / <code>"long"</code>
+</td>
+<td align="left">Plain <code>data.frame</code> with the underlying
+long-format rows (synonyms; pick whichever reads better in your
+code)</td>
+</tr>
+<tr class="odd">
 <td align="left"><code>"tinytable"</code></td>
 <td align="left">Formatted tinytable</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>"gt"</code></td>
 <td align="left">Formatted gt table</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"><code>"flextable"</code></td>
 <td align="left">Formatted flextable</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>"excel"</code></td>
 <td align="left">Written <code>.xlsx</code> file</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"><code>"clipboard"</code></td>
 <td align="left">Copied text table</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>"word"</code></td>
 <td align="left">Written <code>.docx</code> file</td>
 </tr>

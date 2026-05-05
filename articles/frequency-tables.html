@@ -564,8 +564,12 @@ automatically switches from Cramer’s V to Kendall’s Tau-b:</p>
 <div class="section level3">
 <h3 id="weighted-cross-tabulations">Weighted cross-tabulations<a class="anchor" aria-label="anchor" href="#weighted-cross-tabulations"></a>
 </h3>
-<p>Weights work the same as in <code><a href="../reference/freq.html">freq()</a></code>. Without rescaling,
-the table shows raw weighted counts:</p>
+<p>Weights are supplied via <code>weights</code>, just like in
+<code><a href="../reference/freq.html">freq()</a></code>. The default differs, however:
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> defaults to <code>rescale = FALSE</code> (raw
+weighted counts), whereas <code><a href="../reference/freq.html">freq()</a></code> defaults to
+<code>rescale = TRUE</code>. Without rescaling, the table shows raw
+weighted counts:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span></span>
@@ -580,7 +584,7 @@ the table shows raw weighted counts:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.3, p &lt;.001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.13</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Weight: weight</span></span></span></code></pre></div>
-<p>With <code>rescale = TRUE</code>, the weighted total matches the
+<p>Pass <code>rescale = TRUE</code> to make the weighted total match the
 unweighted sample size:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>

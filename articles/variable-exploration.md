@@ -65,10 +65,11 @@ labelled::var_label(out)
 #> [1] "Current smoker"
 ```
 
-This is especially useful for LimeSurvey CSV exports when using Export
-results -\> Export format: CSV -\> Headings: Question code & question
-text, where column names look like `"code. question text"`. In this case
-the default separator is `". "`.
+The default separator `". "` was chosen to match **LimeSurvey CSV
+exports** taken with *Export results -\> Export format: CSV -\>
+Headings: Question code & question text*, which produce column names of
+the form `"code. question text"`. Pass `sep =` to use any other literal
+separator.
 
 ## Inspect variables with varlist()
 
@@ -277,3 +278,12 @@ when you want the same summary with a shorter call in interactive work.
 Use
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 when you want a searchable, interactive codebook for review or export.
+
+The two tools share their column structure but differ in one default:
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+shows only the **observed** factor levels in the `Values` column (Stata
+`tab` style), whereas
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+shows **all declared** levels including unused ones (SPSS `FREQUENCIES`
+style, appropriate for schema documentation). Pass `factor_levels =`
+explicitly to either function to override the default.

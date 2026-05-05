@@ -8,11 +8,14 @@ library(spicy)
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 is the model-based companion to
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
-It fits one linear model per selected continuous outcome using
-`lm(outcome ~ by, ...)`, then returns a compact reporting table. This
-makes it the better choice when you want to stay in a linear-model
-workflow, add heteroskedasticity-consistent standard errors, or apply
-case weights.
+It fits one linear model per selected continuous outcome –
+`lm(outcome ~ by + covariate1 + covariate2 + ...)` if covariates are
+supplied, otherwise `lm(outcome ~ by)` – and returns a compact reporting
+table. This is the right choice when you want to stay in a linear-model
+workflow with heteroskedasticity-consistent or cluster-robust standard
+errors, bootstrap / jackknife variance, case weights, additive covariate
+adjustment, or one of four effect-size families (`f2`, Cohen’s *d*,
+Hedges’ *g*, Hays’ \\\omega^2\\) with noncentral CIs.
 
 ## Basic usage
 
@@ -311,9 +314,9 @@ bootstrap / jackknife only affect the contrast SE).
 interactions or transforms (`covariates = ~ age * sex`,
 `covariates = ~ I(age^2)`) raises `spicy_unsupported` with a migration
 hint. Interactions and polynomials are reserved for a future spicy
-release alongside `table_regression()`. To fit a fully-specified model
-right now, do so with [`lm()`](https://rdrr.io/r/stats/lm.html) directly
-and inspect via [`summary()`](https://rdrr.io/r/base/summary.html),
+release. To fit a fully-specified model right now, do so with
+[`lm()`](https://rdrr.io/r/stats/lm.html) directly and inspect via
+[`summary()`](https://rdrr.io/r/base/summary.html),
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html), or
 `gtsummary`.
 

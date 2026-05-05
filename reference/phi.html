@@ -104,12 +104,15 @@ The p-value tests the null hypothesis of no association
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The phi coefficient is \(\phi = \sqrt{\chi^2 / n}\).
-It is equivalent to Cramer's V for 2x2 tables and equals the
-Pearson correlation between the two binary variables. The point
-estimate matches the DescTools (Signorell et al., 2024) and SPSS
-implementations.
-The confidence interval uses the Fisher z-transformation on
+    <p>The phi coefficient is \(\phi = \sqrt{\chi^2 / n}\). It is
+equivalent to Cramer's V for 2x2 tables and equals the absolute
+value of the Pearson correlation between the two binary
+variables – spicy returns only the magnitude (always
+non-negative), matching the DescTools (Signorell et al., 2024)
+and SPSS conventions. To recover the signed direction of the
+2x2 association, compute the Pearson correlation directly
+(e.g. <code>cor(x, y)</code> after coding both variables 0/1).</p>
+<p>The confidence interval uses the Fisher z-transformation on
 \(\phi\); see <code><a href="cramer_v.html">cramer_v()</a></code> for the formula and full references.</p>
     </div>
     <div class="section level2">

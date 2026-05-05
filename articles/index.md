@@ -50,8 +50,12 @@
   R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md):
 
   Build model-based summary tables for continuous outcomes in R with
-  table_continuous_lm(), including estimated means, robust standard
-  errors, case weights, and APA-style output formats.
+  table_continuous_lm(): estimated marginal means, robust /
+  cluster-robust / bootstrap / jackknife standard errors, case weights,
+  additive covariate adjustment (G-computation or equal-weight), four
+  effect-size families (f2, Cohen’s d, Hedges’ g, Hays’ omega2) with
+  noncentral CIs, and APA-style output to console, gt, tinytable,
+  flextable, Excel, Word, or clipboard.
 
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):

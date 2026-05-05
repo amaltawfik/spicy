@@ -237,9 +237,14 @@ the Pearson chi-squared test.</p>
 <div class="section level3">
 <h3 id="phi-coefficient">Phi coefficient<a class="anchor" aria-label="anchor" href="#phi-coefficient"></a>
 </h3>
-<p>For 2x2 tables, Phi is equivalent to Cramer’s V. Unlike V, Phi can be
-negative when the table is 2x2, indicating the direction of association.
-The p-value tests H0: no association (Pearson chi-squared test).</p>
+<p>For 2x2 tables, Phi is equivalent to Cramer’s V. spicy implements Phi
+as <span class="math inline">\(\sqrt{\chi^2 / n}\)</span>, matching the
+DescTools and SPSS conventions – the value is always non-negative and
+reports only the <em>strength</em> of association, not its direction. To
+recover the signed direction, compute the Pearson correlation between
+the two binary variables explicitly (e.g., <code>cor(x, y)</code> after
+coding both 0/1). The p-value tests H0: no association (Pearson
+chi-squared test).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/phi.html">phi</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -445,9 +450,11 @@ be changed with <code>conf_level</code>:</p>
 <p>When <code>detail = FALSE</code> (the default), functions return a
 plain numeric scalar, so R’s own formatting rules apply. When
 <code>detail = TRUE</code>, the result uses a custom print method that
-defaults to 3 decimal places. Pass <code>digits</code> to change this
-(the p-value always uses 3 decimal places or
-<code>&lt; 0.001</code>):</p>
+defaults to 3 decimal places. Pass <code>digits</code> to change the
+precision of the estimate, SE, and CI columns. The p-value follows
+APA-style formatting independent of <code>digits</code>: 3 decimal
+places with the leading zero stripped (<code>.045</code>) or
+<code>&lt;.001</code> below the threshold:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>

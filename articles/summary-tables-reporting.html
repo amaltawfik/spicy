@@ -146,8 +146,9 @@ interval</td>
 <td align="left"><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code></td>
 <td align="left">Continuous outcomes in a linear-model framework</td>
 <td align="left">No, requires a single predictor</td>
-<td align="left">Robust <code>HC*</code> standard errors, model fit,
-case weights</td>
+<td align="left">Robust / cluster-robust / bootstrap / jackknife SE,
+case weights, additive covariate adjustment, four effect-size families
+with noncentral CIs</td>
 </tr>
 </tbody>
 </table>
@@ -3415,9 +3416,11 @@ tables.</li>
 <code><a href="../reference/table_continuous.html">table_continuous()</a></code> covers grouped descriptive
 statistics, parametric and nonparametric tests, and effect sizes.</li>
 <li>
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers estimated means or slopes
-from simple linear models, robust standard errors, and case
-weights.</li>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers estimated marginal means
+or slopes from linear models, robust / cluster-robust / bootstrap /
+jackknife variance, case weights, additive covariate adjustment
+(G-computation or equal-weight), and four effect-size families with
+noncentral CIs.</li>
 </ul>
 <p>Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.</p>

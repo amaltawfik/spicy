@@ -504,9 +504,14 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 
 ### Weighted cross-tabulations
 
-Weights work the same as in
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
-Without rescaling, the table shows raw weighted counts:
+Weights are supplied via `weights`, just like in
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md). The
+default differs, however:
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+defaults to `rescale = FALSE` (raw weighted counts), whereas
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+defaults to `rescale = TRUE`. Without rescaling, the table shows raw
+weighted counts:
 
 ``` r
 
@@ -525,8 +530,8 @@ cross_tab(sochealth, smoking, education, weights = weight)
 #> Weight: weight
 ```
 
-With `rescale = TRUE`, the weighted total matches the unweighted sample
-size:
+Pass `rescale = TRUE` to make the weighted total match the unweighted
+sample size:
 
 ``` r
 

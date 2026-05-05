@@ -93,9 +93,13 @@ cramer_v(tbl, detail = TRUE)
 
 ### Phi coefficient
 
-For 2x2 tables, Phi is equivalent to Cramer’s V. Unlike V, Phi can be
-negative when the table is 2x2, indicating the direction of association.
-The p-value tests H0: no association (Pearson chi-squared test).
+For 2x2 tables, Phi is equivalent to Cramer’s V. spicy implements Phi as
+\\\sqrt{\chi^2 / n}\\, matching the DescTools and SPSS conventions – the
+value is always non-negative and reports only the *strength* of
+association, not its direction. To recover the signed direction, compute
+the Pearson correlation between the two binary variables explicitly
+(e.g., `cor(x, y)` after coding both 0/1). The p-value tests H0: no
+association (Pearson chi-squared test).
 
 ``` r
 
@@ -328,8 +332,10 @@ cramer_v(tbl, detail = TRUE, conf_level = NULL)
 When `detail = FALSE` (the default), functions return a plain numeric
 scalar, so R’s own formatting rules apply. When `detail = TRUE`, the
 result uses a custom print method that defaults to 3 decimal places.
-Pass `digits` to change this (the p-value always uses 3 decimal places
-or `< 0.001`):
+Pass `digits` to change the precision of the estimate, SE, and CI
+columns. The p-value follows APA-style formatting independent of
+`digits`: 3 decimal places with the leading zero stripped (`.045`) or
+`<.001` below the threshold:
 
 ``` r
 

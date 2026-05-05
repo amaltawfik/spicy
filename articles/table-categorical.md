@@ -284,7 +284,7 @@ table_categorical(
 |     Very good | 44 | 16.9 | 118 | 22.4 | 133 | 33.8 | 295 | 25.0 |  |  |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
-(gt, tinytable, flextable), the CI is shown inline:
+(`gt`, `tinytable`, `flextable`, `word`), the CI is shown inline:
 
 ``` r
 

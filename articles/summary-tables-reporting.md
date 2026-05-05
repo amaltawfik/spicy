@@ -23,7 +23,7 @@ Use the function that matches the type of variables you want to report:
 |:---|:---|:---|:---|
 | [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Factors, labelled categorical variables, grouped frequency-style summaries | Yes | Chi-squared test, association measure, confidence interval |
 | [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric or continuous variables | Yes | Group-comparison test, statistic, effect size |
-| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework | No, requires a single predictor | Robust `HC*` standard errors, model fit, case weights |
+| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework | No, requires a single predictor | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size families with noncentral CIs |
 
 In practice:
 
@@ -329,8 +329,10 @@ The dedicated articles go deeper into each function:
   covers grouped descriptive statistics, parametric and nonparametric
   tests, and effect sizes.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  covers estimated means or slopes from simple linear models, robust
-  standard errors, and case weights.
+  covers estimated marginal means or slopes from linear models, robust /
+  cluster-robust / bootstrap / jackknife variance, case weights,
+  additive covariate adjustment (G-computation or equal-weight), and
+  four effect-size families with noncentral CIs.
 
 Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.
