@@ -144,8 +144,9 @@ table_continuous(
 ```
 
 `table_continuous_lm()` covers the same reporting territory when you
-want to stay in a linear-model framework, for example with robust
-standard errors or case weights:
+want to stay in a linear-model framework, for example with robust or
+cluster-robust standard errors, case weights, or additive covariate
+adjustment:
 
 ```{r table-continuous-lm}
 table_continuous_lm(
@@ -179,14 +180,22 @@ sochealth |>
 
 ## Learn more
 
-- See `?varlist` to inspect variables, labels, values, and missing data.
+- See `?varlist` to inspect variables, labels, values, and missing
+  data.
+- See `?freq` for one-way frequency tables (weights, sorting, custom
+  missing values, labelled-data display modes).
 - See `?cross_tab` for the full list of arguments (weights, simulation,
   association measures).
+- See `?assoc_measures` for the complete list of association
+  statistics; `?cramer_v` for the canonical entry point.
 - See `?table_categorical` for grouped or one-way categorical tables.
 - See `?table_continuous` for continuous summaries and group
   comparisons.
 - See `?table_continuous_lm` for model-based mean-comparison tables
-  with robust standard errors or case weights.
-- See `?assoc_measures` for the complete list of association
-  statistics.
-- See `?code_book` to generate an interactive HTML codebook.
+  with robust / cluster-robust / bootstrap / jackknife SE, case
+  weights, or additive covariate adjustment.
+- See `?mean_n`, `?sum_n`, `?count_n` for row-wise summaries with
+  optional minimum-valid-values rules.
+- See `?code_book` to generate an interactive HTML codebook;
+  `?label_from_names` to derive variable labels from
+  `"code. label"`-style column names (e.g., LimeSurvey exports).

@@ -81,8 +81,9 @@ groups such as education, sex, treatment arm, or survey wave. Pass
 `p_value = FALSE` to suppress the test column and keep the output
 strictly descriptive.
 
-If you want the same outcomes reported in a linear-model workflow, with
-heteroskedasticity-consistent standard errors or case weights, use
+If you want the same outcomes reported in a linear-model workflow,
+with heteroskedasticity-consistent or cluster-robust standard errors,
+case weights, or additive covariate adjustment, use
 `table_continuous_lm()` instead:
 
 ```{r lm-companion}
@@ -105,6 +106,7 @@ table_continuous(
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education,
   statistic = TRUE,
+  effect_size = "auto",
   effect_size_ci = TRUE
 )
 ```
@@ -221,6 +223,7 @@ pkgdown_dark_gt(
 | `output` value | Returned object |
 |:--|:--|
 | `"default"` | Styled ASCII console table |
+| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
 | `"tinytable"` | Formatted tinytable |
 | `"gt"` | Formatted gt table |
 | `"flextable"` | Formatted flextable |

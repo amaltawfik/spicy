@@ -173,15 +173,18 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 
 ### Weighted cross-tabulations
 
-Weights work the same as in `freq()`. Without rescaling, the table
-shows raw weighted counts:
+Weights are supplied via `weights`, just like in `freq()`. The
+default differs, however: `cross_tab()` defaults to
+`rescale = FALSE` (raw weighted counts), whereas `freq()` defaults
+to `rescale = TRUE`. Without rescaling, the table shows raw
+weighted counts:
 
 ```{r cross-weighted-raw}
 cross_tab(sochealth, smoking, education, weights = weight)
 ```
 
-With `rescale = TRUE`, the weighted total matches the unweighted
-sample size:
+Pass `rescale = TRUE` to make the weighted total match the
+unweighted sample size:
 
 ```{r cross-weighted}
 cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)

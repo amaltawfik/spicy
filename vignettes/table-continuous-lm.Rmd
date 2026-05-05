@@ -2,8 +2,12 @@
 title: "Model-based continuous summary tables in R"
 description: >
   Build model-based summary tables for continuous outcomes in R with
-  table_continuous_lm(), including estimated means, robust standard
-  errors, case weights, and APA-style output formats.
+  table_continuous_lm(): estimated marginal means, robust /
+  cluster-robust / bootstrap / jackknife standard errors, case
+  weights, additive covariate adjustment (G-computation or
+  equal-weight), four effect-size families (f2, Cohen's d, Hedges'
+  g, Hays' omega2) with noncentral CIs, and APA-style output to
+  console, gt, tinytable, flextable, Excel, Word, or clipboard.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Model-based continuous summary tables in R}
@@ -40,11 +44,16 @@ library(spicy)
 ```
 
 `table_continuous_lm()` is the model-based companion to
-`table_continuous()`. It fits one linear model per selected continuous
-outcome using `lm(outcome ~ by, ...)`, then returns a compact reporting
-table. This makes it the better choice when you want to stay in a
-linear-model workflow, add heteroskedasticity-consistent standard
-errors, or apply case weights.
+`table_continuous()`. It fits one linear model per selected
+continuous outcome --
+`lm(outcome ~ by + covariate1 + covariate2 + ...)` if covariates are
+supplied, otherwise `lm(outcome ~ by)` -- and returns a compact
+reporting table. This is the right choice when you want to stay in
+a linear-model workflow with heteroskedasticity-consistent or
+cluster-robust standard errors, bootstrap / jackknife variance,
+case weights, additive covariate adjustment, or one of four
+effect-size families (`f2`, Cohen's *d*, Hedges' *g*, Hays'
+\(\omega^2\)) with noncentral CIs.
 
 ## Basic usage
 
@@ -263,9 +272,9 @@ CR* / bootstrap / jackknife only affect the contrast SE).
 interactions or transforms (`covariates = ~ age * sex`,
 `covariates = ~ I(age^2)`) raises `spicy_unsupported` with a
 migration hint. Interactions and polynomials are reserved for a
-future spicy release alongside `table_regression()`. To fit a
-fully-specified model right now, do so with `lm()` directly and
-inspect via `summary()`, `broom::tidy()`, or `gtsummary`.
+future spicy release. To fit a fully-specified model right now,
+do so with `lm()` directly and inspect via `summary()`,
+`broom::tidy()`, or `gtsummary`.
 
 ## Effect sizes
 

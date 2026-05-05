@@ -210,7 +210,7 @@ table_categorical(
 ```
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
-(gt, tinytable, flextable), the CI is shown inline:
+(`gt`, `tinytable`, `flextable`, `word`), the CI is shown inline:
 
 ```{r ci-rendered, eval = build_rich_tables}
 pkgdown_dark_gt(

@@ -32,11 +32,15 @@ The p-value tests the null hypothesis of no association
 \code{phi()} computes the phi coefficient for a 2x2 contingency table.
 }
 \details{
-The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}.
-It is equivalent to Cramer's V for 2x2 tables and equals the
-Pearson correlation between the two binary variables. The point
-estimate matches the DescTools (Signorell et al., 2024) and SPSS
-implementations.
+The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}. It is
+equivalent to Cramer's V for 2x2 tables and equals the absolute
+value of the Pearson correlation between the two binary
+variables -- spicy returns only the magnitude (always
+non-negative), matching the DescTools (Signorell et al., 2024)
+and SPSS conventions. To recover the signed direction of the
+2x2 association, compute the Pearson correlation directly
+(e.g. \code{cor(x, y)} after coding both variables 0/1).
+
 The confidence interval uses the Fisher z-transformation on
 \eqn{\phi}; see \code{\link[=cramer_v]{cramer_v()}} for the formula and full references.
 }
