@@ -376,9 +376,19 @@ test_that("gamma_gk NA path returns scalar by default and full shape with detail
 
 
 # Anti-regression: oracle values from PSPP 2.0 CROSSTABS /STATISTICS=ALL.
-# These pin spicy's point estimates to the SPSS/PSPP reference at 1e-6 on
-# four datasets (mtcars 3x3, mtcars 2x2, HairEyeColor 4x4, sochealth).
-# Generated 2026-05-01; see tmp_validation/REPORT.md for the full matrix.
+# These pin spicy's point estimates to the SPSS / PSPP reference at 1e-5
+# on four datasets:
+#
+#   * mtcars 3x3 (gear x cyl)            -- 16 statistics
+#   * mtcars 2x2 (vs x am)               -- 10 statistics
+#   * HairEyeColor 4x4 (Hair x Eye)      --  8 statistics
+#   * sochealth (smoking x education)    --  6 statistics
+#
+# Total: 40 oracle assertions. Generated against PSPP 2.0 on 2026-05-01.
+# Reproduction: install PSPP, save the four tables as .sav, run
+# `CROSSTABS /STATISTICS=ALL` on each, and compare the printed values
+# to the constants below. Each constant matches PSPP's reported value
+# to 7 decimals (rounded to 1e-5 here for cross-platform stability).
 
 test_that("PSPP oracle: mtcars 3x3 (gear x cyl)", {
   tab <- table(factor(mtcars$gear), factor(mtcars$cyl))

@@ -48,6 +48,7 @@ Suggests:
     officer,
     openxlsx2,
     rmarkdown,
+    spelling,
     testthat (>= 3.0.0),
     tinytable,
     withr
