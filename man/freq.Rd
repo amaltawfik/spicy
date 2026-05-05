@@ -121,40 +121,24 @@ using \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{
 returns a \code{data.frame} containing frequencies and proportions.
 }
 \details{
-This function is designed to mimic common frequency procedures from
-statistical software such as SPSS or Stata, while integrating the
-flexibility of R's data structures.
+Designed to mimic common frequency procedures from SPSS or Stata
+while integrating the flexibility of R's data structures. The
+input type (\code{vector}, \code{factor}, \code{labelled}) is auto-detected; see
+\verb{@param labelled_levels} and \verb{@param factor_levels} for the
+schema-vs-observed level controls, and \verb{@param na_val} for
+optional sentinel-value recoding.
 
-It automatically detects the type of input (\code{vector}, \code{factor}, or
-\code{labelled}) and applies appropriate transformations, including:
-\itemize{
-\item Handling of labelled variables via \strong{labelled} or \strong{haven}
-\item Optional recoding of specific values as missing (\code{na_val})
-\item Optional weighting with a rescaling mechanism
-\item Support for cumulative percentages (\code{cum = TRUE})
-\item Multiple display modes for labels via \code{labelled_levels}
-\item Schema-vs-observed level display via \code{factor_levels}
-}
+Weighting (\code{weights}): frequencies and percentages are computed
+proportionally to the weights. Missing values in \code{weights} cause
+those observations to be dropped from the table entirely (with a
+warning), matching the behaviour of \code{\link[=cross_tab]{cross_tab()}} in spicy
+0.11.0+. With \code{rescale = TRUE}, the remaining (non-\code{NA}-weighted)
+weights are normalised so the total weighted N equals the count
+of non-\code{NA}-weighted rows. With \code{rescale = FALSE}, the total
+weighted N is the actual sum of non-\code{NA} weights.
 
-For factor and labelled inputs, the \code{factor_levels} argument
-controls whether declared-but-unobserved levels appear in the
-output. The default \code{"observed"} drops them (Stata \code{tab} behavior);
-\code{"all"} keeps them with \code{n = 0}, matching SPSS \code{FREQUENCIES} and
-\code{\link[=code_book]{code_book()}}'s default. For schema-level inspection without
-computing frequencies, use \code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}} with
-\code{factor_levels = "all"}.
-
-When weighting is applied (\code{weights}), the frequencies and percentages are
-computed proportionally to the weights. The argument \code{rescale = TRUE}
-normalizes weights so their sum equals the unweighted sample size
-(\code{length(weights)}).
-
-Missing values in \code{weights} cause those observations to be dropped
-from the table entirely (with a warning), matching the behaviour of
-\code{\link[=cross_tab]{cross_tab()}} in spicy 0.11.0+. With \code{rescale = TRUE}, the remaining
-(non-\code{NA}-weighted) weights are normalized so the total weighted N
-equals the count of non-\code{NA}-weighted rows. With \code{rescale = FALSE},
-the total weighted N is the actual sum of non-\code{NA} weights.
+For schema-level inspection without computing frequencies, use
+\code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}}.
 }
 \examples{
 # Frequency table with labelled ordered factor
@@ -218,6 +202,9 @@ head(f)
 
 }
 \seealso{
-\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for formatted printing.
+\code{\link[=cross_tab]{cross_tab()}} for two-way cross-tabulations;
+\code{\link[=table_categorical]{table_categorical()}} for multi-variable categorical summary
+tables; \code{\link[=varlist]{varlist()}} / \code{\link[=code_book]{code_book()}} for variable inspection;
+\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for formatted printing;
 \code{\link[=spicy_print_table]{spicy_print_table()}} for the underlying ASCII rendering engine.
 }

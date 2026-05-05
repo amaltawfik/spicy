@@ -2,27 +2,26 @@
 #'
 #' @description
 #' Computes a two-way cross-tabulation with optional weights, grouping
-#' (including combinations of multiple variables), percentage displays,
-#' and inferential statistics.
+#' (including combinations of multiple variables via `interaction()`),
+#' row / column percentages, and inferential statistics (Chi-squared
+#' test with an APA-style association measure).
 #'
-#' `cross_tab()` produces weighted or unweighted contingency tables with
-#' row or column percentages, optional grouping via `by`, and associated
-#' Chi-squared tests with an association measure and diagnostic information.
-#'
-#' Both `x` and `y` variables are required. For one-way frequency tables,
-#' use [freq()] instead.
+#' Both `x` and `y` are required; for one-way frequency tables, use
+#' [freq()].
 #'
 #' @param data A data frame. Alternatively, a vector when using the
 #'   vector-based interface.
 #' @param x Row variable (unquoted).
-#' @param y Column variable (unquoted). Mandatory; for one-way tables, use [freq()].
+#' @param y Column variable (unquoted). Required; the `NULL` default
+#'   in the signature is a placeholder and triggers an error if left
+#'   unset (use [freq()] for one-way tables).
 #' @param by Optional grouping variable or expression. Can be a single variable
 #'   or a combination of multiple variables (e.g. `interaction(vs, am)`).
 #' @param weights Optional numeric weights.
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
-#' @param percent One of `"none"` (the default), `"row"`, `"column"`.
-#'   Unique abbreviations are accepted (e.g. `"n"`, `"r"`, `"c"`).
+#' @param percent One of `"none"` (the default), `"column"`, or `"row"`.
+#'   Unique abbreviations are accepted (e.g. `"n"`, `"c"`, `"r"`).
 #' @param include_stats Logical. If `TRUE` (the default), computes Chi-squared
 #'   and an association measure (see `assoc_measure`).
 #' @param assoc_measure Character. Which association measure to report.
@@ -38,8 +37,9 @@
 #'   If `TRUE`, uses Monte Carlo simulation.
 #' @param simulate_B Integer. Number of replicates for Monte Carlo simulation.
 #'   Defaults to `2000`.
-#' @param digits Number of decimals for cell values. Defaults to `1` for
-#'   percentages, `0` for counts.
+#' @param digits Number of decimals for cell values. Defaults to
+#'   `NULL`, which is resolved to `1` when `percent != "none"` and
+#'   `0` when `percent = "none"` (counts are always integers).
 #' @param styled Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
 #'   (for formatted printing). If `FALSE`, returns a plain `data.frame`.
 #' @param show_n Logical. If `TRUE` (the default), adds marginal N totals when
@@ -55,8 +55,29 @@
 #'   matches the `p_digits` argument of the `table_*()` family.
 #'
 #' @return
-#' A `data.frame`, list of data.frames, or `spicy_cross_table` object.
-#' When `by` is used, returns a `spicy_cross_table_list`.
+#' Depends on `styled` and `by`:
+#' \itemize{
+#'   \item `styled = TRUE`, no `by`: a `spicy_cross_table` object
+#'     (a `data.frame` carrying rendering metadata as attributes:
+#'     `title`, `digits`, `decimal_mark`, `n_row_idx`, `n_col_name`,
+#'     and the inferential block when `include_stats = TRUE`).
+#'     Printing dispatches to [print.spicy_cross_table()].
+#'   \item `styled = TRUE`, `by` supplied: a `spicy_cross_table_list`,
+#'     i.e. a named list of `spicy_cross_table` objects (one element
+#'     per group level, named by that level). Printing dispatches to
+#'     [print.spicy_cross_table_list()] which renders each table in
+#'     turn separated by a blank line.
+#'   \item `styled = FALSE`: the same payload returned as a plain
+#'     `data.frame` (or named list of `data.frame`s with `by`),
+#'     stripped of the `spicy_*` classes for downstream programmatic
+#'     use.
+#' }
+#'
+#' Cell columns are the levels of `y`; rows are the levels of `x`.
+#' When `percent != "none"`, the `N` column (or `N` row) is added
+#' according to `show_n`. When `include_stats = TRUE`, the result
+#' carries a Chi-squared row (statistic, df, *p*) and an
+#' association-measure row (estimate, optional CI via `assoc_ci`).
 #'
 #' @section Global Options:
 #'

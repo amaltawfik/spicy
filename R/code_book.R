@@ -11,26 +11,7 @@
 #' (copy, print, CSV, Excel, PDF) directly.
 #'
 #' @param x A data frame or tibble.
-#' @param ... Optional tidyselect-style column selectors (e.g.
-#'   `starts_with("var")`, `where(is.numeric)`, etc.). Columns can be selected
-#'   or reordered, but renaming selections is not supported.
-#' @param values Logical. If `FALSE` (the default), displays a compact
-#'   summary of the variable's values. For numeric, character, date/time,
-#'   labelled, and factor variables, all unique non-missing values are shown
-#'   when there are at most four; otherwise the first three values, an ellipsis
-#'   (`...`), and the last value are shown. Values are sorted when appropriate
-#'   (e.g., numeric, character, date).
-#'   For factors, `factor_levels` controls whether observed or all declared
-#'   levels are shown; level order is preserved.
-#'   For labelled variables, prefixed labels are displayed via
-#'   `labelled::to_factor(levels = "prefixed")`.
-#'   If `TRUE`, all unique non-missing values are displayed.
-#' @param include_na Logical. If `TRUE`, unique missing value markers
-#'   (`<NA>`, `<NaN>`) are appended at the end of the `Values` summary when
-#'   present in the variable. This applies to all variable types. Literal
-#'   strings `"NA"`, `"NaN"`, and `""` are quoted to distinguish them from
-#'   missing markers. If `FALSE` (the default), missing values are omitted from
-#'   `Values` but still counted in the `NAs` column.
+#' @inheritParams varlist
 #' @param title Optional character string displayed as the table caption.
 #'   Defaults to `"Codebook"`. Set to `NULL` to remove the title
 #'   completely. When `filename = NULL`, the title is also used as the base for
@@ -45,15 +26,12 @@
 #'   levels present in the data, preserving factor level order.
 #'
 #' @details
-#' - The interactive `datatable` supports column sorting, global searching, and
-#'   client-side export to various formats.
-#' - Variable selection uses the same tidyselect interface as [`varlist()`].
-#' - By default, factor variables document all declared levels, including
-#'   unused levels — appropriate for a schema-oriented codebook. This differs
-#'   from [varlist()], which defaults to `"observed"` to summarize observed
-#'   data only. Pass `factor_levels = "observed"` to mirror [varlist()]'s
-#'   default.
-#' - All exports occur client-side through the Viewer or Tab.
+#' - The interactive `datatable` supports column sorting, global
+#'   searching, and client-side export (copy, print, CSV, Excel,
+#'   PDF) directly from the Viewer.
+#' - Variable selection uses the same tidyselect interface as
+#'   [`varlist()`]; the underlying summary tibble is built by
+#'   [`varlist()`] with `tbl = TRUE`.
 #'
 #' @return
 #' A `DT::datatable` object.

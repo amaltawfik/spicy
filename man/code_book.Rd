@@ -21,12 +21,12 @@ code_book(
 \code{starts_with("var")}, \code{where(is.numeric)}, etc.). Columns can be selected
 or reordered, but renaming selections is not supported.}
 
-\item{values}{Logical. If \code{FALSE} (the default), displays a compact
-summary of the variable's values. For numeric, character, date/time,
-labelled, and factor variables, all unique non-missing values are shown
-when there are at most four; otherwise the first three values, an ellipsis
-(\code{...}), and the last value are shown. Values are sorted when appropriate
-(e.g., numeric, character, date).
+\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary
+of the variable's values. For numeric, character, date/time, labelled, and
+factor variables, all unique non-missing values are shown when there are
+at most four; otherwise the first three values, an ellipsis (\code{...}), and
+the last value are shown. Values are sorted when appropriate (e.g.,
+numeric, character, date).
 For factors, \code{factor_levels} controls whether observed or all declared
 levels are shown; level order is preserved.
 For labelled variables, prefixed labels are displayed via
@@ -34,11 +34,11 @@ For labelled variables, prefixed labels are displayed via
 If \code{TRUE}, all unique non-missing values are displayed.}
 
 \item{include_na}{Logical. If \code{TRUE}, unique missing value markers
-(\verb{<NA>}, \verb{<NaN>}) are appended at the end of the \code{Values} summary when
-present in the variable. This applies to all variable types. Literal
-strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them from
-missing markers. If \code{FALSE} (the default), missing values are omitted from
-\code{Values} but still counted in the \code{NAs} column.}
+(\verb{<NA>}, \verb{<NaN>}) are explicitly appended at the end of the \code{Values}
+summary when present in the variable. This applies to all variable types.
+Literal strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them
+from missing markers. If \code{FALSE} (the default), missing values are omitted
+from \code{Values} but still counted in the \code{NAs} column.}
 
 \item{title}{Optional character string displayed as the table caption.
 Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
@@ -70,15 +70,12 @@ The output is displayed as an interactive \code{DT::datatable()} in the Viewer p
 }
 \details{
 \itemize{
-\item The interactive \code{datatable} supports column sorting, global searching, and
-client-side export to various formats.
-\item Variable selection uses the same tidyselect interface as \code{\link[=varlist]{varlist()}}.
-\item By default, factor variables document all declared levels, including
-unused levels — appropriate for a schema-oriented codebook. This differs
-from \code{\link[=varlist]{varlist()}}, which defaults to \code{"observed"} to summarize observed
-data only. Pass \code{factor_levels = "observed"} to mirror \code{\link[=varlist]{varlist()}}'s
-default.
-\item All exports occur client-side through the Viewer or Tab.
+\item The interactive \code{datatable} supports column sorting, global
+searching, and client-side export (copy, print, CSV, Excel,
+PDF) directly from the Viewer.
+\item Variable selection uses the same tidyselect interface as
+\code{\link[=varlist]{varlist()}}; the underlying summary tibble is built by
+\code{\link[=varlist]{varlist()}} with \code{tbl = TRUE}.
 }
 }
 \section{Dependencies}{

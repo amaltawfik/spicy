@@ -32,7 +32,9 @@ vector-based interface.}
 
 \item{x}{Row variable (unquoted).}
 
-\item{y}{Column variable (unquoted). Mandatory; for one-way tables, use \code{\link[=freq]{freq()}}.}
+\item{y}{Column variable (unquoted). Required; the \code{NULL} default
+in the signature is a placeholder and triggers an error if left
+unset (use \code{\link[=freq]{freq()}} for one-way tables).}
 
 \item{by}{Optional grouping variable or expression. Can be a single variable
 or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
@@ -42,8 +44,8 @@ or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
 \item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.}
 
-\item{percent}{One of \code{"none"} (the default), \code{"row"}, \code{"column"}.
-Unique abbreviations are accepted (e.g. \code{"n"}, \code{"r"}, \code{"c"}).}
+\item{percent}{One of \code{"none"} (the default), \code{"column"}, or \code{"row"}.
+Unique abbreviations are accepted (e.g. \code{"n"}, \code{"c"}, \code{"r"}).}
 
 \item{include_stats}{Logical. If \code{TRUE} (the default), computes Chi-squared
 and an association measure (see \code{assoc_measure}).}
@@ -66,8 +68,9 @@ If \code{TRUE}, uses Monte Carlo simulation.}
 \item{simulate_B}{Integer. Number of replicates for Monte Carlo simulation.
 Defaults to \code{2000}.}
 
-\item{digits}{Number of decimals for cell values. Defaults to \code{1} for
-percentages, \code{0} for counts.}
+\item{digits}{Number of decimals for cell values. Defaults to
+\code{NULL}, which is resolved to \code{1} when \code{percent != "none"} and
+\code{0} when \code{percent = "none"} (counts are always integers).}
 
 \item{styled}{Logical. If \code{TRUE} (the default), returns a \code{spicy_cross_table} object
 (for formatted printing). If \code{FALSE}, returns a plain \code{data.frame}.}
@@ -87,20 +90,38 @@ p-value (and to determine the small-\code{p} threshold below which
 matches the \code{p_digits} argument of the \verb{table_*()} family.}
 }
 \value{
-A \code{data.frame}, list of data.frames, or \code{spicy_cross_table} object.
-When \code{by} is used, returns a \code{spicy_cross_table_list}.
+Depends on \code{styled} and \code{by}:
+\itemize{
+\item \code{styled = TRUE}, no \code{by}: a \code{spicy_cross_table} object
+(a \code{data.frame} carrying rendering metadata as attributes:
+\code{title}, \code{digits}, \code{decimal_mark}, \code{n_row_idx}, \code{n_col_name},
+and the inferential block when \code{include_stats = TRUE}).
+Printing dispatches to \code{\link[=print.spicy_cross_table]{print.spicy_cross_table()}}.
+\item \code{styled = TRUE}, \code{by} supplied: a \code{spicy_cross_table_list},
+i.e. a named list of \code{spicy_cross_table} objects (one element
+per group level, named by that level). Printing dispatches to
+\code{\link[=print.spicy_cross_table_list]{print.spicy_cross_table_list()}} which renders each table in
+turn separated by a blank line.
+\item \code{styled = FALSE}: the same payload returned as a plain
+\code{data.frame} (or named list of \code{data.frame}s with \code{by}),
+stripped of the \verb{spicy_*} classes for downstream programmatic
+use.
+}
+
+Cell columns are the levels of \code{y}; rows are the levels of \code{x}.
+When \code{percent != "none"}, the \code{N} column (or \code{N} row) is added
+according to \code{show_n}. When \code{include_stats = TRUE}, the result
+carries a Chi-squared row (statistic, df, \emph{p}) and an
+association-measure row (estimate, optional CI via \code{assoc_ci}).
 }
 \description{
 Computes a two-way cross-tabulation with optional weights, grouping
-(including combinations of multiple variables), percentage displays,
-and inferential statistics.
+(including combinations of multiple variables via \code{interaction()}),
+row / column percentages, and inferential statistics (Chi-squared
+test with an APA-style association measure).
 
-\code{cross_tab()} produces weighted or unweighted contingency tables with
-row or column percentages, optional grouping via \code{by}, and associated
-Chi-squared tests with an association measure and diagnostic information.
-
-Both \code{x} and \code{y} variables are required. For one-way frequency tables,
-use \code{\link[=freq]{freq()}} instead.
+Both \code{x} and \code{y} are required; for one-way frequency tables, use
+\code{\link[=freq]{freq()}}.
 }
 \section{Global Options}{
 

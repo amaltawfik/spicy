@@ -1,24 +1,24 @@
 #' Generate a comprehensive summary of the variables
 #'
-#' `varlist()` lists the variables of a data frame and extracts essential
-#' metadata, including variable names, labels, summary values, classes, number
-#' of distinct values, number of valid (non-missing) observations, and number
-#' of missing values.
+#' @description
+#' `varlist()` lists the variables of a data frame and extracts
+#' essential metadata: variable names, labels, summary values,
+#' classes, number of distinct values, number of valid (non-missing)
+#' observations, and number of missing values. Tidyselect-style
+#' selectors can be supplied to pick or reorder columns dynamically.
 #'
-#' The function can also apply tidyselect-style variable selectors to select or
-#' reorder columns dynamically.
+#' @details
+#' In an interactive session (RStudio, Positron, ...), the summary
+#' opens in the Viewer pane with a contextual title like
+#' `vl: sochealth`. If the data frame has been transformed or
+#' subsetted, the title is suffixed with `*` (e.g. `vl: sochealth*`);
+#' anonymous or ambiguous calls fall back to `vl: <data>`. Pass
+#' `tbl = TRUE` to return a tibble instead.
 #'
-#' If used interactively (e.g. in RStudio or Positron), the summary is
-#' displayed in the Viewer pane with a contextual title like `vl: sochealth`.
-#' If the data frame has been transformed or subsetted, the title will display
-#' an asterisk (`*`), e.g. `vl: sochealth*`. Anonymous or ambiguous calls use
-#' `vl: <data>`.
-#'
-#' For factor variables, `varlist()` defaults to displaying only the levels
-#' observed in the data (`factor_levels = "observed"`) — a reflection of what
-#' is actually present. By contrast, [code_book()] defaults to `"all"` to
-#' document the declared schema, including unused levels. Pass `factor_levels`
-#' explicitly to override either default.
+#' The default `factor_levels = "observed"` mirrors what is actually
+#' in the data; [code_book()] defaults to `"all"` to document the
+#' declared schema. See `@param factor_levels` to override either
+#' default.
 #'
 #' @aliases vl
 #'
@@ -78,10 +78,10 @@
 #' / `NAs` therefore count complete vs. incomplete rows, not
 #' individual cells.
 #'
-#' If `tbl = TRUE`, the tibble is returned. If `tbl = FALSE` and the session is
-#' interactive, the summary is displayed in the Viewer pane and the function
-#' returns invisibly. In non-interactive sessions, a message is displayed and
-#' the function returns invisibly.
+#' With `tbl = FALSE` (the default) the tibble is sent to the
+#' Viewer (interactive) or surfaced via a message (non-interactive)
+#' and the function returns invisibly `NULL`. Set `tbl = TRUE` to
+#' return the tibble directly for downstream use.
 #'
 #' @family variable inspection
 #' @export

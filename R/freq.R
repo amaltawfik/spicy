@@ -10,39 +10,24 @@
 #' returns a `data.frame` containing frequencies and proportions.
 #'
 #' @details
-#' This function is designed to mimic common frequency procedures from
-#' statistical software such as SPSS or Stata, while integrating the
-#' flexibility of R's data structures.
+#' Designed to mimic common frequency procedures from SPSS or Stata
+#' while integrating the flexibility of R's data structures. The
+#' input type (`vector`, `factor`, `labelled`) is auto-detected; see
+#' `@param labelled_levels` and `@param factor_levels` for the
+#' schema-vs-observed level controls, and `@param na_val` for
+#' optional sentinel-value recoding.
 #'
-#' It automatically detects the type of input (`vector`, `factor`, or
-#' `labelled`) and applies appropriate transformations, including:
+#' Weighting (`weights`): frequencies and percentages are computed
+#' proportionally to the weights. Missing values in `weights` cause
+#' those observations to be dropped from the table entirely (with a
+#' warning), matching the behaviour of [cross_tab()] in spicy
+#' 0.11.0+. With `rescale = TRUE`, the remaining (non-`NA`-weighted)
+#' weights are normalised so the total weighted N equals the count
+#' of non-`NA`-weighted rows. With `rescale = FALSE`, the total
+#' weighted N is the actual sum of non-`NA` weights.
 #'
-#' * Handling of labelled variables via **labelled** or **haven**
-#' * Optional recoding of specific values as missing (`na_val`)
-#' * Optional weighting with a rescaling mechanism
-#' * Support for cumulative percentages (`cum = TRUE`)
-#' * Multiple display modes for labels via `labelled_levels`
-#' * Schema-vs-observed level display via `factor_levels`
-#'
-#' For factor and labelled inputs, the `factor_levels` argument
-#' controls whether declared-but-unobserved levels appear in the
-#' output. The default `"observed"` drops them (Stata `tab` behavior);
-#' `"all"` keeps them with `n = 0`, matching SPSS `FREQUENCIES` and
-#' [code_book()]'s default. For schema-level inspection without
-#' computing frequencies, use [varlist()] or [code_book()] with
-#' `factor_levels = "all"`.
-#'
-#' When weighting is applied (`weights`), the frequencies and percentages are
-#' computed proportionally to the weights. The argument `rescale = TRUE`
-#' normalizes weights so their sum equals the unweighted sample size
-#' (`length(weights)`).
-#'
-#' Missing values in `weights` cause those observations to be dropped
-#' from the table entirely (with a warning), matching the behaviour of
-#' [cross_tab()] in spicy 0.11.0+. With `rescale = TRUE`, the remaining
-#' (non-`NA`-weighted) weights are normalized so the total weighted N
-#' equals the count of non-`NA`-weighted rows. With `rescale = FALSE`,
-#' the total weighted N is the actual sum of non-`NA` weights.
+#' For schema-level inspection without computing frequencies, use
+#' [varlist()] or [code_book()].
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
@@ -178,7 +163,10 @@
 #' head(f)
 #'
 #' @seealso
-#' [print.spicy_freq_table()] for formatted printing.
+#' [cross_tab()] for two-way cross-tabulations;
+#' [table_categorical()] for multi-variable categorical summary
+#' tables; [varlist()] / [code_book()] for variable inspection;
+#' [print.spicy_freq_table()] for formatted printing;
 #' [spicy_print_table()] for the underlying ASCII rendering engine.
 #'
 #' @export

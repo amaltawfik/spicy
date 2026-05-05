@@ -86,35 +86,33 @@ a row is treated as missing if any of its cells is \code{NA}. \code{N_valid}
 / \code{NAs} therefore count complete vs. incomplete rows, not
 individual cells.
 
-If \code{tbl = TRUE}, the tibble is returned. If \code{tbl = FALSE} and the session is
-interactive, the summary is displayed in the Viewer pane and the function
-returns invisibly. In non-interactive sessions, a message is displayed and
-the function returns invisibly.
+With \code{tbl = FALSE} (the default) the tibble is sent to the
+Viewer (interactive) or surfaced via a message (non-interactive)
+and the function returns invisibly \code{NULL}. Set \code{tbl = TRUE} to
+return the tibble directly for downstream use.
 }
 \description{
-\code{varlist()} lists the variables of a data frame and extracts essential
-metadata, including variable names, labels, summary values, classes, number
-of distinct values, number of valid (non-missing) observations, and number
-of missing values.
+\code{varlist()} lists the variables of a data frame and extracts
+essential metadata: variable names, labels, summary values,
+classes, number of distinct values, number of valid (non-missing)
+observations, and number of missing values. Tidyselect-style
+selectors can be supplied to pick or reorder columns dynamically.
 
 \code{vl()} is a convenient shorthand for \code{varlist()} that offers identical
 functionality with a shorter name.
 }
 \details{
-The function can also apply tidyselect-style variable selectors to select or
-reorder columns dynamically.
+In an interactive session (RStudio, Positron, ...), the summary
+opens in the Viewer pane with a contextual title like
+\code{vl: sochealth}. If the data frame has been transformed or
+subsetted, the title is suffixed with \code{*} (e.g. \verb{vl: sochealth*});
+anonymous or ambiguous calls fall back to \verb{vl: <data>}. Pass
+\code{tbl = TRUE} to return a tibble instead.
 
-If used interactively (e.g. in RStudio or Positron), the summary is
-displayed in the Viewer pane with a contextual title like \code{vl: sochealth}.
-If the data frame has been transformed or subsetted, the title will display
-an asterisk (\code{*}), e.g. \verb{vl: sochealth*}. Anonymous or ambiguous calls use
-\verb{vl: <data>}.
-
-For factor variables, \code{varlist()} defaults to displaying only the levels
-observed in the data (\code{factor_levels = "observed"}) — a reflection of what
-is actually present. By contrast, \code{\link[=code_book]{code_book()}} defaults to \code{"all"} to
-document the declared schema, including unused levels. Pass \code{factor_levels}
-explicitly to override either default.
+The default \code{factor_levels = "observed"} mirrors what is actually
+in the data; \code{\link[=code_book]{code_book()}} defaults to \code{"all"} to document the
+declared schema. See \verb{@param factor_levels} to override either
+default.
 }
 \examples{
 varlist(sochealth, tbl = TRUE)
