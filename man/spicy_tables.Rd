@@ -2,56 +2,38 @@
 % Please edit documentation in R/spicy_tables.R
 \name{spicy_tables}
 \alias{spicy_tables}
-\title{Spicy Table Engine: Frequency and Cross-tabulation Rendering}
+\title{Spicy table engine}
 \description{
-The \emph{spicy table engine} provides a cohesive set of tools for creating and
-printing formatted ASCII tables in R, designed for descriptive statistics.
-
-Functions in this family include:
-\itemize{
-\item \code{\link[=freq]{freq()}} — frequency tables with support for weights, labelled data, and cumulative percentages
-\item \code{\link[=spicy_print_table]{spicy_print_table()}} — general-purpose ASCII table printer
-\item \code{\link[=build_ascii_table]{build_ascii_table()}} — internal rendering engine for column alignment and formatting
+Index page for the ASCII rendering engine that produces every
+spicy console table (\code{\link[=freq]{freq()}}, \code{\link[=cross_tab]{cross_tab()}}, the \verb{table_*()}
+family, and the association-measure printers). The engine
+supports Unicode line drawing, ANSI colours via \pkg{crayon}
+(with monochrome fallback), automatic colour-aware width
+detection, configurable integer padding (\code{0L} / \code{2L} / \code{4L}),
+per-column alignment, and horizontal panelling for tables
+wider than the console.
 }
-}
-\details{
-All functions in this family share a common philosophy:
-\itemize{
-\item Console-friendly display with Unicode box-drawing characters
-\item Consistent alignment and spacing across outputs
-\item Automatic detection of variable type (\code{factor}, \code{labelled}, \code{numeric})
-\item Optional integration of variable labels and weighting information
-}
-}
-\section{Core functions}{
+\section{User-facing entry points}{
 
 \itemize{
-\item \strong{\code{freq()}} — Main entry point for generating frequency tables.
-\item \strong{\code{spicy_print_table()}} — Applies formatting and optional titles or notes.
-\item \strong{\code{build_ascii_table()}} — Internal engine handling padding, alignment, and box rules.
+\item \code{\link[=freq]{freq()}} -- one-way frequency tables
+\item \code{\link[=cross_tab]{cross_tab()}} -- two-way cross-tabulations
+\item \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} -- multi-variable summary tables
 }
 }
 
-\section{Output styling}{
+\section{Rendering primitives (internal API)}{
 
-The spicy table engine supports multiple padding options via \code{padding}:
-\code{"compact"} (default), \code{"normal"}, and \code{"wide"}.
-Horizontal and vertical rules can be customized, and colors are supported
-when the terminal allows ANSI color output (via the \strong{crayon} package).
+\itemize{
+\item \code{\link[=spicy_print_table]{spicy_print_table()}} -- user-facing wrapper that adds title,
+note, table-type-aware alignment defaults, and panelling.
+\item \code{\link[=build_ascii_table]{build_ascii_table()}} -- the underlying string renderer.
+}
 }
 
 \seealso{
-\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for the specialized frequency display method.
-\code{\link[labelled:to_factor]{labelled::to_factor()}} and \code{\link[dplyr:pull]{dplyr::pull()}} for data transformations.
-
-Other spicy tables:
-\code{\link[=table_categorical]{table_categorical()}},
-\code{\link[=table_continuous]{table_continuous()}},
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}
+\link{spicy} for the full package overview, including the
+API stability tiers and the classed-condition taxonomy.
 }
-\concept{spicy tables}
-\keyword{descriptive}
-\keyword{frequency}
 \keyword{internal}
-\keyword{spicy}
-\keyword{tables}

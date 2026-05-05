@@ -1029,7 +1029,6 @@ mean differences (Austin and Stuart 2015); the
 design-based inference on complex-survey samples.
 
 Other spicy tables:
-\code{\link{spicy_tables}},
 \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}
 }

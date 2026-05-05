@@ -436,7 +436,6 @@ bootstrap / jackknife SE, fitted means, weighted contrasts);
 one-way frequency tables.
 
 Other spicy tables:
-\code{\link{spicy_tables}},
 \code{\link[=table_continuous]{table_continuous()}},
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}
 }
