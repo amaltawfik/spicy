@@ -1,9 +1,9 @@
-# Length-guarded `sort(unique(x), method = "radix")`. Necessary
-# because R's `sort()` segfaults on a zero-length input for several
-# classes (`Date`, `POSIXct`, `character`, ... -- observed on R
-# 4.6.0 dev). Returns the deduplicated input as-is when there is
-# nothing to order; otherwise byte-stable radix-sorts. Centralised
-# so every empty-column call site gets the same protection.
+# Length-guarded `sort(unique(x), method = "radix")`. Defensive
+# wrapper: skips the `sort()` step when fewer than two distinct
+# values remain (zero- or one-element inputs are returned as-is),
+# then byte-stable radix-sorts the rest. Centralised so every
+# call site shares the same handling of empty / singleton vectors,
+# and so the sort algorithm stays consistent across input classes.
 safe_sort_unique <- function(x) {
   out <- unique(x)
   if (length(out) > 1L) {
@@ -118,7 +118,6 @@ summarize_values_all <- function(
   include_na = FALSE,
   factor_levels = "observed"
 ) {
-  na_omit_col <- stats::na.omit(col)
   has_na <- varlist_has_na(col)
   has_nan <- varlist_has_nan(col)
 
@@ -163,7 +162,7 @@ summarize_values_all <- function(
   }
 
   if (is.logical(col) || is.character(col)) {
-    return(show_vals(na_omit_col))
+    return(show_vals(stats::na.omit(col)))
   }
 
   if (varlist_is_array_column(col)) {
@@ -178,7 +177,7 @@ summarize_values_all <- function(
     ))
   }
 
-  show_vals(na_omit_col)
+  show_vals(stats::na.omit(col))
 }
 
 

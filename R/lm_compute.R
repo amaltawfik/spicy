@@ -1,7 +1,8 @@
-# Internal lm-based computation backbone shared by table_continuous_lm()
-# and (in 0.13.0) table_regression(): vcov family (classical / HC* / CR* /
-# bootstrap / jackknife), single-coef and Wald inference, model stats, and
-# noncentral effect-size CIs.
+# Internal lm-based computation backbone shared by
+# table_continuous_lm() and designed to be reused by future
+# regression-table builders: vcov family (classical / HC* / CR* /
+# bootstrap / jackknife), single-coef and Wald inference, model
+# stats, and noncentral effect-size CIs.
 
 compute_lm_vcov <- function(
   fit,
