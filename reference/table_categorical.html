@@ -212,8 +212,13 @@ Defaults to <code>1</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
-<dd><p>Number of digits for p-values (except <code>&lt; .001</code>).
-Defaults to <code>3</code>.</p></dd>
+<dd><p>Integer &gt;= 1. Number of decimal places used to
+render <em>p</em>-values in the <code>p</code> column (default: <code>3</code>, the APA
+Publication Manual standard). Both the displayed precision and
+the small-<em>p</em> threshold derive from this argument: <code>p_digits = 3</code>
+prints <code>.045</code> and <code>&lt;.001</code>; <code>p_digits = 4</code> prints <code>.0451</code> and
+<code>&lt;.0001</code>. Leading zeros are always stripped, following APA
+convention.</p></dd>
 
 
 <dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
@@ -363,15 +368,14 @@ path invisibly.</p></li>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
     <p>When <code>by</code> is used, each selected variable is cross-tabulated
-against the grouping variable with <code><a href="cross_tab.html">cross_tab()</a></code>. The omnibus
-chi-squared test (with optional Yates continuity correction or
-Monte Carlo <em>p</em>-value, see <code>correct</code> / <code>simulate_p</code>) is computed
-and reported in the <code>p</code> column. The chosen association measure
-(<code>assoc_measure</code>, with <code>"auto"</code> selecting Cramer's V for nominal
-variables and Kendall's Tau-b when both are ordered) is reported
-alongside, with optional CI via <code>assoc_ci</code>. Without <code>by</code>, the
-table reports the marginal frequency distribution of each variable
-with no inferential statistics.</p>
+against the grouping variable with <code><a href="cross_tab.html">cross_tab()</a></code> and the omnibus
+chi-squared <em>p</em>-value is reported in the <code>p</code> column. See
+<code>@param correct</code> / <code>simulate_p</code> to switch on Yates' continuity
+correction or Monte Carlo <em>p</em>-values, and <code>@param assoc_measure</code>
+for the per-row dispatch table used by <code>"auto"</code> (2x2 -&gt; Phi,
+both ordered -&gt; Kendall's Tau-b, otherwise Cramer's V). Without
+<code>by</code>, the table reports the marginal frequency distribution of
+each variable with no inferential statistics.</p>
 <p>For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.
 For descriptive (empirical) comparisons on continuous outcomes, see
@@ -379,24 +383,10 @@ For descriptive (empirical) comparisons on continuous outcomes, see
     </div>
     <div class="section level2">
     <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
-    <p>By default (<code>align = "decimal"</code>) numeric columns are aligned on
-the decimal mark, the standard scientific-publication convention
-used by SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
-<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> / <code>tinytable::style_tt(align = "d")</code>.
-For the printed ASCII table the alignment is achieved by padding
-numeric cells with leading and trailing spaces so dots line up
-vertically. Pass <code>align = "auto"</code> to revert to the legacy uniform
-right-alignment used in spicy &lt; 0.11.0.</p>
-<p><em>p</em>-values are formatted with <code>p_digits</code> decimal places (default
-3, the APA standard). Leading zeros on <em>p</em> are always stripped
-(<code>.045</code>, not <code>0.045</code>).</p>
-<p>Optional output engines require suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
-<li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
-<li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>
-<li><p><span class="pkg">flextable</span> + <span class="pkg">officer</span> for <code>output = "word"</code></p></li>
-<li><p><span class="pkg">openxlsx2</span> for <code>output = "excel"</code></p></li>
-<li><p><span class="pkg">clipr</span> for <code>output = "clipboard"</code></p></li>
-</ul></div>
+    <p>Decimal alignment, <em>p</em>-value formatting, and required suggested
+packages per output engine are documented under <code>@param align</code>,
+<code>@param p_digits</code>, and <code>@param output</code> respectively.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code> for empirical comparisons on
@@ -693,9 +683,9 @@ one-way frequency tables.</p>
 <span class="r-in"><span><span class="co">#   table_categorical(sochealth,</span></span></span>
 <span class="r-in"><span><span class="co">#                     select = c(smoking, physical_activity),</span></span></span>
 <span class="r-in"><span><span class="co">#                     by = sex)</span></span></span>
-<span class="r-in"><span><span class="co"># only `output` changes. Assign to a variable to avoid the</span></span></span>
-<span class="r-in"><span><span class="co"># console-friendly text fallback that some engines fall back to</span></span></span>
-<span class="r-in"><span><span class="co"># when printed directly in `?` help.</span></span></span>
+<span class="r-in"><span><span class="co"># only `output` changes. Assign each result to a variable -- some</span></span></span>
+<span class="r-in"><span><span class="co"># engines auto-print as a console-friendly text fallback inside</span></span></span>
+<span class="r-in"><span><span class="co"># the `?` help viewer.</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide data.frame (one row per modality).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>

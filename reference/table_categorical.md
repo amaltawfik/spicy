@@ -139,7 +139,12 @@ table_categorical(
 
 - p_digits:
 
-  Number of digits for p-values (except `< .001`). Defaults to `3`.
+  Integer \>= 1. Number of decimal places used to render *p*-values in
+  the `p` column (default: `3`, the APA Publication Manual standard).
+  Both the displayed precision and the small-*p* threshold derive from
+  this argument: `p_digits = 3` prints `.045` and `<.001`;
+  `p_digits = 4` prints `.0451` and `<.0001`. Leading zeros are always
+  stripped, following APA convention.
 
 - v_digits:
 
@@ -317,15 +322,14 @@ Depends on `output`:
 
 When `by` is used, each selected variable is cross-tabulated against the
 grouping variable with
-[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-The omnibus chi-squared test (with optional Yates continuity correction
-or Monte Carlo *p*-value, see `correct` / `simulate_p`) is computed and
-reported in the `p` column. The chosen association measure
-(`assoc_measure`, with `"auto"` selecting Cramer's V for nominal
-variables and Kendall's Tau-b when both are ordered) is reported
-alongside, with optional CI via `assoc_ci`. Without `by`, the table
-reports the marginal frequency distribution of each variable with no
-inferential statistics.
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+and the omnibus chi-squared *p*-value is reported in the `p` column. See
+`@param correct` / `simulate_p` to switch on Yates' continuity
+correction or Monte Carlo *p*-values, and `@param assoc_measure` for the
+per-row dispatch table used by `"auto"` (2x2 -\> Phi, both ordered -\>
+Kendall's Tau-b, otherwise Cramer's V). Without `by`, the table reports
+the marginal frequency distribution of each variable with no inferential
+statistics.
 
 For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see
@@ -335,32 +339,9 @@ For descriptive (empirical) comparisons on continuous outcomes, see
 
 ## Display conventions
 
-By default (`align = "decimal"`) numeric columns are aligned on the
-decimal mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX `siunitx`, and the native primitives of
-[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
-/ `tinytable::style_tt(align = "d")`. For the printed ASCII table the
-alignment is achieved by padding numeric cells with leading and trailing
-spaces so dots line up vertically. Pass `align = "auto"` to revert to
-the legacy uniform right-alignment used in spicy \< 0.11.0.
-
-*p*-values are formatted with `p_digits` decimal places (default 3, the
-APA standard). Leading zeros on *p* are always stripped (`.045`, not
-`0.045`).
-
-Optional output engines require suggested packages:
-
-- tinytable for `output = "tinytable"`
-
-- gt for `output = "gt"`
-
-- flextable for `output = "flextable"`
-
-- flextable + officer for `output = "word"`
-
-- openxlsx2 for `output = "excel"`
-
-- clipr for `output = "clipboard"`
+Decimal alignment, *p*-value formatting, and required suggested packages
+per output engine are documented under `@param align`,
+`@param p_digits`, and `@param output` respectively.
 
 ## See also
 
@@ -663,9 +644,9 @@ table_categorical(
 #   table_categorical(sochealth,
 #                     select = c(smoking, physical_activity),
 #                     by = sex)
-# only `output` changes. Assign to a variable to avoid the
-# console-friendly text fallback that some engines fall back to
-# when printed directly in `?` help.
+# only `output` changes. Assign each result to a variable -- some
+# engines auto-print as a console-friendly text fallback inside
+# the `?` help viewer.
 
 # Wide data.frame (one row per modality).
 table_categorical(

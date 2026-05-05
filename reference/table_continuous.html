@@ -20,11 +20,11 @@ table ("default"), a plain data.frame ("data.frame" or
 Details), or publication-ready tables ("tinytable", "gt",
 "flextable", "excel", "clipboard", "word").
 This is the descriptive companion to table_continuous_lm(). The
-two functions share their argument vocabulary (select, by,
-weights / vcov exclusively in the model variant, effect_size,
-ci_level, digits, p_digits, decimal_mark, align, ...) so a
-descriptive analysis and a model-based analysis of the same data
-use the same table layout, decimal mark, and reporting precision.'><meta property="og:description" content='Computes descriptive statistics (mean, SD, min, max, confidence interval
+two functions share their layout, alignment, and reporting precision
+so descriptive and model-based analyses of the same data look
+uniform side by side. Use table_continuous_lm() when you need
+robust SE, weighted contrasts, fitted means, or covariate
+adjustment.'><meta property="og:description" content='Computes descriptive statistics (mean, SD, min, max, confidence interval
 of the mean, n) for one or many continuous variables selected with
 tidyselect syntax.
 With by, produces grouped summaries and reports a group-comparison
@@ -39,11 +39,11 @@ table ("default"), a plain data.frame ("data.frame" or
 Details), or publication-ready tables ("tinytable", "gt",
 "flextable", "excel", "clipboard", "word").
 This is the descriptive companion to table_continuous_lm(). The
-two functions share their argument vocabulary (select, by,
-weights / vcov exclusively in the model variant, effect_size,
-ci_level, digits, p_digits, decimal_mark, align, ...) so a
-descriptive analysis and a model-based analysis of the same data
-use the same table layout, decimal mark, and reporting precision.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+two functions share their layout, alignment, and reporting precision
+so descriptive and model-based analyses of the same data look
+uniform side by side. Use table_continuous_lm() when you need
+robust SE, weighted contrasts, fitted means, or covariate
+adjustment.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -111,11 +111,11 @@ table (<code>"default"</code>), a plain <code>data.frame</code> (<code>"data.fra
 Details), or publication-ready tables (<code>"tinytable"</code>, <code>"gt"</code>,
 <code>"flextable"</code>, <code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>).</p>
 <p>This is the descriptive companion to <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The
-two functions share their argument vocabulary (<code>select</code>, <code>by</code>,
-<code>weights</code> / <code>vcov</code> exclusively in the model variant, <code>effect_size</code>,
-<code>ci_level</code>, <code>digits</code>, <code>p_digits</code>, <code>decimal_mark</code>, <code>align</code>, ...) so a
-descriptive analysis and a model-based analysis of the same data
-use the same table layout, decimal mark, and reporting precision.</p>
+two functions share their layout, alignment, and reporting precision
+so descriptive and model-based analyses of the same data look
+uniform side by side. Use <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> when you need
+robust SE, weighted contrasts, fitted means, or covariate
+adjustment.</p>
     </div>
 
     <div class="section level2">
@@ -166,9 +166,10 @@ expression pattern (character string).</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional grouping column. Accepts an unquoted column name or
-a single character column name. The column does not need to be
-numeric.</p></dd>
+<dd><p>Optional grouping column. Accepts an unquoted column name
+or a single character column name. Coerced to factor for
+grouping; non-numeric grouping columns (factor, character,
+logical) are supported as-is.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -230,7 +231,7 @@ outputs. One of:</p><ul><li><p><code>"none"</code> (default): no effect-size col
 <code>test</code> and group count – Hedges' <em>g</em> (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial <em>r</em>
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
-groups). This is the historical behaviour of <code>effect_size = TRUE</code>.</p></li>
+groups).</p></li>
 <li><p><code>"hedges_g"</code>: Hedges' <em>g</em> (bias-corrected standardised mean
 difference, 2 groups, parametric). CI via the Hedges &amp; Olkin
 normal approximation.</p></li>
@@ -254,10 +255,10 @@ triggers an actionable error. Ignored when <code>by</code> is not used.</p></dd>
 <dt id="arg-effect-size-ci">effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-ci"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, appends the confidence
 interval of the effect size in brackets (e.g.,
-<code>g = 0.45 [0.22, 0.68]</code>). Implies a non-<code>"none"</code> effect size; if
-<code>effect_size = "none"</code> is left unchanged, this argument is
-ignored with a warning, and the function falls back to
-<code>effect_size = "auto"</code>. Defaults to <code>FALSE</code>.</p></dd>
+<code>g = 0.45 [0.22, 0.68]</code>). Implies a non-<code>"none"</code> effect size: if
+left at the default <code>effect_size = "none"</code>, the function warns
+and promotes <code>effect_size</code> to <code>"auto"</code> so the requested CI can
+be shown. Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
@@ -409,68 +410,37 @@ path invisibly.</p></li>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
     <p>The omnibus test is computed only when <code>by</code> is supplied and at
-least two groups have two or more observations. Choice driven by
-<code>test</code>:</p><ul><li><p><code>"welch"</code> (default): Welch <em>t</em>-test for two groups
-(<code>stats::t.test(var.equal = FALSE)</code>); Welch one-way ANOVA for
-three or more (<code>stats::oneway.test(var.equal = FALSE)</code>). Does
-not assume equal variances.</p></li>
-<li><p><code>"student"</code>: Student <em>t</em>-test (<code>var.equal = TRUE</code>) /
-classical ANOVA (<code>stats::oneway.test(var.equal = TRUE)</code>).</p></li>
-<li><p><code>"nonparametric"</code>: Wilcoxon rank-sum / Mann-Whitney <em>U</em>
-for two groups (<code><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">stats::wilcox.test</a></code>); Kruskal-Wallis <em>H</em> for
-three or more (<code><a href="https://rdrr.io/r/stats/kruskal.test.html" class="external-link">stats::kruskal.test</a></code>).</p></li>
-</ul><p>For model-based contrasts (heteroskedasticity-consistent SE,
-cluster-robust SE, weighted contrasts, fitted means, etc.), use
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
+least two groups remain after dropping <code>NA</code>s, with every group
+contributing at least two observations. Choice of test family is
+driven by <code>test</code> (see the <code>@param</code> entry for the full dispatch
+and the underlying <code>stats::</code> functions called).</p>
+<p>For model-based contrasts (heteroskedasticity-consistent SE,
+cluster-robust SE, weighted contrasts, fitted means, covariate
+adjustment), use <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="effect-sizes">Effect sizes<a class="anchor" aria-label="anchor" href="#effect-sizes"></a></h2>
-    <p>Effect size is selected via <code>effect_size</code>. The default is <code>"none"</code>
-(no column). <code>"auto"</code> mirrors the historical <code>effect_size = TRUE</code>
-behaviour and chooses the canonical measure for the active
-(<code>test</code>, <code>n_groups</code>) combination:</p><ul><li><p>Parametric, 2 groups -&gt; Hedges' <em>g</em> (Hedges &amp; Olkin 1985).</p></li>
-<li><p>Parametric, 3+ groups -&gt; Eta-squared (\(\eta^2\)).</p></li>
-<li><p>Nonparametric, 2 groups -&gt; Rank-biserial <em>r</em>.</p></li>
-<li><p>Nonparametric, 3+ groups -&gt; Epsilon-squared
-(\(\varepsilon^2\)).</p></li>
-</ul><p>Explicit choices (<code>"hedges_g"</code>, <code>"eta_sq"</code>, <code>"r_rb"</code>,
-<code>"epsilon_sq"</code>) are validated against (<code>test</code>, <code>n_groups</code>); an
-incompatible request triggers a clear error rather than a silent
-fallback. The model-based companion <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> adds
-Cohen's <em>d</em>, Hays' \(\omega^2\), and Cohen's <em>f</em>\(^2\), all
-derived from the fitted (possibly weighted) <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. CIs are
-available via <code>effect_size_ci = TRUE</code>: noncentral <em>F</em> inversion
-for \(\eta^2\), Hedges-Olkin normal approximation for <em>g</em>,
-Fisher <em>z</em>-transform for <em>r</em>, and percentile bootstrap (2 000
-replicates) for \(\varepsilon^2\).</p>
+    <p>See <code>@param effect_size</code> for the dispatch table (canonical
+measure for each (<code>test</code>, <code>n_groups</code>) combination) and the
+validation rules applied to explicit requests.</p>
+<p>Confidence intervals (enabled with <code>effect_size_ci = TRUE</code>) use
+noncentral <em>F</em> inversion for \(\eta^2\), the Hedges-Olkin
+normal approximation for <em>g</em>, the Fisher <em>z</em>-transform for <em>r</em>,
+and percentile bootstrap (2,000 replicates) for
+\(\varepsilon^2\).</p>
+<p>For Cohen's <em>d</em>, Hays' \(\omega^2\), and Cohen's <em>f</em>\(^2\)
+(derived from a fitted, possibly weighted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), use the
+model-based companion <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
-    <p>By default (<code>align = "decimal"</code>) numeric columns are aligned on
-the decimal mark, the standard scientific-publication convention
-used by SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
-<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> / <code>tinytable::style_tt(align = "d")</code>.
-For engines without a native primitive (<code>flextable</code>, <code>word</code>,
-<code>clipboard</code>, ASCII print), values are pre-padded with leading and
-trailing spaces so dots line up vertically; <code>flextable</code>/<code>word</code>
-additionally use a monospace font in the body. Pass
-<code>align = "auto"</code> to revert to the legacy per-column rule (centre
-for the descriptive columns, right for <code>n</code> and <code>p</code>).</p>
-<p><em>p</em>-values are formatted with <code>p_digits</code> decimal places (default
-3, the APA standard). The threshold below which the column shows
-<code>&lt;.001</code> is <code>10^{-p_digits}</code>; setting <code>p_digits = 4</code> shifts both
-the displayed precision and the threshold accordingly. Leading
-zeros on <em>p</em> are always stripped (<code>.045</code>, not <code>0.045</code>).</p>
+    <p>Decimal alignment, <em>p</em>-value formatting, and required suggested
+packages per output engine are documented under <code>@param align</code>,
+<code>@param p_digits</code>, and <code>@param output</code> respectively.</p>
 <p>Non-numeric columns are silently dropped (set <code>verbose = TRUE</code> to
-see which columns were excluded). When a single constant column is
+see which columns were excluded). When a constant column is
 passed, SD and CI are shown as <code>"--"</code> in the ASCII table.</p>
-<p>Optional output engines require suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
-<li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
-<li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>
-<li><p><span class="pkg">flextable</span> + <span class="pkg">officer</span> for <code>output = "word"</code></p></li>
-<li><p><span class="pkg">openxlsx2</span> for <code>output = "excel"</code></p></li>
-<li><p><span class="pkg">clipr</span> for <code>output = "clipboard"</code></p></li>
-</ul></div>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> for the model-based companion
@@ -697,9 +667,9 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="co">#   table_continuous(sochealth,</span></span></span>
 <span class="r-in"><span><span class="co">#                    select = c(bmi, wellbeing_score),</span></span></span>
 <span class="r-in"><span><span class="co">#                    by = sex)</span></span></span>
-<span class="r-in"><span><span class="co"># only `output` changes. Assign to a variable to avoid the</span></span></span>
-<span class="r-in"><span><span class="co"># console-friendly text fallback that some engines fall back to</span></span></span>
-<span class="r-in"><span><span class="co"># when printed directly in `?` help.</span></span></span>
+<span class="r-in"><span><span class="co"># only `output` changes. Assign each result to a variable -- some</span></span></span>
+<span class="r-in"><span><span class="co"># engines auto-print as a console-friendly text fallback inside</span></span></span>
+<span class="r-in"><span><span class="co"># the `?` help viewer.</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide / long data.frame (synonyms): one row per (variable x group).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
