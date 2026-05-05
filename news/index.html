@@ -73,6 +73,11 @@
 </ul></div>
 </div>
 <div class="section level3">
+<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/code_book.html">code_book()</a></code> no longer silently truncates the export filename to 120 characters. spicy now follows the Stata / SPSS convention of preserving user-supplied identifiers verbatim: if a <code>title</code> or <code>filename</code> produces a basename so long that the platform filename limit (Windows MAX_PATH 260 incl. path, macOS / ext4 255 bytes per component) is exceeded, the download surfaces a noisy OS-level error instead of a silently-shortened file. <strong>Migration</strong>: shorten very long titles explicitly, or pass an explicit <code>filename =</code> to <code><a href="../reference/code_book.html">code_book()</a></code>.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="internal-development-version">Internal<a class="anchor" aria-label="anchor" href="#internal-development-version"></a></h3>
 <ul><li>
 <p><code>R/table_continuous_lm.R</code> (3394 lines) split into four files on a strict shared / specific naming convention, so the inferential backbone (vcov family, single-coef inference, model stats, noncentral effect-size CIs) can be reused by future regression-table builders without duplication. No behaviour change, no rename, no signature change; only file moves.</p>
