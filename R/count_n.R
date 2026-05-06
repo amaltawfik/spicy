@@ -232,6 +232,8 @@ base_count_n <- function(
     message("Ignored list columns: ", paste(list_cols, collapse = ", "))
   }
 
+  n_rows <- nrow(data)
+
   if (!is.null(special)) {
     allowed <- c("NA", "NaN", "Inf", "-Inf")
     if ("all" %in% special) {
@@ -242,6 +244,10 @@ base_count_n <- function(
         "Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.",
         class = "spicy_invalid_input"
       )
+    }
+
+    if (ncol(data) == 0) {
+      return(rep(0L, n_rows))
     }
 
     checkers <- list(

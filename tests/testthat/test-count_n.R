@@ -186,6 +186,19 @@ test_that("count_n returns 0 for empty or incompatible selection", {
   )
 })
 
+test_that("count_n special branch returns nrow zeros when no usable columns remain", {
+  df <- tibble::tibble(lst = list(1, 2, 3))
+  expect_equal(count_n(df, special = "NA"), c(0, 0, 0))
+  expect_equal(count_n(df, special = "all"), c(0, 0, 0))
+  expect_equal(count_n(df, special = c("NaN", "Inf")), c(0, 0, 0))
+
+  df2 <- tibble::tibble(x = 1:3, y = letters[1:3])
+  expect_equal(
+    count_n(df2, special = "NA", select = starts_with("not_here")),
+    c(0, 0, 0)
+  )
+})
+
 test_that("count_n throws error if neither count nor special is specified", {
   df <- tibble::tibble(x = 1:3, y = letters[1:3])
   expect_error(

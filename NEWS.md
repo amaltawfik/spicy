@@ -39,6 +39,15 @@
 
 ## Bug fixes
 
+* `count_n(special = ...)` now returns a length-`nrow(data)` zero
+  vector when no usable column survives the list-column filter
+  (or when the user-supplied `select` resolves to zero columns),
+  rather than `numeric(0)`. The bug broke the documented contract
+  ("A numeric vector of row-wise counts ... of length `nrow(data)`")
+  and would crash a `dplyr::mutate()` pipeline with a length-mismatch
+  error. The `count = ...` branch already had this guard; the
+  `special = ...` branch is now aligned.
+
 * `lambda_gk()` and `goodman_kruskal_tau()` no longer return a
   silent `NaN` (no-detail mode) or raise an unguarded
   `if (NA)` error (detail mode) on rank-1 tables -- a 2x2 with
