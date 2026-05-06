@@ -54,7 +54,13 @@ validate_code_book_control_dots <- function(dots) {
     return(invisible(dots))
   }
 
-  controls <- c("values", "include_na", "title", "filename", "factor_levels")
+  # Derived from `formals(code_book)` rather than hardcoded so that
+  # adding a new control argument to `code_book()` (e.g. a future
+  # `decimal_mark`) is picked up automatically here. Excludes `x`
+  # (positional data argument) and `...` (the tidyselect dots whose
+  # contents we are validating). Matches exactly the legacy hardcoded
+  # list `c("values", "include_na", "title", "filename", "factor_levels")`.
+  controls <- setdiff(names(formals(code_book)), c("x", "..."))
   named_dots <- dot_names[named_idx]
   partial_controls <- vapply(
     named_dots,
