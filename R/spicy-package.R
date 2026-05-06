@@ -92,6 +92,10 @@
 #'         failed; a simpler estimator was used instead.
 #'       \item \code{spicy_summary_failed} -- [varlist()] could not
 #'         summarise one column; the rest of the table is fine.
+#'       \item \code{spicy_renamed_column} -- a user data column or
+#'         factor level collided with a spicy-internal name and was
+#'         auto-renamed to preserve the data (emitted by
+#'         [cross_tab()]).
 #'     }
 #'   }
 #' }
