@@ -42,6 +42,29 @@
 
 ### Bug fixes
 
+- [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
+  and
+  [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
+  no longer return a silent `NaN` (no-detail mode) or raise an unguarded
+  `if (NA)` error (detail mode) on rank-1 tables – a 2x2 with all
+  observations in one row, or any table where the predicted variable is
+  constant under the chosen direction. Both functions now emit a
+  `spicy_undefined_stat` warning and return the fully `NA`-shaped
+  result, matching the existing defensive pattern in
+  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)
+  (`C + D == 0`),
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
+  (`(n0 - n1)(n0 - n2) == 0`),
+  [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+  (`denom == 0`) and
+  [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)
+  (`ad + bc == 0`). As part of the same pass,
+  [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)’s
+  `if (se > 0)` p-value guard was tightened to
+  `if (!is.na(se) && se > 0)` so a NaN sigma2 (already unlikely after
+  the upfront degenerate guard, but possible at the boundary of
+  numerical stability) no longer raises in `if (NA)`.
+
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   no longer silently overwrites a user’s y-variable level when that
   level is literally named `"N"`, `"Total"`, or `"Values"`. The three
