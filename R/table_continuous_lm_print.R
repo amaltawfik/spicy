@@ -335,7 +335,15 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
     test_type = per_outcome$test_type,
     statistic = per_outcome$statistic,
     df = as.integer(per_outcome$df1),
-    df.residual = as.integer(per_outcome$df2),
+    # `df2` is the denominator df. For classical / HC* it is an
+    # integer (`df.residual(fit)`); for CR* it is the Satterthwaite df,
+    # which is genuinely fractional (e.g. 38.7) and may also arrive as
+    # integer-but-with-FP-noise (e.g. 47.999999... very close to 48).
+    # Coercing to integer truncates both genuinely-fractional values
+    # and FP-noisy near-integers (47.999... -> 47), so keep it
+    # numeric. Mirrors the broom convention for Satterthwaite-corrected
+    # models (e.g. lmerTest::glance, afex output).
+    df.residual = as.numeric(per_outcome$df2),
     p.value = per_outcome$p.value,
     r.squared = per_outcome$r2,
     adj.r.squared = per_outcome$adj_r2,

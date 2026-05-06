@@ -195,6 +195,37 @@ test_that("resolve_covariates_argument: overlap with `select` is allowed (orches
   )
 })
 
+test_that("resolve_covariates_argument: covariate named 'x' is rejected", {
+  # Regression: the internal model fit uses a placeholder column named
+  # "x" for the predictor. Without this guard, a user covariate named
+  # "x" would silently shadow the predictor in `model.matrix()` and
+  # produce cryptic errors downstream ("arguments inadequats" from the
+  # emmean math) instead of a clean diagnostic.
+  data <- data.frame(age = 1:3, x = c(0.1, 0.2, 0.3))
+  err <- expect_error(
+    spicy:::resolve_covariates_argument(
+      rlang::quo(c(age, x)),
+      data
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "reserved")
+})
+
+test_that("resolve_covariates_argument: covariate named 'y' is rejected", {
+  # Same rationale as the 'x' guard: "y" is the response placeholder
+  # in the internal `y ~ x + ...` formula.
+  data <- data.frame(age = 1:3, y = c(0.1, 0.2, 0.3))
+  err <- expect_error(
+    spicy:::resolve_covariates_argument(
+      rlang::quo(c(age, y)),
+      data
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "reserved")
+})
+
 test_that("resolve_covariates_argument: where() may overlap with by -> errors", {
   # `where(is.numeric)` would silently grab the predictor if it is
   # numeric; the overlap check forces the user to be explicit.

@@ -2227,6 +2227,39 @@ test_that("effect sizes are invariant to vcov = 'CR2'", {
   )
 })
 
+test_that("glance() preserves df.residual without integer truncation", {
+  # Regression: glance() previously coerced df2 -> integer, which
+  # truncated both genuinely-fractional Satterthwaite df (e.g. 45.32)
+  # and FP-noisy near-integer values (47.999999... -> 47). The
+  # broom convention for Satterthwaite-corrected models keeps df as
+  # numeric, so spicy now mirrors that.
+  skip_if_not_installed("clubSandwich")
+  set.seed(1)
+  n <- 200
+  d <- data.frame(
+    outcome = rnorm(n),
+    predictor = factor(rep(c("A", "B"), n / 2)),
+    cluster_id = rep(1:50, 4)
+  )
+  res <- table_continuous_lm(
+    d, outcome, by = predictor,
+    vcov = "CR2", cluster = cluster_id
+  )
+  long <- as.data.frame(res)
+  raw_df2 <- long$df2[1]
+  g <- broom::glance(res)
+  expect_type(g$df.residual, "double")
+  expect_equal(g$df.residual, raw_df2)
+  # Also verify a synthetic genuinely-fractional value is preserved.
+  res2 <- res
+  ld <- as.data.frame(res2)
+  ld$df2 <- 45.32
+  attributes(res2) <- attributes(res)
+  res2[] <- ld
+  g2 <- broom::glance(res2)
+  expect_equal(g2$df.residual, 45.32)
+})
+
 test_that("CR2 df2 differs from classical df.residual (cluster-aware df)", {
   skip_if_not_installed("clubSandwich")
   long_classical <- table_continuous_lm(

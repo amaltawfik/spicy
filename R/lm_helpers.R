@@ -294,5 +294,28 @@ resolve_covariates_argument <- function(
     )
   }
 
+  # Reserved placeholders. The internal model fit uses
+  # `data.frame(y = outcome, x = predictor)` and the formula
+  # `y ~ x + <covariates>`, so a covariate column literally named
+  # "x" or "y" collides with the placeholder and produces cryptic
+  # errors ("response appeared on the right-hand side and was
+  # eliminated", "arguments inadequats" from the emmean math).
+  # Reject up front with an actionable message; users can rename
+  # the offending column in `data` before calling.
+  reserved <- intersect(cov_names, c("x", "y"))
+  if (length(reserved) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`%s` cannot use column name(s) reserved by the internal model fit: %s.",
+          arg,
+          paste(shQuote(reserved), collapse = ", ")
+        ),
+        "i" = "Rename the column in `data` (e.g. via `dplyr::rename()`) before passing it as a covariate."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   cov_names
 }
