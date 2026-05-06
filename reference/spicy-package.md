@@ -118,6 +118,11 @@ parent class plus a leaf class describing the specific cause:
     [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
     could not summarise one column; the rest of the table is fine.
 
+  - `spicy_renamed_column` – a user data column or factor level collided
+    with a spicy-internal name and was auto-renamed to preserve the data
+    (emitted by
+    [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)).
+
 ## See also
 
 Useful links:
