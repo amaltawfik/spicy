@@ -634,7 +634,7 @@ broom::tidy(out)
 broom::glance(out)
 #> # A tibble: 2 × 16
 #>   outcome     label predictor_type test_type statistic    df df.residual p.value
-#>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <int>   <dbl>
+#>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <dbl>   <dbl>
 #> 1 wellbeing_… WHO-… categorical    F             18.8      1        1198 1.55e-5
 #> 2 bmi         Body… categorical    F              5.64     1        1186 1.78e-2
 #> # ℹ 8 more variables: r.squared <dbl>, adj.r.squared <dbl>, es_type <chr>,

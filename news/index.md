@@ -42,6 +42,28 @@
 
 ### Bug fixes
 
+- `table_continuous_lm(covariates = ...)` now rejects covariate column
+  names `"x"` or `"y"` with a clear `spicy_invalid_input` error pointing
+  the user to rename the offending column. Those names are reserved by
+  the internal model fit (which uses
+  `data.frame(y = outcome, x = predictor)` and the formula
+  `y ~ x + <covariates>`); allowing them to flow through produced
+  cryptic [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html)
+  warnings (“la réponse est apparue dans le membre de droite et y a été
+  éliminée”) followed by an opaque `"arguments inadequats"` failure deep
+  in the emmean math.
+
+- [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  on a `spicy_continuous_lm_table` now keeps `df.residual` numeric
+  instead of coercing through
+  [`as.integer()`](https://rdrr.io/r/base/integer.html). Under
+  cluster-robust variance (`vcov = "CR2"` / `"CR3"`) the Satterthwaite
+  df is genuinely fractional (e.g. `38.7`) and may also arrive as
+  integer-but-with-FP-noise (e.g. `47.999999...`, which previously
+  truncated to `47`). Mirrors the broom convention for
+  Satterthwaite-corrected models (e.g. `lmerTest::glance`, `afex`
+  output).
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   no longer renders a *p*-value in the half-open band
   `(10^-p_digits, 0.001)` as `"<.<10^-p_digits>"` when the user picks a
