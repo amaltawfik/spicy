@@ -49,6 +49,24 @@
 #'         [spicy_print_table()]
 #' }
 #'
+#' @section broom output shape:
+#' The `broom::tidy()` and `broom::glance()` methods on
+#' `spicy_freq_table`, `spicy_categorical_table`,
+#' `spicy_continuous_table`, and `spicy_continuous_lm_table` follow
+#' the standard broom column conventions (`outcome`, `term`,
+#' `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`,
+#' `p.value`, `df`, `df.residual`, `r.squared`, `adj.r.squared`,
+#' `nobs`, ...). The set of columns produced by each method is
+#' considered **stabilising**: existing columns will not be silently
+#' renamed or have their semantics changed within `0.y.z`, and any
+#' breaking change is announced in `NEWS.md`. Adding optional new
+#' columns (e.g. covariate-adjustment metadata) is not a breaking
+#' change. Numeric columns are always returned with the type
+#' downstream broom-consumers expect: `df` integer, `df.residual`
+#' numeric (so Satterthwaite-corrected degrees of freedom from
+#' cluster-robust variance modes are preserved verbatim, matching
+#' `lmerTest::glance()` and the `afex` output convention).
+#'
 #' @section Classed conditions:
 #' All errors and warnings emitted by the stable / stabilising
 #' surfaces carry classed conditions so downstream code can

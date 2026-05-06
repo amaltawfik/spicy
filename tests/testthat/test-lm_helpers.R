@@ -690,6 +690,32 @@ test_that("print footer lists multiple covariates separated by commas", {
   expect_true(grepl("Adjusted for age, weight", txt, fixed = TRUE))
 })
 
+test_that("resolve_cluster_argument: typo'd column name reports as missing column", {
+  # Regression: a length-1 character that is not in `names(data)` and
+  # cannot plausibly be a cluster-ID vector (`nrow(data) != 1`) used to
+  # fall through to the length-mismatch branch ("must have length
+  # nrow(data) (got 1, expected N)") -- a misleading error since the
+  # underlying mistake is a typo'd column name. The helper now raises
+  # `spicy_missing_column` with the offending name in the message.
+  data <- data.frame(y = 1:10, clinic = rep(1:5, 2))
+  err <- expect_error(
+    spicy:::resolve_cluster_argument(rlang::quo("clinic_typo"), data),
+    class = "spicy_missing_column"
+  )
+  expect_match(conditionMessage(err), "clinic_typo")
+})
+
+test_that("resolve_cluster_argument: nrow=1 single-string cluster ID still flows through", {
+  # The new typo guard hinges on `nrow(data) != 1`; with a 1-row data
+  # frame, a length-1 character should be treated as a cluster-ID
+  # vector (the legitimate use-case), not as a column-name typo.
+  data <- data.frame(y = 1, x = factor("A"))
+  expect_identical(
+    spicy:::resolve_cluster_argument(rlang::quo("clinic_a"), data),
+    "clinic_a"
+  )
+})
+
 test_that("adjustment: invalid value rejected by match.arg", {
   set.seed(108L)
   n <- 40

@@ -94,6 +94,20 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
 
   if (is.character(val) && length(val) == 1L && val %in% names(data)) {
     val <- data[[val]]
+  } else if (is.character(val) && length(val) == 1L && nrow(data) != 1L) {
+    # A length-1 character that is NOT a column name and cannot be a
+    # vector of cluster IDs (since `nrow(data) != 1`) is almost always
+    # a typo of the intended column name. Reporting it as a length
+    # mismatch ("got 1, expected N") sends the user looking for the
+    # wrong problem; surface it as a missing-column error instead.
+    spicy_abort(
+      sprintf(
+        "Cluster column `%s` not found in `data`: %s.",
+        arg,
+        shQuote(val)
+      ),
+      class = "spicy_missing_column"
+    )
   }
 
   if (!is.atomic(val)) {
