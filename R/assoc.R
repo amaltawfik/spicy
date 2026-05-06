@@ -600,6 +600,33 @@ lambda_gk <- function(
   max_rsum <- max(rsum)
   max_csum <- max(csum)
 
+  # Defend the degenerate denominator zero case (a "rank-1" table
+  # where every observation is in a single row -- max_rsum = n --
+  # or in a single column -- max_csum = n -- or both for the
+  # symmetric direction). Without this guard the estimate is
+  # `0 / 0 = NaN`, the no-detail branch returns silent NaN, and
+  # the detail branch errors at the unguarded `if (se > 0)` step
+  # because `is.na(NaN) > 0` is itself NA. Mirrors the same
+  # defensive pattern in `gamma_gk()` (`C + D == 0`),
+  # `kendall_tau_b()` (`(n0 - n1)(n0 - n2) == 0`) and
+  # `somers_d()` (denom == 0).
+  denom <- switch(
+    direction,
+    symmetric = n - 0.5 * (max_csum + max_rsum),
+    column = n - max_csum,
+    row = n - max_rsum
+  )
+  if (denom == 0) {
+    spicy_warn(
+      sprintf(
+        "Lambda is undefined for direction = \"%s\" on this table (one variable is constant); returning NA.",
+        direction
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+  }
+
   est <- switch(
     direction,
     symmetric = {
@@ -668,7 +695,7 @@ lambda_gk <- function(
   )
 
   se <- sqrt(max(0, sigma2))
-  p_value <- if (se > 0) {
+  p_value <- if (!is.na(se) && se > 0) {
     2 * stats::pnorm(-abs(est / se))
   } else {
     NA_real_
@@ -736,9 +763,29 @@ goodman_kruskal_tau <- function(
   rsum <- rowSums(x)
   csum <- colSums(x)
 
+  # Defend the degenerate denominator zero case (a "rank-1" table
+  # where every observation falls in a single row, for `direction
+  # = "row"`, or in a single column, for `direction = "column"`).
+  # Without this guard `(n - v) = 0` yields silent `NaN`. Mirrors
+  # the same defensive pattern in `gamma_gk()` and `lambda_gk()`.
+  v <- if (direction == "row") {
+    sum(rsum^2) / n
+  } else {
+    sum(csum^2) / n
+  }
+  if (n - v == 0) {
+    spicy_warn(
+      sprintf(
+        "Goodman-Kruskal Tau is undefined for direction = \"%s\" on this table (the predicted variable is constant); returning NA.",
+        direction
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+  }
+
   if (direction == "row") {
     # Column predicts row
-    v <- sum(rsum^2) / n
     d <- 0
     for (j in seq_len(ncol(x))) {
       if (csum[j] > 0) {
@@ -748,7 +795,6 @@ goodman_kruskal_tau <- function(
     tau <- (d - v) / (n - v)
   } else {
     # Row predicts column
-    v <- sum(csum^2) / n
     d <- 0
     for (i in seq_len(nrow(x))) {
       if (rsum[i] > 0) {

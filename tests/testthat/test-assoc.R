@@ -473,6 +473,55 @@ test_that("kendall_tau_b warns on degenerate table", {
   expect_true(is.numeric(res))
 })
 
+test_that("lambda_gk warns + returns NA on rank-1 (constant variable) table", {
+  # Anti-regression: a 2x2 with all observations in one row had
+  # `denom = n - max_rsum = 0` -> estimate `0/0 = NaN`. The
+  # no-detail branch silently returned NaN; the detail branch
+  # errored at the unguarded `if (se > 0)` step because
+  # `is.na(NaN > 0) = NA` makes `if (NA)` raise.
+  rank1 <- matrix(c(10L, 0L, 0L, 0L), 2, 2)
+  class(rank1) <- "table"
+  dimnames(rank1) <- list(x = c("a", "b"), y = c("Y", "N"))
+
+  expect_warning(
+    res <- lambda_gk(rank1, "row"),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(is.na(res))
+
+  # Detail mode: returns the fully NA-shaped result (no error).
+  expect_warning(
+    res_d <- lambda_gk(rank1, "row", detail = TRUE),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(res_d)))
+  expect_named(
+    res_d,
+    c("estimate", "ci_lower", "ci_upper", "p_value")
+  )
+})
+
+test_that("goodman_kruskal_tau warns + returns NA on rank-1 table", {
+  # Anti-regression for the parallel silent-NaN bug:
+  # `(n - v) = 0` when v = sum(rsum^2)/n = n (a single-row table)
+  # produced silent NaN. Now warns and returns NA shape.
+  rank1 <- matrix(c(10L, 0L, 0L, 0L), 2, 2)
+  class(rank1) <- "table"
+  dimnames(rank1) <- list(x = c("a", "b"), y = c("Y", "N"))
+
+  expect_warning(
+    res <- goodman_kruskal_tau(rank1, "row"),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(is.na(res))
+
+  expect_warning(
+    res_d <- goodman_kruskal_tau(rank1, "row", detail = TRUE),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(res_d)))
+})
+
 test_that("kendall_tau_c warns on 1-row table", {
   tab <- matrix(c(5L, 3L), nrow = 1)
   class(tab) <- "table"
