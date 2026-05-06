@@ -2034,6 +2034,30 @@ test_that("p_digits = 4 respects decimal_mark = ','", {
   expect_true(any(grepl("^<,0001$", p_col)))
 })
 
+test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)", {
+  # Regression: parse_stats() previously hardcoded `p_op = "<"` for any
+  # p < 0.001, which caused fmt_p() to render "<.0001" for a true p
+  # like 0.000108 even though that value is *greater* than the
+  # p_digits = 4 threshold. The correct rendering is the rounded
+  # numeric form (".0001"), reserving "<.0001" for p < 1e-4.
+  set.seed(1)
+  n <- 60
+  df <- tibble::tibble(
+    x = factor(c(rep("A", n), rep("B", n))),
+    y = factor(c(rep("yes", 50), rep("no", 10), rep("yes", 30), rep("no", 30)))
+  )
+  ct <- cross_tab(df, x, y)
+  p <- attr(ct, "p_value")
+  expect_true(p > 1e-4 && p < 1e-3) # sanity: p sits in the bug zone
+  out <- table_categorical(df, select = y, by = x, p_digits = 4)
+  disp <- attr(out, "display_df")
+  p_col <- disp[["p"]][nzchar(disp[["p"]])]
+  # The rendered p must NOT be "<.0001" -- the true p > 1e-4.
+  expect_false(any(grepl("^<\\.0001$", p_col)))
+  # It should be the four-decimal rounded form, e.g. ".0001".
+  expect_true(any(grepl("^\\.0001$", p_col)))
+})
+
 # ---- labels: dual-form (positional + named) -------------------------------
 
 test_that("labels accepts the legacy positional character vector", {

@@ -795,10 +795,17 @@ table_categorical <- function(
     ci_hi <- if (!is.null(ar)) ar[["ci_upper"]] else NA_real_
 
     if (!is.null(p_val) && !is.null(v_val)) {
-      p_op <- if (!is.na(p_val) && p_val < 0.001) "<" else "="
+      # Numeric path: leave the small-p threshold to `format_p_value()`
+      # via `p_digits`. Setting `p_op = "<"` here based on a hardcoded
+      # 0.001 threshold would force `fmt_p()` to render `"<.0001"` for
+      # any `p < 0.001`, even when `p_digits = 4` and the true value
+      # (e.g. 0.000108) is *greater* than the displayed-precision
+      # threshold (1e-4). The `<` override is reserved for the
+      # note-parsing fallback path below where the actual p-value is
+      # only available as the literal string "p < threshold".
       return(list(
         p = p_val,
-        p_op = p_op,
+        p_op = "=",
         v = v_val,
         measure = m_name %||% "Cramer's V",
         chi2 = chi2_val %||% NA_real_,

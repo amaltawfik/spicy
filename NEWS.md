@@ -39,6 +39,18 @@
 
 ## Bug fixes
 
+* `table_categorical()` no longer renders a *p*-value in the
+  half-open band `(10^-p_digits, 0.001)` as `"<.<10^-p_digits>"` when
+  the user picks a finer-than-default `p_digits`. The internal
+  `parse_stats()` hardcoded `p_op = "<"` for every `p < 0.001`,
+  which then forced `fmt_p()` to render the small-p form even when
+  the true value sat *above* the displayed-precision threshold (e.g.
+  `p = 0.000108` printed as `"<.0001"` under `p_digits = 4`,
+  hiding the fact that p was greater than 1e-4). The threshold is
+  now driven entirely by `format_p_value(digits = p_digits)`, so
+  `p = 0.000108` correctly prints as `".0001"` at `p_digits = 4`,
+  `".00011"` at `p_digits = 5`, and only `"<.0001"` once `p < 1e-4`.
+
 * `count_n(special = ...)` now returns a length-`nrow(data)` zero
   vector when no usable column survives the list-column filter
   (or when the user-supplied `select` resolves to zero columns),
