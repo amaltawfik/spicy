@@ -6,139 +6,73 @@
 
 #### Covariate adjustment in `table_continuous_lm()`
 
-- New `covariates` argument adds **additive covariates** to each
-  per-outcome model (`lm(y ~ by + cov1 + cov2 + ...)`). Estimate, SE,
-  *p*-value and CI on `by` become covariate-adjusted; effect sizes adapt
-  accordingly (see below). Accepts tidyselect expressions or a literal
-  character vector; covariates that overlap `select` are auto-excluded
-  from the outcome list. v1 supports additive terms only — formula
-  syntax with interactions / transforms raises `spicy_unsupported`.
-- New `adjustment` argument selects the estimand for the
-  covariate-adjusted marginal means (the `emmean*` columns):
-  `"proportional"` (default) for G-computation over the observed
-  covariate distribution (matches Stata `margins`,
-  `marginaleffects::avg_predictions(variables)`), or `"balanced"` for
-  synthetic-grid equal-weight averaging (matches
+- New `covariates` argument adds additive covariates to each per-outcome
+  model. Estimate, SE, *p*-value and CI on `by` become
+  covariate-adjusted; effect sizes adapt accordingly. Accepts a
+  tidyselect expression or a literal character vector; covariates
+  overlapping `select` are auto-excluded from the outcome list. Formula
+  syntax (interactions, transforms) is reserved for a future release.
+- New `adjustment` argument selects the estimand for the per-group
+  adjusted means displayed in the table: `"proportional"` (default,
+  G-computation; matches Stata `margins` and
+  `marginaleffects::avg_predictions(variables)`) or `"balanced"`
+  (synthetic-grid equal-weight; matches
   [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
-  default, SPSS UNIANOVA, SAS LSMEANS). The two methods coincide when
-  there are no factor covariates or non-uniform proportions.
-- Effect-size dispatch under adjustment: `"f2"` and `"omega2"` become
-  **partial** *f²* / *ω²* via
-  [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) restricted to
-  the focal term; `"d"` and `"g"` are undefined under adjustment and
-  raise `spicy_unsupported` with a pointer to the partial-F
-  generalisations.
-- The default ASCII print emits an APA footer
-  `Note. Adjusted for <covs> (<method>).` whenever the model is
-  covariate-adjusted. New result attributes `covariates` and
-  `adjustment` carry the metadata downstream.
+  default, SPSS UNIANOVA, SAS LSMEANS).
+- Under adjustment, `"f2"` and `"omega2"` become **partial** *f²* / *ω²*
+  via [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) restricted
+  to the focal term; `"d"` and `"g"` are undefined under adjustment and
+  rejected.
+- The default print emits an APA footer
+  `Note. Adjusted for <covs> (<method>).`
 - See
   [`?table_continuous_lm`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  and the *Covariate adjustment* section of
+  and
   [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
-  for the full semantics, defaults rationale, and runnable examples.
-- `emmeans` and `marginaleffects` added to `Suggests` as oracle packages
-  for the cross-validation tests (no runtime dependency change).
+  for full semantics and runnable examples.
 
 ### Bug fixes
 
-- `table_continuous_lm(covariates = ...)` now rejects covariate column
-  names `"x"` or `"y"` with a clear `spicy_invalid_input` error pointing
-  the user to rename the offending column. Those names are reserved by
-  the internal model fit (which uses
-  `data.frame(y = outcome, x = predictor)` and the formula
-  `y ~ x + <covariates>`); allowing them to flow through produced
-  cryptic [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html)
-  warnings about the response appearing on the right-hand side, followed
-  by an opaque downstream failure in the marginal-mean computation.
-
-- [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-  on a `spicy_continuous_lm_table` now keeps `df.residual` numeric
-  instead of coercing through
-  [`as.integer()`](https://rdrr.io/r/base/integer.html). Under
-  cluster-robust variance (`vcov = "CR2"` / `"CR3"`) the Satterthwaite
-  df is genuinely fractional (e.g. `38.7`) and may also arrive as
-  integer-but-with-FP-noise (e.g. `47.999999...`, which previously
-  truncated to `47`). Mirrors the broom convention for
-  Satterthwaite-corrected models (e.g. `lmerTest::glance`, `afex`
-  output).
-
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  no longer renders a *p*-value in the half-open band
-  `(10^-p_digits, 0.001)` as `"<.<10^-p_digits>"` when the user picks a
-  finer-than-default `p_digits`. The internal `parse_stats()` hardcoded
-  `p_op = "<"` for every `p < 0.001`, which then forced `fmt_p()` to
-  render the small-p form even when the true value sat *above* the
-  displayed-precision threshold (e.g. `p = 0.000108` printed as
-  `"<.0001"` under `p_digits = 4`, hiding the fact that p was greater
-  than 1e-4). The threshold is now driven entirely by
-  `format_p_value(digits = p_digits)`, so `p = 0.000108` correctly
-  prints as `".0001"` at `p_digits = 4`, `".00011"` at `p_digits = 5`,
-  and only `"<.0001"` once `p < 1e-4`.
-
-- `count_n(special = ...)` now returns a length-`nrow(data)` zero vector
-  when no usable column survives the list-column filter (or when the
-  user-supplied `select` resolves to zero columns), rather than
-  `numeric(0)`. The bug broke the documented contract (“A numeric vector
-  of row-wise counts … of length `nrow(data)`”) and would crash a
+  no longer over-truncates a *p*-value in `(10^-p_digits, 0.001)` when
+  `p_digits >= 4`. Example: `p = 0.000108` now correctly prints as
+  `".0001"` at `p_digits = 4` (was `"<.0001"`).
+- `count_n(special = ...)` returns a length-`nrow(data)` zero vector
+  when no usable column survives the list-column filter, matching the
+  documented contract and the `count = ...` branch (was `numeric(0)`,
+  which broke
   [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
-  pipeline with a length-mismatch error. The `count = ...` branch
-  already had this guard; the `special = ...` branch is now aligned.
-
+  pipelines).
 - [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
   and
   [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
-  no longer return a silent `NaN` (no-detail mode) or raise an unguarded
-  `if (NA)` error (detail mode) on rank-1 tables – a 2x2 with all
-  observations in one row, or any table where the predicted variable is
-  constant under the chosen direction. Both functions now emit a
-  `spicy_undefined_stat` warning and return the fully `NA`-shaped
-  result, matching the existing defensive pattern in
-  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)
-  (`C + D == 0`),
-  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
-  (`(n0 - n1)(n0 - n2) == 0`),
+  emit `spicy_undefined_stat` and return the fully-`NA` result on rank-1
+  contingency tables (constant predicted variable), matching the
+  existing pattern in
+  [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md),
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),
   [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
-  (`denom == 0`) and
-  [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md)
-  (`ad + bc == 0`). As part of the same pass,
-  [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)’s
-  `if (se > 0)` p-value guard was tightened to
-  `if (!is.na(se) && se > 0)` so a NaN sigma2 (already unlikely after
-  the upfront degenerate guard, but possible at the boundary of
-  numerical stability) no longer raises in `if (NA)`.
-
+  and
+  [`yule_q()`](https://amaltawfik.github.io/spicy/reference/yule_q.md).
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  no longer silently overwrites a user’s y-variable level when that
-  level is literally named `"N"`, `"Total"`, or `"Values"`. The three
-  names were spicy-internal column reservations – `"Values"` for the
-  row-identifier column, `"Total"` for the margin column, and `"N"` for
-  the sample-size column with `percent = "row" + show_n` – and a y-level
-  matching one of them produced plausible-looking but corrupt output
-  (overwritten percentages, mis-labelled totals row). The function now
-  auto-renames the conflicting **spicy-internal** column with a numbered
-  suffix (e.g. `"N"` -\> `"N_1"`, `"Total"` -\> `"Total_1"`, `"Values"`
-  -\> `"Values_1"`) so the user’s data column is preserved intact, and
-  emits a single `spicy_renamed_column` warning listing every rename.
-  Y/N answer coding, “Total” as a literal survey category, and “Values”
-  as a y-level all now produce a usable table; users who prefer the
-  default labels can rename the conflicting y-level upstream. Companion
-  to the 0.11.0 fix that made the same situation safe at the *row* level
-  via `total_row_idx` / `n_row_idx` attributes; this commit closes the
-  column-level twin.
+  no longer silently overwrites a user’s y-variable level named `"N"`,
+  `"Total"` or `"Values"`. The conflicting spicy-internal column is
+  auto-renamed with a numbered suffix and a single
+  `spicy_renamed_column` warning is emitted. Companion to the 0.11.0
+  row-level fix.
+- [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  on a `spicy_continuous_lm_table` keeps `df.residual` numeric, so
+  Satterthwaite degrees of freedom from `vcov = "CR2"` / `"CR3"` are
+  preserved verbatim instead of truncated through
+  [`as.integer()`](https://rdrr.io/r/base/integer.html).
 
 ### Breaking changes
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  no longer silently truncates the export filename to 120 characters.
-  spicy now follows the Stata / SPSS convention of preserving
-  user-supplied identifiers verbatim: if a `title` or `filename`
-  produces a basename so long that the platform filename limit (Windows
-  MAX_PATH 260 incl. path, macOS / ext4 255 bytes per component) is
-  exceeded, the download surfaces a noisy OS-level error instead of a
-  silently-shortened file. **Migration**: shorten very long titles
-  explicitly, or pass an explicit `filename =` to
-  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
+  no longer silently truncates the export filename to 120 characters:
+  very long titles surface a noisy OS-level error rather than a silently
+  shortened file. **Migration**: shorten the title or pass an explicit
+  `filename =`.
 
 ## spicy 0.11.0
 
