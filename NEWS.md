@@ -1,4 +1,4 @@
-# spicy (development version)
+# spicy 0.12.0
 
 ## New features
 
@@ -45,9 +45,9 @@
   names are reserved by the internal model fit (which uses
   `data.frame(y = outcome, x = predictor)` and the formula
   `y ~ x + <covariates>`); allowing them to flow through produced
-  cryptic `model.matrix()` warnings ("la réponse est apparue dans
-  le membre de droite et y a été éliminée") followed by an opaque
-  `"arguments inadequats"` failure deep in the emmean math.
+  cryptic `model.matrix()` warnings about the response appearing
+  on the right-hand side, followed by an opaque downstream failure
+  in the marginal-mean computation.
 
 * `broom::glance()` on a `spicy_continuous_lm_table` now keeps
   `df.residual` numeric instead of coercing through `as.integer()`.
