@@ -42,6 +42,15 @@
 
 ### Bug fixes
 
+- `count_n(special = ...)` now returns a length-`nrow(data)` zero vector
+  when no usable column survives the list-column filter (or when the
+  user-supplied `select` resolves to zero columns), rather than
+  `numeric(0)`. The bug broke the documented contract (“A numeric vector
+  of row-wise counts … of length `nrow(data)`”) and would crash a
+  [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
+  pipeline with a length-mismatch error. The `count = ...` branch
+  already had this guard; the `special = ...` branch is now aligned.
+
 - [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
   and
   [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)
