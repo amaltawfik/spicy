@@ -1,15 +1,15 @@
 # `table_regression()` — design doc
 
-> **Status**: design-phase, no code yet.
+> **Status**: design fully settled. All 10 open questions closed.
+> Ready for implementation post-CRAN-accept of 0.12.0.
+>
 > **Branch**: `feature/table-regression` (forked from `main` at `d95e3e6`).
-> **Created**: 2026-05-06, while waiting for the CRAN window to reopen for spicy 0.12.0 (≥ 2026-05-11).
-> **Author**: Amal + Claude pairing session 2026-05-06.
+> **Created**: 2026-05-06. **Settled**: 2026-05-08.
+> **Author**: Amal + Claude pairing sessions 2026-05-06 and 2026-05-08.
 >
 > This document is the **single source of truth** to resume the work.
-> It contains, verbatim, everything that was said in the chat session
-> when the design was first sketched. Nothing has been omitted.
 > When work resumes, re-read this file end-to-end; it should be enough
-> to restart cold.
+> to restart cold without going back to chat logs.
 
 ---
 
@@ -20,45 +20,19 @@ The user wants a `table_regression()` function. Phasing they expressed:
 1. **First**: classical lm regression table.
 2. **Then**: extend to logistic (binary), probit, poisson, etc.
 3. **Reasonably soon**: side-by-side display of:
-   - **Hierarchical models** (m0 → m1 → m2 with progressively more predictors,
+   - **Hierarchical models** (m₀ → m₁ → m₂ with progressively more predictors,
      same DV).
    - **Different models** (different DVs and / or partially diverging IVs).
 
 Open question they asked: **should `list(m1, m2)` be accepted as input,
 or should we create a separate function for the multi-model case?**
 
-User's quoted instruction: *"Suggestions pro, robuste, ne regarde pas le
-temps, on a le temps et je prends le temps."* Take time, design carefully.
+User's explicit instruction: *"Suggestions pro, robuste, ne regarde pas
+le temps, on a le temps et je prends le temps."*
 
 ---
 
-## 2. Short answer to the user's question
-
-**One single function that accepts both.** `table_regression(fit)` AND
-`table_regression(list(m1, m2, ...))`. Internal type-detection,
-internal canonical representation **always** = list (single model = a
-1-element list). This is the pattern used by **modelsummary** and
-**jtools::export_summs** — battle-tested across thousands of users
-since ~2017.
-
-**Why not two functions** (`table_regression` + `table_regression_compare`):
-- API surface duplication to maintain.
-- A user moving from "one model" to "two models" must change function → friction.
-- ~95 % of options are common (vcov, ci_level, output, digits, position knobs).
-
-**Why not a composition system** (`tbl_regression() %>% tbl_merge()` à la gtsummary):
-- spicy has a "one call = one table" philosophy. Coherence with
-  `table_continuous_lm()`, `table_categorical()`, `cross_tab()`. No
-  internal pipeline DSL.
-- Cost to the user: must learn 2 functions instead of 1.
-
-→ **Robust decision**: `models` argument is polymorphic
-(lm | list of lm | data.frame + formula); the canonical internal
-representation is always a list.
-
----
-
-## 3. Target architecture (long-term vision)
+## 2. Architecture (long-term vision)
 
 ### Layer 1 — Extraction (per model)
 
@@ -103,28 +77,48 @@ Pivot wide on `(term, statistic) → m1, m2, m3...`. Apply
 
 ---
 
-## 4. Public signature proposal (Phase 1 — lm only)
+## 3. Public signature (Phase 1, lm only — final)
 
 ```r
 table_regression(
-  models,                    # lm | list(lm, ...) | data.frame (with formula)
-  formula = NULL,            # if `models` is a data.frame
-  data = NULL,
-  vcov = "classical",        # classical / HC0-3 / CR0-3 / bootstrap / jackknife
-  cluster = NULL,
+  models,                                            # lm | list(lm, ...)
+
+  # Inference
+  vcov = "classical",                                # scalar OR list (per-model)
+  cluster = NULL,                                    # vector/name OR list (per-model)
   ci_level = 0.95,
-  standardized = FALSE,      # FALSE / "refit"
-  show_columns = c("B", "SE", "CI", "p"),
+  boot_n = 1000L,
+
+  # Coefficient transforms
+  standardized = c("none", "refit", "posthoc",
+                   "basic", "smart"),
+  show_columns = c("B", "SE", "CI", "p"),            # tokens — see vocabulary below
+
+  # Layout knobs
   show_intercept = TRUE,
-  show_fit_stats = c("nobs", "r.squared", "adj.r.squared"),
-  show_model_names = NULL,   # NULL = list names, else explicit char vec
-  group_factor_levels = TRUE,  # block header + indented contrasts
-  labels = NULL,             # named char: c("age" = "Age (years)")
-  digits = 2L,
-  p_digits = 3L,
+  intercept_position = c("first", "last"),
+  group_factor_levels = TRUE,
+  reference_style = c("row", "annotation"),
+  reference_label = "(ref.)",
+  show_fit_stats = c("nobs", "r.squared",            # tokens — see vocabulary below
+                     "adj.r.squared"),
+  model_labels = NULL,                               # NULL → smart default; char vec → explicit
+
+  # Multi-model comparison (hierarchical regression)
+  nested = FALSE,
+  nested_stats = NULL,                               # NULL = class-aware default
+
+  # Display formatting
+  digits = 2L,                                       # B, β, SE, CI, t/z, F, Chi², deviance, σ̂, weighted_n, AME
+  p_digits = 3L,                                     # p-values
+  effect_size_digits = 2L,                           # partial_f2, partial_eta2, partial_omega2
+  fit_digits = 2L,                                   # R², Adj.R², ΔR², f² model-level, sigma, rmse
+  ic_digits = 1L,                                    # AIC, AICc, BIC, ΔAIC, ΔBIC
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
-  ...,
+  labels = NULL,                                     # named char: c("age" = "Age (yrs)")
+
+  # Output dispatch
   output = c("default", "data.frame", "long", "gt", "flextable",
              "tinytable", "excel", "clipboard"),
   excel_path = NULL,
@@ -134,88 +128,302 @@ table_regression(
 )
 ```
 
-**Polymorphism contract**:
-
-- `table_regression(fit)` → 1-element list → 1-column table.
-- `table_regression(list(m1, m2, m3))` → 3-column table; headers =
-  `Model 1 / 2 / 3` or the `names()` of the list.
-- `table_regression(list(Naive = m1, Adjusted = m2))` → headers =
-  `Naive / Adjusted`.
-- `table_regression(data, formula = y ~ x1 + x2)` → internal `lm()`
-  fit then dispatch to the single-model path.
-
-**Multi-model output sketch**:
-
-```
-                       │  Model 1            Model 2            Model 3
-                       │  B [95% CI]      p  B [95% CI]      p  B [95% CI]   p
-───────────────────────┼─────────────────────────────────────────────────────────
-(Intercept)            │  1.42 [...]    .001 1.39 [...]    .001 1.55 [...]  .001
-age                    │  0.08 [...]    .003 0.09 [...]    .002 0.07 [...]  .005
-sex [ref: F]           │
-  M                    │             →  -0.32 [...]   .04  -0.30 [...] .05
-education [ref: Lower] │
-  Upper                │                                       0.18 [...]   .12
-  Tertiary             │                                       0.42 [...]  .002
-───────────────────────┼─────────────────────────────────────────────────────────
-n                      │  1200             1180             1180
-R²                     │  .03              .05              .12
-Adj. R²                │  .03              .05              .11
-```
-
-(Terms absent from a model = blank cells. Factor headers = grey
-indented row.)
+**~25 arguments**. Comparable to `table_continuous_lm()` (~20). API
+consistency with the rest of the package maintained.
 
 ---
 
-## 5. Phasing — 0.13 → 0.16+
+## 4. Token vocabularies (Phase 1)
 
-| Version    | Scope |
-| ---------- | ----- |
-| **0.13.0** | **Phase 1**: single lm, multi-lm. Extract + render. 8 outputs. vcov family + cluster. `standardized = "refit"`. broom integration. APA strict. |
-| **0.14.0** | **Phase 2**: comparison helpers (`nested = TRUE` → footer ΔR² + partial F via `anova()`). Different DVs handled. |
-| **0.15.0** | **Phase 3**: glm (binomial logit / probit, poisson, quasi-poisson). `exponentiate = TRUE`. glm-specific fit stats (McFadden R², Tjur R², deviance). |
-| **0.16.0+** | **Phase 4**: merMod (lme4 / lmerTest). Random-effect block separated. Not before Phase 3 is stable. |
+### `show_columns` (per-coefficient columns, in main table)
+
+| Token | Family | Description |
+| ----- | ------ | ----------- |
+| `B` | estimate | raw coefficient |
+| `beta` | estimate | standardised coef (requires `standardized != "none"`) |
+| `SE` | estimate | standard error of B (or β) |
+| `CI` | estimate | confidence interval of B (or β) at `ci_level` |
+| `t` | estimate | t (or z for resampling vcov) statistic |
+| `p` | estimate | p-value of B (or β) |
+| `partial_f2` | effect size | Cohen's partial f² for the term |
+| `partial_eta2` | effect size | partial η² for the term |
+| `partial_omega2` | effect size | partial ω² (unbiased) for the term |
+| `AME` | marginal | Average Marginal Effect with `[CI_AME]` compact rendering |
+| `AME_p` | marginal | p-value of AME (when different from p_B) |
+| `AME_SE` | marginal | SE of AME (rare; for APA-strict) |
+
+**Default**: `c("B", "SE", "CI", "p")`.
+
+**Auto-injection rules**:
+- `standardized != "none"` AND `"beta"` ∉ show_columns → β auto-injected after B.
+- `"beta"` ∈ show_columns AND `standardized == "none"` → `spicy_invalid_input` error.
+- Unknown token → `spicy_invalid_input` with valid list.
+- Empty / duplicate tokens → `spicy_invalid_input`.
+
+### `show_fit_stats` (model-level stats, in footer)
+
+| Token | Family | Description |
+| ----- | ------ | ----------- |
+| `nobs` | count | number of observations |
+| `weighted_nobs` | count | sum of weights (when `weights` is set) |
+| `r.squared` | variance explained | R² |
+| `adj.r.squared` | variance explained | Wherry-corrected R² |
+| `omega2` | variance explained | Hays bias-corrected R² (Olejnik & Algina 2003) |
+| `sigma` | residual scale | classical residual SD: `sqrt(SSE/(n-p))` |
+| `rmse` | residual scale | predictive RMSE: `sqrt(SSE/n)` |
+| `f2` | effect size | Cohen's model-level f² = R²/(1-R²) |
+| `AIC` | information | Akaike Information Criterion |
+| `AICc` | information | small-sample corrected AIC (Hurvich & Tsai 1989) |
+| `BIC` | information | Bayesian Information Criterion |
+| `deviance` | likelihood | residual deviance (= SSE for Gaussian) |
+
+**Default**: `c("nobs", "r.squared", "adj.r.squared")`.
+
+### `nested_stats` (hierarchical comparison footer)
+
+| Token | Compatibility | Description |
+| ----- | ------------- | ----------- |
+| `R2_change` | lm | ΔR² between adjacent models |
+| `AdjR2_change` | lm | ΔAdj.R² |
+| `F` | lm | partial F-test |
+| `f2_change` | lm | Cohen's f² for the additional predictors |
+| `LRT` | lm, glm, merMod | likelihood-ratio test (Chi²) |
+| `AIC` | all | ΔAIC |
+| `AICc` | all | ΔAICc |
+| `BIC` | all | ΔBIC |
+| `deviance_change` | all | Δresidual deviance |
+| `p` | all | p-value of the chosen test (F or LRT) |
+
+**Default per class** (when `nested_stats = NULL`):
+- **lm**: `c("R2_change", "F", "p")` — APA hierarchical regression
+- **glm** (Phase 3): `c("LRT", "AIC", "p")` — biostats / health-econ standard
+- **merMod** (Phase 4): `c("LRT", "AIC")` — Bates et al. 2015
+
+**Cross-class validation**: tokens incompatible with the class of the
+models in `models` raise `spicy_invalid_input` with the available
+list.
 
 ---
 
-## 6. Open questions to settle before code
+## 5. Settled decisions (10 questions, closed)
 
-The user hasn't yet ratified or modified these. **Defaults proposed**;
-the user can override any of them at design-review time.
+### Q1 — Headers de colonne pour multi-modèle
 
-| #  | Question | Proposed default |
-| -- | -------- | ---------------- |
-| 1 | Unnamed list → headers `"Model 1", "Model 2"` or `"(1)", "(2)"` (stargazer-style)? | `"Model 1"`, etc. (more readable than parentheses) |
-| 2 | Show intercept by default? | **Yes** (`show_intercept = TRUE`). APA always shows it. |
-| 3 | `standardized = "refit"` returns a separate column or replaces the `B` column? | **Separate column** (`β`) next to `B`. Activated via `show_columns = c("B", "beta", "SE", "p")`. |
-| 4 | Factors: indented header (gtsummary) or one row per contrast? | **Indented header** (consistent with `table_categorical()`, more APA). Knob: `group_factor_levels = TRUE`. |
-| 5 | Reference-level rendering: `[ref: F]` in the header, or a separate row `Female (ref.)`? | **In the header**: fewer lines, direct read. |
-| 6 | Nested-model comparison: auto-detect when `models = list(m1, m2)` is nested, or opt-in `nested = TRUE`? | **Opt-in** (`nested = TRUE`) in Phase 2. Auto-detect has too many false positives. |
-| 7 | Cluster-robust SE in multi-model: single `cluster` for all, or one per model? | **Single for all** in v1. Per-model = list later if asked. |
-| 8 | broom output `tidy()`: long shape with `model_id` column, or list of tibbles (one per model)? | **Long with `model_id`**. More tidyverse-idiomatic, aggregable. |
-| 9 | If user passes `models = fit_glm` in Phase 1 → clear error? | **Yes**, `spicy_unsupported` with message *"Phase 1 supports lm only; glm support landing in 0.15.0."* |
-| 10 | "Fit inside the function" path (`data + formula`) in v1? | **Yes in v1**: removes the friction of having to `lm()` first. Internally call `stats::lm()` then dispatch the single-model path. |
+| | |
+|---|---|
+| **`model_labels = NULL`** | n=1 → drop header (header inutile pour un seul modèle) ; n≥2 → "Model 1, 2, ..." OR `names(list)` if list is named |
+| **`model_labels = c(...)`** | uniform override (works for both n=1 and n≥2) |
+| **Conflit** `names(list)` + `model_labels` | `spicy_ignored_arg` warning |
+| **Précédence** | `model_labels` > `names(list)` > default |
+
+### Q2 — Intercept
+
+| | |
+|---|---|
+| **`show_intercept = TRUE`** (default) | visibility (orthogonal to position) |
+| **`intercept_position = "first"`** (default) | OR `"last"` (Stata-style) |
+| **Hide via** | `show_intercept = FALSE` (renders `intercept_position` irrelevant — `spicy_ignored_arg` warning) |
+
+### Q3 — Standardized + show_columns
+
+| | |
+|---|---|
+| **`standardized`** | enum `c("none", "refit", "posthoc", "basic", "smart")`, default `"none"` |
+| **Implementation** | native (4 methods, ~60 lines), `effectsize::standardize_parameters()` as test oracle |
+| **`show_columns`** | character vector — controls **inclusion + order** |
+| **Default** | `c("B", "SE", "CI", "p")` |
+| **β auto-inject** | when `standardized != "none"` and `"beta"` ∉ show_columns → injected after B |
+| **β-without-method** | `"beta"` ∈ show_columns AND `standardized == "none"` → `spicy_invalid_input` |
+
+### Q4 — Factor display
+
+| | |
+|---|---|
+| **`group_factor_levels = TRUE`** (default) | header + indented contrasts (APA / gtsummary style) |
+| **`group_factor_levels = FALSE`** | flat row `factor: level` (compact / inspection mode) |
+| **Style raw `educationUpper`** | not exposed in v1 |
+
+### Q5 — Reference level rendering
+
+| | |
+|---|---|
+| **`reference_style = "row"`** (default) | explicit row `Lower (ref.)` with em-dash `—` in all stat columns |
+| **`reference_style = "annotation"`** | `[ref: Lower]` in the header (compact mode) |
+| **`reference_label = "(ref.)"`** (default) | parameterisable string |
+| **Cell value for ref row** | em-dash `—` in B, SE, CI, t/z, p — never `0` (semantically incorrect), never blank (looks like missing) |
+
+### Q6 — Nested model comparison
+
+| | |
+|---|---|
+| **`nested = FALSE`** (default) | side-by-side display only, no comparison footer |
+| **`nested = TRUE`** | adds footer block `── Model comparison ──` with stats per adjacent pair |
+| **`nested_stats = NULL`** (default) | class-aware default (see vocabulary above) |
+| **Validations strictes** | same DV, predictors strictly nested, identical n |
+| **Non-nested → error** | `spicy_invalid_input` with diagnosis |
+| **Auto-detect** | NO (too many false positives) |
+
+### Q7 — vcov / cluster multi-model
+
+| | |
+|---|---|
+| **`vcov`** | scalar (recycled to all) **OR** list (per-model, length must match) |
+| **`cluster`** | vector/name (recycled) **OR** list (per-model, NULLs allowed for non-clustered models) |
+| **`boot_n`** | scalar only in v1 |
+| **Pedagogical use case** | `list(fit, fit, fit)` + `vcov = list("classical", "HC3", "CR2")` enables side-by-side SE comparison — explicit, no auto-replication shortcut |
+| **Auto-replication of single fit** | deferred to Phase 2 |
+
+### Q8 — broom output shape
+
+| | |
+|---|---|
+| **`tidy(table_regression(...))`** | one tibble, long format with `model_id` column, one row per `(model_id, term, estimate_type)` |
+| **`glance(table_regression(...))`** | one tibble, long format with `model_id` column, one row per model |
+| **`as.data.frame()` / `as_tibble()`** | wide raw output (= `output = "data.frame"`) |
+| **List-of-tibbles** | never returned (violates broom contract) |
+
+`tidy()` columns: `model_id, outcome, term, estimate_type ("B"/"beta"), estimate, std.error, conf.low, conf.high, statistic, p.value`.
+
+`glance()` columns: `model_id, outcome, nobs, r.squared, adj.r.squared, omega2, sigma, rmse, AIC, AICc, BIC, deviance, df.residual` (numeric, not integer — Satterthwaite-safe).
+
+### Q9 — Reject of non-lm classes in Phase 1
+
+| | |
+|---|---|
+| **Dispatch** | strict via `inherits(fit, "glm")` then `inherits(fit, "merMod")` then `inherits(fit, "lm")` |
+| **glm → reject** | tier 1 message with redirect to `lm()` for Gaussian + roadmap to 0.15.0 |
+| **merMod → reject** | tier 2 message with roadmap to 0.16+ |
+| **other class → reject** | tier 3 message, generic + invitation to open issue |
+| **Multi-model** | aggregate-fail (lists ALL offending positions in a single error) |
+| **Classed condition** | `spicy_unsupported` (parent: `spicy_error`) |
+
+### Q10 — Inline-fit (data + formula) is REJECTED
+
+| | |
+|---|---|
+| **`table_regression()`** | accepts ONLY fit objects (single or list) |
+| **(data + formula)** | rejected with diagnosis + redirect to `lm() %>% table_regression()` |
+| **Justification** | unanimous R modeling convention (broom, modelsummary, gtsummary, marginaleffects, parameters); fit-first preserves transparency, contrasts, weights, na.action |
 
 ---
 
-## 7. Proposed next steps (the original 3-step plan)
+## 6. Decision matrix — digit precision (5 args)
 
-When the work resumes:
+| Argument | Default | Covers |
+| -------- | ------- | ------ |
+| `digits` | `2L` | B, β, SE, CI, t/z, F, Chi², deviance, σ̂, weighted_n, AME |
+| `p_digits` | `3L` | p-values (APA-strict: leading zero stripped, `<.001` threshold) |
+| `effect_size_digits` | `2L` | partial_f2, partial_eta2, partial_omega2 |
+| `fit_digits` | `2L` | R², Adj.R², ΔR², omega2, f² model-level, sigma, rmse |
+| `ic_digits` | `1L` | AIC, AICc, BIC, ΔAIC, ΔBIC |
 
-1. **Today** (no `main` modification):
-   - Create branch `feature/table-regression` (already done — this branch).
-   - Write `dev/table_regression_design.md` (this file — already done).
-   - Sketch the roxygen signature (see step 3 below — *paused*).
+`df` rendering (Satterthwaite, `format_df()`): hardcoded — integer if
+whole within FP tolerance, else 1 decimal.
 
-2. **After CRAN accepts 0.12.0 + tag posted + bump to `0.12.0.9000`**:
-   - Phase 1 implementation on this branch.
-   - Pro-grade tests (cross-validation against `parameters::model_parameters()`,
-     `modelsummary`, `gtsummary`, possibly Stata pinpoint values for
-     critical coefficients).
-   - Merge into `main` when green.
+`n` rendering: integer always.
 
-### What step 3 ("roxygen sketch") meant — clarification
+**Phase 3 addition**: `digits_ame` may be needed when AME lives on the
+probability scale (often <0.1 for logit). Add then, not now.
+
+---
+
+## 7. Phasing — 0.13 → 0.16+
+
+| Version | Scope |
+| ------- | ----- |
+| **0.13.0** | **Phase 1**: single lm + multi-lm (per-model `vcov`/`cluster` lists), full vcov family + cluster, `standardized = "refit"/posthoc/basic/smart"` (native), all 12 `show_columns` tokens, all 12 `show_fit_stats` tokens, all 10 `nested_stats` tokens, 8 outputs, broom integration, APA strict. |
+| **0.14.0** | **Phase 2**: helpers comparison auto-detect (off by default), auto-replication of single fit + per-vcov list, AME default-on for lm with detected interactions. |
+| **0.15.0** | **Phase 3**: glm support (binomial logit/probit, Poisson, quasi-Poisson). `exponentiate = TRUE`. Pseudo-R² (McFadden, Tjur, Nagelkerke, Cox-Snell). `digits_ame` arg. AME default-on. |
+| **0.16.0+** | **Phase 4**: merMod (lme4 / lmerTest). Random-effect block separated. |
+
+---
+
+## 8. Resumption checklist
+
+When picking this work back up:
+
+- [ ] Re-read this file end-to-end.
+- [ ] Verify the branch is still based on a recent `main` (rebase if needed).
+- [ ] Confirm 0.12.0 is on CRAN; if not, postpone implementation until accepted.
+- [ ] Bump `main` to `0.12.0.9000` (dev) before merging anything from this branch.
+- [ ] Optional: do step 3 (roxygen-only file) before writing logic.
+       Concretely: create `R/table_regression.R` with full `@param`,
+       `@description`, `@return`, `@examples` and `function(...) NULL`
+       body, render `?table_regression`, iterate on the help page until
+       the API contract reads cleanly.
+- [ ] Implement `extract_lm.lm` first (the heart of the extraction layer).
+       Reuses `lm_compute.R` (`compute_lm_vcov`, `compute_lm_coef_inference`,
+       `compute_lm_wald_test`, `compute_lm_model_stats`).
+- [ ] Implement standardisation: `R/standardize.R` (new file). Native
+       refit / posthoc / basic / smart. Test oracle = `effectsize::standardize_parameters()`.
+- [ ] Implement multi-model alignment via long-format bind_rows + pivot wide.
+- [ ] Implement nested comparison footer (`anova(m_i, m_{i+1})` per pair,
+       validate strict nesting upstream).
+- [ ] Implement AME extraction via `marginaleffects::avg_slopes()`.
+- [ ] broom integration: `tidy()` / `glance()` / `as.data.frame()` / `as_tibble()`.
+- [ ] Tests:
+       - classical lm, HC*-vcov, CR*-vcov + cluster, bootstrap (per-model lists)
+       - single model, multi-model (named + unnamed lists)
+       - hierarchical with `nested = TRUE` + every `nested_stats` token
+       - all 4 standardisation methods (cross-validate vs `effectsize`)
+       - all `show_columns` token combinations (validation of incompatibilities)
+       - all output formats × 8
+       - AME for lm with interactions (cross-validate vs `marginaleffects`)
+       - Reject paths (glm → tier 1, merMod → tier 2, gam/nls → tier 3)
+       - Aggregate-fail multi-model
+- [ ] Cross-validation oracles:
+       - `parameters::model_parameters()` — coef table sanity check
+       - `modelsummary` — multi-model layout
+       - `gtsummary::tbl_regression()` — single-model layout
+       - `effectsize::standardize_parameters()` — β methods
+       - `marginaleffects::avg_slopes()` — AME values
+       - Stata pinpoint values where critical (manual table)
+- [ ] NEWS.md entry for 0.13.0.
+- [ ] Update API stability tier in `?spicy` (move `table_regression`
+       to "Stabilising" once shipped).
+
+---
+
+## 9. Cross-references
+
+### Reusable infrastructure already in spicy
+
+| File | Reuse |
+| ---- | ----- |
+| `R/lm_compute.R` | vcov family, single-coef inference, partial F extraction. **Use as-is** for `extract_lm.lm`. |
+| `R/lm_helpers.R` | input resolution helpers (`is_supported_lm_predictor`, `coerce_lm_factor`, `resolve_cluster_argument`, `resolve_covariates_argument`, partial-prefix dispatch via `formals()`). |
+| `R/table_helpers.R` | `format_number`, `format_p_value`, `decimal_align_strings`, `ci_bracket_separator`. |
+| `R/tables_ascii.R` | `build_ascii_table`, `spicy_print_table`, panelling logic. |
+| `R/table_continuous_lm_render.R` | patterns for the 8 output formats (gt, flextable, tinytable, Excel, Word, clipboard). |
+| `R/abort.R` | `spicy_abort()`, `spicy_warn()` with classed conditions. |
+
+### External references (architecture & convention sources)
+
+| Reference | Used for |
+| --------- | -------- |
+| **modelsummary** (Vincent Arel-Bundock) | closest spirit; long-internal, list-in API, vocabulary tokens |
+| **gtsummary::tbl_regression / tbl_merge** | factor header + indented contrasts; reference row with em-dash; clinical convention |
+| **stargazer** | (counterexample) intercept.bottom, raw labels, anti-pattern of treating glm(gaussian) as lm |
+| **jtools::export_summs** | list-in polymorphism precedent |
+| **parameters::model_parameters** (Daniel Lüdecke et al.) | oracle for cross-validation; β methods |
+| **effectsize::standardize_parameters** (Mattan Ben-Shachar et al.) | oracle for native standardisation tests |
+| **marginaleffects::avg_slopes** (Vincent Arel-Bundock) | AME computation; convention "fit-only API" precedent |
+| **performance::model_performance** | dual sigma + rmse precedent; AICc inclusion |
+| **broom** (David Robinson, Alex Hayes) | tidy contract: long tibble with `model_id` for multi-model |
+| **APA Manual 7** Tables 7.13–7.15 | layout convention, p-value formatting, intercept-first |
+| **Cohen, Cohen, West & Aiken 2003** Applied Multiple Regression | f² as canonical regression effect size; partial f² interpretation |
+| **Hays 1973** Statistics | ω² as bias-corrected variance estimator |
+| **Olejnik & Algina 2003** Generalized Eta and Omega Squared | ω² recommendation over adj.R² |
+| **Lakens 2013** Calculating and reporting effect sizes | f² in regression context |
+| **Hurvich & Tsai 1989** | AICc small-sample correction |
+| **Mize, Doan & Long 2019** Sociological Methodology | AME mandatory for nonlinear models |
+| **Hanmer & Kalkan 2013** Am. J. Pol. Sci. | AME the most defensible interpretation |
+| **Bates, Mächler, Bolker, Walker 2015** | nested comparison conventions for mixed models |
+| **Cameron, Gelbach, Miller 2008** | cluster bootstrap |
+| **Pustejovsky & Tipton 2018** | CR2 / Satterthwaite df recommendation |
+| **Steiger & Fouladi 1997**, **Steiger 2004** | noncentral F → η²-partial CI inversion (already in lm_compute.R) |
+
+### Step 3 explanation — doc-first roxygen sketch
 
 When we resume, **step 3 = write the function file with the full
 roxygen documentation but no function body**. Concretely:
@@ -226,75 +434,52 @@ roxygen documentation but no function body**. Concretely:
 #' @description
 #' [...full description, params, return value, examples...]
 #'
-#' @param models lm fit, list of lm fits, or data frame...
-#' @param formula ...
+#' @param models lm fit, list of lm fits, or...
 #' @param vcov ...
 #' [... etc, every argument fully documented ...]
 #'
-#' @return A `spicy_regression_table` — a data frame...
+#' @return A `spicy_regression_table` — a data frame of class...
 #' @export
-table_regression <- function(models, formula = NULL, ...) {
+table_regression <- function(models, ...) {
   # body intentionally empty for design review
   NULL
 }
 ```
 
-The point of this **doc-first** approach: we render `?table_regression`
+The point of this **doc-first** approach: render `?table_regression`
 and *read* the help page **before writing a single line of logic**.
-This forces us to confront ambiguities in arg semantics, examples that
-don't quite work, missing edge-case mentions, etc., **at the cheapest
-possible moment**. Once the help page reads cleanly, *then* the
-implementation flows naturally because the contract is unambiguous.
+This forces us to confront ambiguities in arg semantics, examples
+that don't quite work, missing edge-case mentions, etc., **at the
+cheapest possible moment**. Once the help page reads cleanly, *then*
+the implementation flows naturally because the contract is unambiguous.
 
 This is optional. If you'd rather jump straight to implementation
-once the design questions in §6 are settled, that works too.
+once 0.12.0 is on CRAN, that works too. The 10 settled decisions
+above are sufficient to write the implementation directly.
 
 ---
 
-## 8. Resumption checklist
+## 10. Effort estimate (Phase 1)
 
-When picking this work back up:
+| Module | Estimated lines |
+| ------ | --------------- |
+| Public function + arg validation | ~150 |
+| `extract_lm.lm` (per-model long-format extractor) | ~80 |
+| Multi-model alignment + pivot | ~50 |
+| Standardisation native (4 methods) | ~60 |
+| AME extraction wrapper | ~30 |
+| Nested comparison footer (10 token mappings) | ~80 |
+| Rendering: factor headers + reference rows + intercept positioning | ~100 |
+| Output dispatch (8 formats) | ~120 |
+| broom integration (`tidy`, `glance`, `as.data.frame`, `as_tibble`) | ~60 |
+| Reject helpers (3-tier messages + aggregate-fail) | ~30 |
+| **Subtotal code** | **~760** |
+| Tests (unit + cross-validation oracles) | ~250 |
+| Roxygen documentation | ~150 |
+| **Total Phase 1** | **~1,160 lines** |
 
-- [ ] Re-read this file end-to-end.
-- [ ] Verify the branch is still based on a recent `main` (rebase if needed).
-- [ ] Confirm 0.12.0 is on CRAN; if not, postpone until it is.
-- [ ] Settle the 10 open questions in §6 (override defaults if any).
-- [ ] Optionally do step 3 (roxygen-only file) before writing logic.
-- [ ] Implement `extract_lm.lm` first (the heart of the extraction layer).
-- [ ] Implement the long → wide pivot + render layer.
-- [ ] broom integration: `tidy()` / `glance()` / `as.data.frame()` / `as_tibble()`.
-- [ ] Tests: classical lm, HC*-vcov, CR*-vcov + cluster, bootstrap,
-       single model, multi-model, nested-not-detected (should not fire
-       in Phase 1), labels, output formats × 8.
-- [ ] Cross-validation: against `parameters::model_parameters()`,
-       `modelsummary`, `gtsummary::tbl_regression()` (single only),
-       `stargazer` (multi only). Pin oracle values where critical.
-- [ ] NEWS.md entry for 0.13.0.
-- [ ] Update API stability tier in `?spicy` (move `table_regression`
-       to "Stabilising" once shipped).
-
----
-
-## 9. Cross-references
-
-- Reusable infrastructure already in spicy:
-  - `R/lm_compute.R` — vcov family, single-coef inference, partial F
-    extraction. **Use as-is** for `extract_lm.lm`.
-  - `R/lm_helpers.R` — input resolution helpers
-    (`is_supported_lm_predictor`, `coerce_lm_factor`,
-    `resolve_cluster_argument`, `resolve_covariates_argument`).
-  - `R/table_helpers.R` — `format_number`, `format_p_value`,
-    `decimal_align_strings`, `ci_bracket_separator`.
-  - `R/tables_ascii.R` — `build_ascii_table`, `spicy_print_table`.
-  - `R/table_continuous_lm_render.R` — patterns for the 8 output formats.
-
-- External references (architecture inspiration):
-  - **modelsummary** — closest spirit; long-internal, list-in API.
-  - **gtsummary::tbl_regression / tbl_merge** — composition
-    alternative we explicitly chose *not* to follow.
-  - **stargazer** — the legacy multi-model tool; single-function,
-    `(...)` of fits.
-  - **jtools::export_summs** — `list(m1, m2)` accepted, single model
-    auto-promoted to 1-element list. Same pattern we're adopting.
-  - **parameters::model_parameters** — closest single-model
-    alternative; useful as an oracle for cross-validation tests.
+Phase 1 is **substantial but bounded**. By comparison, the current
+`table_continuous_lm.R` is ~1,800 lines (post-modularisation: ~3,400
+across 4 files). `table_regression()` Phase 1 is roughly half the size
+because it doesn't need the per-outcome × per-predictor combinatorial
+orchestration of `table_continuous_lm()`.
