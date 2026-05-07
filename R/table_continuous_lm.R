@@ -237,11 +237,12 @@
 #'   affected by `vcov`.
 #'
 #'   **Under covariate adjustment** (`covariates` non-empty):
-#'   - `"f2"` and `"omega2"` become the **partial** *f²* / partial *ω²*,
-#'     derived from the partial *F* of `by` via [stats::drop1()] —
-#'     the correctly-defined effect size when the model is adjusted.
-#'     For numeric `by`, partial *f²* equals the squared partial
-#'     correlation of `by` with the outcome, divided by `(1 - r²_partial)`.
+#'   - `"f2"` and `"omega2"` become the **partial** \eqn{f^2} /
+#'     partial \eqn{\omega^2}, derived from the partial *F* of `by`
+#'     via [stats::drop1()] — the correctly-defined effect size when
+#'     the model is adjusted. For numeric `by`, partial \eqn{f^2}
+#'     equals the squared partial correlation of `by` with the
+#'     outcome, divided by \eqn{1 - r^2_{partial}}.
 #'   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d*
 #'     and Hedges' *g* have no canonical extension to adjusted models
 #'     (the pooled SD is undefined under adjustment). Use `"f2"` or
@@ -432,12 +433,12 @@
 #' itself.
 #'
 #' **Under covariate adjustment** (`covariates` non-empty), `"f2"` and
-#' `"omega2"` become the partial *f²* / partial *ω²* of `by`, derived
-#' from the partial *F* via [stats::drop1()] restricted to the focal
-#' term. `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
-#' standard deviation has no canonical extension under adjustment, so
-#' Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
-#' `effect_size` for the full dispatch.
+#' `"omega2"` become the partial \eqn{f^2} / partial \eqn{\omega^2} of
+#' `by`, derived from the partial *F* via [stats::drop1()] restricted
+#' to the focal term. `"d"` and `"g"` raise a `spicy_unsupported`
+#' error: the pooled standard deviation has no canonical extension
+#' under adjustment, so Cohen's *d* and Hedges' *g* are undefined for
+#' adjusted models. See `effect_size` for the full dispatch.
 #'
 #' Confidence intervals for the effect size are available via
 #' `effect_size_ci = TRUE` and use the modern noncentral-distribution

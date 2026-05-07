@@ -286,11 +286,12 @@ affected by \code{vcov}.
 
 \strong{Under covariate adjustment} (\code{covariates} non-empty):
 \itemize{
-\item \code{"f2"} and \code{"omega2"} become the \strong{partial} \emph{f²} / partial \emph{ω²},
-derived from the partial \emph{F} of \code{by} via \code{\link[stats:drop1]{stats::drop1()}} —
-the correctly-defined effect size when the model is adjusted.
-For numeric \code{by}, partial \emph{f²} equals the squared partial
-correlation of \code{by} with the outcome, divided by \verb{(1 - r²_partial)}.
+\item \code{"f2"} and \code{"omega2"} become the \strong{partial} \eqn{f^2} /
+partial \eqn{\omega^2}, derived from the partial \emph{F} of \code{by}
+via \code{\link[stats:drop1]{stats::drop1()}} — the correctly-defined effect size when
+the model is adjusted. For numeric \code{by}, partial \eqn{f^2}
+equals the squared partial correlation of \code{by} with the
+outcome, divided by \eqn{1 - r^2_{partial}}.
 \item \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: Cohen's \emph{d}
 and Hedges' \emph{g} have no canonical extension to adjusted models
 (the pooled SD is undefined under adjustment). Use \code{"f2"} or
@@ -529,12 +530,12 @@ test statistic of the contrast but not the standardized magnitude
 itself.
 
 \strong{Under covariate adjustment} (\code{covariates} non-empty), \code{"f2"} and
-\code{"omega2"} become the partial \emph{f²} / partial \emph{ω²} of \code{by}, derived
-from the partial \emph{F} via \code{\link[stats:drop1]{stats::drop1()}} restricted to the focal
-term. \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: the pooled
-standard deviation has no canonical extension under adjustment, so
-Cohen's \emph{d} and Hedges' \emph{g} are undefined for adjusted models. See
-\code{effect_size} for the full dispatch.
+\code{"omega2"} become the partial \eqn{f^2} / partial \eqn{\omega^2} of
+\code{by}, derived from the partial \emph{F} via \code{\link[stats:drop1]{stats::drop1()}} restricted
+to the focal term. \code{"d"} and \code{"g"} raise a \code{spicy_unsupported}
+error: the pooled standard deviation has no canonical extension
+under adjustment, so Cohen's \emph{d} and Hedges' \emph{g} are undefined for
+adjusted models. See \code{effect_size} for the full dispatch.
 
 Confidence intervals for the effect size are available via
 \code{effect_size_ci = TRUE} and use the modern noncentral-distribution
