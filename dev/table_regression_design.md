@@ -305,6 +305,18 @@ list.
 | **(data + formula)** | rejected with diagnosis + redirect to `lm() %>% table_regression()` |
 | **Justification** | unanimous R modeling convention (broom, modelsummary, gtsummary, marginaleffects, parameters); fit-first preserves transparency, contrasts, weights, na.action |
 
+### Q11 — `nobs` validation under `nested = TRUE`
+
+| | |
+|---|---|
+| **Validation rule** | when `nested = TRUE`, all models must have **identical `nobs`** |
+| **Rationale** | every comparison statistic (ΔR², partial F, ΔAIC, LRT, ΔDeviance, f²_change, ω²_change) requires the **same observations** in all models. Different `nobs` means R applied listwise deletion on different rows → comparison statistics are invalid (Cohen et al. 2003 §5.4; Burnham & Anderson 2002). |
+| **Behaviour on mismatch** | `spicy_invalid_input` error with diagnosis (which models, which `nobs`) + remediation snippet (`tidyr::drop_na()` on the common predictor set, or `na.action = na.exclude` upstream) |
+| **`nested = FALSE` (default)** | no validation — side-by-side display is purely descriptive, models can have different `nobs`. Per-model absolute stats (R², AIC, etc.) remain valid. |
+| **Stricter check (deferred Phase 2)** | `identical(rownames(model.frame(m1)), rownames(model.frame(m2)))` to catch the rare "same `nobs` but different rows" pathological case. Too strict for Phase 1 (would reject legitimate equal-n-by-coincidence). |
+| **Override (deferred Phase 2)** | possible future `nested_strict = TRUE` (default) with `FALSE` opt-out + warning. Not in v1 — strict-by-default is safer for an initial release. |
+| **Consensus check** | `lme4::anova()` is the only major R tool that errors on data mismatch; modelsummary / gtsummary / sjPlot / stargazer are all silent. spicy will be the **stricter** option, aligned with `lme4` philosophy. |
+
 ---
 
 ## 6. Decision matrix — digit precision (5 args)
