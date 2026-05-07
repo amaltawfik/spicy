@@ -316,9 +316,12 @@ equal to <code>by</code> is rejected up front.</p>
 <h3 id="two-estimands-for-the-adjusted-marginal-means">Two estimands for the adjusted marginal means<a class="anchor" aria-label="anchor" href="#two-estimands-for-the-adjusted-marginal-means"></a>
 </h3>
 <p>Two methodologically distinct conventions exist for computing the
-covariate-adjusted estimated marginal means (the <code>emmean</code> /
-<code>emmean_se</code> columns) when <code>by</code> is categorical.
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> exposes the choice via
+covariate-adjusted per-group means displayed in the table (the
+<code>M (level)</code> columns of the printed output, and the
+<code>emmean</code> / <code>emmean_se</code> /
+<code>emmean_ci_lower</code> / <code>emmean_ci_upper</code> columns of
+the <code>output = "long"</code> data frame) when <code>by</code> is
+categorical. <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> exposes the choice via
 <code>adjustment</code>; both are valid but produce different numerical
 answers when at least one factor covariate has non-uniform observed
 proportions.</p>

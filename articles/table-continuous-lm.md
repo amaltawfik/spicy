@@ -233,8 +233,10 @@ rejected up front.
 ### Two estimands for the adjusted marginal means
 
 Two methodologically distinct conventions exist for computing the
-covariate-adjusted estimated marginal means (the `emmean` / `emmean_se`
-columns) when `by` is categorical.
+covariate-adjusted per-group means displayed in the table (the
+`M (level)` columns of the printed output, and the `emmean` /
+`emmean_se` / `emmean_ci_lower` / `emmean_ci_upper` columns of the
+`output = "long"` data frame) when `by` is categorical.
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 exposes the choice via `adjustment`; both are valid but produce
 different numerical answers when at least one factor covariate has

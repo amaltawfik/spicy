@@ -410,11 +410,12 @@ model's weighted residual standard deviation), keeping them consistent
 with the weighted contrast and its CI shown in the table. All effect
 sizes are point estimates derived from the OLS/WLS fit and are <strong>not</strong>
 affected by <code>vcov</code>.</p>
-<p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty):</p><ul><li><p><code>"f2"</code> and <code>"omega2"</code> become the <strong>partial</strong> <em>f²</em> / partial <em>ω²</em>,
-derived from the partial <em>F</em> of <code>by</code> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> —
-the correctly-defined effect size when the model is adjusted.
-For numeric <code>by</code>, partial <em>f²</em> equals the squared partial
-correlation of <code>by</code> with the outcome, divided by <code>(1 - r²_partial)</code>.</p></li>
+<p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty):</p><ul><li><p><code>"f2"</code> and <code>"omega2"</code> become the <strong>partial</strong> \(f^2\) /
+partial \(\omega^2\), derived from the partial <em>F</em> of <code>by</code>
+via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> — the correctly-defined effect size when
+the model is adjusted. For numeric <code>by</code>, partial \(f^2\)
+equals the squared partial correlation of <code>by</code> with the
+outcome, divided by \(1 - r^2_{partial}\).</p></li>
 <li><p><code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: Cohen's <em>d</em>
 and Hedges' <em>g</em> have no canonical extension to adjusted models
 (the pooled SD is undefined under adjustment). Use <code>"f2"</code> or
@@ -644,12 +645,12 @@ and are <strong>invariant to <code>vcov</code></strong>: choosing <code>HC*</cod
 test statistic of the contrast but not the standardized magnitude
 itself.</p>
 <p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty), <code>"f2"</code> and
-<code>"omega2"</code> become the partial <em>f²</em> / partial <em>ω²</em> of <code>by</code>, derived
-from the partial <em>F</em> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted to the focal
-term. <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: the pooled
-standard deviation has no canonical extension under adjustment, so
-Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
-<code>effect_size</code> for the full dispatch.</p>
+<code>"omega2"</code> become the partial \(f^2\) / partial \(\omega^2\) of
+<code>by</code>, derived from the partial <em>F</em> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted
+to the focal term. <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code>
+error: the pooled standard deviation has no canonical extension
+under adjustment, so Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for
+adjusted models. See <code>effect_size</code> for the full dispatch.</p>
 <p>Confidence intervals for the effect size are available via
 <code>effect_size_ci = TRUE</code> and use the modern noncentral-distribution
 inversion approach, the consensus standard in commercial statistical
