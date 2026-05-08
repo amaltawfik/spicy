@@ -104,6 +104,7 @@ table_regression(
                      "adj.r.squared"),
   model_labels = NULL,                               # NULL → smart default; char vec → explicit
   outcome_labels = NULL,                             # NULL → smart auto (label > varname, hide if DVs identical); char vec → explicit; FALSE → suppress
+  stars = FALSE,                                     # FALSE / TRUE (APA preset) / named numeric vector (custom thresholds)
 
   # Multi-model comparison (hierarchical regression)
   nested = FALSE,
@@ -332,6 +333,20 @@ list.
 | **Pattern parallel to `model_labels`** | both follow the same smart-default + uniform-override grammar. `model_labels` controls the **column / model identifier** row; `outcome_labels` controls the **DV** row. Two orthogonal concepts. |
 | **Layout when both rows shown** | model label row above DV row. E.g., row 1 = "Naive / Adjusted / Naive / Adjusted", row 2 = "Well-being / Well-being / Life satis. / Life satis." |
 | **Layout when DVs identical (single DV)** | DV mentioned in the table title (`"Outcome: Well-being"`); per-model headers do NOT repeat it. User can force display with `outcome_labels = c(rep("Well-being", n))` for APA-strict redundancy. |
+
+### Q12 — Significance stars
+
+| | |
+|---|---|
+| **`stars = FALSE`** (default) | no asterisks, p-values reported as numbers only. **Aligned with APA 7 §6.46** which explicitly discourages stars; Wasserstein, Schirm & Lazar (2019) *"Moving to a World Beyond p < 0.05"*; ASA Statement on p-values (Wasserstein & Lazar 2016). |
+| **`stars = TRUE`** | preset APA-conventional cutoffs `c("*" = 0.05, "**" = 0.01, "***" = 0.001)` |
+| **`stars = c(...)`** | custom named numeric vector (e.g., `c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)` for fields that include a marginal threshold). |
+| **Where stars render** | suffixed on the **estimate** (B or β if standardized + replacing B-position). Convention unanime stargazer / modelsummary / sjPlot. |
+| **Footer note** | auto-generated when `stars != FALSE`. Format: *"Note. *** p < .001, ** p < .01, * p < .05."* — adapts to the user-supplied symbol/threshold mapping. |
+| **Interaction with `"p"` token** | independent. `"p"` ∈ show_columns AND `stars = TRUE` → both displayed (some users want the redundancy, others find it noisy; spicy doesn't second-guess). |
+| **Validation** | `stars` must be FALSE, TRUE, or a named numeric vector with all values in (0, 1] and non-empty names. |
+| **Why off-default** | spicy positions itself APA-7-aligned. ON-by-default would silently legitimise a practice methodologically deprecated by the consensus reviews (APA, ASA, *American Statistician* 2019). Modern R consensus is unanimous OFF: modelsummary, gtsummary, sjPlot, fixest, parameters all default OFF. Stargazer (legacy, defaults ON) is the lone outlier. |
+| **Why opt-in available** | pedagogical use, conservative reviewers / journals, cross-discipline (econ / finance), table-density readability for tables with 20+ coefficients. |
 
 ---
 
