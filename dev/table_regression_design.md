@@ -1,10 +1,12 @@
 # `table_regression()` — design doc
 
-> **Status**: design fully settled. All 10 open questions closed.
+> **Status**: design fully settled. All 16 open questions closed
+> (Q1–Q12 in initial settling pass; Q13–Q16 added in resumption
+> audit and resolved 2026-05-08).
 > Ready for implementation post-CRAN-accept of 0.12.0.
 >
 > **Branch**: `feature/table-regression` (forked from `main` at `d95e3e6`).
-> **Created**: 2026-05-06. **Settled**: 2026-05-08.
+> **Created**: 2026-05-06. **Settled**: 2026-05-08 (16 questions).
 > **Author**: Amal + Claude pairing sessions 2026-05-06 and 2026-05-08.
 >
 > This document is the **single source of truth** to resume the work.
@@ -348,6 +350,64 @@ list.
 | **Why off-default** | spicy positions itself APA-7-aligned. ON-by-default would silently legitimise a practice methodologically deprecated by the consensus reviews (APA, ASA, *American Statistician* 2019). Modern R consensus is unanimous OFF: modelsummary, gtsummary, sjPlot, fixest, parameters all default OFF. Stargazer (legacy, defaults ON) is the lone outlier. |
 | **Why opt-in available** | pedagogical use, conservative reviewers / journals, cross-discipline (econ / finance), table-density readability for tables with 20+ coefficients. |
 
+### Q13 — Title and footer note auto-generation
+
+| | |
+|---|---|
+| **No `title` or `note` argument** | both auto-generated from context, consistent with `freq()`, `cross_tab()`, `table_continuous_lm()` etc. User overrides via `attr(result, "title")` / `attr(result, "note")` post-processing if needed. |
+| **Title logic** | `Regression: <DV>` (single model); `Hierarchical regression: <DV>` (`nested = TRUE`); `Regression comparison: <DV>` (multi-model, identical DVs); `Regression comparison` (multi-model, different DVs). `<DV>` is **always the variable name from `formula(fit)[[2]]`**, NEVER the `attr("label")`. |
+| **Footer themes** | each on its own logical line: `vcov`-info, `standardized` caveat, `nested` declaration, `stars` mapping. Concatenated with `\n`, indented after the leading `Note. `. |
+| **Footer when `vcov` is uniform** | single-line, e.g. `"Std. errors: cluster-robust (CR2), clusters by clinic_id."` |
+| **Footer when `vcov` differs per model** | multi-line indented enumeration: each `Model k: <vcov>` on its own line under a `Std. errors:` header. Convention aligned with gtsummary / modelsummary / fixest modern footer style. |
+| **Detection cluster name vs vector** | reuses `detect_weights_column_name()` from `R/lm_helpers.R`. Name detected → `"clusters by <name>"`; atomic vector → `"cluster vector supplied"`. |
+
+### Q14 — AME for factor predictors and AME-Satterthwaite under CR*
+
+#### Q14a — Layout per-contrast for factor k > 2
+
+| | |
+|---|---|
+| **AME layout** | one AME row per contrast, aligned with the B coefficient layout (each non-reference level of a factor gets its own AME, matching the dummy structure of `marginaleffects::avg_slopes()` default reference-coding). |
+| **Reference level** | em-dash `—` in B, SE, CI, p, AME, AME_p, AME_SE columns (consistent with Q5). |
+| **Intercept** | em-dash in AME columns (AME not applicable to the intercept term). |
+| **Interaction terms `x:z`** | em-dash in AME columns (the AME of the main term `x` already integrates the interaction; `x:z` itself has no standalone AME). |
+| **Pairwise contrasts** | not in v1; `marginaleffects::avg_slopes()` default reference-contrast aligns with B layout. Pairwise option deferred to Phase 2. |
+
+#### Q14b — AME-Satterthwaite under CR* via `clubSandwich::linear_contrast()` (Option B)
+
+| | |
+|---|---|
+| **Coherence goal** | B and AME share the **same inferential regime** for every `vcov` type, no z-vs-t mismatch in the same table. |
+| **classical / HC0–HC5** | both B and AME use t with `df.residual` (pass `df = "residual"` to `marginaleffects::avg_slopes()`). |
+| **bootstrap / jackknife** | both use z (default `df = Inf`). |
+| **CR0 – CR3** | both use t with **Satterthwaite-corrected df**. AME inference computed in-house: build the linear contrast vector representing the AME, pass to `clubSandwich::linear_contrast()` with `test = "Satterthwaite"`, return its (estimate, SE, df_Satt, t-stat, p, CI). |
+| **Why Option B over A** | spicy becomes the first R package with proper AME-Satterthwaite for lm. Existing tools (modelsummary, parameters, marginaleffects, sjPlot) all default to z-asymptotic AME under CR*, which is anti-conservative for few clusters. Refs: Pustejovsky & Tipton (2018) for the Satterthwaite framework via `clubSandwich`. |
+| **Contrast construction (lm linear)** | closed-form via `model.matrix()` differences (numeric: unit increment; factor: level-vs-reference design-matrix delta; columns averaged over observations). No numerical derivative. ~50 lines. |
+| **Fallback for non-linear formulas** | `lm(y ~ poly(x, 2))`, `lm(y ~ I(x^2))`, `lm(y ~ log(x))`, `lm(y ~ splines::ns(x))` etc. — fall back to `marginaleffects::avg_slopes()` with z-asymptotic + a `spicy_fallback` warning explaining the limitation. Phase 2 may add numerical-derivative support. |
+| **Validation oracles** | (1) trivial lm → AME ≡ B → identity check vs `compute_lm_coef_inference()`. (2) factor → identity check vs direct `clubSandwich::linear_contrast()`. (3) non-CR* → identity check vs `marginaleffects::avg_slopes(vcov = matrix)`. |
+| **Footer note** | affirmative declaration when CR* + AME used: *"AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`."* — positive signal, not a disclaimer. |
+| **Effort** | ~220 lines additional in Phase 1 (contrast builder + clubSandwich wrapper + branch logic + tests + doc). |
+
+### Q15 — Standardized coefficients with interactions / transforms
+
+| | |
+|---|---|
+| **Always compute** (Option A') | aligned with SPSS, Stata, SAS, `effectsize::standardize_parameters()`, `parameters::model_parameters()`, `sjPlot::tab_model()`, `lm.beta`. No major tool rejects. |
+| **Why not reject** | Cohen, Cohen, West & Aiken (2003) §7.7 says *"interpret with caution"*, not *"don't compute"*. Rejecting would be paternalistic and depart from a unanimous industry baseline. |
+| **Detection** | `attr(terms(fit), "term.labels")`: regex `:` for interactions, regex `(` for transforms (catches `I()`, `poly()`, `log()`, `splines::ns()`, etc.). |
+| **`spicy_caveat` warning** | classed condition emitted **once per call** when non-additive terms detected and `standardized != "none"`. User can mute via `withCallingHandlers(..., spicy_caveat = function(c) invokeRestart("muffleWarning"))`. |
+| **Footer caveat auto-generated** | method-specific text: *refit* → "After refit, β for these terms reflects the interaction of z-scored variables, not the standardisation of the original term"; *posthoc / basic / smart* → "β uses SD of the product/transformed column, which differs from SD(x) × SD(z) and may be unstable." |
+| **Differentiation vs other tools** | spicy is the **only** package to warn at runtime AND auto-document the caveat in the footer. Existing tools document only in the help (effectsize), or not at all (legacy). spicy is "more pro" via *transparency*, not *rejection*. |
+
+### Q16 — `weights` clarification (no public arg)
+
+| | |
+|---|---|
+| **No `weights` argument** in `table_regression()` signature | weights are a property of the fitted model (`stats::weights(fit)`), not of the table function. Pass them when fitting: `lm(y ~ x, data = df, weights = w)`. |
+| **Auto-extraction** | `compute_lm_vcov_bootstrap()`, `compute_lm_vcov_jackknife()`, `marginaleffects::avg_slopes()`, the `weighted_nobs` token, and the `standardize_refit_lm()` helper all extract weights from each fit object via `stats::weights(fit)`. No coordination across multiple models — each fit carries its own weights. |
+| **Documentation** | `@details` in `?table_regression` clarifies the convention and pre-empts the user looking for a `weights = ...` argument. |
+| **Implementation effort** | zero additional code (mechanism already in place via the underlying helpers). Documentation only. |
+
 ---
 
 ## 6. Decision matrix — digit precision (5 args)
@@ -463,7 +523,8 @@ When picking this work back up:
 | **Hanmer & Kalkan 2013** Am. J. Pol. Sci. | AME the most defensible interpretation |
 | **Bates, Mächler, Bolker, Walker 2015** | nested comparison conventions for mixed models |
 | **Cameron, Gelbach, Miller 2008** | cluster bootstrap |
-| **Pustejovsky & Tipton 2018** | CR2 / Satterthwaite df recommendation |
+| **Pustejovsky & Tipton 2018** | CR2 / Satterthwaite df recommendation; foundation for AME-Satterthwaite via `clubSandwich::linear_contrast()` (Q14b) |
+| **Aiken & West 1991** *Multiple Regression: Testing and Interpreting Interactions* | center-before-interaction discussion; basis for the `standardized` caveat under interactions (Q15) |
 | **Steiger & Fouladi 1997**, **Steiger 2004** | noncentral F → η²-partial CI inversion (already in lm_compute.R) |
 
 ### Step 3 explanation — doc-first roxygen sketch
@@ -509,20 +570,29 @@ above are sufficient to write the implementation directly.
 | Public function + arg validation | ~150 |
 | `extract_lm.lm` (per-model long-format extractor) | ~80 |
 | Multi-model alignment + pivot | ~50 |
-| Standardisation native (4 methods) | ~60 |
-| AME extraction wrapper | ~30 |
+| Standardisation native (4 methods) + non-additive detection + caveat warning (Q15) | ~80 |
+| AME extraction (marginaleffects wrapper for non-CR* paths) | ~30 |
+| **AME-Satterthwaite via clubSandwich (Q14b, CR* path)** | ~110 |
 | Nested comparison footer (10 token mappings) | ~80 |
-| Rendering: factor headers + reference rows + intercept positioning | ~100 |
+| Rendering: factor headers + reference rows + intercept positioning + per-contrast AME (Q14a) | ~110 |
 | Output dispatch (8 formats) | ~120 |
 | broom integration (`tidy`, `glance`, `as.data.frame`, `as_tibble`) | ~60 |
 | Reject helpers (3-tier messages + aggregate-fail) | ~30 |
-| **Subtotal code** | **~760** |
-| Tests (unit + cross-validation oracles) | ~250 |
-| Roxygen documentation | ~150 |
-| **Total Phase 1** | **~1,160 lines** |
+| Title + footer auto-generation (Q13: vcov-aware multi-line, theme separator) | ~60 |
+| **Subtotal code** | **~960** |
+| Tests (unit + cross-validation oracles, including AME-Satterthwaite vs `clubSandwich::linear_contrast()` direct) | ~330 |
+| Roxygen documentation | ~180 |
+| **Total Phase 1** | **~1,470 lines** |
 
 Phase 1 is **substantial but bounded**. By comparison, the current
 `table_continuous_lm.R` is ~1,800 lines (post-modularisation: ~3,400
-across 4 files). `table_regression()` Phase 1 is roughly half the size
-because it doesn't need the per-outcome × per-predictor combinatorial
-orchestration of `table_continuous_lm()`.
+across 4 files). `table_regression()` Phase 1 is roughly comparable
+in size, the difference accounted for by:
+
+- AME-Satterthwaite (Q14b): novel feature, no equivalent in
+  `table_continuous_lm`; contributes ~110 lines.
+- Multi-model orchestration: lighter than the per-outcome ×
+  per-predictor combinatorial of `table_continuous_lm`.
+- Tests: cross-validation against five external oracles
+  (`parameters`, `modelsummary`, `effectsize`, `marginaleffects`,
+  `clubSandwich`) is heavier than `table_continuous_lm`'s.
