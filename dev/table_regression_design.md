@@ -103,6 +103,7 @@ table_regression(
   show_fit_stats = c("nobs", "r.squared",            # tokens — see vocabulary below
                      "adj.r.squared"),
   model_labels = NULL,                               # NULL → smart default; char vec → explicit
+  outcome_labels = NULL,                             # NULL → smart auto (label > varname, hide if DVs identical); char vec → explicit; FALSE → suppress
 
   # Multi-model comparison (hierarchical regression)
   nested = FALSE,
@@ -305,17 +306,32 @@ list.
 | **(data + formula)** | rejected with diagnosis + redirect to `lm() %>% table_regression()` |
 | **Justification** | unanimous R modeling convention (broom, modelsummary, gtsummary, marginaleffects, parameters); fit-first preserves transparency, contrasts, weights, na.action |
 
-### Q11 — `nobs` validation under `nested = TRUE`
+### Q11 — Validations under `nested = TRUE` and DV display under `nested = FALSE`
+
+#### Q11a — `nobs` and DV identity validations under `nested = TRUE`
 
 | | |
 |---|---|
-| **Validation rule** | when `nested = TRUE`, all models must have **identical `nobs`** |
-| **Rationale** | every comparison statistic (ΔR², partial F, ΔAIC, LRT, ΔDeviance, f²_change, ω²_change) requires the **same observations** in all models. Different `nobs` means R applied listwise deletion on different rows → comparison statistics are invalid (Cohen et al. 2003 §5.4; Burnham & Anderson 2002). |
-| **Behaviour on mismatch** | `spicy_invalid_input` error with diagnosis (which models, which `nobs`) + remediation snippet (`tidyr::drop_na()` on the common predictor set, or `na.action = na.exclude` upstream) |
-| **`nested = FALSE` (default)** | no validation — side-by-side display is purely descriptive, models can have different `nobs`. Per-model absolute stats (R², AIC, etc.) remain valid. |
-| **Stricter check (deferred Phase 2)** | `identical(rownames(model.frame(m1)), rownames(model.frame(m2)))` to catch the rare "same `nobs` but different rows" pathological case. Too strict for Phase 1 (would reject legitimate equal-n-by-coincidence). |
-| **Override (deferred Phase 2)** | possible future `nested_strict = TRUE` (default) with `FALSE` opt-out + warning. Not in v1 — strict-by-default is safer for an initial release. |
+| **Validation rule (nobs)** | when `nested = TRUE`, all models must have **identical `nobs`** |
+| **Validation rule (DV)** | when `nested = TRUE`, all models must have **identical response variable** (compared via `formula(fit)[[2]]` — the response side of the formula) |
+| **Rationale** | every comparison statistic (ΔR², partial F, ΔAIC, LRT, ΔDeviance, f²_change, ω²_change) requires the **same observations** in all models *and* the same DV for the comparison to be statistically meaningful (Cohen et al. 2003 §5.4; Burnham & Anderson 2002). |
+| **Behaviour on `nobs` mismatch** | `spicy_invalid_input` error with diagnosis + remediation snippet (`tidyr::drop_na()` on the common predictor set, or `na.action = na.exclude` upstream) |
+| **Behaviour on DV mismatch** | `spicy_invalid_input` error: *"Models have different response variables (wellbeing, life_sat). Hierarchical comparison requires the same DV across models. For side-by-side multi-DV display, use `nested = FALSE`."* |
+| **Stricter check (deferred Phase 2)** | `identical(rownames(model.frame(m1)), rownames(model.frame(m2)))` to catch the rare "same `nobs` but different rows" pathological case. Too strict for Phase 1. |
+| **Override (deferred Phase 2)** | possible future `nested_strict = TRUE` (default) with `FALSE` opt-out + warning. Not in v1. |
 | **Consensus check** | `lme4::anova()` is the only major R tool that errors on data mismatch; modelsummary / gtsummary / sjPlot / stargazer are all silent. spicy will be the **stricter** option, aligned with `lme4` philosophy. |
+
+#### Q11b — DV display under `nested = FALSE` via `outcome_labels`
+
+| | |
+|---|---|
+| **`outcome_labels = NULL`** (default) | smart-auto: row hidden when all DVs identical, row auto-shown when DVs differ. Auto-derived from `attr(data[[dv]], "label", exact = TRUE)` if present, else from `formula(fit)[[2]]` (the DV name from the formula). |
+| **`outcome_labels = c("...", ...)`** | explicit per-model labels, length must match `length(models)`. Forces row display regardless of DV identity. |
+| **`outcome_labels = FALSE`** | row suppressed even when DVs differ (user takes responsibility for clarity via title / caption / footnote). |
+| **No validation under `nested = FALSE`** | DVs may differ legitimately (e.g., side-by-side comparison of regressions with different outcomes), n may differ legitimately (e.g., same regression in different countries / time periods). Side-by-side is descriptive, no comparison statistics computed → no statistical pre-conditions. |
+| **Pattern parallel to `model_labels`** | both follow the same smart-default + uniform-override grammar. `model_labels` controls the **column / model identifier** row; `outcome_labels` controls the **DV** row. Two orthogonal concepts. |
+| **Layout when both rows shown** | model label row above DV row. E.g., row 1 = "Naive / Adjusted / Naive / Adjusted", row 2 = "Well-being / Well-being / Life satis. / Life satis." |
+| **Layout when DVs identical (single DV)** | DV mentioned in the table title (`"Outcome: Well-being"`); per-model headers do NOT repeat it. User can force display with `outcome_labels = c(rep("Well-being", n))` for APA-strict redundancy. |
 
 ---
 
