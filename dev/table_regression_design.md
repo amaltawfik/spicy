@@ -124,7 +124,7 @@ table_regression(
 
   # Output dispatch
   output = c("default", "data.frame", "long", "gt", "flextable",
-             "tinytable", "excel", "clipboard"),
+             "tinytable", "excel", "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = "Regression",
   clipboard_delim = "\t",
@@ -132,8 +132,12 @@ table_regression(
 )
 ```
 
-**~25 arguments**. Comparable to `table_continuous_lm()` (~20). API
-consistency with the rest of the package maintained.
+**31 arguments** (verified against the roxygen sketch). Comparable
+to `table_continuous_lm()` (~20) — the extra surface comes from the
+multi-model knobs (`model_labels`, `outcome_labels`, `nested`,
+`nested_stats`), the explicit per-category digit args, and the
+`reference_style` / `reference_label` pair. API consistency with
+the rest of the package maintained.
 
 ---
 
