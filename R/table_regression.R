@@ -451,30 +451,64 @@ table_regression <- function(
   align <- match.arg(align)
   output <- match.arg(output)
 
-  # ---- Validate inputs (Q21 cascade Phase A: input class) ----------------
+  # ====================================================================
+  # Validation cascade (Q21 — 6 phases, ~29 steps, fail-fast).
+  # Each helper lives in R/regression_validate.R and is called in the
+  # documented order. Errors carry classed conditions
+  # (spicy_invalid_input / spicy_unsupported); cross-arg semantic
+  # warnings (Phase E) carry spicy_caveat or spicy_ignored_arg.
+  # ====================================================================
+
+  # Phase A — input class (steps 1–3)
   models <- validate_models_input(models)
   n_models <- length(models)
 
-  # Q12 — `stars` validation. FALSE / TRUE pass through; named numeric
-  # vector must be non-empty with all values in (0, 1] and unique
-  # non-empty names.
-  if (!isFALSE(stars) && !isTRUE(stars)) {
-    if (!is.numeric(stars) || length(stars) == 0L ||
-        is.null(names(stars)) || any(!nzchar(names(stars))) ||
-        any(!is.finite(stars)) || any(stars <= 0) || any(stars > 1)) {
-      spicy_abort(
-        c(
-          "`stars` must be FALSE, TRUE, or a non-empty named numeric vector.",
-          "i" = paste0("Each value is the upper threshold for its symbol; ",
-                       "values must be in (0, 1] and names must be ",
-                       "non-empty (e.g. c(\"*\" = 0.05, \"**\" = 0.01)).")
-        ),
-        class = "spicy_invalid_input"
-      )
+  # Phase B — multi-model alignment (steps 4–8)
+  validate_nested_alignment(models, nested)
+  validate_vcov_cluster_lists(vcov, cluster, models)
+
+  # Phase C — vocabulary tokens (steps 9–12). validate_show_columns
+  # also rejects "beta" combined with `standardized = "none"` (Q3).
+  validate_show_columns(show_columns, standardized)
+  validate_show_fit_stats(show_fit_stats)
+  if (!is.null(nested_stats)) {
+    validate_nested_stats(nested_stats)
+  }
+  # Q3 — auto-inject "beta" right after "B" when standardized != "none"
+  # AND beta is not already requested. Done after validation so the
+  # reject-beta-without-method branch fires before the orchestrator
+  # mutates the user's show_columns.
+  if (!identical(standardized, "none") && !"beta" %in% show_columns) {
+    b_idx <- which(show_columns == "B")
+    show_columns <- if (length(b_idx)) {
+      append(show_columns, "beta", after = b_idx[1])
+    } else {
+      c(show_columns, "beta")
     }
   }
 
-  # Q1 — conflict warning when both names(list) AND model_labels supplied.
+  # Phase D — argument values (steps 13–24)
+  validate_ci_level(ci_level)
+  validate_boot_n(boot_n)
+  validate_logical_scalar(show_intercept, "show_intercept")
+  validate_logical_scalar(group_factor_levels, "group_factor_levels")
+  validate_logical_scalar(nested, "nested")
+  validate_digit_arg(digits, "digits")
+  validate_digit_arg(p_digits, "p_digits")
+  validate_digit_arg(effect_size_digits, "effect_size_digits")
+  validate_digit_arg(fit_digits, "fit_digits")
+  validate_digit_arg(ic_digits, "ic_digits")
+  validate_decimal_mark(decimal_mark)
+  validate_reference_label(reference_label)
+  validate_stars(stars)
+  validate_model_labels(model_labels, models)
+  validate_outcome_labels(outcome_labels, models)
+  validate_predictor_labels(labels, models)
+
+  # Phase E — cross-arg semantic warnings (no errors). The
+  # standardized × non-additive caveat is emitted later (after
+  # extracts) since it inspects each fit. Q1 / Q2 conflict warnings
+  # are runtime / orchestrator-only and emitted here.
   if (!is.null(model_labels) &&
       is.list(models) && !is.null(names(models)) &&
       all(nzchar(names(models)))) {
@@ -487,9 +521,6 @@ table_regression <- function(
       class = "spicy_ignored_arg"
     )
   }
-
-  # Q2 — conflict warning when show_intercept = FALSE renders
-  # intercept_position irrelevant.
   if (isFALSE(show_intercept) && !identical(intercept_position, "first")) {
     spicy_warn(
       c(
@@ -501,41 +532,19 @@ table_regression <- function(
     )
   }
 
-  # ---- Validation Phases B-E (best effort; errors are spicy_invalid_input)
-  # Recycling vcov / cluster across models per Q7
-  vcov_list <- if (is.list(vcov) && !is.null(names(vcov)) == FALSE &&
-                   length(vcov) == n_models) {
-    vcov
-  } else if (is.list(vcov)) {
-    if (length(vcov) != n_models) {
-      spicy_abort(
-        sprintf("`vcov` list length (%d) must equal number of models (%d).",
-                length(vcov), n_models),
-        class = "spicy_invalid_input"
-      )
-    }
-    vcov
-  } else {
-    rep(list(vcov), n_models)
-  }
-  cluster_list <- if (is.list(cluster) && length(cluster) == n_models) {
+  # Phase F — output-dependent resource validation (file paths,
+  # optional packages). Fires only for the selected output.
+  validate_output_resources(output, excel_path, word_path)
+
+  # ====================================================================
+  # End of validation cascade. Recycle vcov / cluster across models.
+  # ====================================================================
+
+  vcov_list <- if (is.list(vcov)) vcov else rep(list(vcov), n_models)
+  cluster_list <- if (is.list(cluster) && !is.atomic(cluster)) {
     cluster
   } else {
     rep(list(cluster), n_models)
-  }
-
-  # Auto-inject "beta" when standardized is set and beta is not requested
-  if (!identical(standardized, "none") && !"beta" %in% show_columns) {
-    show_columns <- c(show_columns[show_columns == "B"], "beta",
-                       show_columns[show_columns != "B"])
-  }
-  # Reject "beta" without method
-  if ("beta" %in% show_columns && identical(standardized, "none")) {
-    spicy_abort(
-      c("`\"beta\"` in `show_columns` requires `standardized != \"none\"`.",
-        "i" = "Pick a method: \"refit\", \"posthoc\", \"basic\", or \"smart\"."),
-      class = "spicy_invalid_input"
-    )
   }
 
   # Detect AME-Satterthwaite path activation (Q14b)

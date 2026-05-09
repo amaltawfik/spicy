@@ -300,3 +300,162 @@ test_that("stars validation — empty / unnamed name errors", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# ============================================================================
+# Polish round 3 — full Q21 validation cascade wired into orchestrator
+# ============================================================================
+
+test_that("vcov — unknown type errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, vcov = "HC99"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("vcov — CR* without cluster errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, vcov = "CR2"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("vcov — list length mismatch errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2), vcov = list("classical")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("ci_level — out of range errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, ci_level = 1.5),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, ci_level = 0),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("show_columns — unknown token errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, show_columns = c("B", "BOGUS")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("show_columns — empty errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, show_columns = character(0)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("show_fit_stats — unknown token errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, show_fit_stats = c("nobs", "nope")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("nested_stats — unknown token errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2), nested = TRUE,
+                     nested_stats = c("F", "BOGUS")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("digit args — non-positive integer errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, digits = -1L),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, p_digits = "three"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("decimal_mark — multi-character errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, decimal_mark = "..."),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("reference_label — empty string errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(fit, reference_label = ""),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("model_labels — length mismatch errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2), model_labels = "only_one"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("outcome_labels — length mismatch errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2), outcome_labels = "only_one"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("labels — unknown predictor key errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit,
+                     labels = c("nonexistent_predictor" = "Foo")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("nested = TRUE — different nobs errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  # Drop one row to force nobs mismatch
+  m2 <- lm(mpg ~ wt + cyl, data = mt[-1, ])
+  expect_error(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("nested = TRUE — different DV errors spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(hp ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, output = "excel",
+                     excel_path = "/no/such/directory/out.xlsx"),
+    class = "spicy_invalid_input"
+  )
+})

@@ -208,7 +208,15 @@ validate_nested_alignment <- function(models, nested) {
 validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   n_models <- length(models)
 
-  # Step 6: vcov list length
+  # Canonical vcov vocabulary (Q7). Validated upfront so an unknown
+  # type is caught with a clear error instead of letting `sandwich` /
+  # `clubSandwich` warn-and-fallback at compute time.
+  valid_vcov <- c("classical",
+                   paste0("HC", 0:5),
+                   paste0("CR", 0:3),
+                   "bootstrap", "jackknife")
+
+  # Step 6: vcov list length + element type
   if (is.list(vcov)) {
     if (length(vcov) != n_models) {
       spicy_abort(
@@ -248,6 +256,25 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         class = "spicy_invalid_input"
       )
     }
+  }
+
+  # Step 6b: vocabulary check (each element must be a known type)
+  vcov_check <- if (is.list(vcov)) unlist(vcov) else vcov
+  bad <- setdiff(vcov_check, valid_vcov)
+  if (length(bad) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Unknown `vcov` type(s): %s.",
+          paste(shQuote(bad), collapse = ", ")
+        ),
+        "i" = sprintf(
+          "Valid types: %s.",
+          paste(shQuote(valid_vcov), collapse = ", ")
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   # Step 7: cluster list length (only when an actual list, not an atomic vector)
