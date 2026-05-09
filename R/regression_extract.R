@@ -68,13 +68,23 @@ extract_lm_phase1 <- function(
   )
   coefs_long <- rbind(coefs_B, ref_rows)
 
-  # ---- HOOKS for Steps 4–6 ------------------------------------------------
-  # Step 4 (standardize_lm.R): if (!identical(standardized, "none")) {
-  #   beta_rows <- extract_beta_rows(fit, standardized, model_id, outcome,
-  #                                  vc, ci_level, ...)
-  #   coefs_long <- rbind(coefs_long, beta_rows)
-  # }
-  #
+  # ---- Standardised β rows (Step 4) ---------------------------------------
+  if (!identical(standardized, "none")) {
+    beta_rows <- extract_beta_rows(
+      fit = fit,
+      standardized = standardized,
+      vcov_type = vcov_type,
+      cluster = cluster,
+      ci_level = ci_level,
+      weights = weights,
+      boot_n = boot_n,
+      model_id = model_id,
+      outcome = outcome
+    )
+    coefs_long <- rbind(coefs_long, beta_rows)
+  }
+
+  # ---- HOOKS for Steps 5–6 ------------------------------------------------
   # Step 5 (regression_ame.R):  if ("AME" %in% show_columns) {
   #   ame_rows <- extract_ame_rows(fit, vc, vcov_type, cluster, ci_level,
   #                                use_ame_satterthwaite, model_id, outcome)
