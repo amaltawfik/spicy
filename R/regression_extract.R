@@ -84,13 +84,24 @@ extract_lm_phase1 <- function(
     coefs_long <- rbind(coefs_long, beta_rows)
   }
 
-  # ---- HOOKS for Steps 5–6 ------------------------------------------------
-  # Step 5 (regression_ame.R):  if ("AME" %in% show_columns) {
-  #   ame_rows <- extract_ame_rows(fit, vc, vcov_type, cluster, ci_level,
-  #                                use_ame_satterthwaite, model_id, outcome)
-  #   coefs_long <- rbind(coefs_long, ame_rows)
-  # }
-  #
+  # ---- AME rows (Step 5) --------------------------------------------------
+  if ("AME" %in% show_columns) {
+    ame_rows <- extract_ame_rows(
+      fit = fit,
+      vc = vc,
+      vcov_type = vcov_type,
+      cluster = cluster,
+      ci_level = ci_level,
+      use_ame_satterthwaite = use_ame_satterthwaite,
+      model_id = model_id,
+      outcome = outcome
+    )
+    if (nrow(ame_rows) > 0L) {
+      coefs_long <- rbind(coefs_long, ame_rows)
+    }
+  }
+
+  # ---- HOOK for Step 6 ---------------------------------------------------
   # Step 6 (regression_partial.R): if (any(c("partial_f2", "partial_eta2",
   #                                           "partial_omega2") %in% show_columns)) {
   #   partial_rows <- extract_partial_effects(fit, ci_level, model_id, outcome)
