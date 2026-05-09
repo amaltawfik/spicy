@@ -94,12 +94,23 @@ align_extracts <- function(
     character(1)
   )
 
+  # Per-model exponentiate headers ("OR" / "IRR" / "HR" / ...) when
+  # the user asked for `exponentiate = TRUE` AND the model is a
+  # non-identity-link glm. NA for models where exp() was not
+  # applied — the renderer keeps the default "B" header for those.
+  model_ids <- vapply(extracts, function(e) e$model_id, character(1))
+  exp_headers_auto <- vapply(extracts, function(e) {
+    if (isTRUE(e$exp_applied)) e$exp_header else NA_character_
+  }, character(1))
+  names(exp_headers_auto) <- model_ids
+
   list(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
     term_order = term_order,
     factor_ref_levels = factor_ref_levels,
     outcome_labels_auto = outcome_labels_auto,
+    exp_headers_auto = exp_headers_auto,
     n_models = length(extracts)
   )
 }

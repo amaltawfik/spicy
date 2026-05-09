@@ -197,6 +197,21 @@
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`. See the *Standardised coefficients*
 #'   section.
+#' @param exponentiate Logical. When `TRUE` and the model is a
+#'   `glm()` with a non-identity link, the displayed coefficient
+#'   (`B`), confidence interval bounds, and standard error are
+#'   transformed to the response scale via `exp()`. The column
+#'   header is rebranded per family / link: `OR` for binomial(logit),
+#'   `IRR` for poisson(log), `HR` for binomial(cloglog), `RR` for
+#'   binomial(log), `MR` for Gamma(log), and the generic `exp(B)`
+#'   otherwise. The standard error follows the delta-method
+#'   approximation `SE_OR = OR × SE_log-odds` (Stata `logit, or`,
+#'   `parameters::model_parameters()`); the test statistic and the
+#'   p-value remain on the link scale (both are invariant under
+#'   monotone transformation). Default `FALSE` (parameters /
+#'   modelsummary convention — explicit opt-in over silent transform).
+#'   Has no effect on `lm()` fits or on identity-link glm; emits a
+#'   `spicy_ignored_arg` warning in those cases.
 #' @param p_adjust Multiple-comparison adjustment method applied to
 #'   the family of estimated coefficient p-values within each model
 #'   (intercept and reference rows excluded by convention). One of
@@ -463,6 +478,7 @@ table_regression <- function(
   ci_level = 0.95,
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  exponentiate = FALSE,
   p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
   keep = NULL,
@@ -571,10 +587,32 @@ table_regression <- function(
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
 
+  # exponentiate: warn if requested but no glm-with-non-identity-link
+  # is present — the transform would be a no-op everywhere.
+  if (isTRUE(exponentiate)) {
+    has_non_identity_glm <- any(vapply(models, function(f) {
+      if (!inherits(f, "glm")) return(FALSE)
+      !identical(stats::family(f)$link, "identity")
+    }, logical(1)))
+    if (!has_non_identity_glm) {
+      spicy_warn(
+        c(
+          "`exponentiate = TRUE` has no effect on `lm()` or identity-link `glm()` fits.",
+          "i" = paste0(
+            "exp() is only applied to glm fits whose link is non-",
+            "identity (logit, probit, log, cloglog, inverse). Drop ",
+            "the argument or remove the check."
+          )
+        ),
+        class = "spicy_ignored_arg"
+      )
+    }
+  }
+
   # gaussian-glm caveat: the user fitted glm() with the default
   # (gaussian / identity) family, which is mathematically equivalent
   # to lm() but loses access to the variance-explained effect sizes
-  # (partial_f2 / η² / ω²) and to the AME-Satterthwaite path A.
+  # (partial_f2 / \u03B7\u00B2 / \u03C9\u00B2) and to the AME-Satterthwaite path A.
   # Following the "transparency over rejection" rule, we accept the
   # fit and surface the suggestion via spicy_caveat.
   for (i in seq_along(models)) {
@@ -592,7 +630,7 @@ table_regression <- function(
             "i" = paste0(
               "This is mathematically equivalent to `lm()`. Refitting ",
               "with `lm()` gives access to the variance-explained ",
-              "partial effect sizes (partial_f2 / η² / ω²) and to the ",
+              "partial effect sizes (partial_f2 / \u03B7\u00B2 / \u03C9\u00B2) and to the ",
               "Satterthwaite-corrected AME path under CR* variance, ",
               "neither of which is defined for the glm route."
             )
@@ -619,6 +657,7 @@ table_regression <- function(
   validate_stars(stars)
   validate_p_adjust(p_adjust)
   validate_keep_drop(keep, drop)
+  validate_logical_scalar(exponentiate, "exponentiate")
   validate_model_labels(model_labels, models)
   validate_outcome_labels(outcome_labels, models)
   validate_predictor_labels(labels, models)
@@ -706,6 +745,7 @@ table_regression <- function(
       boot_n = boot_n,
       ci_level = ci_level,
       standardized = standardized,
+      exponentiate = exponentiate,
       show_columns = show_columns,
       show_fit_stats = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,

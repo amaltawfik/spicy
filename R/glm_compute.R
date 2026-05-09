@@ -182,8 +182,14 @@ compute_pseudo_r2_mcfadden <- function(fit) {
   if (grepl("^quasi", fam$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  null_fit <- tryCatch(stats::update(fit, . ~ 1),
-                        error = function(e) NULL)
+  # Pass `data` explicitly so the refit doesn't rely on lexical-
+  # scope lookup of the original data frame; the helper is called
+  # from internal code where the user's `data` symbol is not in
+  # scope, which would otherwise produce a silent NA.
+  null_fit <- tryCatch(
+    stats::update(fit, . ~ 1, data = stats::model.frame(fit)),
+    error = function(e) NULL
+  )
   if (is.null(null_fit)) return(NA_real_)
   ll_null <- tryCatch(as.numeric(stats::logLik(null_fit)),
                        error = function(e) NA_real_)
@@ -199,8 +205,14 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
   if (grepl("^quasi", fam$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  null_fit <- tryCatch(stats::update(fit, . ~ 1),
-                        error = function(e) NULL)
+  # Pass `data` explicitly so the refit doesn't rely on lexical-
+  # scope lookup of the original data frame; the helper is called
+  # from internal code where the user's `data` symbol is not in
+  # scope, which would otherwise produce a silent NA.
+  null_fit <- tryCatch(
+    stats::update(fit, . ~ 1, data = stats::model.frame(fit)),
+    error = function(e) NULL
+  )
   if (is.null(null_fit)) return(NA_real_)
   ll_null <- tryCatch(as.numeric(stats::logLik(null_fit)),
                        error = function(e) NA_real_)
@@ -214,6 +226,45 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
   if (!is.finite(upper) || upper <= 0) return(NA_real_)
   cox_snell / upper
 }
+
+# ---- exp() transform for response-scale display --------------------------
+
+# Apply exp() to B-row (and beta-row) estimates + CI bounds, and a
+# delta-method approximation to the SE. The test statistic and the
+# p-value are invariant under monotone transformation and stay on
+# the link scale (matches Stata `logit, or` / SPSS exp(B) / SAS
+# OR convention).
+#
+# Reference rows (em-dash) and singular coefs (NA) pass through
+# untouched. The "(Intercept)" row IS exponentiated because exp()
+# of the intercept is the baseline odds / rate / ... — meaningful
+# in its own right (Stata reports it; SPSS reports it; APA Manual 7
+# §6.46 example).
+apply_exponentiate_to_coefs <- function(coefs) {
+  if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
+  is_b_or_beta <- coefs$estimate_type %in% c("B", "beta")
+  is_eligible <- is_b_or_beta &
+                   !coefs$is_singular &
+                   !coefs$is_reference &
+                   !is.na(coefs$estimate)
+  if (!any(is_eligible)) return(coefs)
+
+  rows <- which(is_eligible)
+  est_orig <- coefs$estimate[rows]
+  se_orig  <- coefs$se[rows]
+
+  exp_est <- exp(est_orig)
+  coefs$estimate[rows] <- exp_est
+  coefs$ci_low[rows]   <- exp(coefs$ci_low[rows])
+  coefs$ci_high[rows]  <- exp(coefs$ci_high[rows])
+  # Delta-method: Var(g(X)) ≈ (g'(X))² × Var(X) ; for g = exp,
+  # g'(X) = exp(X), so SE_exp = exp(B) × SE_logit.
+  coefs$se[rows]       <- exp_est * se_orig
+  # Statistic (z) and p_value: invariant under exp() — the test of
+  # H0: B = 0 ↔ H0: exp(B) = 1 has the same z and p. Leave as-is.
+  coefs
+}
+
 
 compute_pseudo_r2_tjur <- function(fit) {
   if (!inherits(fit, "glm")) return(NA_real_)

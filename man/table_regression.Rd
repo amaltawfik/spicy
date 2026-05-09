@@ -11,6 +11,7 @@ table_regression(
   ci_level = 0.95,
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  exponentiate = FALSE,
   p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
   keep = NULL,
@@ -20,7 +21,7 @@ table_regression(
   group_factor_levels = TRUE,
   reference_style = c("row", "annotation"),
   reference_label = "(ref.)",
-  show_fit_stats = c("nobs", "r2", "adj_r2"),
+  show_fit_stats = NULL,
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -75,6 +76,22 @@ AME, partial effect sizes). Default \code{0.95}.}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}. See the \emph{Standardised coefficients}
 section.}
+
+\item{exponentiate}{Logical. When \code{TRUE} and the model is a
+\code{glm()} with a non-identity link, the displayed coefficient
+(\code{B}), confidence interval bounds, and standard error are
+transformed to the response scale via \code{exp()}. The column
+header is rebranded per family / link: \code{OR} for binomial(logit),
+\code{IRR} for poisson(log), \code{HR} for binomial(cloglog), \code{RR} for
+binomial(log), \code{MR} for Gamma(log), and the generic \code{exp(B)}
+otherwise. The standard error follows the delta-method
+approximation \verb{SE_OR = OR × SE_log-odds} (Stata \verb{logit, or},
+\code{parameters::model_parameters()}); the test statistic and the
+p-value remain on the link scale (both are invariant under
+monotone transformation). Default \code{FALSE} (parameters /
+modelsummary convention — explicit opt-in over silent transform).
+Has no effect on \code{lm()} fits or on identity-link glm; emits a
+\code{spicy_ignored_arg} warning in those cases.}
 
 \item{p_adjust}{Multiple-comparison adjustment method applied to
 the family of estimated coefficient p-values within each model

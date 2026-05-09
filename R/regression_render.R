@@ -80,8 +80,11 @@ render_regression_table <- function(
   }
   label_map <- setNames(model_labels, model_ids)
   stars_map <- resolve_stars_thresholds(stars)
-  col_spec <- build_column_spec(show_columns, model_ids, label_map,
-                                ci_level = ci_level)
+  col_spec <- build_column_spec(
+    show_columns, model_ids, label_map,
+    ci_level = ci_level,
+    model_exp_headers = aligned$exp_headers_auto
+  )
 
   # One render row per unique term (in canonical order).
   term_meta <- unique(coefs[, c("term", "order_idx", "is_reference",
@@ -216,8 +219,15 @@ render_regression_table <- function(
 # `model_ids`     : vector of model IDs (long format keys)
 # `label_map`     : named character vector mapping model_id → label
 build_column_spec <- function(show_columns, model_ids, label_map,
-                              ci_level = 0.95) {
+                              ci_level = 0.95,
+                              model_exp_headers = NULL) {
   ci_pct <- formatC(ci_level * 100, format = "g")
+  if (is.null(model_exp_headers)) {
+    model_exp_headers <- setNames(
+      rep(NA_character_, length(model_ids)),
+      model_ids
+    )
+  }
   base <- list(
     B              = list(estimate_type = "B",
                           fields = "estimate",
@@ -260,13 +270,22 @@ build_column_spec <- function(show_columns, model_ids, label_map,
   out <- list()
   for (m_id in model_ids) {
     m_lbl <- label_map[[m_id]]
+    exp_hdr <- model_exp_headers[[m_id]]
     for (tk in show_columns) {
       desc <- base[[tk]]
       if (is.null(desc)) next
-      header <- if (nzchar(m_lbl)) {
-        paste0(m_lbl, ": ", desc$header_short)
+      # Per-model B-header rebrand under exponentiate (Step 2 / glm).
+      header_short <- if (identical(tk, "B") &&
+                            !is.na(exp_hdr) &&
+                            nzchar(exp_hdr)) {
+        exp_hdr
       } else {
         desc$header_short
+      }
+      header <- if (nzchar(m_lbl)) {
+        paste0(m_lbl, ": ", header_short)
+      } else {
+        header_short
       }
       out[[length(out) + 1L]] <- list(
         col_name = make_unique_col_name(out, header),

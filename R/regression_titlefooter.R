@@ -90,6 +90,7 @@ build_regression_footer <- function(
   themes <- list(
     build_vcov_footer_block(extracts),
     build_ame_satterthwaite_footer_block(extracts, show_columns),
+    build_exponentiate_footer_block(extracts),
     build_standardized_caveat_footer_block(extracts, standardized),
     build_p_adjust_footer_block(extracts, p_adjust),
     build_stars_footer_block(stars),
@@ -262,6 +263,43 @@ build_singular_footer_block <- function(extracts) {
     "Rank-deficient model(s) ",
     paste(sprintf("Model %d", affected), collapse = ", "),
     ": dropped coefficient(s) shown as \u2014."
+  )
+}
+
+
+# ---- Theme: exponentiate (Q2 / Step 2 glm) -------------------------------
+
+# Footer note when at least one extract had its B / beta rows
+# exponentiated. Names the family-specific label (OR / IRR / HR / RR
+# / MR / exp(B)) per Stata `logit, or` convention. The per-family
+# qualifier appears only when MULTIPLE distinct headers are in
+# play (e.g., logit + poisson side by side ⇒ "OR / IRR (per
+# family)"); a single family — even with a non-exponentiated lm
+# alongside — uses the unqualified header.
+build_exponentiate_footer_block <- function(extracts) {
+  if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
+  applied <- vapply(extracts, function(e) isTRUE(e$exp_applied),
+                    logical(1))
+  if (!any(applied)) return(NULL)
+  hdrs <- unique(vapply(
+    extracts[applied], function(e) e$exp_header, character(1)
+  ))
+  if (length(hdrs) == 1L) {
+    hdr <- hdrs[1L]
+    return(sprintf(
+      paste0(
+        "Coefficients exponentiated and displayed as %s; CI bounds ",
+        "exponentiated; SE delta-method approximation: ",
+        "SE_%s = %s \u00D7 SE_link."
+      ),
+      hdr, hdr, hdr
+    ))
+  }
+  paste0(
+    "Coefficients exponentiated and displayed as ",
+    paste(hdrs, collapse = " / "),
+    " (per family); CI bounds exponentiated; SE delta-method ",
+    "approximation: SE_exp = exp(B) \u00D7 SE_link."
   )
 }
 

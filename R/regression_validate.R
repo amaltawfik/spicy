@@ -13,17 +13,17 @@
 # Q9). Each step is a separate `validate_*()` helper, called in
 # deterministic order by table_regression() itself.
 #
-# Phase A — input class            (steps 1–3)
-# Phase B — multi-model alignment  (steps 4–8)
-# Phase C — vocabulary tokens      (steps 9–12)
-# Phase D — argument values        (steps 13–24)
-# Phase E — cross-arg semantic     (steps 25–26, warnings only)
-# Phase F — output-dependent       (steps 27–29)
+# Phase A \u2014 input class            (steps 1–3)
+# Phase B \u2014 multi-model alignment  (steps 4–8)
+# Phase C \u2014 vocabulary tokens      (steps 9–12)
+# Phase D \u2014 argument values        (steps 13–24)
+# Phase E \u2014 cross-arg semantic     (steps 25–26, warnings only)
+# Phase F \u2014 output-dependent       (steps 27–29)
 
 
 # ---- Token vocabularies (canonical) ---------------------------------------
 
-# Phase 1 lm token vocabularies. Match dev/table_regression_design.md §4.
+# Phase 1 lm token vocabularies. Match dev/table_regression_design.md \u00A74.
 # Centralised here so validators, the rendering layer, and the test suite
 # share a single source of truth.
 .regression_tokens <- list(
@@ -39,7 +39,7 @@
     "nobs", "weighted_nobs",
     # Variance-explained (lm only)
     "r2", "adj_r2", "omega2",
-    # Pseudo-R² family (glm only)
+    # Pseudo-R\u00B2 family (glm only)
     "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
     "sigma", "rmse",
     "f2",
@@ -54,7 +54,7 @@
 )
 
 
-# ---- Phase A — input class ------------------------------------------------
+# ---- Phase A \u2014 input class ------------------------------------------------
 
 # Steps 1–3: validate `models` is lm OR list of lm; aggregate-fail on
 # any non-lm position.
@@ -99,7 +99,7 @@ validate_models_input <- function(models) {
   # Step 1c: when the list is named, names must be unique. Duplicate
   # names would silently collide in the long-format model_id key,
   # causing one fit to overwrite the other in extract / align /
-  # render — a silent data loss that's worth catching upfront.
+  # render \u2014 a silent data loss that's worth catching upfront.
   nms <- names(models)
   if (!is.null(nms) && any(nzchar(nms))) {
     dupes <- unique(nms[duplicated(nms) & nzchar(nms)])
@@ -182,7 +182,7 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
 }
 
 
-# ---- Phase B — multi-model alignment --------------------------------------
+# ---- Phase B \u2014 multi-model alignment --------------------------------------
 
 # Steps 4–5: nested = TRUE requires identical nobs and identical DV
 validate_nested_alignment <- function(models, nested) {
@@ -385,7 +385,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
 }
 
 
-# ---- Phase C — vocabulary token validation --------------------------------
+# ---- Phase C \u2014 vocabulary token validation --------------------------------
 
 # Step 9: show_columns (+ Step 12: beta requires standardized != "none")
 validate_show_columns <- function(show_columns, standardized) {
@@ -421,10 +421,10 @@ validate_show_columns <- function(show_columns, standardized) {
 # error second when the typo is absent.
 #
 # Substitution policy (closest analog per discipline convention):
-#   * lm  ⟶ no  partial_chi2          (use partial_f2 / η² / ω²)
+#   * lm  ⟶ no  partial_chi2          (use partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
 #   * lm  ⟶ no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
-#   * glm ⟶ no  partial_f2 / η² / ω²  (use partial_chi2; Long & Freese
-#                                      2014 §3.5; Allison "TYPE3")
+#   * glm ⟶ no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Long & Freese
+#                                      2014 \u00A73.5; Allison "TYPE3")
 #   * glm ⟶ no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
 validate_class_appropriate_tokens <- function(models,
@@ -438,7 +438,7 @@ validate_class_appropriate_tokens <- function(models,
   all_lm  <- any_lm_only && !any_glm
 
   # Variance-explained partial tokens. Reject only when ALL models
-  # are glm — in mixed sets, the renderer em-dashes glm rows and
+  # are glm \u2014 in mixed sets, the renderer em-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
     bad <- intersect(show_columns,
@@ -451,11 +451,11 @@ validate_class_appropriate_tokens <- function(models,
             paste(shQuote(bad), collapse = ", ")
           ),
           "i" = paste0(
-            "Variance-explained partition (R² / partial f² / η² / ω²) ",
+            "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
             "does not apply outside the least-squares framework. The ",
             "`glm`-appropriate analog is `partial_chi2` (partial ",
             "likelihood-ratio chi-square via `drop1(test = \"LRT\")`; ",
-            "Long & Freese 2014 §3.5; Allison \"TYPE3\")."
+            "Long & Freese 2014 \u00A73.5; Allison \"TYPE3\")."
           ),
           "i" = "Replace with `\"partial_chi2\"` or drop the token."
         ),
@@ -472,7 +472,7 @@ validate_class_appropriate_tokens <- function(models,
             paste(shQuote(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
-            "Use the pseudo-R² family instead: `\"pseudo_r2_mcfadden\"` ",
+            "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
             "(McFadden 1974), `\"pseudo_r2_nagelkerke\"` (Nagelkerke ",
             "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only)."
           )
@@ -490,7 +490,7 @@ validate_class_appropriate_tokens <- function(models,
           "Token \"partial_chi2\" in `show_columns` is for `glm` models only.",
           "i" = paste0(
             "For `lm`, use `\"partial_f2\"`, `\"partial_eta2\"`, or ",
-            "`\"partial_omega2\"` — the variance-explained analogs."
+            "`\"partial_omega2\"` \u2014 the variance-explained analogs."
           )
         ),
         class = "spicy_invalid_input"
@@ -518,7 +518,7 @@ validate_class_appropriate_tokens <- function(models,
 
 
 # Step 10: show_fit_stats. Empty character or NULL means "drop the
-# fit-stats footer block" — a legitimate rendering choice (some
+# fit-stats footer block" \u2014 a legitimate rendering choice (some
 # users prefer the body alone). show_columns has no analogous
 # escape hatch because a table with zero data columns is
 # nonsensical.
@@ -593,11 +593,11 @@ validate_token_vector <- function(x, valid, arg) {
 }
 
 
-# ---- Phase D — argument value validation ----------------------------------
+# ---- Phase D \u2014 argument value validation ----------------------------------
 
 # Steps 13–14: enum args. table_regression() invokes match.arg() directly
 # on `standardized`, `intercept_position`, `align`, `output`,
-# `reference_style` — match.arg() raises a clear base-R error on
+# `reference_style` \u2014 match.arg() raises a clear base-R error on
 # invalid values. No spicy-specific helper needed.
 
 # Step 15: digit args (non-negative integer scalar). Reused for
@@ -689,7 +689,7 @@ validate_p_adjust <- function(p_adjust) {
 
 # `keep` / `drop` validation. Each is NULL (no filter) or a non-empty
 # character vector with no NA / empty-string elements. They are
-# mutually exclusive — supplying both raises an error rather than
+# mutually exclusive \u2014 supplying both raises an error rather than
 # silently picking one.
 validate_keep_drop <- function(keep, drop) {
   for (pair in list(c("keep", "keep"), c("drop", "drop"))) {
@@ -918,7 +918,7 @@ validate_predictor_labels <- function(labels, models) {
 }
 
 
-# ---- Phase E — cross-arg semantic warnings (no errors) --------------------
+# ---- Phase E \u2014 cross-arg semantic warnings (no errors) --------------------
 
 # Step 25: standardized != "none" × non-additive terms → spicy_caveat warning
 emit_standardized_caveat_if_needed <- function(models, standardized) {
@@ -1011,7 +1011,7 @@ detect_ame_satterthwaite_path <- function(vcov, show_columns) {
 }
 
 
-# ---- Phase F — output-dependent resource validation -----------------------
+# ---- Phase F \u2014 output-dependent resource validation -----------------------
 
 # Steps 27–29: file paths and package availability for the selected
 # output format. Fires only when the user picked the corresponding
@@ -1102,7 +1102,7 @@ validate_output_resources <- function(output, excel_path, word_path) {
       # nocov end
     }
     if (!clipr::clipr_available()) {
-      # nocov start — system clipboard is environment-dependent.
+      # nocov start \u2014 system clipboard is environment-dependent.
       spicy_abort(
         "Clipboard is not available on this system.",
         class = "spicy_unsupported"

@@ -32,6 +32,7 @@ extract_lm_phase1 <- function(
   boot_n = 1000L,
   ci_level = 0.95,
   standardized = "none",
+  exponentiate = FALSE,
   show_columns = c("B", "SE", "CI", "p"),
   show_fit_stats = c("nobs", "r2", "adj_r2"),
   use_ame_satterthwaite = FALSE,
@@ -100,6 +101,18 @@ extract_lm_phase1 <- function(
     coefs_long <- rbind(coefs_long, beta_rows)
   }
 
+  # ---- Exponentiate B / beta rows for response-scale display --------------
+  # Only meaningful for glm with non-identity link. The transform is
+  # applied here so AME / partial rows (which follow) are unaffected
+  # — AME is already on response scale by construction.
+  is_glm <- inherits(fit, "glm")
+  family_info <- if (is_glm) spicy_glm_family_info(fit) else NULL
+  exp_applied <- isTRUE(exponentiate) && is_glm &&
+                   !identical(family_info$link, "identity")
+  if (exp_applied) {
+    coefs_long <- apply_exponentiate_to_coefs(coefs_long)
+  }
+
   # ---- AME rows (Step 5) --------------------------------------------------
   if ("AME" %in% show_columns) {
     ame_rows <- extract_ame_rows(
@@ -146,15 +159,9 @@ extract_lm_phase1 <- function(
   has_singular <- any(is_singular_vec)
 
   # ---- Return structure ---------------------------------------------------
-  # Family / link descriptor for glm; NULL for lm. Drives the
-  # family-aware title, the exponentiate column-header rebrand,
-  # and the gaussian-glm caveat.
-  family_info <- if (inherits(fit, "glm")) {
-    spicy_glm_family_info(fit)
-  } else {
-    NULL
-  }
-
+  # `family_info` was computed earlier (before the exponentiate
+  # branch). For lm it stayed NULL and we attach a placeholder
+  # title_prefix.
   list(
     model_id = model_id,
     outcome = outcome,
@@ -169,9 +176,11 @@ extract_lm_phase1 <- function(
     has_weights = !is.null(weights) && length(unique(weights)) > 1L,
     weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
     nobs = stats::nobs(fit),
-    is_glm = inherits(fit, "glm"),
+    is_glm = is_glm,
     family_info = family_info,
-    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Regression"
+    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Regression",
+    exp_applied = exp_applied,
+    exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_
   )
 }
 
