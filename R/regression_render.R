@@ -315,24 +315,36 @@ format_cell_value <- function(long_row, cs, stars_map,
 format_term_label <- function(term_row, reference_label, reference_style,
                                group_factor_levels, labels) {
   term <- term_row$term
-  # Apply user-provided labels first
-  if (!is.null(labels) && term %in% names(labels)) {
-    term <- labels[[term]]
-  }
 
   if (isTRUE(term_row$is_intercept)) {
-    return("(Intercept)")
+    return(resolve_label("(Intercept)", labels))
   }
   if (isTRUE(term_row$is_reference)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
-    indent <- if (isTRUE(group_factor_levels)) "  " else ""
-    return(paste0(indent, lvl, " ", reference_label))
+    if (isTRUE(group_factor_levels)) {
+      # Grouped: factor header carries var name → indent + bare level.
+      return(paste0("  ", lvl, " ", reference_label))
+    }
+    # Flat: no factor header → render as <var><level> (matching the
+    # coef-name convention used for non-reference dummies).
+    ft <- term_row$factor_term
+    flat_lbl <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
+    return(paste0(flat_lbl, " ", reference_label))
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
     return(paste0("  ", lvl))
+  }
+  resolve_label(term, labels)
+}
+
+# Look up a user-provided label for a term name; fall back to the
+# raw term string when no override is given.
+resolve_label <- function(term, labels) {
+  if (!is.null(labels) && term %in% names(labels)) {
+    return(labels[[term]])
   }
   term
 }

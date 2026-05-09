@@ -247,12 +247,11 @@ test_that("singular block — multi-model lists affected indices", {
 # Footer — nested declaration (Q6)
 # ============================================================================
 
-test_that("nested block — emitted only when nested = TRUE", {
+test_that("nested block — always NULL: the comparison block is self-explanatory", {
+  # Phase 1 returns NULL in both branches; the dedicated
+  # "── Model comparison ──" block from Step 9 already announces itself.
   expect_null(spicy:::build_nested_footer_block(FALSE))
-  expect_match(
-    spicy:::build_nested_footer_block(TRUE),
-    "Hierarchical comparison"
-  )
+  expect_null(spicy:::build_nested_footer_block(TRUE))
 })
 
 

@@ -201,6 +201,28 @@ test_that("render — user-provided labels rename term column", {
   expect_true("Cylinders:" %in% rt$Variable)
 })
 
+test_that("render — labels also rename the intercept", {
+  aligned <- mk_aligned(list(mpg ~ wt), list("M1"))
+  rt <- spicy:::render_regression_table(
+    aligned,
+    labels = c("(Intercept)" = "Constant")
+  )
+  expect_true("Constant" %in% rt$Variable)
+  expect_false("(Intercept)" %in% rt$Variable)
+})
+
+test_that("render — flat layout: factor reference uses <var><level> form", {
+  aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"),
+                        group_factor_levels = FALSE)
+  rt <- spicy:::render_regression_table(aligned,
+                                        group_factor_levels = FALSE)
+  # Reference row should be "cyl4 (ref.)" — matching the coef-name
+  # convention used for the dummy rows ("cyl6", "cyl8").
+  expect_true(any(grepl("^cyl4 \\(ref\\.\\)$", rt$Variable)))
+  # Should NOT be the orphan "4 (ref.)" (without the factor prefix).
+  expect_false(any(grepl("^4 \\(ref\\.\\)$", rt$Variable)))
+})
+
 
 # ============================================================================
 # Decimal mark (European convention)

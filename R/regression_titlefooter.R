@@ -241,10 +241,13 @@ build_singular_footer_block <- function(extracts) {
 
 # ---- Theme: nested declaration (Q6) --------------------------------------
 
+# Returns NULL by design: the nested comparison block emitted by
+# format_nested_comparison_footer() (Step 9) is self-explanatory under
+# its "── Model comparison ──" header. Adding a paragraph that
+# announces it would just be redundant noise above the block. The
+# function is kept as a hook so Phase 2/3 can reintroduce
+# class-specific declarations (LRT for glm, REML for merMod, etc.)
+# without changing the dispatcher.
 build_nested_footer_block <- function(nested) {
-  if (!isTRUE(nested)) return(NULL)
-  paste0(
-    "Hierarchical comparison: each model is compared to the previous ",
-    "via likelihood ratio / F-change (see comparison block)."
-  )
+  NULL
 }
