@@ -632,3 +632,81 @@ test_that("reference_style = 'annotation' — works with multiple factors", {
   expect_true(any(grepl("^cyl: \\[ref: 4\\]$",  out$Variable)))
   expect_true(any(grepl("^gear: \\[ref: 3\\]$", out$Variable)))
 })
+
+
+# ============================================================================
+# Polish round 6 — no-intercept formula edge case (y ~ 0 + x)
+# ============================================================================
+
+test_that("no-intercept formula — first level of factor is a real coef, no phantom ref row", {
+  fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
+  out <- table_regression(fit)
+  # No "(ref.)" suffix anywhere — all 3 cyl levels are fitted coefs
+  expect_false(any(grepl("\\(ref\\.\\)", out$Variable)))
+  # cyl4 / cyl6 / cyl8 all displayed (indented under "cyl:")
+  expect_true(any(grepl("^  4$", out$Variable)))
+  expect_true(any(grepl("^  6$", out$Variable)))
+  expect_true(any(grepl("^  8$", out$Variable)))
+  # No standalone "cyl4" row outside the factor group
+  expect_false(any(grepl("^cyl4$", out$Variable)))
+})
+
+test_that("no-intercept formula — tidy returns all factor coefs", {
+  fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
+  td <- broom::tidy(table_regression(fit))
+  # Expect 4 B rows (wt, cyl4, cyl6, cyl8)
+  b_rows <- td[td$estimate_type == "B", ]
+  expect_equal(nrow(b_rows), 4L)
+  expect_setequal(b_rows$term, c("wt", "cyl4", "cyl6", "cyl8"))
+  # cyl4 estimate is real, NOT NA
+  expect_true(is.finite(b_rows$estimate[b_rows$term == "cyl4"]))
+  # No is_intercept = TRUE row
+  expect_false(any(td$is_intercept))
+})
+
+test_that("no-intercept formula — alt syntax 'y ~ x - 1' is equivalent", {
+  fit_a <- lm(mpg ~ 0 + wt, data = mt)
+  fit_b <- lm(mpg ~ wt - 1, data = mt)
+  out_a <- table_regression(fit_a)
+  out_b <- table_regression(fit_b)
+  expect_equal(out_a$B, out_b$B)
+})
+
+test_that("no-intercept formula — works with multi-model nested lookalike", {
+  m_with_int <- lm(mpg ~ wt + cyl, data = mt)
+  m_no_int   <- lm(mpg ~ 0 + wt + cyl, data = mt)
+  # Side-by-side display (NOT nested — these aren't nested in the
+  # likelihood sense). Validate that the rendering does not crash.
+  out <- table_regression(list(m_with_int, m_no_int))
+  expect_s3_class(out, "spicy_regression_table")
+  # Reference-row from M1 still shown for M2 the same factor group
+  expect_true(any(grepl("\\(ref\\.\\)", out$Variable)))
+})
+
+
+# ============================================================================
+# Snapshot tests — golden output for the most common rendering paths
+# ============================================================================
+
+test_that("snapshot — single lm default rendering", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  txt <- paste(capture.output(print(out)), collapse = "\n")
+  expect_snapshot(cat(txt))
+})
+
+test_that("snapshot — multi-model with nested = TRUE comparison footer", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list(m1, m2), nested = TRUE)
+  txt <- paste(capture.output(print(out)), collapse = "\n")
+  expect_snapshot(cat(txt))
+})
+
+test_that("snapshot — standardized + stars + reference annotation", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, standardized = "refit", stars = TRUE,
+                          reference_style = "annotation")
+  txt <- paste(capture.output(print(out)), collapse = "\n")
+  expect_snapshot(cat(txt))
+})

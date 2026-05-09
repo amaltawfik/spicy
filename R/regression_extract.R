@@ -243,20 +243,28 @@ build_one_b_row <- function(nm, model_id, outcome,
 # For each factor predictor, emit one row per *reference* level with
 # is_reference = TRUE and NA stat values. The renderer turns these
 # into em-dashed cells under `reference_style = "row"`.
+#
+# In a no-intercept formula like `y ~ 0 + cyl`, R drops the reference
+# coding and fits ALL levels of the first factor as real coefficients
+# (cyl4, cyl6, cyl8 instead of just cyl6, cyl8). For those factors we
+# must NOT emit a reference-row placeholder — the level is a genuine
+# coef, not a baseline. The check `paste0(var, lvls[1]) %in%
+# names(coef(fit))` is true exactly when the first level was fitted
+# instead of dropped.
 build_reference_rows <- function(fit, model_id, outcome) {
   factor_terms <- detect_factor_terms(fit)
   if (length(factor_terms) == 0L) {
     return(empty_coefs_long())
   }
+  cf_names <- names(stats::coef(fit))
 
   rows <- list()
   for (ft in factor_terms) {
-    # Reference level = first level (R contr.treatment default)
     ref_lvl <- ft$reference_level
-    # Term name as it would appear in coef() if it weren't the ref:
-    # `<factor><level>`. We use that as the term identifier for
-    # consistency, but flag is_reference = TRUE.
     term_name <- paste0(ft$factor_term, ref_lvl)
+    if (term_name %in% cf_names) {
+      next                           # first level was fitted, not dropped
+    }
     rows[[length(rows) + 1L]] <- build_one_b_row(
       nm = term_name, model_id = model_id, outcome = outcome,
       estimate = NA_real_, se = NA_real_,
@@ -269,6 +277,9 @@ build_reference_rows <- function(fit, model_id, outcome) {
       factor_term = ft$factor_term,
       factor_level = ref_lvl
     )
+  }
+  if (length(rows) == 0L) {
+    return(empty_coefs_long())
   }
   do.call(rbind, rows)
 }
@@ -326,22 +337,21 @@ detect_factor_term_meta <- function(fit) {
 }
 
 # For a given coef name, find which factor it belongs to (if any) and
-# which non-reference level. The naming is `<var><level>` for
-# contr.treatment with no separator. Match by longest-prefix.
+# which level. The naming is `<var><level>` for contr.treatment with
+# no separator. Matches ANY factor level (not just non-reference) so
+# no-intercept formulas like `y ~ 0 + cyl` — where R fits all k
+# levels of the first factor as real coefs — get their first-level
+# coef recognised as belonging to the factor group.
 match_coef_to_factor <- function(coef_name, xlevels) {
   if (coef_name == "(Intercept)") return(NULL)
   # Skip interaction terms — they involve multiple factors / numerics
   if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
 
-  # Find the factor whose name is a prefix of the coef name AND whose
-  # remaining suffix is one of its non-reference levels.
   for (var in names(xlevels)) {
     if (startsWith(coef_name, var)) {
       candidate_level <- substring(coef_name, nchar(var) + 1L)
       lvls <- xlevels[[var]]
-      # Non-reference levels (skip the first)
-      non_ref_lvls <- lvls[-1L]
-      if (candidate_level %in% non_ref_lvls) {
+      if (candidate_level %in% lvls) {
         return(list(factor_term = var, factor_level = candidate_level))
       }
     }
