@@ -371,11 +371,22 @@ detect_factor_design_cols <- function(fit) {
 extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
                                ci_level, weights, boot_n,
                                model_id, outcome) {
-  std_table <- standardize_lm(
-    fit, method = standardized,
-    vcov_type = vcov_type, cluster = cluster,
-    ci_level = ci_level, weights = weights, boot_n = boot_n
-  )
+  # Dispatch on class: glm has its own 5-method standardise machinery
+  # (5th = "pseudo", Menard 2011 fully-standardised), with X-only
+  # algebraic semantics for the other four (Long & Freese 2014 §4.3.4).
+  std_table <- if (inherits(fit, "glm")) {
+    standardize_glm(
+      fit, method = standardized,
+      vcov_type = vcov_type, cluster = cluster,
+      ci_level = ci_level, weights = weights, boot_n = boot_n
+    )
+  } else {
+    standardize_lm(
+      fit, method = standardized,
+      vcov_type = vcov_type, cluster = cluster,
+      ci_level = ci_level, weights = weights, boot_n = boot_n
+    )
+  }
 
   factor_meta <- detect_factor_term_meta(fit)
   cf <- stats::coef(fit)

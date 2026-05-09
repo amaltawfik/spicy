@@ -100,12 +100,25 @@
 #'
 #' `standardized` controls the standardisation method when `"beta"`
 #' is in `show_columns`:
-#'   * `"refit"` — refit the model on z-scored predictors and
-#'     outcome (gold standard, Cohen et al. 2003).
-#'   * `"posthoc"` — post-hoc scaling `β = B × SD(X) / SD(Y)`.
-#'   * `"basic"` — like posthoc but factor dummies stay at 0/1.
-#'   * `"smart"` — Gelman (2008) recommendation: divide by `2 × SD`
-#'     for binary predictors.
+#'   * `"refit"` — refit the model on z-scored predictors. For `lm`,
+#'     the response is also z-scored (Cohen et al. 2003 gold standard);
+#'     for `glm`, the response stays on its observed scale and only
+#'     numeric predictors are standardised (Long & Freese 2014 §4.3.4
+#'     "x-standardization").
+#'   * `"posthoc"` — post-hoc scaling. For `lm`:
+#'     `β = B × SD(X) / SD(Y)`; for `glm`: X-only `β = B × SD(X)` (the
+#'     response side is undefined on the link scale —
+#'     `parameters` / `effectsize` convention).
+#'   * `"basic"` — like posthoc but factor-derived dummies are scaled
+#'     by their column SD (treated as numeric).
+#'   * `"smart"` — Gelman (2008) recommendation: divide binary
+#'     predictors by `2 × SD` instead of `SD`.
+#'   * `"pseudo"` — *glm only*. Menard (2004, 2011) fully-standardised
+#'     `β = B × SD(X) / SD(Y*)`, where `Y*` is the latent variable on
+#'     the link scale and
+#'     `SD(Y*) = sqrt(var(η̂) + var_link)` with `var_link` =
+#'     π²/3 (logit), 1 (probit), π²/6 (cloglog). Defined for binomial
+#'     families; non-binomial returns NA with a `spicy_caveat`.
 #'   * `"none"` (default) — no β computed.
 #'
 #' For models with interactions or transformed predictors (`I()`,
@@ -201,7 +214,9 @@
 #'   `1000L`.
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
-#'   `"basic"`, `"smart"`. See the *Standardised coefficients*
+#'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
+#'   (Menard 2011 fully-standardised); using it with `lm()` raises
+#'   `spicy_invalid_input`. See the *Standardised coefficients*
 #'   section.
 #' @param exponentiate Logical. When `TRUE` and the model is a
 #'   `glm()` with a non-identity link, the displayed coefficient
@@ -483,7 +498,7 @@ table_regression <- function(
   cluster = NULL,
   ci_level = 0.95,
   boot_n = 1000L,
-  standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
@@ -592,6 +607,32 @@ table_regression <- function(
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+
+  # `standardized = "pseudo"` (Menard 2011 fully-standardised) is glm
+  # only — it derives SD(Y*) from the link-scale latent variance,
+  # which is undefined for lm.
+  if (identical(standardized, "pseudo")) {
+    any_lm_only <- any(vapply(models, function(f) {
+      inherits(f, "lm") && !inherits(f, "glm")
+    }, logical(1)))
+    if (any_lm_only) {
+      spicy_abort(
+        c(
+          paste0(
+            "`standardized = \"pseudo\"` (Menard 2011 fully-",
+            "standardised) is defined for `glm` only."
+          ),
+          "i" = paste0(
+            "Use `standardized = \"refit\"` for `lm` (Cohen et al. ",
+            "2003 gold standard) or one of `\"posthoc\"` / ",
+            "`\"basic\"` / `\"smart\"` (algebraic scaling on the ",
+            "fitted model)."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
 
   # exponentiate: warn if requested but no glm-with-non-identity-link
   # is present — the transform would be a no-op everywhere.

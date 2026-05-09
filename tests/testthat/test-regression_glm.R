@@ -489,3 +489,159 @@ test_that("glm: partial_chi2 with intercept-only fit -> empty rows (no crash)", 
   td <- broom::tidy(out)
   expect_equal(sum(td$estimate_type == "partial_chi2"), 0L)
 })
+
+
+# ============================================================================
+# Step 4: standardize for glm - 5 methods (refit Long-Freese / posthoc / basic
+# / smart / pseudo Menard 2011)
+# ============================================================================
+
+test_that("glm refit: matches effectsize::standardize_parameters(method='refit')", {
+  skip_if_not_installed("effectsize")
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, standardized = "refit"))
+  beta <- td[td$estimate_type == "beta", ]
+  oracle <- effectsize::standardize_parameters(fit, method = "refit")
+  for (term_nm in c("mpg", "wt")) {
+    expect_equal(
+      beta$estimate[beta$term == term_nm],
+      oracle$Std_Coefficient[oracle$Parameter == term_nm],
+      tolerance = 1e-6,
+      info = paste("term =", term_nm)
+    )
+  }
+})
+
+test_that("glm posthoc: matches effectsize posthoc (X-only, no Y div)", {
+  skip_if_not_installed("effectsize")
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, standardized = "posthoc"))
+  beta <- td[td$estimate_type == "beta", ]
+  oracle <- effectsize::standardize_parameters(fit, method = "posthoc")
+  for (term_nm in c("mpg", "wt")) {
+    expect_equal(
+      beta$estimate[beta$term == term_nm],
+      oracle$Std_Coefficient[oracle$Parameter == term_nm],
+      tolerance = 1e-6
+    )
+  }
+})
+
+test_that("glm pseudo (Menard 2011): matches manual SD(Y*) calculation", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, standardized = "pseudo"))
+  beta <- td[td$estimate_type == "beta", ]
+  # Menard formula: SD(Y*) = sqrt(var(eta_hat) + pi^2/3) for binomial logit
+  eta <- predict(fit, type = "link")
+  sd_y_star <- sqrt(var(eta) + pi^2 / 3)
+  b <- coef(fit)
+  for (term_nm in c("mpg", "wt")) {
+    expected <- b[term_nm] * sd(mt[[term_nm]]) / sd_y_star
+    expect_equal(
+      beta$estimate[beta$term == term_nm],
+      unname(expected),
+      tolerance = 1e-12
+    )
+  }
+})
+
+test_that("glm pseudo: probit uses var_link = 1, cloglog uses pi^2/6", {
+  fit_pr <- glm(am ~ mpg, data = mt, family = binomial(link = "probit"))
+  td_pr <- broom::tidy(table_regression(fit_pr, standardized = "pseudo"))
+  beta_pr <- td_pr$estimate[td_pr$estimate_type == "beta" &
+                              td_pr$term == "mpg"]
+  eta_pr <- predict(fit_pr, type = "link")
+  sd_y_star_pr <- sqrt(var(eta_pr) + 1)        # probit: 1
+  expected_pr <- coef(fit_pr)["mpg"] * sd(mt$mpg) / sd_y_star_pr
+  expect_equal(beta_pr, unname(expected_pr), tolerance = 1e-12)
+
+  fit_cl <- glm(am ~ mpg, data = mt, family = binomial(link = "cloglog"))
+  td_cl <- broom::tidy(table_regression(fit_cl, standardized = "pseudo"))
+  beta_cl <- td_cl$estimate[td_cl$estimate_type == "beta" &
+                              td_cl$term == "mpg"]
+  eta_cl <- predict(fit_cl, type = "link")
+  sd_y_star_cl <- sqrt(var(eta_cl) + pi^2 / 6) # cloglog: pi^2/6 (Gumbel)
+  expected_cl <- coef(fit_cl)["mpg"] * sd(mt$mpg) / sd_y_star_cl
+  expect_equal(beta_cl, unname(expected_cl), tolerance = 1e-12)
+})
+
+test_that("glm pseudo: non-binomial returns NA + spicy_caveat", {
+  fit <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
+  caveat_seen <- FALSE
+  out <- withCallingHandlers(
+    table_regression(fit, standardized = "pseudo"),
+    spicy_caveat = function(c) {
+      caveat_seen <<- TRUE
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(caveat_seen)
+  td <- broom::tidy(out)
+  beta_rows <- td[td$estimate_type == "beta", ]
+  expect_true(all(is.na(beta_rows$estimate)))
+})
+
+test_that("glm: all 5 methods preserve p-value (linear rescaling invariance)", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  raw_td <- broom::tidy(table_regression(fit))
+  raw_p <- setNames(raw_td$p.value[raw_td$estimate_type == "B"],
+                    raw_td$term[raw_td$estimate_type == "B"])
+  for (m in c("refit", "posthoc", "basic", "smart", "pseudo")) {
+    td <- broom::tidy(table_regression(fit, standardized = m))
+    beta_p <- setNames(td$p.value[td$estimate_type == "beta"],
+                       td$term[td$estimate_type == "beta"])
+    for (term_nm in c("mpg", "wt")) {
+      expect_equal(unname(beta_p[term_nm]), unname(raw_p[term_nm]),
+                   tolerance = 1e-10,
+                   info = paste("method =", m, "term =", term_nm))
+    }
+  }
+})
+
+test_that("lm + standardized = 'pseudo' - rejected with hint to refit/posthoc", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, standardized = "pseudo"),
+    class = "spicy_invalid_input"
+  )
+  err <- tryCatch(
+    table_regression(fit, standardized = "pseudo"),
+    spicy_invalid_input = function(e) e
+  )
+  expect_match(conditionMessage(err), "glm.*only", perl = TRUE)
+  expect_match(conditionMessage(err), "refit", fixed = TRUE)
+})
+
+test_that("glm refit fallback: factor() in formula triggers spicy_fallback", {
+  # factor() in the formula prevents the refit on z-scored mf — should
+  # emit spicy_fallback and use posthoc (X-only) algebraic scaling.
+  fit <- glm(am ~ mpg + factor(cyl), data = mt, family = binomial)
+  fb_seen <- FALSE
+  out <- withCallingHandlers(
+    table_regression(fit, standardized = "refit"),
+    spicy_fallback = function(c) {
+      fb_seen <<- TRUE
+      invokeRestart("muffleWarning")
+    },
+    spicy_caveat = function(c) invokeRestart("muffleWarning")
+  )
+  # Just check no error + warning fires; actual β values come from posthoc
+  expect_s3_class(out, "spicy_regression_table")
+  expect_true(fb_seen)
+})
+
+test_that("glm pseudo: log-binomial treated as logit-equivalent (var_link = pi^2/3)", {
+  d <- data.frame(y = c(0,1,1,0,1,1,0,0,1,1,0,1,1,0,1,0,1,1,0,1),
+                  x = seq_len(20))
+  fit <- tryCatch(
+    suppressWarnings(glm(y ~ x, data = d, family = binomial(link = "log"))),
+    error = function(e) NULL, warning = function(w) NULL
+  )
+  skip_if(is.null(fit), "log-binomial fit did not converge")
+  td <- broom::tidy(table_regression(fit, standardized = "pseudo"))
+  beta_x <- td$estimate[td$estimate_type == "beta" & td$term == "x"]
+  eta <- predict(fit, type = "link")
+  sd_y_star <- sqrt(var(eta) + pi^2 / 3)  # log-binomial: logit-equivalent
+  expected <- coef(fit)["x"] * sd(d$x) / sd_y_star
+  expect_equal(beta_x, unname(expected), tolerance = 1e-12)
+})

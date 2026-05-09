@@ -10,7 +10,7 @@ table_regression(
   cluster = NULL,
   ci_level = 0.95,
   boot_n = 1000L,
-  standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
@@ -74,7 +74,9 @@ AME, partial effect sizes). Default \code{0.95}.}
 
 \item{standardized}{Standardisation method for the \code{"beta"}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
-\code{"basic"}, \code{"smart"}. See the \emph{Standardised coefficients}
+\code{"basic"}, \code{"smart"}, \code{"pseudo"}. \code{"pseudo"} is \emph{glm only}
+(Menard 2011 fully-standardised); using it with \code{lm()} raises
+\code{spicy_invalid_input}. See the \emph{Standardised coefficients}
 section.}
 
 \item{exponentiate}{Logical. When \code{TRUE} and the model is a
@@ -381,12 +383,25 @@ z-asymptotic with a \code{spicy_fallback} warning.
 \code{standardized} controls the standardisation method when \code{"beta"}
 is in \code{show_columns}:
 \itemize{
-\item \code{"refit"} — refit the model on z-scored predictors and
-outcome (gold standard, Cohen et al. 2003).
-\item \code{"posthoc"} — post-hoc scaling \verb{β = B × SD(X) / SD(Y)}.
-\item \code{"basic"} — like posthoc but factor dummies stay at 0/1.
-\item \code{"smart"} — Gelman (2008) recommendation: divide by \verb{2 × SD}
-for binary predictors.
+\item \code{"refit"} — refit the model on z-scored predictors. For \code{lm},
+the response is also z-scored (Cohen et al. 2003 gold standard);
+for \code{glm}, the response stays on its observed scale and only
+numeric predictors are standardised (Long & Freese 2014 §4.3.4
+"x-standardization").
+\item \code{"posthoc"} — post-hoc scaling. For \code{lm}:
+\verb{β = B × SD(X) / SD(Y)}; for \code{glm}: X-only \verb{β = B × SD(X)} (the
+response side is undefined on the link scale —
+\code{parameters} / \code{effectsize} convention).
+\item \code{"basic"} — like posthoc but factor-derived dummies are scaled
+by their column SD (treated as numeric).
+\item \code{"smart"} — Gelman (2008) recommendation: divide binary
+predictors by \verb{2 × SD} instead of \code{SD}.
+\item \code{"pseudo"} — \emph{glm only}. Menard (2004, 2011) fully-standardised
+\verb{β = B × SD(X) / SD(Y*)}, where \verb{Y*} is the latent variable on
+the link scale and
+\verb{SD(Y*) = sqrt(var(η̂) + var_link)} with \code{var_link} =
+π²/3 (logit), 1 (probit), π²/6 (cloglog). Defined for binomial
+families; non-binomial returns NA with a \code{spicy_caveat}.
 \item \code{"none"} (default) — no β computed.
 }
 
