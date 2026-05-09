@@ -101,12 +101,19 @@ extract_lm_phase1 <- function(
     }
   }
 
-  # ---- HOOK for Step 6 ---------------------------------------------------
-  # Step 6 (regression_partial.R): if (any(c("partial_f2", "partial_eta2",
-  #                                           "partial_omega2") %in% show_columns)) {
-  #   partial_rows <- extract_partial_effects(fit, ci_level, model_id, outcome)
-  #   coefs_long <- rbind(coefs_long, partial_rows)
-  # }
+  # ---- Partial effect-size rows (Step 6) ----------------------------------
+  if (any(c("partial_f2", "partial_eta2", "partial_omega2") %in% show_columns)) {
+    partial_rows <- extract_partial_effect_rows(
+      fit = fit,
+      ci_level = ci_level,
+      show_columns = show_columns,
+      model_id = model_id,
+      outcome = outcome
+    )
+    if (nrow(partial_rows) > 0L) {
+      coefs_long <- rbind(coefs_long, partial_rows)
+    }
+  }
 
   # ---- Model-level fit statistics -----------------------------------------
   fit_stats <- extract_fit_stats(
