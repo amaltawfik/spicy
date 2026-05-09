@@ -150,11 +150,12 @@ build_standardized_caveat_footer_block <- function(extracts, standardized) {
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
   any_problem <- FALSE
   for (e in extracts) {
-    fit <- e$fit %||% NULL
-    # Fall back to inspecting whatever metadata the extract carries.
-    # Prefer the live fit if available; otherwise the orchestrator
-    # may attach `non_additive` (set as part of validation).
-    nonadd <- e$non_additive %||% NULL
+    # `[[` (not `$`) — extract_lm_phase1's output has a `fit_stats`
+    # field that partial-matches "fit" under `$`, which would
+    # silently feed a data.frame to detect_non_additive_terms() and
+    # crash on missing $terms.
+    fit <- e[["fit"]]
+    nonadd <- e[["non_additive"]]
     if (is.null(nonadd) && !is.null(fit)) {
       nonadd <- detect_non_additive_terms(fit)
     }

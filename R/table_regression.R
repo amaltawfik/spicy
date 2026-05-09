@@ -444,16 +444,165 @@ table_regression <- function(
   clipboard_delim = "\t",
   word_path = NULL
 ) {
-  # Body intentionally empty for design-review purposes. Implementation
-  # follows the cascade specified in dev/table_regression_design.md
-  # (24 settled questions; AME-Satterthwaite via clubSandwich; broom
-  # integration with model_id long format). Phase 1: lm only.
-  spicy_abort(
-    c(
-      "`table_regression()` is not yet implemented.",
-      "i" = "This is the doc-first roxygen sketch for design review.",
-      "i" = "See `dev/table_regression_design.md` for the full Phase 1 spec."
-    ),
-    class = "spicy_unsupported"
+  # Resolve enum args
+  standardized <- match.arg(standardized)
+  intercept_position <- match.arg(intercept_position)
+  reference_style <- match.arg(reference_style)
+  align <- match.arg(align)
+  output <- match.arg(output)
+
+  # ---- Validate inputs (Q21 cascade Phase A: input class) ----------------
+  models <- validate_models_input(models)
+  n_models <- length(models)
+
+  # ---- Validation Phases B-E (best effort; errors are spicy_invalid_input)
+  # Recycling vcov / cluster across models per Q7
+  vcov_list <- if (is.list(vcov) && !is.null(names(vcov)) == FALSE &&
+                   length(vcov) == n_models) {
+    vcov
+  } else if (is.list(vcov)) {
+    if (length(vcov) != n_models) {
+      spicy_abort(
+        sprintf("`vcov` list length (%d) must equal number of models (%d).",
+                length(vcov), n_models),
+        class = "spicy_invalid_input"
+      )
+    }
+    vcov
+  } else {
+    rep(list(vcov), n_models)
+  }
+  cluster_list <- if (is.list(cluster) && length(cluster) == n_models) {
+    cluster
+  } else {
+    rep(list(cluster), n_models)
+  }
+
+  # Auto-inject "beta" when standardized is set and beta is not requested
+  if (!identical(standardized, "none") && !"beta" %in% show_columns) {
+    show_columns <- c(show_columns[show_columns == "B"], "beta",
+                       show_columns[show_columns != "B"])
+  }
+  # Reject "beta" without method
+  if ("beta" %in% show_columns && identical(standardized, "none")) {
+    spicy_abort(
+      c("`\"beta\"` in `show_columns` requires `standardized != \"none\"`.",
+        "i" = "Pick a method: \"refit\", \"posthoc\", \"basic\", or \"smart\"."),
+      class = "spicy_invalid_input"
+    )
+  }
+
+  # Detect AME-Satterthwaite path activation (Q14b)
+  any_cr <- any(vapply(vcov_list,
+                       function(v) is.character(v) && startsWith(v, "CR"),
+                       logical(1)))
+  use_ame_satt <- any_cr && "AME" %in% show_columns
+
+  # ---- Per-model extraction (Layer 1) ------------------------------------
+  default_id <- function(i) paste0("M", i)
+  model_ids <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    names(models)
+  } else {
+    vapply(seq_len(n_models), default_id, character(1))
+  }
+
+  extracts <- vector("list", n_models)
+  for (i in seq_len(n_models)) {
+    extracts[[i]] <- extract_lm_phase1(
+      models[[i]],
+      model_id = model_ids[i],
+      vcov_type = vcov_list[[i]],
+      cluster = cluster_list[[i]],
+      boot_n = boot_n,
+      ci_level = ci_level,
+      standardized = standardized,
+      show_columns = show_columns,
+      show_fit_stats = show_fit_stats,
+      use_ame_satterthwaite = use_ame_satt
+    )
+    # Attach precomputed non-additivity metadata so the standardized
+    # caveat footer (build_standardized_caveat_footer_block()) can
+    # decide without reaching back to the live fit.
+    extracts[[i]][["non_additive"]] <- detect_non_additive_terms(models[[i]])
+  }
+
+  # Standardized-on-non-additive caveat (Q15, Phase E)
+  emit_standardized_caveat_if_needed(models, standardized)
+
+  # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
+  aligned <- align_extracts(
+    extracts,
+    show_intercept = show_intercept,
+    intercept_position = intercept_position,
+    group_factor_levels = group_factor_levels,
+    reference_style = reference_style
+  )
+
+  # ---- Title + footer (Step 7) -------------------------------------------
+  title <- build_regression_title(extracts, nested = nested)
+  footer_main <- build_regression_footer(
+    extracts,
+    standardized = standardized,
+    stars = stars,
+    nested = nested,
+    show_columns = show_columns
+  )
+
+  # ---- Nested comparison (Step 9) ----------------------------------------
+  nested_footer <- NULL
+  if (isTRUE(nested)) {
+    nested_comp <- compute_nested_comparisons_lm(models, nested_stats)
+    nested_footer <- format_nested_comparison_footer(
+      nested_comp,
+      digits = digits, p_digits = p_digits,
+      fit_digits = fit_digits, ic_digits = ic_digits
+    )
+  }
+
+  full_footer <- c(footer_main, nested_footer)
+  full_footer <- full_footer[!is.null(full_footer) &
+                              vapply(full_footer, nzchar, logical(1))]
+  full_footer_str <- if (length(full_footer)) {
+    paste(full_footer, collapse = "\n\n")
+  } else {
+    NULL
+  }
+
+  # ---- Render (Layer 3) --------------------------------------------------
+  # Q1: model_labels precedence is explicit > names(list) > default.
+  effective_model_labels <- if (!is.null(model_labels)) {
+    model_labels
+  } else if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    names(models)
+  } else {
+    NULL  # render_regression_table generates "Model 1", ... as fallback
+  }
+  rendered <- render_regression_table(
+    aligned,
+    show_columns = show_columns,
+    model_labels = effective_model_labels,
+    reference_label = reference_label,
+    reference_style = reference_style,
+    group_factor_levels = group_factor_levels,
+    stars = stars,
+    ci_level = ci_level,
+    digits = digits,
+    p_digits = p_digits,
+    effect_size_digits = effect_size_digits,
+    decimal_mark = decimal_mark,
+    labels = labels,
+    title = title,
+    note = full_footer_str
+  )
+
+  # ---- Output dispatch (Step 11) -----------------------------------------
+  dispatch_regression_output(
+    rendered = rendered,
+    aligned = aligned,
+    output = output,
+    excel_path = excel_path,
+    excel_sheet = excel_sheet,
+    clipboard_delim = clipboard_delim,
+    word_path = word_path
   )
 }
