@@ -1,0 +1,422 @@
+# Per-model long-format extractor for table_regression().
+#
+# Architecture per dev/table_regression_design.md §2 layer 1.
+# Dispatch is on `class(fit)` (S3 in spirit; here Phase 1 = lm only,
+# implemented as a single internal function `extract_lm_phase1()`
+# rather than an S3 generic to keep Phase 1 lean. Phase 3 (glm) and
+# Phase 4 (merMod) will introduce a true S3 generic `extract_lm()`
+# with class-specific methods.)
+#
+# Returns a list with two main components:
+#   * `coefs`     — long-format data.frame, one row per
+#                   (term, estimate_type) combination
+#   * `fit_stats` — single-row data.frame with model-level statistics
+#                   selected via `show_fit_stats`
+# Plus metadata fields consumed by the multi-model alignment,
+# rendering, and footer-generation layers.
+#
+# Phase 1 scope: B / SE / CI / t / p + reference-level placeholder
+# rows + singular detection + fit statistics. The vocabulary
+# extensions ("beta", "AME", "partial_f2", "partial_eta2",
+# "partial_omega2") have hook comments marking where the next
+# implementation steps will plug in.
+
+
+# ---- Public-internal entry point ------------------------------------------
+
+extract_lm_phase1 <- function(
+  fit,
+  model_id,
+  vcov_type = "classical",
+  cluster = NULL,
+  boot_n = 1000L,
+  ci_level = 0.95,
+  standardized = "none",
+  show_columns = c("B", "SE", "CI", "p"),
+  show_fit_stats = c("nobs", "r2", "adj_r2"),
+  use_ame_satterthwaite = FALSE,
+  cluster_name = NULL
+) {
+  outcome <- deparse1(stats::formula(fit)[[2]])
+  weights <- stats::weights(fit)
+
+  # ---- vcov computation (reuse R/lm_compute.R) ----------------------------
+  vc <- compute_lm_vcov(
+    fit,
+    type = vcov_type,
+    cluster = cluster,
+    weights = weights,
+    boot_n = boot_n
+  )
+
+  # ---- Per-coefficient B inference ----------------------------------------
+  coefs_B <- build_b_rows(
+    fit = fit,
+    vc = vc,
+    vcov_type = vcov_type,
+    cluster = cluster,
+    ci_level = ci_level,
+    model_id = model_id,
+    outcome = outcome
+  )
+
+  # ---- Reference-level placeholder rows (Q5 em-dash) ----------------------
+  ref_rows <- build_reference_rows(
+    fit = fit,
+    model_id = model_id,
+    outcome = outcome
+  )
+  coefs_long <- rbind(coefs_B, ref_rows)
+
+  # ---- HOOKS for Steps 4–6 ------------------------------------------------
+  # Step 4 (standardize_lm.R): if (!identical(standardized, "none")) {
+  #   beta_rows <- extract_beta_rows(fit, standardized, model_id, outcome,
+  #                                  vc, ci_level, ...)
+  #   coefs_long <- rbind(coefs_long, beta_rows)
+  # }
+  #
+  # Step 5 (regression_ame.R):  if ("AME" %in% show_columns) {
+  #   ame_rows <- extract_ame_rows(fit, vc, vcov_type, cluster, ci_level,
+  #                                use_ame_satterthwaite, model_id, outcome)
+  #   coefs_long <- rbind(coefs_long, ame_rows)
+  # }
+  #
+  # Step 6 (regression_partial.R): if (any(c("partial_f2", "partial_eta2",
+  #                                           "partial_omega2") %in% show_columns)) {
+  #   partial_rows <- extract_partial_effects(fit, ci_level, model_id, outcome)
+  #   coefs_long <- rbind(coefs_long, partial_rows)
+  # }
+
+  # ---- Model-level fit statistics -----------------------------------------
+  fit_stats <- extract_fit_stats(
+    fit = fit,
+    show_fit_stats = show_fit_stats,
+    weights = weights,
+    model_id = model_id,
+    outcome = outcome
+  )
+
+  # ---- Singular detection (Q22) -------------------------------------------
+  cf <- stats::coef(fit)
+  is_singular_vec <- is.na(cf)
+  has_singular <- any(is_singular_vec)
+
+  # ---- Return structure ---------------------------------------------------
+  list(
+    model_id = model_id,
+    outcome = outcome,
+    coefs = coefs_long,
+    fit_stats = fit_stats,
+    vcov_type = vcov_type,
+    cluster_name = cluster_name,
+    use_ame_satterthwaite = use_ame_satterthwaite,
+    has_singular = has_singular,
+    singular_terms = if (has_singular) names(cf)[is_singular_vec] else character(0),
+    has_weights = !is.null(weights) && length(unique(weights)) > 1L,
+    weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
+    nobs = stats::nobs(fit)
+  )
+}
+
+
+# ---- Per-coefficient B-row builder ----------------------------------------
+
+# Builds one row per fitted coefficient with estimate_type = "B".
+# Singular coefs (NA in coef(fit)) get NA-shaped rows with
+# is_singular = TRUE; the renderer turns these into em-dashes (Q22).
+build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
+                         model_id, outcome) {
+  cf <- stats::coef(fit)
+  coef_names <- names(cf)
+  is_singular_vec <- is.na(cf)
+
+  # Factor structure for the term column (so the renderer can build
+  # grouped factor headers under group_factor_levels = TRUE without
+  # having to re-introspect the model).
+  factor_meta <- detect_factor_term_meta(fit)
+
+  rows <- lapply(seq_along(cf), function(i) {
+    nm <- coef_names[i]
+    fmeta <- factor_meta[[nm]]   # NULL if not a factor contrast
+
+    if (is_singular_vec[i]) {
+      build_one_b_row(
+        nm = nm, model_id = model_id, outcome = outcome,
+        estimate = NA_real_, se = NA_real_,
+        ci_low = NA_real_, ci_high = NA_real_,
+        statistic = NA_real_, df = NA_real_, p_value = NA_real_,
+        test_type = NA_character_,
+        is_singular = TRUE,
+        is_intercept = (nm == "(Intercept)"),
+        is_reference = FALSE,
+        factor_term = fmeta$factor_term %||% NA_character_,
+        factor_level = fmeta$factor_level %||% NA_character_
+      )
+    } else {
+      inf <- compute_lm_coef_inference(
+        fit = fit,
+        coef_idx = i,
+        vc = vc,
+        vcov_type = vcov_type,
+        cluster = cluster,
+        ci_level = ci_level
+      )
+      build_one_b_row(
+        nm = nm, model_id = model_id, outcome = outcome,
+        estimate = inf$estimate, se = inf$se,
+        ci_low = inf$ci_lower, ci_high = inf$ci_upper,
+        statistic = inf$statistic, df = inf$df, p_value = inf$p.value,
+        test_type = inf$test_type,
+        is_singular = FALSE,
+        is_intercept = (nm == "(Intercept)"),
+        is_reference = FALSE,
+        factor_term = fmeta$factor_term %||% NA_character_,
+        factor_level = fmeta$factor_level %||% NA_character_
+      )
+    }
+  })
+  do.call(rbind, rows)
+}
+
+# Helper to build a single coefs row with all the standard columns.
+# Centralised so all row builders (B, beta, AME, partial_*) use the
+# same column structure — required by `rbind()` upstream.
+build_one_b_row <- function(nm, model_id, outcome,
+                             estimate, se, ci_low, ci_high,
+                             statistic, df, p_value, test_type,
+                             is_singular, is_intercept, is_reference,
+                             factor_term, factor_level,
+                             estimate_type = "B") {
+  data.frame(
+    model_id = model_id,
+    outcome = outcome,
+    term = nm,
+    estimate_type = estimate_type,
+    estimate = estimate,
+    se = se,
+    ci_low = ci_low,
+    ci_high = ci_high,
+    statistic = statistic,
+    df = df,
+    p_value = p_value,
+    test_type = test_type,
+    is_singular = is_singular,
+    is_intercept = is_intercept,
+    is_reference = is_reference,
+    factor_term = factor_term,
+    factor_level = factor_level,
+    stringsAsFactors = FALSE
+  )
+}
+
+
+# ---- Reference-level placeholder rows (Q5) --------------------------------
+
+# For each factor predictor, emit one row per *reference* level with
+# is_reference = TRUE and NA stat values. The renderer turns these
+# into em-dashed cells under `reference_style = "row"`.
+build_reference_rows <- function(fit, model_id, outcome) {
+  factor_terms <- detect_factor_terms(fit)
+  if (length(factor_terms) == 0L) {
+    return(empty_coefs_long())
+  }
+
+  rows <- list()
+  for (ft in factor_terms) {
+    # Reference level = first level (R contr.treatment default)
+    ref_lvl <- ft$reference_level
+    # Term name as it would appear in coef() if it weren't the ref:
+    # `<factor><level>`. We use that as the term identifier for
+    # consistency, but flag is_reference = TRUE.
+    term_name <- paste0(ft$factor_term, ref_lvl)
+    rows[[length(rows) + 1L]] <- build_one_b_row(
+      nm = term_name, model_id = model_id, outcome = outcome,
+      estimate = NA_real_, se = NA_real_,
+      ci_low = NA_real_, ci_high = NA_real_,
+      statistic = NA_real_, df = NA_real_, p_value = NA_real_,
+      test_type = NA_character_,
+      is_singular = FALSE,
+      is_intercept = FALSE,
+      is_reference = TRUE,
+      factor_term = ft$factor_term,
+      factor_level = ref_lvl
+    )
+  }
+  do.call(rbind, rows)
+}
+
+
+# ---- Factor introspection -------------------------------------------------
+
+# For each factor predictor in the model, return:
+#   factor_term      — the variable name (e.g., "sex")
+#   reference_level  — the first level (used in contr.treatment)
+#   levels           — full level vector (in factor order)
+detect_factor_terms <- function(fit) {
+  trms <- attr(stats::terms(fit), "term.labels")
+  xlevels <- fit$xlevels   # named list: factor_var -> levels
+  if (is.null(xlevels) || length(xlevels) == 0L) {
+    return(list())
+  }
+
+  factor_terms <- character(0)
+  out <- list()
+  for (var in names(xlevels)) {
+    # Only main-effect factor terms. Interaction terms (containing ":")
+    # use these factors but get their own coef rows by R's coding;
+    # we don't emit reference rows for them.
+    if (var %in% trms) {
+      lvls <- xlevels[[var]]
+      out[[length(out) + 1L]] <- list(
+        factor_term = var,
+        reference_level = lvls[1L],
+        levels = lvls
+      )
+    }
+  }
+  out
+}
+
+# Inverse map: for each *coefficient name* in coef(fit), is it a
+# factor contrast? If yes, return list(factor_term, factor_level).
+# Returns a named list keyed by coef name; entries are NULL for
+# non-factor coefficients (intercept, numeric predictors,
+# interactions, transforms).
+detect_factor_term_meta <- function(fit) {
+  cf_names <- names(stats::coef(fit))
+  xlevels <- fit$xlevels
+  if (is.null(xlevels) || length(xlevels) == 0L) {
+    return(setNames(replicate(length(cf_names), NULL), cf_names))
+  }
+
+  out <- vector("list", length(cf_names))
+  names(out) <- cf_names
+  for (cn in cf_names) {
+    out[[cn]] <- match_coef_to_factor(cn, xlevels)
+  }
+  out
+}
+
+# For a given coef name, find which factor it belongs to (if any) and
+# which non-reference level. The naming is `<var><level>` for
+# contr.treatment with no separator. Match by longest-prefix.
+match_coef_to_factor <- function(coef_name, xlevels) {
+  if (coef_name == "(Intercept)") return(NULL)
+  # Skip interaction terms — they involve multiple factors / numerics
+  if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
+
+  # Find the factor whose name is a prefix of the coef name AND whose
+  # remaining suffix is one of its non-reference levels.
+  for (var in names(xlevels)) {
+    if (startsWith(coef_name, var)) {
+      candidate_level <- substring(coef_name, nchar(var) + 1L)
+      lvls <- xlevels[[var]]
+      # Non-reference levels (skip the first)
+      non_ref_lvls <- lvls[-1L]
+      if (candidate_level %in% non_ref_lvls) {
+        return(list(factor_term = var, factor_level = candidate_level))
+      }
+    }
+  }
+  NULL
+}
+
+
+# ---- Fit-statistics extraction --------------------------------------------
+
+# Compute the model-level fit statistics requested via `show_fit_stats`.
+# Returns a single-row data.frame with the model_id + outcome + one
+# numeric column per requested token. Tokens not in show_fit_stats
+# get NA so the wide schema is constant across models (downstream
+# bind_rows works without column-mismatch issues).
+extract_fit_stats <- function(fit, show_fit_stats, weights,
+                               model_id, outcome) {
+  # Compute everything once, then subset by show_fit_stats.
+  sm <- summary(fit)
+
+  # Core stats from summary(fit)
+  r2 <- unname(sm$r.squared)
+  adj_r2 <- unname(sm$adj.r.squared)
+  sigma <- unname(sm$sigma)
+
+  # Hays bias-corrected omega² (model-level), reusing the
+  # infrastructure in lm_compute.R. df_effect = number of non-intercept
+  # coefs ; df_resid = stats::df.residual(fit).
+  df_resid <- stats::df.residual(fit)
+  df_effect <- length(stats::coef(fit)) - 1L
+  omega2 <- compute_lm_omega2(fit, df_effect, df_resid)
+
+  # Cohen's f² model-level
+  f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
+
+  # Residual scale variants
+  rmse <- sqrt(sum(stats::residuals(fit)^2) / stats::nobs(fit))
+
+  # Information criteria
+  AIC_v <- stats::AIC(fit)
+  BIC_v <- stats::BIC(fit)
+  # AICc = AIC + 2k(k+1)/(n-k-1) ; k = number of estimated params
+  # incl. sigma (Hurvich & Tsai 1989). For lm, k = length(coef) + 1 (sigma).
+  k <- length(stats::coef(fit)) + 1L
+  n <- stats::nobs(fit)
+  AICc_v <- if (n - k - 1L > 0L) {
+    AIC_v + (2 * k * (k + 1L)) / (n - k - 1L)
+  } else {
+    NA_real_
+  }
+  deviance_v <- stats::deviance(fit)
+
+  # Counts
+  nobs_v <- stats::nobs(fit)
+  weighted_nobs_v <- if (!is.null(weights)) sum(weights) else NA_real_
+
+  # Build single-row data.frame with all stats; subset by request later
+  # (we keep all columns in extract output; the renderer applies
+  # show_fit_stats filtering).
+  data.frame(
+    model_id = model_id,
+    outcome = outcome,
+    nobs = nobs_v,
+    weighted_nobs = weighted_nobs_v,
+    r2 = r2,
+    adj_r2 = adj_r2,
+    omega2 = omega2,
+    sigma = sigma,
+    rmse = rmse,
+    f2 = f2,
+    AIC = AIC_v,
+    AICc = AICc_v,
+    BIC = BIC_v,
+    deviance = deviance_v,
+    df_residual = df_resid,
+    stringsAsFactors = FALSE
+  )
+}
+
+
+# ---- Helpers --------------------------------------------------------------
+
+# Empty long-format frame with the canonical column structure. Used
+# when a model has no factor predictors → no reference rows to add.
+empty_coefs_long <- function() {
+  data.frame(
+    model_id = character(0),
+    outcome = character(0),
+    term = character(0),
+    estimate_type = character(0),
+    estimate = numeric(0),
+    se = numeric(0),
+    ci_low = numeric(0),
+    ci_high = numeric(0),
+    statistic = numeric(0),
+    df = numeric(0),
+    p_value = numeric(0),
+    test_type = character(0),
+    is_singular = logical(0),
+    is_intercept = logical(0),
+    is_reference = logical(0),
+    factor_term = character(0),
+    factor_level = character(0),
+    stringsAsFactors = FALSE
+  )
+}
