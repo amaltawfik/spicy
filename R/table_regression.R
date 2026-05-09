@@ -444,6 +444,12 @@ table_regression <- function(
   clipboard_delim = "\t",
   word_path = NULL
 ) {
+  # Capture the cluster expression BEFORE evaluation so we can
+  # derive a friendly name for the footer ("clusters by clinic_id"
+  # rather than "cluster vector supplied"). Done first thing, since
+  # downstream uses of `cluster` evaluate the symbol away.
+  cluster_expr <- substitute(cluster)
+
   # Resolve enum args
   standardized <- match.arg(standardized)
   intercept_position <- match.arg(intercept_position)
@@ -547,6 +553,23 @@ table_regression <- function(
     rep(list(cluster), n_models)
   }
 
+  # Friendly cluster-column names per model for the footer. When the
+  # user passed `cluster = df$col`, we extract "col"; when a list of
+  # clusters was passed, we walk the captured expression element by
+  # element. Falls back to NA → footer renders "cluster vector
+  # supplied" the way it did before.
+  cluster_name_list <- if (is.call(cluster_expr) &&
+                            identical(as.character(cluster_expr[[1]]), "list")) {
+    elems <- as.list(cluster_expr)[-1L]
+    if (length(elems) == n_models) {
+      vapply(elems, extract_arg_column_name, character(1))
+    } else {
+      rep(NA_character_, n_models)
+    }
+  } else {
+    rep(extract_arg_column_name(cluster_expr), n_models)
+  }
+
   # Detect AME-Satterthwaite path activation (Q14b)
   any_cr <- any(vapply(vcov_list,
                        function(v) is.character(v) && startsWith(v, "CR"),
@@ -573,7 +596,8 @@ table_regression <- function(
       standardized = standardized,
       show_columns = show_columns,
       show_fit_stats = show_fit_stats,
-      use_ame_satterthwaite = use_ame_satt
+      use_ame_satterthwaite = use_ame_satt,
+      cluster_name = cluster_name_list[i]
     )
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block()) can

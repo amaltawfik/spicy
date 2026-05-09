@@ -131,6 +131,15 @@ render_regression_table <- function(
   body <- do.call(rbind, rows)
 
   # Prepend outcome row when applicable (Q11b — multi-DV display).
+  #
+  # Two vectors per model:
+  #   * `model_outcomes`        — variable name from formula(fit)[[2]],
+  #                               used for the identical-DV decision
+  #   * `model_outcome_labels`  — display string: attr("label") if
+  #                               set on the response (labelled,
+  #                               haven, SPSS), else the variable name
+  #
+  # Both come from align_extracts(); fallback if absent.
   model_outcomes <- vapply(model_ids, function(m_id) {
     fs <- aligned$fit_stats_aligned
     out <- fs$outcome[fs$model_id == m_id][1]
@@ -141,8 +150,16 @@ render_regression_table <- function(
       out
     }
   }, character(1))
+  model_outcome_labels <- if (!is.null(aligned$outcome_labels_auto) &&
+                               length(aligned$outcome_labels_auto) ==
+                                 length(model_ids)) {
+    aligned$outcome_labels_auto
+  } else {
+    model_outcomes
+  }
   outcome_row <- build_outcome_row(
     model_outcomes = model_outcomes,
+    model_outcome_labels = model_outcome_labels,
     outcome_labels = outcome_labels,
     model_ids = model_ids,
     label_map = label_map,
@@ -435,11 +452,28 @@ resolve_label <- function(term, labels) {
 # ---- Outcome row (Q11b) --------------------------------------------------
 
 # Smart auto + explicit + suppress logic per Q11b.
+#
+# `model_outcomes` — variable names from formula(fit)[[2]] per model;
+#                    used ONLY for the "are DVs identical?" decision.
+# `model_outcome_labels` — auto-display strings: attr("label") if set,
+#                    else the variable name; used as the default
+#                    auto-shown labels when outcome_labels = NULL.
+# `outcome_labels` — user-supplied: NULL (auto), FALSE (suppress),
+#                    or a character vector of length n_models
+#                    (explicit override).
+#
 # Returns a single-row data.frame to prepend to the body, or NULL
 # when the outcome row should not be displayed.
-build_outcome_row <- function(model_outcomes, outcome_labels, model_ids,
-                                label_map, col_spec) {
+build_outcome_row <- function(model_outcomes,
+                                outcome_labels,
+                                model_ids,
+                                label_map,
+                                col_spec,
+                                model_outcome_labels = NULL) {
   n_models <- length(model_ids)
+  if (is.null(model_outcome_labels)) {
+    model_outcome_labels <- model_outcomes
+  }
 
   if (isFALSE(outcome_labels)) {
     return(NULL)                              # suppress entirely
@@ -449,9 +483,11 @@ build_outcome_row <- function(model_outcomes, outcome_labels, model_ids,
   }
 
   if (is.null(outcome_labels)) {
-    # Smart auto: hide when all DVs identical, show when DVs differ.
+    # Smart auto: hide when all formula DVs are identical (regardless
+    # of any label differences); show otherwise. The displayed values
+    # are the auto labels (attr("label") || variable name).
     if (length(unique(model_outcomes)) <= 1L) return(NULL)
-    outcome_labels <- model_outcomes           # default = variable names
+    outcome_labels <- model_outcome_labels
   }
 
   # Place each outcome label in the FIRST sub-column of its model

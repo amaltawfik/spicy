@@ -77,3 +77,41 @@ spicy_warn <- function(message, class = NULL, ...) {
 spicy_pkg_available <- function(pkg) {
   requireNamespace(pkg, quietly = TRUE)
 }
+
+
+# Internal: derive a friendly column name from a captured expression
+# (typically `substitute(arg)` in the immediate caller). Used by
+# `table_regression()` to print "clusters by clinic_id" in the
+# footer when the user passed `cluster = data$clinic_id`, instead
+# of the generic "cluster vector supplied".
+#
+# Recognised forms:
+#   * symbol            `df$col`              → "col"  (extracted from `$`)
+#   * symbol            `df[["col"]]`         → "col"  (extracted from `[[`)
+#   * bare symbol       `mycluster`           → "mycluster"
+#   * literal vector    `c(1, 2, 3)`          → NA   (no meaningful name)
+#   * NULL / missing    `cluster_expr` is NULL → NA
+#
+# Returns a character scalar (NA_character_ when no name applies).
+# Lives next to `spicy_pkg_available()` because it is a small,
+# horizontally-shared utility used across the regression layer.
+extract_arg_column_name <- function(arg_expr) {
+  if (is.null(arg_expr)) return(NA_character_)
+  if (is.symbol(arg_expr)) {
+    nm <- as.character(arg_expr)
+    if (identical(nm, "NULL") || !nzchar(nm)) return(NA_character_)
+    return(nm)
+  }
+  if (is.call(arg_expr)) {
+    op <- tryCatch(as.character(arg_expr[[1]]), error = function(e) "")
+    if (identical(op, "$") && length(arg_expr) == 3L &&
+          is.symbol(arg_expr[[3]])) {
+      return(as.character(arg_expr[[3]]))
+    }
+    if (identical(op, "[[") && length(arg_expr) == 3L &&
+          is.character(arg_expr[[3]])) {
+      return(arg_expr[[3]])
+    }
+  }
+  NA_character_
+}

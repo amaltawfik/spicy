@@ -38,6 +38,22 @@ extract_lm_phase1 <- function(
   cluster_name = NULL
 ) {
   outcome <- deparse1(stats::formula(fit)[[2]])
+  # Auto-label for the outcome row (Q11b smart auto): prefer the
+  # `label` attribute set by `labelled::var_label()` / haven import /
+  # SPSS labels, fall back to the variable name. Used by the renderer
+  # only when `outcome_labels = NULL` AND DVs differ across models.
+  outcome_label <- tryCatch(
+    {
+      mr <- stats::model.response(stats::model.frame(fit))
+      lab <- attr(mr, "label")
+      if (is.character(lab) && length(lab) == 1L && nzchar(lab)) {
+        lab
+      } else {
+        outcome
+      }
+    },
+    error = function(e) outcome
+  )
   weights <- stats::weights(fit)
 
   # ---- vcov computation (reuse R/lm_compute.R) ----------------------------
@@ -133,6 +149,7 @@ extract_lm_phase1 <- function(
   list(
     model_id = model_id,
     outcome = outcome,
+    outcome_label = outcome_label,
     coefs = coefs_long,
     fit_stats = fit_stats,
     vcov_type = vcov_type,

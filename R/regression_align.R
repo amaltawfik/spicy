@@ -85,11 +85,21 @@ align_extracts <- function(
                                   coefs_long$model_id), , drop = FALSE]
   rownames(coefs_long) <- NULL
 
+  # Per-model outcome auto-labels (attr("label") if set, else
+  # variable name). Propagated to the renderer for the multi-DV
+  # outcome row when `outcome_labels = NULL`.
+  outcome_labels_auto <- vapply(
+    extracts,
+    function(e) e$outcome_label %||% e$outcome,
+    character(1)
+  )
+
   list(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
     term_order = term_order,
     factor_ref_levels = factor_ref_levels,
+    outcome_labels_auto = outcome_labels_auto,
     n_models = length(extracts)
   )
 }

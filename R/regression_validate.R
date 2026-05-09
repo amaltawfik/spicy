@@ -90,6 +90,31 @@ validate_models_input <- function(models) {
     )
   }
 
+  # Step 1c: when the list is named, names must be unique. Duplicate
+  # names would silently collide in the long-format model_id key,
+  # causing one fit to overwrite the other in extract / align /
+  # render — a silent data loss that's worth catching upfront.
+  nms <- names(models)
+  if (!is.null(nms) && any(nzchar(nms))) {
+    dupes <- unique(nms[duplicated(nms) & nzchar(nms)])
+    if (length(dupes) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Duplicate name(s) in `models` list: %s.",
+            paste(shQuote(dupes), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Names of the models list are used as model IDs and ",
+            "must be unique. Drop the names (positional list) or ",
+            "rename the duplicates."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   # Steps 2–3: per-element class check, aggregate-fail
   problems <- vapply(seq_along(models), function(i) {
     msg <- classify_unsupported_lm_class(models[[i]], position = i)
@@ -609,6 +634,22 @@ validate_model_labels <- function(model_labels, models) {
       sprintf(
         "`model_labels` has length %d but `models` has length %d.",
         length(model_labels), length(models)
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (anyDuplicated(model_labels)) {
+    dupes <- unique(model_labels[duplicated(model_labels)])
+    spicy_abort(
+      c(
+        sprintf(
+          "Duplicate value(s) in `model_labels`: %s.",
+          paste(shQuote(dupes), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Each model column needs a distinct label so the wide ",
+          "rendering can name its sub-columns unambiguously."
+        )
       ),
       class = "spicy_invalid_input"
     )

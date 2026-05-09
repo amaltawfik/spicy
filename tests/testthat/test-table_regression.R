@@ -568,6 +568,114 @@ test_that("print — align = 'center' propagates to align_center_cols", {
 
 
 # ============================================================================
+# Final-audit fixes: duplicate-name validation, outcome attr label,
+# cluster name detection via NSE
+# ============================================================================
+
+test_that("duplicate names in `list(...)` error spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(M1 = m1, M1 = m2)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("duplicate values in `model_labels` error spicy_invalid_input", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(list(m1, m2),
+                     model_labels = c("Same", "Same")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("outcome auto-row uses attr('label') when available", {
+  # Build a small fit on a labelled response (mimicking what
+  # `labelled::var_label()` / haven imports produce).
+  df <- data.frame(y = rnorm(50), x = rnorm(50))
+  attr(df$y, "label") <- "Wellbeing score (0-100)"
+  fit_a <- lm(y ~ x, data = df)
+  fit_b <- lm(x ~ y, data = df)   # different DV (`x`), no label
+
+  out <- table_regression(list(fit_a, fit_b))
+  outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
+  expect_equal(nrow(outcome_row), 1L)
+
+  m1_label <- trimws(outcome_row[1, "Model 1: B"])
+  m2_label <- trimws(outcome_row[1, "Model 2: B"])
+  expect_equal(m1_label, "Wellbeing score (0-100)")  # attr used
+  expect_equal(m2_label, "x")                          # bare name fallback
+})
+
+test_that("outcome auto-row identical-DV check uses variable name (not label)", {
+  # If two fits share the same response variable (same column),
+  # the row must still be hidden even if labels happen to differ.
+  df <- data.frame(y = rnorm(50), x = rnorm(50))
+  attr(df$y, "label") <- "Y"
+  fit1 <- lm(y ~ x, data = df)
+  fit2 <- lm(y ~ I(x^2), data = df)
+  out <- table_regression(list(fit1, fit2))
+  expect_false("Outcome" %in% out$Variable)
+})
+
+test_that("cluster_name — `df$col` extracted to 'col' for the footer", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(1)
+  df <- data.frame(
+    y = rnorm(120), x = rnorm(120),
+    region = factor(sample(letters[1:6], 120, replace = TRUE))
+  )
+  fit <- lm(y ~ x, data = df)
+  out <- table_regression(fit, vcov = "CR2", cluster = df$region)
+  expect_match(attr(out, "note"), "clusters by region")
+  expect_no_match(attr(out, "note"), "cluster vector supplied")
+})
+
+test_that("cluster_name — bare symbol extracted as variable name", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(2)
+  df <- data.frame(
+    y = rnorm(120), x = rnorm(120),
+    region = factor(sample(letters[1:6], 120, replace = TRUE))
+  )
+  region_vec <- df$region
+  fit <- lm(y ~ x, data = df)
+  out <- table_regression(fit, vcov = "CR2", cluster = region_vec)
+  expect_match(attr(out, "note"), "clusters by region_vec")
+})
+
+test_that("cluster_name — list(...) with named elements per model", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(3)
+  df <- data.frame(
+    y = rnorm(120), x = rnorm(120),
+    region = factor(sample(letters[1:6], 120, replace = TRUE)),
+    clinic = factor(sample(LETTERS[1:5], 120, replace = TRUE))
+  )
+  m1 <- lm(y ~ x, data = df)
+  m2 <- lm(y ~ x, data = df)
+  out <- table_regression(
+    list(m1, m2),
+    vcov = list("CR2", "CR2"),
+    cluster = list(df$region, df$clinic)
+  )
+  note <- attr(out, "note")
+  expect_match(note, "clusters by region")
+  expect_match(note, "clusters by clinic")
+})
+
+test_that("extract_arg_column_name — handles all recognised forms", {
+  expect_equal(spicy:::extract_arg_column_name(quote(df$col)), "col")
+  expect_equal(spicy:::extract_arg_column_name(quote(df[["col"]])), "col")
+  expect_equal(spicy:::extract_arg_column_name(quote(mycluster)), "mycluster")
+  expect_true(is.na(spicy:::extract_arg_column_name(quote(c(1, 2, 3)))))
+  expect_true(is.na(spicy:::extract_arg_column_name(NULL)))
+})
+
+
+# ============================================================================
 # Polish round 5 — outcome_labels (Q11b) and reference_style annotation (Q5)
 # ============================================================================
 
