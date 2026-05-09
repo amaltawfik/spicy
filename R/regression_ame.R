@@ -33,34 +33,51 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       extract_ame_satterthwaite(
         fit, vcov_type, cluster, ci_level, model_id, outcome
       ),
-      error = function(e) {
-        attr(e, "spicy_failure_reason") <- conditionMessage(e)
-        e
-      }
+      error = function(e) e
     )
     if (!inherits(rows, "error")) {
       return(rows)
     }
-    # Fallback: explain why Satterthwaite failed
-    spicy_warn(
-      c(
-        paste0(
-          "AME-Satterthwaite computation failed; falling back to ",
-          "z-asymptotic AME inference."
+    # Fallback: explain why Satterthwaite failed. The wording is
+    # tailored to the cause via the classed condition system —
+    # `spicy_ame_satt_unsupported_formula` is the documented
+    # contract for "this formula isn't compatible with the
+    # closed-form contrast"; anything else is treated as an
+    # unexpected internal failure (still recoverable but worth
+    # surfacing more bluntly).
+    if (inherits(rows, "spicy_ame_satt_unsupported_formula")) {
+      spicy_warn(
+        c(
+          paste0(
+            "AME-Satterthwaite is not applicable to this formula; ",
+            "falling back to z-asymptotic AME inference."
+          ),
+          "x" = paste0("Reason: ", conditionMessage(rows)),
+          "i" = paste0(
+            "AME magnitudes are unaffected; only the inference ",
+            "framework (t-Satterthwaite vs z-asymptotic) differs."
+          )
         ),
-        "x" = paste0("Reason: ", attr(rows, "spicy_failure_reason")),
-        "i" = paste0(
-          "This typically happens when the formula contains function ",
-          "calls (`I()`, `poly()`, `log()`, `splines::ns()`, etc.) ",
-          "that defeat the closed-form contrast construction."
+        class = "spicy_fallback"
+      )
+    } else {
+      spicy_warn(
+        c(
+          paste0(
+            "AME-Satterthwaite computation failed unexpectedly; ",
+            "falling back to z-asymptotic AME inference."
+          ),
+          "x" = paste0("Reason: ", conditionMessage(rows)),
+          "i" = paste0(
+            "If this is reproducible, please open an issue at ",
+            "https://github.com/amaltawfik/spicy/issues -- ",
+            "spicy is the only R package offering AME-Satterthwaite ",
+            "for `lm`, so unexpected failures are worth reporting."
+          )
         ),
-        "i" = paste0(
-          "AME magnitudes are unaffected; only the inference framework ",
-          "(t-Satterthwaite vs z-asymptotic) differs slightly."
-        )
-      ),
-      class = "spicy_fallback"
-    )
+        class = "spicy_fallback"
+      )
+    }
   }
   # Path B: marginaleffects with our vcov matrix + df-aware
   extract_ame_marginaleffects(fit, vc, vcov_type, ci_level,
@@ -91,11 +108,28 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
   # Identify predictors: term.labels minus pure-interaction terms
   trms <- attr(stats::terms(fit), "term.labels")
   preds <- trms[!grepl(":", trms, fixed = TRUE)]
-  # Exclude function-call predictors — closed-form contrast won't work
+  # Exclude function-call predictors — closed-form contrast won't work.
+  # Carries the dedicated `spicy_ame_satt_unsupported_formula` leaf
+  # class so `extract_ame_rows()` can distinguish this expected
+  # condition from genuine internal failures and tailor its
+  # fallback warning accordingly.
   if (any(grepl("(", preds, fixed = TRUE))) {
-    stop("Formula contains function-call predictors (",
-         paste(preds[grepl("(", preds, fixed = TRUE)], collapse = ", "),
-         "); closed-form contrast not applicable.")
+    bad <- preds[grepl("(", preds, fixed = TRUE)]
+    spicy_abort(
+      c(
+        sprintf(
+          "Formula contains function-call predictor(s): %s.",
+          paste(shQuote(bad), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Closed-form contrast construction is not applicable for ",
+          "`I()`, `poly()`, `log()`, `splines::ns()`, and similar ",
+          "transforms. Pre-build the transformed column in `data` ",
+          "before calling `lm()` to use the Satterthwaite path."
+        )
+      ),
+      class = c("spicy_ame_satt_unsupported_formula", "spicy_unsupported")
+    )
   }
   # Exclude predictors absent from the model frame (defensive)
   data <- stats::model.frame(fit)
@@ -290,24 +324,45 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
   # (e.g., "sex" + "M" -> "sexM").
   factor_meta <- detect_factor_term_meta(fit)
   mf <- stats::model.frame(fit)
+  mf_names <- names(mf)
 
   rows <- lapply(seq_len(nrow(ame_table)), function(i) {
     var_name <- ame_table$term[i]
     contrast_str <- ame_table$contrast[i] %||% NA_character_
+
+    # Resolve `var_name` (as returned by marginaleffects) to the
+    # actual column name in `model.frame(fit)`. When the formula
+    # uses an inline transform like `factor(cyl)`, marginaleffects
+    # strips the wrapper and reports the bare variable ("cyl"),
+    # but the model-frame column is "factor(cyl)" and the lm
+    # coefficient names follow that wrapper too ("factor(cyl)6").
+    # Without this normalisation the AME row term_id would be
+    # "cyl6" and de-align with the B coefficient row named
+    # "factor(cyl)6".
+    col_name <- if (var_name %in% mf_names) {
+      var_name
+    } else {
+      cand <- grep(
+        paste0("(^|\\()", var_name, "(\\)|$)"),
+        mf_names, value = TRUE
+      )
+      if (length(cand) > 0L) cand[1L] else var_name
+    }
+
     # Reconstruct coef-style term_id ONLY for true factor variables.
     # marginaleffects' `contrast` is "lvl - ref" for factors AND
     # for binary numerics like am ∈ {0, 1} (it returns "1 - 0"),
     # which would produce `am1` and de-align with the B coef row
     # named `am`. Anchor on the model-frame class to disambiguate.
-    is_factor_var <- !is.null(mf[[var_name]]) &&
-                      is.factor(mf[[var_name]])
+    is_factor_var <- col_name %in% mf_names &&
+                      is.factor(mf[[col_name]])
     term_id <- if (is_factor_var &&
                     !is.na(contrast_str) &&
                     grepl(" - ", contrast_str)) {
       lvl <- sub(" - .*$", "", contrast_str)
-      paste0(var_name, lvl)
+      paste0(col_name, lvl)
     } else {
-      var_name
+      col_name
     }
     fmeta <- factor_meta[[term_id]]
     build_one_b_row(

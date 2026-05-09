@@ -557,6 +557,15 @@ test_that("align — 'auto' / 'right' / 'center' are accepted (no decimal pad)",
   }
 })
 
+test_that("print — align = 'center' propagates to align_center_cols", {
+  # Exercises the data_col_idx branch in print.spicy_regression_table
+  # when align is "center" (vs "decimal" / "right" / "auto").
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit, align = "center")
+  txt <- capture.output(print(out))
+  expect_true(any(nzchar(txt)))
+})
+
 
 # ============================================================================
 # Polish round 5 — outcome_labels (Q11b) and reference_style annotation (Q5)
@@ -688,25 +697,34 @@ test_that("no-intercept formula — works with multi-model nested lookalike", {
 # Snapshot tests — golden output for the most common rendering paths
 # ============================================================================
 
+# Snapshot helper: capture the printed output and normalise trailing
+# whitespace + the trailing blank line. spicy_print_table() pads
+# every cell to a fixed column width, so harmless changes in the
+# longest cell propagate as cascade-y diffs in the snapshot. Trimming
+# trailing whitespace per line keeps the snapshot stable as long as
+# the SEMANTIC content (cells + alignment) is unchanged.
+capture_norm <- function(out) {
+  txt <- capture.output(print(out))
+  txt <- sub("[ \t]+$", "", txt)         # trim trailing whitespace
+  paste(txt, collapse = "\n")
+}
+
 test_that("snapshot — single lm default rendering", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
-  txt <- paste(capture.output(print(out)), collapse = "\n")
-  expect_snapshot(cat(txt))
+  expect_snapshot(cat(capture_norm(out)))
 })
 
 test_that("snapshot — multi-model with nested = TRUE comparison footer", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
-  txt <- paste(capture.output(print(out)), collapse = "\n")
-  expect_snapshot(cat(txt))
+  expect_snapshot(cat(capture_norm(out)))
 })
 
 test_that("snapshot — standardized + stars + reference annotation", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, standardized = "refit", stars = TRUE,
                           reference_style = "annotation")
-  txt <- paste(capture.output(print(out)), collapse = "\n")
-  expect_snapshot(cat(txt))
+  expect_snapshot(cat(capture_norm(out)))
 })

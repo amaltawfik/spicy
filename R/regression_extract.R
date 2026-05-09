@@ -240,31 +240,26 @@ build_one_b_row <- function(nm, model_id, outcome,
 
 # ---- Reference-level placeholder rows (Q5) --------------------------------
 
-# For each factor predictor, emit one row per *reference* level with
-# is_reference = TRUE and NA stat values. The renderer turns these
-# into em-dashed cells under `reference_style = "row"`.
+# For each factor predictor whose reference level was actually
+# dropped (i.e., the standard contr.treatment encoding), emit one
+# placeholder row with is_reference = TRUE and NA stat values. The
+# renderer turns these into em-dashed cells under
+# `reference_style = "row"`.
 #
-# In a no-intercept formula like `y ~ 0 + cyl`, R drops the reference
-# coding and fits ALL levels of the first factor as real coefficients
-# (cyl4, cyl6, cyl8 instead of just cyl6, cyl8). For those factors we
-# must NOT emit a reference-row placeholder — the level is a genuine
-# coef, not a baseline. The check `paste0(var, lvls[1]) %in%
-# names(coef(fit))` is true exactly when the first level was fitted
-# instead of dropped.
+# In a no-intercept formula like `y ~ 0 + cyl`, R fits ALL k levels
+# of the first factor as real coefficients — `detect_factor_terms()`
+# flags `reference_dropped = FALSE` for these and we skip them here.
 build_reference_rows <- function(fit, model_id, outcome) {
   factor_terms <- detect_factor_terms(fit)
   if (length(factor_terms) == 0L) {
     return(empty_coefs_long())
   }
-  cf_names <- names(stats::coef(fit))
 
   rows <- list()
   for (ft in factor_terms) {
+    if (!isTRUE(ft$reference_dropped)) next
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
-    if (term_name %in% cf_names) {
-      next                           # first level was fitted, not dropped
-    }
     rows[[length(rows) + 1L]] <- build_one_b_row(
       nm = term_name, model_id = model_id, outcome = outcome,
       estimate = NA_real_, se = NA_real_,
@@ -288,15 +283,24 @@ build_reference_rows <- function(fit, model_id, outcome) {
 # ---- Factor introspection -------------------------------------------------
 
 # For each factor predictor in the model, return:
-#   factor_term      — the variable name (e.g., "sex")
-#   reference_level  — the first level (used in contr.treatment)
-#   levels           — full level vector (in factor order)
+#   factor_term         — the variable name (e.g., "sex")
+#   reference_level     — under default contr.treatment, this is the
+#                         first level. NA when no level was dropped
+#                         (no-intercept formulas of the form
+#                         `y ~ 0 + f` fit ALL k levels and the
+#                         "reference" concept does not apply).
+#   reference_dropped   — TRUE when the first level was actually
+#                         dropped (its dummy is absent from
+#                         `coef(fit)`); FALSE when it was fitted
+#                         (no-intercept case).
+#   levels              — full level vector (in factor order)
 detect_factor_terms <- function(fit) {
   trms <- attr(stats::terms(fit), "term.labels")
   xlevels <- fit$xlevels   # named list: factor_var -> levels
   if (is.null(xlevels) || length(xlevels) == 0L) {
     return(list())
   }
+  cf_names <- names(stats::coef(fit))
 
   factor_terms <- character(0)
   out <- list()
@@ -306,9 +310,12 @@ detect_factor_terms <- function(fit) {
     # we don't emit reference rows for them.
     if (var %in% trms) {
       lvls <- xlevels[[var]]
+      first_level_coef <- paste0(var, lvls[1L])
+      dropped <- !(first_level_coef %in% cf_names)
       out[[length(out) + 1L]] <- list(
         factor_term = var,
-        reference_level = lvls[1L],
+        reference_level = if (dropped) lvls[1L] else NA_character_,
+        reference_dropped = dropped,
         levels = lvls
       )
     }

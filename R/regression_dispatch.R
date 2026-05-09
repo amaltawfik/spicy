@@ -1,5 +1,15 @@
 # Output dispatch for table_regression() — Step 11.
 #
+# Coverage convention:
+#   The `# nocov start` / `# nocov end` pragmas in this file mark
+#   missing-Suggests guards (the `spicy_abort()` body inside each
+#   `if (!spicy_pkg_available(...))` block). On a CI / dev machine
+#   with all Suggests installed, those branches are intentionally
+#   unreachable; covr correctly excludes them from the denominator.
+#   When adding a new optional output engine, wrap its
+#   missing-package guard body the same way to keep the convention
+#   consistent.
+#
 # Per dev/table_regression_design.md `output` arg: routes the rendered
 # character data.frame to one of nine destinations:
 #
@@ -187,10 +197,15 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     # nocov end
   }
   if (is.null(excel_path) || !nzchar(excel_path)) {
+    # nocov start — defensive: validate_output_resources() (Phase F)
+    # rejects this upstream, so the dispatch path here is unreachable
+    # through table_regression(). Kept for direct callers of
+    # dispatch_regression_output() (e.g., bespoke pipelines).
     spicy_abort(
       "`excel_path` must be supplied for output = \"excel\".",
       class = "spicy_invalid_input"
     )
+    # nocov end
   }
   body <- as.data.frame(rendered, stringsAsFactors = FALSE)
   title <- attr(rendered, "title")
@@ -221,6 +236,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
 
 # ---- clipboard -----------------------------------------------------------
 
+# nocov start — clipboard side effect requires a system clipboard
+# AND the optional `clipr` package. Exercised on user machines but
+# unreachable on headless CI runners; the validator (Phase F) and
+# the orchestrator's clipr / clipr_available checks short-circuit
+# before reaching this function in test environments.
 output_clipboard <- function(rendered, clipboard_delim) {
   if (!spicy_pkg_available("clipr")) {
     # nocov start
@@ -248,6 +268,7 @@ output_clipboard <- function(rendered, clipboard_delim) {
   invisible(rendered)
   # nocov end
 }
+# nocov end — closes the `output_clipboard` function block
 
 
 # ---- word ----------------------------------------------------------------
@@ -264,10 +285,13 @@ output_word <- function(rendered, word_path) {
     # nocov end
   }
   if (is.null(word_path) || !nzchar(word_path)) {
+    # nocov start — defensive duplicate of the Phase F
+    # validate_output_resources() check (see excel_path comment).
     spicy_abort(
       "`word_path` must be supplied for output = \"word\".",
       class = "spicy_invalid_input"
     )
+    # nocov end
   }
   ft <- output_flextable(rendered)
   flextable::save_as_docx(ft, path = word_path)
@@ -280,7 +304,12 @@ output_word <- function(rendered, word_path) {
 #' @export
 print.spicy_regression_table <- function(x, ...) {
   group_sep <- attr(x, "group_sep_rows")
+  # nocov start — defensive: render_regression_table() always sets
+  # the attribute (to integer(0) when no fit-stats footer is present).
+  # Reached only if a caller manually constructed an object that
+  # bypasses the renderer.
   if (is.null(group_sep)) group_sep <- integer(0)
+  # nocov end
   align <- attr(x, "align") %||% "decimal"
 
   body <- as.data.frame(x, stringsAsFactors = FALSE)

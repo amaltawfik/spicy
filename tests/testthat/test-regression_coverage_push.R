@@ -96,14 +96,12 @@ test_that("glance.spicy_regression_table — empty input returns empty broom-sha
                     "df.residual") %in% names(g)))
 })
 
-test_that("maybe_as_tibble — without tibble installed returns plain data.frame", {
-  testthat::local_mocked_bindings(
-    spicy_pkg_available = function(pkg) !identical(pkg, "tibble"),
-    .package = "spicy"
-  )
+# maybe_as_tibble — tibble is in Imports, so the legacy
+# missing-tibble fallback was dead code. The simplified function
+# always returns a tbl_df; tested via the broom methods.
+test_that("maybe_as_tibble — always returns a tbl_df (tibble is in Imports)", {
   out <- spicy:::maybe_as_tibble(data.frame(x = 1:3))
-  expect_s3_class(out, "data.frame")
-  expect_false(inherits(out, "tbl_df"))
+  expect_s3_class(out, "tbl_df")
 })
 
 
@@ -699,15 +697,11 @@ test_that("extract_ame_rows: Path A with finite Satt then format_p / NA SE branc
 # Tibble-missing fallback in maybe_as_tibble + as_tibble methods
 # ============================================================================
 
-test_that("as_tibble.spicy_regression_table — errors spicy_missing_pkg without tibble", {
-  testthat::local_mocked_bindings(
-    spicy_pkg_available = function(pkg) !identical(pkg, "tibble"),
-    .package = "spicy"
-  )
+# tibble is in Imports → as_tibble.spicy_regression_table can rely
+# on it unconditionally; previously dead missing-pkg branch removed.
+test_that("as_tibble.spicy_regression_table — returns a tbl_df", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
-  expect_error(
-    spicy:::as_tibble.spicy_regression_table(out),
-    class = "spicy_missing_pkg"
-  )
+  tb <- spicy:::as_tibble.spicy_regression_table(out)
+  expect_s3_class(tb, "tbl_df")
 })

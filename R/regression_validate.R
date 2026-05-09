@@ -1,5 +1,12 @@
 # Internal validators for table_regression().
 #
+# Coverage convention:
+#   The `# nocov start` / `# nocov end` pragmas in
+#   `validate_output_resources()` mark missing-Suggests guards that
+#   only fire when the optional output engine package is uninstalled.
+#   See R/regression_dispatch.R for the same convention applied to
+#   the dispatcher's own engine guards.
+#
 # Implements the validation cascade specified in
 # dev/table_regression_design.md Q21: 6 phases, 29 steps, fail-fast
 # at first error except step 3 (multi-model class aggregate-fail per

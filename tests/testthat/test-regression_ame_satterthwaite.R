@@ -141,17 +141,21 @@ test_that("extract_ame_satterthwaite — empty when formula has no main-effect p
   expect_equal(nrow(rows), 0L)
 })
 
-test_that("extract_ame_satterthwaite — errors on function-call predictors", {
+test_that("extract_ame_satterthwaite — errors with classed condition on function-call predictors", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ poly(x, 2), data = df)
-  expect_error(
+  err <- tryCatch(
     spicy:::extract_ame_satterthwaite(
       fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
       model_id = "M1", outcome = "y"
     ),
-    "function-call predictors"
+    error = function(e) e
   )
+  expect_s3_class(err, "spicy_ame_satt_unsupported_formula")
+  expect_s3_class(err, "spicy_unsupported")
+  expect_s3_class(err, "spicy_error")
+  expect_match(conditionMessage(err), "function-call predictor")
 })
 
 
@@ -189,6 +193,117 @@ test_that("extract_ame_rows — Path A failure on poly() falls back to Path B", 
     model_id = "M1", outcome = "y"
   ))
   expect_true(nrow(rows) > 0L)
+})
+
+test_that("extract_ame_marginaleffects — bare factor variable matches model.frame name directly", {
+  # Sanity: when the predictor IS already a factor in the data,
+  # var_name from marginaleffects matches the model.frame column
+  # name exactly and the grep fallback is not exercised.
+  skip_if_not_installed("marginaleffects")
+  mt <- mtcars
+  mt$cyl <- factor(mt$cyl)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  vc <- vcov(fit)
+  rows <- spicy:::extract_ame_marginaleffects(
+    fit, vc = vc, vcov_type = "classical", ci_level = 0.95,
+    model_id = "M1", outcome = "mpg"
+  )
+  expect_true(any(rows$term == "cyl6"))
+  expect_true(any(rows$term == "cyl8"))
+  expect_true(any(rows$term == "wt"))
+})
+
+test_that("extract_ame_marginaleffects — handles inline factor(x) transform (Path B)", {
+  # Edge case: when the formula uses an inline `factor()` transform,
+  # marginaleffects strips the wrapper and reports the bare variable
+  # name ("cyl") rather than "factor(cyl)". Path B must resolve the
+  # bare name back to the model-frame column ("factor(cyl)") so the
+  # AME row term_id matches the lm coefficient name
+  # ("factor(cyl)6"); otherwise the AME row de-aligns with the B
+  # coefficient row in the rendered table.
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+  vc <- vcov(fit)
+  rows <- suppressWarnings(spicy:::extract_ame_marginaleffects(
+    fit, vc = vc, vcov_type = "classical", ci_level = 0.95,
+    model_id = "M1", outcome = "mpg"
+  ))
+  expect_true(any(rows$term == "wt"))
+  expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
+})
+
+test_that("extract_ame_rows — fallback wording differs by cause (Q14b)", {
+  skip_if_no_clubsandwich()
+  skip_if_not_installed("marginaleffects")
+  df <- mk_clustered_data()
+
+  # Cause 1: unsupported formula → "is not applicable to this formula"
+  fit_poly <- lm(y ~ poly(x, 2), data = df)
+  vc <- clubSandwich::vcovCR(fit_poly, type = "CR2", cluster = df$cluster)
+  w1 <- tryCatch(
+    withCallingHandlers(
+      spicy:::extract_ame_rows(
+        fit_poly, vc = vc, vcov_type = "CR2", cluster = df$cluster,
+        ci_level = 0.95, use_ame_satterthwaite = TRUE,
+        model_id = "M1", outcome = "y"
+      ),
+      spicy_fallback = function(c) stop(conditionMessage(c))
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(w1, "is not applicable to this formula")
+  expect_match(w1, "function-call predictor")
+})
+
+test_that("extract_ame_rows — unexpected internal failure uses 'open an issue' wording", {
+  # Cause 2: any non-spicy_ame_satt_unsupported_formula error
+  # exits via the catch-all branch. We mock extract_ame_satterthwaite
+  # to throw a plain error and verify the fallback message routes
+  # through the second branch with the GitHub issue hint.
+  skip_if_not_installed("marginaleffects")
+  testthat::local_mocked_bindings(
+    extract_ame_satterthwaite = function(...) {
+      stop("synthetic failure for test")
+    },
+    .package = "spicy"
+  )
+  df <- mk_clustered_data()
+  fit <- lm(y ~ x, data = df)
+  vc <- vcov(fit)
+  w <- tryCatch(
+    withCallingHandlers(
+      spicy:::extract_ame_rows(
+        fit, vc = vc, vcov_type = "CR2", cluster = df$cluster,
+        ci_level = 0.95, use_ame_satterthwaite = TRUE,
+        model_id = "M1", outcome = "y"
+      ),
+      spicy_fallback = function(c) stop(conditionMessage(c))
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(w, "failed unexpectedly")
+  expect_match(w, "open an issue")
+})
+
+test_that("extract_ame_marginaleffects — avg_slopes failure emits spicy_fallback warning", {
+  # Force an avg_slopes failure by passing a malformed vcov matrix
+  # (wrong dimensions / wrong row names). The function catches the
+  # error, warns spicy_fallback, and returns empty_coefs_long().
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt, data = mtcars)
+  bad_vc <- matrix(NA_real_, nrow = 3L, ncol = 3L)
+  rownames(bad_vc) <- colnames(bad_vc) <- c("a", "b", "c")
+  w <- tryCatch(
+    withCallingHandlers(
+      spicy:::extract_ame_marginaleffects(
+        fit, vc = bad_vc, vcov_type = "classical", ci_level = 0.95,
+        model_id = "M1", outcome = "mpg"
+      ),
+      spicy_fallback = function(c) stop(conditionMessage(c))
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(w, "AME computation via")
 })
 
 
