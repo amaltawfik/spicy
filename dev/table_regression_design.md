@@ -103,8 +103,7 @@ table_regression(
   group_factor_levels = TRUE,
   reference_style = c("row", "annotation"),
   reference_label = "(ref.)",
-  show_fit_stats = c("nobs", "r.squared",            # tokens — see vocabulary below
-                     "adj.r.squared"),
+  show_fit_stats = c("nobs", "r2", "adj_r2"),        # tokens — see vocabulary below
   model_labels = NULL,                               # NULL → smart default; char vec → explicit
   outcome_labels = NULL,                             # NULL → smart auto (label > varname, hide if DVs identical); char vec → explicit; FALSE → suppress
   stars = FALSE,                                     # FALSE / TRUE (APA preset) / named numeric vector (custom thresholds)
@@ -171,8 +170,8 @@ consistency with the rest of the package maintained.
 | ----- | ------ | ----------- |
 | `nobs` | count | number of observations |
 | `weighted_nobs` | count | sum of weights (when `weights` is set) |
-| `r.squared` | variance explained | R² |
-| `adj.r.squared` | variance explained | Wherry-corrected R² |
+| `r2` | variance explained | R² |
+| `adj_r2` | variance explained | Wherry-corrected R² |
 | `omega2` | variance explained | Hays bias-corrected R² (Olejnik & Algina 2003) |
 | `sigma` | residual scale | classical residual SD: `sqrt(SSE/(n-p))` |
 | `rmse` | residual scale | predictive RMSE: `sqrt(SSE/n)` |
@@ -182,14 +181,14 @@ consistency with the rest of the package maintained.
 | `BIC` | information | Bayesian Information Criterion |
 | `deviance` | likelihood | residual deviance (= SSE for Gaussian) |
 
-**Default**: `c("nobs", "r.squared", "adj.r.squared")`.
+**Default**: `c("nobs", "r2", "adj_r2")`.
 
 ### `nested_stats` (hierarchical comparison footer)
 
 | Token | Compatibility | Description |
 | ----- | ------------- | ----------- |
-| `R2_change` | lm | ΔR² between adjacent models |
-| `AdjR2_change` | lm | ΔAdj.R² |
+| `r2_change` | lm | ΔR² between adjacent models |
+| `adj_r2_change` | lm | ΔAdj.R² |
 | `F` | lm | partial F-test |
 | `f2_change` | lm | Cohen's f² for the additional predictors |
 | `LRT` | lm, glm, merMod | likelihood-ratio test (Chi²) |
@@ -200,7 +199,7 @@ consistency with the rest of the package maintained.
 | `p` | all | p-value of the chosen test (F or LRT) |
 
 **Default per class** (when `nested_stats = NULL`):
-- **lm**: `c("R2_change", "F", "p")` — APA hierarchical regression
+- **lm**: `c("r2_change", "F", "p")` — APA hierarchical regression
 - **glm** (Phase 3): `c("LRT", "AIC", "p")` — biostats / health-econ standard
 - **merMod** (Phase 4): `c("LRT", "AIC")` — Bates et al. 2015
 
@@ -210,7 +209,7 @@ list.
 
 ---
 
-## 5. Settled decisions (10 questions, closed)
+## 5. Settled decisions (24 questions, closed)
 
 ### Q1 — Headers de colonne pour multi-modèle
 
@@ -287,9 +286,11 @@ list.
 | **`as.data.frame()` / `as_tibble()`** | wide raw output (= `output = "data.frame"`) |
 | **List-of-tibbles** | never returned (violates broom contract) |
 
-`tidy()` columns: `model_id, outcome, term, estimate_type ("B"/"beta"), estimate, std.error, conf.low, conf.high, statistic, p.value`.
+> ⚠ **Schemas listed below are SUPERSEDED by Q17** (more complete). Refer to Q17 for the authoritative `tidy()` / `glance()` specifications.
 
-`glance()` columns: `model_id, outcome, nobs, r.squared, adj.r.squared, omega2, sigma, rmse, AIC, AICc, BIC, deviance, df.residual` (numeric, not integer — Satterthwaite-safe).
+`tidy()` columns (initial draft, replaced by Q17): `model_id, outcome, term, estimate_type ("B"/"beta"), estimate, std.error, conf.low, conf.high, statistic, p.value`.
+
+`glance()` columns (initial draft, replaced by Q17): `model_id, outcome, nobs, r.squared, adj.r.squared, omega2, sigma, rmse, AIC, AICc, BIC, deviance, df.residual`.
 
 ### Q9 — Reject of non-lm classes in Phase 1
 
@@ -560,11 +561,11 @@ A general convention adopted at the same time:
 
 | Argument | Default | Covers |
 | -------- | ------- | ------ |
-| `digits` | `2L` | B, β, SE, CI, t/z, F, Chi², deviance, σ̂, weighted_n, AME |
-| `p_digits` | `3L` | p-values (APA-strict: leading zero stripped, `<.001` threshold) |
-| `effect_size_digits` | `2L` | partial_f2, partial_eta2, partial_omega2 |
-| `fit_digits` | `2L` | R², Adj.R², ΔR², omega2, f² model-level, sigma, rmse |
-| `ic_digits` | `1L` | AIC, AICc, BIC, ΔAIC, ΔBIC |
+| `digits` | `2L` | tokens `B`, `beta`, `SE`, `CI`, `t`, `F`, `LRT`, `deviance`, `deviance_change`, `AME`, `AME_SE` ; `weighted_nobs` |
+| `p_digits` | `3L` | tokens `p`, `AME_p`, p-values in `nested_stats` (APA-strict: leading zero stripped, `<.001` threshold) |
+| `effect_size_digits` | `2L` | tokens `partial_f2`, `partial_eta2`, `partial_omega2` |
+| `fit_digits` | `2L` | tokens `r2`, `adj_r2`, `r2_change`, `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`, `rmse` |
+| `ic_digits` | `1L` | tokens `AIC`, `AICc`, `BIC` (in both `show_fit_stats` and `nested_stats` — Δ-form derived automatically) |
 
 `df` rendering (Satterthwaite, `format_df()`): hardcoded — integer if
 whole within FP tolerance, else 1 decimal.
@@ -580,10 +581,28 @@ probability scale (often <0.1 for logit). Add then, not now.
 
 | Version | Scope |
 | ------- | ----- |
-| **0.13.0** | **Phase 1**: single lm + multi-lm (per-model `vcov`/`cluster` lists), full vcov family + cluster, `standardized = "refit"/posthoc/basic/smart"` (native), all 12 `show_columns` tokens, all 12 `show_fit_stats` tokens, all 10 `nested_stats` tokens, 8 outputs, broom integration, APA strict. |
+| **0.13.0** | **Phase 1**: single lm + multi-lm (per-model `vcov`/`cluster` lists), full vcov family + cluster, `standardized = "refit"/"posthoc"/"basic"/"smart"` (native), all 12 `show_columns` tokens, all 12 `show_fit_stats` tokens, all 10 `nested_stats` tokens, 8 outputs, broom integration, APA strict. |
 | **0.14.0** | **Phase 2**: helpers comparison auto-detect (off by default), auto-replication of single fit + per-vcov list, AME default-on for lm with detected interactions. |
 | **0.15.0** | **Phase 3**: glm support (binomial logit/probit, Poisson, quasi-Poisson). `exponentiate = TRUE`. Pseudo-R² (McFadden, Tjur, Nagelkerke, Cox-Snell). `digits_ame` arg. AME default-on. |
 | **0.16.0+** | **Phase 4**: merMod (lme4 / lmerTest). Random-effect block separated. |
+
+### Phase 3 forward-compat notes (anticipated for glm)
+
+Recorded here so Phase 3 implementation doesn't get blindsided by
+issues better resolved at design time:
+
+| Topic | Anticipated decision for Phase 3 |
+|---|---|
+| **AME-Satterthwaite under CR* for glm** | the closed-form linear-contrast approach of Q14b does **not** generalise to glm: the AME of `g(Xβ)` requires the link-function gradient `g'(Xβ)`, making the contrast non-linear (data-dependent). Phase 3 falls back to **Option A** (matrix vcov passed to `marginaleffects::avg_slopes()` with z-asymptotic) for AME under CR*. Footer caveat re-introduced in this case. The Q14b differentiation (Option B) is **lm-only** by mathematical necessity, not by lack of effort. |
+| **Pseudo-R² family by glm family** | conventions to settle in Phase 3: binomial logit → Tjur (Tjur 2009) + McFadden ; probit → McFadden + Cox-Snell ; Poisson / quasi-Poisson → McFadden + deviance-based. New tokens: `pseudo_r2_mcfadden`, `pseudo_r2_tjur`, `pseudo_r2_nagelkerke`, `pseudo_r2_coxsnell`. Default per family decided in Phase 3. |
+| **`exponentiate = TRUE`** | new arg in Phase 3 for glm logit/probit (OR) and Poisson (IRR). Affects `B` token (renders `exp(B)`), `CI` token (exponentiated bounds), but **not** `AME` (stays on probability / expected-count scale). Default `TRUE` for glm logit/probit, `TRUE` for Poisson. Phase 1 lm: not exposed (no semantic). |
+| **`digits_ame`** | new arg in Phase 3. AME on probability scale often `< 0.1` for logit → 3 decimals appropriate. Default `digits_ame = 3L` for glm; for lm where AME ≈ B, `digits` covers (no need for the arg in Phase 1). |
+| **nested_stats default for glm** | `c("LRT", "AIC", "p")` (already locked in Q6 / §4 vocabulary). |
+| **Family detection** | `family(fit)$family` and `family(fit)$link` extract the dispatch keys for glm. Trivial helper `extract_glm_family_link()`. |
+| **Token compatibility validation** | already implemented per-class (Q6); Phase 3 just adds new tokens to the compatibility matrix. No reorganisation. |
+| **Class dispatch** | `extract_lm.glm()` is a separate S3 method on `extract_lm`. Phase 1's `extract_lm.lm()` doesn't need refactoring; the dispatch was designed for this. |
+| **glm-specific AME tokens** | `AME` token works for glm (marginaleffects handles the link-function math). Phase 3 just removes the lm-only Q14b path. |
+| **glm `glance()` schema** | will include `pseudo_r2_*` columns (varying by family), `null.deviance`, `df.null`, retain `deviance`, `df.residual`, `AIC`, `BIC`, `nobs`. Drop `r.squared`, `adj.r.squared`, `omega2`, `sigma`, `rmse` (lm-specific). Class-aware glance schema, dispatched on the model's primary class. |
 
 ---
 
@@ -704,7 +723,7 @@ cheapest possible moment**. Once the help page reads cleanly, *then*
 the implementation flows naturally because the contract is unambiguous.
 
 This is optional. If you'd rather jump straight to implementation
-once 0.12.0 is on CRAN, that works too. The 10 settled decisions
+once 0.12.0 is on CRAN, that works too. The 24 settled decisions
 above are sufficient to write the implementation directly.
 
 ---
@@ -713,7 +732,7 @@ above are sufficient to write the implementation directly.
 
 | Module | Estimated lines |
 | ------ | --------------- |
-| Public function + arg validation | ~150 |
+| Public function + arg validation (29 steps cascade per Q21) | ~190 |
 | `extract_lm.lm` (per-model long-format extractor) | ~80 |
 | Multi-model alignment + pivot | ~50 |
 | Standardisation native (4 methods) + non-additive detection + caveat warning (Q15) | ~80 |
