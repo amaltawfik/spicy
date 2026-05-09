@@ -38,6 +38,7 @@
 render_regression_table <- function(
     aligned,
     show_columns = c("B", "SE", "CI", "p"),
+    show_fit_stats = c("nobs", "r2", "adj_r2"),
     model_labels = NULL,
     reference_label = "(ref.)",
     reference_style = c("row", "annotation"),
@@ -47,10 +48,14 @@ render_regression_table <- function(
     digits = 2L,
     p_digits = 3L,
     effect_size_digits = 2L,
+    fit_digits = 2L,
+    ic_digits = 1L,
     decimal_mark = ".",
+    align = c("decimal", "center", "right", "auto"),
     labels = NULL,
     title = NULL,
     note = NULL) {
+  align <- match.arg(align)
   reference_style <- match.arg(reference_style)
 
   coefs <- aligned$coefs_aligned
@@ -113,9 +118,42 @@ render_regression_table <- function(
   }
 
   body <- do.call(rbind, rows)
+
+  # Append fit-stats rows below the body (one per requested token).
+  # Group separator (sep_row_idx attr) tells the printer where the
+  # body ends and the fit-stats footer begins.
+  fit_stats <- aligned$fit_stats_aligned
+  group_sep <- integer(0)
+  if (length(show_fit_stats) > 0L && !is.null(fit_stats) &&
+      nrow(fit_stats) > 0L) {
+    fit_rows <- build_fit_stats_rows(
+      fit_stats, show_fit_stats, model_ids, label_map,
+      col_spec = col_spec,
+      digits = digits, fit_digits = fit_digits,
+      ic_digits = ic_digits, decimal_mark = decimal_mark
+    )
+    if (length(fit_rows) > 0L) {
+      group_sep <- nrow(body) + 1L
+      body <- rbind(body, do.call(rbind, fit_rows))
+    }
+  }
+
+  # Apply decimal alignment to numeric cells (default).
+  # Other modes are passed through to the print engine via the
+  # `align` attribute and applied at output-dispatch time.
+  if (identical(align, "decimal")) {
+    data_cols <- setdiff(names(body), "Variable")
+    for (col in data_cols) {
+      body[[col]] <- decimal_align_strings(body[[col]],
+                                            decimal_mark = decimal_mark)
+    }
+  }
+
   attr(body, "title") <- title
   attr(body, "note") <- note
   attr(body, "col_spec") <- col_spec
+  attr(body, "group_sep_rows") <- group_sep
+  attr(body, "align") <- align
   body
 }
 
@@ -324,18 +362,28 @@ format_term_label <- function(term_row, reference_label, reference_style,
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
     if (isTRUE(group_factor_levels)) {
       # Grouped: factor header carries var name → indent + bare level.
-      return(paste0("  ", lvl, " ", reference_label))
+      # Label lookup tries the coef-style key (e.g. "cyl4") first so
+      # users can relabel individual reference rows; falls back to
+      # the bare factor_level string.
+      lbl <- resolve_label(term, labels)
+      if (identical(lbl, term)) lbl <- lvl
+      return(paste0("  ", lbl, " ", reference_label))
     }
     # Flat: no factor header → render as <var><level> (matching the
     # coef-name convention used for non-reference dummies).
     ft <- term_row$factor_term
-    flat_lbl <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
+    flat_key <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
+    flat_lbl <- resolve_label(flat_key, labels)
     return(paste0(flat_lbl, " ", reference_label))
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
-    return(paste0("  ", lvl))
+    # Coef-style key first ("cyl6" → "6 cylinders"); otherwise the
+    # bare factor level.
+    lbl <- resolve_label(term, labels)
+    if (identical(lbl, term)) lbl <- lvl
+    return(paste0("  ", lbl))
   }
   resolve_label(term, labels)
 }
@@ -347,6 +395,106 @@ resolve_label <- function(term, labels) {
     return(labels[[term]])
   }
   term
+}
+
+
+# ---- Fit-stats footer rows -----------------------------------------------
+
+# Append one row per show_fit_stats token. The fit-stat value goes
+# into the FIRST sub-column of each model (the "B" column under the
+# default show_columns layout); the other sub-columns are blank,
+# matching modelsummary / gtsummary convention. group_sep_rows attr
+# on the parent table marks the divider so the print method draws a
+# horizontal rule between the body and the fit-stats block.
+build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
+                                  label_map, col_spec,
+                                  digits, fit_digits, ic_digits,
+                                  decimal_mark) {
+  if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
+    return(list())
+  }
+
+  # First sub-column per model (where the fit-stat value will land)
+  first_col_per_model <- vapply(model_ids, function(m_id) {
+    for (cs in col_spec) {
+      if (identical(cs$model_id, m_id)) return(cs$col_name)
+    }
+    NA_character_
+  }, character(1))
+  names(first_col_per_model) <- model_ids
+  all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
+
+  rows <- list()
+  for (tk in show_fit_stats) {
+    if (!tk %in% names(fit_stats)) next   # token absent from fit_stats schema
+    cells <- list(Variable = fit_stat_label(tk))
+    for (col in all_data_cols) cells[[col]] <- ""
+    for (m_id in model_ids) {
+      target_col <- first_col_per_model[[m_id]]
+      if (is.na(target_col)) next
+      sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
+      if (nrow(sub) == 0L) next
+      val <- sub[[tk]][1]
+      cells[[target_col]] <- format_fit_stat_value(
+        tk, val,
+        digits = digits, fit_digits = fit_digits,
+        ic_digits = ic_digits,
+        decimal_mark = decimal_mark
+      )
+    }
+    rows[[length(rows) + 1L]] <- as.data.frame(
+      cells, stringsAsFactors = FALSE, check.names = FALSE
+    )
+  }
+  rows
+}
+
+# Display label for each show_fit_stats token. Greek symbols and
+# typographic conventions per APA / modelsummary.
+fit_stat_label <- function(token) {
+  switch(token,
+    nobs           = "n",
+    weighted_nobs  = "Weighted n",
+    r2             = "R²",
+    adj_r2         = "Adj.R²",
+    omega2         = "ω²",
+    sigma          = "σ̂",
+    rmse           = "RMSE",
+    f2             = "f²",
+    AIC            = "AIC",
+    AICc           = "AICc",
+    BIC            = "BIC",
+    deviance       = "Deviance",
+    token
+  )
+}
+
+# Per-token precision bucket per the design Q digits decision matrix:
+#   nobs / weighted_nobs       → integer (0 decimals)
+#   r2 / adj_r2 / omega2 / f2  → fit_digits
+#   sigma / rmse               → fit_digits
+#   AIC / AICc / BIC           → ic_digits
+#   deviance                   → digits
+format_fit_stat_value <- function(token, val,
+                                    digits, fit_digits, ic_digits,
+                                    decimal_mark) {
+  if (is.null(val) || is.na(val)) return("")
+  prec <- switch(token,
+    nobs           = 0L,
+    weighted_nobs  = 0L,
+    r2             = fit_digits,
+    adj_r2         = fit_digits,
+    omega2         = fit_digits,
+    sigma          = fit_digits,
+    rmse           = fit_digits,
+    f2             = fit_digits,
+    AIC            = ic_digits,
+    AICc           = ic_digits,
+    BIC            = ic_digits,
+    deviance       = digits,
+    digits
+  )
+  format_number(val, prec, decimal_mark)
 }
 
 

@@ -257,10 +257,26 @@ output_word <- function(rendered, word_path) {
 
 #' @export
 print.spicy_regression_table <- function(x, ...) {
+  group_sep <- attr(x, "group_sep_rows")
+  if (is.null(group_sep)) group_sep <- integer(0)
+  align <- attr(x, "align") %||% "decimal"
+
+  body <- as.data.frame(x, stringsAsFactors = FALSE)
+  data_col_idx <- setdiff(seq_along(body), 1L)
+  align_center_cols <- if (identical(align, "center")) {
+    data_col_idx
+  } else {
+    integer(0)
+  }
+  # "decimal" alignment was pre-applied in the renderer (cells are
+  # already padded). "right" / "auto" delegate to the print engine
+  # defaults. "center" forces center alignment of data columns.
   spicy_print_table(
-    as.data.frame(x, stringsAsFactors = FALSE),
+    body,
     title = attr(x, "title"),
     note = attr(x, "note"),
+    group_sep_rows = group_sep,
+    align_center_cols = align_center_cols,
     ...
   )
   invisible(x)

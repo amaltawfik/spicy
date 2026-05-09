@@ -635,6 +635,7 @@ table_regression <- function(
   rendered <- render_regression_table(
     aligned,
     show_columns = show_columns,
+    show_fit_stats = show_fit_stats,
     model_labels = effective_model_labels,
     reference_label = reference_label,
     reference_style = reference_style,
@@ -644,7 +645,10 @@ table_regression <- function(
     digits = digits,
     p_digits = p_digits,
     effect_size_digits = effect_size_digits,
+    fit_digits = fit_digits,
+    ic_digits = ic_digits,
     decimal_mark = decimal_mark,
+    align = align,
     labels = labels,
     title = title,
     note = full_footer_str

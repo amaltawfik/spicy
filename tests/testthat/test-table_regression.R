@@ -31,7 +31,8 @@ test_that("table_regression — factor with reference: ref row em-dashed", {
   ref_idx <- grep("\\(ref\\.\\)", out$Variable)
   expect_equal(length(ref_idx), 1L)
   stat_cols <- setdiff(names(out), "Variable")
-  expect_true(all(unlist(out[ref_idx, stat_cols]) == "—"))
+  # trim padding from default decimal alignment before comparison
+  expect_true(all(trimws(unlist(out[ref_idx, stat_cols])) == "—"))
 })
 
 
@@ -458,4 +459,100 @@ test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
                      excel_path = "/no/such/directory/out.xlsx"),
     class = "spicy_invalid_input"
   )
+})
+
+
+# ============================================================================
+# Polish round 4 — show_fit_stats footer block, labels for coef-style
+# names, align argument
+# ============================================================================
+
+test_that("show_fit_stats — default tokens (n / R² / Adj.R²) appear in body", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_true("n" %in% out$Variable)
+  expect_true("R²" %in% out$Variable)
+  expect_true("Adj.R²" %in% out$Variable)
+})
+
+test_that("show_fit_stats — custom tokens (omega2, sigma, AIC) appear", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit,
+                          show_fit_stats = c("nobs", "omega2",
+                                              "sigma", "AIC"))
+  expect_true("ω²" %in% out$Variable)
+  expect_true("σ̂" %in% out$Variable)
+  expect_true("AIC" %in% out$Variable)
+})
+
+test_that("show_fit_stats — empty character drops the footer block", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit, show_fit_stats = character(0))
+  expect_false(any(c("n", "R²", "Adj.R²") %in% out$Variable))
+})
+
+test_that("show_fit_stats — multi-model: each model contributes its values", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list(m1, m2),
+                          show_fit_stats = c("nobs", "r2"))
+  # Both n rows present; R² differs across the two model columns
+  expect_true("n" %in% out$Variable)
+  expect_true("R²" %in% out$Variable)
+  r2_row <- out[out$Variable == "R²", , drop = FALSE]
+  m1_first <- trimws(r2_row[["Model 1: B"]])
+  m2_first <- trimws(r2_row[["Model 2: B"]])
+  expect_true(nzchar(m1_first))
+  expect_true(nzchar(m2_first))
+  expect_false(identical(m1_first, m2_first))
+})
+
+test_that("group_sep_rows attribute marks the body / fit-stats divider", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit)
+  sep <- attr(out, "group_sep_rows")
+  expect_true(length(sep) == 1L && sep > 0L)
+  # Separator points to the row right after the body ends
+  expect_equal(out$Variable[sep], "n")
+})
+
+test_that("labels — coef-style key (cyl6) renames the contrast row", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit,
+                          labels = c("cyl6" = "6 cylinders",
+                                      "cyl8" = "8 cylinders"))
+  # Indented level rows are renamed
+  expect_true(any(grepl("6 cylinders$", out$Variable)))
+  expect_true(any(grepl("8 cylinders$", out$Variable)))
+  # Factor header still uses the term name "cyl"
+  expect_true("cyl:" %in% out$Variable)
+})
+
+test_that("labels — mixed term + coef-style keys both honoured", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit,
+                          labels = c("cyl" = "Cylinders",
+                                      "cyl6" = "Six",
+                                      "wt" = "Weight"))
+  expect_true("Weight" %in% out$Variable)
+  expect_true("Cylinders:" %in% out$Variable)
+  expect_true(any(grepl("Six$", out$Variable)))
+})
+
+test_that("align — 'decimal' is default; padding applied to numeric cols", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit)
+  expect_equal(attr(out, "align"), "decimal")
+  # Decimal-aligned strings are pre-padded → cells contain spaces
+  b_col <- out$B
+  # At least some cells start or end with a space (padding)
+  expect_true(any(grepl("^[ ].*", b_col) | grepl(".*[ ]$", b_col)))
+})
+
+test_that("align — 'auto' / 'right' / 'center' are accepted (no decimal pad)", {
+  fit <- lm(mpg ~ wt, data = mt)
+  for (a in c("center", "right", "auto")) {
+    out <- table_regression(fit, align = a)
+    expect_equal(attr(out, "align"), a)
+  }
 })

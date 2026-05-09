@@ -87,9 +87,11 @@ test_that("render — reference rows em-dashed in stat columns", {
   rt <- spicy:::render_regression_table(aligned)
   ref_row <- rt[grepl("\\(ref\\.\\)", rt$Variable), , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
-  # All stat cols em-dashed
+  # All stat cols em-dashed (trim decimal-alignment padding before
+  # comparison — render output pre-pads numeric cells for vertical
+  # decimal-mark alignment by default).
   stat_cols <- setdiff(names(ref_row), "Variable")
-  expect_true(all(unlist(ref_row[1, stat_cols]) == "—"))
+  expect_true(all(trimws(unlist(ref_row[1, stat_cols])) == "—"))
 })
 
 test_that("render — reference_label customisation", {
@@ -137,7 +139,9 @@ test_that("render — stars custom thresholds applied", {
 test_that("render — intercept_position = 'last' places intercept last", {
   aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"),
                         intercept_position = "last")
-  rt <- spicy:::render_regression_table(aligned)
+  # Disable fit-stats footer so the intercept is the literal last row.
+  rt <- spicy:::render_regression_table(aligned,
+                                        show_fit_stats = character(0))
   intercept_idx <- which(rt$Variable == "(Intercept)")
   expect_equal(intercept_idx, nrow(rt))
 })

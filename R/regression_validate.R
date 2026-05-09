@@ -375,8 +375,15 @@ validate_show_columns <- function(show_columns, standardized) {
   invisible(NULL)
 }
 
-# Step 10: show_fit_stats
+# Step 10: show_fit_stats. Empty character or NULL means "drop the
+# fit-stats footer block" — a legitimate rendering choice (some
+# users prefer the body alone). show_columns has no analogous
+# escape hatch because a table with zero data columns is
+# nonsensical.
 validate_show_fit_stats <- function(show_fit_stats) {
+  if (is.null(show_fit_stats) || length(show_fit_stats) == 0L) {
+    return(invisible(NULL))
+  }
   validate_token_vector(
     show_fit_stats,
     .regression_tokens$show_fit_stats,
@@ -647,21 +654,37 @@ validate_predictor_labels <- function(labels, models) {
     )
   }
 
-  # Union of term labels across all models
+  # Accept BOTH:
+  #   * formula term labels  (`attr(terms(fit), "term.labels")`)
+  #     → e.g. "wt", "cyl", "wt:cyl", "I(x^2)"
+  #   * coefficient names    (`names(coef(fit))`)
+  #     → e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
+  # The renderer tries the per-row label first (coef name), then
+  # falls back to the per-term label (factor variable). So both
+  # flavours of key are useful: term keys rename factor headers,
+  # coef keys rename individual contrast rows.
   all_terms <- unique(unlist(lapply(models, function(fit) {
     attr(stats::terms(fit), "term.labels")
   })))
-  unknown <- setdiff(nms, all_terms)
+  all_coefs <- unique(unlist(lapply(models, function(fit) {
+    names(stats::coef(fit))
+  })))
+  valid_keys <- unique(c(all_terms, all_coefs))
+  unknown <- setdiff(nms, valid_keys)
   if (length(unknown) > 0L) {
     spicy_abort(
       c(
         sprintf(
-          "Some `labels` keys are not term labels in any of the models: %s.",
+          "Some `labels` keys are not term or coefficient names: %s.",
           paste(shQuote(unknown), collapse = ", ")
         ),
         "i" = sprintf(
           "Available term labels: %s.",
           paste(shQuote(all_terms), collapse = ", ")
+        ),
+        "i" = sprintf(
+          "Available coefficient names: %s.",
+          paste(shQuote(all_coefs), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"
