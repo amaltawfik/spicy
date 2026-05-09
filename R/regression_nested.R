@@ -158,7 +158,7 @@ format_nested_comparison_footer <- function(
     ic_digits = 1L) {
   if (is.null(comparisons) || nrow(comparisons) == 0L) return(NULL)
 
-  header <- "── Model comparison ──"
+  header <- "\u2500\u2500 Model comparison \u2500\u2500"
   lines <- vapply(seq_len(nrow(comparisons)), function(i) {
     row <- comparisons[i, , drop = FALSE]
     token_cols <- setdiff(names(row), "comparison")
@@ -181,7 +181,7 @@ format_nested_comparison_footer <- function(
 format_nested_token <- function(token, value,
                                  digits, p_digits, fit_digits, ic_digits) {
   if (is.na(value) || !is.finite(value)) {
-    return(paste0(token_label(token), " = —"))
+    return(paste0(token_label(token), " = \u2014"))
   }
   prec <- token_precision(token, digits, p_digits, fit_digits, ic_digits)
   if (token == "p") {
@@ -193,15 +193,15 @@ format_nested_token <- function(token, value,
 # Symbolic label for each token.
 token_label <- function(token) {
   switch(token,
-    r2_change       = "ΔR²",
-    adj_r2_change   = "ΔAdj.R²",
+    r2_change       = "\u0394R\u00B2",
+    adj_r2_change   = "\u0394Adj.R\u00B2",
     F               = "F",
-    f2_change       = "Δf²",
-    LRT             = "χ²",
-    AIC             = "ΔAIC",
-    AICc            = "ΔAICc",
-    BIC             = "ΔBIC",
-    deviance_change = "Δdev",
+    f2_change       = "\u0394f\u00B2",
+    LRT             = "\u03C7\u00B2",
+    AIC             = "\u0394AIC",
+    AICc            = "\u0394AICc",
+    BIC             = "\u0394BIC",
+    deviance_change = "\u0394dev",
     p               = "p",
     token
   )

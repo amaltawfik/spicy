@@ -111,7 +111,7 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
   if (inherits(fit, "glm")) {
     return(paste0(
       pos_prefix,
-      "`glm()` model — supported in spicy 0.15.0. ",
+      "`glm()` model \u2014 supported in spicy 0.15.0. ",
       "If your model is OLS (gaussian / identity link), refit with `lm()` directly."
     ))
   }
@@ -119,7 +119,7 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
     return(paste0(
       pos_prefix,
       sprintf(
-        "`%s` mixed-effects model — supported in spicy 0.16+.",
+        "`%s` mixed-effects model \u2014 supported in spicy 0.16+.",
         class(fit)[1]
       )
     ))
@@ -136,7 +136,7 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
   if (!inherits(fit, "lm")) {
     return(paste0(
       pos_prefix,
-      sprintf("`%s` — not on the roadmap. ", class(fit)[1]),
+      sprintf("`%s` \u2014 not on the roadmap. ", class(fit)[1]),
       "If support would be useful, please open an issue: ",
       "https://github.com/amaltawfik/spicy/issues"
     ))
@@ -163,8 +163,8 @@ validate_nested_alignment <- function(models, nested) {
           paste(nobs_vec, collapse = ", ")
         ),
         "i" = paste0(
-          "Hierarchical comparison statistics (ΔR², partial F, ",
-          "ΔAIC, LRT, etc.) require identical observations across ",
+          "Hierarchical comparison statistics (\u0394R\u00B2, partial F, ",
+          "\u0394AIC, LRT, etc.) require identical observations across ",
           "all models. Different `nobs` typically results from R's ",
           "listwise deletion on different rows for each model."
         ),
@@ -249,8 +249,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         c(
           "`vcov` must be a single string or a list of strings.",
           "i" = paste0(
-            "Valid scalars: \"classical\", \"HC0\"–\"HC5\", ",
-            "\"CR0\"–\"CR3\", \"bootstrap\", \"jackknife\"."
+            "Valid scalars: \"classical\", \"HC0\"\u2013\"HC5\", ",
+            "\"CR0\"\u2013\"CR3\", \"bootstrap\", \"jackknife\"."
           )
         ),
         class = "spicy_invalid_input"
@@ -733,14 +733,14 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
 
   caveat_msg <- if (identical(standardized, "refit")) {
     paste0(
-      "After refit on z-scored data, β for these terms reflects ",
+      "After refit on z-scored data, \u03B2 for these terms reflects ",
       "the interaction of z-scored variables, not the standardisation ",
       "of the original term."
     )
   } else {
     paste0(
-      "β uses SD of the product / transformed column, which differs ",
-      "from SD(x) × SD(z) and may be unstable."
+      "\u03B2 uses SD of the product / transformed column, which differs ",
+      "from SD(x) \u00D7 SD(z) and may be unstable."
     )
   }
 
@@ -755,7 +755,7 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
       ),
       lines,
       "i" = caveat_msg,
-      "i" = "Cohen, Cohen, West & Aiken (2003) §7.7."
+      "i" = "Cohen, Cohen, West & Aiken (2003) \u00A77.7."
     ),
     class = "spicy_caveat"
   )

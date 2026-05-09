@@ -219,7 +219,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                           header_short = "p"),
     beta           = list(estimate_type = "beta",
                           fields = "estimate",
-                          header_short = "β"),
+                          header_short = "\u03B2"),
     AME            = list(estimate_type = "AME",
                           fields = c("estimate", "ci_low", "ci_high"),
                           header_short = "AME"),
@@ -231,13 +231,13 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                           header_short = "AME SE"),
     partial_f2     = list(estimate_type = "partial_f2",
                           fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "f²"),
+                          header_short = "f\u00B2"),
     partial_eta2   = list(estimate_type = "partial_eta2",
                           fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "η²"),
+                          header_short = "\u03B7\u00B2"),
     partial_omega2 = list(estimate_type = "partial_omega2",
                           fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "ω²")
+                          header_short = "\u03C9\u00B2")
   )
 
   out <- list()
@@ -290,7 +290,7 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
 
   for (cs in col_spec) {
     if (isTRUE(term_row$is_reference)) {
-      cells[[cs$col_name]] <- "—"   # em-dash
+      cells[[cs$col_name]] <- "\u2014"   # em-dash
       next
     }
     long_row <- coefs[coefs$model_id == cs$model_id &
@@ -329,7 +329,7 @@ format_cell_value <- function(long_row, cs, stars_map,
     est <- long_row$estimate[1]
     lo  <- long_row$ci_low[1]
     hi  <- long_row$ci_high[1]
-    if (is.na(est)) return("—")
+    if (is.na(est)) return("\u2014")
     val_str <- format_number(est, digits_to_use, decimal_mark)
     ci_sep <- ci_bracket_separator(decimal_mark)
     ci_str <- if (is.na(lo) || is.na(hi)) {
@@ -348,7 +348,7 @@ format_cell_value <- function(long_row, cs, stars_map,
       identical(cs$fields, c("ci_low", "ci_high"))) {
     lo <- long_row$ci_low[1]
     hi <- long_row$ci_high[1]
-    if (is.na(lo) || is.na(hi)) return("—")
+    if (is.na(lo) || is.na(hi)) return("\u2014")
     ci_sep <- ci_bracket_separator(decimal_mark)
     return(paste0("[",
                   format_number(lo, digits_to_use, decimal_mark), ci_sep,
@@ -359,7 +359,7 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Single-field cells
   field <- cs$fields
   val <- long_row[[field]][1]
-  if (is.na(val)) return("—")
+  if (is.na(val)) return("\u2014")
 
   if (field == "p_value") {
     out <- format_p_value(val, decimal_mark = decimal_mark, digits = p_digits)
@@ -533,12 +533,12 @@ fit_stat_label <- function(token) {
   switch(token,
     nobs           = "n",
     weighted_nobs  = "Weighted n",
-    r2             = "R²",
-    adj_r2         = "Adj.R²",
-    omega2         = "ω²",
-    sigma          = "σ̂",
+    r2             = "R\u00B2",
+    adj_r2         = "Adj.R\u00B2",
+    omega2         = "\u03C9\u00B2",
+    sigma          = "\u03C3\u0302",
     rmse           = "RMSE",
-    f2             = "f²",
+    f2             = "f\u00B2",
     AIC            = "AIC",
     AICc           = "AICc",
     BIC            = "BIC",

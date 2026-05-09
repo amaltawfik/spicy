@@ -168,15 +168,15 @@ build_standardized_caveat_footer_block <- function(extracts, standardized) {
 
   caveat <- if (identical(standardized, "refit")) {
     paste0(
-      "Standardised β: after refit on z-scored data, β for interaction ",
+      "Standardised \u03B2: after refit on z-scored data, \u03B2 for interaction ",
       "and transform terms reflects the interaction of z-scored ",
       "variables, not the standardisation of the original term."
     )
   } else {
     paste0(
-      "Standardised β: for interaction and transform terms, β uses ",
+      "Standardised \u03B2: for interaction and transform terms, \u03B2 uses ",
       "SD of the product / transformed column, which differs from ",
-      "SD(x) × SD(z) and may be unstable (Cohen et al. 2003 §7.7)."
+      "SD(x) \u00D7 SD(z) and may be unstable (Cohen et al. 2003 \u00A77.7)."
     )
   }
   caveat
@@ -229,12 +229,12 @@ build_singular_footer_block <- function(extracts) {
   if (!any(flags)) return(NULL)
   affected <- which(flags)
   if (length(extracts) == 1L) {
-    return("Rank-deficient model: dropped coefficient(s) shown as —.")
+    return("Rank-deficient model: dropped coefficient(s) shown as \u2014.")
   }
   paste0(
     "Rank-deficient model(s) ",
     paste(sprintf("Model %d", affected), collapse = ", "),
-    ": dropped coefficient(s) shown as —."
+    ": dropped coefficient(s) shown as \u2014."
   )
 }
 
