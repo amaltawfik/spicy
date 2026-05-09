@@ -205,3 +205,98 @@ test_that("print.spicy_regression_table — invisible return + non-empty stdout"
   expect_true(any(nzchar(txt)))
   expect_true(any(grepl("Variable", txt)))
 })
+
+
+# ============================================================================
+# Polish round 2 — Q1/Q2 conflict warnings, stars validation, AME naming
+# ============================================================================
+
+test_that("AME — binary numeric var keeps the var name (not '<var>1')", {
+  # mtcars$am is 0/1 INTEGER (not factor). marginaleffects returns
+  # the contrast string "1 - 0" for binary numerics; we must not
+  # mistake that for a factor and concatenate `am1`. The AME row
+  # must align with the B coef row, both keyed `am`.
+  fit <- lm(mpg ~ wt + am, data = mtcars)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  expect_true("am" %in% ame$term)
+  expect_false("am1" %in% ame$term)
+})
+
+test_that("AME — true factor still gets <var><level> naming", {
+  # Sanity: factor predictors must still produce <var><level> AME
+  # rows so they align with the B coef rows (cyl6, cyl8).
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  ame_terms <- td$term[td$estimate_type == "AME"]
+  expect_true(all(c("cyl6", "cyl8") %in% ame_terms))
+})
+
+test_that("Q1 — names(list) + model_labels conflict warns spicy_ignored_arg", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_warning(
+    table_regression(list(A = m1, B = m2), model_labels = c("X", "Y")),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("Q1 — names(list) alone (no explicit model_labels): no warning", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  expect_no_warning(
+    table_regression(list(A = m1, B = m2)),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("Q2 — show_intercept=FALSE + non-default intercept_position warns", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_warning(
+    table_regression(fit, show_intercept = FALSE,
+                     intercept_position = "last"),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("Q2 — show_intercept=FALSE + default intercept_position: no warning", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_no_warning(
+    table_regression(fit, show_intercept = FALSE),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("stars validation — empty numeric errors spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit,
+                     stars = setNames(numeric(0), character(0))),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("stars validation — out-of-range threshold errors", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, stars = c("*" = 0, "**" = -0.01)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, stars = c("*" = 1.5)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("stars validation — empty / unnamed name errors", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, stars = c(0.05, 0.01)),       # no names
+    class = "spicy_invalid_input"
+  )
+  bad <- setNames(c(0.05, 0.01), c("*", ""))
+  expect_error(
+    table_regression(fit, stars = bad),
+    class = "spicy_invalid_input"
+  )
+})

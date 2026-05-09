@@ -285,14 +285,21 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
   # coef-style term name for consistency with B rows
   # (e.g., "sex" + "M" -> "sexM").
   factor_meta <- detect_factor_term_meta(fit)
+  mf <- stats::model.frame(fit)
 
   rows <- lapply(seq_len(nrow(ame_table)), function(i) {
     var_name <- ame_table$term[i]
     contrast_str <- ame_table$contrast[i] %||% NA_character_
-    # Reconstruct coef-style term_id for factors. marginaleffects'
-    # `contrast` is something like "lvl - ref" for factors; "dY/dX"
-    # for numerics. For numerics we use the variable name directly.
-    term_id <- if (!is.na(contrast_str) && grepl(" - ", contrast_str)) {
+    # Reconstruct coef-style term_id ONLY for true factor variables.
+    # marginaleffects' `contrast` is "lvl - ref" for factors AND
+    # for binary numerics like am ∈ {0, 1} (it returns "1 - 0"),
+    # which would produce `am1` and de-align with the B coef row
+    # named `am`. Anchor on the model-frame class to disambiguate.
+    is_factor_var <- !is.null(mf[[var_name]]) &&
+                      is.factor(mf[[var_name]])
+    term_id <- if (is_factor_var &&
+                    !is.na(contrast_str) &&
+                    grepl(" - ", contrast_str)) {
       lvl <- sub(" - .*$", "", contrast_str)
       paste0(var_name, lvl)
     } else {

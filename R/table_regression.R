@@ -455,6 +455,52 @@ table_regression <- function(
   models <- validate_models_input(models)
   n_models <- length(models)
 
+  # Q12 — `stars` validation. FALSE / TRUE pass through; named numeric
+  # vector must be non-empty with all values in (0, 1] and unique
+  # non-empty names.
+  if (!isFALSE(stars) && !isTRUE(stars)) {
+    if (!is.numeric(stars) || length(stars) == 0L ||
+        is.null(names(stars)) || any(!nzchar(names(stars))) ||
+        any(!is.finite(stars)) || any(stars <= 0) || any(stars > 1)) {
+      spicy_abort(
+        c(
+          "`stars` must be FALSE, TRUE, or a non-empty named numeric vector.",
+          "i" = paste0("Each value is the upper threshold for its symbol; ",
+                       "values must be in (0, 1] and names must be ",
+                       "non-empty (e.g. c(\"*\" = 0.05, \"**\" = 0.01)).")
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Q1 — conflict warning when both names(list) AND model_labels supplied.
+  if (!is.null(model_labels) &&
+      is.list(models) && !is.null(names(models)) &&
+      all(nzchar(names(models)))) {
+    spicy_warn(
+      c(
+        paste0("Both `names(models)` and `model_labels` were supplied; ",
+               "the explicit `model_labels` takes precedence (Q1)."),
+        "i" = "Drop one of the two to silence this warning."
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+
+  # Q2 — conflict warning when show_intercept = FALSE renders
+  # intercept_position irrelevant.
+  if (isFALSE(show_intercept) && !identical(intercept_position, "first")) {
+    spicy_warn(
+      c(
+        paste0("`intercept_position = \"", intercept_position,
+               "\"` is ignored when `show_intercept = FALSE` (Q2)."),
+        "i" = "Drop `intercept_position` or set `show_intercept = TRUE`."
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+
   # ---- Validation Phases B-E (best effort; errors are spicy_invalid_input)
   # Recycling vcov / cluster across models per Q7
   vcov_list <- if (is.list(vcov) && !is.null(names(vcov)) == FALSE &&
