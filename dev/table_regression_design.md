@@ -1,13 +1,13 @@
 # `table_regression()` — design doc
 
-> **Status**: design fully settled. All 16 open questions closed
-> (Q1–Q12 in initial settling pass; Q13–Q16 added in resumption
-> audit and resolved 2026-05-08).
+> **Status**: design fully settled. All 19 open questions closed
+> (Q1–Q12 in initial settling pass; Q13–Q16 in resumption audit;
+> Q17–Q19 in final pre-implementation audit 2026-05-09).
 > Ready for implementation post-CRAN-accept of 0.12.0.
 >
 > **Branch**: `feature/table-regression` (forked from `main` at `d95e3e6`).
-> **Created**: 2026-05-06. **Settled**: 2026-05-08 (16 questions).
-> **Author**: Amal + Claude pairing sessions 2026-05-06 and 2026-05-08.
+> **Created**: 2026-05-06. **Settled**: 2026-05-09 (19 questions).
+> **Author**: Amal + Claude pairing sessions 2026-05-06 → 2026-05-09.
 >
 > This document is the **single source of truth** to resume the work.
 > When work resumes, re-read this file end-to-end; it should be enough
@@ -407,6 +407,40 @@ list.
 | **Auto-extraction** | `compute_lm_vcov_bootstrap()`, `compute_lm_vcov_jackknife()`, `marginaleffects::avg_slopes()`, the `weighted_nobs` token, and the `standardize_refit_lm()` helper all extract weights from each fit object via `stats::weights(fit)`. No coordination across multiple models — each fit carries its own weights. |
 | **Documentation** | `@details` in `?table_regression` clarifies the convention and pre-empts the user looking for a `weights = ...` argument. |
 | **Implementation effort** | zero additional code (mechanism already in place via the underlying helpers). Documentation only. |
+
+### Q17 — Class hierarchy and S3 methods
+
+| | |
+|---|---|
+| **Class of result** | `c("spicy_regression_table", "spicy_table", "data.frame")` — pattern aligned with `cross_tab`, `table_categorical`, `table_continuous`, `table_continuous_lm`. |
+| **5 obligatory S3 methods (Phase 1)** | `print`, `as.data.frame`, `as_tibble`, `tidy`, `glance` |
+| **`print.spicy_regression_table`** | delegates to `spicy_print_table()` after building the wide display. Reads attrs (title, note, align, padding, ...), applies factor-group separators, returns `invisible(x)`. |
+| **`as.data.frame` / `as_tibble`** | drop spicy classes and rendering attrs, return wide raw with provenance attrs (`outcome`, `model_ids`). Identical pattern to `unclass_spicy_continuous_lm_table()`. |
+| **`tidy.spicy_regression_table`** schema | pure long format, broom-canonical: one row per `(model_id, term, estimate_type)` triplet. `estimate_type ∈ {"B", "beta", "AME", "partial_f2", "partial_eta2", "partial_omega2"}`. Columns: `model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, p.value`. For partial_* rows: `std.error` may be NA, `statistic` = partial F, `p.value` = partial F p-value, `conf.low/high` from noncentral F inversion. |
+| **`glance.spicy_regression_table`** schema | one row per `(model_id, outcome)`. Columns: `model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual` (numeric — Satterthwaite-safe). |
+| **Skip Phase 1** | `format`, `summary`, `[`, `head/tail` — defaults from `data.frame` are acceptable. Add later if needed. |
+| **Output `gt`/`flextable`/`tinytable`** | inherits print methods of those packages. No spicy-side method required. |
+
+### Q18 — Token naming — snake_case lowercase uniform convention
+
+| | |
+|---|---|
+| **Convention** | snake_case lowercase, with capitalisation preserved only for canonical statistical abbreviations (AIC, BIC, F, LRT, B, SE, CI, AME). |
+| **Rationale** | Aligned with `modelsummary`, `performance`, `fixest` (modern R references) and with the existing internal long format of `table_continuous_lm()` (`r2`, `adj_r2`, `f2`, `omega2`). Snake_case is more keyboard-natural than broom-style with dots. |
+| **Mappings revised vs initial draft** | `r.squared` → `r2` ; `adj.r.squared` → `adj_r2` ; `R2_change` → `r2_change` ; `AdjR2_change` → `adj_r2_change` |
+| **Unchanged** | `B`, `beta`, `SE`, `CI`, `t`, `p`, `omega2`, `f2`, `f2_change`, `partial_f2`, `partial_eta2`, `partial_omega2`, `AME`, `AME_p`, `AME_SE`, `nobs`, `weighted_nobs`, `sigma`, `rmse`, `deviance`, `deviance_change`, `AIC`, `AICc`, `BIC`, `LRT`, `F` |
+| **broom outputs unchanged** | `tidy()` and `glance()` use broom-canonical column names (`estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, and for `glance()` also `r.squared`, `adj.r.squared`, `df.residual`). The two conventions coexist: tokens are *user-input vocabulary*; broom-canonical names are *output schema for downstream tools*. |
+
+### Q19 — Compact `value [CI]` rendering for partial effect sizes
+
+| | |
+|---|---|
+| **Tokens concerned** | `partial_f2`, `partial_eta2`, `partial_omega2` |
+| **Cell rendering** | `0.025 [0.005, 0.058]` — compact, single cell, follows the same pattern as `AME` (Q14a) and as `B` when `"CI"` ∈ show_columns. |
+| **CI level** | governed by global `ci_level` argument (default 0.95). |
+| **CI computation** | reuses the noncentral-F inversion machinery already in `R/lm_compute.R`: `find_ncp_f_lm()`, `compute_omega2_ci_lm()`, `compute_f2_ci_lm()`. partial η² CI derived from the same ncp via `η²_partial = ncp / (ncp + n_total)` (Steiger 2004). **No new numerical code.** |
+| **No "no-CI" variant in Phase 1** | future `partial_es_compact = TRUE/FALSE` knob possible in Phase 2 if a user asks for value-only display. |
+| **Coherence** | compact `value [CI]` rendering used consistently across `B` (when `"CI"` shown), `AME`, `partial_f2`, `partial_eta2`, `partial_omega2`. Single visual idiom across the row. |
 
 ---
 
