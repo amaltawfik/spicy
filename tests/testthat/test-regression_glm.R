@@ -881,3 +881,149 @@ test_that("ci_method = 'profile': asymmetric CI for sparse logistic", {
     expect_false(isTRUE(all.equal(half_low, half_high, tolerance = 1e-3)))
   }
 })
+
+
+# ============================================================================
+# Step 7: integration tests - end-to-end scenarios combining multiple glm
+# features (Phase 3 acceptance suite)
+# ============================================================================
+
+test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(
+    fit,
+    exponentiate = TRUE,
+    standardized = "pseudo",
+    show_columns = c("B", "beta", "AME", "partial_chi2", "p")
+  )
+  expect_s3_class(out, "spicy_regression_table")
+  expect_match(attr(out, "title"), "^Logistic regression: am$")
+  td <- broom::tidy(out)
+  # All four estimate types present
+  expect_true(all(c("B", "beta", "AME", "partial_chi2") %in% td$estimate_type))
+  # B exponentiated → row for mpg has positive value (OR scale)
+  b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
+  expect_true(b_mpg > 0)  # OR is exp(-0.32) ≈ 0.72
+  # AME on response scale (probability units) — magnitude < |B|
+  ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
+  expect_true(abs(ame_mpg) < 0.1)
+})
+
+test_that("E2E: poisson IRR + nested LRT hierarchy", {
+  m1 <- glm(I(round(mpg)) ~ wt,         data = mt, family = poisson)
+  m2 <- glm(I(round(mpg)) ~ wt + cyl,   data = mt, family = poisson)
+  out <- table_regression(
+    list(m1, m2),
+    exponentiate = TRUE,
+    nested = TRUE
+  )
+  expect_match(attr(out, "title"), "^Hierarchical poisson regression: ")
+  note <- attr(out, "note")
+  expect_match(note, "IRR", fixed = TRUE)
+  expect_match(note, "Model comparison", fixed = TRUE)
+  expect_match(note, "χ²", fixed = TRUE)
+})
+
+test_that("E2E: mixed lm + glm side-by-side renders without error", {
+  m_lm  <- lm(mpg ~ wt, data = mt)
+  m_glm <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(list("OLS" = m_lm, "Logistic" = m_glm))
+  expect_s3_class(out, "spicy_regression_table")
+  # Title falls back to plain "Regression comparison" (mixed families)
+  expect_match(attr(out, "title"), "^Regression comparison$")
+  # vcov footer per-model: OLS / MLE
+  note <- attr(out, "note")
+  expect_match(note, "OLS", fixed = TRUE)
+  expect_match(note, "MLE inverse Hessian", fixed = TRUE)
+})
+
+test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
+  set.seed(42)
+  n <- 200L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x1 = rnorm(n), x2 = rnorm(n),
+                  clinic = rep(letters[1:20], each = 10))
+  m1 <- glm(y ~ x1, data = d, family = binomial)
+  m2 <- glm(y ~ x1 + x2, data = d, family = binomial)
+  out <- table_regression(
+    list(m1, m2),
+    vcov = "CR2", cluster = d$clinic,
+    show_columns = c("B", "AME", "p"),
+    nested = TRUE
+  )
+  note <- attr(out, "note")
+  expect_match(note, "cluster-robust [(]CR2[)]", perl = TRUE)
+  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
+  expect_match(note, "Model comparison", fixed = TRUE)
+  # AME df_Satt is finite (not Inf) under CR2
+  td <- broom::tidy(out)
+  ame_rows <- td[td$estimate_type == "AME", ]
+  expect_true(all(is.finite(ame_rows$df)))
+})
+
+test_that("E2E: profile CI + exponentiate combination", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(fit, ci_method = "profile", exponentiate = TRUE)
+  td <- broom::tidy(out)
+  # CI bounds are exp() of the profile bounds on log-odds scale
+  oracle <- suppressMessages(confint(fit))
+  for (term_nm in c("mpg", "wt")) {
+    expect_equal(
+      td$conf.low[td$estimate_type == "B" & td$term == term_nm],
+      exp(oracle[term_nm, 1L]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      td$conf.high[td$estimate_type == "B" & td$term == term_nm],
+      exp(oracle[term_nm, 2L]),
+      tolerance = 1e-10
+    )
+  }
+})
+
+test_that("E2E: broom::tidy() schema stable for glm output", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(
+    fit,
+    show_columns = c("B", "AME", "partial_chi2", "p")
+  )
+  td <- broom::tidy(out)
+  # Required broom-style columns
+  expect_true(all(c("term", "estimate", "std.error", "statistic",
+                     "p.value", "conf.low", "conf.high", "df",
+                     "test_type", "estimate_type") %in% names(td)))
+})
+
+test_that("E2E: standardized refit + glm + multi-model rendering", {
+  m1 <- glm(am ~ mpg,      data = mt, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(list(m1, m2), standardized = "refit")
+  expect_s3_class(out, "spicy_regression_table")
+  td <- broom::tidy(out)
+  beta_rows <- td[td$estimate_type == "beta", ]
+  # Both models have beta rows for mpg
+  expect_true(sum(beta_rows$term == "mpg") == 2L)
+})
+
+test_that("E2E: full feature surface in a single call (acceptance)", {
+  # Single comprehensive call that should succeed — covers ALL Phase 3
+  # additions: exponentiate, partial_chi2, AME, standardized=pseudo,
+  # ci_method=profile, custom labels, p_adjust, fit-stats override.
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  expect_no_error(
+    out <- table_regression(
+      fit,
+      exponentiate = TRUE,
+      ci_method = "profile",
+      standardized = "pseudo",
+      p_adjust = "holm",
+      show_columns = c("B", "beta", "CI", "AME", "partial_chi2", "p"),
+      show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_tjur",
+                          "AIC", "BIC"),
+      labels = c(mpg = "Miles per gallon", wt = "Weight (1000 lbs)"),
+      stars = TRUE,
+      digits = 3L
+    )
+  )
+  td <- broom::tidy(out)
+  expect_true(nrow(td) > 0L)
+})

@@ -331,6 +331,127 @@ are available — `LRT` (likelihood-ratio χ²), `AIC` / `AICc` / `BIC`
 (deltas), `f2_change`, `deviance_change` — selectable via
 `nested_stats`.
 
+## Generalised linear models (`glm`)
+
+`table_regression()` accepts any `glm()` fit. Inference defaults to
+the z-asymptotic Wald regime that matches `summary.glm`,
+`parameters::model_parameters`, Stata's `logit, or` and SPSS
+`LOGISTIC REGRESSION`. The title becomes family-aware ("Logistic
+regression", "Poisson regression", "Probit regression", ...) and the
+default footer block for `nobs / pseudo_r2_mcfadden /
+pseudo_r2_nagelkerke / AIC` swaps in instead of `R² / Adj.R²`:
+
+```{r glm-basic}
+fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
+table_regression(fit)
+```
+
+### Response-scale display: `exponentiate = TRUE`
+
+Set `exponentiate = TRUE` to switch the `B` column to the response
+scale and rebrand its header per family / link: `OR` for
+`binomial(logit)`, `IRR` for `poisson(log)`, `HR` for
+`binomial(cloglog)`, `RR` for `binomial(log)`, `MR` for
+`Gamma(log)`, and the generic `exp(B)` otherwise. The standard error
+follows the delta-method approximation `SE_OR = OR × SE_log-odds`
+(Stata `logit, or`; `parameters::model_parameters()`); the test
+statistic and the p-value are invariant under monotone
+transformation:
+
+```{r glm-or}
+table_regression(fit, exponentiate = TRUE)
+```
+
+### Term-level partial chi-square
+
+`partial_chi2` is the glm analog of `partial_f2`: for each model
+term, the partial likelihood-ratio chi-square via
+`drop1(test = "LRT")` (SAS PROC LOGISTIC `TYPE3`; Long & Freese
+2014 §3.5; Allison "TYPE3"). Rendered as `value (df)` so factor
+terms (k−1 df) and numeric terms (1 df) read at a glance:
+
+```{r glm-partial-chi2}
+mt <- mtcars; mt$cyl <- factor(mt$cyl)
+fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
+table_regression(fit2, show_columns = c("B", "partial_chi2", "p"))
+```
+
+### Standardised coefficients: `refit` and the new `pseudo`
+
+For `glm`, `standardized = "refit"` z-scores numeric *predictors*
+only and refits the model (the response stays on its observed scale
+since the link is fixed). This is Long & Freese 2014 §4.3.4
+"x-standardization". The other algebraic methods (`"posthoc"`,
+`"basic"`, `"smart"`) apply X-only scaling per the
+`parameters` / `effectsize` convention.
+
+`standardized = "pseudo"` (`glm` only) is the Menard (2004, 2011)
+*fully* standardised coefficient, scaling by `SD(X) / SD(Y*)` where
+`Y*` is the latent variable on the link scale and
+`SD(Y*) = sqrt(var(linear-predictor) + var_link)` with `var_link` =
+π²/3 for logit, 1 for probit, π²/6 for cloglog. Defined for binomial
+families; non-binomial returns NA with a `spicy_caveat`:
+
+```{r glm-pseudo, eval = FALSE}
+table_regression(fit, standardized = "pseudo")
+```
+
+### Average Marginal Effects (AME)
+
+The `AME` token returns response-scale marginal effects via
+`marginaleffects::avg_slopes()`. For `glm`, AME is computed as
+the average of `dE[Y|X]/dx` over the observed sample (so for
+logistic regression the displayed AME is in probability units, not
+log-odds). Under cluster-robust variance (`vcov = "CR2"` etc.), the
+inference uses Satterthwaite df from
+`clubSandwich::coef_test()` on the dominant underlying coefficient
+— Pustejovsky & Tipton (2018) §4 approximation for nonlinear
+contrasts:
+
+```{r glm-ame, eval = FALSE}
+table_regression(fit, show_columns = c("B", "AME", "p"))
+```
+
+### Profile-likelihood CIs: `ci_method = "profile"`
+
+The default is `ci_method = "wald"` (symmetric `estimate ± z × SE`,
+matching `summary.glm`). For `glm` you can also request
+`ci_method = "profile"`, which calls `MASS::confint.glm()` to
+compute the profile-likelihood CI — asymmetric, exact for
+likelihood-based inference, and the gold standard under sparse data
+or near-boundary estimates (Venables & Ripley *MASS* §7.2). The
+estimate, SE, statistic, and p-value all remain Wald;
+`"profile"` only refines the CI bounds:
+
+```{r glm-profile, eval = FALSE}
+table_regression(fit, ci_method = "profile")
+```
+
+### Hierarchical glm (LRT)
+
+`nested = TRUE` on a list of nested glm fits adds a "Model
+comparison" block whose default tokens are `c("LRT", "p")` — the
+APA-conventional layout for hierarchical logistic regression
+(Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6). The chi-square
+statistic comes from `anova(test = "LRT")`. `r2_change` and `F` are
+not defined for glm and return em-dashes if explicitly requested:
+
+```{r glm-nested, eval = FALSE}
+m1 <- glm(am ~ mpg,                 data = mtcars, family = binomial)
+m2 <- glm(am ~ mpg + wt,            data = mtcars, family = binomial)
+m3 <- glm(am ~ mpg + wt + factor(cyl), data = mtcars, family = binomial)
+table_regression(list(m1, m2, m3), nested = TRUE)
+```
+
+### Gaussian glm caveat
+
+A `glm()` with `family = gaussian` and `link = "identity"` is
+mathematically equivalent to `lm()` but lacks the variance-explained
+effect-size family (`partial_f2 / η² / ω²`) and the Satterthwaite-
+corrected AME path. Following the *transparency over rejection*
+rule, spicy accepts the fit and emits a `spicy_caveat` suggesting a
+refit with `lm()`.
+
 ## Significance stars
 
 Stars are off by default. APA 7 §6.46 explicitly discourages them, and
@@ -466,6 +587,9 @@ perspectives on recent causal and statistical inference debates.
 Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
 Springer. Section 5.4 on multiplicity.
 
+Hosmer, D. W., Lemeshow, S., and Sturdivant, R. X. (2013).
+*Applied Logistic Regression* (3rd ed.). Wiley.
+
 Imbens, G. W., and Kolesár, M. (2016). Robust standard errors in
 small samples: Some practical advice. *Review of Economics and
 Statistics*, 98(4), 701–712.
@@ -473,6 +597,23 @@ Statistics*, 98(4), 701–712.
 Long, J. S., and Ervin, L. H. (2000). Using heteroscedasticity
 consistent standard errors in the linear regression model.
 *The American Statistician*, 54(3), 217–224.
+
+Long, J. S., and Freese, J. (2014). *Regression Models for
+Categorical Dependent Variables Using Stata* (3rd ed.). Stata Press.
+
+McFadden, D. (1974). Conditional logit analysis of qualitative
+choice behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*
+(pp. 105–142). Academic Press.
+
+Menard, S. (2004). Six approaches to calculating standardized
+logistic regression coefficients. *The American Statistician*,
+58(3), 218–223.
+
+Menard, S. (2011). Standards for standardized logistic regression
+coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Nagelkerke, N. J. D. (1991). A note on a general definition of the
+coefficient of determination. *Biometrika*, 78(3), 691–692.
 
 Olejnik, S., and Algina, J. (2003). Generalized eta and omega squared
 statistics: Measures of effect size for some common research designs.
@@ -491,6 +632,14 @@ Smithson, M. (2003). *Confidence Intervals*. Sage.
 Steiger, J. H. (2004). Beyond the F test: Effect size confidence
 intervals and tests of close fit in the analysis of variance and
 contrast analysis. *Psychological Methods*, 9(2), 164–182.
+
+Tjur, T. (2009). Coefficients of determination in logistic
+regression models — A new proposal: The coefficient of
+discrimination. *The American Statistician*, 63(4), 366–372.
+
+Venables, W. N., and Ripley, B. D. (2002). *Modern Applied
+Statistics with S* (4th ed.). Springer. Section 7.2 on profile
+likelihood.
 
 Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019). Moving
 to a world beyond "p < 0.05". *The American Statistician*, 73(sup1),
