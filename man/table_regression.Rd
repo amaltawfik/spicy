@@ -11,7 +11,10 @@ table_regression(
   ci_level = 0.95,
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
+  keep = NULL,
+  drop = NULL,
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
   group_factor_levels = TRUE,
@@ -73,10 +76,40 @@ column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}. See the \emph{Standardised coefficients}
 section.}
 
+\item{p_adjust}{Multiple-comparison adjustment method applied to
+the family of estimated coefficient p-values within each model
+(intercept and reference rows excluded by convention). One of
+\code{"none"} (default — no adjustment), \code{"holm"}, \code{"hochberg"},
+\code{"hommel"}, \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}. The
+adjustment is delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}} and applied
+per-model and per \code{estimate_type} (so B and AME p-values are
+adjusted independently within their own families). When active,
+a footer note documents the method and the family size. The
+adjustment runs \strong{before} any \code{keep} / \code{drop} filtering so the
+family is the model's full coefficient set, not just the
+displayed subset (modelsummary convention).}
+
 \item{show_columns}{Character vector of tokens controlling
 which per-coefficient columns to display, \strong{and} in which
 order. See the \emph{Vocabulary tokens} section. Default
 \code{c("B", "SE", "CI", "p")}.}
+
+\item{keep}{Character vector of regular expressions; when
+supplied, only coefficient rows whose term name matches at
+least one of the patterns are kept. Useful when a model has
+many control variables and you want to display only the focal
+predictors. Mutually exclusive with \code{drop}. Matching is
+applied to the coefficient name as it appears in
+\code{\link[stats:coef]{stats::coef()}} (e.g., \code{"wt"}, \code{"cyl6"}, \code{"factor(cyl)8"}).
+\code{p_adjust} is computed before the filter, so adjusted p-values
+reflect the model's full coefficient family. Default \code{NULL}
+(no filter).}
+
+\item{drop}{Character vector of regular expressions; when
+supplied, coefficient rows whose term name matches any of the
+patterns are removed. Mutually exclusive with \code{keep}. Useful
+for hiding control variables from a publication-ready table.
+Same matching semantics as \code{keep}. Default \code{NULL} (no filter).}
 
 \item{show_intercept}{Whether to display the intercept row.
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}

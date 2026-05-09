@@ -547,6 +547,72 @@ validate_logical_scalar <- function(x, name) {
   invisible(NULL)
 }
 
+# `p_adjust` validation. Must be one of stats::p.adjust.methods.
+# We accept "fdr" as an alias for "BH" (matching stats::p.adjust
+# itself) but normalise back to the canonical name in the orchestrator
+# so the footer wording is consistent.
+.spicy_p_adjust_methods <- c("none", "holm", "hochberg", "hommel",
+                              "bonferroni", "BH", "BY", "fdr")
+
+validate_p_adjust <- function(p_adjust) {
+  if (length(p_adjust) != 1L || !is.character(p_adjust) ||
+        is.na(p_adjust)) {
+    spicy_abort(
+      "`p_adjust` must be a single string.",
+      class = "spicy_invalid_input"
+    )
+  }
+  if (!p_adjust %in% .spicy_p_adjust_methods) {
+    spicy_abort(
+      c(
+        sprintf("Unknown `p_adjust` method: %s.", shQuote(p_adjust)),
+        "i" = sprintf(
+          "Valid methods: %s.",
+          paste(shQuote(.spicy_p_adjust_methods), collapse = ", ")
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
+# `keep` / `drop` validation. Each is NULL (no filter) or a non-empty
+# character vector with no NA / empty-string elements. They are
+# mutually exclusive — supplying both raises an error rather than
+# silently picking one.
+validate_keep_drop <- function(keep, drop) {
+  for (pair in list(c("keep", "keep"), c("drop", "drop"))) {
+    arg_name <- pair[[1L]]
+    val <- get(arg_name)
+    if (is.null(val)) next
+    if (!is.character(val) || length(val) == 0L ||
+          any(is.na(val)) || any(!nzchar(val))) {
+      spicy_abort(
+        sprintf(
+          paste0("`%s` must be NULL or a non-empty character vector ",
+                  "with no NA or empty-string elements."),
+          arg_name
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  if (!is.null(keep) && !is.null(drop)) {
+    spicy_abort(
+      c(
+        "`keep` and `drop` are mutually exclusive.",
+        "i" = paste0(
+          "Pick one: `keep` to whitelist focal predictors, ",
+          "`drop` to hide a few control variables."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
 # Step 19: stars (FALSE | TRUE | named numeric vector with thresholds in (0,1])
 validate_stars <- function(stars) {
   if (isFALSE(stars) || isTRUE(stars)) {

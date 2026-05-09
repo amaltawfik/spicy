@@ -61,6 +61,7 @@ build_regression_title <- function(extracts, nested = FALSE) {
 build_regression_footer <- function(
     extracts,
     standardized = "none",
+    p_adjust = "none",
     stars = FALSE,
     nested = FALSE,
     show_columns = character(0)) {
@@ -68,6 +69,7 @@ build_regression_footer <- function(
     build_vcov_footer_block(extracts),
     build_ame_satterthwaite_footer_block(extracts, show_columns),
     build_standardized_caveat_footer_block(extracts, standardized),
+    build_p_adjust_footer_block(extracts, p_adjust),
     build_stars_footer_block(stars),
     build_singular_footer_block(extracts),
     build_nested_footer_block(nested)
@@ -235,6 +237,38 @@ build_singular_footer_block <- function(extracts) {
     "Rank-deficient model(s) ",
     paste(sprintf("Model %d", affected), collapse = ", "),
     ": dropped coefficient(s) shown as \u2014."
+  )
+}
+
+
+# ---- Theme: p_adjust mapping ---------------------------------------------
+
+# Footer note when a multiple-comparison adjustment was applied.
+# Mirrors the modelsummary convention. Family size (per model) is
+# inferred from the extracts so the user sees what `m` was.
+build_p_adjust_footer_block <- function(extracts, p_adjust) {
+  if (identical(p_adjust, "none") || is.null(p_adjust) ||
+        !is.list(extracts) || length(extracts) == 0L) {
+    return(NULL)
+  }
+  # Per-model family sizes (B-row coefs that were actually adjusted)
+  sizes <- vapply(extracts, function(e) {
+    cf <- e$coefs
+    if (is.null(cf) || nrow(cf) == 0L) return(0L)
+    sum(cf$estimate_type == "B" &
+          !cf$is_intercept &
+          !cf$is_reference &
+          !is.na(cf$p_value))
+  }, integer(1))
+  size_part <- if (length(unique(sizes)) == 1L) {
+    sprintf("m = %d coefficient(s) per model", sizes[1L])
+  } else {
+    sprintf("m = (%s) coefficient(s) per model",
+            paste(sizes, collapse = ", "))
+  }
+  sprintf(
+    "P-values adjusted via stats::p.adjust(method = %s); %s.",
+    shQuote(p_adjust), size_part
   )
 }
 

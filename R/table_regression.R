@@ -197,10 +197,37 @@
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`. See the *Standardised coefficients*
 #'   section.
+#' @param p_adjust Multiple-comparison adjustment method applied to
+#'   the family of estimated coefficient p-values within each model
+#'   (intercept and reference rows excluded by convention). One of
+#'   `"none"` (default — no adjustment), `"holm"`, `"hochberg"`,
+#'   `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`. The
+#'   adjustment is delegated to [stats::p.adjust()] and applied
+#'   per-model and per `estimate_type` (so B and AME p-values are
+#'   adjusted independently within their own families). When active,
+#'   a footer note documents the method and the family size. The
+#'   adjustment runs **before** any `keep` / `drop` filtering so the
+#'   family is the model's full coefficient set, not just the
+#'   displayed subset (modelsummary convention).
 #' @param show_columns Character vector of tokens controlling
 #'   which per-coefficient columns to display, **and** in which
 #'   order. See the *Vocabulary tokens* section. Default
 #'   `c("B", "SE", "CI", "p")`.
+#' @param keep Character vector of regular expressions; when
+#'   supplied, only coefficient rows whose term name matches at
+#'   least one of the patterns are kept. Useful when a model has
+#'   many control variables and you want to display only the focal
+#'   predictors. Mutually exclusive with `drop`. Matching is
+#'   applied to the coefficient name as it appears in
+#'   [stats::coef()] (e.g., `"wt"`, `"cyl6"`, `"factor(cyl)8"`).
+#'   `p_adjust` is computed before the filter, so adjusted p-values
+#'   reflect the model's full coefficient family. Default `NULL`
+#'   (no filter).
+#' @param drop Character vector of regular expressions; when
+#'   supplied, coefficient rows whose term name matches any of the
+#'   patterns are removed. Mutually exclusive with `keep`. Useful
+#'   for hiding control variables from a publication-ready table.
+#'   Same matching semantics as `keep`. Default `NULL` (no filter).
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param intercept_position Where to place the intercept when
@@ -417,7 +444,10 @@ table_regression <- function(
   ci_level = 0.95,
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart"),
+  p_adjust = "none",
   show_columns = c("B", "SE", "CI", "p"),
+  keep = NULL,
+  drop = NULL,
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
   group_factor_levels = TRUE,
@@ -507,6 +537,8 @@ table_regression <- function(
   validate_decimal_mark(decimal_mark)
   validate_reference_label(reference_label)
   validate_stars(stars)
+  validate_p_adjust(p_adjust)
+  validate_keep_drop(keep, drop)
   validate_model_labels(model_labels, models)
   validate_outcome_labels(outcome_labels, models)
   validate_predictor_labels(labels, models)
@@ -603,6 +635,14 @@ table_regression <- function(
     # caveat footer (build_standardized_caveat_footer_block()) can
     # decide without reaching back to the live fit.
     extracts[[i]][["non_additive"]] <- detect_non_additive_terms(models[[i]])
+
+    # p_adjust runs per model BEFORE alignment / keep-drop filtering
+    # so the family is the model's full coefficient set (intercept
+    # and reference rows excluded), not just the displayed subset.
+    if (!identical(p_adjust, "none")) {
+      extracts[[i]]$coefs <- apply_p_adjust(extracts[[i]]$coefs,
+                                            p_adjust)
+    }
   }
 
   # Standardized-on-non-additive caveat (Q15, Phase E)
@@ -617,11 +657,18 @@ table_regression <- function(
     reference_style = reference_style
   )
 
+  # `keep` / `drop` filter — runs AFTER alignment (so canonical term
+  # ordering is preserved for the surviving terms) and AFTER
+  # p_adjust (so adjusted p-values reflect the model's full
+  # coefficient family, not just the displayed subset).
+  aligned <- apply_keep_drop_filter(aligned, keep = keep, drop = drop)
+
   # ---- Title + footer (Step 7) -------------------------------------------
   title <- build_regression_title(extracts, nested = nested)
   footer_main <- build_regression_footer(
     extracts,
     standardized = standardized,
+    p_adjust = p_adjust,
     stars = stars,
     nested = nested,
     show_columns = show_columns
