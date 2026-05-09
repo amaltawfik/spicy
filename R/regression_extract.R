@@ -31,6 +31,7 @@ extract_lm_phase1 <- function(
   cluster = NULL,
   boot_n = 1000L,
   ci_level = 0.95,
+  ci_method = "wald",
   standardized = "none",
   exponentiate = FALSE,
   show_columns = c("B", "SE", "CI", "p"),
@@ -74,7 +75,8 @@ extract_lm_phase1 <- function(
     cluster = cluster,
     ci_level = ci_level,
     model_id = model_id,
-    outcome = outcome
+    outcome = outcome,
+    ci_method = ci_method
   )
 
   # ---- Reference-level placeholder rows (Q5 em-dash) ----------------------
@@ -192,7 +194,7 @@ extract_lm_phase1 <- function(
 # Singular coefs (NA in coef(fit)) get NA-shaped rows with
 # is_singular = TRUE; the renderer turns these into em-dashes (Q22).
 build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
-                         model_id, outcome) {
+                         model_id, outcome, ci_method = "wald") {
   cf <- stats::coef(fit)
   coef_names <- names(cf)
   is_singular_vec <- is.na(cf)
@@ -201,6 +203,39 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
   # grouped factor headers under group_factor_levels = TRUE without
   # having to re-introspect the model).
   factor_meta <- detect_factor_term_meta(fit)
+
+  # Profile-likelihood CI for glm (Phase 3 Step 6). One profile run
+  # at the model level returns CI bounds for ALL coefs as a matrix
+  # (k × 2); we then override per-coef inf$ci_lower / inf$ci_upper.
+  # The estimate / SE / statistic / p-value all stay Wald (profile is
+  # a CI-only refinement; matches the convention of MASS::confint.glm,
+  # Stata `nlcom, profile`, parameters::ci(method = "profile")).
+  profile_ci <- NULL
+  if (identical(ci_method, "profile") && inherits(fit, "glm")) {
+    profile_ci <- tryCatch(
+      suppressMessages(suppressWarnings(
+        stats::confint(fit, level = ci_level)
+      )),
+      error = function(e) NULL
+    )
+    if (is.null(profile_ci) || !is.matrix(profile_ci) ||
+          ncol(profile_ci) != 2L) {
+      spicy_warn(
+        c(
+          paste0(
+            "Profile-likelihood CI computation failed; falling back ",
+            "to Wald CI for this model."
+          ),
+          "i" = paste0(
+            "Profile CI requires `MASS::confint.glm()`; verify that ",
+            "MASS is installed and the fit converged cleanly."
+          )
+        ),
+        class = "spicy_fallback"
+      )
+      profile_ci <- NULL
+    }
+  }
 
   rows <- lapply(seq_along(cf), function(i) {
     nm <- coef_names[i]
@@ -236,10 +271,16 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         cluster = cluster,
         ci_level = ci_level
       )
+      ci_low_i <- inf$ci_lower
+      ci_high_i <- inf$ci_upper
+      if (!is.null(profile_ci) && nm %in% rownames(profile_ci)) {
+        ci_low_i  <- profile_ci[nm, 1L]
+        ci_high_i <- profile_ci[nm, 2L]
+      }
       build_one_b_row(
         nm = nm, model_id = model_id, outcome = outcome,
         estimate = inf$estimate, se = inf$se,
-        ci_low = inf$ci_lower, ci_high = inf$ci_upper,
+        ci_low = ci_low_i, ci_high = ci_high_i,
         statistic = inf$statistic, df = inf$df, p_value = inf$p.value,
         test_type = inf$test_type,
         is_singular = FALSE,

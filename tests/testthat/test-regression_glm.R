@@ -751,3 +751,133 @@ test_that("glm AME: HC* vcov uses z-asymptotic (no Satterthwaite)", {
   expect_true(all(is.infinite(ame$df)))
   expect_true(all(ame$test_type == "z"))
 })
+
+
+# ============================================================================
+# Step 6: nested LRT for glm + ci_method = "profile" option
+# ============================================================================
+
+test_that("glm hierarchical: LRT chi-square matches anova(test='LRT')", {
+  m1 <- glm(am ~ mpg, data = mt, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(list(m1, m2), nested = TRUE)
+  note <- attr(out, "note")
+  # Footer should contain the LRT line
+  expect_match(note, "Model comparison", fixed = TRUE)
+  expect_match(note, "χ²", fixed = TRUE)
+  # Cross-check the value
+  av <- anova(m1, m2, test = "LRT")
+  expected_lrt <- av$Deviance[2]
+  # Format: "+12.49" with 2 digits
+  expected_str <- sprintf("+%.2f", expected_lrt)
+  expect_match(note, expected_str, fixed = TRUE)
+})
+
+test_that("glm hierarchical: default nested_stats is c('LRT', 'p')", {
+  m1 <- glm(am ~ mpg, data = mt, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  comps <- spicy:::compute_nested_comparisons_lm(list(m1, m2),
+                                                  nested_stats = NULL)
+  expect_setequal(names(comps), c("comparison", "LRT", "p"))
+})
+
+test_that("glm hierarchical: r2_change/F return NA (not defined for glm)", {
+  m1 <- glm(am ~ mpg, data = mt, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  comps <- spicy:::compute_nested_comparisons_lm(
+    list(m1, m2), nested_stats = c("r2_change", "F", "LRT", "p")
+  )
+  expect_true(is.na(comps$r2_change[1]))
+  expect_true(is.na(comps$F[1]))
+  expect_true(is.finite(comps$LRT[1]))
+  expect_true(is.finite(comps$p[1]))
+})
+
+test_that("glm hierarchical: AIC/BIC delta computed correctly", {
+  m1 <- glm(am ~ mpg, data = mt, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  comps <- spicy:::compute_nested_comparisons_lm(
+    list(m1, m2), nested_stats = c("AIC", "BIC")
+  )
+  expect_equal(comps$AIC[1], AIC(m2) - AIC(m1), tolerance = 1e-12)
+  expect_equal(comps$BIC[1], BIC(m2) - BIC(m1), tolerance = 1e-12)
+})
+
+test_that("lm hierarchical: still uses partial F + r2_change (unchanged)", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  comps <- spicy:::compute_nested_comparisons_lm(list(m1, m2),
+                                                  nested_stats = NULL)
+  expect_setequal(names(comps), c("comparison", "r2_change", "F", "p"))
+  expect_true(is.finite(comps$F[1]))
+})
+
+test_that("ci_method = 'profile' on glm: matches confint() to machine precision", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, ci_method = "profile"))
+  oracle <- suppressMessages(confint(fit))
+  for (term_nm in c("(Intercept)", "mpg", "wt")) {
+    expect_equal(
+      td$conf.low[td$estimate_type == "B" & td$term == term_nm],
+      oracle[term_nm, 1L],
+      tolerance = 1e-10, info = paste("term =", term_nm)
+    )
+    expect_equal(
+      td$conf.high[td$estimate_type == "B" & td$term == term_nm],
+      oracle[term_nm, 2L],
+      tolerance = 1e-10, info = paste("term =", term_nm)
+    )
+  }
+})
+
+test_that("ci_method = 'profile' leaves estimate / SE / p unchanged (CI only)", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td_wald    <- broom::tidy(table_regression(fit, ci_method = "wald"))
+  td_profile <- broom::tidy(table_regression(fit, ci_method = "profile"))
+  for (term_nm in c("mpg", "wt")) {
+    w_row <- td_wald[td_wald$estimate_type == "B" & td_wald$term == term_nm, ]
+    p_row <- td_profile[td_profile$estimate_type == "B" &
+                          td_profile$term == term_nm, ]
+    expect_equal(w_row$estimate, p_row$estimate, tolerance = 1e-12)
+    expect_equal(w_row$std.error, p_row$std.error, tolerance = 1e-12)
+    expect_equal(w_row$p.value, p_row$p.value, tolerance = 1e-12)
+    # CI bounds DO differ
+    expect_false(isTRUE(all.equal(w_row$conf.low, p_row$conf.low,
+                                    tolerance = 1e-3)))
+  }
+})
+
+test_that("ci_method = 'profile' on lm: rejected with hint", {
+  fit <- lm(mpg ~ wt, data = mt)
+  err <- tryCatch(
+    table_regression(fit, ci_method = "profile"),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "glm.*only", perl = TRUE)
+  expect_match(conditionMessage(err), "Wald", fixed = TRUE)
+})
+
+test_that("ci_method = 'profile' on mixed lm + glm: rejected", {
+  m_lm  <- lm(mpg ~ wt, data = mt)
+  m_glm <- glm(am ~ mpg, data = mt, family = binomial)
+  expect_error(
+    table_regression(list(m_lm, m_glm), ci_method = "profile"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("ci_method = 'profile': asymmetric CI for sparse logistic", {
+  # Asymmetry is the hallmark of profile CI: distance from estimate
+  # to upper bound != distance to lower bound.
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, ci_method = "profile"))
+  for (term_nm in c("mpg", "wt")) {
+    row <- td[td$estimate_type == "B" & td$term == term_nm, ]
+    half_low  <- row$estimate - row$conf.low
+    half_high <- row$conf.high - row$estimate
+    # Wald would give symmetric (half_low == half_high). Profile is
+    # asymmetric — the gap should be visibly different.
+    expect_false(isTRUE(all.equal(half_low, half_high, tolerance = 1e-3)))
+  }
+})

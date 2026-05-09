@@ -212,6 +212,16 @@
 #' @param boot_n Number of bootstrap replicates when
 #'   `vcov = "bootstrap"`. Single positive integer. Default
 #'   `1000L`.
+#' @param ci_method CI construction method. `"wald"` (default) uses
+#'   the symmetric Wald formula `estimate ± z × SE` (or `t × SE` for
+#'   `lm`); for `glm` this matches `summary.glm` and `confint.default`.
+#'   `"profile"` (*glm only*) uses the profile-likelihood CI from
+#'   `MASS::confint.glm()` — asymmetric, exact for likelihood-based
+#'   inference, and the gold standard under sparse data or near-
+#'   boundary estimates (Venables & Ripley *MASS* §7.2). The estimate,
+#'   SE, statistic and p-value remain Wald; `"profile"` only refines
+#'   the CI bounds. Using `"profile"` with `lm` raises
+#'   `spicy_invalid_input`.
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
@@ -497,6 +507,7 @@ table_regression <- function(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
+  ci_method = c("wald", "profile"),
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
@@ -538,6 +549,7 @@ table_regression <- function(
 
   # Resolve enum args
   standardized <- match.arg(standardized)
+  ci_method <- match.arg(ci_method)
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
   align <- match.arg(align)
@@ -607,6 +619,29 @@ table_regression <- function(
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+
+  # `ci_method = "profile"` is glm only. Profile-likelihood CIs are
+  # standard for glm (MASS::confint.glm); for lm, Wald CIs are exact
+  # under the normal-error assumption, so a profile path would be
+  # equivalent to Wald with extra cost.
+  if (identical(ci_method, "profile")) {
+    any_lm_only <- any(vapply(models, function(f) {
+      inherits(f, "lm") && !inherits(f, "glm")
+    }, logical(1)))
+    if (any_lm_only) {
+      spicy_abort(
+        c(
+          "`ci_method = \"profile\"` is defined for `glm` only.",
+          "i" = paste0(
+            "For `lm`, Wald CIs are exact under the normal-error ",
+            "assumption (no profile refinement available)."
+          ),
+          "i" = "Use `ci_method = \"wald\"` (default) for `lm`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
 
   # `standardized = "pseudo"` (Menard 2011 fully-standardised) is glm
   # only — it derives SD(Y*) from the link-scale latent variance,
@@ -791,6 +826,7 @@ table_regression <- function(
       cluster = cluster_list[[i]],
       boot_n = boot_n,
       ci_level = ci_level,
+      ci_method = ci_method,
       standardized = standardized,
       exponentiate = exponentiate,
       show_columns = show_columns,

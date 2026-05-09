@@ -9,6 +9,7 @@ table_regression(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
+  ci_method = c("wald", "profile"),
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
@@ -67,6 +68,17 @@ a single string column name, an atomic vector of length
 
 \item{ci_level}{Confidence level for all reported CIs (B, β,
 AME, partial effect sizes). Default \code{0.95}.}
+
+\item{ci_method}{CI construction method. \code{"wald"} (default) uses
+the symmetric Wald formula \verb{estimate ± z × SE} (or \verb{t × SE} for
+\code{lm}); for \code{glm} this matches \code{summary.glm} and \code{confint.default}.
+\code{"profile"} (\emph{glm only}) uses the profile-likelihood CI from
+\code{MASS::confint.glm()} — asymmetric, exact for likelihood-based
+inference, and the gold standard under sparse data or near-
+boundary estimates (Venables & Ripley \emph{MASS} §7.2). The estimate,
+SE, statistic and p-value remain Wald; \code{"profile"} only refines
+the CI bounds. Using \code{"profile"} with \code{lm} raises
+\code{spicy_invalid_input}.}
 
 \item{boot_n}{Number of bootstrap replicates when
 \code{vcov = "bootstrap"}. Single positive integer. Default

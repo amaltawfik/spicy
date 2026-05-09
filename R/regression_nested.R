@@ -37,15 +37,31 @@ compute_nested_comparisons_lm <- function(fits, nested_stats = NULL) {
   if (length(fits) < 2L) {
     return(empty_nested_comparisons())
   }
+
+  # Class-aware default per-pair semantics:
+  #   * adjacent pair both glm → LRT chi-square via anova(test = "LRT").
+  #     Default token set: c("LRT", "p") (Hosmer & Lemeshow §3.5;
+  #     Long & Freese 2014 §3.6 "hierarchical logistic regression").
+  #   * adjacent pair both lm  → partial F via anova(). Default
+  #     token set: c("r2_change", "F", "p") (APA hierarchical
+  #     regression standard).
+  #   * mixed-class pair       → LRT path (the only test that's
+  #     well-defined across model classes that share an MLE).
+  all_glm <- all(vapply(fits, inherits, logical(1), "glm"))
   if (is.null(nested_stats)) {
-    nested_stats <- c("r2_change", "F", "p")
+    nested_stats <- if (all_glm) c("LRT", "p") else c("r2_change", "F", "p")
   }
 
   result <- vector("list", length(fits) - 1L)
   for (k in seq_len(length(fits) - 1L)) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
-    stats <- compute_one_pair_lm(fit_prev, fit_curr)
+    pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
+    stats <- if (pair_glm) {
+      compute_one_pair_glm(fit_prev, fit_curr)
+    } else {
+      compute_one_pair_lm(fit_prev, fit_curr)
+    }
     result[[k]] <- data.frame(
       comparison = sprintf("Model %d vs Model %d", k + 1L, k),
       r2_change = stats$r2_change,
@@ -139,6 +155,69 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     AICc            = aicc_c - aicc_p,
     BIC             = bic_c - bic_p,
     deviance_change = dev_p - dev_c,   # positive when m_curr fits better
+    p               = p_val
+  )
+}
+
+
+# ---- Per-pair glm computation (Phase 3 Step 6) ---------------------------
+
+# Per-pair statistics for nested glm models. Uses the LRT chi-square
+# from anova(test = "LRT") (Hosmer & Lemeshow §3.5; Long & Freese
+# 2014 §3.6) — the canonical hierarchical-logistic test, mirroring
+# the role of partial F in lm. Variance-explained tokens (r2_change,
+# adj_r2_change, F, f2_change) are NA for glm: the residual-sum-of-
+# squares partition does not apply outside the least-squares
+# framework. AIC / AICc / BIC / deviance_change / LRT / p are all
+# meaningful and computed.
+compute_one_pair_glm <- function(fit_prev, fit_curr) {
+  na <- list(
+    r2_change = NA_real_, adj_r2_change = NA_real_,
+    F = NA_real_, f2_change = NA_real_,
+    LRT = NA_real_,
+    AIC = NA_real_, AICc = NA_real_, BIC = NA_real_,
+    deviance_change = NA_real_, p = NA_real_
+  )
+
+  av <- tryCatch(
+    suppressWarnings(stats::anova(fit_prev, fit_curr, test = "LRT")),
+    error = function(e) NULL
+  )
+  if (is.null(av) || nrow(av) < 2L) return(na)
+
+  # Column names vary across R versions: "Deviance" + "Pr(>Chi)" is
+  # standard for binomial / poisson; "Pr(>F)" appears for quasi-
+  # families when test = "F" is the natural test (we still asked for
+  # LRT but anova may downgrade). Look up defensively.
+  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT"), names(av))
+  p_col <- intersect(c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>F)"), names(av))
+  lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_
+  p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_
+
+  aic_p <- stats::AIC(fit_prev); aic_c <- stats::AIC(fit_curr)
+  bic_p <- stats::BIC(fit_prev); bic_c <- stats::BIC(fit_curr)
+
+  aicc <- function(fit, aic_v) {
+    k <- length(stats::coef(fit)) + 1L
+    n <- stats::nobs(fit)
+    if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_
+  }
+  aicc_p <- aicc(fit_prev, aic_p)
+  aicc_c <- aicc(fit_curr, aic_c)
+
+  dev_p <- stats::deviance(fit_prev)
+  dev_c <- stats::deviance(fit_curr)
+
+  list(
+    r2_change       = NA_real_,
+    adj_r2_change   = NA_real_,
+    F               = NA_real_,
+    f2_change       = NA_real_,
+    LRT             = lrt_stat,
+    AIC             = aic_c - aic_p,
+    AICc            = aicc_c - aicc_p,
+    BIC             = bic_c - bic_p,
+    deviance_change = dev_p - dev_c,
     p               = p_val
   )
 }
