@@ -87,7 +87,26 @@ adjusted independently within their own families). When active,
 a footer note documents the method and the family size. The
 adjustment runs \strong{before} any \code{keep} / \code{drop} filtering so the
 family is the model's full coefficient set, not just the
-displayed subset (modelsummary convention).}
+displayed subset (modelsummary convention).
+
+\strong{Methodological note.} Adjusting the p-values of all
+coefficients of a single regression model is \emph{not} the standard
+convention in social-science / clinical reporting. Each
+coefficient tests a scientifically distinct hypothesis on a
+distinct predictor, which is not the situation multiple-testing
+procedures were designed for (Rothman 1990; Greenland 2017).
+The default \code{"none"} reflects this: APA Manual 7 §6.46,
+Harrell (\emph{Regression Modeling Strategies}, §5.4), and Gelman,
+Hill & Yajima (2012) all recommend reporting unadjusted
+p-values for the coefficients of a pre-specified regression
+model. Cases where adjustment IS appropriate include mass
+screening with many candidate predictors and no prior
+hypothesis (typically \code{"BH"} / FDR), pre-registered
+multi-endpoint confirmatory designs (typically \code{"holm"}), or
+when a journal / SAP explicitly requests it. spicy exposes the
+argument under the same "transparency over rejection" rule
+used for \code{standardized}: the tool is available, the
+methodological choice is yours.}
 
 \item{show_columns}{Character vector of tokens controlling
 which per-coefficient columns to display, \strong{and} in which

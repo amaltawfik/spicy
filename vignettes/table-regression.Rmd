@@ -248,6 +248,23 @@ model's full coefficient set and the displayed adjusted p-values
 reflect the right denominator regardless of which subset is shown
 (matching the `modelsummary` and `parameters` convention).
 
+A methodological note. Adjusting the p-values of every coefficient
+of a single regression model is *not* the standard convention in
+social-science or clinical reporting (Rothman 1990; Greenland 2017;
+Harrell *Regression Modeling Strategies* §5.4; Gelman, Hill &
+Yajima 2012; APA Manual 7 §6.46). Each coefficient tests a
+scientifically distinct hypothesis on a distinct predictor, which
+is not the situation that family-wise procedures were designed for.
+The default `"none"` reflects this consensus. Adjustment is
+nonetheless legitimate in three contexts: (i) mass screening with
+many candidate predictors and no prior hypothesis (typically
+`"BH"` / FDR), (ii) pre-registered multi-endpoint confirmatory
+designs (typically `"holm"`), or (iii) when a reviewer or SAP
+explicitly requests it. spicy exposes the argument under the same
+"transparency over rejection" rule used for `standardized`: the
+tool is here, the methodological choice is yours, and the footer
+makes the choice visible to the reader.
+
 ## Filtering displayed coefficients
 
 `keep` and `drop` accept regular expressions matched against
@@ -438,6 +455,17 @@ Behavioral Sciences* (3rd ed.). Lawrence Erlbaum.
 Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. *Statistics in Medicine*, 27(15), 2865–2873.
 
+Gelman, A., Hill, J., and Yajima, M. (2012). Why we (usually) don't
+have to worry about multiple comparisons. *Journal of Research on
+Educational Effectiveness*, 5(2), 189–211.
+
+Greenland, S. (2017). For and against methodologies: Some
+perspectives on recent causal and statistical inference debates.
+*European Journal of Epidemiology*, 32(1), 3–20.
+
+Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
+Springer. Section 5.4 on multiplicity.
+
 Imbens, G. W., and Kolesár, M. (2016). Robust standard errors in
 small samples: Some practical advice. *Review of Economics and
 Statistics*, 98(4), 701–712.
@@ -454,6 +482,9 @@ Pustejovsky, J. E., and Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed
 effects models. *Journal of Business & Economic Statistics*, 36(4),
 672–683.
+
+Rothman, K. J. (1990). No adjustments are needed for multiple
+comparisons. *Epidemiology*, 1(1), 43–46.
 
 Smithson, M. (2003). *Confidence Intervals*. Sage.
 
