@@ -29,12 +29,18 @@
 .regression_tokens <- list(
   show_columns = c(
     "B", "beta", "SE", "CI", "t", "p",
+    # Variance-explained partials (lm only)
     "partial_f2", "partial_eta2", "partial_omega2",
+    # LRT-based partial chi-square (glm; analog of partial F)
+    "partial_chi2",
     "AME", "AME_p", "AME_SE"
   ),
   show_fit_stats = c(
     "nobs", "weighted_nobs",
+    # Variance-explained (lm only)
     "r2", "adj_r2", "omega2",
+    # Pseudo-R² family (glm only)
+    "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
     "sigma", "rmse",
     "f2",
     "AIC", "AICc", "BIC", "deviance"
@@ -137,16 +143,15 @@ validate_models_input <- function(models) {
 
 # Per-fit class classifier: NULL if OK, message string otherwise.
 # Used by validate_models_input() to build the aggregate-fail message.
+# As of spicy 0.13: `lm` and `glm` are supported. Mixed-effects
+# models are deferred to 0.16+. Other classes route to issue tracker.
 classify_unsupported_lm_class <- function(fit, position = NULL) {
   pos_prefix <- if (!is.null(position)) sprintf("Position %d: ", position) else ""
 
-  if (inherits(fit, "glm")) {
-    return(paste0(
-      pos_prefix,
-      "`glm()` model \u2014 supported in spicy 0.15.0. ",
-      "If your model is OLS (gaussian / identity link), refit with `lm()` directly."
-    ))
-  }
+  # `glm` inherits from `lm`, but the converse is not true.
+  # Order matters: catch mixed-effects classes BEFORE the lm fallback,
+  # since `lmerMod` etc. don't inherit from lm but are explicitly out
+  # of scope for now.
   if (inherits(fit, c("lmerMod", "glmerMod", "merMod"))) {
     return(paste0(
       pos_prefix,
@@ -160,12 +165,12 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
   if (is.data.frame(fit)) {
     return(paste0(
       pos_prefix,
-      "data.frame supplied where an `lm` fit is expected. ",
+      "data.frame supplied where an `lm` or `glm` fit is expected. ",
       "Fit a model first: ",
       "`fit <- lm(y ~ x, data = your_data); table_regression(fit)`."
     ))
   }
-  if (!inherits(fit, "lm")) {
+  if (!inherits(fit, "lm")) {       # `glm` inherits from `lm`, so this catches both glm and lm
     return(paste0(
       pos_prefix,
       sprintf("`%s` \u2014 not on the roadmap. ", class(fit)[1]),
@@ -406,6 +411,111 @@ validate_show_columns <- function(show_columns, standardized) {
   }
   invisible(NULL)
 }
+
+# Class-aware token validation. Rejects tokens that are
+# mathematically inappropriate for the model class with a clear
+# remediation pointer toward the right substitute. Called AFTER
+# validate_show_columns / validate_show_fit_stats (which only
+# check vocabulary membership) so the user always sees the
+# generic-error first when a typo is present, the class-specific
+# error second when the typo is absent.
+#
+# Substitution policy (closest analog per discipline convention):
+#   * lm  ⟶ no  partial_chi2          (use partial_f2 / η² / ω²)
+#   * lm  ⟶ no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
+#   * glm ⟶ no  partial_f2 / η² / ω²  (use partial_chi2; Long & Freese
+#                                      2014 §3.5; Allison "TYPE3")
+#   * glm ⟶ no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
+#                                      1974 / Nagelkerke 1991 / Tjur 2009)
+validate_class_appropriate_tokens <- function(models,
+                                                show_columns,
+                                                show_fit_stats) {
+  any_glm <- any(vapply(models, inherits, logical(1), "glm"))
+  any_lm_only <- any(vapply(models, function(f) {
+    inherits(f, "lm") && !inherits(f, "glm")
+  }, logical(1)))
+  all_glm <- any_glm && !any_lm_only
+  all_lm  <- any_lm_only && !any_glm
+
+  # Variance-explained partial tokens. Reject only when ALL models
+  # are glm — in mixed sets, the renderer em-dashes glm rows and
+  # populates lm rows, which is the right behaviour.
+  if (all_glm) {
+    bad <- intersect(show_columns,
+                     c("partial_f2", "partial_eta2", "partial_omega2"))
+    if (length(bad) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for `glm` models.",
+            paste(shQuote(bad), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Variance-explained partition (R² / partial f² / η² / ω²) ",
+            "does not apply outside the least-squares framework. The ",
+            "`glm`-appropriate analog is `partial_chi2` (partial ",
+            "likelihood-ratio chi-square via `drop1(test = \"LRT\")`; ",
+            "Long & Freese 2014 §3.5; Allison \"TYPE3\")."
+          ),
+          "i" = "Replace with `\"partial_chi2\"` or drop the token."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    bad_fit <- intersect(show_fit_stats,
+                          c("r2", "adj_r2", "omega2", "f2"))
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for `glm` models.",
+            paste(shQuote(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Use the pseudo-R² family instead: `\"pseudo_r2_mcfadden\"` ",
+            "(McFadden 1974), `\"pseudo_r2_nagelkerke\"` (Nagelkerke ",
+            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only)."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  if (all_lm) {
+    bad <- intersect(show_columns, "partial_chi2")
+    if (length(bad) > 0L) {
+      spicy_abort(
+        c(
+          "Token \"partial_chi2\" in `show_columns` is for `glm` models only.",
+          "i" = paste0(
+            "For `lm`, use `\"partial_f2\"`, `\"partial_eta2\"`, or ",
+            "`\"partial_omega2\"` — the variance-explained analogs."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    bad_fit <- intersect(show_fit_stats,
+                          c("pseudo_r2_mcfadden",
+                             "pseudo_r2_nagelkerke",
+                             "pseudo_r2_tjur"))
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are for `glm` models only.",
+            paste(shQuote(bad_fit), collapse = ", ")
+          ),
+          "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  invisible(NULL)
+}
+
 
 # Step 10: show_fit_stats. Empty character or NULL means "drop the
 # fit-stats footer block" — a legitimate rendering choice (some

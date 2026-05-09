@@ -32,21 +32,43 @@ build_regression_title <- function(extracts, nested = FALSE) {
   outcomes <- outcomes[!is.na(outcomes)]
   n <- length(extracts)
 
+  # Family-aware prefix per model. When all models share the same
+  # family / link, the prefix becomes the title's class label
+  # ("Logistic regression", "Poisson regression", ...). Mixed
+  # families (e.g. logit + probit) fall back to the generic
+  # "Regression" so the title doesn't lie about the analysis.
+  prefixes <- vapply(extracts, function(e) {
+    e$title_prefix %||% "Regression"
+  }, character(1))
+  prefix <- if (length(unique(prefixes)) == 1L) {
+    prefixes[1L]
+  } else {
+    "Regression"
+  }
+
   if (n == 1L) {
-    if (length(outcomes) == 0L) return("Regression")
-    return(sprintf("Regression: %s", outcomes[1]))
+    if (length(outcomes) == 0L) return(prefix)
+    return(sprintf("%s: %s", prefix, outcomes[1]))
   }
 
   identical_dv <- length(unique(outcomes)) == 1L
 
   if (isTRUE(nested)) {
-    # Hierarchical assumes identical DV (validated upstream by Q11a)
-    return(sprintf("Hierarchical regression: %s", outcomes[1]))
+    # Hierarchical assumes identical DV (validated upstream by Q11a).
+    # The "Hierarchical " prefix is paired with the lowercased
+    # family label for grammatical correctness ("Hierarchical
+    # logistic regression: am" rather than "Hierarchical Logistic
+    # regression: am").
+    lower_prefix <- paste0(
+      tolower(substr(prefix, 1L, 1L)),
+      substr(prefix, 2L, nchar(prefix))
+    )
+    return(sprintf("Hierarchical %s: %s", lower_prefix, outcomes[1]))
   }
   if (identical_dv) {
-    return(sprintf("Regression comparison: %s", outcomes[1]))
+    return(sprintf("%s comparison: %s", prefix, outcomes[1]))
   }
-  "Regression comparison"
+  sprintf("%s comparison", prefix)
 }
 
 
@@ -107,7 +129,10 @@ build_vcov_footer_block <- function(extracts) {
 format_vcov_label <- function(extract) {
   vt <- extract$vcov_type %||% "classical"
   cn <- extract$cluster_name %||% NA_character_
-  if (vt == "classical") return("classical (OLS)")
+  is_glm <- isTRUE(extract$is_glm)
+  if (vt == "classical") {
+    return(if (is_glm) "classical (MLE inverse Hessian)" else "classical (OLS)")
+  }
   if (startsWith(vt, "HC")) {
     return(sprintf("heteroskedasticity-robust (%s)", vt))
   }

@@ -146,6 +146,15 @@ extract_lm_phase1 <- function(
   has_singular <- any(is_singular_vec)
 
   # ---- Return structure ---------------------------------------------------
+  # Family / link descriptor for glm; NULL for lm. Drives the
+  # family-aware title, the exponentiate column-header rebrand,
+  # and the gaussian-glm caveat.
+  family_info <- if (inherits(fit, "glm")) {
+    spicy_glm_family_info(fit)
+  } else {
+    NULL
+  }
+
   list(
     model_id = model_id,
     outcome = outcome,
@@ -159,7 +168,10 @@ extract_lm_phase1 <- function(
     singular_terms = if (has_singular) names(cf)[is_singular_vec] else character(0),
     has_weights = !is.null(weights) && length(unique(weights)) > 1L,
     weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
-    nobs = stats::nobs(fit)
+    nobs = stats::nobs(fit),
+    is_glm = inherits(fit, "glm"),
+    family_info = family_info,
+    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Regression"
   )
 }
 
@@ -198,7 +210,15 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         factor_level = fmeta$factor_level %||% NA_character_
       )
     } else {
-      inf <- compute_lm_coef_inference(
+      # Class-aware inference: glm uses z-asymptotic Wald (matches
+      # summary.glm / Stata logit / SPSS LOGISTIC); lm uses t with
+      # df.residual or Satterthwaite df under CR* (lm_compute.R).
+      inf_fn <- if (inherits(fit, "glm") && !inherits(fit, "lm.gaussian.passthrough")) {
+        compute_glm_coef_inference
+      } else {
+        compute_lm_coef_inference
+      }
+      inf <- inf_fn(
         fit = fit,
         coef_idx = i,
         vc = vc,
@@ -395,30 +415,59 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
                                model_id, outcome) {
   # Compute everything once, then subset by show_fit_stats.
   sm <- summary(fit)
+  is_glm <- inherits(fit, "glm")
 
-  # Core stats from summary(fit)
-  r2 <- unname(sm$r.squared)
-  adj_r2 <- unname(sm$adj.r.squared)
-  sigma <- unname(sm$sigma)
+  # Variance-explained stats (lm only). For glm, R² / Adj.R² /
+  # ω² / f² are not defined and stay NA — pseudo_r2_* tokens
+  # cover the equivalent reporting need.
+  if (is_glm) {
+    r2 <- NA_real_
+    adj_r2 <- NA_real_
+    omega2 <- NA_real_
+    f2 <- NA_real_
+  } else {
+    r2 <- unname(sm$r.squared)
+    adj_r2 <- unname(sm$adj.r.squared)
+    df_resid_lm <- stats::df.residual(fit)
+    df_effect <- length(stats::coef(fit)) - 1L
+    omega2 <- compute_lm_omega2(fit, df_effect, df_resid_lm)
+    f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
+  }
 
-  # Hays bias-corrected omega² (model-level), reusing the
-  # infrastructure in lm_compute.R. df_effect = number of non-intercept
-  # coefs ; df_resid = stats::df.residual(fit).
-  df_resid <- stats::df.residual(fit)
-  df_effect <- length(stats::coef(fit)) - 1L
-  omega2 <- compute_lm_omega2(fit, df_effect, df_resid)
+  # Pseudo-R² family (glm only; NA for lm).
+  pseudo_r2_mcfadden <- if (is_glm) compute_pseudo_r2_mcfadden(fit) else NA_real_
+  pseudo_r2_nagelkerke <- if (is_glm) compute_pseudo_r2_nagelkerke(fit) else NA_real_
+  pseudo_r2_tjur <- if (is_glm) compute_pseudo_r2_tjur(fit) else NA_real_
 
-  # Cohen's f² model-level
-  f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
+  # Residual scale. For glm, `summary(fit)$sigma` does not exist;
+  # we use the dispersion estimate (sm$dispersion) instead and
+  # report it under the same `sigma` token. For families with a
+  # fixed dispersion (binomial / poisson), this is 1 by convention.
+  sigma <- if (is_glm) {
+    unname(sm$dispersion %||% NA_real_)
+  } else {
+    unname(sm$sigma)
+  }
 
-  # Residual scale variants
-  rmse <- sqrt(sum(stats::residuals(fit)^2) / stats::nobs(fit))
+  # RMSE — sqrt mean squared residual. Defined for all glm
+  # families on the response scale via residuals(fit, type =
+  # "response"). For lm, residuals(fit) is already on the
+  # response scale, so the formulae coincide.
+  resid_response <- if (is_glm) {
+    stats::residuals(fit, type = "response")
+  } else {
+    stats::residuals(fit)
+  }
+  rmse <- sqrt(sum(resid_response^2) / stats::nobs(fit))
 
-  # Information criteria
+  # Information criteria — defined for both lm and glm.
   AIC_v <- stats::AIC(fit)
   BIC_v <- stats::BIC(fit)
-  # AICc = AIC + 2k(k+1)/(n-k-1) ; k = number of estimated params
-  # incl. sigma (Hurvich & Tsai 1989). For lm, k = length(coef) + 1 (sigma).
+  # AICc — Hurvich & Tsai (1989). k = length(coef) + 1 (lm: sigma;
+  # glm: dispersion if estimated, else just k = length(coef) for
+  # binomial/poisson with fixed dispersion). The `+ 1` is a
+  # conservative default that matches the convention used by
+  # `MuMIn::AICc`, the most-cited AICc implementation in R.
   k <- length(stats::coef(fit)) + 1L
   n <- stats::nobs(fit)
   AICc_v <- if (n - k - 1L > 0L) {
@@ -427,14 +476,12 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
     NA_real_
   }
   deviance_v <- stats::deviance(fit)
+  df_resid <- stats::df.residual(fit)
 
   # Counts
   nobs_v <- stats::nobs(fit)
   weighted_nobs_v <- if (!is.null(weights)) sum(weights) else NA_real_
 
-  # Build single-row data.frame with all stats; subset by request later
-  # (we keep all columns in extract output; the renderer applies
-  # show_fit_stats filtering).
   data.frame(
     model_id = model_id,
     outcome = outcome,
@@ -443,6 +490,9 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
     r2 = r2,
     adj_r2 = adj_r2,
     omega2 = omega2,
+    pseudo_r2_mcfadden = pseudo_r2_mcfadden,
+    pseudo_r2_nagelkerke = pseudo_r2_nagelkerke,
+    pseudo_r2_tjur = pseudo_r2_tjur,
     sigma = sigma,
     rmse = rmse,
     f2 = f2,

@@ -472,7 +472,7 @@ table_regression <- function(
   group_factor_levels = TRUE,
   reference_style = c("row", "annotation"),
   reference_label = "(ref.)",
-  show_fit_stats = c("nobs", "r2", "adj_r2"),
+  show_fit_stats = NULL,
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -539,6 +539,67 @@ table_regression <- function(
       append(show_columns, "beta", after = b_idx[1])
     } else {
       c(show_columns, "beta")
+    }
+  }
+
+  # show_fit_stats class-aware default: when NULL, pick the
+  # appropriate token set per model class. Mixed lm + glm sets
+  # union both groups; the renderer's "skip token absent from
+  # fit_stats schema" branch handles the per-row NA gracefully.
+  if (is.null(show_fit_stats)) {
+    any_glm <- any(vapply(models, inherits, logical(1), "glm"))
+    any_lm_only <- any(vapply(models, function(f) {
+      inherits(f, "lm") && !inherits(f, "glm")
+    }, logical(1)))
+    show_fit_stats <- character(0)
+    if (any_lm_only) {
+      show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
+    }
+    if (any_glm) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only) "nobs",
+                            "pseudo_r2_mcfadden",
+                            "pseudo_r2_nagelkerke",
+                            "AIC")
+    }
+    show_fit_stats <- unique(show_fit_stats)
+  }
+
+  # Class-aware token compatibility — variance-explained tokens are
+  # rejected on glm with a hint to the partial_chi2 / pseudo_r2_*
+  # substitutes; pseudo_r2_* is rejected on lm. The check runs on
+  # the resolved (class-aware default OR user-supplied) vector.
+  validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+
+  # gaussian-glm caveat: the user fitted glm() with the default
+  # (gaussian / identity) family, which is mathematically equivalent
+  # to lm() but loses access to the variance-explained effect sizes
+  # (partial_f2 / η² / ω²) and to the AME-Satterthwaite path A.
+  # Following the "transparency over rejection" rule, we accept the
+  # fit and surface the suggestion via spicy_caveat.
+  for (i in seq_along(models)) {
+    f <- models[[i]]
+    if (inherits(f, "glm") && !inherits(f, "lm.gaussian.passthrough")) {
+      fam <- stats::family(f)
+      if (identical(fam$family, "gaussian") &&
+            identical(fam$link, "identity")) {
+        spicy_warn(
+          c(
+            sprintf(
+              "Model %d is a gaussian / identity glm.",
+              i
+            ),
+            "i" = paste0(
+              "This is mathematically equivalent to `lm()`. Refitting ",
+              "with `lm()` gives access to the variance-explained ",
+              "partial effect sizes (partial_f2 / η² / ω²) and to the ",
+              "Satterthwaite-corrected AME path under CR* variance, ",
+              "neither of which is defined for the glm route."
+            )
+          ),
+          class = "spicy_caveat"
+        )
+      }
     }
   }
 

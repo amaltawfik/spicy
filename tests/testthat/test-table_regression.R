@@ -185,12 +185,26 @@ test_that("table_regression — NULL models errors with spicy_invalid_input", {
   )
 })
 
-test_that("table_regression — glm errors with spicy_unsupported (Phase 1 = lm only)", {
-  fit <- glm(am ~ mpg, data = mt, family = binomial)
+test_that("table_regression — merMod-like errors with spicy_unsupported (mixed-effects on roadmap for 0.16+)", {
+  # As of spicy 0.13, lm + glm are supported (Phase 3); mixed-
+  # effects models remain rejected with a roadmap pointer.
+  fake <- structure(list(), class = c("lmerMod", "merMod"))
   expect_error(
-    table_regression(fit),
+    table_regression(fake),
     class = "spicy_unsupported"
   )
+})
+
+test_that("table_regression — binomial glm fits cleanly (Phase 3)", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  out <- table_regression(fit)
+  expect_s3_class(out, "spicy_regression_table")
+  expect_match(attr(out, "title"), "^Logistic regression: am$")
+  td <- broom::tidy(out)
+  # z-asymptotic inference per glm convention (summary.glm,
+  # parameters::model_parameters, Stata logit, SPSS LOGISTIC)
+  expect_true(all(td$test_type == "z"))
+  expect_true(all(is.infinite(td$df)))
 })
 
 

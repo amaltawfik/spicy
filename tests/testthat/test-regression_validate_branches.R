@@ -25,14 +25,15 @@ test_that("validate_models_input — data.frame errors spicy_unsupported with re
   )
 })
 
-test_that("validate_models_input — glm errors with 0.15.0 roadmap message", {
+test_that("validate_models_input — glm is now accepted (Phase 3)", {
   fit <- glm(am ~ mpg, data = mtcars, family = binomial)
-  err <- tryCatch(
-    spicy:::validate_models_input(fit),
-    error = function(e) e
-  )
-  expect_s3_class(err, "spicy_unsupported")
-  expect_match(conditionMessage(err), "0\\.15\\.0")
+  # As of spicy 0.13, glm fits flow through validate_models_input
+  # without error and are wrapped in a 1-element list (Phase 3
+  # support: lm + glm).
+  out <- spicy:::validate_models_input(fit)
+  expect_type(out, "list")
+  expect_equal(length(out), 1L)
+  expect_true(inherits(out[[1L]], "glm"))
 })
 
 test_that("validate_models_input — merMod-like class errors with 0.16+ roadmap", {
@@ -58,7 +59,10 @@ test_that("validate_models_input — other class errors with 'open an issue' hin
 
 test_that("validate_models_input — multi-position aggregate-fail lists ALL bad positions", {
   fit_ok <- lm(mpg ~ wt, data = mtcars)
-  fit_bad <- glm(am ~ mpg, data = mtcars, family = binomial)
+  # merMod-like is still on the unsupported list (0.16+), so use it
+  # to exercise the multi-position aggregate failure path now that
+  # glm is accepted in Phase 3.
+  fit_bad <- structure(list(), class = c("lmerMod", "merMod"))
   err <- tryCatch(
     spicy:::validate_models_input(list(fit_ok, fit_bad, fit_bad)),
     error = function(e) e
