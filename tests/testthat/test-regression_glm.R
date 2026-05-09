@@ -645,3 +645,109 @@ test_that("glm pseudo: log-binomial treated as logit-equivalent (var_link = pi^2
   expected <- coef(fit)["x"] * sd(d$x) / sd_y_star
   expect_equal(beta_x, unname(expected), tolerance = 1e-12)
 })
+
+
+# ============================================================================
+# Step 5: AME for glm via marginaleffects + (optional) CR2 + Satterthwaite df
+# ============================================================================
+
+test_that("glm AME: matches marginaleffects::avg_slopes() to machine precision", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  oracle <- marginaleffects::avg_slopes(fit)
+  for (term_nm in c("mpg", "wt")) {
+    expect_equal(
+      ame$estimate[ame$term == term_nm],
+      oracle$estimate[oracle$term == term_nm],
+      tolerance = 1e-12, info = paste("term =", term_nm)
+    )
+    expect_equal(
+      ame$std.error[ame$term == term_nm],
+      oracle$std.error[oracle$term == term_nm],
+      tolerance = 1e-10
+    )
+  }
+})
+
+test_that("glm AME: classical vcov uses z-asymptotic (df = Inf, test_type = 'z')", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  expect_true(all(is.infinite(ame$df)))
+  expect_true(all(ame$test_type == "z"))
+})
+
+test_that("glm AME + CR2: Satterthwaite df from coef_test on dominant coef", {
+  set.seed(1)
+  n <- 200L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x1 = rnorm(n), x2 = rnorm(n),
+                  clinic = rep(letters[1:20], each = 10))
+  fit <- glm(y ~ x1 + x2, data = d, family = binomial)
+  td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = d$clinic,
+                                       show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  expect_true(all(ame$test_type == "t"))
+  # Cross-check: AME df_Satt should equal the dominant-coef df_Satt
+  ct <- clubSandwich::coef_test(fit, vcov = "CR2", cluster = d$clinic,
+                                  test = "Satterthwaite")
+  expect_equal(
+    ame$df[ame$term == "x1"],
+    unname(ct$df_Satt[rownames(ct) == "x1"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    ame$df[ame$term == "x2"],
+    unname(ct$df_Satt[rownames(ct) == "x2"]),
+    tolerance = 1e-10
+  )
+})
+
+test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
+  set.seed(1)
+  n <- 200L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n),
+                  clinic = rep(letters[1:20], each = 10))
+  fit <- glm(y ~ x, data = d, family = binomial)
+  out <- table_regression(fit, vcov = "CR2", cluster = d$clinic,
+                           show_columns = c("B", "AME"))
+  note <- attr(out, "note")
+  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
+  expect_match(note, "coef_test", fixed = TRUE)
+  # Should NOT mention linear_contrast (that's lm-only path)
+  expect_false(grepl("linear_contrast", note, fixed = TRUE))
+})
+
+test_that("glm AME with factor predictor: each level gets its own AME row", {
+  mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
+  fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  # mpg + cyl6 + cyl8 = 3 AME rows
+  expect_true("mpg" %in% ame$term)
+  expect_true("cyl6" %in% ame$term)
+  expect_true("cyl8" %in% ame$term)
+})
+
+test_that("glm AME: response-scale (NOT link-scale) - AME != B for logit", {
+  # Critical regression test: the closed-form linear contrast (Path A,
+  # used for lm) would compute the link-scale AME = B. We must NOT
+  # use Path A for glm; instead the response-scale AME from
+  # marginaleffects must differ from B.
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
+  ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
+  # Response-scale AME for logistic mpg coef is order-of-magnitude
+  # smaller (logistic squashes through pi^2/3 + var(eta))
+  expect_true(abs(ame_mpg) < abs(b_mpg) / 5)
+})
+
+test_that("glm AME: HC* vcov uses z-asymptotic (no Satterthwaite)", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit, vcov = "HC1",
+                                       show_columns = c("B", "AME")))
+  ame <- td[td$estimate_type == "AME", ]
+  expect_true(all(is.infinite(ame$df)))
+  expect_true(all(ame$test_type == "z"))
+})

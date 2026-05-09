@@ -159,9 +159,31 @@ build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
                          function(e) isTRUE(e$use_ame_satterthwaite),
                          logical(1)))
   if (!any_satt) return(NULL)
+  any_lm  <- any(vapply(extracts, function(e) !isTRUE(e$is_glm),
+                        logical(1)))
+  any_glm <- any(vapply(extracts, function(e) isTRUE(e$is_glm),
+                        logical(1)))
+  # Class-aware mechanism wording: lm uses the closed-form linear
+  # contrast (`clubSandwich::linear_contrast`); glm uses the dominant-
+  # coefficient approximation via `clubSandwich::coef_test` because the
+  # response-scale AME is non-linear in beta (Pustejovsky & Tipton
+  # 2018, §4).
+  mechanism <- if (any_lm && any_glm) {
+    paste0(
+      "via `clubSandwich` (closed-form `linear_contrast()` for `lm`; ",
+      "dominant-coef `coef_test()` approximation for `glm`)."
+    )
+  } else if (any_glm) {
+    paste0(
+      "via `clubSandwich::coef_test()` on the dominant underlying ",
+      "coefficient (response-scale AME is non-linear in \u03B2)."
+    )
+  } else {
+    "via `clubSandwich::linear_contrast()`."
+  }
   paste0(
     "AME inference: t-distribution with Satterthwaite-corrected df ",
-    "(Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`."
+    "(Pustejovsky & Tipton 2018) ", mechanism
   )
 }
 

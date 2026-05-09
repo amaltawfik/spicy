@@ -27,6 +27,24 @@
 
 extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
                               use_ame_satterthwaite, model_id, outcome) {
+  # Class-aware dispatch (Phase 3 Step 5).
+  #
+  # For `glm`, AME is on the response scale (E[Y|X] = link^-1(η)) and
+  # therefore non-linear in β — the closed-form `clubSandwich::linear_-
+  # contrast()` (Path A) does NOT apply, since its contrast would
+  # represent the link-scale AME (= β for numeric, no link-derivative
+  # weighting), not the response-scale AME users expect.
+  #
+  # We always use marginaleffects for glm, with optional Satterthwaite-
+  # df augmentation under CR*: the Pustejovsky & Tipton (2018, §4)
+  # approximation is to use the Satterthwaite df of the **dominant**
+  # underlying coefficient (the same coef whose name matches the AME
+  # term_id) as the df of the AME t-statistic.
+  if (inherits(fit, "glm")) {
+    return(extract_ame_glm(fit, vc, vcov_type, cluster, ci_level,
+                            model_id, outcome))
+  }
+
   # Path A: try Satterthwaite when CR* and AME requested
   if (isTRUE(use_ame_satterthwaite)) {
     rows <- tryCatch(
@@ -386,4 +404,171 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
     )
   })
   do.call(rbind, rows)
+}
+
+
+# ---- glm path: marginaleffects + optional Satterthwaite-df under CR* -----
+
+# AME extraction for glm. Always uses marginaleffects::avg_slopes()
+# (response-scale AME = E[link^-1(η)] is non-linear in β). Inference
+# regime by vcov:
+#
+#   * classical / HC* / bootstrap / jackknife
+#       → z-asymptotic (df = Inf), matching summary.glm convention.
+#
+#   * CR0–CR3 with cluster
+#       → CR2 SE from our `vc`; df from clubSandwich::coef_test
+#         (Satterthwaite) on the **dominant** underlying coefficient
+#         (the coef whose name matches the AME row's `term_id`).
+#         t-statistic, p-value, and CI rebuilt from
+#         (AME, SE_CR, df_Satt).
+#         This is the Pustejovsky & Tipton (2018, §4) approximation
+#         for nonlinear contrasts under cluster correlation.
+extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
+                              model_id, outcome) {
+  if (!spicy_pkg_available("marginaleffects")) {
+    # nocov start
+    spicy_abort(
+      c(
+        "AME extraction requires the 'marginaleffects' package.",
+        "i" = "Install it with `install.packages(\"marginaleffects\")`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+    # nocov end
+  }
+
+  # Compute AME on the response scale with our vcov; df = Inf so we
+  # get z-asymptotic SE / CI / p baseline. For CR* we override below.
+  ame_table <- tryCatch(
+    marginaleffects::avg_slopes(
+      fit,
+      vcov = vc,
+      conf_level = ci_level,
+      df = Inf
+    ),
+    error = function(e) {
+      spicy_warn(
+        c(
+          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          "x" = paste0("Reason: ", conditionMessage(e)),
+          "i" = "AME column will be em-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      NULL
+    }
+  )
+  if (is.null(ame_table)) {
+    return(empty_coefs_long())
+  }
+
+  # CR* augmentation: Satterthwaite df from clubSandwich, mapped to
+  # AME rows via the dominant-coef approximation.
+  use_satt <- startsWith(vcov_type, "CR") &&
+                !is.null(cluster) &&
+                spicy_pkg_available("clubSandwich")
+  df_satt_map <- if (use_satt) {
+    compute_satt_df_per_coef_glm(fit, vc, cluster)
+  } else {
+    NULL
+  }
+
+  factor_meta <- detect_factor_term_meta(fit)
+  mf <- stats::model.frame(fit)
+  mf_names <- names(mf)
+
+  rows <- lapply(seq_len(nrow(ame_table)), function(i) {
+    var_name <- ame_table$term[i]
+    contrast_str <- ame_table$contrast[i] %||% NA_character_
+
+    # Resolve `var_name` (as returned by marginaleffects) to the
+    # actual model.frame column. Same logic as the lm helper —
+    # marginaleffects strips inline transforms like `factor(cyl)`
+    # and reports the bare variable.
+    col_name <- if (var_name %in% mf_names) {
+      var_name
+    } else {
+      cand <- grep(
+        paste0("(^|\\()", var_name, "(\\)|$)"),
+        mf_names, value = TRUE
+      )
+      if (length(cand) > 0L) cand[1L] else var_name
+    }
+
+    # Reconstruct coef-style term_id only for true factor variables.
+    is_factor_var <- col_name %in% mf_names &&
+                      is.factor(mf[[col_name]])
+    term_id <- if (is_factor_var &&
+                    !is.na(contrast_str) &&
+                    grepl(" - ", contrast_str)) {
+      lvl <- sub(" - .*$", "", contrast_str)
+      paste0(col_name, lvl)
+    } else {
+      col_name
+    }
+    fmeta <- factor_meta[[term_id]]
+
+    est_i <- ame_table$estimate[i]
+    se_i  <- ame_table$std.error[i]
+    ci_lo_i <- ame_table$conf.low[i]
+    ci_hi_i <- ame_table$conf.high[i]
+    stat_i  <- ame_table$statistic[i]
+    p_i     <- ame_table$p.value[i]
+    df_i    <- Inf
+    test_type_i <- "z"
+
+    if (!is.null(df_satt_map) && term_id %in% names(df_satt_map)) {
+      df_i <- unname(df_satt_map[term_id])
+      if (is.finite(df_i) && df_i > 0 && !is.na(se_i) && se_i > 0) {
+        stat_i <- est_i / se_i
+        p_i <- 2 * stats::pt(abs(stat_i), df = df_i, lower.tail = FALSE)
+        crit <- stats::qt(1 - (1 - ci_level) / 2, df = df_i)
+        ci_lo_i <- est_i - crit * se_i
+        ci_hi_i <- est_i + crit * se_i
+        test_type_i <- "t"
+      }
+    }
+
+    build_one_b_row(
+      nm = term_id,
+      model_id = model_id,
+      outcome = outcome,
+      estimate_type = "AME",
+      estimate = est_i,
+      se = se_i,
+      ci_low = ci_lo_i,
+      ci_high = ci_hi_i,
+      statistic = stat_i,
+      df = df_i,
+      p_value = p_i,
+      test_type = test_type_i,
+      is_singular = FALSE,
+      is_intercept = FALSE,
+      is_reference = FALSE,
+      factor_term = fmeta$factor_term %||% NA_character_,
+      factor_level = fmeta$factor_level %||% NA_character_
+    )
+  })
+  do.call(rbind, rows)
+}
+
+
+# Map coef name → Satterthwaite df via clubSandwich::coef_test on the
+# original glm. Returns NULL on failure (e.g., clubSandwich missing,
+# coef_test errored). Caller falls back to z-asymptotic.
+compute_satt_df_per_coef_glm <- function(fit, vc, cluster) {
+  ct <- tryCatch(
+    clubSandwich::coef_test(
+      fit,
+      vcov = vc,
+      cluster = cluster,
+      test = "Satterthwaite"
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(ct) || !is.data.frame(ct) || !"df_Satt" %in% names(ct)) {
+    return(NULL)
+  }
+  setNames(as.numeric(ct$df_Satt), rownames(ct))
 }
