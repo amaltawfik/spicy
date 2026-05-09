@@ -1,12 +1,13 @@
 # `table_regression()` — design doc
 
-> **Status**: design fully settled. All 19 open questions closed
-> (Q1–Q12 in initial settling pass; Q13–Q16 in resumption audit;
-> Q17–Q19 in final pre-implementation audit 2026-05-09).
+> **Status**: design fully settled. All 24 open questions closed
+> (Q1–Q12 initial settling pass; Q13–Q16 resumption audit;
+> Q17–Q19 pre-implementation audit; Q20–Q24 residual-gap settling
+> pass 2026-05-09).
 > Ready for implementation post-CRAN-accept of 0.12.0.
 >
 > **Branch**: `feature/table-regression` (forked from `main` at `d95e3e6`).
-> **Created**: 2026-05-06. **Settled**: 2026-05-09 (19 questions).
+> **Created**: 2026-05-06. **Settled**: 2026-05-09 (24 questions).
 > **Author**: Amal + Claude pairing sessions 2026-05-06 → 2026-05-09.
 >
 > This document is the **single source of truth** to resume the work.
@@ -441,6 +442,117 @@ list.
 | **CI computation** | reuses the noncentral-F inversion machinery already in `R/lm_compute.R`: `find_ncp_f_lm()`, `compute_omega2_ci_lm()`, `compute_f2_ci_lm()`. partial η² CI derived from the same ncp via `η²_partial = ncp / (ncp + n_total)` (Steiger 2004). **No new numerical code.** |
 | **No "no-CI" variant in Phase 1** | future `partial_es_compact = TRUE/FALSE` knob possible in Phase 2 if a user asks for value-only display. |
 | **Coherence** | compact `value [CI]` rendering used consistently across `B` (when `"CI"` shown), `AME`, `partial_f2`, `partial_eta2`, `partial_omega2`. Single visual idiom across the row. |
+
+### Q20 — `output = "long"` vs `tidy()` distinct schemas
+
+Both return long format but with different naming conventions and column richness. Aligned with the existing distinction in `table_continuous_lm()`.
+
+| Aspect | `output = "long"` | `tidy()` |
+|---|---|---|
+| **Naming columns** | snake_case spicy-internal (`se`, `ci_low`, `p_value`, `r2`, `adj_r2`, `f2`) | broom-canonical (`std.error`, `conf.low`, `p.value`, `r.squared`, `adj.r.squared`) |
+| **Columns** | all computed fields (`weighted_n`, `vcov_type`, `cluster_name`, `df`, `partial_f2`, etc.) | minimal broom set: `model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, p.value` (+ partial_* additional columns on B rows) |
+| **Format** | numeric raw | numeric raw |
+| **Audience** | spicy users for downstream pivots / aggregations | broom-downstream tools (modelsummary, parameters, gtsummary) |
+| **Stability** | spicy-specific, can evolve | broom-canonical, stable contract |
+
+→ Two distinct representations of the same content. `output = "long"` is the analytic raw with all fields; `tidy()` is the broom-canonical normalised projection.
+
+### Q21 — Argument validation order (6 phases, ~29 steps)
+
+Cascade from most fundamental (cheapest, most impactful) to most cosmetic (resource paths). Fail-fast on first error except step 3 (multi-model class aggregate-fail per Q9).
+
+```
+Phase A — Input class (steps 1–3)
+  1. `models` is fit OR list of fits
+  2. Each element: lm AND not glm AND not merMod
+  3. Aggregate-fail if multiple non-lm in list (Q9 3-tier)
+
+Phase B — Multi-model alignment (steps 4–8)
+  4. nested = TRUE → all nobs identical (Q11a)
+  5. nested = TRUE → all DV identical (Q11a)
+  6. vcov is list → length(vcov) == length(models)
+  7. cluster is list → length(cluster) == length(models)
+  8. CR* requires cluster non-NULL; cluster length == nobs(model_i)
+
+Phase C — Vocabulary tokens (steps 9–12)
+  9. show_columns: tokens valid, non-empty, no duplicates
+  10. show_fit_stats: idem
+  11. nested_stats: idem + class-compatibility (lm Phase 1)
+  12. "beta" ∈ show_columns requires standardized != "none"
+
+Phase D — Argument values (steps 13–24)
+  13. standardized enum (match.arg)
+  14. intercept_position, align, output, reference_style enum
+  15. digits, p_digits, effect_size_digits, fit_digits, ic_digits non-neg integer
+  16. ci_level in (0, 1) exclusive
+  17. boot_n positive integer
+  18. show_intercept, group_factor_levels, nested length-1 logical not NA
+  19. stars: FALSE | TRUE | named numeric vec with thresholds in (0,1]
+  20. decimal_mark single character
+  21. reference_label non-empty single string
+  22. model_labels NULL OR character of length(models)
+  23. outcome_labels NULL OR FALSE OR character of length(models)
+  24. labels keys exist in model term labels
+
+Phase E — Cross-arg semantic (warnings only, steps 25–26)
+  25. standardized != "none" × non-additive terms → spicy_caveat warning (Q15)
+  26. vcov ∈ CR* × "AME" ∈ show_columns → activate AME-Satterthwaite path (Q14b)
+
+Phase F — Output-dependent resources (steps 27–29)
+  27. output = "excel": excel_path provided + dirname writable
+  28. output = "word": word_path provided + dirname writable
+  29. output = "clipboard": clipr available
+```
+
+Each step implemented as a separate `validate_*()` helper, called in cascade in `table_regression()`.
+
+### Q22 — Rank-deficient lm handling
+
+| | |
+|---|---|
+| **Detection** | `is.na(coef(fit))` upfront in `extract_lm.lm()`. R sets singular coefs to NA automatically. |
+| **Cell rendering** | em-dash `—` in all stat columns for the singular row (B, SE, CI, t, p, AME, partial_*) — visually consistent with reference rows (Q5) and intercept-in-AME (Q14a). |
+| **Distinction** | em-dash `—` = "term in model but value indefined" ; **blank cell** = "term not in this model" (multi-model misalignment). Two distinct visual states for two semantic states. |
+| **`spicy_singular` warning** | classed condition emitted once per call when ≥1 coef singular detected. Lists per-model offenders. |
+| **Footer auto** | when singular detected, ligne added: *"Rank-deficient coefficients in some models (em-dashed cells): Model 1: x_dup; Model 3: z, w_collinear"*. |
+| **Convention** | broom-style (keep row, NA→em-dash) + Stata-style (warning + footer note). Aligned with how `parameters::model_parameters` and `modelsummary` handle rank-deficient. |
+| **Edge cases covered** | singular vcov → SE = NA → cells em-dashed ; AME computation fails on singular → AME column em-dashed ; standardized refit fails on singular → β = NA + `spicy_fallback` warning ; `drop1()` partial F fails → partial_* = NA. |
+
+### Q23 — Internationalisation (deferred)
+
+| | |
+|---|---|
+| **Phase 1** | English-only for auto-generated text (titles, footer body, error / warning messages) |
+| **6 escape hatches** | `reference_label`, `model_labels`, `outcome_labels`, `labels`, plus `attr(result, "title")` / `attr(result, "note")` post-processing — cover all user-visible text customisation |
+| **Convention check** | tidyverse, broom, modelsummary, gtsummary, parameters all English-only. spicy is consistent across the whole package (cross_tab, freq, table_continuous_lm, etc. all English). |
+| **User-facing documentation** | `?table_regression` `@details` lists the escape hatches. **No mention of speculative future i18n** (would be roadmap pollution). |
+| **Internal roadmap** | If demand emerges, package-wide `language` knob in spicy 0.20+ as a transversal milestone (coordinate across all functions, not patch on `table_regression` alone). Tracked here, not in user-facing docs. |
+
+### Q24 — Output encoding (UTF-8 only)
+
+| | |
+|---|---|
+| **Phase 1** | UTF-8 output with Unicode box-drawing (`│`, `─`, `┼`, `┴`, `╌`), em-dash, Greek / math symbols (β, ω², χ², f², Δ, †) |
+| **Convention** | aligned with `R/tables_ascii.R` and the rest of spicy (Unicode-only since v0.1). Aligned with tidyverse, modelsummary, gtsummary, kableExtra (all Unicode). |
+| **Requirement documented** | `?table_regression` `@details` notes: UTF-8 terminal required; default in RStudio, R ≥ 4.0 on Windows 10+, macOS, modern Linux. |
+| **No user-facing speculative** | the user-doc does NOT mention "future ASCII fallback". (Convention: document what exists, not what might exist.) |
+| **Workaround in rare cases** | user can `capture.output()` + `gsub()` the Unicode chars manually. Not pretty but works for the rare non-UTF-8 environment. |
+| **Internal roadmap** | If demand emerges, package-wide `ascii = TRUE` knob in spicy 0.20+ (potentially conjoint with the i18n milestone). Tracked here, not in user-facing docs. |
+
+#### Distinction user-doc vs design-doc internal
+
+A general convention adopted at the same time:
+
+| Niveau | Speculative future features OK to mention? |
+|---|---|
+| `?table_regression` (user-facing roxygen) | **NO** — document only what works |
+| NEWS.md | **NO** — document only what's in this release |
+| User-facing vignettes | **NO** |
+| `dev/table_regression_design.md` (internal design doc) | **YES** — its purpose is to track internal roadmap |
+| GitHub issues / project boards | **YES** |
+| README "Roadmap" section (if it exists) | **OPT-IN** with firm timeline if mentioned |
+
+→ Internal roadmap tracking ≠ user-facing promises. Don't conflate.
 
 ---
 
