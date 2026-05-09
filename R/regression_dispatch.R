@@ -36,7 +36,7 @@ dispatch_regression_output <- function(
                                  "excel", "clipboard", "word"))
 
   switch(output,
-    default     = output_default(rendered),
+    default     = output_default(rendered, aligned),
     data.frame  = output_data_frame(rendered),
     long        = output_long(aligned),
     tinytable   = output_tinytable(rendered),
@@ -53,7 +53,11 @@ dispatch_regression_output <- function(
 
 # ---- default: printable spicy_regression_table ---------------------------
 
-output_default <- function(rendered) {
+# Carries the analytic data as attributes so broom methods (tidy,
+# glance) can read them without re-running the pipeline.
+output_default <- function(rendered, aligned) {
+  attr(rendered, "spicy_long")     <- aligned$coefs_aligned
+  attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
   class(rendered) <- c("spicy_regression_table", "spicy_table",
                        "data.frame")
   rendered
