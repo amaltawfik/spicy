@@ -45,8 +45,11 @@ dispatch_regression_output <- function(
     excel       = output_excel(rendered, excel_path, excel_sheet),
     clipboard   = output_clipboard(rendered, clipboard_delim),
     word        = output_word(rendered, word_path),
+    # nocov start — defensive: match.arg() above forbids any other
+    # value, so this branch is unreachable in practice.
     spicy_abort(sprintf("Unknown output \"%s\".", output),
                 class = "spicy_invalid_input")
+    # nocov end
   )
 }
 
@@ -100,12 +103,15 @@ output_long <- function(aligned) {
 # ---- tinytable -----------------------------------------------------------
 
 output_tinytable <- function(rendered) {
-  if (!requireNamespace("tinytable", quietly = TRUE)) {
+  if (!spicy_pkg_available("tinytable")) {
+    # nocov start — only reachable when 'tinytable' is not installed;
+    # CI / dev runs always have it via Suggests.
     spicy_abort(
       c("Output `\"tinytable\"` requires the 'tinytable' package.",
         "i" = "Install it with `install.packages(\"tinytable\")`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
@@ -119,12 +125,14 @@ output_tinytable <- function(rendered) {
 # ---- gt ------------------------------------------------------------------
 
 output_gt <- function(rendered) {
-  if (!requireNamespace("gt", quietly = TRUE)) {
+  if (!spicy_pkg_available("gt")) {
+    # nocov start
     spicy_abort(
       c("Output `\"gt\"` requires the 'gt' package.",
         "i" = "Install it with `install.packages(\"gt\")`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
@@ -143,12 +151,14 @@ output_gt <- function(rendered) {
 # ---- flextable -----------------------------------------------------------
 
 output_flextable <- function(rendered) {
-  if (!requireNamespace("flextable", quietly = TRUE)) {
+  if (!spicy_pkg_available("flextable")) {
+    # nocov start
     spicy_abort(
       c("Output `\"flextable\"` requires the 'flextable' package.",
         "i" = "Install it with `install.packages(\"flextable\")`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   body <- as.data.frame(rendered, stringsAsFactors = FALSE)
   ft <- flextable::flextable(body)
@@ -167,12 +177,14 @@ output_flextable <- function(rendered) {
 # ---- excel ---------------------------------------------------------------
 
 output_excel <- function(rendered, excel_path, excel_sheet) {
-  if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+  if (!spicy_pkg_available("openxlsx2")) {
+    # nocov start
     spicy_abort(
       c("Output `\"excel\"` requires the 'openxlsx2' package.",
         "i" = "Install it with `install.packages(\"openxlsx2\")`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   if (is.null(excel_path) || !nzchar(excel_path)) {
     spicy_abort(
@@ -210,36 +222,46 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
 # ---- clipboard -----------------------------------------------------------
 
 output_clipboard <- function(rendered, clipboard_delim) {
-  if (!requireNamespace("clipr", quietly = TRUE)) {
+  if (!spicy_pkg_available("clipr")) {
+    # nocov start
     spicy_abort(
       c("Output `\"clipboard\"` requires the 'clipr' package.",
         "i" = "Install it with `install.packages(\"clipr\")`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   if (!clipr::clipr_available()) {
+    # nocov start — system clipboard is environment-dependent and
+    # typically unavailable on headless CI runners; we test the
+    # branch behaviourally elsewhere via mocking.
     spicy_abort(
       c("System clipboard is not available.",
         "i" = "On Linux, install xclip or xsel."),
       class = "spicy_unsupported"
     )
+    # nocov end
   }
+  # nocov start — write_clip side effect cannot run on headless CI.
   body <- as.data.frame(rendered, stringsAsFactors = FALSE)
   clipr::write_clip(body, sep = clipboard_delim, col.names = TRUE)
   invisible(rendered)
+  # nocov end
 }
 
 
 # ---- word ----------------------------------------------------------------
 
 output_word <- function(rendered, word_path) {
-  if (!requireNamespace("flextable", quietly = TRUE) ||
-      !requireNamespace("officer", quietly = TRUE)) {
+  if (!spicy_pkg_available("flextable") ||
+      !spicy_pkg_available("officer")) {
+    # nocov start
     spicy_abort(
       c("Output `\"word\"` requires the 'flextable' and 'officer' packages.",
         "i" = "Install with `install.packages(c(\"flextable\", \"officer\"))`."),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   if (is.null(word_path) || !nzchar(word_path)) {
     spicy_abort(

@@ -170,8 +170,10 @@ as.data.frame.spicy_regression_table <- function(
 #' @rdname as.data.frame.spicy_regression_table
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_regression_table <- function(x, ...) {
-  if (!requireNamespace("tibble", quietly = TRUE)) {
+  if (!spicy_pkg_available("tibble")) {
+    # nocov start — tibble is in Imports, so always available.
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
+    # nocov end
   }
   tibble::as_tibble(unclass_spicy_regression_table(x), ...)
 }
@@ -191,7 +193,7 @@ unclass_spicy_regression_table <- function(x) {
 }
 
 maybe_as_tibble <- function(df) {
-  if (requireNamespace("tibble", quietly = TRUE)) {
+  if (spicy_pkg_available("tibble")) {
     return(tibble::as_tibble(df))
   }
   df

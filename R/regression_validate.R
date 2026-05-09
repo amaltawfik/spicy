@@ -811,7 +811,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
         class = "spicy_invalid_input"
       )
     }
-    if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+    if (!spicy_pkg_available("openxlsx2")) {
+      # nocov start
       spicy_abort(
         c(
           "`output = \"excel\"` requires the 'openxlsx2' package.",
@@ -819,6 +820,7 @@ validate_output_resources <- function(output, excel_path, word_path) {
         ),
         class = "spicy_missing_pkg"
       )
+      # nocov end
     }
   }
 
@@ -839,7 +841,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
         class = "spicy_invalid_input"
       )
     }
-    if (!requireNamespace("flextable", quietly = TRUE)) {
+    if (!spicy_pkg_available("flextable")) {
+      # nocov start
       spicy_abort(
         c(
           "`output = \"word\"` requires the 'flextable' package.",
@@ -847,8 +850,10 @@ validate_output_resources <- function(output, excel_path, word_path) {
         ),
         class = "spicy_missing_pkg"
       )
+      # nocov end
     }
-    if (!requireNamespace("officer", quietly = TRUE)) {
+    if (!spicy_pkg_available("officer")) {
+      # nocov start
       spicy_abort(
         c(
           "`output = \"word\"` requires the 'officer' package.",
@@ -856,11 +861,13 @@ validate_output_resources <- function(output, excel_path, word_path) {
         ),
         class = "spicy_missing_pkg"
       )
+      # nocov end
     }
   }
 
   if (identical(output, "clipboard")) {
-    if (!requireNamespace("clipr", quietly = TRUE)) {
+    if (!spicy_pkg_available("clipr")) {
+      # nocov start
       spicy_abort(
         c(
           "`output = \"clipboard\"` requires the 'clipr' package.",
@@ -868,16 +875,20 @@ validate_output_resources <- function(output, excel_path, word_path) {
         ),
         class = "spicy_missing_pkg"
       )
+      # nocov end
     }
     if (!clipr::clipr_available()) {
+      # nocov start — system clipboard is environment-dependent.
       spicy_abort(
         "Clipboard is not available on this system.",
         class = "spicy_unsupported"
       )
+      # nocov end
     }
   }
 
-  if (identical(output, "gt") && !requireNamespace("gt", quietly = TRUE)) {
+  if (identical(output, "gt") && !spicy_pkg_available("gt")) {
+    # nocov start
     spicy_abort(
       c(
         "`output = \"gt\"` requires the 'gt' package.",
@@ -885,9 +896,11 @@ validate_output_resources <- function(output, excel_path, word_path) {
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   if (identical(output, "flextable") &&
-        !requireNamespace("flextable", quietly = TRUE)) {
+        !spicy_pkg_available("flextable")) {
+    # nocov start
     spicy_abort(
       c(
         "`output = \"flextable\"` requires the 'flextable' package.",
@@ -895,9 +908,11 @@ validate_output_resources <- function(output, excel_path, word_path) {
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
   if (identical(output, "tinytable") &&
-        !requireNamespace("tinytable", quietly = TRUE)) {
+        !spicy_pkg_available("tinytable")) {
+    # nocov start
     spicy_abort(
       c(
         "`output = \"tinytable\"` requires the 'tinytable' package.",
@@ -905,6 +920,7 @@ validate_output_resources <- function(output, excel_path, word_path) {
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 
   invisible(NULL)

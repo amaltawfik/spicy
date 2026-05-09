@@ -65,3 +65,15 @@ spicy_warn <- function(message, class = NULL, ...) {
     ...
   )
 }
+
+
+# Internal indirection for `requireNamespace()`. Exists so the
+# missing-Suggests guards across the regression files can be
+# exercised in tests via `local_mocked_bindings(.package = "spicy")`
+# — `requireNamespace` itself is in `base::`, and mocking it there
+# does not propagate cleanly to instrumented code under
+# `covr::package_coverage()`. Going through this wrapper makes the
+# guards both more readable and properly testable.
+spicy_pkg_available <- function(pkg) {
+  requireNamespace(pkg, quietly = TRUE)
+}

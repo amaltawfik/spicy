@@ -76,7 +76,8 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 # and format the result as a long-format row.
 extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
                                        model_id, outcome) {
-  if (!requireNamespace("clubSandwich", quietly = TRUE)) {
+  if (!spicy_pkg_available("clubSandwich")) {
+    # nocov start
     spicy_abort(
       c(
         "AME-Satterthwaite under CR* requires the 'clubSandwich' package.",
@@ -84,6 +85,7 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 
   # Identify predictors: term.labels minus pure-interaction terms
@@ -239,7 +241,8 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 
 extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
                                          model_id, outcome) {
-  if (!requireNamespace("marginaleffects", quietly = TRUE)) {
+  if (!spicy_pkg_available("marginaleffects")) {
+    # nocov start
     spicy_abort(
       c(
         "AME extraction requires the 'marginaleffects' package.",
@@ -247,6 +250,7 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 
   # df argument — keeps B/AME inference regimes coherent (Q14b)
