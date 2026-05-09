@@ -556,3 +556,79 @@ test_that("align — 'auto' / 'right' / 'center' are accepted (no decimal pad)",
     expect_equal(attr(out, "align"), a)
   }
 })
+
+
+# ============================================================================
+# Polish round 5 — outcome_labels (Q11b) and reference_style annotation (Q5)
+# ============================================================================
+
+test_that("outcome_labels — single model: row never shown (DV is in title)", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out_null <- table_regression(fit, outcome_labels = NULL)
+  out_chr  <- table_regression(fit, outcome_labels = "Custom")
+  out_F    <- table_regression(fit, outcome_labels = FALSE)
+  expect_false("Outcome" %in% out_null$Variable)
+  expect_false("Outcome" %in% out_chr$Variable)
+  expect_false("Outcome" %in% out_F$Variable)
+})
+
+test_that("outcome_labels — multi-model identical DVs: NULL hides the row", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list(m1, m2))
+  expect_false("Outcome" %in% out$Variable)
+})
+
+test_that("outcome_labels — multi-model differing DVs: NULL shows the row with auto labels", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp))
+  expect_true("Outcome" %in% out$Variable)
+  outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
+  # Auto labels = variable names; in M1 first col, in M2 first col.
+  expect_true(any(grepl("mpg", outcome_row[, "Model 1: B"])))
+  expect_true(any(grepl("hp",  outcome_row[, "Model 2: B"])))
+})
+
+test_that("outcome_labels — explicit labels take precedence", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp),
+                          outcome_labels = c("Fuel economy", "Horsepower"))
+  outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
+  expect_true(any(grepl("Fuel economy", outcome_row[, "Model 1: B"])))
+  expect_true(any(grepl("Horsepower",   outcome_row[, "Model 2: B"])))
+})
+
+test_that("outcome_labels — FALSE suppresses the row even with differing DVs", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp), outcome_labels = FALSE)
+  expect_false("Outcome" %in% out$Variable)
+})
+
+test_that("reference_style = 'annotation' — factor header annotated [ref: <level>]", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, reference_style = "annotation")
+  # Header now reads "cyl: [ref: 4]" (or whichever the ref level is)
+  expect_true(any(grepl("^cyl: \\[ref: 4\\]$", out$Variable)))
+  # And the orphan row "4 (ref.)" must NOT appear (it was dropped)
+  expect_false(any(grepl("\\(ref\\.\\)", out$Variable)))
+})
+
+test_that("reference_style = 'row' (default) — no factor header annotation", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)   # default = "row"
+  expect_true("cyl:" %in% out$Variable)
+  expect_false(any(grepl("\\[ref: ", out$Variable)))
+  expect_true(any(grepl("\\(ref\\.\\)", out$Variable)))
+})
+
+test_that("reference_style = 'annotation' — works with multiple factors", {
+  mt2 <- mt
+  mt2$gear <- factor(mt2$gear)
+  fit <- lm(mpg ~ wt + cyl + gear, data = mt2)
+  out <- table_regression(fit, reference_style = "annotation")
+  expect_true(any(grepl("^cyl: \\[ref: 4\\]$",  out$Variable)))
+  expect_true(any(grepl("^gear: \\[ref: 3\\]$", out$Variable)))
+})

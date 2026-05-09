@@ -650,6 +650,7 @@ table_regression <- function(
     decimal_mark = decimal_mark,
     align = align,
     labels = labels,
+    outcome_labels = outcome_labels,
     title = title,
     note = full_footer_str
   )

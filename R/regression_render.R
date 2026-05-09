@@ -53,6 +53,7 @@ render_regression_table <- function(
     decimal_mark = ".",
     align = c("decimal", "center", "right", "auto"),
     labels = NULL,
+    outcome_labels = NULL,
     title = NULL,
     note = NULL) {
   align <- match.arg(align)
@@ -89,6 +90,9 @@ render_regression_table <- function(
   term_meta <- term_meta[order(term_meta$order_idx), , drop = FALSE]
   rownames(term_meta) <- NULL
 
+  ref_level_map <- aligned$factor_ref_levels %||%
+    setNames(character(0), character(0))
+
   rows <- list()
   current_factor <- NA_character_
   for (i in seq_len(nrow(term_meta))) {
@@ -97,8 +101,15 @@ render_regression_table <- function(
     if (isTRUE(group_factor_levels) &&
         !is.na(rt$factor_term) &&
         !identical(rt$factor_term, current_factor)) {
+      ref_lvl <- if (rt$factor_term %in% names(ref_level_map)) {
+        ref_level_map[[rt$factor_term]]
+      } else {
+        NA_character_
+      }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
-        rt$factor_term, col_spec, labels
+        rt$factor_term, col_spec, labels,
+        reference_style = reference_style,
+        ref_level = ref_lvl
       )
       current_factor <- rt$factor_term
     }
@@ -119,9 +130,32 @@ render_regression_table <- function(
 
   body <- do.call(rbind, rows)
 
+  # Prepend outcome row when applicable (Q11b — multi-DV display).
+  model_outcomes <- vapply(model_ids, function(m_id) {
+    fs <- aligned$fit_stats_aligned
+    out <- fs$outcome[fs$model_id == m_id][1]
+    if (length(out) == 0L || is.na(out)) {
+      coefs_for_model <- coefs[coefs$model_id == m_id, , drop = FALSE]
+      if (nrow(coefs_for_model) > 0L) coefs_for_model$outcome[1] else NA_character_
+    } else {
+      out
+    }
+  }, character(1))
+  outcome_row <- build_outcome_row(
+    model_outcomes = model_outcomes,
+    outcome_labels = outcome_labels,
+    model_ids = model_ids,
+    label_map = label_map,
+    col_spec = col_spec
+  )
+  if (!is.null(outcome_row)) {
+    body <- rbind(outcome_row, body)
+  }
+
   # Append fit-stats rows below the body (one per requested token).
-  # Group separator (sep_row_idx attr) tells the printer where the
-  # body ends and the fit-stats footer begins.
+  # group_sep_rows attr tells the printer where the body ends and the
+  # fit-stats footer begins. Already-prepended outcome row is part of
+  # the body so its index is folded in via nrow(body).
   fit_stats <- aligned$fit_stats_aligned
   group_sep <- integer(0)
   if (length(show_fit_stats) > 0L && !is.null(fit_stats) &&
@@ -398,6 +432,50 @@ resolve_label <- function(term, labels) {
 }
 
 
+# ---- Outcome row (Q11b) --------------------------------------------------
+
+# Smart auto + explicit + suppress logic per Q11b.
+# Returns a single-row data.frame to prepend to the body, or NULL
+# when the outcome row should not be displayed.
+build_outcome_row <- function(model_outcomes, outcome_labels, model_ids,
+                                label_map, col_spec) {
+  n_models <- length(model_ids)
+
+  if (isFALSE(outcome_labels)) {
+    return(NULL)                              # suppress entirely
+  }
+  if (n_models <= 1L) {
+    return(NULL)                              # DV is in title for single model
+  }
+
+  if (is.null(outcome_labels)) {
+    # Smart auto: hide when all DVs identical, show when DVs differ.
+    if (length(unique(model_outcomes)) <= 1L) return(NULL)
+    outcome_labels <- model_outcomes           # default = variable names
+  }
+
+  # Place each outcome label in the FIRST sub-column of its model
+  # (mirrors the fit-stats footer convention).
+  first_col_per_model <- vapply(model_ids, function(m_id) {
+    for (cs in col_spec) {
+      if (identical(cs$model_id, m_id)) return(cs$col_name)
+    }
+    NA_character_
+  }, character(1))
+  names(first_col_per_model) <- model_ids
+  all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
+
+  cells <- list(Variable = "Outcome")
+  for (col in all_data_cols) cells[[col]] <- ""
+  for (i in seq_along(model_ids)) {
+    target_col <- first_col_per_model[[model_ids[i]]]
+    if (is.na(target_col)) next
+    cells[[target_col]] <- outcome_labels[i]
+  }
+  as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+
 # ---- Fit-stats footer rows -----------------------------------------------
 
 # Append one row per show_fit_stats token. The fit-stat value goes
@@ -500,13 +578,23 @@ format_fit_stat_value <- function(token, val,
 
 # ---- Factor header row ---------------------------------------------------
 
-build_factor_header_row <- function(factor_term, col_spec, labels) {
+build_factor_header_row <- function(factor_term, col_spec, labels,
+                                      reference_style = "row",
+                                      ref_level = NA_character_) {
   display <- if (!is.null(labels) && factor_term %in% names(labels)) {
     labels[[factor_term]]
   } else {
     factor_term
   }
-  cells <- list(Variable = paste0(display, ":"))
+  header <- paste0(display, ":")
+  # Q5 — annotation mode bakes "[ref: <level>]" into the factor
+  # header so the reference level remains readable even though the
+  # ref ROW was dropped during alignment.
+  if (identical(reference_style, "annotation") &&
+      !is.na(ref_level) && nzchar(ref_level)) {
+    header <- paste0(header, " [ref: ", ref_level, "]")
+  }
+  cells <- list(Variable = header)
   for (cs in col_spec) {
     cells[[cs$col_name]] <- ""
   }

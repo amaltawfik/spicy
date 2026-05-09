@@ -38,12 +38,27 @@ align_extracts <- function(
       coefs_aligned = empty_coefs_aligned(),
       fit_stats_aligned = empty_fit_stats_aligned(),
       term_order = character(0),
+      factor_ref_levels = setNames(character(0), character(0)),
       n_models = 0L
     ))
   }
 
   coefs_long <- do.call(rbind, lapply(extracts, `[[`, "coefs"))
   fit_stats <- do.call(rbind, lapply(extracts, `[[`, "fit_stats"))
+
+  # Capture the reference level for each factor BEFORE the annotation
+  # branch potentially drops the ref rows. The map is keyed by the
+  # factor variable name (e.g., "cyl" → "4"). Used by the renderer
+  # to annotate the factor header when reference_style = "annotation".
+  ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
+  factor_ref_levels <- if (nrow(ref_rows_all) == 0L) {
+    setNames(character(0), character(0))
+  } else {
+    lvl_map <- ref_rows_all$factor_level
+    nms <- ref_rows_all$factor_term
+    keep <- !is.na(nms) & !duplicated(nms)
+    setNames(lvl_map[keep], nms[keep])
+  }
 
   term_order <- compute_canonical_term_order(extracts)
 
@@ -74,6 +89,7 @@ align_extracts <- function(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
     term_order = term_order,
+    factor_ref_levels = factor_ref_levels,
     n_models = length(extracts)
   )
 }
