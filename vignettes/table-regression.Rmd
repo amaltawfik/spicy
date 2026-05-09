@@ -6,9 +6,11 @@ description: >
   jackknife variance, AME with Satterthwaite-corrected df under CR*
   (a first in R), four standardisation methods, per-coefficient
   effect sizes (partial f² / η² / ω² with noncentral CIs),
-  side-by-side and hierarchical regression layouts, APA-aligned
-  formatting, and output to console, gt, tinytable, flextable,
-  Excel, Word, or clipboard.
+  multiple-comparison adjustment via stats::p.adjust() with full-
+  family scope, regex-based keep / drop filters for focal-predictor
+  display, side-by-side and hierarchical regression layouts, APA-
+  aligned formatting, and output to console, gt, tinytable,
+  flextable, Excel, Word, or clipboard.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Regression coefficient tables in R}
@@ -220,6 +222,53 @@ point estimate.
 For factor predictors with k levels, the partial F-test is the joint
 (k-1) df Wald test, so the same effect-size value is broadcast across
 all non-reference dummies (and reference rows show an em-dash).
+
+## Multiple-comparison adjustment
+
+`p_adjust` applies a family-wise or false-discovery-rate adjustment
+to the p-values via [`stats::p.adjust()`][stats::p.adjust]. The
+family is the model's full coefficient set (intercept and reference
+rows excluded); `B` and `AME` are adjusted as independent families
+within the same call. Available methods are the same as in
+`stats::p.adjust()`: `"none"` (default), `"holm"`, `"hochberg"`,
+`"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, `"BY"`.
+
+```{r p-adjust}
+fit <- lm(wellbeing_score ~ age + sex + smoking + education,
+          data = sochealth)
+table_regression(fit, p_adjust = "bonferroni")
+```
+
+The footer documents the chosen method and the family size; the SE
+column is unchanged. `p_adjust` is orthogonal to `vcov`: combining
+a robust SE with a family-wise correction is fully supported, e.g.
+`vcov = "HC3", p_adjust = "holm"`. The adjustment is applied
+**before** `keep` / `drop` filtering, so the family stays the
+model's full coefficient set and the displayed adjusted p-values
+reflect the right denominator regardless of which subset is shown
+(matching the `modelsummary` and `parameters` convention).
+
+## Filtering displayed coefficients
+
+`keep` and `drop` accept regular expressions matched against
+coefficient names (as returned by [stats::coef()]). They are
+mutually exclusive — pick `keep` to whitelist focal predictors, or
+`drop` to hide a few control variables. Multiple patterns combine
+with logical OR.
+
+```{r keep}
+fit <- lm(wellbeing_score ~ age + sex + smoking + bmi + education,
+          data = sochealth)
+table_regression(fit, keep = c("^smoking", "^bmi$"))
+```
+
+```{r drop}
+table_regression(fit, drop = "^education")
+```
+
+Together with `p_adjust`, this is the article-ready workflow:
+adjust on the full model, display only the rows the reader cares
+about — `table_regression(fit, p_adjust = "BH", keep = "^treatment")`.
 
 ## Multiple models side by side
 
