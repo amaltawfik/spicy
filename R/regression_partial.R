@@ -30,6 +30,21 @@
 
 extract_partial_effect_rows <- function(fit, ci_level, show_columns,
                                          model_id, outcome) {
+  # glm path: only partial_chi2 is defined (variance-explained
+  # tokens were rejected upstream by validate_class_appropriate_tokens).
+  if (inherits(fit, "glm")) {
+    if (!"partial_chi2" %in% show_columns) {
+      return(empty_coefs_long())
+    }
+    return(extract_partial_chi2_rows_glm(
+      fit = fit,
+      model_id = model_id,
+      outcome = outcome
+    ))
+  }
+
+  # lm path: variance-explained partition (partial_f2 / partial_eta2 /
+  # partial_omega2). partial_chi2 was rejected upstream for lm.
   partial_tokens <- c("partial_f2", "partial_eta2", "partial_omega2")
   active_tokens <- intersect(show_columns, partial_tokens)
   if (length(active_tokens) == 0L) {
@@ -167,4 +182,71 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
       ci_high = ci_omega2[2]
     )
   )
+}
+
+
+# ---- glm path: term-level partial χ² via drop1 LRT -----------------------
+
+# Build the partial_chi2 rows for one glm fit. One row per non-intercept
+# coef; factor terms emit one row per non-reference dummy, all sharing
+# the same term-level χ² (the renderer collapses to a single display
+# per term via the same factor-term grouping used for partial_f2).
+extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
+  cf <- stats::coef(fit)
+  cf_names <- names(cf)
+  mm <- stats::model.matrix(fit)
+  assign_idx <- attr(mm, "assign")
+  term_labels <- attr(stats::terms(fit), "term.labels")
+  if (length(assign_idx) != length(cf_names) || length(term_labels) == 0L) {
+    return(empty_coefs_long())
+  }
+
+  factor_meta <- detect_factor_term_meta(fit)
+
+  unique_term_idx <- unique(assign_idx[assign_idx != 0L])
+  cache <- setNames(
+    vector("list", length(unique_term_idx)),
+    as.character(unique_term_idx)
+  )
+  for (k in unique_term_idx) {
+    cache[[as.character(k)]] <- compute_partial_chi2_for_term(
+      fit = fit,
+      term_label = term_labels[k]
+    )
+  }
+
+  rows <- list()
+  for (i in seq_along(cf_names)) {
+    term_idx <- assign_idx[i]
+    if (term_idx == 0L) next
+    if (is.na(cf[i])) next
+    eff <- cache[[as.character(term_idx)]]
+    if (is.null(eff)) next
+
+    nm <- cf_names[i]
+    fmeta <- factor_meta[[nm]]
+    rows[[length(rows) + 1L]] <- build_one_b_row(
+      nm = nm,
+      model_id = model_id,
+      outcome = outcome,
+      estimate_type = "partial_chi2",
+      estimate = eff$chi2,
+      se = NA_real_,
+      ci_low = NA_real_,
+      ci_high = NA_real_,
+      statistic = eff$chi2,
+      df = as.double(eff$df),
+      p_value = eff$p_value,
+      test_type = "X2",
+      is_singular = FALSE,
+      is_intercept = FALSE,
+      is_reference = FALSE,
+      factor_term = fmeta$factor_term %||% NA_character_,
+      factor_level = fmeta$factor_level %||% NA_character_
+    )
+  }
+  if (length(rows) == 0L) {
+    return(empty_coefs_long())
+  }
+  do.call(rbind, rows)
 }

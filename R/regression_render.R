@@ -264,7 +264,10 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                           header_short = "\u03B7\u00B2"),
     partial_omega2 = list(estimate_type = "partial_omega2",
                           fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "\u03C9\u00B2")
+                          header_short = "\u03C9\u00B2"),
+    partial_chi2   = list(estimate_type = "partial_chi2",
+                          fields = c("estimate", "df"),
+                          header_short = "\u03C7\u00B2")
   )
 
   out <- list()
@@ -356,8 +359,23 @@ format_cell_value <- function(long_row, cs, stars_map,
                                digits, p_digits, effect_size_digits,
                                decimal_mark, show_columns) {
   tk <- cs$token
-  is_es <- tk %in% c("partial_f2", "partial_eta2", "partial_omega2")
+  is_es <- tk %in% c("partial_f2", "partial_eta2", "partial_omega2",
+                     "partial_chi2")
   digits_to_use <- if (is_es) effect_size_digits else digits
+
+  # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) —
+  # SAS PROC LOGISTIC TYPE3 / car::Anova(type = 3) convention. Df sits
+  # in parens to disambiguate factor terms (k-1 df) from numeric terms
+  # (1 df) without burning an extra column.
+  if (length(cs$fields) == 2L &&
+      identical(cs$fields, c("estimate", "df"))) {
+    est <- long_row$estimate[1]
+    df_val <- long_row$df[1]
+    if (is.na(est)) return("\u2014")
+    val_str <- format_number(est, digits_to_use, decimal_mark)
+    df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
+    return(paste0(val_str, df_str))
+  }
 
   # Compact "value [CI]" rendering for AME and partial_*  (Q19 / Q14a)
   if (length(cs$fields) == 3L &&

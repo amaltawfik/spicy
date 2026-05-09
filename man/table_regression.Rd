@@ -297,8 +297,14 @@ abbreviations (\code{AIC}, \code{BIC}, \code{F}, \code{LRT}, \code{B}, \code{SE}
 \subsection{\code{show_columns} — per-coefficient columns (in main table)}{
 
 Estimate-related: \code{B}, \code{beta}, \code{SE}, \code{CI}, \code{t}, \code{p}.
-Effect sizes: \code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}
-(compact \code{value [CI]} rendering).
+Effect sizes (lm only): \code{partial_f2}, \code{partial_eta2},
+\code{partial_omega2} (compact \code{value [CI]} rendering).
+Effect sizes (glm only): \code{partial_chi2} — term-level partial
+likelihood-ratio chi-square via \code{drop1(test = "LRT")}, the
+generalised analog of the partial F-test (SAS PROC LOGISTIC
+\code{TYPE3}; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
+\code{value (df)} rendering; the df slot disambiguates factor terms
+(k−1 df) from numeric terms (1 df).
 Marginal effects: \code{AME}, \code{AME_p}, \code{AME_SE} (compact for \code{AME}).
 
 Default: \code{c("B", "SE", "CI", "p")}.

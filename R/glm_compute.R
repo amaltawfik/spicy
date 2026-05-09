@@ -266,6 +266,48 @@ apply_exponentiate_to_coefs <- function(coefs) {
 }
 
 
+# ---- Partial likelihood-ratio chi-square ---------------------------------
+
+# Term-level partial χ² via drop1(test = "LRT") — the glm analog
+# of the partial F-test in lm. For each model term, refit without that
+# term and compare via likelihood ratio:
+#
+#   LR = 2 * (LL_full - LL_reduced)  ~  χ²(df = #params dropped)
+#
+# Convention follows SAS PROC LOGISTIC `TYPE3`, Stata `test, accumulate`,
+# Allison "TYPE3", Long & Freese 2014 §3.5. For factor terms with k
+# levels, the test is joint over all k−1 dummies and df = k−1
+# (matching how `car::Anova(type = 3)` reports it for glm).
+#
+# Returns NULL on any failure (drop1 error, non-finite chi-square, etc.)
+# so the caller can skip the term and the renderer em-dashes the cells.
+# For quasi families, drop1(test = "LRT") returns the deviance ratio
+# which under-dispersion is unreliable — we let it through (the user
+# opted in via the token), but the upstream caveat note flags it.
+compute_partial_chi2_for_term <- function(fit, term_label) {
+  if (!inherits(fit, "glm")) return(NULL)
+  d1 <- tryCatch(
+    suppressWarnings(
+      stats::drop1(fit, scope = stats::reformulate(term_label), test = "LRT")
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(d1) || nrow(d1) < 2L) return(NULL)
+  # Column names vary by R version: "LRT" (modern) vs "scaled dev." vs
+  # "Deviance" depending on dispersion handling. The chi-square value
+  # is in whichever of these is present; we look for them in order.
+  chi2_col <- intersect(c("LRT", "scaled dev.", "Deviance"), names(d1))
+  if (length(chi2_col) == 0L || !"Df" %in% names(d1)) return(NULL)
+  chi2 <- d1[[chi2_col[1L]]][2L]
+  df1 <- d1[["Df"]][2L]
+  if (!is.finite(chi2) || !is.finite(df1) || df1 < 1L || chi2 < 0) {
+    return(NULL)
+  }
+  p_value <- stats::pchisq(chi2, df = df1, lower.tail = FALSE)
+  list(chi2 = chi2, df = as.integer(df1), p_value = p_value)
+}
+
+
 compute_pseudo_r2_tjur <- function(fit) {
   if (!inherits(fit, "glm")) return(NA_real_)
   fam <- stats::family(fit)

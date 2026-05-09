@@ -22,8 +22,14 @@
 #' ## `show_columns` — per-coefficient columns (in main table)
 #'
 #' Estimate-related: `B`, `beta`, `SE`, `CI`, `t`, `p`.
-#' Effect sizes: `partial_f2`, `partial_eta2`, `partial_omega2`
-#' (compact `value [CI]` rendering).
+#' Effect sizes (lm only): `partial_f2`, `partial_eta2`,
+#' `partial_omega2` (compact `value [CI]` rendering).
+#' Effect sizes (glm only): `partial_chi2` — term-level partial
+#' likelihood-ratio chi-square via `drop1(test = "LRT")`, the
+#' generalised analog of the partial F-test (SAS PROC LOGISTIC
+#' `TYPE3`; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
+#' `value (df)` rendering; the df slot disambiguates factor terms
+#' (k−1 df) from numeric terms (1 df).
 #' Marginal effects: `AME`, `AME_p`, `AME_SE` (compact for `AME`).
 #'
 #' Default: `c("B", "SE", "CI", "p")`.

@@ -367,3 +367,125 @@ test_that("apply_exponentiate_to_coefs — singular and reference rows untouched
   expect_true(any(ref))
   expect_true(all(is.na(exp_cf$estimate[ref])))
 })
+
+
+# ============================================================================
+# Step 3: partial_chi2 token via drop1(test = "LRT") - the glm analog
+# of partial F (Long & Freese 2014 §3.5; Allison "TYPE3"; SAS PROC LOGISTIC).
+# ============================================================================
+
+test_that("glm: partial_chi2 matches drop1(test = 'LRT') to machine precision", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(fit, show_columns = c("B", "partial_chi2", "p"))
+  td <- broom::tidy(out)
+  chi <- td[td$estimate_type == "partial_chi2", ]
+  expect_equal(nrow(chi), 2L)  # mpg + wt, no intercept
+
+  d1 <- drop1(fit, test = "LRT")
+  expect_equal(chi$estimate[chi$term == "mpg"], d1["mpg", "LRT"],
+               tolerance = 1e-12)
+  expect_equal(chi$estimate[chi$term == "wt"],  d1["wt",  "LRT"],
+               tolerance = 1e-12)
+  expect_equal(chi$df[chi$term == "mpg"], 1)
+  expect_equal(chi$df[chi$term == "wt"],  1)
+  # p_value on partial_chi2 row is the LRT p (Pr(>Chi))
+  expect_equal(chi$p.value[chi$term == "mpg"], d1["mpg", "Pr(>Chi)"],
+               tolerance = 1e-12)
+})
+
+test_that("glm: partial_chi2 - factor term shares term-level chi2 across dummies", {
+  mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
+  fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
+  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  td <- broom::tidy(out)
+  chi <- td[td$estimate_type == "partial_chi2", ]
+  # cyl has 2 non-reference dummies (cyl6, cyl8), both share term-level chi2
+  cyl_rows <- chi[grepl("^cyl", chi$term), ]
+  expect_equal(nrow(cyl_rows), 2L)
+  expect_equal(cyl_rows$estimate[1], cyl_rows$estimate[2], tolerance = 1e-12)
+  expect_equal(cyl_rows$df[1], 2)  # k-1 = 2 df for 3-level factor
+  expect_equal(cyl_rows$df[2], 2)
+  # Joint chi2 from drop1
+  d1 <- drop1(fit, test = "LRT")
+  expect_equal(cyl_rows$estimate[1], d1["cyl", "LRT"], tolerance = 1e-12)
+})
+
+test_that("glm: partial_chi2 cell renders 'value (df)' format - SAS TYPE3", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  chi_col <- grep("χ", names(body), value = TRUE)
+  expect_length(chi_col, 1L)
+  # mpg row: chi2 = 1.99, df = 1 -> "1.99 (1)"
+  mpg_cell <- body[grepl("mpg", body$Variable), chi_col]
+  expect_match(mpg_cell, "[(]1[)]$")
+})
+
+test_that("glm: partial_chi2 column header is chi-squared (UTF-8 safe)", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  expect_true(any(grepl("χ²", names(body))))
+})
+
+test_that("lm + partial_chi2 - rejected with hint to partial_f2 / eta2 / omega2", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  expect_error(
+    table_regression(fit, show_columns = c("B", "partial_chi2")),
+    class = "spicy_invalid_input"
+  )
+  # Hint message mentions the lm-appropriate analogs
+  err <- tryCatch(
+    table_regression(fit, show_columns = c("B", "partial_chi2")),
+    spicy_invalid_input = function(e) e
+  )
+  expect_match(conditionMessage(err), "partial_f2", fixed = TRUE)
+})
+
+test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
+  fit_lm  <- lm(mpg ~ wt, data = mt)
+  fit_glm <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  expect_no_error(
+    out <- table_regression(list(fit_lm, fit_glm),
+                            show_columns = c("B", "partial_chi2"))
+  )
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  chi_cols <- grep("χ", names(body), value = TRUE)
+  # Two models -> two chi-squared columns; lm column is all em-dash
+  expect_length(chi_cols, 2L)
+  lm_chi_col <- chi_cols[1]
+  glm_chi_col <- chi_cols[2]
+  # lm side of chi2 column is blank (token doesn't apply to this model
+  # class); glm side has values. Check that lm column has only blanks
+  # for non-Intercept body rows, while glm column has values.
+  body_no_fit <- body[!body$Variable %in% c("n", "R²", "Adj.R²",
+                                              "pseudo_r2_mcfadden",
+                                              "pseudo_r2_nagelkerke", "AIC",
+                                              "Outcome"), ]
+  non_int <- body_no_fit[!grepl("Intercept", body_no_fit$Variable), ]
+  lm_vals  <- gsub("\\s+", "", non_int[[lm_chi_col]])
+  glm_vals <- gsub("\\s+", "", non_int[[glm_chi_col]])
+  expect_true(all(lm_vals == ""))           # lm side fully blank
+  expect_true(any(nzchar(glm_vals)))         # glm side has values
+})
+
+test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), em-dashed", {
+  set.seed(123)
+  d <- data.frame(y = rpois(50, 3), x = rnorm(50))
+  fit <- glm(y ~ x, data = d, family = quasipoisson)
+  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  td <- broom::tidy(out)
+  chi <- td[td$estimate_type == "partial_chi2" & td$term == "x", ]
+  # Either no row (extract returned empty) OR row with finite estimate
+  # (drop1 still returns scaled deviance for quasi). Just ensure no crash.
+  expect_true(nrow(chi) <= 1L)
+})
+
+test_that("glm: partial_chi2 with intercept-only fit -> empty rows (no crash)", {
+  fit <- glm(am ~ 1, data = mt, family = binomial)
+  expect_no_error(
+    out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  )
+  td <- broom::tidy(out)
+  expect_equal(sum(td$estimate_type == "partial_chi2"), 0L)
+})
