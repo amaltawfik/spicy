@@ -1281,3 +1281,182 @@ test_that("AUDIT B4: glm + jackknife vcov refits as glm (not lm)", {
   expect_true(se_jk / se_classical > 0.5 && se_jk / se_classical < 10,
               info = sprintf("ratio = %.3f", se_jk / se_classical))
 })
+
+
+# ============================================================================
+# AUDIT round 4: SPSS/Stata-grade polish
+# Cross-validation against parameters / performance, edge case tests,
+# error message uniformity, multi-family handling.
+# ============================================================================
+
+test_that("AUDIT: glm pseudo-R^2 matches performance::r2_* for binomial", {
+  skip_if_not_installed("performance")
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  expect_equal(spicy:::compute_pseudo_r2_mcfadden(fit),
+               unname(performance::r2_mcfadden(fit)$R2),
+               tolerance = 1e-10)
+  expect_equal(spicy:::compute_pseudo_r2_nagelkerke(fit),
+               unname(performance::r2_nagelkerke(fit)),
+               tolerance = 1e-10)
+  expect_equal(spicy:::compute_pseudo_r2_tjur(fit),
+               unname(performance::r2_tjur(fit)),
+               tolerance = 1e-10)
+})
+
+test_that("AUDIT: glm B / SE / z / p match parameters::model_parameters", {
+  skip_if_not_installed("parameters")
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  td <- broom::tidy(table_regression(fit))
+  oracle <- parameters::model_parameters(fit, ci_method = "wald")
+  for (term_nm in c("(Intercept)", "mpg", "wt")) {
+    s_row <- td[td$estimate_type == "B" & td$term == term_nm, ]
+    o_row <- oracle[oracle$Parameter == term_nm, ]
+    expect_equal(s_row$estimate,  o_row$Coefficient, tolerance = 1e-10,
+                 info = paste("term =", term_nm))
+    expect_equal(s_row$std.error, o_row$SE,          tolerance = 1e-10)
+    expect_equal(s_row$statistic, o_row$z,           tolerance = 1e-10)
+    expect_equal(s_row$p.value,   o_row$p,           tolerance = 1e-10)
+    expect_equal(s_row$conf.low,  o_row$CI_low,      tolerance = 1e-10)
+    expect_equal(s_row$conf.high, o_row$CI_high,     tolerance = 1e-10)
+  }
+})
+
+test_that("AUDIT: glm + NA in predictors -> nobs reflects na.omit, no crash", {
+  set.seed(1)
+  d <- data.frame(y = rbinom(50, 1, 0.5), x1 = rnorm(50), x2 = rnorm(50))
+  d$x1[1:5] <- NA
+  fit <- glm(y ~ x1 + x2, data = d, family = binomial)
+  out <- table_regression(fit, show_columns = c("B", "AME", "partial_chi2"))
+  expect_equal(nobs(fit), 45L)
+  td <- broom::tidy(out)
+  expect_true(all(is.finite(td$estimate[!is.na(td$estimate)])))
+})
+
+test_that("AUDIT: glm + cluster vector with NAs -> clear fallback warning", {
+  set.seed(1)
+  n <- 100L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n),
+                  clinic = rep(letters[1:10], each = 10))
+  d$clinic[1:3] <- NA
+  fit <- glm(y ~ x, data = d, family = binomial)
+  expect_warning(
+    table_regression(fit, vcov = "CR2", cluster = d$clinic),
+    class = "spicy_fallback"
+  )
+})
+
+test_that("AUDIT: cluster length mismatch -> clear actionable error", {
+  set.seed(1)
+  n <- 100L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n))
+  d$x[1:5] <- NA  # creates a 5-row mismatch
+  fit <- glm(y ~ x, data = d, family = binomial)
+  cluster_full <- rep(letters[1:10], each = 10)  # length 100, fit nobs = 95
+  err <- tryCatch(
+    table_regression(fit, vcov = "CR2", cluster = cluster_full),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "length 100", fixed = TRUE)
+  expect_match(conditionMessage(err), "95 observations", fixed = TRUE)
+})
+
+test_that("AUDIT: glm + subset -> nobs reflects subset, table renders", {
+  fit <- glm(am ~ mpg + wt, data = mtcars, subset = mpg > 15,
+              family = binomial)
+  expect_equal(nobs(fit), 26L)
+  out <- table_regression(fit)
+  expect_s3_class(out, "spicy_regression_table")
+})
+
+test_that("AUDIT: glm fit on tibble works", {
+  skip_if_not_installed("tibble")
+  mtt <- tibble::as_tibble(mtcars)
+  fit <- glm(am ~ mpg + wt, data = mtt, family = binomial)
+  expect_no_error(table_regression(fit))
+})
+
+test_that("AUDIT: empty list + NULL element -> clear errors", {
+  expect_error(table_regression(list()), class = "spicy_invalid_input")
+  expect_error(table_regression(NULL), class = "spicy_invalid_input")
+  err <- tryCatch(
+    table_regression(list(NULL, lm(mpg ~ wt, data = mtcars))),
+    spicy_unsupported = function(e) e
+  )
+  expect_s3_class(err, "spicy_unsupported")
+  expect_match(conditionMessage(err), "NULL element", fixed = TRUE)
+  expect_match(conditionMessage(err), "Drop the NULL", fixed = TRUE)
+})
+
+test_that("AUDIT: error messages reference both lm and glm (no stale lm-only)", {
+  err <- tryCatch(table_regression(NULL),
+                   spicy_invalid_input = function(e) e)
+  expect_match(conditionMessage(err), "lm.*glm|glm.*lm", perl = TRUE)
+  err <- tryCatch(table_regression(list()),
+                   spicy_invalid_input = function(e) e)
+  expect_match(conditionMessage(err), "lm.*glm|glm.*lm", perl = TRUE)
+})
+
+test_that("AUDIT: ci_level boundary values rejected with clear error", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  for (bad in list(0, 1, -0.1, 1.5, NA_real_)) {
+    err <- tryCatch(table_regression(fit, ci_level = bad),
+                     spicy_invalid_input = function(e) e)
+    expect_s3_class(err, "spicy_invalid_input")
+  }
+})
+
+test_that("AUDIT: mixed-family glms -> per-model exp header (OR / IRR)", {
+  m_log  <- glm(am ~ mpg, data = mt, family = binomial)
+  m_pois <- glm(am ~ mpg, data = mt, family = poisson)
+  out <- table_regression(list("Logit" = m_log, "Pois" = m_pois),
+                            exponentiate = TRUE)
+  expect_true("Logit: OR"  %in% names(out))
+  expect_true("Pois: IRR"  %in% names(out))
+  expect_match(attr(out, "note"), "OR / IRR", fixed = TRUE)
+})
+
+test_that("AUDIT: all HC* variants work for glm (sandwich S3 method present)", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  for (h in c("HC0", "HC1", "HC2", "HC3", "HC4", "HC5")) {
+    expect_no_error(
+      td <- broom::tidy(table_regression(fit, vcov = h))
+    )
+    se <- td$std.error[td$estimate_type == "B" & td$term == "mpg"]
+    expect_true(is.finite(se) && se > 0,
+                info = paste("vcov =", h, "se =", se))
+  }
+})
+
+test_that("AUDIT: rich output formats work for glm + exponentiate", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  if (requireNamespace("gt", quietly = TRUE)) {
+    expect_no_error(
+      table_regression(fit, exponentiate = TRUE, output = "gt")
+    )
+  }
+  if (requireNamespace("flextable", quietly = TRUE)) {
+    expect_no_error(
+      table_regression(fit, exponentiate = TRUE, output = "flextable")
+    )
+  }
+  if (requireNamespace("tinytable", quietly = TRUE)) {
+    expect_no_error(
+      table_regression(fit, exponentiate = TRUE, output = "tinytable")
+    )
+  }
+})
+
+test_that("AUDIT: beta token without standardized -> hint lists all 5 methods", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  err <- tryCatch(
+    table_regression(fit, show_columns = c("B", "beta")),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- conditionMessage(err)
+  for (m in c("refit", "posthoc", "basic", "smart", "pseudo")) {
+    expect_match(msg, m, fixed = TRUE,
+                 info = paste("missing method =", m))
+  }
+})

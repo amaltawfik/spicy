@@ -173,6 +173,16 @@ compute_glm_coef_inference <- function(
 #                         / (1 - exp(LL_null * 2 / n))
 #                         Cox-Snell rescaled to [0, 1]. Standard
 #                         in SPSS / SAS for binary outcomes.
+#                         Implemented from the original Nagelkerke
+#                         (1991) log-likelihood formula, NOT the
+#                         deviance-based variant used by
+#                         `performance::r2()`. The two forms agree
+#                         exactly for binomial (LL_saturated = 0)
+#                         and disagree mildly for poisson / Gamma /
+#                         inverse.gaussian (where LL_saturated != 0).
+#                         For binary outcomes (the dominant use case)
+#                         spicy and performance return identical
+#                         values to machine precision.
 #   * Tjur (2009)       : mean(prob | y=1) - mean(prob | y=0)
 #                         "Coefficient of discrimination"; only
 #                         defined for binary outcomes (binomial

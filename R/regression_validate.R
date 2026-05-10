@@ -72,7 +72,7 @@ validate_models_input <- function(models) {
     spicy_abort(
       c(
         "`models` cannot be NULL.",
-        "i" = "Pass an `lm()` fit or a list of `lm()` fits."
+        "i" = "Pass an `lm()` or `glm()` fit, or a list of such fits."
       ),
       class = "spicy_invalid_input"
     )
@@ -92,7 +92,7 @@ validate_models_input <- function(models) {
     spicy_abort(
       c(
         "`models` is an empty list.",
-        "i" = "Pass at least one lm fit."
+        "i" = "Pass at least one `lm()` or `glm()` fit."
       ),
       class = "spicy_invalid_input"
     )
@@ -170,6 +170,13 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
       "data.frame supplied where an `lm` or `glm` fit is expected. ",
       "Fit a model first: ",
       "`fit <- lm(y ~ x, data = your_data); table_regression(fit)`."
+    ))
+  }
+  if (is.null(fit)) {
+    return(paste0(
+      pos_prefix,
+      "NULL element \u2014 the list of models contains a NULL slot. ",
+      "Drop the NULL or replace it with an `lm()` / `glm()` fit."
     ))
   }
   if (!inherits(fit, "lm")) {       # `glm` inherits from `lm`, so this catches both glm and lm
@@ -404,7 +411,7 @@ validate_show_columns <- function(show_columns, standardized) {
         "`\"beta\"` is in `show_columns` but `standardized = \"none\"`.",
         "i" = paste0(
           "Set `standardized` to one of: \"refit\", \"posthoc\", ",
-          "\"basic\", \"smart\"."
+          "\"basic\", \"smart\", \"pseudo\" (\"pseudo\" is `glm` only)."
         ),
         "i" = "Or remove `\"beta\"` from `show_columns`."
       ),

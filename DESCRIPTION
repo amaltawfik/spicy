@@ -47,6 +47,8 @@ Suggests:
     marginaleffects,
     officer,
     openxlsx2,
+    parameters,
+    performance,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
