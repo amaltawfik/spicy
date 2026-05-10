@@ -183,21 +183,10 @@ compute_glm_coef_inference <- function(
 # well-specified models) when defined; NA when not applicable.
 compute_pseudo_r2_mcfadden <- function(fit) {
   if (!inherits(fit, "glm")) return(NA_real_)
-  fam <- stats::family(fit)
-  if (grepl("^quasi", fam$family)) return(NA_real_)
+  if (grepl("^quasi", stats::family(fit)$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  # Pass `data` explicitly so the refit doesn't rely on lexical-
-  # scope lookup of the original data frame; the helper is called
-  # from internal code where the user's `data` symbol is not in
-  # scope, which would otherwise produce a silent NA.
-  null_fit <- tryCatch(
-    stats::update(fit, . ~ 1, data = stats::model.frame(fit)),
-    error = function(e) NULL
-  )
-  if (is.null(null_fit)) return(NA_real_)
-  ll_null <- tryCatch(as.numeric(stats::logLik(null_fit)),
-                       error = function(e) NA_real_)
+  ll_null <- compute_intercept_only_loglik_glm(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0) {
     return(NA_real_)
   }
@@ -206,21 +195,10 @@ compute_pseudo_r2_mcfadden <- function(fit) {
 
 compute_pseudo_r2_nagelkerke <- function(fit) {
   if (!inherits(fit, "glm")) return(NA_real_)
-  fam <- stats::family(fit)
-  if (grepl("^quasi", fam$family)) return(NA_real_)
+  if (grepl("^quasi", stats::family(fit)$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  # Pass `data` explicitly so the refit doesn't rely on lexical-
-  # scope lookup of the original data frame; the helper is called
-  # from internal code where the user's `data` symbol is not in
-  # scope, which would otherwise produce a silent NA.
-  null_fit <- tryCatch(
-    stats::update(fit, . ~ 1, data = stats::model.frame(fit)),
-    error = function(e) NULL
-  )
-  if (is.null(null_fit)) return(NA_real_)
-  ll_null <- tryCatch(as.numeric(stats::logLik(null_fit)),
-                       error = function(e) NA_real_)
+  ll_null <- compute_intercept_only_loglik_glm(fit)
   n <- stats::nobs(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || !is.finite(n) ||
         n <= 0) {
@@ -230,6 +208,36 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
   upper <- 1 - exp(ll_null * 2 / n)
   if (!is.finite(upper) || upper <= 0) return(NA_real_)
   cox_snell / upper
+}
+
+# Log-likelihood of the intercept-only ("null") model for a glm,
+# robust to formula transforms on the response (`I(round(y))`,
+# `log(y)`, `cbind(y, n - y)`, ...). A naive `update(fit, . ~ 1)`
+# fails when the response side itself contains function calls
+# because update reuses the LHS expression and tries to re-evaluate
+# the bare symbols against the model frame (whose columns are
+# named after the wrapped expression, not the inner symbol).
+#
+# Workaround: extract the *evaluated* response from the model
+# frame and refit on a fresh data.frame whose single column is
+# the response vector. Falls back to NA on any failure.
+compute_intercept_only_loglik_glm <- function(fit) {
+  mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(mf)) return(NA_real_)
+  y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
+  if (is.null(y)) return(NA_real_)
+  fam <- stats::family(fit)
+  weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  args <- list(formula = y ~ 1, family = fam,
+                data = data.frame(y = y))
+  if (!is.null(weights)) args$weights <- weights
+  null_fit <- tryCatch(
+    suppressWarnings(do.call(stats::glm, args)),
+    error = function(e) NULL
+  )
+  if (is.null(null_fit)) return(NA_real_)
+  tryCatch(as.numeric(stats::logLik(null_fit)),
+           error = function(e) NA_real_)
 }
 
 compute_pseudo_r2_tjur <- function(fit) {

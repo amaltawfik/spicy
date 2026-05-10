@@ -52,6 +52,14 @@ spicy_abort <- function(
 #                               erroring)
 #   |- spicy_fallback          (the requested computation failed;
 #                               falling back to a simpler estimator)
+#   |- spicy_caveat            (computation succeeded but its inter-
+#                               pretation carries a non-trivial methodo-
+#                               logical caveat the user should know
+#                               about -- e.g., standardised coefficients
+#                               on non-additive terms, gaussian glm
+#                               equivalent to lm, Menard pseudo-
+#                               standardisation requested on a non-
+#                               binomial family)
 #   |- spicy_summary_failed    (varlist() could not summarize one
 #                               column; the rest of the table is fine)
 #   |- spicy_renamed_column    (a user data column or factor level

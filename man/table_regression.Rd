@@ -184,8 +184,13 @@ in \code{reference_style = "row"} mode. Default \code{"(ref.)"}.
 Customise to \code{"(reference)"} or \code{"(réf.)"} etc.}
 
 \item{show_fit_stats}{Character vector of tokens for the
-model-level fit-stats footer. See \emph{Vocabulary tokens}.
-Default \code{c("nobs", "r2", "adj_r2")}.}
+model-level fit-stats footer, or \code{NULL} (default) to apply
+the class-aware default. For all-\code{lm} models:
+\code{c("nobs", "r2", "adj_r2")}. For all-\code{glm} models:
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
+Mixed \code{lm} + \code{glm} sets: union of both groups (renderer
+per-row em-dashes the inappropriate cell). See
+\emph{Vocabulary tokens} for the full token list.}
 
 \item{model_labels}{Column / model labels for multi-model
 tables. \code{NULL} (default) uses smart auto-generation: hidden
@@ -330,23 +335,33 @@ it is auto-injected after \code{B}. Asking for \code{"beta"} while
 \subsection{\code{show_fit_stats} — model-level statistics (in footer)}{
 
 Counts: \code{nobs}, \code{weighted_nobs}.
-Variance explained: \code{r2}, \code{adj_r2}, \code{omega2}.
-Residual scale: \code{sigma}, \code{rmse}.
+Variance explained (\code{lm} only): \code{r2}, \code{adj_r2}, \code{omega2}.
+Pseudo-R² (\code{glm} only): \code{pseudo_r2_mcfadden} (McFadden 1974),
+\code{pseudo_r2_nagelkerke} (Nagelkerke 1991),
+\code{pseudo_r2_tjur} (Tjur 2009; binomial only).
+Residual scale: \code{sigma} (lm σ̂ / glm dispersion), \code{rmse}.
 Effect size: \code{f2}.
 Information criteria: \code{AIC}, \code{AICc}, \code{BIC}, \code{deviance}.
 
-Default: \code{c("nobs", "r2", "adj_r2")}.
+Default is class-aware (resolved when \code{NULL}): for \code{lm},
+\code{c("nobs", "r2", "adj_r2")}; for \code{glm},
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
 }
 
 \subsection{\code{nested_stats} — hierarchical comparison footer}{
 
 Activates when \code{nested = TRUE}. Tokens: \code{r2_change},
-\code{adj_r2_change}, \code{F}, \code{f2_change}, \code{LRT}, \code{AIC}, \code{AICc}, \code{BIC},
-\code{deviance_change}, \code{p}.
+\code{adj_r2_change}, \code{F}, \code{f2_change} (\code{lm} only), \code{LRT}, \code{AIC},
+\code{AICc}, \code{BIC}, \code{deviance_change}, \code{p}.
 
-Default for \code{lm} (\code{nested_stats = NULL}):
-\code{c("r2_change", "F", "p")} — the APA hierarchical regression
-standard.
+Default is class-aware (resolved when \code{NULL}): for \code{lm}
+hierarchies, \code{c("r2_change", "F", "p")} (APA hierarchical
+regression standard); for \code{glm} hierarchies, \code{c("LRT", "p")}
+(APA hierarchical-logistic standard; Hosmer & Lemeshow §3.5;
+Long & Freese 2014 §3.6). Variance-explained tokens (\code{r2_change},
+\code{adj_r2_change}, \code{F}, \code{f2_change}) are not defined for \code{glm} and
+raise \code{spicy_invalid_input} if requested for an all-\code{glm}
+hierarchy.
 }
 }
 
@@ -499,9 +514,8 @@ or \code{\link[=withCallingHandlers]{withCallingHandlers()}}. Errors inherit fro
 this function include \code{spicy_invalid_input},
 \code{spicy_invalid_data}, \code{spicy_unsupported},
 \code{spicy_missing_pkg}, \code{spicy_missing_column},
-\code{spicy_ignored_arg}, \code{spicy_caveat}, \code{spicy_singular},
-\code{spicy_fallback}. See \code{\link[=spicy-package]{spicy}} for the
-full taxonomy.
+\code{spicy_ignored_arg}, \code{spicy_caveat}, \code{spicy_fallback}. See
+\code{\link[=spicy-package]{spicy}} for the full taxonomy.
 }
 
 \examples{

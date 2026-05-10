@@ -40,22 +40,32 @@
 #' ## `show_fit_stats` — model-level statistics (in footer)
 #'
 #' Counts: `nobs`, `weighted_nobs`.
-#' Variance explained: `r2`, `adj_r2`, `omega2`.
-#' Residual scale: `sigma`, `rmse`.
+#' Variance explained (`lm` only): `r2`, `adj_r2`, `omega2`.
+#' Pseudo-R² (`glm` only): `pseudo_r2_mcfadden` (McFadden 1974),
+#' `pseudo_r2_nagelkerke` (Nagelkerke 1991),
+#' `pseudo_r2_tjur` (Tjur 2009; binomial only).
+#' Residual scale: `sigma` (lm σ̂ / glm dispersion), `rmse`.
 #' Effect size: `f2`.
 #' Information criteria: `AIC`, `AICc`, `BIC`, `deviance`.
 #'
-#' Default: `c("nobs", "r2", "adj_r2")`.
+#' Default is class-aware (resolved when `NULL`): for `lm`,
+#' `c("nobs", "r2", "adj_r2")`; for `glm`,
+#' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
 #'
 #' ## `nested_stats` — hierarchical comparison footer
 #'
 #' Activates when `nested = TRUE`. Tokens: `r2_change`,
-#' `adj_r2_change`, `F`, `f2_change`, `LRT`, `AIC`, `AICc`, `BIC`,
-#' `deviance_change`, `p`.
+#' `adj_r2_change`, `F`, `f2_change` (`lm` only), `LRT`, `AIC`,
+#' `AICc`, `BIC`, `deviance_change`, `p`.
 #'
-#' Default for `lm` (`nested_stats = NULL`):
-#' `c("r2_change", "F", "p")` — the APA hierarchical regression
-#' standard.
+#' Default is class-aware (resolved when `NULL`): for `lm`
+#' hierarchies, `c("r2_change", "F", "p")` (APA hierarchical
+#' regression standard); for `glm` hierarchies, `c("LRT", "p")`
+#' (APA hierarchical-logistic standard; Hosmer & Lemeshow §3.5;
+#' Long & Freese 2014 §3.6). Variance-explained tokens (`r2_change`,
+#' `adj_r2_change`, `F`, `f2_change`) are not defined for `glm` and
+#' raise `spicy_invalid_input` if requested for an all-`glm`
+#' hierarchy.
 #'
 #' # Multi-model semantics
 #'
@@ -311,8 +321,13 @@
 #'   in `reference_style = "row"` mode. Default `"(ref.)"`.
 #'   Customise to `"(reference)"` or `"(réf.)"` etc.
 #' @param show_fit_stats Character vector of tokens for the
-#'   model-level fit-stats footer. See *Vocabulary tokens*.
-#'   Default `c("nobs", "r2", "adj_r2")`.
+#'   model-level fit-stats footer, or `NULL` (default) to apply
+#'   the class-aware default. For all-`lm` models:
+#'   `c("nobs", "r2", "adj_r2")`. For all-`glm` models:
+#'   `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
+#'   Mixed `lm` + `glm` sets: union of both groups (renderer
+#'   per-row em-dashes the inappropriate cell). See
+#'   *Vocabulary tokens* for the full token list.
 #' @param model_labels Column / model labels for multi-model
 #'   tables. `NULL` (default) uses smart auto-generation: hidden
 #'   for a single model, `"Model 1, 2, 3"` or `names(list)` for
@@ -409,9 +424,8 @@
 #' this function include `spicy_invalid_input`,
 #' `spicy_invalid_data`, `spicy_unsupported`,
 #' `spicy_missing_pkg`, `spicy_missing_column`,
-#' `spicy_ignored_arg`, `spicy_caveat`, `spicy_singular`,
-#' `spicy_fallback`. See [`spicy`][spicy::spicy-package] for the
-#' full taxonomy.
+#' `spicy_ignored_arg`, `spicy_caveat`, `spicy_fallback`. See
+#' [`spicy`][spicy::spicy-package] for the full taxonomy.
 #'
 #' @seealso
 #' Other regression-table functions:

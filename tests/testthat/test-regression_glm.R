@@ -1,6 +1,17 @@
 # Tests for `glm` support in table_regression() — Phase 3.
-# Covers Steps 1 (foundation) + 2 (exponentiate). Subsequent steps
-# add their own tests in this file as they land.
+# Sections:
+#   * Step 1: foundation (z-asymptotic Wald, family-aware title,
+#             pseudo-R² family, gaussian glm caveat, class-aware
+#             token rejection)
+#   * Step 2: exponentiate (OR / IRR / HR / RR / MR / exp(B) header
+#             rebrand + delta-method SE)
+#   * Step 3: partial_chi2 token via drop1(test = "LRT")
+#   * Step 4: standardize for glm (refit / posthoc / basic / smart /
+#             pseudo Menard 2011)
+#   * Step 5: AME via marginaleffects + CR2 + Satterthwaite df
+#   * Step 6: nested LRT for glm + ci_method = "profile"
+#   * Step 7: integration / acceptance tests
+#   * AUDIT:  regression guards from the post-Phase-3 polish round
 
 mt <- mtcars
 
@@ -64,12 +75,12 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   out <- table_regression(fit)
   # Default for glm-only models: nobs, McFadden, Nagelkerke, AIC
   expect_true("n" %in% out$Variable)
-  expect_true(any(grepl("pseudo_r2_mcfadden", out$Variable)))
-  expect_true(any(grepl("pseudo_r2_nagelkerke", out$Variable)))
-  expect_true(any(grepl("AIC", out$Variable)))
-  # And NOT R²/Adj.R²
-  expect_false(any(grepl("^R", out$Variable)))
-  expect_false(any(grepl("Adj", out$Variable)))
+  expect_true(any(grepl("McFadden", out$Variable, fixed = TRUE)))
+  expect_true(any(grepl("Nagelkerke", out$Variable, fixed = TRUE)))
+  expect_true(any(grepl("AIC", out$Variable, fixed = TRUE)))
+  # And NOT plain R² / Adj.R² (those are lm tokens)
+  expect_false(any(out$Variable == "R²"))
+  expect_false(any(out$Variable == "Adj.R²"))
 })
 
 test_that("glm: explicit r2 in show_fit_stats errors with hint to pseudo_r2", {
@@ -459,8 +470,8 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
   # class); glm side has values. Check that lm column has only blanks
   # for non-Intercept body rows, while glm column has values.
   body_no_fit <- body[!body$Variable %in% c("n", "R²", "Adj.R²",
-                                              "pseudo_r2_mcfadden",
-                                              "pseudo_r2_nagelkerke", "AIC",
+                                              "R² (McFadden)",
+                                              "R² (Nagelkerke)", "AIC",
                                               "Outcome"), ]
   non_int <- body_no_fit[!grepl("Intercept", body_no_fit$Variable), ]
   lm_vals  <- gsub("\\s+", "", non_int[[lm_chi_col]])
@@ -1151,4 +1162,65 @@ test_that("AUDIT: B-row Satterthwaite under CR* (direct unit test)", {
   )
   expect_equal(inf$test_type, "t")
   expect_true(is.finite(inf$df) && inf$df < n)  # Satterthwaite df is small
+})
+
+
+# ============================================================================
+# AUDIT round 2: UX + display labels + formula-wrapped response
+# ============================================================================
+
+test_that("AUDIT B1: pseudo_r2_* render with pretty labels (not raw tokens)", {
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  out <- table_regression(fit, show_fit_stats = c("nobs",
+                                                    "pseudo_r2_mcfadden",
+                                                    "pseudo_r2_nagelkerke",
+                                                    "pseudo_r2_tjur"))
+  vars <- out$Variable
+  expect_true("R² (McFadden)"   %in% vars)
+  expect_true("R² (Nagelkerke)" %in% vars)
+  expect_true("R² (Tjur)"       %in% vars)
+  # Raw token names must NOT appear
+  expect_false("pseudo_r2_mcfadden"   %in% vars)
+  expect_false("pseudo_r2_nagelkerke" %in% vars)
+  expect_false("pseudo_r2_tjur"       %in% vars)
+})
+
+test_that("AUDIT B2: pseudo_r2_* work with formula-wrapped response", {
+  # Bug: update(fit, . ~ 1) failed when response is wrapped (I(),
+  # log(), cbind()), because update reuses the LHS expression and
+  # tries to re-evaluate bare symbols against the model.frame
+  # (whose columns are named after the wrapped expression). Fixed
+  # by extracting the evaluated response and refitting on a fresh
+  # data.frame.
+  fit_I <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
+  expect_true(is.finite(spicy:::compute_pseudo_r2_mcfadden(fit_I)))
+  expect_true(is.finite(spicy:::compute_pseudo_r2_nagelkerke(fit_I)))
+
+  fit_log <- glm(I(log(mpg)) ~ wt, data = mt, family = gaussian)
+  expect_true(is.finite(spicy:::compute_pseudo_r2_mcfadden(fit_log)))
+
+  # cbind() form (binomial proportions): not common in spicy's
+  # use cases but should not crash.
+  d <- data.frame(s = c(2,5,7,3,1), n = c(10,12,15,8,9), x = 1:5)
+  fit_cb <- suppressWarnings(
+    glm(cbind(s, n - s) ~ x, data = d, family = binomial)
+  )
+  # Just check it runs without error (value may be NA if quirky)
+  expect_no_error(spicy:::compute_pseudo_r2_mcfadden(fit_cb))
+})
+
+test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {
+  # spicy_warn() must auto-attach the package-wide spicy_warning root
+  # so users can catch any spicy warning generically. Verify for the
+  # spicy_caveat leaf class introduced for glm-related caveats.
+  cnd <- NULL
+  withCallingHandlers(
+    spicy:::spicy_warn("test", class = "spicy_caveat"),
+    spicy_warning = function(c) {
+      cnd <<- c
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_s3_class(cnd, "spicy_caveat")
+  expect_s3_class(cnd, "spicy_warning")
 })
