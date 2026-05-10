@@ -66,7 +66,7 @@ a single string column name, an atomic vector of length
 \code{nobs(model)}, or a list (one per model). Default \code{NULL}
 (no clustering).}
 
-\item{ci_level}{Confidence level for all reported CIs (B, β,
+\item{ci_level}{Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 AME, partial effect sizes). Default \code{0.95}.}
 
 \item{ci_method}{CI construction method. \code{"wald"} (default) uses
@@ -247,7 +247,7 @@ Default \code{2L}.}
 
 \item{ic_digits}{Decimals for information criteria (\code{AIC},
 \code{AICc}, \code{BIC} in both \code{show_fit_stats} and \code{nested_stats},
-plus their Δ-form). Default \code{1L}.}
+plus their \eqn{\Delta}{Delta}-form). Default \code{1L}.}
 
 \item{decimal_mark}{Decimal mark used in numeric display.
 \code{"."} (default) or \code{","} (European convention). When
@@ -323,7 +323,7 @@ likelihood-ratio chi-square via \code{drop1(test = "LRT")}, the
 generalised analog of the partial F-test (SAS PROC LOGISTIC
 \code{TYPE3}; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
 \code{value (df)} rendering; the df slot disambiguates factor terms
-(k−1 df) from numeric terms (1 df).
+(k-1 df) from numeric terms (1 df).
 Marginal effects: \code{AME}, \code{AME_p}, \code{AME_SE} (compact for \code{AME}).
 
 Default: \code{c("B", "SE", "CI", "p")}.
@@ -336,10 +336,10 @@ it is auto-injected after \code{B}. Asking for \code{"beta"} while
 
 Counts: \code{nobs}, \code{weighted_nobs}.
 Variance explained (\code{lm} only): \code{r2}, \code{adj_r2}, \code{omega2}.
-Pseudo-R² (\code{glm} only): \code{pseudo_r2_mcfadden} (McFadden 1974),
+Pseudo-\eqn{R^2}{R^2} (\code{glm} only): \code{pseudo_r2_mcfadden} (McFadden 1974),
 \code{pseudo_r2_nagelkerke} (Nagelkerke 1991),
 \code{pseudo_r2_tjur} (Tjur 2009; binomial only).
-Residual scale: \code{sigma} (lm σ̂ / glm dispersion), \code{rmse}.
+Residual scale: \code{sigma} (lm \eqn{\hat{\sigma}}{sigma-hat} / glm dispersion), \code{rmse}.
 Effect size: \code{f2}.
 Information criteria: \code{AIC}, \code{AICc}, \code{BIC}, \code{deviance}.
 
@@ -416,7 +416,7 @@ for \code{glm}, the response stays on its observed scale and only
 numeric predictors are standardised (Long & Freese 2014 §4.3.4
 "x-standardization").
 \item \code{"posthoc"} — post-hoc scaling. For \code{lm}:
-\verb{β = B × SD(X) / SD(Y)}; for \code{glm}: X-only \verb{β = B × SD(X)} (the
+\verb{\eqn{\beta}{beta} = B × SD(X) / SD(Y)}; for \code{glm}: X-only \verb{\eqn{\beta}{beta} = B × SD(X)} (the
 response side is undefined on the link scale —
 \code{parameters} / \code{effectsize} convention).
 \item \code{"basic"} — like posthoc but factor-derived dummies are scaled
@@ -424,12 +424,12 @@ by their column SD (treated as numeric).
 \item \code{"smart"} — Gelman (2008) recommendation: divide binary
 predictors by \verb{2 × SD} instead of \code{SD}.
 \item \code{"pseudo"} — \emph{glm only}. Menard (2004, 2011) fully-standardised
-\verb{β = B × SD(X) / SD(Y*)}, where \verb{Y*} is the latent variable on
+\verb{\eqn{\beta}{beta} = B × SD(X) / SD(Y*)}, where \verb{Y*} is the latent variable on
 the link scale and
-\verb{SD(Y*) = sqrt(var(η̂) + var_link)} with \code{var_link} =
-π²/3 (logit), 1 (probit), π²/6 (cloglog). Defined for binomial
+\verb{SD(Y*) = sqrt(var(\eqn{\hat{\eta}}{eta-hat}) + var_link)} with \code{var_link} =
+\eqn{\pi}{pi}²/3 (logit), 1 (probit), \eqn{\pi}{pi}²/6 (cloglog). Defined for binomial
 families; non-binomial returns NA with a \code{spicy_caveat}.
-\item \code{"none"} (default) — no β computed.
+\item \code{"none"} (default) — no \eqn{\beta}{beta} computed.
 }
 
 For models with interactions or transformed predictors (\code{I()},
@@ -477,8 +477,8 @@ preserved verbatim.
 \section{Output encoding}{
 \code{table_regression()} produces UTF-8 output with Unicode
 box-drawing for table layout and Greek / mathematical symbols
-(β, ω², χ², f², Δ, †, em-dash). A UTF-8 capable terminal is
-required (default in RStudio, R ≥ 4.0 on Windows 10+, macOS,
+(\eqn{\beta}{beta}, \eqn{\omega^2}{omega^2}, \eqn{\chi^2}{chi-squared}, \eqn{f^2}{f^2}, \eqn{\Delta}{Delta}, †, em-dash). A UTF-8 capable terminal is
+required (default in RStudio, R \eqn{\ge}{>=} 4.0 on Windows 10+, macOS,
 modern Linux).
 }
 
@@ -528,7 +528,7 @@ fit <- lm(wellbeing_score ~ age + sex + education,
 table_regression(fit)
 
 # Hierarchical regression: nested = TRUE adds the comparison
-# footer (ΔR², partial F, p)
+# footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)
 m1 <- lm(wellbeing_score ~ age, data = sochealth)
 m2 <- lm(wellbeing_score ~ age + sex, data = sochealth)
 m3 <- lm(wellbeing_score ~ age + sex + education,
@@ -547,10 +547,10 @@ table_regression(
   cluster = clinic_id
 )
 
-# Standardised coefficients (β) alongside B
+# Standardised coefficients (\eqn{\beta}{beta}) alongside B
 table_regression(fit, standardized = "refit")
 
-# Custom column set: B, partial f², AME with CI, p
+# Custom column set: B, partial \eqn{f^2}{f^2}, AME with CI, p
 table_regression(
   fit,
   show_columns = c("B", "partial_f2", "AME", "p")

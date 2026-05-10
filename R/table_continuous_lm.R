@@ -124,7 +124,7 @@
 #'   `weights` are excluded from the analytic sample for each outcome,
 #'   alongside rows with `NA` in `y` or `by`. When supplied, weights are
 #'   passed to `lm(..., weights = ...)`, so coefficients become weighted
-#'   least-squares estimates and `R²`, adjusted `R²`, and the four effect
+#'   least-squares estimates and `\eqn{R^2}{R^2}`, adjusted `\eqn{R^2}{R^2}`, and the four effect
 #'   sizes are computed from the corresponding weighted sums of squares
 #'   (see the *Weights* section in Details).
 #' @param vcov Variance estimator used for standard errors, confidence
@@ -167,7 +167,7 @@
 #'     1985). Inference is asymptotic (`z` / `chi^2(q)`).
 #'
 #'   The `HC*` variants are computed via [sandwich::vcovHC()].
-#'   Coefficients (means, contrasts, slopes), `R²`, and the standardized
+#'   Coefficients (means, contrasts, slopes), `\eqn{R^2}{R^2}`, and the standardized
 #'   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
 #'   OLS/WLS fit and are not affected by `vcov`; only their standard errors,
 #'   CIs, and the test statistic of the contrast change.
@@ -214,10 +214,10 @@
 #' @param effect_size Character. Effect-size column to include in the wide and
 #'   rendered outputs. One of:
 #'   - `"none"` (the default): no effect-size column.
-#'   - `"f2"`: Cohen's `f² = R² / (1 - R²)`. Defined for any predictor type.
+#'   - `"f2"`: Cohen's `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})`. Defined for any predictor type.
 #'     Familiar from Cohen (1988); standard input for a-priori power analysis.
-#'     Note that for a single-predictor model, `f²` is a monotone transform of
-#'     `R²` and adds no information beyond it.
+#'     Note that for a single-predictor model, `\eqn{f^2}{f^2}` is a monotone transform of
+#'     `\eqn{R^2}{R^2}` and adds no information beyond it.
 #'   - `"d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat` is the
 #'     model coefficient (the displayed difference) and `sigma_hat` is the
 #'     residual standard deviation from the fitted model. Defined only when
@@ -226,7 +226,7 @@
 #'   - `"g"`: Hedges' `g = J * d` with the small-sample correction
 #'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"d"`.
 #'   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
-#'     population variance explained, less optimistic than `R²` for small
+#'     population variance explained, less optimistic than `\eqn{R^2}{R^2}` for small
 #'     samples. Defined for any predictor type and truncated at 0.
 #'
 #'   When `weights` is supplied, `"d"`, `"g"`, and `"omega2"` are derived from
@@ -237,10 +237,10 @@
 #'   affected by `vcov`.
 #'
 #'   **Under covariate adjustment** (`covariates` non-empty):
-#'   - `"f2"` and `"omega2"` become the **partial** *f²* / partial *ω²*,
+#'   - `"f2"` and `"omega2"` become the **partial** *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}*,
 #'     derived from the partial *F* of `by` via [stats::drop1()] —
 #'     the correctly-defined effect size when the model is adjusted.
-#'     For numeric `by`, partial *f²* equals the squared partial
+#'     For numeric `by`, partial *\eqn{f^2}{f^2}* equals the squared partial
 #'     correlation of `by` with the outcome, divided by `(1 - r²_partial)`.
 #'   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d*
 #'     and Hedges' *g* have no canonical extension to adjusted models
@@ -261,12 +261,12 @@
 #'   warning.
 #' @param r2 Character. Fit statistic to include in the wide and rendered
 #'   outputs. One of:
-#'   - `"r2"` (default): the model `R²` (`summary(lm)$r.squared`).
-#'   - `"adj_r2"`: adjusted `R²`, penalising for `df_effect` relative to the
+#'   - `"r2"` (default): the model `\eqn{R^2}{R^2}` (`summary(lm)$r.squared`).
+#'   - `"adj_r2"`: adjusted `\eqn{R^2}{R^2}`, penalising for `df_effect` relative to the
 #'     residual degrees of freedom.
 #'   - `"none"`: omit the fit-statistic column.
 #'
-#'   When `weights` is supplied, `R²` and adjusted `R²` are the weighted
+#'   When `weights` is supplied, `\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}` are the weighted
 #'   least-squares versions reported by `summary(lm(..., weights = ...))`.
 #' @param ci Logical. If `TRUE`, includes contrast confidence-interval columns
 #'   in the wide and rendered outputs when a single contrast is shown.
@@ -279,8 +279,8 @@
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values, regression
 #'   coefficients, and test statistics (default: `2`).
-#' @param fit_digits Number of decimal places for model-fit columns (`R²` or
-#'   adjusted `R²`) in wide and rendered outputs (default: `2`).
+#' @param fit_digits Number of decimal places for model-fit columns (`\eqn{R^2}{R^2}` or
+#'   adjusted `\eqn{R^2}{R^2}`) in wide and rendered outputs (default: `2`).
 #' @param effect_size_digits Number of decimal places for the effect-size
 #'   column (`f2`, `d`, `g`, or `omega2`) in wide and rendered outputs
 #'   (default: `2`).
@@ -345,7 +345,7 @@
 #'   \item `"data.frame"`: a plain wide `data.frame` with one row per
 #'     outcome and numeric columns for means (categorical `by`) or slope
 #'     (numeric `by`), optional contrast and CI, optional test statistic,
-#'     `p`, fit statistic (`R²` or adjusted `R²`), effect size, optional
+#'     `p`, fit statistic (`\eqn{R^2}{R^2}` or adjusted `\eqn{R^2}{R^2}`), effect size, optional
 #'     `effect_size_ci_lower` / `effect_size_ci_upper` (when
 #'     `effect_size_ci = TRUE`), `n`, and `Weighted n`.
 #'   \item `"long"`: a raw `data.frame` with one block per outcome and 28
@@ -401,13 +401,13 @@
 #'
 #' Effect size is selected explicitly via `effect_size` (defaults to
 #' `"none"`). All variants are derived from the same fitted model as the
-#' displayed coefficients, `R²`, and CIs, so the effect size stays
+#' displayed coefficients, `\eqn{R^2}{R^2}`, and CIs, so the effect size stays
 #' internally consistent with the rest of the table.
 #'
 #' \itemize{
-#'   \item `"f2"`: Cohen's `f² = R² / (1 - R²)` (Cohen 1988). Defined
-#'     for any predictor type. For a single-predictor model, `f²` is a
-#'     monotone transform of `R²` and adds no information beyond it; its
+#'   \item `"f2"`: Cohen's `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})` (Cohen 1988). Defined
+#'     for any predictor type. For a single-predictor model, `\eqn{f^2}{f^2}` is a
+#'     monotone transform of `\eqn{R^2}{R^2}` and adds no information beyond it; its
 #'     primary use is in *a priori* power analysis (e.g. G*Power).
 #'   \item `"d"`, `"g"`: standardized mean difference (Cohen's *d* or Hedges'
 #'     *g*), defined only when `by` has exactly two non-empty levels.
@@ -432,7 +432,7 @@
 #' itself.
 #'
 #' **Under covariate adjustment** (`covariates` non-empty), `"f2"` and
-#' `"omega2"` become the partial *f²* / partial *ω²* of `by`, derived
+#' `"omega2"` become the partial *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}* of `by`, derived
 #' from the partial *F* via [stats::drop1()] restricted to the focal
 #' term. `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
 #' standard deviation has no canonical extension under adjustment, so
@@ -454,7 +454,7 @@
 #'     correction.
 #'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004).
 #'     Bounds are converted from the noncentrality parameter using
-#'     `omega² = ncp / (ncp + N)` and `f² = ncp / N` respectively, with
+#'     `omega² = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N` respectively, with
 #'     `N = df1 + df2 + 1` (total sample size).
 #' }
 #' For the weighted case, the CI uses raw (unweighted) group counts and
@@ -519,7 +519,7 @@
 #' sample is small; use the jackknife as a closed-form, deterministic
 #' alternative.
 #'
-#' `R²`, adjusted `R²`, and the effect sizes remain ordinary
+#' `\eqn{R^2}{R^2}`, adjusted `\eqn{R^2}{R^2}`, and the effect sizes remain ordinary
 #' least-squares (or weighted least-squares) statistics regardless of
 #' `vcov`.
 #'
@@ -528,8 +528,8 @@
 #' When `weights` is supplied, `table_continuous_lm()` fits weighted
 #' linear models via `lm(..., weights = ...)`. Means become weighted
 #' least-squares estimates and contrasts and slopes are weighted. The
-#' fit statistics `R²` and adjusted `R²`, as well as Hays' `omega²`
-#' and Cohen's `f²`, use the corresponding **weighted sums of squares**
+#' fit statistics `\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}`, as well as Hays' `omega²`
+#' and Cohen's `\eqn{f^2}{f^2}`, use the corresponding **weighted sums of squares**
 #' from the WLS fit. Cohen's `d` and Hedges' `g` use the **WLS
 #' coefficient and the model's weighted residual standard deviation**
 #' (`summary(fit)$sigma`), which is the standard convention for
@@ -711,7 +711,7 @@
 #' @examples
 #' # --- Basic usage ---------------------------------------------------------
 #'
-#' # Default: ASCII table with model-based means, p, and R².
+#' # Default: ASCII table with model-based means, p, and \eqn{R^2}{R^2}.
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
@@ -748,7 +748,7 @@
 #'   effect_size_ci = TRUE
 #' )
 #'
-#' # Cohen's f² alongside R² (familiar power-analysis effect size).
+#' # Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
@@ -823,7 +823,7 @@
 #'
 #' # --- Article-style polish -----------------------------------------------
 #'
-#' # Pretty outcome labels and adjusted R².
+#' # Pretty outcome labels and adjusted \eqn{R^2}{R^2}.
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),

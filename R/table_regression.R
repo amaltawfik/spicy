@@ -29,7 +29,7 @@
 #' generalised analog of the partial F-test (SAS PROC LOGISTIC
 #' `TYPE3`; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
 #' `value (df)` rendering; the df slot disambiguates factor terms
-#' (k−1 df) from numeric terms (1 df).
+#' (k-1 df) from numeric terms (1 df).
 #' Marginal effects: `AME`, `AME_p`, `AME_SE` (compact for `AME`).
 #'
 #' Default: `c("B", "SE", "CI", "p")`.
@@ -41,10 +41,10 @@
 #'
 #' Counts: `nobs`, `weighted_nobs`.
 #' Variance explained (`lm` only): `r2`, `adj_r2`, `omega2`.
-#' Pseudo-R² (`glm` only): `pseudo_r2_mcfadden` (McFadden 1974),
+#' Pseudo-\eqn{R^2}{R^2} (`glm` only): `pseudo_r2_mcfadden` (McFadden 1974),
 #' `pseudo_r2_nagelkerke` (Nagelkerke 1991),
 #' `pseudo_r2_tjur` (Tjur 2009; binomial only).
-#' Residual scale: `sigma` (lm σ̂ / glm dispersion), `rmse`.
+#' Residual scale: `sigma` (lm \eqn{\hat{\sigma}}{sigma-hat} / glm dispersion), `rmse`.
 #' Effect size: `f2`.
 #' Information criteria: `AIC`, `AICc`, `BIC`, `deviance`.
 #'
@@ -116,7 +116,7 @@
 #'     numeric predictors are standardised (Long & Freese 2014 §4.3.4
 #'     "x-standardization").
 #'   * `"posthoc"` — post-hoc scaling. For `lm`:
-#'     `β = B × SD(X) / SD(Y)`; for `glm`: X-only `β = B × SD(X)` (the
+#'     `\eqn{\beta}{beta} = B × SD(X) / SD(Y)`; for `glm`: X-only `\eqn{\beta}{beta} = B × SD(X)` (the
 #'     response side is undefined on the link scale —
 #'     `parameters` / `effectsize` convention).
 #'   * `"basic"` — like posthoc but factor-derived dummies are scaled
@@ -124,12 +124,12 @@
 #'   * `"smart"` — Gelman (2008) recommendation: divide binary
 #'     predictors by `2 × SD` instead of `SD`.
 #'   * `"pseudo"` — *glm only*. Menard (2004, 2011) fully-standardised
-#'     `β = B × SD(X) / SD(Y*)`, where `Y*` is the latent variable on
+#'     `\eqn{\beta}{beta} = B × SD(X) / SD(Y*)`, where `Y*` is the latent variable on
 #'     the link scale and
-#'     `SD(Y*) = sqrt(var(η̂) + var_link)` with `var_link` =
-#'     π²/3 (logit), 1 (probit), π²/6 (cloglog). Defined for binomial
+#'     `SD(Y*) = sqrt(var(\eqn{\hat{\eta}}{eta-hat}) + var_link)` with `var_link` =
+#'     \eqn{\pi}{pi}²/3 (logit), 1 (probit), \eqn{\pi}{pi}²/6 (cloglog). Defined for binomial
 #'     families; non-binomial returns NA with a `spicy_caveat`.
-#'   * `"none"` (default) — no β computed.
+#'   * `"none"` (default) — no \eqn{\beta}{beta} computed.
 #'
 #' For models with interactions or transformed predictors (`I()`,
 #' `poly()`, `log()`, `splines::ns()`), a `spicy_caveat` warning is
@@ -174,8 +174,8 @@
 #'
 #' `table_regression()` produces UTF-8 output with Unicode
 #' box-drawing for table layout and Greek / mathematical symbols
-#' (β, ω², χ², f², Δ, †, em-dash). A UTF-8 capable terminal is
-#' required (default in RStudio, R ≥ 4.0 on Windows 10+, macOS,
+#' (\eqn{\beta}{beta}, \eqn{\omega^2}{omega^2}, \eqn{\chi^2}{chi-squared}, \eqn{f^2}{f^2}, \eqn{\Delta}{Delta}, †, em-dash). A UTF-8 capable terminal is
+#' required (default in RStudio, R \eqn{\ge}{>=} 4.0 on Windows 10+, macOS,
 #' modern Linux).
 #'
 #' # Internationalisation
@@ -217,7 +217,7 @@
 #'   a single string column name, an atomic vector of length
 #'   `nobs(model)`, or a list (one per model). Default `NULL`
 #'   (no clustering).
-#' @param ci_level Confidence level for all reported CIs (B, β,
+#' @param ci_level Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 #'   AME, partial effect sizes). Default `0.95`.
 #' @param boot_n Number of bootstrap replicates when
 #'   `vcov = "bootstrap"`. Single positive integer. Default
@@ -374,7 +374,7 @@
 #'   Default `2L`.
 #' @param ic_digits Decimals for information criteria (`AIC`,
 #'   `AICc`, `BIC` in both `show_fit_stats` and `nested_stats`,
-#'   plus their Δ-form). Default `1L`.
+#'   plus their \eqn{\Delta}{Delta}-form). Default `1L`.
 #' @param decimal_mark Decimal mark used in numeric display.
 #'   `"."` (default) or `","` (European convention). When
 #'   `","` is used, the CI bracket separator switches to `"; "`
@@ -453,7 +453,7 @@
 #' table_regression(fit)
 #'
 #' # Hierarchical regression: nested = TRUE adds the comparison
-#' # footer (ΔR², partial F, p)
+#' # footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)
 #' m1 <- lm(wellbeing_score ~ age, data = sochealth)
 #' m2 <- lm(wellbeing_score ~ age + sex, data = sochealth)
 #' m3 <- lm(wellbeing_score ~ age + sex + education,
@@ -472,10 +472,10 @@
 #'   cluster = clinic_id
 #' )
 #'
-#' # Standardised coefficients (β) alongside B
+#' # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 #' table_regression(fit, standardized = "refit")
 #'
-#' # Custom column set: B, partial f², AME with CI, p
+#' # Custom column set: B, partial \eqn{f^2}{f^2}, AME with CI, p
 #' table_regression(
 #'   fit,
 #'   show_columns = c("B", "partial_f2", "AME", "p")
