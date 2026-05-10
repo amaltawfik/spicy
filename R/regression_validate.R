@@ -222,7 +222,28 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
 
 # Steps 4–5: nested = TRUE requires identical nobs and identical DV
 validate_nested_alignment <- function(models, nested) {
-  if (!isTRUE(nested) || length(models) <= 1L) {
+  if (!isTRUE(nested)) {
+    return(invisible(NULL))
+  }
+  # Nested = TRUE with a single fit is a no-op (nothing to compare).
+  # Warn rather than silently render a regular table — the user almost
+  # certainly meant to pass a list of nested fits and the silent no-op
+  # would mask the mistake.
+  if (length(models) <= 1L) {
+    spicy_warn(
+      c(
+        paste0(
+          "`nested = TRUE` requires a list of at least 2 models; ",
+          "the single fit was rendered without a comparison footer."
+        ),
+        "i" = paste0(
+          "Pass `list(m1, m2, ...)` of nested models with identical ",
+          "DV and identical n to enable the hierarchical-comparison ",
+          "footer."
+        )
+      ),
+      class = "spicy_ignored_arg"
+    )
     return(invisible(NULL))
   }
 
@@ -414,6 +435,26 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_invalid_input"
         )
       }
+    }
+
+    # Cluster supplied but vcov is not CR* — silent ignore would be a
+    # forgotten-vcov mistake. Warn explicitly so the user notices.
+    if (!is.null(c_i) && !is_cr) {
+      spicy_warn(
+        c(
+          sprintf(
+            paste0("Model %d: `cluster` supplied but `vcov = \"%s\"` ",
+                    "is not cluster-robust; the cluster vector is ",
+                    "ignored."),
+            i, v_i
+          ),
+          "i" = paste0(
+            "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",
+            "to use the cluster vector for cluster-robust SE."
+          )
+        ),
+        class = "spicy_ignored_arg"
+      )
     }
   }
 

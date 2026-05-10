@@ -591,6 +591,21 @@ table_regression <- function(
   validate_show_fit_stats(show_fit_stats)
   if (!is.null(nested_stats)) {
     validate_nested_stats(nested_stats)
+    # Warn if `nested_stats` is supplied but `nested = FALSE` — the
+    # token vector would otherwise be silently ignored. Cross-arg
+    # semantic check (Phase E equivalent).
+    if (!isTRUE(nested)) {
+      spicy_warn(
+        c(
+          paste0(
+            "`nested_stats` is supplied but `nested = FALSE`; the ",
+            "tokens are ignored."
+          ),
+          "i" = "Set `nested = TRUE` to display the model-comparison footer."
+        ),
+        class = "spicy_ignored_arg"
+      )
+    }
   }
   # Q3 — auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the

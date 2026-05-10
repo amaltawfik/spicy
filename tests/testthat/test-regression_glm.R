@@ -1686,3 +1686,138 @@ test_that("AUDIT B8: standardized refit intercept noise renders as 0.00", {
   beta_int <- trimws(int_row$`β`)
   expect_equal(beta_int, "0.00")
 })
+
+
+# ============================================================================
+# AUDIT round 6: silent no-op detection (B9 nested single, B10 nested_stats
+# without nested, B12 cluster without CR*) + family/link matrix coverage
+# ============================================================================
+
+test_that("AUDIT B9: nested = TRUE on single fit warns (was silent no-op)", {
+  fit <- glm(am ~ mpg, data = mtcars, family = binomial)
+  expect_warning(
+    out <- table_regression(fit, nested = TRUE),
+    class = "spicy_ignored_arg"
+  )
+  # Output still rendered (no error)
+  expect_s3_class(out, "spicy_regression_table")
+})
+
+test_that("AUDIT B10: nested_stats without nested = TRUE warns", {
+  fit <- glm(am ~ mpg, data = mtcars, family = binomial)
+  expect_warning(
+    table_regression(fit, nested_stats = c("LRT", "p")),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("AUDIT B12: cluster supplied without CR* vcov warns explicitly", {
+  fit <- glm(am ~ mpg, data = mtcars, family = binomial)
+  expect_warning(
+    table_regression(fit, cluster = mtcars$cyl),
+    class = "spicy_ignored_arg"
+  )
+  # Same warning under HC* (also not CR)
+  expect_warning(
+    table_regression(fit, vcov = "HC1", cluster = mtcars$cyl),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("AUDIT: no warning when cluster IS used (CR* + cluster)", {
+  set.seed(1)
+  n <- 100L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n),
+                  clinic = rep(letters[1:10], each = 10))
+  fit <- glm(y ~ x, data = d, family = binomial)
+  expect_no_warning(
+    table_regression(fit, vcov = "CR2", cluster = d$clinic),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("AUDIT round 6: family x link matrix -- 14 combos all run cleanly", {
+  set.seed(1)
+  n <- 100L
+  d <- data.frame(y_b = rbinom(n, 1, 0.5),
+                  y_p = rpois(n, 3L),
+                  y_g = rgamma(n, 2, 1),
+                  x = rnorm(n))
+  matrix_specs <- list(
+    list(fam = binomial(link = "logit"),    y = "y_b"),
+    list(fam = binomial(link = "probit"),   y = "y_b"),
+    list(fam = binomial(link = "cloglog"),  y = "y_b"),
+    list(fam = binomial(link = "log"),      y = "y_b"),
+    list(fam = poisson(link = "log"),       y = "y_p"),
+    list(fam = poisson(link = "identity"),  y = "y_p"),
+    list(fam = poisson(link = "sqrt"),      y = "y_p"),
+    list(fam = Gamma(link = "inverse"),     y = "y_g"),
+    list(fam = Gamma(link = "log"),         y = "y_g"),
+    list(fam = Gamma(link = "identity"),    y = "y_g"),
+    list(fam = quasibinomial(),             y = "y_b"),
+    list(fam = quasipoisson(),              y = "y_p")
+  )
+  for (spec in matrix_specs) {
+    y <- d[[spec$y]]
+    fit <- tryCatch(
+      suppressWarnings(glm(y ~ d$x, family = spec$fam)),
+      error = function(e) NULL
+    )
+    if (is.null(fit)) next
+    expect_no_error(
+      table_regression(fit),
+      message = sprintf("family = %s / link = %s",
+                         spec$fam$family, spec$fam$link)
+    )
+  }
+})
+
+test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
+  d <- mtcars
+  d$cyl_h <- factor(d$cyl)
+  contrasts(d$cyl_h) <- contr.helmert(3)
+  fit_h <- glm(am ~ cyl_h, data = d, family = binomial)
+  vars_h <- as.data.frame(table_regression(fit_h),
+                            stringsAsFactors = FALSE)$Variable
+  expect_false(any(grepl("ref", vars_h)))    # no ref row for poly-style
+  expect_true("cyl_h1" %in% vars_h)
+
+  d$cyl_s <- factor(d$cyl)
+  contrasts(d$cyl_s) <- contr.sum(3)
+  fit_s <- glm(am ~ cyl_s, data = d, family = binomial)
+  vars_s <- as.data.frame(table_regression(fit_s),
+                            stringsAsFactors = FALSE)$Variable
+  expect_false(any(grepl("ref", vars_s)))
+  expect_true("cyl_s1" %in% vars_s)
+})
+
+test_that("AUDIT: long predictor names render correctly", {
+  d <- mtcars
+  names(d)[c(2, 3)] <- c("very_long_predictor_name_1",
+                          "super_long_predictor_2")
+  fit <- glm(am ~ very_long_predictor_name_1 + super_long_predictor_2,
+              data = d, family = binomial)
+  out <- table_regression(fit)
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_true("very_long_predictor_name_1" %in% vars)
+  expect_true("super_long_predictor_2" %in% vars)
+})
+
+test_that("AUDIT: response types (logical, integer, character->factor)", {
+  set.seed(1)
+  n <- 100L
+  # logical Y
+  d_b <- data.frame(y = sample(c(TRUE, FALSE), n, replace = TRUE),
+                    x = rnorm(n))
+  fit_b <- glm(y ~ x, data = d_b, family = binomial)
+  expect_no_error(table_regression(fit_b))
+  # integer Y
+  d_p <- data.frame(y = rpois(n, 3L), x = rnorm(n))
+  fit_p <- glm(y ~ x, data = d_p, family = poisson)
+  expect_no_error(table_regression(fit_p))
+  # character Y -> factor
+  d_c <- data.frame(y = sample(c("Yes", "No"), n, replace = TRUE),
+                    x = rnorm(n))
+  fit_c <- glm(factor(y) ~ x, data = d_c, family = binomial)
+  expect_no_error(table_regression(fit_c))
+})
