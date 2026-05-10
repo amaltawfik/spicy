@@ -619,6 +619,7 @@ table_regression <- function(
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+  validate_class_appropriate_nested_stats(models, nested_stats, nested)
 
   # `ci_method = "profile"` is glm only. Profile-likelihood CIs are
   # standard for glm (MASS::confint.glm); for lm, Wald CIs are exact
@@ -699,7 +700,7 @@ table_regression <- function(
   # fit and surface the suggestion via spicy_caveat.
   for (i in seq_along(models)) {
     f <- models[[i]]
-    if (inherits(f, "glm") && !inherits(f, "lm.gaussian.passthrough")) {
+    if (inherits(f, "glm")) {
       fam <- stats::family(f)
       if (identical(fam$family, "gaussian") &&
             identical(fam$link, "identity")) {

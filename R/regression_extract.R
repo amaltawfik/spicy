@@ -258,7 +258,7 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       # Class-aware inference: glm uses z-asymptotic Wald (matches
       # summary.glm / Stata logit / SPSS LOGISTIC); lm uses t with
       # df.residual or Satterthwaite df under CR* (lm_compute.R).
-      inf_fn <- if (inherits(fit, "glm") && !inherits(fit, "lm.gaussian.passthrough")) {
+      inf_fn <- if (inherits(fit, "glm")) {
         compute_glm_coef_inference
       } else {
         compute_lm_coef_inference

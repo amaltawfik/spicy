@@ -184,18 +184,52 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   se_beta <- se_b * scale_factor
 
   # Intercept set to NA — its standardised value is mechanical under
-  # algebraic scaling and not meaningful for interpretation.
-  beta[1] <- NA_real_
-  se_beta[1] <- NA_real_
+  # algebraic scaling and not meaningful for interpretation. Guard
+  # against no-intercept models (`glm(y ~ -1 + x, ...)`): only NA the
+  # first row when it actually IS the intercept.
+  if (length(beta) >= 1L && identical(names(b)[1L], "(Intercept)")) {
+    beta[1] <- NA_real_
+    se_beta[1] <- NA_real_
+  }
 
-  # Inference reconstruction. glm uses z-asymptotic (df = Inf) to
-  # match `compute_glm_coef_inference()`.
+  # Inference reconstruction.
+  #
+  # Default: z-asymptotic (df = Inf) — matches glm convention.
+  #
+  # CR* + cluster: Satterthwaite-corrected df via clubSandwich,
+  # parallelling `compute_glm_coef_inference()` for the B row. Without
+  # this, the β row would silently revert to z while the B row uses
+  # Satterthwaite, producing inconsistent CIs / p-values for what is
+  # mathematically the same test (linear rescaling preserves the
+  # statistic, so df / p / CI must follow the same regime).
+  df_vec <- rep(Inf, length(b))
+  use_satt <- startsWith(vcov_type, "CR") &&
+                !is.null(cluster) &&
+                spicy_pkg_available("clubSandwich")
+  if (use_satt) {
+    df_satt_map <- compute_satt_df_per_coef_glm(fit, vc, cluster)
+    if (!is.null(df_satt_map)) {
+      hits <- match(names(b), names(df_satt_map))
+      df_vec[!is.na(hits)] <- df_satt_map[hits[!is.na(hits)]]
+    }
+  }
   alpha <- 1 - ci_level
-  crit <- stats::qnorm(1 - alpha / 2)
-  ci_low <- beta - crit * se_beta
-  ci_high <- beta + crit * se_beta
-  z_stat <- beta / se_beta
-  p_value <- 2 * stats::pnorm(abs(z_stat), lower.tail = FALSE)
+  ci_low <- numeric(length(beta))
+  ci_high <- numeric(length(beta))
+  stat <- beta / se_beta
+  p_value <- numeric(length(beta))
+  for (i in seq_along(beta)) {
+    df_i <- df_vec[i]
+    if (is.finite(df_i) && df_i > 0) {
+      crit_i <- stats::qt(1 - alpha / 2, df = df_i)
+      p_value[i] <- 2 * stats::pt(abs(stat[i]), df = df_i, lower.tail = FALSE)
+    } else {
+      crit_i <- stats::qnorm(1 - alpha / 2)
+      p_value[i] <- 2 * stats::pnorm(abs(stat[i]), lower.tail = FALSE)
+    }
+    ci_low[i]  <- beta[i] - crit_i * se_beta[i]
+    ci_high[i] <- beta[i] + crit_i * se_beta[i]
+  }
 
   data.frame(
     term = names(b),
@@ -203,8 +237,8 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
     se = unname(se_beta),
     ci_low = unname(ci_low),
     ci_high = unname(ci_high),
-    statistic = unname(z_stat),
-    df = rep(Inf, length(b)),
+    statistic = unname(stat),
+    df = df_vec,
     p_value = unname(p_value),
     stringsAsFactors = FALSE
   )

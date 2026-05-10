@@ -1027,3 +1027,128 @@ test_that("E2E: full feature surface in a single call (acceptance)", {
   td <- broom::tidy(out)
   expect_true(nrow(td) > 0L)
 })
+
+
+# ============================================================================
+# Audit-driven regression guards (post-Phase-3 polish)
+# ============================================================================
+
+test_that("AUDIT C1: glm + CR* + standardized -- B and beta share Satterthwaite df", {
+  set.seed(1)
+  n <- 200L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x1 = rnorm(n), x2 = rnorm(n),
+                  clinic = rep(letters[1:20], each = 10))
+  fit <- glm(y ~ x1 + x2, data = d, family = binomial)
+  for (m in c("refit", "posthoc", "basic", "smart", "pseudo")) {
+    td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = d$clinic,
+                                         standardized = m))
+    rows <- td[td$term %in% c("x1", "x2") &
+                  td$estimate_type %in% c("B", "beta"), ]
+    by_term <- split(rows$df, rows$term)
+    for (term_nm in names(by_term)) {
+      dfs <- by_term[[term_nm]]
+      # B df_Satt and beta df_Satt must match (same Satterthwaite df,
+      # not z-asymptotic Inf for one and finite for the other)
+      expect_true(all(is.finite(dfs)),
+                  info = paste("method =", m, "term =", term_nm))
+      expect_true(length(unique(round(dfs, 6))) == 1L,
+                  info = paste("method =", m, "term =", term_nm,
+                                "df values:", paste(dfs, collapse = ", ")))
+    }
+  }
+})
+
+test_that("AUDIT H1: partial_chi2 returns NULL for quasi families", {
+  set.seed(2)
+  d <- data.frame(y = rpois(60, 3), x = rnorm(60))
+  fit <- glm(y ~ x, data = d, family = quasipoisson)
+  res <- spicy:::compute_partial_chi2_for_term(fit, "x")
+  expect_null(res)
+  fit2 <- glm(am ~ mpg, data = mtcars, family = quasibinomial)
+  expect_null(spicy:::compute_partial_chi2_for_term(fit2, "mpg"))
+})
+
+test_that("AUDIT M4: nested_stats with lm-only tokens on all-glm rejected", {
+  m1 <- glm(am ~ mpg,      data = mtcars, family = binomial)
+  m2 <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
+  err <- tryCatch(
+    table_regression(list(m1, m2), nested = TRUE,
+                      nested_stats = c("r2_change", "F", "p")),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "not defined for `glm`", fixed = TRUE)
+  expect_match(conditionMessage(err), "LRT", fixed = TRUE)
+})
+
+test_that("AUDIT M4: nested_stats validator accepts mixed lm + glm hierarchies", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- glm(am ~ mpg, data = mtcars, family = binomial)
+  # Mixed hierarchy with r2_change should NOT error (nested = TRUE
+  # would actually fail at validate_nested_alignment because DVs
+  # differ; just confirm the class-aware nested_stats validator
+  # doesn't fire on the mixed-class branch).
+  expect_no_error(
+    spicy:::validate_class_appropriate_nested_stats(
+      list(m1, m2), nested_stats = c("r2_change", "F", "p"),
+      nested = TRUE
+    )
+  )
+})
+
+test_that("AUDIT M5: standardize_algebraic_glm preserves no-intercept predictors", {
+  fit <- glm(am ~ -1 + mpg + wt, data = mtcars, family = binomial)
+  for (m in c("posthoc", "basic", "smart")) {
+    td <- broom::tidy(table_regression(fit, standardized = m))
+    beta_rows <- td[td$estimate_type == "beta", ]
+    # Both predictors should have FINITE beta (not NA-out of first row)
+    mpg_beta <- beta_rows$estimate[beta_rows$term == "mpg"]
+    wt_beta  <- beta_rows$estimate[beta_rows$term == "wt"]
+    expect_true(is.finite(mpg_beta), info = paste("method =", m))
+    expect_true(is.finite(wt_beta),  info = paste("method =", m))
+  }
+})
+
+test_that("AUDIT: less common families have correct titles", {
+  # quasibinomial / quasipoisson explicit prefixes
+  fit_qb <- glm(am ~ mpg, data = mtcars, family = quasibinomial)
+  expect_match(attr(table_regression(fit_qb), "title"),
+               "^Quasi-binomial regression: am$")
+  fit_qp <- glm(I(round(mpg)) ~ wt, data = mtcars, family = quasipoisson)
+  expect_match(attr(table_regression(fit_qp), "title"),
+               "^Quasi-Poisson regression:")
+  # inverse.gaussian
+  set.seed(5)
+  d <- data.frame(y = rgamma(50, 2, 0.5), x = rnorm(50))
+  fit_ig <- tryCatch(
+    suppressWarnings(glm(y ~ x, data = d,
+                          family = inverse.gaussian(link = "1/mu^2"))),
+    error = function(e) NULL
+  )
+  skip_if(is.null(fit_ig), "inverse.gaussian fit did not converge")
+  expect_match(attr(table_regression(fit_ig), "title"),
+               "^Inverse-Gaussian regression:")
+})
+
+test_that("AUDIT: Gamma(log) exponentiate header is MR (mean ratio)", {
+  set.seed(6)
+  d <- data.frame(y = rgamma(80, 2, 0.5), x1 = rnorm(80), x2 = rnorm(80))
+  fit <- glm(y ~ x1 + x2, data = d, family = Gamma(link = "log"))
+  out <- table_regression(fit, exponentiate = TRUE)
+  expect_true("MR" %in% names(out))
+})
+
+test_that("AUDIT: B-row Satterthwaite under CR* (direct unit test)", {
+  set.seed(8)
+  n <- 200L
+  d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n),
+                  clinic = rep(letters[1:20], each = 10))
+  fit <- glm(y ~ x, data = d, family = binomial)
+  vc <- compute_lm_vcov(fit, type = "CR2", cluster = d$clinic)
+  inf <- spicy:::compute_glm_coef_inference(
+    fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
+    cluster = d$clinic, ci_level = 0.95
+  )
+  expect_equal(inf$test_type, "t")
+  expect_true(is.finite(inf$df) && inf$df < n)  # Satterthwaite df is small
+})

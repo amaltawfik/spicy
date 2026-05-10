@@ -1,8 +1,12 @@
 # Internal glm-specific computation backbone for table_regression().
-# Mirrors R/lm_compute.R: per-coef inference (z-asymptotic with
-# Inf df), pseudo-R² family (McFadden, Nagelkerke, Tjur), family /
-# link helpers used by the rendering layer (title, exponentiate
-# header rebrand, gaussian-glm caveat).
+# Mirrors R/lm_compute.R. Contents:
+#   * Family / link helpers (title prefix, exponentiate header)
+#   * Per-coef inference: z-asymptotic Wald, with CR* Satterthwaite
+#     branch via clubSandwich
+#   * Pseudo-R² family: McFadden, Nagelkerke, Tjur
+#   * Term-level partial chi-square via drop1(test = "LRT")
+#   * apply_exponentiate_to_coefs(): exp() transform on coefs +
+#     CIs + delta-method SE
 
 # ---- Family / link introspection -----------------------------------------
 
@@ -47,7 +51,8 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
     return("Quasi-Poisson regression")
   }
   if (grepl("^quasi", family_name)) return("Quasi-likelihood regression")
-  if (identical(family_name, "gaussian")) return("Regression")
+  # gaussian + identity (and any other unrecognised family) falls
+  # through to the generic "Regression" prefix.
   "Regression"
 }
 
@@ -227,6 +232,22 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
   cox_snell / upper
 }
 
+compute_pseudo_r2_tjur <- function(fit) {
+  if (!inherits(fit, "glm")) return(NA_real_)
+  fam <- stats::family(fit)
+  if (!identical(fam$family, "binomial")) return(NA_real_)
+  y <- stats::model.response(stats::model.frame(fit))
+  if (is.factor(y)) y <- as.integer(y) - 1L
+  if (!all(y %in% c(0, 1))) return(NA_real_)
+  pi_hat <- stats::fitted(fit)
+  if (length(pi_hat) != length(y)) return(NA_real_)
+  m1 <- mean(pi_hat[y == 1])
+  m0 <- mean(pi_hat[y == 0])
+  if (!is.finite(m1) || !is.finite(m0)) return(NA_real_)
+  m1 - m0
+}
+
+
 # ---- exp() transform for response-scale display --------------------------
 
 # Apply exp() to B-row (and beta-row) estimates + CI bounds, and a
@@ -281,11 +302,12 @@ apply_exponentiate_to_coefs <- function(coefs) {
 #
 # Returns NULL on any failure (drop1 error, non-finite chi-square, etc.)
 # so the caller can skip the term and the renderer em-dashes the cells.
-# For quasi families, drop1(test = "LRT") returns the deviance ratio
-# which under-dispersion is unreliable — we let it through (the user
-# opted in via the token), but the upstream caveat note flags it.
+# Quasi families (quasibinomial / quasipoisson / quasi) have no proper
+# log-likelihood, so the LRT is undefined; we return NULL — consistent
+# with how the pseudo-R² family handles them.
 compute_partial_chi2_for_term <- function(fit, term_label) {
   if (!inherits(fit, "glm")) return(NULL)
+  if (grepl("^quasi", stats::family(fit)$family)) return(NULL)
   d1 <- tryCatch(
     suppressWarnings(
       stats::drop1(fit, scope = stats::reformulate(term_label), test = "LRT")
@@ -305,20 +327,4 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
   }
   p_value <- stats::pchisq(chi2, df = df1, lower.tail = FALSE)
   list(chi2 = chi2, df = as.integer(df1), p_value = p_value)
-}
-
-
-compute_pseudo_r2_tjur <- function(fit) {
-  if (!inherits(fit, "glm")) return(NA_real_)
-  fam <- stats::family(fit)
-  if (!identical(fam$family, "binomial")) return(NA_real_)
-  y <- stats::model.response(stats::model.frame(fit))
-  if (is.factor(y)) y <- as.integer(y) - 1L
-  if (!all(y %in% c(0, 1))) return(NA_real_)
-  pi_hat <- stats::fitted(fit)
-  if (length(pi_hat) != length(y)) return(NA_real_)
-  m1 <- mean(pi_hat[y == 1])
-  m0 <- mean(pi_hat[y == 0])
-  if (!is.finite(m1) || !is.finite(m0)) return(NA_real_)
-  m1 - m0
 }

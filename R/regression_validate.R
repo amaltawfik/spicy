@@ -516,6 +516,53 @@ validate_class_appropriate_tokens <- function(models,
   invisible(NULL)
 }
 
+# Class-aware validation of `nested_stats`. Variance-explained
+# tokens (r2_change, adj_r2_change, F, f2_change) require an OLS
+# residual-sum-of-squares partition and are NA for glm. Reject
+# explicitly when ALL nested models are glm; for mixed lm + glm
+# hierarchies the renderer em-dashes the glm side, which is the
+# right behaviour. NULL or empty `nested_stats` is a no-op (the
+# class-aware default in compute_nested_comparisons_lm() picks the
+# right tokens automatically).
+validate_class_appropriate_nested_stats <- function(models,
+                                                      nested_stats,
+                                                      nested) {
+  if (!isTRUE(nested) || is.null(nested_stats) ||
+        length(nested_stats) == 0L) {
+    return(invisible(NULL))
+  }
+  any_lm_only <- any(vapply(models, function(f) {
+    inherits(f, "lm") && !inherits(f, "glm")
+  }, logical(1)))
+  if (any_lm_only) return(invisible(NULL))
+  # all-glm path
+  bad <- intersect(nested_stats,
+                   c("r2_change", "adj_r2_change", "F", "f2_change"))
+  if (length(bad) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          paste0("Token(s) %s in `nested_stats` are not defined for ",
+                 "`glm` hierarchies."),
+          paste(shQuote(bad), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Variance-explained model comparison (\u0394R\u00b2 / partial F / ",
+          "\u0394f\u00b2) does not apply outside the least-squares framework."
+        ),
+        "i" = paste0(
+          "For `glm` hierarchies, use `\"LRT\"` (likelihood-ratio ",
+          "\u03c7\u00b2; APA hierarchical-logistic standard), or one of ",
+          "`\"AIC\"` / `\"AICc\"` / `\"BIC\"` / `\"deviance_change\"`. ",
+          "Default: c(\"LRT\", \"p\")."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
 
 # Step 10: show_fit_stats. Empty character or NULL means "drop the
 # fit-stats footer block" \u2014 a legitimate rendering choice (some
