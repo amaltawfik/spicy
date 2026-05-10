@@ -120,6 +120,12 @@ compute_lm_vcov_bootstrap <- function(
     weights <- stats::weights(fit)
   }
 
+  # Class-aware refit: glm fits must be re-fit with stats::glm and the
+  # original family / link, otherwise the bootstrap variance is computed
+  # for a misspecified linear model on the (often binary) response. The
+  # original family is captured once and reused across replicates.
+  is_glm <- inherits(fit, "glm")
+  fam <- if (is_glm) stats::family(fit) else NULL
   refit <- function(boot_idx) {
     sub_data <- mf[boot_idx, , drop = FALSE]
     sub_w <- if (is.null(weights)) NULL else weights[boot_idx]
@@ -127,10 +133,18 @@ compute_lm_vcov_bootstrap <- function(
     if (!is.null(sub_w)) {
       args$weights <- sub_w
     }
-    tryCatch(
-      suppressWarnings(do.call(stats::lm, args)),
-      error = function(e) NULL
-    )
+    if (is_glm) {
+      args$family <- fam
+      tryCatch(
+        suppressWarnings(do.call(stats::glm, args)),
+        error = function(e) NULL
+      )
+    } else {
+      tryCatch(
+        suppressWarnings(do.call(stats::lm, args)),
+        error = function(e) NULL
+      )
+    }
   }
 
   beta_boot <- matrix(NA_real_, nrow = boot_n, ncol = k)
@@ -222,6 +236,11 @@ compute_lm_vcov_jackknife <- function(
     weights <- stats::weights(fit)
   }
 
+  # Class-aware refit: glm fits must be re-fit with stats::glm and the
+  # original family / link (see `compute_lm_vcov_bootstrap` for the
+  # same rationale).
+  is_glm <- inherits(fit, "glm")
+  fam <- if (is_glm) stats::family(fit) else NULL
   refit <- function(jack_idx) {
     sub_data <- mf[jack_idx, , drop = FALSE]
     sub_w <- if (is.null(weights)) NULL else weights[jack_idx]
@@ -229,10 +248,18 @@ compute_lm_vcov_jackknife <- function(
     if (!is.null(sub_w)) {
       args$weights <- sub_w
     }
-    tryCatch(
-      suppressWarnings(do.call(stats::lm, args)),
-      error = function(e) NULL
-    )
+    if (is_glm) {
+      args$family <- fam
+      tryCatch(
+        suppressWarnings(do.call(stats::glm, args)),
+        error = function(e) NULL
+      )
+    } else {
+      tryCatch(
+        suppressWarnings(do.call(stats::lm, args)),
+        error = function(e) NULL
+      )
+    }
   }
 
   if (is.null(cluster)) {

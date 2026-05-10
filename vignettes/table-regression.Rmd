@@ -76,9 +76,11 @@ R landscape (`modelsummary`, `gtsummary`, `parameters`,
   `?` — `table_regression()` is "more pro via transparency, not
   rejection" (Cohen, Cohen, West, and Aiken 2003 §7.7).
 
-The current scope is `lm` only (Phase 1). `glm` support is on the
-roadmap for spicy 0.15.0; mixed-effects models (`merMod`,
-`lmerModLmerTest`) for 0.16+.
+Supports `lm` and `glm` (binomial / poisson / Gamma /
+inverse.gaussian / quasi families with any link). Mixed-effects
+models (`merMod`, `lmerModLmerTest`) are on the roadmap for
+spicy 0.16+. See the *Generalised linear models* section below
+for the glm-specific argument semantics.
 
 ## Basic usage
 

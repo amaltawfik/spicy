@@ -45,13 +45,13 @@ table_regression(
 )
 }
 \arguments{
-\item{models}{An \code{lm} fitted model \strong{or} a list of \code{lm} fits
-(named or unnamed). Single fits are auto-promoted to a
-one-element list internally. \code{glm}, \code{merMod}, and other
-classes are rejected with an actionable error in Phase 1.
-Raw data + formula is \strong{not} accepted (fit-only API,
-matching \code{broom}, \code{modelsummary}, \code{gtsummary}, and
-\code{marginaleffects}).}
+\item{models}{An \code{lm} or \code{glm} fitted model \strong{or} a list of
+such fits (named or unnamed; lm and glm fits may be mixed in
+the same list). Single fits are auto-promoted to a one-element
+list internally. \code{merMod} and other classes are rejected with
+an actionable error. Raw data + formula is \strong{not} accepted
+(fit-only API, matching \code{broom}, \code{modelsummary}, \code{gtsummary},
+and \code{marginaleffects}).}
 
 \item{vcov}{Variance-covariance estimator. A single string
 (one of \code{"classical"}, \code{"HC0"} to \code{"HC5"}, \code{"CR0"} to
@@ -303,9 +303,9 @@ regression models. Designed for \strong{APA-strict} reporting in
 psychology, public health, sociology, and biostatistics, with
 optional opt-in conventions for econometrics and clinical trials.
 
-Phase 1 supports \code{lm} only. Logistic / probit / Poisson regression
-(\code{glm}) is planned for spicy 0.15.0; mixed-effects models
-(\code{lmerMod}, \code{glmerMod}) for spicy 0.16+.
+Supports \code{lm} and \code{glm} (binomial / poisson / Gamma /
+inverse.gaussian / quasi families with any link). Mixed-effects
+models (\code{lmerMod}, \code{glmerMod}) are planned for spicy 0.16+.
 }
 \section{Vocabulary tokens}{
 Three vector arguments — \code{show_columns}, \code{show_fit_stats}, and

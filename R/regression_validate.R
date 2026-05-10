@@ -23,9 +23,11 @@
 
 # ---- Token vocabularies (canonical) ---------------------------------------
 
-# Phase 1 lm token vocabularies. Match dev/table_regression_design.md \u00A74.
+# Token vocabularies (lm + glm). Match dev/table_regression_design.md \u00A74.
 # Centralised here so validators, the rendering layer, and the test suite
-# share a single source of truth.
+# share a single source of truth. Class-aware token compatibility is
+# checked separately by `validate_class_appropriate_tokens()` and
+# `validate_class_appropriate_nested_stats()`.
 .regression_tokens <- list(
   show_columns = c(
     "B", "beta", "SE", "CI", "t", "p",
@@ -130,9 +132,9 @@ validate_models_input <- function(models) {
   if (length(bad) > 0L) {
     spicy_abort(
       c(
-        "Some `models` are not supported in spicy 0.13 (Phase 1: lm only).",
+        "Some `models` are not supported by `table_regression()`.",
         bad,
-        "i" = "All models must be `lm()` fits."
+        "i" = "Supported classes: `lm` and `glm`."
       ),
       class = "spicy_unsupported"
     )
@@ -580,8 +582,10 @@ validate_show_fit_stats <- function(show_fit_stats) {
   )
 }
 
-# Step 11: nested_stats (NULL = class-aware default applied later;
-# when supplied, validate against Phase 1 lm tokens)
+# Step 11: nested_stats vocabulary check (NULL = class-aware default
+# applied later in compute_nested_comparisons_lm()). Class-appropriateness
+# of supplied tokens is enforced separately by
+# `validate_class_appropriate_nested_stats()`.
 validate_nested_stats <- function(nested_stats) {
   if (is.null(nested_stats)) {
     return(invisible(NULL))

@@ -1,11 +1,17 @@
 # Per-model long-format extractor for table_regression().
 #
 # Architecture per dev/table_regression_design.md §2 layer 1.
-# Dispatch is on `class(fit)` (S3 in spirit; here Phase 1 = lm only,
-# implemented as a single internal function `extract_lm_phase1()`
-# rather than an S3 generic to keep Phase 1 lean. Phase 3 (glm) and
-# Phase 4 (merMod) will introduce a true S3 generic `extract_lm()`
-# with class-specific methods.)
+# Dispatch is on `class(fit)` (S3 in spirit; implemented as a single
+# internal function `extract_lm_phase1()` with class-aware branches
+# rather than a true S3 generic, since the lm and glm paths share
+# most of the scaffolding — only the per-coef inference, fit-stats
+# family, and a few transforms differ).
+#
+# The function name retains the historical `_phase1` suffix for
+# call-site compatibility; functionally it covers both lm (Phase 1)
+# and glm (Phase 3, including all 5 standardize methods, AME +
+# CR2 + Satterthwaite, partial_chi2, exponentiate, profile CI).
+# Phase 4 (merMod) is deferred and will introduce a true S3 generic.
 #
 # Returns a list with two main components:
 #   * `coefs`     — long-format data.frame, one row per
@@ -14,12 +20,6 @@
 #                   selected via `show_fit_stats`
 # Plus metadata fields consumed by the multi-model alignment,
 # rendering, and footer-generation layers.
-#
-# Phase 1 scope: B / SE / CI / t / p + reference-level placeholder
-# rows + singular detection + fit statistics. The vocabulary
-# extensions ("beta", "AME", "partial_f2", "partial_eta2",
-# "partial_omega2") have hook comments marking where the next
-# implementation steps will plug in.
 
 
 # ---- Public-internal entry point ------------------------------------------

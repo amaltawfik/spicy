@@ -211,16 +211,26 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
 }
 
 # Log-likelihood of the intercept-only ("null") model for a glm,
-# robust to formula transforms on the response (`I(round(y))`,
-# `log(y)`, `cbind(y, n - y)`, ...). A naive `update(fit, . ~ 1)`
-# fails when the response side itself contains function calls
-# because update reuses the LHS expression and tries to re-evaluate
-# the bare symbols against the model frame (whose columns are
-# named after the wrapped expression, not the inner symbol).
+# robust to:
+#   * formula transforms on the response (`I(round(y))`, `log(y)`,
+#     `cbind(y, n - y)`)
+#   * `offset(...)` terms in the formula or `offset = ` argument
+#   * `weights = ` argument
 #
-# Workaround: extract the *evaluated* response from the model
-# frame and refit on a fresh data.frame whose single column is
-# the response vector. Falls back to NA on any failure.
+# A naive `update(fit, . ~ 1)` fails when the response side itself
+# contains function calls because update reuses the LHS expression
+# and tries to re-evaluate the bare symbols against the model frame
+# (whose columns are named after the wrapped expression, not the
+# inner symbol). It also drops the offset by default — and an
+# intercept-only fit without the offset over-attributes outcome
+# variation to the intercept, producing pseudo-R² < 0 when the
+# full model includes a real-rate offset (Long & Freese 2014 §3.6
+# explicitly: the null model must carry the same offset as the full
+# model, otherwise pseudo-R² is not a valid 0–1 statistic).
+#
+# Workaround: extract the *evaluated* response, weights, and
+# offset from the model frame and refit on a fresh data.frame.
+# Falls back to NA on any failure.
 compute_intercept_only_loglik_glm <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) return(NA_real_)
@@ -228,9 +238,12 @@ compute_intercept_only_loglik_glm <- function(fit) {
   if (is.null(y)) return(NA_real_)
   fam <- stats::family(fit)
   weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
+
   args <- list(formula = y ~ 1, family = fam,
                 data = data.frame(y = y))
   if (!is.null(weights)) args$weights <- weights
+  if (!is.null(offset_vec)) args$offset <- offset_vec
   null_fit <- tryCatch(
     suppressWarnings(do.call(stats::glm, args)),
     error = function(e) NULL

@@ -13,12 +13,14 @@
 #     deviance_change (all)       — drop in residual deviance
 #     p               (all)       — p-value of the chosen test
 #
-# Default for lm: c("r2_change", "F", "p") — APA hierarchical
-# regression style.
-#
-# Phase 1 implements the lm path; the dispatcher below is structured
-# so that Phase 3 (glm) and Phase 4 (merMod) plug in by adding a new
-# `compute_one_pair_<class>()` and a class-aware default.
+# Class-aware default token sets, picked when nested_stats = NULL:
+#   * lm  : c("r2_change", "F", "p") — APA hierarchical regression
+#   * glm : c("LRT", "p")            — APA hierarchical-logistic
+#                                      (Hosmer & Lemeshow §3.5;
+#                                      Long & Freese 2014 §3.6)
+# Mixed-class hierarchies route through the lm path which em-dashes
+# the glm side of the variance-explained tokens. Phase 4 (merMod)
+# will add `compute_one_pair_merMod()` plus a third default branch.
 
 
 # ---- Public-internal entry point -----------------------------------------

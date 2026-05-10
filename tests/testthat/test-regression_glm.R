@@ -1224,3 +1224,60 @@ test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {
   expect_s3_class(cnd, "spicy_caveat")
   expect_s3_class(cnd, "spicy_warning")
 })
+
+
+# ============================================================================
+# AUDIT round 3: glm + offset + bootstrap/jackknife class-aware
+# ============================================================================
+
+test_that("AUDIT B3: pseudo_r2_* preserve offset in null model refit", {
+  # Bug: compute_intercept_only_loglik_glm dropped the offset, so the
+  # null model under-modelled the rate baseline and pseudo-R^2 went
+  # negative for offset glms (Long & Freese 2014 sec. 3.6: the null
+  # model must carry the same offset as the full model).
+  set.seed(1)
+  n <- 50L
+  d <- data.frame(y = rpois(n, 3), x = rnorm(n),
+                  exposure = runif(n, 1, 10))
+  fit <- glm(y ~ x + offset(log(exposure)), data = d, family = poisson)
+  mcf <- spicy:::compute_pseudo_r2_mcfadden(fit)
+  nag <- spicy:::compute_pseudo_r2_nagelkerke(fit)
+  # Both should be in [0, 1] for a well-defined offset model.
+  expect_true(is.finite(mcf) && mcf >= -0.01 && mcf <= 1)
+  expect_true(is.finite(nag) && nag >= -0.01 && nag <= 1)
+})
+
+test_that("AUDIT B4: glm + bootstrap vcov refits as glm (not lm)", {
+  # Bug: compute_lm_vcov_bootstrap hard-coded stats::lm() in the refit
+  # closure, so for a glm fit the bootstrap variance was computed for
+  # a misspecified linear model on the (often binary) response. SEs
+  # were underestimated by an order of magnitude.
+  fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  set.seed(42)
+  vc_boot <- spicy:::compute_lm_vcov(fit, type = "bootstrap", boot_n = 100L)
+  # SE order of magnitude under the FIX should be roughly comparable
+  # to (or larger than, for small n with binary data) the classical
+  # MLE SE. Under the BUG, bootstrap SEs were ~30x smaller.
+  se_classical <- sqrt(diag(vcov(fit)))
+  se_boot      <- sqrt(diag(vc_boot))
+  # All bootstrap SEs should be at least 50% of classical; the bug
+  # produced ratios around 0.03-0.07.
+  expect_true(all(se_boot / se_classical > 0.5),
+              info = sprintf("ratios: %s",
+                              paste(round(se_boot / se_classical, 3),
+                                     collapse = ", ")))
+})
+
+test_that("AUDIT B4: glm + jackknife vcov refits as glm (not lm)", {
+  set.seed(42)
+  d <- data.frame(y = rbinom(50, 1, 0.5), x = rnorm(50))
+  fit <- glm(y ~ x, data = d, family = binomial)
+  vc_jk <- spicy:::compute_lm_vcov(fit, type = "jackknife")
+  # SE on x should be on the same order of magnitude as classical
+  # (jackknife is conservative; ratio should be in [0.5, 5] under
+  # the FIX, was ~0.05 under the BUG).
+  se_classical <- sqrt(diag(vcov(fit)))["x"]
+  se_jk        <- sqrt(diag(vc_jk))["x"]
+  expect_true(se_jk / se_classical > 0.5 && se_jk / se_classical < 10,
+              info = sprintf("ratio = %.3f", se_jk / se_classical))
+})

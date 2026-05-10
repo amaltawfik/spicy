@@ -6,9 +6,9 @@
 #' psychology, public health, sociology, and biostatistics, with
 #' optional opt-in conventions for econometrics and clinical trials.
 #'
-#' Phase 1 supports `lm` only. Logistic / probit / Poisson regression
-#' (`glm`) is planned for spicy 0.15.0; mixed-effects models
-#' (`lmerMod`, `glmerMod`) for spicy 0.16+.
+#' Supports `lm` and `glm` (binomial / poisson / Gamma /
+#' inverse.gaussian / quasi families with any link). Mixed-effects
+#' models (`lmerMod`, `glmerMod`) are planned for spicy 0.16+.
 #'
 #' @details
 #' # Vocabulary tokens
@@ -199,13 +199,13 @@
 #' All downstream computations (vcov, AME, standardisation,
 #' `weighted_nobs`) extract the weights automatically.
 #'
-#' @param models An `lm` fitted model **or** a list of `lm` fits
-#'   (named or unnamed). Single fits are auto-promoted to a
-#'   one-element list internally. `glm`, `merMod`, and other
-#'   classes are rejected with an actionable error in Phase 1.
-#'   Raw data + formula is **not** accepted (fit-only API,
-#'   matching `broom`, `modelsummary`, `gtsummary`, and
-#'   `marginaleffects`).
+#' @param models An `lm` or `glm` fitted model **or** a list of
+#'   such fits (named or unnamed; lm and glm fits may be mixed in
+#'   the same list). Single fits are auto-promoted to a one-element
+#'   list internally. `merMod` and other classes are rejected with
+#'   an actionable error. Raw data + formula is **not** accepted
+#'   (fit-only API, matching `broom`, `modelsummary`, `gtsummary`,
+#'   and `marginaleffects`).
 #' @param vcov Variance-covariance estimator. A single string
 #'   (one of `"classical"`, `"HC0"` to `"HC5"`, `"CR0"` to
 #'   `"CR3"`, `"bootstrap"`, `"jackknife"`) recycled to all models,
