@@ -98,28 +98,55 @@ validate_models_input <- function(models) {
     )
   }
 
-  # Step 1c: when the list is named, names must be unique. Duplicate
-  # names would silently collide in the long-format model_id key,
-  # causing one fit to overwrite the other in extract / align /
-  # render \u2014 a silent data loss that's worth catching upfront.
+  # Step 1c: when the list is named, names must be unique AND non-
+  # empty. Duplicate names would silently collide in the long-format
+  # model_id key, causing one fit to overwrite the other in extract /
+  # align / render \u2014 a silent data loss. Empty names ("") would
+  # downstream trigger a cryptic 'zero-length variable name' error
+  # at the rbind step. Both caught upfront with actionable messages.
   nms <- names(models)
-  if (!is.null(nms) && any(nzchar(nms))) {
-    dupes <- unique(nms[duplicated(nms) & nzchar(nms)])
-    if (length(dupes) > 0L) {
+  if (!is.null(nms)) {
+    # Empty-string names: partial naming ("a", "") is more confusing
+    # than no naming, and "" is never useful as a model_id. If ANY
+    # name is empty while ANY is set, refuse upfront.
+    is_empty <- !nzchar(nms)
+    is_set   <- any(nzchar(nms))
+    if (is_set && any(is_empty)) {
+      bad_pos <- which(is_empty)
       spicy_abort(
         c(
           sprintf(
-            "Duplicate name(s) in `models` list: %s.",
-            paste(shQuote(dupes), collapse = ", ")
+            paste0("Empty name(s) at position(s) %s of the `models` ",
+                    "list."),
+            paste(bad_pos, collapse = ", ")
           ),
           "i" = paste0(
-            "Names of the models list are used as model IDs and ",
-            "must be unique. Drop the names (positional list) or ",
-            "rename the duplicates."
+            "Names of the models list are used as model IDs in the ",
+            "rendered table. Either name ALL elements, or drop the ",
+            "names (positional list -> auto-labelled M1, M2, ...)."
           )
         ),
         class = "spicy_invalid_input"
       )
+    }
+    if (is_set) {
+      dupes <- unique(nms[duplicated(nms) & nzchar(nms)])
+      if (length(dupes) > 0L) {
+        spicy_abort(
+          c(
+            sprintf(
+              "Duplicate name(s) in `models` list: %s.",
+              paste(shQuote(dupes), collapse = ", ")
+            ),
+            "i" = paste0(
+              "Names of the models list are used as model IDs and ",
+              "must be unique. Drop the names (positional list) or ",
+              "rename the duplicates."
+            )
+          ),
+          class = "spicy_invalid_input"
+        )
+      }
     }
   }
 

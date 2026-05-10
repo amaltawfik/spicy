@@ -390,23 +390,34 @@ detect_factor_terms <- function(fit) {
   }
   cf_names <- names(stats::coef(fit))
 
-  factor_terms <- character(0)
   out <- list()
   for (var in names(xlevels)) {
     # Only main-effect factor terms. Interaction terms (containing ":")
     # use these factors but get their own coef rows by R's coding;
     # we don't emit reference rows for them.
-    if (var %in% trms) {
-      lvls <- xlevels[[var]]
-      first_level_coef <- paste0(var, lvls[1L])
-      dropped <- !(first_level_coef %in% cf_names)
-      out[[length(out) + 1L]] <- list(
-        factor_term = var,
-        reference_level = if (dropped) lvls[1L] else NA_character_,
-        reference_dropped = dropped,
-        levels = lvls
-      )
-    }
+    if (!(var %in% trms)) next
+    lvls <- xlevels[[var]]
+    # Treatment-contrast detection: at least one coef must follow the
+    # canonical `<var><level>` pattern (i.e., `paste0(var, level)` is
+    # in coef names). Ordered factors with polynomial contrasts
+    # (R's default for `Ord.factor`) instead produce names like
+    # `<var>.L`, `<var>.Q`, `<var>.C` — there is no "reference level"
+    # in the contr.treatment sense, so we skip factor-grouping
+    # entirely and let the renderer treat the .L/.Q/.C coefs as
+    # plain numeric rows. Same for any user-supplied non-treatment
+    # contrast (Helmert, sum-to-zero, custom).
+    candidate_level_coefs <- paste0(var, lvls)
+    is_treatment <- any(candidate_level_coefs %in% cf_names)
+    if (!is_treatment) next
+
+    first_level_coef <- candidate_level_coefs[1L]
+    dropped <- !(first_level_coef %in% cf_names)
+    out[[length(out) + 1L]] <- list(
+      factor_term = var,
+      reference_level = if (dropped) lvls[1L] else NA_character_,
+      reference_dropped = dropped,
+      levels = lvls
+    )
   }
   out
 }

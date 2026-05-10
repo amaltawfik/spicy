@@ -1460,3 +1460,229 @@ test_that("AUDIT: beta token without standardized -> hint lists all 5 methods", 
                  info = paste("missing method =", m))
   }
 })
+
+
+# ============================================================================
+# AUDIT round 5: B5 critical bug -- multi-model column alignment
+# ============================================================================
+
+test_that("AUDIT B5: non-alphabetical model names map to correct columns", {
+  # The bug: align_extracts() sorted coefs by (order_idx, estimate_type,
+  # model_id), and the renderer derived model_ids via
+  # unique(coefs$model_id) which returns the post-sort alphabetical
+  # order. The user's model_labels (input order) were then zipped in
+  # the wrong order -- column data was swapped vs. column header.
+  #
+  # Reproducer: name list with non-alphabetical names so the input
+  # order ("Z", "A") differs from alphabetical ("A", "Z"). The B value
+  # under "Z: B" must come from the model the user passed as "Z", NOT
+  # the alphabetically-first model.
+  m1 <- lm(mpg ~ wt,           data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl,     data = mtcars)
+  out <- table_regression(list("Z" = m1, "A" = m2))
+  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  # Z has only intercept + wt; A has intercept + wt + cyl.
+  # Z: B for the cyl row must be blank (Z lacks cyl); A: B has -1.51.
+  cyl_row <- df[df$Variable == "cyl", , drop = FALSE]
+  expect_equal(trimws(cyl_row$`Z: B`), "")
+  expect_match(cyl_row$`A: B`, "-1\\.51")
+
+  # Also: the wt coefficient for Z (lm without cyl) is -5.34;
+  # for A (lm with cyl) it's -3.19. They MUST not be swapped.
+  wt_row <- df[df$Variable == "wt", , drop = FALSE]
+  expect_match(wt_row$`Z: B`, "-5\\.34")
+  expect_match(wt_row$`A: B`, "-3\\.19")
+})
+
+test_that("AUDIT B5: mixed lm + glm with non-alphabetical labels", {
+  # The original audit reproducer: lm + glm with exponentiate. Under
+  # the bug, the OLS column got the OR header AND the binomial values.
+  m_lm  <- lm(mpg ~ wt, data = mtcars)
+  m_glm <- glm(am ~ mpg, data = mtcars, family = binomial)
+  out <- table_regression(list("OLS" = m_lm, "Logit" = m_glm),
+                            exponentiate = TRUE)
+  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  # OLS column header must be "OLS: B" (no exp on lm)
+  expect_true("OLS: B" %in% names(df))
+  # Logit column header must be "Logit: OR" (binomial logit -> OR)
+  expect_true("Logit: OR" %in% names(df))
+  # Intercept value under OLS: B is the lm intercept (37.29), NOT the
+  # exp() of the binomial intercept (which would be ~1.36e-3 displayed
+  # as 0.00).
+  int_row <- df[df$Variable == "(Intercept)", , drop = FALSE]
+  expect_match(int_row$`OLS: B`, "37\\.29")
+  expect_match(int_row$`Logit: OR`, "0\\.00")
+  # mpg row: OLS has nothing (lm uses wt), Logit has 1.36 (exp(0.31))
+  mpg_row <- df[df$Variable == "mpg", , drop = FALSE]
+  expect_equal(trimws(mpg_row$`OLS: B`), "")
+  expect_match(mpg_row$`Logit: OR`, "1\\.36")
+  # Outcome row: mpg under OLS, am under Logit
+  out_row <- df[df$Variable == "Outcome", , drop = FALSE]
+  expect_equal(trimws(out_row$`OLS: B`), "mpg")
+  expect_equal(trimws(out_row$`Logit: OR`), "am")
+})
+
+test_that("AUDIT B5: 3-model with non-alphabetical names preserves input order", {
+  m1 <- lm(mpg ~ wt,             data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl,       data = mtcars)
+  m3 <- lm(mpg ~ wt + cyl + hp,  data = mtcars)
+  out <- table_regression(list("Z" = m1, "A" = m2, "M" = m3))
+  cols <- names(as.data.frame(out, stringsAsFactors = FALSE))
+  # First non-Variable col must be Z (input position 1), then A, then M
+  data_cols <- cols[cols != "Variable"]
+  first_per_model <- function(prefix) {
+    head(grep(paste0("^", prefix, ":"), data_cols), 1L)
+  }
+  expect_true(first_per_model("Z") < first_per_model("A"))
+  expect_true(first_per_model("A") < first_per_model("M"))
+})
+
+test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl, data = mtcars)
+  ext1 <- spicy:::extract_lm_phase1(m1, model_id = "Z")
+  ext2 <- spicy:::extract_lm_phase1(m2, model_id = "A")
+  aligned <- spicy:::align_extracts(list(ext1, ext2))
+  wide <- spicy:::pivot_aligned_wide(aligned,
+                                       model_labels = c("Z-label", "A-label"))
+  cols <- names(wide)
+  z_est <- grep("^Z-label__estimate", cols)[1]
+  a_est <- grep("^A-label__estimate", cols)[1]
+  expect_true(!is.na(z_est) && !is.na(a_est))
+  expect_true(z_est < a_est)
+  # Z's intercept value must be the lm(mpg ~ wt) intercept (37.29),
+  # NOT the lm(mpg ~ wt + cyl) intercept (39.69) — confirms the bug
+  # is fixed at the data level (input model_id Z paired with the
+  # first input fit, alphabetical re-sort notwithstanding).
+  int_row <- wide[wide$term == "(Intercept)" &
+                    wide$estimate_type == "B", ]
+  expect_equal(int_row[["Z-label__estimate"]], 37.28512627,
+               tolerance = 1e-3)
+  expect_equal(int_row[["A-label__estimate"]], 39.68616,
+               tolerance = 1e-3)
+})
+
+
+# ============================================================================
+# AUDIT round 5: B6 (empty model name) + B7 (poly contrasts)
+# ============================================================================
+
+test_that("AUDIT B6: empty model name (set programmatically) is rejected", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl, data = mtcars)
+  models <- list(m1, m2)
+  names(models) <- c("", "B")
+  err <- tryCatch(table_regression(models),
+                   spicy_invalid_input = function(e) e)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "Empty name", fixed = TRUE)
+  expect_match(conditionMessage(err), "position(s) 1", fixed = TRUE)
+})
+
+test_that("AUDIT B6: existing duplicate-name validator still fires cleanly", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl, data = mtcars)
+  models <- list(m1, m2)
+  names(models) <- c("A", "A")
+  err <- tryCatch(table_regression(models),
+                   spicy_invalid_input = function(e) e)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "Duplicate name", fixed = TRUE)
+})
+
+test_that("AUDIT B7: ordered factor with poly contrasts -- no bogus ref row", {
+  # Bug: detect_factor_terms() assumed contr.treatment naming
+  # (`<var><level>`). For ordered factors R uses contr.poly which
+  # produces `<var>.L`, `<var>.Q`, `<var>.C` -- no "reference level"
+  # in the contr.treatment sense. The bug was: a bogus reference row
+  # was emitted under a "education:" factor header, while the .L /
+  # .Q coefs were rendered as plain numeric rows. Confusing and
+  # incorrect.
+  fit <- glm(dentist_12m ~ age + sex + education,
+              data = sochealth, family = binomial)
+  out <- table_regression(fit)
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  # NO "education:" factor header (poly coding -> no ref level)
+  expect_false(any(vars == "education:"))
+  # NO reference row for education ("Lower secondary (ref.)")
+  expect_false(any(grepl("Lower secondary", vars)))
+  # The two poly contrasts ARE displayed as plain rows
+  expect_true("education.L" %in% vars)
+  expect_true("education.Q" %in% vars)
+  # sex (treatment factor) still groups correctly with ref row
+  expect_true(any(grepl("^sex:", vars)))
+  expect_true(any(grepl("Female.*ref", vars)))
+})
+
+test_that("AUDIT B7: treatment-coded factor unchanged (regression check)", {
+  # Sanity: factors using contr.treatment (R's default for unordered
+  # factors) still get the factor header + reference row + indented
+  # levels.
+  mt <- mtcars
+  mt$cyl <- factor(mt$cyl)  # unordered factor -> contr.treatment
+  fit <- glm(am ~ mpg + cyl, data = mt, family = binomial)
+  out <- table_regression(fit)
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_true(any(grepl("^cyl:", vars)))     # factor header present
+  expect_true(any(grepl("4.*ref", vars)))    # ref row for cyl=4
+})
+
+
+# ============================================================================
+# AUDIT round 5: B8 (extreme-value display)
+# ============================================================================
+
+test_that("AUDIT B8: format_number switches to scientific for huge values", {
+  expect_equal(spicy:::format_number(1.747e11, 2L), "1.75e+11")
+  expect_equal(spicy:::format_number(-2.13e12, 2L), "-2.13e+12")
+  expect_equal(spicy:::format_number(1e7, 2L), "1.00e+07")
+})
+
+test_that("AUDIT B8: format_number stays fixed-decimal below 1e+7", {
+  expect_equal(spicy:::format_number(9999999, 2L), "9999999.00")
+  expect_equal(spicy:::format_number(1234.56, 2L), "1234.56")
+})
+
+test_that("AUDIT B8: small values respect digits contract (round to zero)", {
+  # 1e-3 at digits = 2 -> "0.00" (fixed), NOT "1.00e-03" (scientific).
+  # This matches Stata convention and keeps decimal alignment stable.
+  # Users wanting sub-precision visible can request more digits.
+  expect_equal(spicy:::format_number(1e-3, 2L), "0.00")
+  expect_equal(spicy:::format_number(1e-7, 2L), "0.00")
+  # Genuine machine-epsilon noise must render as 0.00, NOT scientific.
+  # This was the original B8 audit failure: standardized refit
+  # intercept noise (8e-17) was being shown as "8.05e-17" and
+  # broke decimal alignment in the standardized stars test.
+  expect_equal(spicy:::format_number(8.05e-17, 2L), "0.00")
+})
+
+test_that("AUDIT B8: zero stays as 0.00 (no scientific)", {
+  expect_equal(spicy:::format_number(0, 2L), "0.00")
+})
+
+test_that("AUDIT B8: glm exp huge OR display is readable", {
+  fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
+  out <- table_regression(fit, exponentiate = TRUE)
+  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  int_row <- df[df$Variable == "(Intercept)", , drop = FALSE]
+  # Intercept OR ~ 1.75e+11 -- must be in scientific notation, not
+  # 12 digits wide
+  expect_match(trimws(int_row$OR), "e\\+", perl = TRUE)
+  # Must have mantissa . digits + e + sign + exponent
+  expect_match(trimws(int_row$OR), "^-?\\d+\\.\\d+e\\+\\d+$", perl = TRUE)
+})
+
+test_that("AUDIT B8: standardized refit intercept noise renders as 0.00", {
+  # Regression check for the bug surfaced by polish round 5: the
+  # centered-refit intercept produces machine-epsilon non-zero
+  # (e.g. 8.05e-17). Pre-fix this was breaking decimal alignment
+  # in the standardized + stars test by adding trailing space to
+  # the wt beta cell.
+  fit <- lm(mpg ~ wt, data = mtcars)
+  out <- table_regression(fit, standardized = "refit", stars = TRUE)
+  int_row <- out[out$Variable == "(Intercept)", , drop = FALSE]
+  # beta column for intercept must round to 0.00, not show as
+  # scientific noise.
+  beta_int <- trimws(int_row$`β`)
+  expect_equal(beta_int, "0.00")
+})

@@ -111,6 +111,11 @@ align_extracts <- function(
     factor_ref_levels = factor_ref_levels,
     outcome_labels_auto = outcome_labels_auto,
     exp_headers_auto = exp_headers_auto,
+    # Canonical model_id order (input order from `extracts`). The
+    # renderer must use this — `unique(coefs$model_id)` returns the
+    # post-sort alphabetical order, which de-aligns labels and
+    # exp-headers (B5 audit fix).
+    model_ids = model_ids,
     n_models = length(extracts)
   )
 }
@@ -178,7 +183,10 @@ pivot_aligned_wide <- function(
     return(empty_coefs_wide(value_fields, model_labels))
   }
 
-  model_ids <- unique(coefs$model_id)
+  # Use canonical model_id order from `aligned` (input order from
+  # the user). `unique(coefs$model_id)` would return the post-sort
+  # alphabetical order, which de-aligns label_map (B5 audit fix).
+  model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
   if (is.null(model_labels)) {
     model_labels <- paste0("Model ", seq_len(n_models))

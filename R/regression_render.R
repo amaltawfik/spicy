@@ -64,7 +64,12 @@ render_regression_table <- function(
     return(empty_render_table())
   }
 
-  model_ids <- unique(coefs$model_id)
+  # Use the canonical model_id order from `aligned` (input order from
+  # the user). `unique(coefs$model_id)` would return the post-sort
+  # alphabetical order, which de-aligns label_map / exp_headers / etc.
+  # Falls back to unique() for older callers that don't supply
+  # `aligned$model_ids`.
+  model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
   if (is.null(model_labels)) {
     model_labels <- if (n_models == 1L) "" else paste0("Model ", seq_len(n_models))
