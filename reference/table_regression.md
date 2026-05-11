@@ -715,10 +715,13 @@ table_regression(
 # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 table_regression(fit, standardized = "refit")
 
-# Custom column set: B, partial \eqn{f^2}{f^2}, AME with CI, p
+# Custom column set with AME displayed alongside its own p-value.
+# `"p"` always refers to the B coefficient; for the AME-specific
+# p-value use `"AME_p"`. Placing AME after the B p-value makes
+# the "which p belongs to what" reading unambiguous.
 table_regression(
   fit,
-  show_columns = c("B", "partial_f2", "AME", "p")
+  show_columns = c("B", "p", "partial_f2", "AME", "AME_p")
 )
 
 # Pedagogical side-by-side SE comparison (same fit, three vcovs)
