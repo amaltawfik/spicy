@@ -18,6 +18,7 @@ build_ascii_table(
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
+  center_headers = FALSE,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   ...
@@ -79,6 +80,16 @@ build_ascii_table(
   Integer vector of column indices to center-align. Defaults to
   `integer(0)` (no centered columns). Columns not in `align_left_cols`
   or `align_center_cols` are right-aligned.
+
+- center_headers:
+
+  Logical. When `TRUE`, column headers are centered above their column
+  content even when the data itself is right-aligned (the publication
+  convention for coefficient / summary tables; matches Stata regress /
+  parameters::model_parameters / modelsummary). Left-aligned columns
+  (per `align_left_cols`) keep their header on the left. Defaults to
+  `FALSE` for backward compatibility; the `print.spicy_regression_table`
+  method enables it.
 
 - group_sep_rows:
 

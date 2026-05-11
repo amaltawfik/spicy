@@ -21,6 +21,7 @@ spicy_print_table(
   lines_color = "darkgrey",
   align_left_cols = NULL,
   align_center_cols = integer(0),
+  center_headers = FALSE,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   ...
@@ -83,6 +84,13 @@ spicy_print_table(
 
   Integer vector of column indices to center-align. Defaults to
   `integer(0)`.
+
+- center_headers:
+
+  Logical. When `TRUE`, column headers are centered above their column
+  content even when the data itself is right-aligned. Passed through to
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
+  Defaults to `FALSE`.
 
 - group_sep_rows:
 

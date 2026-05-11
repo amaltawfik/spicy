@@ -170,7 +170,7 @@ a single-model table with <code>B</code>, <code>SE</code>,
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.20    1.66    [61.95, 68.45]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05    0.03    [-0.01,  0.11]     .130 </span></span>
@@ -202,7 +202,7 @@ small-sample-friendly default (Long and Ervin 2000):</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.20    1.61    [62.05, 68.35]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05    0.03    [-0.01,  0.11]     .127 </span></span>
@@ -242,7 +242,7 @@ orchestrator detects the column name and prints it in the footer:</p>
 <span><span class="co">#&gt;   bread.mlm sandwich</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.00    1.74    [60.49, 69.51]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05    0.04    [-0.05,  0.15]     .247 </span></span>
@@ -286,7 +286,7 @@ df:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.00    1.74    [60.49, 69.51]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05    0.04    [-0.05,  0.15]     .247 </span></span>
@@ -301,7 +301,7 @@ df:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>      0.02                                    </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>      0.02                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>                   AME    AME p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>          AME            AME p  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>                                </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>    0.05 [-0.05, 0.15]     .247 </span></span>
@@ -363,7 +363,7 @@ auto-injected into <code>show_columns</code> immediately after
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B        β      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B         β       SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.20    -0.10    1.66    [61.95, 68.45]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05     0.04    0.03    [-0.01,  0.11]     .130 </span></span>
@@ -404,7 +404,7 @@ cell:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B        p                   η² </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B         p             η²          </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     64.49    &lt;.001                      </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.03     .344    0.00 [0.00, 0.01] </span></span>
@@ -421,7 +421,7 @@ cell:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>      0.22                               </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>      0.22                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>                  ω² </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         ω²          </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>                     </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>   0.00 [0.00, 0.01] </span></span>
@@ -470,7 +470,7 @@ within the same call. Available methods are the same as in
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, p_adjust <span class="op">=</span> <span class="st">"bonferroni"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     64.49    1.48    [61.58, 67.40]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.03    0.03    [-0.03,  0.08]    1.000 </span></span>
@@ -529,7 +529,7 @@ Multiple patterns combine with logical OR.</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"^smoking"</span>, <span class="st">"^bmi$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>         B      SE           95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>     B        SE        95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  smoking:      <span style="color: #9E9E9E;">│</span>                                             </span></span>
 <span><span class="co">#&gt;    No (ref.)   <span style="color: #9E9E9E;">│</span>      —       —             —          —     </span></span>
@@ -545,7 +545,7 @@ Multiple patterns combine with logical OR.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, drop <span class="op">=</span> <span class="st">"^education"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     62.12    3.23    [55.78, 68.45]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.02    0.03    [-0.03,  0.08]     .407 </span></span>
@@ -583,7 +583,7 @@ labelled:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m_wellbeing</span>, <span class="va">m_bmi</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression comparison</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>                         Model 1: B    Model 1: SE </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>             Model 1: B               Model 1: SE  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Outcome           <span style="color: #9E9E9E;">│</span>   WHO-5 wellbeing index (0-100)                   </span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>                              65.20           1.66 </span></span>
@@ -599,7 +599,7 @@ labelled:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>                               0.02                </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>                               0.02                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 1: 95% CI    Model 1: p            Model 2: B </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 1: 95% CI    Model 1: p        Model 2: B      </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Outcome           <span style="color: #9E9E9E;">│</span>                                    Body mass index    </span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>    [61.95, 68.45]         &lt;.001                 23.98 </span></span>
@@ -615,7 +615,7 @@ labelled:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>                                                  0.02 </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>                                                  0.02 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 2: SE    Model 2: 95% CI    Model 2: p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 2: SE    Model 2: 95% CI    Model 2: p  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Outcome           <span style="color: #9E9E9E;">│</span>                                                </span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>          0.40     [23.20, 24.75]         &lt;.001 </span></span>
@@ -654,7 +654,7 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 1: B    Model 1: SE    Model 1: 95% CI </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 1: B    Model 1: SE    Model 1: 95% CI  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>        64.70           1.66     [61.45, 67.95] </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>         0.05           0.03     [-0.01,  0.11] </span></span>
@@ -670,7 +670,7 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>         0.02                                   </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>         0.02                                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 1: p    Model 2: B    Model 2: SE </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 1: p    Model 2: B    Model 2: SE  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>        &lt;.001         65.00           1.67 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>         .118          0.05           0.03 </span></span>
@@ -686,7 +686,7 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>                       0.02                </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>                       0.02                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 2: 95% CI    Model 2: p    Model 3: B </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 2: 95% CI    Model 2: p    Model 3: B  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>    [61.73, 68.27]         &lt;.001         80.57 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>    [-0.01,  0.11]          .109          0.07 </span></span>
@@ -702,7 +702,7 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="co">#&gt;  R²                <span style="color: #9E9E9E;">│</span>                                          0.04 </span></span>
 <span><span class="co">#&gt;  Adj.R²            <span style="color: #9E9E9E;">│</span>                                          0.04 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   Model 3: SE    Model 3: 95% CI    Model 3: p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  Model 3: SE    Model 3: 95% CI    Model 3: p  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>          3.37     [73.97, 87.18]         &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>          0.03     [ 0.01,  0.13]          .019 </span></span>
@@ -751,7 +751,7 @@ swaps in instead of <code>R² / Adj.R²</code>:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>       B       SE             95% CI       p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>    B       SE          95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>   25.89    12.19    [  1.99, 49.79]    .034 </span></span>
 <span><span class="co">#&gt;  mpg               <span style="color: #9E9E9E;">│</span>   -0.32     0.24    [ -0.79,  0.15]    .176 </span></span>
@@ -781,7 +781,7 @@ p-value are invariant under monotone transformation:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>          OR          SE              95% CI       p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>     OR           SE            95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>    1.75e+11    2.13e+12    [7.30, 4.18e+21]    .034 </span></span>
 <span><span class="co">#&gt;  mpg               <span style="color: #9E9E9E;">│</span>    0.72        0.17        [0.45, 1.16    ]    .176 </span></span>
@@ -810,7 +810,7 @@ and numeric terms (1 df) read at a glance:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit2</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"partial_chi2"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>       B          χ²        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>    B         χ²         p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>   -8.34                 .104 </span></span>
 <span><span class="co">#&gt;  mpg               <span style="color: #9E9E9E;">│</span>    0.37    4.53 (1)     .080 </span></span>
@@ -920,7 +920,7 @@ named numeric vector for custom thresholds:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, stars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>            B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>      B          SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     65.20***    1.66    [61.95, 68.45]    &lt;.001 </span></span>
 <span><span class="co">#&gt;  age               <span style="color: #9E9E9E;">│</span>      0.05       0.03    [-0.01,  0.11]     .130 </span></span>
@@ -970,7 +970,7 @@ European decimal notation and automatically changes the CI separator to
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable             <span style="color: #9E9E9E;">│</span>         B      SE            95% CI        p </span></span>
+<span><span class="co">#&gt;  Variable             <span style="color: #9E9E9E;">│</span>     B        SE         95% CI          p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────┼──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Age (years)          <span style="color: #9E9E9E;">│</span>      0,03    0,03    [-0,03;  0,08]     ,343 </span></span>
 <span><span class="co">#&gt;  Sex: [ref: Female]   <span style="color: #9E9E9E;">│</span>                                              </span></span>
