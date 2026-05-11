@@ -58,6 +58,8 @@ navbar:
           href: articles/table-continuous.html
         - text: Model-based continuous summary tables in R
           href: articles/table-continuous-lm.html
+        - text: Regression coefficient tables in R
+          href: articles/table-regression.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html
     github:
@@ -76,6 +78,7 @@ articles:
       - table-categorical
       - table-continuous
       - table-continuous-lm
+      - table-regression
       - summary-tables-reporting
 
 reference:
@@ -113,6 +116,7 @@ reference:
       - table_categorical
       - table_continuous
       - table_continuous_lm
+      - table_regression
   - title: Export
     contents:
       - copy_clipboard
@@ -142,7 +146,9 @@ reference:
       - as.data.frame.spicy_categorical_table
       - as.data.frame.spicy_continuous_lm_table
       - as.data.frame.spicy_continuous_table
+      - as.data.frame.spicy_regression_table
       - tidy.spicy_categorical_table
       - tidy.spicy_continuous_lm_table
       - tidy.spicy_continuous_table
+      - tidy.spicy_regression_table
       - spicy_tables
