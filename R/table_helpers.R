@@ -20,6 +20,19 @@
 # the configured decimal mark. NA -> "" so blank cells render
 # cleanly. Vectorised by recursion -- the per-element branch is the
 # common case in the print methods.
+#
+# Auto-switch to scientific notation when the magnitude is too
+# extreme for a fixed-decimal display to be readable:
+#   * |x| >= 1e+7         : scientific (e.g., exp(intercept) for a
+#                           sparse logistic regression can hit 1e+11+;
+#                           even moderate log-odds like 12 gives ~1.6e+5
+#                           which fits, but exp(20) = 4.85e+8 needs sci)
+#   * |x| <  1e-4 (and !=0): scientific (e.g., very small probabilities
+#                           or near-zero ORs after exp())
+# Below those thresholds the conventional fixed-decimal rendering
+# preserves table readability and decimal alignment. Matches the
+# convention used by parameters / modelsummary / Stata, which all
+# auto-switch around the same magnitudes.
 format_number <- function(x, digits = 2L, decimal_mark = ".") {
   if (length(x) > 1L) {
     return(vapply(
@@ -33,7 +46,23 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   if (is.na(x)) {
     return("")
   }
-  out <- formatC(x, digits = digits, format = "f")
+  abs_x <- abs(x)
+  # Switch to scientific notation only for HUGE values (>= 1e+7) where
+  # fixed-decimal would produce unreadable 10+ digit integers. For
+  # small values, the requested `digits` is the user's precision
+  # contract: if a value rounds to "0.00" at digits = 2, it should
+  # display as "0.00" (not "1.63e-03") — this matches Stata's
+  # behaviour and is the only way to keep decimal-alignment stable
+  # in standard cases. Users who want sub-precision values visible
+  # can request more `digits`.
+  use_scientific <- is.finite(x) && x != 0 && abs_x >= 1e+7
+  if (use_scientific) {
+    # `formatC(format = "e")` gives "1.75e+11" with `digits` mantissa
+    # decimals. Honour the user's `digits` (2 by default).
+    out <- formatC(x, digits = digits, format = "e")
+  } else {
+    out <- formatC(x, digits = digits, format = "f")
+  }
   if (!identical(decimal_mark, ".")) {
     out <- chartr(".", decimal_mark, out)
   }

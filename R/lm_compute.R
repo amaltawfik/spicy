@@ -120,6 +120,12 @@ compute_lm_vcov_bootstrap <- function(
     weights <- stats::weights(fit)
   }
 
+  # Class-aware refit: glm fits must be re-fit with stats::glm and the
+  # original family / link, otherwise the bootstrap variance is computed
+  # for a misspecified linear model on the (often binary) response. The
+  # original family is captured once and reused across replicates.
+  is_glm <- inherits(fit, "glm")
+  fam <- if (is_glm) stats::family(fit) else NULL
   refit <- function(boot_idx) {
     sub_data <- mf[boot_idx, , drop = FALSE]
     sub_w <- if (is.null(weights)) NULL else weights[boot_idx]
@@ -127,10 +133,18 @@ compute_lm_vcov_bootstrap <- function(
     if (!is.null(sub_w)) {
       args$weights <- sub_w
     }
-    tryCatch(
-      suppressWarnings(do.call(stats::lm, args)),
-      error = function(e) NULL
-    )
+    if (is_glm) {
+      args$family <- fam
+      tryCatch(
+        suppressWarnings(do.call(stats::glm, args)),
+        error = function(e) NULL
+      )
+    } else {
+      tryCatch(
+        suppressWarnings(do.call(stats::lm, args)),
+        error = function(e) NULL
+      )
+    }
   }
 
   beta_boot <- matrix(NA_real_, nrow = boot_n, ncol = k)
@@ -222,6 +236,11 @@ compute_lm_vcov_jackknife <- function(
     weights <- stats::weights(fit)
   }
 
+  # Class-aware refit: glm fits must be re-fit with stats::glm and the
+  # original family / link (see `compute_lm_vcov_bootstrap` for the
+  # same rationale).
+  is_glm <- inherits(fit, "glm")
+  fam <- if (is_glm) stats::family(fit) else NULL
   refit <- function(jack_idx) {
     sub_data <- mf[jack_idx, , drop = FALSE]
     sub_w <- if (is.null(weights)) NULL else weights[jack_idx]
@@ -229,10 +248,18 @@ compute_lm_vcov_jackknife <- function(
     if (!is.null(sub_w)) {
       args$weights <- sub_w
     }
-    tryCatch(
-      suppressWarnings(do.call(stats::lm, args)),
-      error = function(e) NULL
-    )
+    if (is_glm) {
+      args$family <- fam
+      tryCatch(
+        suppressWarnings(do.call(stats::glm, args)),
+        error = function(e) NULL
+      )
+    } else {
+      tryCatch(
+        suppressWarnings(do.call(stats::lm, args)),
+        error = function(e) NULL
+      )
+    }
   }
 
   if (is.null(cluster)) {
@@ -524,11 +551,15 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
   list(r2 = r2, adj_r2 = adj_r2, f2 = f2, d = d, g = g, omega2 = omega2)
 }
 
-# Internal: partial ω² computation for a focal term, given the
-# partial F-stat already extracted via `extract_lm_focal_f_stat`.
-# Mirrors `compute_lm_omega2()`'s formula but uses focal-term
-# SS_effect = F × df_focal × MSE_full instead of the model-level
-# SS_effect implied by the global F.
+# Internal: partial ω² for a focal term using the Olejnik & Algina
+# (2003) formula (also used by `effectsize::omega_squared(partial =
+# TRUE)` and SPSS UNIANOVA):
+#   ω²_partial = (SS_effect − df_effect · MSE) / (SS_effect + (N − df_effect) · MSE)
+# where SS_effect = F · df_effect · MSE_full and MSE_full = SS_resid / df_resid.
+# Note this differs from the *model-level* Hays ω² in `compute_lm_omega2()`
+# (denominator uses SS_total): the partial form normalises by the
+# effect-only sum of squares plus residual sum of squares, which is
+# the correct partial-effect quantity in a covariate-adjusted model.
 compute_lm_partial_omega2 <- function(fit, fs) {
   rss_full <- stats::deviance(fit)
   if (!is.finite(rss_full) || rss_full <= 0) {
@@ -536,29 +567,12 @@ compute_lm_partial_omega2 <- function(fit, fs) {
   }
   mse_full <- rss_full / fs$df2
   ss_focal <- fs$f_obs * fs$df1 * mse_full
-
-  y <- stats::model.response(stats::model.frame(fit))
-  if (!is.numeric(y)) {
+  n <- stats::nobs(fit)
+  if (!is.finite(n) || n <= fs$df1) {
     return(NA_real_)
   }
-  w <- stats::weights(fit)
-  if (is.null(w)) {
-    w <- rep(1, length(y))
-  }
-  if (length(w) != length(y)) {
-    return(NA_real_)
-  }
-  sw <- sum(w)
-  if (!is.finite(sw) || sw <= 0) {
-    return(NA_real_)
-  }
-  y_bar_w <- sum(w * y) / sw
-  ss_total <- sum(w * (y - y_bar_w)^2)
-  if (!is.finite(ss_total) || ss_total <= 0) {
-    return(NA_real_)
-  }
-
-  omega2 <- (ss_focal - fs$df1 * mse_full) / (ss_total + mse_full)
+  omega2 <- (ss_focal - fs$df1 * mse_full) /
+    (ss_focal + (n - fs$df1) * mse_full)
   if (!is.finite(omega2)) {
     return(NA_real_)
   }
@@ -813,6 +827,17 @@ extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
   )
 }
 
+# CI for η² / ω² via noncentral-F inversion (Steiger 2004). Two
+# regimes, switched by `focal_term`:
+#   * `focal_term = NULL` (model-level R²): bounds = ncp / (ncp + N)
+#     where N = df1 + df2 + 1; this matches the global-F partition
+#     SS_total = SS_model + SS_resid, with df_total = N - 1.
+#   * `focal_term != NULL` (partial η²): bounds = ncp / (ncp + df2);
+#     this matches the partial-η² definition
+#     η²_p = SS_effect / (SS_effect + SS_error) (Smithson 2003;
+#     used by `effectsize::eta_squared(partial = TRUE)`).
+# In a covariate-adjusted model the two formulas diverge — the
+# partial form is the correct one for individual-term inference.
 compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
@@ -824,11 +849,16 @@ compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   if (anyNA(c(ncp_lo, ncp_hi))) {
     return(c(NA_real_, NA_real_))
   }
-  n_total <- fs$df1 + fs$df2 + 1L
-  bounds <- c(ncp_lo, ncp_hi) / (c(ncp_lo, ncp_hi) + n_total)
+  denom <- if (is.null(focal_term)) fs$df1 + fs$df2 + 1L else fs$df2
+  bounds <- c(ncp_lo, ncp_hi) / (c(ncp_lo, ncp_hi) + denom)
   pmax(0, bounds)
 }
 
+# CI for Cohen's f² via noncentral-F inversion. Same partial vs
+# model-level dispatch as `compute_omega2_ci_lm()`:
+#   * model-level: f² = ncp / N         (N = df1 + df2 + 1)
+#   * partial    : f² = ncp / df_error  (= η² / (1 - η²) under the
+#                  partial η² mapping above)
 compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
@@ -840,8 +870,8 @@ compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   if (anyNA(c(ncp_lo, ncp_hi))) {
     return(c(NA_real_, NA_real_))
   }
-  n_total <- fs$df1 + fs$df2 + 1L
-  c(ncp_lo, ncp_hi) / n_total
+  denom <- if (is.null(focal_term)) fs$df1 + fs$df2 + 1L else fs$df2
+  c(ncp_lo, ncp_hi) / denom
 }
 
 # Internal: build the "average design row" used to compute a single
