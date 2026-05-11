@@ -35,7 +35,7 @@
   `lm`; Long & Freese 2014 §4.3.4 x-standardization for `glm`),
   `"posthoc"`, `"basic"`, `"smart"` (Gelman 2008), or `"pseudo"` (Menard
   2011 fully-standardised; `glm` only). The user’s `vcov` flows through
-  to β’s SE / CI / *p*.
+  to the β SE / CI / *p*.
 
 - `exponentiate = TRUE` switches `glm` coefficients to the response
   scale and rebrands the column header per family / link: `OR` (binomial
