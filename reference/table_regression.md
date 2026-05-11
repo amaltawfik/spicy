@@ -50,6 +50,7 @@ table_regression(
   ic_digits = 1L,
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
+  padding = 2L,
   labels = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
@@ -363,8 +364,21 @@ table_regression(
 - align:
 
   Numeric column alignment. `"decimal"` (default) — pre-pad cells so
-  decimal marks line up vertically (publication-style). `"center"`,
-  `"right"`, or `"auto"` for legacy per-column alignment.
+  decimal marks line up vertically (publication-style). For CI cells
+  (`[LL, UL]`) the left bracket, the LL decimal point, the comma
+  separator, the UL decimal point, and the right bracket are
+  independently aligned across rows. `"center"`, `"right"`, or `"auto"`
+  for legacy per-column alignment.
+
+- padding:
+
+  Non-negative integer giving the extra characters added to each data
+  column's auto-computed width when the default `print` method renders
+  the table. Default `2L` (Stata-like spacing). Use `0L` or `1L` for a
+  more compact layout when the table has many columns (e.g.,
+  `c("B", "SE", "CI", "p", "AME", "AME_p")` side by side); use `4L` for
+  a more spacious layout. Headers are centered above the data region
+  regardless of padding.
 
 - labels:
 

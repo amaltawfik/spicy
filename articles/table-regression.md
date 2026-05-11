@@ -77,7 +77,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit)
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     65.20    1.66    [61.95, 68.45]    <.001 
 #>  age               │      0.05    0.03    [-0.01,  0.11]     .130 
@@ -112,7 +112,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, vcov = "HC3")
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     65.20    1.61    [62.05, 68.35]    <.001 
 #>  age               │      0.05    0.03    [-0.01,  0.11]     .127 
@@ -155,7 +155,7 @@ table_regression(
 #>   bread.mlm sandwich
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     65.00    1.74    [60.49, 69.51]    <.001 
 #>  age               │      0.05    0.04    [-0.05,  0.15]     .247 
@@ -203,7 +203,7 @@ table_regression(
 )
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     65.00    1.74    [60.49, 69.51]    <.001 
 #>  age               │      0.05    0.04    [-0.05,  0.15]     .247 
@@ -218,7 +218,7 @@ table_regression(
 #>  R²                │      0.02                                    
 #>  Adj.R²            │      0.02                                    
 #> 
-#>  Variable          │          AME            AME p  
+#>  Variable          │           AME            AME p 
 #> ───────────────────┼────────────────────────────────
 #>  (Intercept)       │                                
 #>  age               │    0.05 [-0.05, 0.15]     .247 
@@ -276,7 +276,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, standardized = "refit")
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B         β       SE         95% CI          p    
+#>  Variable          │      B         β       SE         95% CI          p   
 #> ───────────────────┼───────────────────────────────────────────────────────
 #>  (Intercept)       │     65.20    -0.10    1.66    [61.95, 68.45]    <.001 
 #>  age               │      0.05     0.04    0.03    [-0.01,  0.11]     .130 
@@ -319,7 +319,7 @@ table_regression(
 )
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B         p             η²          
+#>  Variable          │      B         p             η²         
 #> ───────────────────┼─────────────────────────────────────────
 #>  (Intercept)       │     64.49    <.001                      
 #>  age               │      0.03     .344    0.00 [0.00, 0.01] 
@@ -336,7 +336,7 @@ table_regression(
 #>  R²                │      0.22                               
 #>  Adj.R²            │      0.22                               
 #> 
-#>  Variable          │         ω²          
+#>  Variable          │          ω²         
 #> ───────────────────┼─────────────────────
 #>  (Intercept)       │                     
 #>  age               │   0.00 [0.00, 0.01] 
@@ -387,7 +387,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking + education,
 table_regression(fit, p_adjust = "bonferroni")
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     64.49    1.48    [61.58, 67.40]    <.001 
 #>  age               │      0.03    0.03    [-0.03,  0.08]    1.000 
@@ -447,7 +447,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking + bmi + education,
 table_regression(fit, keep = c("^smoking", "^bmi$"))
 #> Regression: wellbeing_score
 #> 
-#>  Variable      │     B        SE        95% CI          p    
+#>  Variable      │      B        SE        95% CI          p   
 #> ───────────────┼─────────────────────────────────────────────
 #>  smoking:      │                                             
 #>    No (ref.)   │      —       —             —          —     
@@ -466,7 +466,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 table_regression(fit, drop = "^education")
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │     B        SE         95% CI          p    
+#>  Variable          │      B        SE         95% CI          p   
 #> ───────────────────┼──────────────────────────────────────────────
 #>  (Intercept)       │     62.12    3.23    [55.78, 68.45]    <.001 
 #>  age               │      0.02    0.03    [-0.03,  0.08]     .407 
@@ -506,7 +506,7 @@ m_bmi       <- lm(bmi             ~ age + sex + smoking,
 table_regression(list(m_wellbeing, m_bmi))
 #> Regression comparison
 #> 
-#>  Variable          │             Model 1: B               Model 1: SE  
+#>  Variable          │              Model 1: B               Model 1: SE 
 #> ───────────────────┼───────────────────────────────────────────────────
 #>  Outcome           │   WHO-5 wellbeing index (0-100)                   
 #>  (Intercept)       │                              65.20           1.66 
@@ -522,7 +522,7 @@ table_regression(list(m_wellbeing, m_bmi))
 #>  R²                │                               0.02                
 #>  Adj.R²            │                               0.02                
 #> 
-#>  Variable          │  Model 1: 95% CI    Model 1: p        Model 2: B      
+#>  Variable          │   Model 1: 95% CI    Model 1: p        Model 2: B     
 #> ───────────────────┼───────────────────────────────────────────────────────
 #>  Outcome           │                                    Body mass index    
 #>  (Intercept)       │    [61.95, 68.45]         <.001                 23.98 
@@ -538,7 +538,7 @@ table_regression(list(m_wellbeing, m_bmi))
 #>  R²                │                                                  0.02 
 #>  Adj.R²            │                                                  0.02 
 #> 
-#>  Variable          │  Model 2: SE    Model 2: 95% CI    Model 2: p  
+#>  Variable          │   Model 2: SE    Model 2: 95% CI    Model 2: p 
 #> ───────────────────┼────────────────────────────────────────────────
 #>  Outcome           │                                                
 #>  (Intercept)       │          0.40     [23.20, 24.75]         <.001 
@@ -578,7 +578,7 @@ m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
 table_regression(list(m1, m2, m3), nested = TRUE)
 #> Hierarchical regression: wellbeing_score
 #> 
-#>  Variable          │  Model 1: B    Model 1: SE    Model 1: 95% CI  
+#>  Variable          │   Model 1: B    Model 1: SE    Model 1: 95% CI 
 #> ───────────────────┼────────────────────────────────────────────────
 #>  (Intercept)       │        64.70           1.66     [61.45, 67.95] 
 #>  age               │         0.05           0.03     [-0.01,  0.11] 
@@ -594,7 +594,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R²                │         0.02                                   
 #>  Adj.R²            │         0.02                                   
 #> 
-#>  Variable          │  Model 1: p    Model 2: B    Model 2: SE  
+#>  Variable          │   Model 1: p    Model 2: B    Model 2: SE 
 #> ───────────────────┼───────────────────────────────────────────
 #>  (Intercept)       │        <.001         65.00           1.67 
 #>  age               │         .118          0.05           0.03 
@@ -610,7 +610,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R²                │                       0.02                
 #>  Adj.R²            │                       0.02                
 #> 
-#>  Variable          │  Model 2: 95% CI    Model 2: p    Model 3: B  
+#>  Variable          │   Model 2: 95% CI    Model 2: p    Model 3: B 
 #> ───────────────────┼───────────────────────────────────────────────
 #>  (Intercept)       │    [61.73, 68.27]         <.001         80.57 
 #>  age               │    [-0.01,  0.11]          .109          0.07 
@@ -626,7 +626,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R²                │                                          0.04 
 #>  Adj.R²            │                                          0.04 
 #> 
-#>  Variable          │  Model 3: SE    Model 3: 95% CI    Model 3: p  
+#>  Variable          │   Model 3: SE    Model 3: 95% CI    Model 3: p 
 #> ───────────────────┼────────────────────────────────────────────────
 #>  (Intercept)       │          3.37     [73.97, 87.18]         <.001 
 #>  age               │          0.03     [ 0.01,  0.13]          .019 
@@ -676,7 +676,7 @@ fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
 table_regression(fit)
 #> Logistic regression: am
 #> 
-#>  Variable          │    B       SE          95% CI          p    
+#>  Variable          │     B       SE          95% CI          p   
 #> ───────────────────┼─────────────────────────────────────────────
 #>  (Intercept)       │   25.89    12.19    [  1.99, 49.79]    .034 
 #>  mpg               │   -0.32     0.24    [ -0.79,  0.15]    .176 
@@ -707,7 +707,7 @@ transformation:
 table_regression(fit, exponentiate = TRUE)
 #> Logistic regression: am
 #> 
-#>  Variable          │     OR           SE            95% CI          p    
+#>  Variable          │      OR           SE            95% CI          p   
 #> ───────────────────┼─────────────────────────────────────────────────────
 #>  (Intercept)       │    1.75e+11    2.13e+12    [7.30, 4.18e+21]    .034 
 #>  mpg               │    0.72        0.17        [0.45, 1.16    ]    .176 
@@ -737,7 +737,7 @@ fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
 table_regression(fit2, show_columns = c("B", "partial_chi2", "p"))
 #> Logistic regression: am
 #> 
-#>  Variable          │    B         χ²         p    
+#>  Variable          │     B         χ²         p   
 #> ───────────────────┼──────────────────────────────
 #>  (Intercept)       │   -8.34                 .104 
 #>  mpg               │    0.37    4.53 (1)     .080 
@@ -849,7 +849,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, stars = TRUE)
 #> Regression: wellbeing_score
 #> 
-#>  Variable          │      B          SE         95% CI          p    
+#>  Variable          │       B          SE         95% CI          p   
 #> ───────────────────┼─────────────────────────────────────────────────
 #>  (Intercept)       │     65.20***    1.66    [61.95, 68.45]    <.001 
 #>  age               │      0.05       0.03    [-0.01,  0.11]     .130 
@@ -900,7 +900,7 @@ table_regression(
 )
 #> Regression: wellbeing_score
 #> 
-#>  Variable             │     B        SE         95% CI          p    
+#>  Variable             │      B        SE         95% CI          p   
 #> ──────────────────────┼──────────────────────────────────────────────
 #>  Age (years)          │      0,03    0,03    [-0,03;  0,08]     ,343 
 #>  Sex: [ref: Female]   │                                              
@@ -966,6 +966,7 @@ str(out)
 #>   .. ..$ fields       : chr "p_value"
 #>  - attr(*, "group_sep_rows")= int 9
 #>  - attr(*, "align")= chr "decimal"
+#>  - attr(*, "padding")= int 2
 ```
 
 ``` r
