@@ -117,6 +117,8 @@
 <li>
 <strong>Build model-based continuous summary tables in R</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear regression reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’ g, Hays’ omega²) with noncentral CIs, optional <strong>additive covariate adjustment</strong> with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, weighted comparisons, and console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
 <li>
+<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more <code>lm</code> or <code>glm</code> fits side by side: classical / HC* / cluster-robust (with Satterthwaite-corrected df) / bootstrap / jackknife variance, five standardisation methods, family-aware exponentiate (OR / IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal effects, partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / χ², pseudo-<em>R²</em> family, hierarchical comparisons, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output.</li>
+<li>
 <strong>Generate interactive and exportable codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
 <li>
 <strong>Extract variable labels</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
@@ -364,7 +366,7 @@
 <span><span class="co">#&gt;                    n</span></span>
 <span><span class="co">#&gt; wellbeing_score 1200</span></span>
 <span><span class="co">#&gt; bmi             1188</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a> for <code>lm</code> and <code>glm</code> coefficient tables, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -416,6 +418,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
 </ul>
 <p>Key reference pages:</p>
@@ -429,6 +432,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html">Reference for <code>table_categorical()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous.html">Reference for <code>table_continuous()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html">Reference for <code>table_continuous_lm()</code></a></li>
+<li><a href="https://amaltawfik.github.io/spicy/reference/table_regression.html">Reference for <code>table_regression()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/mean_n.html">Reference for <code>mean_n()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/sum_n.html">Reference for <code>sum_n()</code></a></li>
 <li><a href="https://amaltawfik.github.io/spicy/reference/count_n.html">Reference for <code>count_n()</code></a></li>
