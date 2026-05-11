@@ -524,10 +524,13 @@
 #' # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 #' table_regression(fit, standardized = "refit")
 #'
-#' # Custom column set: B, partial \eqn{f^2}{f^2}, AME with CI, p
+#' # Custom column set with AME displayed alongside its own p-value.
+#' # `"p"` always refers to the B coefficient; for the AME-specific
+#' # p-value use `"AME_p"`. Placing AME after the B p-value makes
+#' # the "which p belongs to what" reading unambiguous.
 #' table_regression(
 #'   fit,
-#'   show_columns = c("B", "partial_f2", "AME", "p")
+#'   show_columns = c("B", "p", "partial_f2", "AME", "AME_p")
 #' )
 #'
 #' # Pedagogical side-by-side SE comparison (same fit, three vcovs)
@@ -847,6 +850,33 @@ table_regression <- function(
         "i" = "Drop `intercept_position` or set `show_intercept = TRUE`."
       ),
       class = "spicy_ignored_arg"
+    )
+  }
+  # AME visibility caveat: when `AME` and `p` are both shown but
+  # `AME_p` is not, the rendered `p` column is the B (or beta) p-
+  # value, NOT the AME p-value -- which can differ substantially in
+  # the presence of interactions or non-linear formulas. Emit a
+  # caveat so the user adds `"AME_p"` if AME's p was the intent.
+  if (all(c("AME", "p") %in% show_columns) &&
+        !("AME_p" %in% show_columns)) {
+    spicy_warn(
+      c(
+        paste0("`\"AME\"` and `\"p\"` are both in `show_columns`, but ",
+               "`\"AME_p\"` is not. The displayed `p` column refers to ",
+               "the B (or beta if standardised) coefficient, not to the ",
+               "AME."),
+        "i" = paste0(
+          "Add `\"AME_p\"` to `show_columns` to display the AME-specific ",
+          "p-value alongside, e.g., ",
+          "`show_columns = c(\"B\", \"p\", \"AME\", \"AME_p\")`."
+        ),
+        "i" = paste0(
+          "The two p-values are identical for `lm` linear formulas ",
+          "without interactions, but can differ substantially otherwise ",
+          "(non-linear glm link, factor-by-numeric interactions, ...)."
+        )
+      ),
+      class = "spicy_caveat"
     )
   }
 

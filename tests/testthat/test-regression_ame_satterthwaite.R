@@ -315,9 +315,11 @@ test_that("table_regression — CR2 + AME triggers the Satterthwaite footer", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
+  # Include AME_p alongside AME + p to silence the spicy_caveat that
+  # flags the ambiguity of "which p column belongs to what".
   out <- table_regression(
     fit, vcov = "CR2", cluster = df$cluster,
-    show_columns = c("B", "SE", "AME", "p")
+    show_columns = c("B", "SE", "p", "AME", "AME_p")
   )
   note <- attr(out, "note")
   expect_match(note, "AME inference: t-distribution with Satterthwaite-corrected df")

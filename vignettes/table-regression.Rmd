@@ -152,9 +152,14 @@ table_regression(
   fit,
   vcov = "CR2",
   cluster = sochealth_cc$region,
-  show_columns = c("B", "SE", "CI", "AME", "p")
+  show_columns = c("B", "SE", "CI", "p", "AME", "AME_p")
 )
 ```
+
+Note that `"p"` always refers to the B (or β) coefficient, never to
+the AME. To display the AME-specific p-value, include `"AME_p"` in
+`show_columns`. Placing `"AME"` after `"p"` makes the "which p
+belongs to what" reading unambiguous.
 
 The footer now reads "*AME inference: t-distribution with
 Satterthwaite-corrected df (Pustejovsky and Tipton 2018) via
@@ -411,7 +416,7 @@ inference uses Satterthwaite df from
 contrasts:
 
 ```{r glm-ame, eval = FALSE}
-table_regression(fit, show_columns = c("B", "AME", "p"))
+table_regression(fit, show_columns = c("B", "p", "AME", "AME_p"))
 ```
 
 ### Profile-likelihood CIs: `ci_method = "profile"`

@@ -905,7 +905,7 @@ test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized",
     fit,
     exponentiate = TRUE,
     standardized = "pseudo",
-    show_columns = c("B", "beta", "AME", "partial_chi2", "p")
+    show_columns = c("B", "beta", "p", "AME", "AME_p", "partial_chi2")
   )
   expect_s3_class(out, "spicy_regression_table")
   expect_match(attr(out, "title"), "^Logistic regression: am$")
@@ -958,7 +958,7 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   out <- table_regression(
     list(m1, m2),
     vcov = "CR2", cluster = d$clinic,
-    show_columns = c("B", "AME", "p"),
+    show_columns = c("B", "p", "AME", "AME_p"),
     nested = TRUE
   )
   note <- attr(out, "note")
@@ -995,7 +995,7 @@ test_that("E2E: broom::tidy() schema stable for glm output", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(
     fit,
-    show_columns = c("B", "AME", "partial_chi2", "p")
+    show_columns = c("B", "p", "AME", "AME_p", "partial_chi2")
   )
   td <- broom::tidy(out)
   # Required broom-style columns
@@ -1027,7 +1027,7 @@ test_that("E2E: full feature surface in a single call (acceptance)", {
       ci_method = "profile",
       standardized = "pseudo",
       p_adjust = "holm",
-      show_columns = c("B", "beta", "CI", "AME", "partial_chi2", "p"),
+      show_columns = c("B", "beta", "CI", "p", "AME", "AME_p", "partial_chi2"),
       show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_tjur",
                           "AIC", "BIC"),
       labels = c(mpg = "Miles per gallon", wt = "Weight (1000 lbs)"),

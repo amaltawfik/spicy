@@ -197,14 +197,33 @@ render_regression_table <- function(
     }
   }
 
-  # Apply decimal alignment to numeric cells (default).
-  # Other modes are passed through to the print engine via the
-  # `align` attribute and applied at output-dispatch time.
+  # Apply decimal alignment to numeric cells (default). CI-bracket
+  # cells (`"[LL, UL]"`) get the dedicated `align_ci_strings()`
+  # helper, which decimal-aligns LL and UL independently inside
+  # the brackets, so `[`, the LL `.`, the separator, the UL `.`,
+  # and `]` all sit in fixed horizontal positions across rows.
+  # Single-value numeric cells use the standard
+  # `decimal_align_strings()`. Other modes are passed through to
+  # the print engine via the `align` attribute and applied at
+  # output-dispatch time.
   if (identical(align, "decimal")) {
     data_cols <- setdiff(names(body), "Variable")
+    # Detect CI-only columns by inspecting the col_spec: a CI col
+    # has fields == c("ci_low", "ci_high"). Map col_name -> field-set
+    # for the per-column dispatch.
+    ci_cols <- vapply(col_spec, function(cs) {
+      identical(cs$fields, c("ci_low", "ci_high"))
+    }, logical(1))
+    ci_col_names <- vapply(col_spec[ci_cols], `[[`, character(1),
+                            "col_name")
     for (col in data_cols) {
-      body[[col]] <- decimal_align_strings(body[[col]],
-                                            decimal_mark = decimal_mark)
+      if (col %in% ci_col_names) {
+        body[[col]] <- align_ci_strings(body[[col]],
+                                          decimal_mark = decimal_mark)
+      } else {
+        body[[col]] <- decimal_align_strings(body[[col]],
+                                              decimal_mark = decimal_mark)
+      }
     }
   }
 

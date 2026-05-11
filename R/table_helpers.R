@@ -174,3 +174,70 @@ decimal_align_strings <- function(values, decimal_mark = ".") {
 ci_bracket_separator <- function(decimal_mark) {
   if (identical(decimal_mark, ",")) "; " else ", "
 }
+
+# Internal: decimal-align the LL and UL inside a column of
+# bracketed CI strings (`"[LL, UL]"`). The default
+# `decimal_align_strings()` aligns on the FIRST decimal point it
+# finds, which puts the `[` and `]` at different horizontal
+# positions across rows -- visually messy. This helper aligns the
+# brackets at fixed positions AND decimal-aligns LL across rows
+# AND decimal-aligns UL across rows, yielding tables where the
+# left bracket, the LL decimal point, the comma separator, the UL
+# decimal point, and the right bracket all sit in fixed columns.
+#
+# Inputs are the formatted cell strings (already a vector of
+# `"[LL, UL]"` or blank / em-dash strings). NA / blank / em-dash
+# cells pass through and are padded to the same total width as
+# the aligned CI cells so the column stays rectangular.
+align_ci_strings <- function(values, decimal_mark = ".") {
+  if (length(values) == 0L) {
+    return(character(0))
+  }
+  values <- as.character(values)
+  values[is.na(values)] <- ""
+  is_ci <- grepl("^\\[", values) & grepl("\\]\\s*$", values)
+  sep <- ci_bracket_separator(decimal_mark)
+  # Build a regex that escapes regex metacharacters in `sep`. The
+  # only non-trivial cases here are "," and "; " (literal text);
+  # escape defensively in case `sep` is ever extended.
+  sep_re <- gsub("([.|()\\^{}+$*?])", "\\\\\\1", sep, perl = TRUE)
+  pattern <- paste0("^\\[\\s*(.*?)\\s*", sep_re,
+                    "\\s*(.*?)\\s*\\]\\s*$")
+  parts <- regmatches(values, regexec(pattern, values))
+
+  lls <- rep(NA_character_, length(values))
+  uls <- rep(NA_character_, length(values))
+  for (i in seq_along(values)) {
+    if (is_ci[i] && length(parts[[i]]) == 3L) {
+      lls[i] <- parts[[i]][2L]
+      uls[i] <- parts[[i]][3L]
+    }
+  }
+
+  aligned_lls <- decimal_align_strings(lls, decimal_mark)
+  aligned_uls <- decimal_align_strings(uls, decimal_mark)
+
+  ci_cells <- paste0("[", aligned_lls, sep, aligned_uls, "]")
+  ci_width <- if (length(ci_cells)) max(nchar(ci_cells)) else 0L
+
+  out <- character(length(values))
+  for (i in seq_along(values)) {
+    if (is_ci[i] && length(parts[[i]]) == 3L) {
+      out[i] <- ci_cells[i]
+    } else {
+      raw <- trimws(values[i])
+      if (!nzchar(raw)) {
+        out[i] <- strrep(" ", ci_width)
+      } else {
+        # Center single-glyph fallback (e.g., em-dash "—") within
+        # the CI column width so reference / blank rows stay
+        # rectangular and visually anchored.
+        glyph_w <- nchar(raw, type = "width")
+        side <- max(0L, (ci_width - glyph_w) %/% 2L)
+        right <- max(0L, ci_width - glyph_w - side)
+        out[i] <- paste0(strrep(" ", side), raw, strrep(" ", right))
+      }
+    }
+  }
+  out
+}
