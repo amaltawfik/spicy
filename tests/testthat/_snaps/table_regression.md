@@ -5,7 +5,7 @@
     Output
       Regression: mpg
       
-       Variable      │    B       SE         95% CI          p
+       Variable      │     B       SE         95% CI          p
       ───────────────┼────────────────────────────────────────────
        (Intercept)   │   33.99    1.89    [30.12, 37.86]    <.001
        wt            │   -3.21    0.75    [-4.75, -1.66]    <.001
@@ -27,7 +27,7 @@
     Output
       Hierarchical regression: mpg
       
-       Variable      │  Model 1: B    Model 1: SE    Model 1: 95% CI    Model 1: p
+       Variable      │   Model 1: B    Model 1: SE    Model 1: 95% CI    Model 1: p
       ───────────────┼──────────────────────────────────────────────────────────────
        (Intercept)   │        37.29           1.88     [33.45, 41.12]         <.001
        wt            │        -5.34           0.56     [-6.49, -4.20]         <.001
@@ -40,7 +40,7 @@
        R²            │         0.75
        Adj.R²        │         0.74
       
-       Variable      │  Model 2: B    Model 2: SE    Model 2: 95% CI    Model 2: p
+       Variable      │   Model 2: B    Model 2: SE    Model 2: 95% CI    Model 2: p
       ───────────────┼──────────────────────────────────────────────────────────────
        (Intercept)   │        33.99           1.89     [30.12, 37.86]         <.001
        wt            │        -3.21           0.75     [-4.75, -1.66]         <.001
@@ -65,7 +65,7 @@
     Output
       Regression: mpg
       
-       Variable        │    B         β         SE         95% CI          p
+       Variable        │     B         β         SE         95% CI          p
       ─────────────────┼────────────────────────────────────────────────────────
        (Intercept)     │   33.99     0.60**     1.89    [30.12, 37.86]    <.001
        wt              │   -3.21    -0.52***    0.75    [-4.75, -1.66]    <.001

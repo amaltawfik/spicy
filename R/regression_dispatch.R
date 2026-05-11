@@ -327,14 +327,26 @@ print.spicy_regression_table <- function(x, ...) {
   # decimal-aligned, but the column LABEL ("B", "SE", "95% CI", "p")
   # sits centered above the column content. Matches the look of
   # Stata regress / parameters::model_parameters / modelsummary.
-  spicy_print_table(
-    body,
-    title = attr(x, "title"),
-    note = attr(x, "note"),
-    group_sep_rows = group_sep,
-    align_center_cols = align_center_cols,
-    center_headers = TRUE,
-    ...
+  # Use the call-site `padding` stashed by table_regression() (in
+  # the `"padding"` attribute) unless the user overrides via `...`.
+  padding_attr <- attr(x, "padding") %||% 2L
+  dot_args <- list(...)
+  if (is.null(dot_args$padding)) {
+    dot_args$padding <- padding_attr
+  }
+  do.call(
+    spicy_print_table,
+    c(
+      list(
+        body,
+        title = attr(x, "title"),
+        note = attr(x, "note"),
+        group_sep_rows = group_sep,
+        align_center_cols = align_center_cols,
+        center_headers = TRUE
+      ),
+      dot_args
+    )
   )
   invisible(x)
 }

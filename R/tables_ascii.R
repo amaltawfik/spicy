@@ -139,6 +139,21 @@ build_ascii_table <- function(
 
   w <- ascii_table_widths(df, padding)
 
+  # Per-column data content width (max nchar across DATA cells only,
+  # excluding the header). Used by the header-centering branch below
+  # to center the header above the visual data region rather than the
+  # padded cell width -- otherwise the header floats left of the
+  # column's visual centre because the data is right-aligned within
+  # extra padding.
+  data_widths <- vapply(
+    seq_along(df),
+    function(i) {
+      if (nrow(df) == 0L) return(0L)
+      max(crayon::col_nchar(df[[i]], type = "width"), na.rm = TRUE)
+    },
+    integer(1)
+  )
+
   # Helper for cell alignment
   pad_cell <- function(txt, width, align = "right") {
     side <- switch(align, left = "right", center = "both", "left")
@@ -149,9 +164,14 @@ build_ascii_table <- function(
 
   # Build line for header or data row. `is_header = TRUE` activates
   # `center_headers`: a column that would otherwise right-align its
-  # data renders its header centered above the column instead. Left-
-  # aligned columns (typically Variable / Category / Values) keep
-  # their left header so the label hugs the column's start edge.
+  # data renders its header CENTERED ABOVE THE DATA REGION (not the
+  # padded cell). For a decimal-aligned numeric column whose data
+  # occupies the rightmost `data_widths[i]` chars of a `widths[i]`-
+  # wide cell, the header is first centered in a `data_widths[i]`-
+  # wide field, then right-padded with whitespace so it sits over
+  # the data range, leaving the same left-padding that the data has.
+  # Left-aligned columns (typically Variable / Category / Values)
+  # keep their left header so the label hugs the column's start edge.
   build_line <- function(values, widths, is_header = FALSE) {
     stopifnot(length(values) == length(widths))
     pieces <- character(0)
@@ -167,11 +187,23 @@ build_ascii_table <- function(
       } else if (i %in% align_center_cols) {
         "center"
       } else if (isTRUE(is_header) && isTRUE(center_headers)) {
-        "center"
+        "header-center"
       } else {
         "right"
       }
-      cell <- pad_cell(values[i], widths[i], align = col_align)
+      cell <- if (identical(col_align, "header-center") &&
+                    data_widths[i] > 0L &&
+                    data_widths[i] <= widths[i]) {
+        # Center the header within the data region, then right-pad
+        # to the full cell width so the data's left margin is
+        # preserved. Visual result: header sits above the data's
+        # geometric centre, not the padded cell's centre.
+        centered_in_data <- pad_cell(values[i], data_widths[i],
+                                      align = "center")
+        pad_cell(centered_in_data, widths[i], align = "right")
+      } else {
+        pad_cell(values[i], widths[i], align = col_align)
+      }
 
       pieces <- c(pieces, cell)
       pos <- pos + nchar(cell, type = "width")

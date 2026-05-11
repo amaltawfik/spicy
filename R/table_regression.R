@@ -430,9 +430,20 @@
 #'   automatically to avoid `"0,18 [0,07, 0,30]"` ambiguity.
 #' @param align Numeric column alignment.
 #'   `"decimal"` (default) — pre-pad cells so decimal marks line
-#'   up vertically (publication-style).
+#'   up vertically (publication-style). For CI cells (`[LL, UL]`)
+#'   the left bracket, the LL decimal point, the comma separator,
+#'   the UL decimal point, and the right bracket are independently
+#'   aligned across rows.
 #'   `"center"`, `"right"`, or `"auto"` for legacy per-column
 #'   alignment.
+#' @param padding Non-negative integer giving the extra characters
+#'   added to each data column's auto-computed width when the
+#'   default `print` method renders the table. Default `2L`
+#'   (Stata-like spacing). Use `0L` or `1L` for a more compact
+#'   layout when the table has many columns (e.g.,
+#'   `c("B", "SE", "CI", "p", "AME", "AME_p")` side by side); use
+#'   `4L` for a more spacious layout. Headers are centered above
+#'   the data region regardless of padding.
 #' @param labels Named character vector overriding per-coefficient
 #'   row labels. Names are coefficient term names (from
 #'   [stats::terms()]); values are the displayed labels. E.g.
@@ -599,6 +610,7 @@ table_regression <- function(
   ic_digits = 1L,
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
+  padding = 2L,
   labels = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable",
              "tinytable", "excel", "clipboard", "word"),
@@ -816,6 +828,7 @@ table_regression <- function(
   validate_digit_arg(effect_size_digits, "effect_size_digits")
   validate_digit_arg(fit_digits, "fit_digits")
   validate_digit_arg(ic_digits, "ic_digits")
+  validate_digit_arg(padding, "padding")
   validate_decimal_mark(decimal_mark)
   validate_reference_label(reference_label)
   validate_stars(stars)
@@ -1037,6 +1050,11 @@ table_regression <- function(
     title = title,
     note = full_footer_str
   )
+  # Stash the print-time padding as an attribute so the print
+  # method can honour the call-site choice (and tooling like
+  # `as.data.frame()` / broom continues to see the raw rendered
+  # cells unchanged).
+  attr(rendered, "padding") <- as.integer(padding)
 
   # ---- Output dispatch (Step 11) -----------------------------------------
   dispatch_regression_output(

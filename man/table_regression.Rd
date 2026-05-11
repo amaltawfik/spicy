@@ -35,6 +35,7 @@ table_regression(
   ic_digits = 1L,
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
+  padding = 2L,
   labels = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
@@ -296,9 +297,21 @@ automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.}
 
 \item{align}{Numeric column alignment.
 \code{"decimal"} (default) — pre-pad cells so decimal marks line
-up vertically (publication-style).
+up vertically (publication-style). For CI cells (\verb{[LL, UL]})
+the left bracket, the LL decimal point, the comma separator,
+the UL decimal point, and the right bracket are independently
+aligned across rows.
 \code{"center"}, \code{"right"}, or \code{"auto"} for legacy per-column
 alignment.}
+
+\item{padding}{Non-negative integer giving the extra characters
+added to each data column's auto-computed width when the
+default \code{print} method renders the table. Default \code{2L}
+(Stata-like spacing). Use \code{0L} or \code{1L} for a more compact
+layout when the table has many columns (e.g.,
+\code{c("B", "SE", "CI", "p", "AME", "AME_p")} side by side); use
+\code{4L} for a more spacious layout. Headers are centered above
+the data region regardless of padding.}
 
 \item{labels}{Named character vector overriding per-coefficient
 row labels. Names are coefficient term names (from
