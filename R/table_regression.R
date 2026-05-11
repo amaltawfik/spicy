@@ -1,10 +1,19 @@
 #' Regression coefficient summary table
 #'
 #' @description
-#' Build a publication-ready summary table from one or more fitted
-#' regression models. Designed for **APA-strict** reporting in
-#' psychology, public health, sociology, and biostatistics, with
-#' optional opt-in conventions for econometrics and clinical trials.
+#' Build a publication-ready coefficient summary from one or more
+#' fitted regression models. Beyond the standard `B` / `SE` / `CI` /
+#' `p` columns, the same table layout supports **standardised
+#' coefficients** (\eqn{\beta}{beta}), **average marginal effects**
+#' (AME, with its own SE / *p* / CI), **partial effect sizes**
+#' (*\eqn{f^2}{f^2}* / *\eqn{\eta^2}{eta^2}* / *\eqn{\omega^2}{omega^2}*
+#' for `lm`, partial *\eqn{\chi^2}{chi-squared}* for `glm`),
+#' **pseudo-\eqn{R^2}{R^2}** for `glm`, and a wide vocabulary of
+#' variance estimators (classical / HC* / cluster-robust with
+#' Satterthwaite-corrected df / bootstrap / jackknife). Designed for
+#' **APA-strict** reporting in psychology, public health, sociology,
+#' and biostatistics, with optional opt-in conventions for
+#' econometrics and clinical trials.
 #'
 #' Supports `lm` and `glm` (binomial / poisson / Gamma /
 #' inverse.gaussian / quasi families with any link). Mixed-effects
@@ -286,8 +295,24 @@
 #'   methodological choice is yours.
 #' @param show_columns Character vector of tokens controlling
 #'   which per-coefficient columns to display, **and** in which
-#'   order. See the *Vocabulary tokens* section. Default
-#'   `c("B", "SE", "CI", "p")`.
+#'   order. Available tokens:
+#'   \itemize{
+#'     \item Coefficient: `"B"`, `"beta"` (standardised; requires
+#'       `standardized != "none"`), `"SE"`, `"CI"`, `"t"`, `"p"`.
+#'     \item Marginal effects: `"AME"` (compact `value [CI]` cell),
+#'       `"AME_p"` (AME-specific p-value, distinct from `"p"` which
+#'       always refers to B / beta), `"AME_SE"`.
+#'     \item Effect sizes -- `lm` only: `"partial_f2"`,
+#'       `"partial_eta2"`, `"partial_omega2"` (each as
+#'       `value [CI]` with noncentral-*F* bounds).
+#'     \item Effect sizes -- `glm` only: `"partial_chi2"`
+#'       (likelihood-ratio chi-square via
+#'       `drop1(test = "LRT")`, rendered as `value (df)`).
+#'   }
+#'   The `"p"` token always refers to the B (or beta if standardised)
+#'   p-value; for AME use `"AME_p"`. Default `c("B", "SE", "CI", "p")`.
+#'   See *Vocabulary tokens* and *Multi-model semantics* for ordering
+#'   and rendering details.
 #' @param keep Character vector of regular expressions; when
 #'   supplied, only coefficient rows whose term name matches at
 #'   least one of the patterns are kept. Useful when a model has
@@ -322,12 +347,24 @@
 #'   Customise to `"(reference)"` or `"(réf.)"` etc.
 #' @param show_fit_stats Character vector of tokens for the
 #'   model-level fit-stats footer, or `NULL` (default) to apply
-#'   the class-aware default. For all-`lm` models:
-#'   `c("nobs", "r2", "adj_r2")`. For all-`glm` models:
+#'   the class-aware default. Available tokens:
+#'   \itemize{
+#'     \item Counts: `"nobs"`, `"weighted_nobs"`.
+#'     \item Variance explained -- `lm` only: `"r2"`, `"adj_r2"`,
+#'       `"omega2"`.
+#'     \item Pseudo-\eqn{R^2}{R^2} -- `glm` only: `"pseudo_r2_mcfadden"`,
+#'       `"pseudo_r2_nagelkerke"`, `"pseudo_r2_tjur"` (binomial only).
+#'     \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
+#'       / glm dispersion), `"rmse"`.
+#'     \item Effect size: `"f2"`.
+#'     \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`,
+#'       `"deviance"`.
+#'   }
+#'   Class-aware default: for all-`lm`, `c("nobs", "r2", "adj_r2")`;
+#'   for all-`glm`,
 #'   `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
-#'   Mixed `lm` + `glm` sets: union of both groups (renderer
-#'   per-row em-dashes the inappropriate cell). See
-#'   *Vocabulary tokens* for the full token list.
+#'   Mixed `lm` + `glm` sets union both groups (renderer per-row
+#'   em-dashes the inappropriate cell).
 #' @param model_labels Column / model labels for multi-model
 #'   tables. `NULL` (default) uses smart auto-generation: hidden
 #'   for a single model, `"Model 1, 2, 3"` or `names(list)` for
@@ -354,9 +391,21 @@
 #'   footer; requires identical `nobs` and identical response
 #'   variable across all models.
 #' @param nested_stats Tokens controlling which comparison
-#'   statistics to display when `nested = TRUE`. `NULL` (default)
-#'   selects the class-aware default (`c("r2_change", "F", "p")`
-#'   for `lm`). See *Vocabulary tokens*.
+#'   statistics to display when `nested = TRUE`. Available tokens:
+#'   \itemize{
+#'     \item Variance explained -- `lm` only: `"r2_change"`,
+#'       `"adj_r2_change"`, `"F"`, `"f2_change"`.
+#'     \item Likelihood-based: `"LRT"`, `"deviance_change"`.
+#'     \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`.
+#'     \item `"p"` -- p-value of the chosen test (`F` for `lm`
+#'       hierarchies, `LRT` for `glm` hierarchies).
+#'   }
+#'   `NULL` (default) selects the class-aware default:
+#'   `c("r2_change", "F", "p")` for `lm` (APA hierarchical-regression
+#'   standard), `c("LRT", "p")` for `glm` (APA hierarchical-logistic
+#'   standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
+#'   Variance-explained tokens on an all-`glm` hierarchy raise
+#'   `spicy_invalid_input`.
 #' @param digits Number of decimal places for general numeric
 #'   tokens (`B`, `beta`, `SE`, `CI`, `t`, `F`, `LRT`, `deviance`,
 #'   `deviance_change`, `AME`, `AME_SE`, `weighted_nobs`).

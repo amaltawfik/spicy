@@ -141,8 +141,24 @@ methodological choice is yours.}
 
 \item{show_columns}{Character vector of tokens controlling
 which per-coefficient columns to display, \strong{and} in which
-order. See the \emph{Vocabulary tokens} section. Default
-\code{c("B", "SE", "CI", "p")}.}
+order. Available tokens:
+\itemize{
+\item Coefficient: \code{"B"}, \code{"beta"} (standardised; requires
+\code{standardized != "none"}), \code{"SE"}, \code{"CI"}, \code{"t"}, \code{"p"}.
+\item Marginal effects: \code{"AME"} (compact \code{value [CI]} cell),
+\code{"AME_p"} (AME-specific p-value, distinct from \code{"p"} which
+always refers to B / beta), \code{"AME_SE"}.
+\item Effect sizes -- \code{lm} only: \code{"partial_f2"},
+\code{"partial_eta2"}, \code{"partial_omega2"} (each as
+\code{value [CI]} with noncentral-\emph{F} bounds).
+\item Effect sizes -- \code{glm} only: \code{"partial_chi2"}
+(likelihood-ratio chi-square via
+\code{drop1(test = "LRT")}, rendered as \code{value (df)}).
+}
+The \code{"p"} token always refers to the B (or beta if standardised)
+p-value; for AME use \code{"AME_p"}. Default \code{c("B", "SE", "CI", "p")}.
+See \emph{Vocabulary tokens} and \emph{Multi-model semantics} for ordering
+and rendering details.}
 
 \item{keep}{Character vector of regular expressions; when
 supplied, only coefficient rows whose term name matches at
@@ -185,12 +201,24 @@ Customise to \code{"(reference)"} or \code{"(réf.)"} etc.}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level fit-stats footer, or \code{NULL} (default) to apply
-the class-aware default. For all-\code{lm} models:
-\code{c("nobs", "r2", "adj_r2")}. For all-\code{glm} models:
+the class-aware default. Available tokens:
+\itemize{
+\item Counts: \code{"nobs"}, \code{"weighted_nobs"}.
+\item Variance explained -- \code{lm} only: \code{"r2"}, \code{"adj_r2"},
+\code{"omega2"}.
+\item Pseudo-\eqn{R^2}{R^2} -- \code{glm} only: \code{"pseudo_r2_mcfadden"},
+\code{"pseudo_r2_nagelkerke"}, \code{"pseudo_r2_tjur"} (binomial only).
+\item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
+/ glm dispersion), \code{"rmse"}.
+\item Effect size: \code{"f2"}.
+\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"},
+\code{"deviance"}.
+}
+Class-aware default: for all-\code{lm}, \code{c("nobs", "r2", "adj_r2")};
+for all-\code{glm},
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
-Mixed \code{lm} + \code{glm} sets: union of both groups (renderer
-per-row em-dashes the inappropriate cell). See
-\emph{Vocabulary tokens} for the full token list.}
+Mixed \code{lm} + \code{glm} sets union both groups (renderer per-row
+em-dashes the inappropriate cell).}
 
 \item{model_labels}{Column / model labels for multi-model
 tables. \code{NULL} (default) uses smart auto-generation: hidden
@@ -222,9 +250,21 @@ footer; requires identical \code{nobs} and identical response
 variable across all models.}
 
 \item{nested_stats}{Tokens controlling which comparison
-statistics to display when \code{nested = TRUE}. \code{NULL} (default)
-selects the class-aware default (\code{c("r2_change", "F", "p")}
-for \code{lm}). See \emph{Vocabulary tokens}.}
+statistics to display when \code{nested = TRUE}. Available tokens:
+\itemize{
+\item Variance explained -- \code{lm} only: \code{"r2_change"},
+\code{"adj_r2_change"}, \code{"F"}, \code{"f2_change"}.
+\item Likelihood-based: \code{"LRT"}, \code{"deviance_change"}.
+\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"}.
+\item \code{"p"} -- p-value of the chosen test (\code{F} for \code{lm}
+hierarchies, \code{LRT} for \code{glm} hierarchies).
+}
+\code{NULL} (default) selects the class-aware default:
+\code{c("r2_change", "F", "p")} for \code{lm} (APA hierarchical-regression
+standard), \code{c("LRT", "p")} for \code{glm} (APA hierarchical-logistic
+standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
+Variance-explained tokens on an all-\code{glm} hierarchy raise
+\code{spicy_invalid_input}.}
 
 \item{digits}{Number of decimal places for general numeric
 tokens (\code{B}, \code{beta}, \code{SE}, \code{CI}, \code{t}, \code{F}, \code{LRT}, \code{deviance},
@@ -298,10 +338,19 @@ format-specific object (\code{gt_tbl}, \code{flextable}, \code{tinytable},
 outputs).
 }
 \description{
-Build a publication-ready summary table from one or more fitted
-regression models. Designed for \strong{APA-strict} reporting in
-psychology, public health, sociology, and biostatistics, with
-optional opt-in conventions for econometrics and clinical trials.
+Build a publication-ready coefficient summary from one or more
+fitted regression models. Beyond the standard \code{B} / \code{SE} / \code{CI} /
+\code{p} columns, the same table layout supports \strong{standardised
+coefficients} (\eqn{\beta}{beta}), \strong{average marginal effects}
+(AME, with its own SE / \emph{p} / CI), \strong{partial effect sizes}
+(\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} / \emph{\eqn{\omega^2}{omega^2}}
+for \code{lm}, partial \emph{\eqn{\chi^2}{chi-squared}} for \code{glm}),
+\strong{pseudo-\eqn{R^2}{R^2}} for \code{glm}, and a wide vocabulary of
+variance estimators (classical / HC* / cluster-robust with
+Satterthwaite-corrected df / bootstrap / jackknife). Designed for
+\strong{APA-strict} reporting in psychology, public health, sociology,
+and biostatistics, with optional opt-in conventions for
+econometrics and clinical trials.
 
 Supports \code{lm} and \code{glm} (binomial / poisson / Gamma /
 inverse.gaussian / quasi families with any link). Mixed-effects
