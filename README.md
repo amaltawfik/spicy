@@ -54,6 +54,16 @@ With spicy, you can:
   G-computation (Stata `margins` style) or equal-weight (`emmeans`
   style) marginal means, weighted comparisons, and console, gt,
   tinytable, flextable, Excel, Word, or clipboard output.
+- **Build regression coefficient tables in R** with
+  `table_regression()` for one or more `lm` or `glm` fits side by side:
+  classical / HC\* / cluster-robust (with Satterthwaite-corrected df)
+  / bootstrap / jackknife variance, five standardisation methods,
+  family-aware exponentiate (OR / IRR / HR / RR / MR), Wald or
+  profile-likelihood CIs, average marginal effects, partial
+  *f²* / *η²* / *ω²* / χ², pseudo-*R²* family, hierarchical
+  comparisons, multiple-comparison adjustment, and the same
+  console / gt / tinytable / flextable / Excel / Word / clipboard
+  output.
 - **Generate interactive and exportable codebooks** with `code_book()`
   for labelled and survey-style datasets.
 - **Extract variable labels** with `label_from_names()`, including
@@ -344,7 +354,10 @@ R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 for continuous summaries and group comparisons, [Model-based continuous
 summary tables in
 R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
-for weighted or robust linear-model reporting, and [Summary tables for
+for weighted or robust linear-model reporting, [Regression coefficient
+tables in
+R](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+for `lm` and `glm` coefficient tables, and [Summary tables for
 APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
@@ -411,6 +424,8 @@ If you are looking for a specific workflow, start with these vignettes:
   R](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Model-based continuous summary tables in
   R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
+- [Regression coefficient tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
@@ -434,6 +449,8 @@ Key reference pages:
   `table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.html)
 - [Reference for
   `table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html)
+- [Reference for
+  `table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.html)
 - [Reference for
   `mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.html)
 - [Reference for
