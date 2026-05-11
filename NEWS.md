@@ -2,6 +2,94 @@
 
 ## New features
 
+### `table_regression()` — regression coefficient tables
+
+* New top-level function building a publication-ready coefficient
+  summary from one or more fitted regression models. Designed for
+  **APA-strict** reporting in psychology, public health, sociology,
+  and biostatistics, with optional opt-in conventions for
+  econometrics and clinical trials.
+
+* Supports `lm` and `glm` (binomial / poisson / Gamma /
+  inverse.gaussian / quasi families with any link). Single fit or a
+  named / unnamed list of fits side by side; `lm` and `glm` may be
+  mixed in the same call.
+
+* `show_columns` selects per-coefficient columns from a vocabulary
+  of tokens. Estimate-related: `B`, `beta`, `SE`, `CI`, `t`, `p`.
+  Marginal effects: `AME`, `AME_p`, `AME_SE`. Effect sizes:
+  `partial_f2`, `partial_eta2`, `partial_omega2` (`lm`; with
+  noncentral-*F* CIs); `partial_chi2` (`glm`; partial likelihood-
+  ratio χ² via `drop1(test = "LRT")` — SAS PROC LOGISTIC `TYPE3`,
+  Long & Freese 2014).
+
+* `vcov` selects the variance estimator: `"classical"`, `"HC0"` to
+  `"HC5"` (via `sandwich`), `"CR0"` to `"CR3"` with Satterthwaite-
+  corrected df (via `clubSandwich`), `"bootstrap"` (nonparametric
+  or cluster), or `"jackknife"` (leave-one-out / leave-one-cluster-
+  out). Single value recycled to all models, or a per-model list
+  for SE-comparison side by side.
+
+* `standardized` selects the β method: `"refit"` (Cohen et al. 2003
+  for `lm`; Long & Freese 2014 §4.3.4 x-standardization for `glm`),
+  `"posthoc"`, `"basic"`, `"smart"` (Gelman 2008), or `"pseudo"`
+  (Menard 2011 fully-standardised; `glm` only). The user's `vcov`
+  flows through to β's SE / CI / *p*.
+
+* `exponentiate = TRUE` switches `glm` coefficients to the response
+  scale and rebrands the column header per family / link: `OR`
+  (binomial logit), `IRR` (poisson log), `HR` (binomial cloglog),
+  `RR` (binomial log), `MR` (Gamma log), generic `exp(B)`
+  otherwise. Mixed-family multi-model output gets per-model
+  headers (`OR / IRR (per family)`).
+
+* `ci_method = "profile"` (`glm` only) switches confidence intervals
+  to the profile-likelihood form via `MASS::confint.glm()`;
+  estimate / SE / *t* / *p* remain Wald.
+
+* `p_adjust` applies a multiple-comparison correction
+  (`stats::p.adjust()`: `"holm"`, `"hochberg"`, `"hommel"`,
+  `"bonferroni"`, `"BH"`, `"BY"`, `"fdr"`) over the per-model
+  coefficient family. Default `"none"` matches APA Manual 7 §6.46
+  guidance against routine adjustment of regression coefficients.
+
+* `keep` and `drop` are regex filters for focal-predictor display
+  (mutually exclusive). `nested = TRUE` adds an APA-style
+  hierarchical-comparison footer (default tokens
+  `c("r2_change", "F", "p")` for `lm`, `c("LRT", "p")` for `glm`).
+
+* AME under cluster-robust variance gets Satterthwaite-corrected
+  df via `clubSandwich::linear_contrast()` for `lm` and
+  `clubSandwich::coef_test()` (dominant-coefficient approximation,
+  Pustejovsky & Tipton 2018) for `glm`. spicy is the **first R
+  package** to offer this for `lm`.
+
+* Outputs: console (default `spicy_regression_table` print method),
+  `data.frame`, long tibble, `gt`, `flextable`, `tinytable`, Excel,
+  Word, clipboard. Full `broom::tidy()` integration for downstream
+  `modelsummary` / custom workflows.
+
+* Auto-generated APA footer documents the SE family, the AME-
+  Satterthwaite path (when active), the exponentiate transform,
+  the standardisation method, the multiple-comparison adjustment,
+  the significance-stars threshold, and any rank-deficient or
+  hierarchical metadata — no manual annotation needed.
+
+* Cross-validated to machine precision against
+  `parameters::model_parameters()` (B / SE / *z* / *p* / Wald CI),
+  `MASS::confint.glm()` (profile CI), `performance::r2_*`
+  (McFadden / Nagelkerke / Tjur pseudo-R²), and
+  `marginaleffects::avg_slopes()` (AME).
+
+* See `?table_regression` and `vignette("table-regression")` for
+  the full argument reference, runnable examples spanning every
+  feature, and the cross-software equivalence map (Stata / SPSS /
+  SAS conventions).
+
+* `marginaleffects`, `parameters`, and `performance` added to
+  `Suggests` (oracle packages for AME and pseudo-R² cross-
+  validation); no runtime dependency change.
+
 ### Covariate adjustment in `table_continuous_lm()`
 
 * New `covariates` argument adds additive covariates to each
