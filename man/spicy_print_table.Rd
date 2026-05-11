@@ -16,6 +16,7 @@ spicy_print_table(
   lines_color = "darkgrey",
   align_left_cols = NULL,
   align_center_cols = integer(0),
+  center_headers = FALSE,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   ...
@@ -57,6 +58,11 @@ If \code{NULL} (the default), alignment is auto-detected based on \code{x}:
 
 \item{align_center_cols}{Integer vector of column indices to
 center-align. Defaults to \code{integer(0)}.}
+
+\item{center_headers}{Logical. When \code{TRUE}, column headers are
+centered above their column content even when the data itself
+is right-aligned. Passed through to \code{\link[=build_ascii_table]{build_ascii_table()}}.
+Defaults to \code{FALSE}.}
 
 \item{group_sep_rows}{Integer vector of row indices before which a
 light dashed separator line is drawn. Defaults to \code{integer(0)}.}

@@ -322,12 +322,18 @@ print.spicy_regression_table <- function(x, ...) {
   # "decimal" alignment was pre-applied in the renderer (cells are
   # already padded). "right" / "auto" delegate to the print engine
   # defaults. "center" forces center alignment of data columns.
+  # `center_headers = TRUE` is the publication convention for
+  # coefficient tables: numeric / CI columns get their data right- or
+  # decimal-aligned, but the column LABEL ("B", "SE", "95% CI", "p")
+  # sits centered above the column content. Matches the look of
+  # Stata regress / parameters::model_parameters / modelsummary.
   spicy_print_table(
     body,
     title = attr(x, "title"),
     note = attr(x, "note"),
     group_sep_rows = group_sep,
     align_center_cols = align_center_cols,
+    center_headers = TRUE,
     ...
   )
   invisible(x)

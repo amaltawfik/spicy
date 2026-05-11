@@ -75,6 +75,14 @@
 #'   center-align. Defaults to `integer(0)` (no centered columns).
 #'   Columns not in `align_left_cols` or `align_center_cols` are
 #'   right-aligned.
+#' @param center_headers Logical. When `TRUE`, column headers are
+#'   centered above their column content even when the data itself
+#'   is right-aligned (the publication convention for
+#'   coefficient / summary tables; matches Stata regress /
+#'   parameters::model_parameters / modelsummary). Left-aligned
+#'   columns (per `align_left_cols`) keep their header on the
+#'   left. Defaults to `FALSE` for backward compatibility; the
+#'   `print.spicy_regression_table` method enables it.
 #' @param group_sep_rows Integer vector of row indices before which a
 #'   light dashed separator line is drawn. Defaults to `integer(0)`.
 #' @param total_row_idx Optional integer vector of 1-based row indices
@@ -118,6 +126,7 @@ build_ascii_table <- function(
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
+  center_headers = FALSE,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   ...
@@ -138,8 +147,12 @@ build_ascii_table <- function(
 
   sep_after <- ascii_table_separators(df, first_column_line, row_total_line)
 
-  # Build line for header or data row
-  build_line <- function(values, widths) {
+  # Build line for header or data row. `is_header = TRUE` activates
+  # `center_headers`: a column that would otherwise right-align its
+  # data renders its header centered above the column instead. Left-
+  # aligned columns (typically Variable / Category / Values) keep
+  # their left header so the label hugs the column's start edge.
+  build_line <- function(values, widths, is_header = FALSE) {
     stopifnot(length(values) == length(widths))
     pieces <- character(0)
     bars <- integer(0)
@@ -152,6 +165,8 @@ build_ascii_table <- function(
       col_align <- if (i %in% align_left_cols) {
         "left"
       } else if (i %in% align_center_cols) {
+        "center"
+      } else if (isTRUE(is_header) && isTRUE(center_headers)) {
         "center"
       } else {
         "right"
@@ -172,7 +187,7 @@ build_ascii_table <- function(
     list(text = paste0(pieces, collapse = ""), bars = bars, width = pos)
   }
 
-  header_line <- build_line(colnames(df), w)
+  header_line <- build_line(colnames(df), w, is_header = TRUE)
   data_lines <- lapply(seq_len(nrow(df)), function(i) build_line(df[i, ], w))
 
   full_width <- max(c(
@@ -426,6 +441,10 @@ ascii_table_panels <- function(
 #'   * For `cross` tables -> `1`
 #' @param align_center_cols Integer vector of column indices to
 #'   center-align. Defaults to `integer(0)`.
+#' @param center_headers Logical. When `TRUE`, column headers are
+#'   centered above their column content even when the data itself
+#'   is right-aligned. Passed through to [build_ascii_table()].
+#'   Defaults to `FALSE`.
 #' @param group_sep_rows Integer vector of row indices before which a
 #'   light dashed separator line is drawn. Defaults to `integer(0)`.
 #' @param total_row_idx Optional integer vector of 1-based row indices
@@ -468,6 +487,7 @@ spicy_print_table <- function(
   lines_color = "darkgrey",
   align_left_cols = NULL,
   align_center_cols = integer(0),
+  center_headers = FALSE,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   ...
@@ -510,6 +530,7 @@ spicy_print_table <- function(
         lines_color = lines_color,
         align_left_cols = which(cols %in% align_left_cols),
         align_center_cols = which(cols %in% align_center_cols),
+        center_headers = center_headers,
         group_sep_rows = group_sep_rows,
         total_row_idx = total_row_idx,
         ...
