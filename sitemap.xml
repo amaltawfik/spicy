@@ -10,6 +10,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/articles/table-regression.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/variable-exploration.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/authors.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/index.html</loc></url>
@@ -17,6 +18,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/assoc_measures.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/build_ascii_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/code_book.html</loc></url>
@@ -52,9 +54,11 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/uncertainty_coef.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/varlist.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/yule_q.html</loc></url>

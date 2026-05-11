@@ -65,6 +65,8 @@
   : Continuous summary table
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   : Continuous-outcome linear-model table
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  : Regression coefficient summary table
 
 ## Export
 
@@ -136,6 +138,12 @@ Documented here for direct invocation with custom arguments (e.g.,
 
   Coerce a `spicy_continuous_table` to a plain data frame or tibble
 
+- [`as.data.frame(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md)
+  [`as_tibble(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md)
+  :
+
+  Convert a `spicy_regression_table` to a plain data.frame / tibble
+
 - [`tidy(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   [`glance(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   :
@@ -153,6 +161,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   :
 
   Tidying methods for a `spicy_continuous_table`
+
+- [`tidy(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.md)
+  [`glance(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.md)
+  :
+
+  Tidy / glance methods for `spicy_regression_table`
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy table engine

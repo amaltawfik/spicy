@@ -551,6 +551,8 @@ details.
   : Continuous summary table
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   : Continuous-outcome linear-model table
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  : Regression coefficient summary table
 
 ## Export
 
@@ -622,6 +624,12 @@ Documented here for direct invocation with custom arguments (e.g.,
 
   Coerce a `spicy_continuous_table` to a plain data frame or tibble
 
+- [`as.data.frame(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md)
+  [`as_tibble(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md)
+  :
+
+  Convert a `spicy_regression_table` to a plain data.frame / tibble
+
 - [`tidy(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   [`glance(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   :
@@ -639,6 +647,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   :
 
   Tidying methods for a `spicy_continuous_table`
+
+- [`tidy(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.md)
+  [`glance(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.md)
+  :
+
+  Tidy / glance methods for `spicy_regression_table`
 
 - [`spicy_tables`](https://amaltawfik.github.io/spicy/reference/spicy_tables.md)
   : Spicy table engine
@@ -701,6 +715,19 @@ Documented here for direct invocation with custom arguments (e.g.,
   effect-size families (f2, Cohen’s d, Hedges’ g, Hays’ omega2) with
   noncentral CIs, and APA-style output to console, gt, tinytable,
   flextable, Excel, Word, or clipboard.
+
+- [Regression coefficient tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-regression.md):
+
+  Build publication-ready regression coefficient tables in R with
+  table_regression(): classical / HC / cluster-robust / bootstrap /
+  jackknife variance, AME with Satterthwaite-corrected df under CR\* (a
+  first in R), four standardisation methods, per-coefficient effect
+  sizes (partial f² / η² / ω² with noncentral CIs), multiple-comparison
+  adjustment via stats::p.adjust() with full- family scope, regex-based
+  keep / drop filters for focal-predictor display, side-by-side and
+  hierarchical regression layouts, APA- aligned formatting, and output
+  to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):

@@ -57,6 +57,19 @@
   noncentral CIs, and APA-style output to console, gt, tinytable,
   flextable, Excel, Word, or clipboard.
 
+- [Regression coefficient tables in
+  R](https://amaltawfik.github.io/spicy/articles/table-regression.md):
+
+  Build publication-ready regression coefficient tables in R with
+  table_regression(): classical / HC / cluster-robust / bootstrap /
+  jackknife variance, AME with Satterthwaite-corrected df under CR\* (a
+  first in R), four standardisation methods, per-coefficient effect
+  sizes (partial f² / η² / ω² with noncentral CIs), multiple-comparison
+  adjustment via stats::p.adjust() with full- family scope, regex-based
+  keep / drop filters for focal-predictor display, side-by-side and
+  hierarchical regression layouts, APA- aligned formatting, and output
+  to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 
