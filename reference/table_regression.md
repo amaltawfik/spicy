@@ -1,9 +1,16 @@
 # Regression coefficient summary table
 
-Build a publication-ready summary table from one or more fitted
-regression models. Designed for **APA-strict** reporting in psychology,
-public health, sociology, and biostatistics, with optional opt-in
-conventions for econometrics and clinical trials.
+Build a publication-ready coefficient summary from one or more fitted
+regression models. Beyond the standard `B` / `SE` / `CI` / `p` columns,
+the same table layout supports **standardised coefficients**
+(\\\beta\\), **average marginal effects** (AME, with its own SE / *p* /
+CI), **partial effect sizes** (*\\f^2\\* / *\\\eta^2\\* / *\\\omega^2\\*
+for `lm`, partial *\\\chi^2\\* for `glm`), **pseudo-\\R^2\\** for `glm`,
+and a wide vocabulary of variance estimators (classical / HC\* /
+cluster-robust with Satterthwaite-corrected df / bootstrap / jackknife).
+Designed for **APA-strict** reporting in psychology, public health,
+sociology, and biostatistics, with optional opt-in conventions for
+econometrics and clinical trials.
 
 Supports `lm` and `glm` (binomial / poisson / Gamma / inverse.gaussian /
 quasi families with any link). Mixed-effects models (`lmerMod`,
@@ -165,8 +172,26 @@ table_regression(
 - show_columns:
 
   Character vector of tokens controlling which per-coefficient columns
-  to display, **and** in which order. See the *Vocabulary tokens*
-  section. Default `c("B", "SE", "CI", "p")`.
+  to display, **and** in which order. Available tokens:
+
+  - Coefficient: `"B"`, `"beta"` (standardised; requires
+    `standardized != "none"`), `"SE"`, `"CI"`, `"t"`, `"p"`.
+
+  - Marginal effects: `"AME"` (compact `value [CI]` cell), `"AME_p"`
+    (AME-specific p-value, distinct from `"p"` which always refers to B
+    / beta), `"AME_SE"`.
+
+  - Effect sizes – `lm` only: `"partial_f2"`, `"partial_eta2"`,
+    `"partial_omega2"` (each as `value [CI]` with noncentral-*F*
+    bounds).
+
+  - Effect sizes – `glm` only: `"partial_chi2"` (likelihood-ratio
+    chi-square via `drop1(test = "LRT")`, rendered as `value (df)`).
+
+  The `"p"` token always refers to the B (or beta if standardised)
+  p-value; for AME use `"AME_p"`. Default `c("B", "SE", "CI", "p")`. See
+  *Vocabulary tokens* and *Multi-model semantics* for ordering and
+  rendering details.
 
 - keep:
 
@@ -222,12 +247,27 @@ table_regression(
 - show_fit_stats:
 
   Character vector of tokens for the model-level fit-stats footer, or
-  `NULL` (default) to apply the class-aware default. For all-`lm`
-  models: `c("nobs", "r2", "adj_r2")`. For all-`glm` models:
+  `NULL` (default) to apply the class-aware default. Available tokens:
+
+  - Counts: `"nobs"`, `"weighted_nobs"`.
+
+  - Variance explained – `lm` only: `"r2"`, `"adj_r2"`, `"omega2"`.
+
+  - Pseudo-\\R^2\\ – `glm` only: `"pseudo_r2_mcfadden"`,
+    `"pseudo_r2_nagelkerke"`, `"pseudo_r2_tjur"` (binomial only).
+
+  - Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
+    `"rmse"`.
+
+  - Effect size: `"f2"`.
+
+  - Information criteria: `"AIC"`, `"AICc"`, `"BIC"`, `"deviance"`.
+
+  Class-aware default: for all-`lm`, `c("nobs", "r2", "adj_r2")`; for
+  all-`glm`,
   `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
-  Mixed `lm` + `glm` sets: union of both groups (renderer per-row
-  em-dashes the inappropriate cell). See *Vocabulary tokens* for the
-  full token list.
+  Mixed `lm` + `glm` sets union both groups (renderer per-row em-dashes
+  the inappropriate cell).
 
 - model_labels:
 
@@ -265,8 +305,24 @@ table_regression(
 - nested_stats:
 
   Tokens controlling which comparison statistics to display when
-  `nested = TRUE`. `NULL` (default) selects the class-aware default
-  (`c("r2_change", "F", "p")` for `lm`). See *Vocabulary tokens*.
+  `nested = TRUE`. Available tokens:
+
+  - Variance explained – `lm` only: `"r2_change"`, `"adj_r2_change"`,
+    `"F"`, `"f2_change"`.
+
+  - Likelihood-based: `"LRT"`, `"deviance_change"`.
+
+  - Information criteria: `"AIC"`, `"AICc"`, `"BIC"`.
+
+  - `"p"` – p-value of the chosen test (`F` for `lm` hierarchies, `LRT`
+    for `glm` hierarchies).
+
+  `NULL` (default) selects the class-aware default:
+  `c("r2_change", "F", "p")` for `lm` (APA hierarchical-regression
+  standard), `c("LRT", "p")` for `glm` (APA hierarchical-logistic
+  standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
+  Variance-explained tokens on an all-`glm` hierarchy raise
+  `spicy_invalid_input`.
 
 - digits:
 

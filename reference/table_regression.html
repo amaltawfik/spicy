@@ -5,16 +5,34 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Regression coefficient summary table — table_regression"><meta name="description" content="Build a publication-ready summary table from one or more fitted
-regression models. Designed for APA-strict reporting in
-psychology, public health, sociology, and biostatistics, with
-optional opt-in conventions for econometrics and clinical trials.
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Regression coefficient summary table — table_regression"><meta name="description" content="Build a publication-ready coefficient summary from one or more
+fitted regression models. Beyond the standard B / SE / CI /
+p columns, the same table layout supports standardised
+coefficients (\(\beta\)), average marginal effects
+(AME, with its own SE / p / CI), partial effect sizes
+(\(f^2\) / \(\eta^2\) / \(\omega^2\)
+for lm, partial \(\chi^2\) for glm),
+pseudo-\(R^2\) for glm, and a wide vocabulary of
+variance estimators (classical / HC* / cluster-robust with
+Satterthwaite-corrected df / bootstrap / jackknife). Designed for
+APA-strict reporting in psychology, public health, sociology,
+and biostatistics, with optional opt-in conventions for
+econometrics and clinical trials.
 Supports lm and glm (binomial / poisson / Gamma /
 inverse.gaussian / quasi families with any link). Mixed-effects
-models (lmerMod, glmerMod) are planned for spicy 0.16+."><meta property="og:description" content="Build a publication-ready summary table from one or more fitted
-regression models. Designed for APA-strict reporting in
-psychology, public health, sociology, and biostatistics, with
-optional opt-in conventions for econometrics and clinical trials.
+models (lmerMod, glmerMod) are planned for spicy 0.16+."><meta property="og:description" content="Build a publication-ready coefficient summary from one or more
+fitted regression models. Beyond the standard B / SE / CI /
+p columns, the same table layout supports standardised
+coefficients (\(\beta\)), average marginal effects
+(AME, with its own SE / p / CI), partial effect sizes
+(\(f^2\) / \(\eta^2\) / \(\omega^2\)
+for lm, partial \(\chi^2\) for glm),
+pseudo-\(R^2\) for glm, and a wide vocabulary of
+variance estimators (classical / HC* / cluster-robust with
+Satterthwaite-corrected df / bootstrap / jackknife). Designed for
+APA-strict reporting in psychology, public health, sociology,
+and biostatistics, with optional opt-in conventions for
+econometrics and clinical trials.
 Supports lm and glm (binomial / poisson / Gamma /
 inverse.gaussian / quasi families with any link). Mixed-effects
 models (lmerMod, glmerMod) are planned for spicy 0.16+."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
@@ -71,10 +89,19 @@ models (lmerMod, glmerMod) are planned for spicy 0.16+."><meta property="og:imag
     </div>
 
     <div class="ref-description section level2">
-    <p>Build a publication-ready summary table from one or more fitted
-regression models. Designed for <strong>APA-strict</strong> reporting in
-psychology, public health, sociology, and biostatistics, with
-optional opt-in conventions for econometrics and clinical trials.</p>
+    <p>Build a publication-ready coefficient summary from one or more
+fitted regression models. Beyond the standard <code>B</code> / <code>SE</code> / <code>CI</code> /
+<code>p</code> columns, the same table layout supports <strong>standardised
+coefficients</strong> (\(\beta\)), <strong>average marginal effects</strong>
+(AME, with its own SE / <em>p</em> / CI), <strong>partial effect sizes</strong>
+(<em>\(f^2\)</em> / <em>\(\eta^2\)</em> / <em>\(\omega^2\)</em>
+for <code>lm</code>, partial <em>\(\chi^2\)</em> for <code>glm</code>),
+<strong>pseudo-\(R^2\)</strong> for <code>glm</code>, and a wide vocabulary of
+variance estimators (classical / HC* / cluster-robust with
+Satterthwaite-corrected df / bootstrap / jackknife). Designed for
+<strong>APA-strict</strong> reporting in psychology, public health, sociology,
+and biostatistics, with optional opt-in conventions for
+econometrics and clinical trials.</p>
 <p>Supports <code>lm</code> and <code>glm</code> (binomial / poisson / Gamma /
 inverse.gaussian / quasi families with any link). Mixed-effects
 models (<code>lmerMod</code>, <code>glmerMod</code>) are planned for spicy 0.16+.</p>
@@ -241,8 +268,21 @@ methodological choice is yours.</p></dd>
 <dt id="arg-show-columns">show_columns<a class="anchor" aria-label="anchor" href="#arg-show-columns"></a></dt>
 <dd><p>Character vector of tokens controlling
 which per-coefficient columns to display, <strong>and</strong> in which
-order. See the <em>Vocabulary tokens</em> section. Default
-<code>c("B", "SE", "CI", "p")</code>.</p></dd>
+order. Available tokens:</p><ul><li><p>Coefficient: <code>"B"</code>, <code>"beta"</code> (standardised; requires
+<code>standardized != "none"</code>), <code>"SE"</code>, <code>"CI"</code>, <code>"t"</code>, <code>"p"</code>.</p></li>
+<li><p>Marginal effects: <code>"AME"</code> (compact <code>value [CI]</code> cell),
+<code>"AME_p"</code> (AME-specific p-value, distinct from <code>"p"</code> which
+always refers to B / beta), <code>"AME_SE"</code>.</p></li>
+<li><p>Effect sizes – <code>lm</code> only: <code>"partial_f2"</code>,
+<code>"partial_eta2"</code>, <code>"partial_omega2"</code> (each as
+<code>value [CI]</code> with noncentral-<em>F</em> bounds).</p></li>
+<li><p>Effect sizes – <code>glm</code> only: <code>"partial_chi2"</code>
+(likelihood-ratio chi-square via
+<code>drop1(test = "LRT")</code>, rendered as <code>value (df)</code>).</p></li>
+</ul><p>The <code>"p"</code> token always refers to the B (or beta if standardised)
+p-value; for AME use <code>"AME_p"</code>. Default <code>c("B", "SE", "CI", "p")</code>.
+See <em>Vocabulary tokens</em> and <em>Multi-model semantics</em> for ordering
+and rendering details.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
@@ -301,12 +341,21 @@ Customise to <code>"(reference)"</code> or <code>"(réf.)"</code> etc.</p></dd>
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>
 <dd><p>Character vector of tokens for the
 model-level fit-stats footer, or <code>NULL</code> (default) to apply
-the class-aware default. For all-<code>lm</code> models:
-<code>c("nobs", "r2", "adj_r2")</code>. For all-<code>glm</code> models:
+the class-aware default. Available tokens:</p><ul><li><p>Counts: <code>"nobs"</code>, <code>"weighted_nobs"</code>.</p></li>
+<li><p>Variance explained – <code>lm</code> only: <code>"r2"</code>, <code>"adj_r2"</code>,
+<code>"omega2"</code>.</p></li>
+<li><p>Pseudo-\(R^2\) – <code>glm</code> only: <code>"pseudo_r2_mcfadden"</code>,
+<code>"pseudo_r2_nagelkerke"</code>, <code>"pseudo_r2_tjur"</code> (binomial only).</p></li>
+<li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
+/ glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Effect size: <code>"f2"</code>.</p></li>
+<li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>,
+<code>"deviance"</code>.</p></li>
+</ul><p>Class-aware default: for all-<code>lm</code>, <code>c("nobs", "r2", "adj_r2")</code>;
+for all-<code>glm</code>,
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>.
-Mixed <code>lm</code> + <code>glm</code> sets: union of both groups (renderer
-per-row em-dashes the inappropriate cell). See
-<em>Vocabulary tokens</em> for the full token list.</p></dd>
+Mixed <code>lm</code> + <code>glm</code> sets union both groups (renderer per-row
+em-dashes the inappropriate cell).</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>
@@ -348,9 +397,18 @@ variable across all models.</p></dd>
 
 <dt id="arg-nested-stats">nested_stats<a class="anchor" aria-label="anchor" href="#arg-nested-stats"></a></dt>
 <dd><p>Tokens controlling which comparison
-statistics to display when <code>nested = TRUE</code>. <code>NULL</code> (default)
-selects the class-aware default (<code>c("r2_change", "F", "p")</code>
-for <code>lm</code>). See <em>Vocabulary tokens</em>.</p></dd>
+statistics to display when <code>nested = TRUE</code>. Available tokens:</p><ul><li><p>Variance explained – <code>lm</code> only: <code>"r2_change"</code>,
+<code>"adj_r2_change"</code>, <code>"F"</code>, <code>"f2_change"</code>.</p></li>
+<li><p>Likelihood-based: <code>"LRT"</code>, <code>"deviance_change"</code>.</p></li>
+<li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>.</p></li>
+<li><p><code>"p"</code> – p-value of the chosen test (<code>F</code> for <code>lm</code>
+hierarchies, <code>LRT</code> for <code>glm</code> hierarchies).</p></li>
+</ul><p><code>NULL</code> (default) selects the class-aware default:
+<code>c("r2_change", "F", "p")</code> for <code>lm</code> (APA hierarchical-regression
+standard), <code>c("LRT", "p")</code> for <code>glm</code> (APA hierarchical-logistic
+standard; Hosmer &amp; Lemeshow §3.5; Long &amp; Freese 2014 §3.6).
+Variance-explained tokens on an all-<code>glm</code> hierarchy raise
+<code>spicy_invalid_input</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
