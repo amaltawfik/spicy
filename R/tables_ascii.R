@@ -36,7 +36,8 @@
   if (!is.list(spanners) || is.null(names(spanners)) ||
         any(!nzchar(names(spanners)))) {
     spicy_abort(
-      c("`spanners` must be a named list (label → integer column indices).",
+      c(paste0("`spanners` must be a named list (label \u2192 ",
+                "integer column indices)."),
         "i" = "Example: `list(\"Step 1\" = 2:5, \"Step 2\" = 6:9)`."),
       class = "spicy_invalid_input"
     )
@@ -376,7 +377,7 @@ build_ascii_table <- function(
       for (k in seq_along(lab_chars)) {
         spanner_chars[lab_pos + k - 1L] <- lab_chars[k]
       }
-      for (p in span_start:span_end) underline_chars[p] <- "─"
+      for (p in span_start:span_end) underline_chars[p] <- "\u2500"
     }
     spanner_line <- paste(spanner_chars, collapse = "")
     underline_line <- style(paste(underline_chars, collapse = ""))
@@ -586,7 +587,7 @@ ascii_table_panels <- function(
 #'   centered above their column content even when the data itself
 #'   is right-aligned. Passed through to [build_ascii_table()].
 #'   Defaults to `FALSE`.
-#' @param spanners Optional named list of column-group labels (label →
+#' @param spanners Optional named list of column-group labels (label \u2192
 #'   integer column indices). Passed through to [build_ascii_table()];
 #'   when the table is split into horizontal panels each panel keeps
 #'   only the spanners whose columns are fully contained in it.
