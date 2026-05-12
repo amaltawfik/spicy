@@ -157,13 +157,14 @@ always refers to B / beta), \code{"AME_SE"}.
 \code{drop1(test = "LRT")}, rendered as \code{value (df)}).
 }
 The \code{"p"} token always refers to the B (or beta if standardised)
-p-value; for AME use \code{"AME_p"}. Default \code{NULL} selects a
-context-aware default: \code{c("B", "SE", "CI", "p")} for a single
-model (APA-7 §6.46 publication layout), and \code{c("B", "SE", "p")}
-for \verb{≥2} models (CI dropped to fit the side-by-side
-layout — restore it explicitly when needed). See \emph{Vocabulary
-tokens} and \emph{Multi-model semantics} for ordering and rendering
-details.}
+p-value; for AME use \code{"ame_p"}. Default \code{NULL} selects a
+context-aware default: \code{c("b", "se", "ci", "p")} (= the
+\code{"all_b"} group) for a single model (APA-7 §6.46 publication
+layout), and \code{c("b", "se", "p")} (= the \code{"all_b_compact"}
+group) for \eqn{\geq 2}{>= 2} models (CI dropped to fit the
+side-by-side layout -- restore it explicitly when needed).
+See \emph{Vocabulary tokens} and \emph{Multi-model semantics} for
+ordering and rendering details.}
 
 \item{keep}{Character vector of regular expressions; when
 supplied, only coefficient rows whose term name matches at

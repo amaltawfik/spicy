@@ -65,8 +65,9 @@ centered above their column content even when the data itself
 is right-aligned. Passed through to \code{\link[=build_ascii_table]{build_ascii_table()}}.
 Defaults to \code{FALSE}.}
 
-\item{spanners}{Optional named list of column-group labels (label →
-integer column indices). Passed through to \code{\link[=build_ascii_table]{build_ascii_table()}};
+\item{spanners}{Optional named list of column-group labels
+(label -> integer column indices). Passed through to
+\code{\link[=build_ascii_table]{build_ascii_table()}};
 when the table is split into horizontal panels each panel keeps
 only the spanners whose columns are fully contained in it.
 Defaults to \code{NULL} (no spanner row).}

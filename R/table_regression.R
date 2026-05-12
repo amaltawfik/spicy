@@ -310,13 +310,14 @@
 #'       `drop1(test = "LRT")`, rendered as `value (df)`).
 #'   }
 #'   The `"p"` token always refers to the B (or beta if standardised)
-#'   p-value; for AME use `"AME_p"`. Default `NULL` selects a
-#'   context-aware default: `c("B", "SE", "CI", "p")` for a single
-#'   model (APA-7 §6.46 publication layout), and `c("B", "SE", "p")`
-#'   for `≥2` models (CI dropped to fit the side-by-side
-#'   layout — restore it explicitly when needed). See *Vocabulary
-#'   tokens* and *Multi-model semantics* for ordering and rendering
-#'   details.
+#'   p-value; for AME use `"ame_p"`. Default `NULL` selects a
+#'   context-aware default: `c("b", "se", "ci", "p")` (= the
+#'   `"all_b"` group) for a single model (APA-7 §6.46 publication
+#'   layout), and `c("b", "se", "p")` (= the `"all_b_compact"`
+#'   group) for \eqn{\geq 2}{>= 2} models (CI dropped to fit the
+#'   side-by-side layout -- restore it explicitly when needed).
+#'   See *Vocabulary tokens* and *Multi-model semantics* for
+#'   ordering and rendering details.
 #' @param keep Character vector of regular expressions; when
 #'   supplied, only coefficient rows whose term name matches at
 #'   least one of the patterns are kept. Useful when a model has

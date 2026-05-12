@@ -587,8 +587,9 @@ ascii_table_panels <- function(
 #'   centered above their column content even when the data itself
 #'   is right-aligned. Passed through to [build_ascii_table()].
 #'   Defaults to `FALSE`.
-#' @param spanners Optional named list of column-group labels (label \u2192
-#'   integer column indices). Passed through to [build_ascii_table()];
+#' @param spanners Optional named list of column-group labels
+#'   (label -> integer column indices). Passed through to
+#'   [build_ascii_table()];
 #'   when the table is split into horizontal panels each panel keeps
 #'   only the spanners whose columns are fully contained in it.
 #'   Defaults to `NULL` (no spanner row).
