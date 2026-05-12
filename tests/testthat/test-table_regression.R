@@ -1059,3 +1059,31 @@ test_that("spanner — tinytable output uses group_tt for column groups", {
   expect_match(joined, "| A ", fixed = TRUE)
   expect_match(joined, "| B ", fixed = TRUE)
 })
+
+
+test_that("reference row always FIRST in its factor group regardless of group_factor_levels", {
+  # Reference-row position must be deterministic across the
+  # group_factor_levels toggle. Pre-fix, FALSE put the ref AFTER
+  # the active dummies (because build_reference_rows appends them
+  # at the end of coef order and group_factor_terms was gated on
+  # TRUE). Now we always reorder so the ref is first in its group.
+  df <- data.frame(
+    y   = rnorm(200),
+    age = rnorm(200),
+    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
+                 levels = c("Female", "Male"))
+  )
+  fit <- lm(y ~ age + sex, df)
+
+  out_t <- table_regression(fit, group_factor_levels = TRUE)
+  vars_t <- as.data.frame(out_t, stringsAsFactors = FALSE)$Variable
+  ref_t  <- which(grepl("Female (ref.)", vars_t, fixed = TRUE))
+  male_t <- which(vars_t == "  Male")
+  expect_true(ref_t < male_t)
+
+  out_f <- table_regression(fit, group_factor_levels = FALSE)
+  vars_f <- as.data.frame(out_f, stringsAsFactors = FALSE)$Variable
+  ref_f  <- which(grepl("sexFemale (ref.)", vars_f, fixed = TRUE))
+  male_f <- which(vars_f == "sexMale")
+  expect_true(ref_f < male_f)
+})

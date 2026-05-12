@@ -70,9 +70,14 @@ align_extracts <- function(
     term_order <- c(setdiff(term_order, "(Intercept)"), "(Intercept)")
   }
 
-  if (isTRUE(group_factor_levels)) {
-    term_order <- group_factor_terms(term_order, coefs_long)
-  }
+  # Always reorder so each factor's coefs stay contiguous and the
+  # reference row sits FIRST within its group. The position must be
+  # deterministic regardless of `group_factor_levels`: only the
+  # factor-HEADER row and the term-label formatting (indent + bare
+  # level vs `<var><level>`) depend on the flag. Otherwise the user
+  # would see a different ref-row position when toggling the
+  # grouping -- the inconsistency surfaced in real-world testing.
+  term_order <- group_factor_terms(term_order, coefs_long)
 
   if (identical(reference_style, "annotation")) {
     coefs_long <- coefs_long[!coefs_long$is_reference, , drop = FALSE]
