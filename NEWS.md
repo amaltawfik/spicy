@@ -149,10 +149,21 @@
 * **Regression-type declared in the footer note**. Every footer
   now starts with the model's regression type
   ("Linear regression.", "Logistic regression.", "Poisson
-  regression.", ...). Mixed-class multi-model tables enumerate per
-  position ("Model 1: linear regression; Model 2: logistic
-  regression."). The title now also carries the type for `lm`
-  ("Linear regression: mpg" instead of "Regression: mpg").
+  regression.", ...). Multi-model same-type tables use the plural
+  form ("Linear regression models."); mixed-class multi-model
+  tables enumerate per position ("Model 1: linear regression;
+  Model 2: logistic regression."). The title now also carries
+  the type for `lm` ("Linear regression: mpg" instead of
+  "Regression: mpg").
+
+* **AME / B-p caveat narrowed and trimmed**. The warning that
+  fired when `ame` and `p` are shown without `ame_p` is now only
+  raised when divergence between the two p-values is actually
+  plausible — i.e., any model is a `glm` (non-identity link)
+  or has an interaction / non-linear transform. For a pure
+  additive `lm`, the two p-values are mathematically identical,
+  so the caveat is suppressed. The message is also shorter:
+  one main line + one hint (was three lines).
 
 * **Ordered-factor (`contr.poly`) grouping + auto note**. Ordered
   factors are no longer rendered as a flat list of `<var>.L`,

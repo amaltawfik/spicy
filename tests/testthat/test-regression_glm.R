@@ -1853,16 +1853,18 @@ test_that("AUDIT: response types (logical, integer, character->factor)", {
 # nested_stats validators added in the recent polish rounds.
 # ============================================================================
 
-test_that("AME caveat: spicy_caveat fires when AME + p without AME_p", {
-  fit <- lm(mpg ~ wt + cyl, data = mtcars)
+test_that("AME caveat: spicy_caveat fires when ame + p without ame_p (glm)", {
+  # Caveat fires only when divergence between B-p and AME-p is
+  # plausible: any glm in the set, OR any model with a non-additive
+  # term (interaction / transform). Pure additive lm is silent.
+  fit_glm <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   expect_warning(
-    table_regression(fit, show_columns = c("b", "ame", "p")),
+    table_regression(fit_glm, show_columns = c("b", "ame", "p")),
     class = "spicy_caveat"
   )
-  # Suppress the caveat for a cleaner cnd capture
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, show_columns = c("b", "ame", "p")),
+    table_regression(fit_glm, show_columns = c("b", "ame", "p")),
     spicy_caveat = function(c) {
       cnd <<- c
       invokeRestart("muffleWarning")
@@ -1873,8 +1875,29 @@ test_that("AME caveat: spicy_caveat fires when AME + p without AME_p", {
   expect_match(msg, "B (or beta", fixed = TRUE)
 })
 
-test_that("AME caveat: NO caveat when AME + p + AME_p all present", {
-  fit <- lm(mpg ~ wt + cyl, data = mtcars)
+test_that("AME caveat: fires for lm with interaction term", {
+  fit_int <- lm(mpg ~ wt * cyl, data = mtcars)
+  expect_warning(
+    table_regression(fit_int, show_columns = c("b", "ame", "p")),
+    class = "spicy_caveat"
+  )
+})
+
+test_that("AME caveat: SILENT for additive lm (B-p == AME-p mathematically)", {
+  fit_add <- lm(mpg ~ wt + cyl, data = mtcars)
+  cnd <- NULL
+  withCallingHandlers(
+    table_regression(fit_add, show_columns = c("b", "ame", "p")),
+    spicy_caveat = function(c) {
+      cnd <<- c
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_null(cnd)
+})
+
+test_that("AME caveat: NO caveat when ame + p + ame_p all present", {
+  fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   cnd <- NULL
   withCallingHandlers(
     table_regression(fit, show_columns = c("b", "p", "ame", "ame_p")),

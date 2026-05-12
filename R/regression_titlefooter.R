@@ -127,7 +127,11 @@ build_regression_type_footer_block <- function(extracts) {
     return(paste0(capitalize_first(types[1]), "."))
   }
   if (length(unique(types)) == 1L) {
-    return(paste0("All models: ", types[1], "."))
+    # Plural noun ("Linear regression models.") -- terser and more
+    # natural than "All models: linear regression." Works across
+    # families: "Logistic regression models.", "Poisson regression
+    # models.", "Negative-binomial regression models.", ...
+    return(paste0(capitalize_first(types[1]), " models."))
   }
   per <- vapply(seq_along(types), function(i) {
     sprintf("Model %d: %s", i, types[i])

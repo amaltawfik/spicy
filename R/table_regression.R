@@ -897,32 +897,31 @@ table_regression <- function(
       class = "spicy_ignored_arg"
     )
   }
-  # AME visibility caveat: when `AME` and `p` are both shown but
-  # `AME_p` is not, the rendered `p` column is the B (or beta) p-
-  # value, NOT the AME p-value -- which can differ substantially in
-  # the presence of interactions or non-linear formulas. Emit a
-  # caveat so the user adds `"AME_p"` if AME's p was the intent.
+  # AME visibility caveat: when `ame` and `p` are both shown but
+  # `ame_p` is not, the rendered `p` column is the B (or beta) p-
+  # value, not the AME p-value. The two are **mathematically
+  # identical** for `lm` with main effects only (no interactions,
+  # no non-linear transforms), so emitting the caveat in that case
+  # is a false alarm. Fire only when divergence is plausible:
+  # any glm in the set, or any model with a non-additive term
+  # (interaction / transform) detected by detect_non_additive_terms().
   if (all(c("ame", "p") %in% show_columns) &&
         !("ame_p" %in% show_columns)) {
-    spicy_warn(
-      c(
-        paste0("`\"ame\"` and `\"p\"` are both in `show_columns`, but ",
-               "`\"ame_p\"` is not. The displayed `p` column refers to ",
-               "the B (or beta if standardised) coefficient, not to the ",
-               "AME."),
-        "i" = paste0(
-          "Add `\"ame_p\"` to `show_columns` to display the AME-specific ",
-          "p-value alongside, e.g., ",
-          "`show_columns = c(\"b\", \"p\", \"ame\", \"ame_p\")`."
+    any_glm <- any(vapply(models, inherits, logical(1), "glm"))
+    any_non_additive <- any(vapply(models, function(f) {
+      detect_non_additive_terms(f)$has_problem
+    }, logical(1)))
+    if (any_glm || any_non_additive) {
+      spicy_warn(
+        c(
+          paste0("`\"ame\"` and `\"p\"` shown without `\"ame_p\"`: the ",
+                 "`p` column is for B (or beta), not the AME. They can ",
+                 "differ under non-linear links or interactions."),
+          "i" = "Add `\"ame_p\"` to display the AME-specific p-value."
         ),
-        "i" = paste0(
-          "The two p-values are identical for `lm` linear formulas ",
-          "without interactions, but can differ substantially otherwise ",
-          "(non-linear glm link, factor-by-numeric interactions, ...)."
-        )
-      ),
-      class = "spicy_caveat"
-    )
+        class = "spicy_caveat"
+      )
+    }
   }
 
   # Phase F — output-dependent resource validation (file paths,

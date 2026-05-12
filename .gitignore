@@ -10,3 +10,7 @@ docs
 cobertura.xml
 .claude/
 .vscode/
+
+# Transient R plot device output (when Rscript runs plotting code
+# without an explicit pdf()/png() device).
+Rplots.pdf

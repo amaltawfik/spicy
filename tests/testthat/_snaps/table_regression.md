@@ -43,7 +43,7 @@
        R²          │  0.75                0.84
        Adj.R²      │  0.74                0.82
       
-      Note. All models: linear regression.
+      Note. Linear regression models.
       Std. errors: classical (OLS).
       
       ── Model comparison ──
