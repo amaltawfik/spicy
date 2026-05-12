@@ -281,13 +281,14 @@ always refers to B / beta), <code>"AME_SE"</code>.</p></li>
 (likelihood-ratio chi-square via
 <code>drop1(test = "LRT")</code>, rendered as <code>value (df)</code>).</p></li>
 </ul><p>The <code>"p"</code> token always refers to the B (or beta if standardised)
-p-value; for AME use <code>"AME_p"</code>. Default <code>NULL</code> selects a
-context-aware default: <code>c("B", "SE", "CI", "p")</code> for a single
-model (APA-7 §6.46 publication layout), and <code>c("B", "SE", "p")</code>
-for <code>≥2</code> models (CI dropped to fit the side-by-side
-layout — restore it explicitly when needed). See <em>Vocabulary
-tokens</em> and <em>Multi-model semantics</em> for ordering and rendering
-details.</p></dd>
+p-value; for AME use <code>"ame_p"</code>. Default <code>NULL</code> selects a
+context-aware default: <code>c("b", "se", "ci", "p")</code> (= the
+<code>"all_b"</code> group) for a single model (APA-7 §6.46 publication
+layout), and <code>c("b", "se", "p")</code> (= the <code>"all_b_compact"</code>
+group) for \(\geq 2\) models (CI dropped to fit the
+side-by-side layout – restore it explicitly when needed).
+See <em>Vocabulary tokens</em> and <em>Multi-model semantics</em> for
+ordering and rendering details.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>

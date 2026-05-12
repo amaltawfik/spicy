@@ -95,7 +95,7 @@ spicy_print_table(
 
 - spanners:
 
-  Optional named list of column-group labels (label → integer column
+  Optional named list of column-group labels (label -\> integer column
   indices). Passed through to
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md);
   when the table is split into horizontal panels each panel keeps only
