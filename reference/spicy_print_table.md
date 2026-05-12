@@ -22,6 +22,7 @@ spicy_print_table(
   align_left_cols = NULL,
   align_center_cols = integer(0),
   center_headers = FALSE,
+  spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   ...
@@ -91,6 +92,15 @@ spicy_print_table(
   content even when the data itself is right-aligned. Passed through to
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
   Defaults to `FALSE`.
+
+- spanners:
+
+  Optional named list of column-group labels (label → integer column
+  indices). Passed through to
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md);
+  when the table is split into horizontal panels each panel keeps only
+  the spanners whose columns are fully contained in it. Defaults to
+  `NULL` (no spanner row).
 
 - group_sep_rows:
 

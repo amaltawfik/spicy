@@ -87,6 +87,7 @@ per-column alignment.</p>
 <span>  align_left_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span>,</span>
 <span>  align_center_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  center_headers <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  total_row_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -160,6 +161,18 @@ parameters::model_parameters / modelsummary). Left-aligned
 columns (per <code>align_left_cols</code>) keep their header on the
 left. Defaults to <code>FALSE</code> for backward compatibility; the
 <code>print.spicy_regression_table</code> method enables it.</p></dd>
+
+
+<dt id="arg-spanners">spanners<a class="anchor" aria-label="anchor" href="#arg-spanners"></a></dt>
+<dd><p>Optional named list defining a <em>column group row</em>
+drawn above the column headers (the "spanner" / "supra-header"
+convention used by gt, flextable, kableExtra, modelsummary).
+Names are spanner labels; values are integer vectors of 1-based
+column indices the label spans (must be contiguous). A thin
+underline rule is drawn below each spanner across its span.
+Used by <code>print.spicy_regression_table()</code> to display the model
+name above each model's block of sub-columns. Defaults to
+<code>NULL</code> (no spanner row).</p></dd>
 
 
 <dt id="arg-group-sep-rows">group_sep_rows<a class="anchor" aria-label="anchor" href="#arg-group-sep-rows"></a></dt>

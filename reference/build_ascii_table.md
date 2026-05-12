@@ -19,6 +19,7 @@ build_ascii_table(
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
   center_headers = FALSE,
+  spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   ...
@@ -90,6 +91,17 @@ build_ascii_table(
   (per `align_left_cols`) keep their header on the left. Defaults to
   `FALSE` for backward compatibility; the `print.spicy_regression_table`
   method enables it.
+
+- spanners:
+
+  Optional named list defining a *column group row* drawn above the
+  column headers (the "spanner" / "supra-header" convention used by gt,
+  flextable, kableExtra, modelsummary). Names are spanner labels; values
+  are integer vectors of 1-based column indices the label spans (must be
+  contiguous). A thin underline rule is drawn below each spanner across
+  its span. Used by `print.spicy_regression_table()` to display the
+  model name above each model's block of sub-columns. Defaults to `NULL`
+  (no spanner row).
 
 - group_sep_rows:
 

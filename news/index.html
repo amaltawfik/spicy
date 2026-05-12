@@ -75,6 +75,68 @@
 <li><p><code>keep</code> and <code>drop</code> are regex filters for focal-predictor display (mutually exclusive). <code>nested = TRUE</code> adds an APA-style hierarchical-comparison footer (default tokens <code>c("r2_change", "F", "p")</code> for <code>lm</code>, <code>c("LRT", "p")</code> for <code>glm</code>).</p></li>
 <li><p>AME under cluster-robust variance gets Satterthwaite-corrected df via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code> for <code>lm</code> and <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> (dominant-coefficient approximation, Pustejovsky &amp; Tipton 2018) for <code>glm</code>. spicy is the <strong>first R package</strong> to offer this for <code>lm</code>.</p></li>
 <li><p>Outputs: console (default <code>spicy_regression_table</code> print method), <code>data.frame</code>, long tibble, <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel, Word, clipboard. Full <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> integration for downstream <code>modelsummary</code> / custom workflows.</p></li>
+<li><p><strong>Multi-model column spanners</strong>: when two or more fits share the table, each model’s sub-columns (<code>B</code> / <code>SE</code> / <code>95% CI</code> / <code>p</code> / …) are grouped under a centered spanner label drawn above the header — by default in the console (ASCII), and via the native spanner API in <code><a href="https://gt.rstudio.com/reference/tab_spanner.html" class="external-link">gt::tab_spanner()</a></code>, <code><a href="https://davidgohel.github.io/flextable/reference/add_header_row.html" class="external-link">flextable::add_header_row()</a></code>, <code><a href="https://vincentarelbundock.github.io/tinytable/man/group_tt.html" class="external-link">tinytable::group_tt()</a></code>, and <code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_merge_cells.html" class="external-link">openxlsx2::wb_merge_cells()</a></code> (Word follows <code>flextable</code>). The redundant <code>"Step 1: B"</code>-style prefix is stripped from displayed sub-column headers when a spanner is shown. Plain <code>data.frame</code> / <code>long</code> / <code>clipboard</code> outputs keep the unambiguous prefixed names.</p></li>
+<li><p><strong>DV-in-spanner smart default</strong>: when models have all-distinct response variables and no explicit <code>model_labels</code> / <code>names(list)</code> is supplied, the bare DV name (from <code>formula(fit)[[2]]</code>, <em>not</em> <code>attr("label")</code>, which can be long and would distort column widths) is lifted into the spanner labels instead of the generic <code>"Model 1, 2, ..."</code>. User-supplied <code>model_labels</code> / list names always win.</p></li>
+<li><p><strong><code>outcome_labels</code> row hidden by default</strong>. With the multi-model spanner now carrying the DV / model name, the body Outcome row is redundant. <code>outcome_labels = NULL</code> (the default) hides it; pass <code>outcome_labels = c(...)</code> to opt back in.</p></li>
+<li><p><strong>Context-aware <code>show_columns</code> default</strong>. A single-model table keeps the APA-7 §6.46 publication layout <code>c("B", "SE", "CI", "p")</code>; a multi-model table drops <code>"CI"</code> to fit the side-by-side layout (<code>c("B", "SE", "p")</code>). Override explicitly via <code>show_columns</code> when needed. Matches the modelsummary default.</p></li>
+<li><p><strong>Compact <code>padding = 0L</code> default</strong>. The console renderer now uses zero extra column padding by default for <code><a href="../reference/table_regression.html">table_regression()</a></code> (was <code>2L</code>), matching modelsummary’s tight layout. Pass <code>padding = 2L</code> or <code>4L</code> to restore the previous look. Other spicy tables (<code><a href="../reference/freq.html">freq()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/table_categorical.html">table_categorical()</a></code> / <code><a href="../reference/table_continuous.html">table_continuous()</a></code>) keep their original <code>padding = 2L</code> default.</p></li>
+<li><p><strong>Partial naming of the models list is accepted</strong>. <code>list("Step 1" = m1, m2)</code> now works: the named slot keeps its label, the unnamed slot auto-fills as <code>"Model &lt;position&gt;"</code> (here <code>"Model 2"</code>). Previously this was a hard error. Duplicate explicit names are still rejected (they would silently collide in the long-format model_id key).</p></li>
+<li>
+<p><strong><code>show_columns</code> vocabulary — lowercase atomic tokens + group presets</strong>. The token vocabulary is now all-lowercase and one-token-per-displayed-column (no more bundled <code>value [CI]</code> cells outside <code>partial_chi2</code>):</p>
+<table class="table"><colgroup><col width="46%"><col width="53%"></colgroup><thead><tr><th>&lt;= 0.11 (mixed case + bundled)</th>
+<th>0.12 atomic (lowercase)</th>
+</tr></thead><tbody><tr><td>
+<code>"B"</code>, <code>"SE"</code>, <code>"CI"</code>, <code>"t"</code>, <code>"p"</code>, <code>"beta"</code>
+</td>
+<td>
+<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>, <code>"beta"</code>
+</td>
+</tr><tr><td>
+<code>"AME"</code> (bundled <code>value [CI]</code>)</td>
+<td>
+<code>"ame"</code> + <code>"ame_ci"</code> (split)</td>
+</tr><tr><td>
+<code>"AME_SE"</code>, <code>"AME_p"</code>
+</td>
+<td>
+<code>"ame_se"</code>, <code>"ame_p"</code>
+</td>
+</tr><tr><td>
+<code>"partial_f2"</code> (bundled), <code>"partial_eta2"</code>, <code>"partial_omega2"</code>
+</td>
+<td>
+<code>"partial_f2"</code> + <code>"partial_f2_ci"</code> (split); same for eta² / omega²</td>
+</tr><tr><td>
+<code>"partial_chi2"</code> (bundled <code>value (df)</code>)</td>
+<td>
+<code>"partial_chi2"</code> (kept bundled — universal <code>χ²(df)</code> convention)</td>
+</tr></tbody></table><p>Passing a legacy uppercase token raises an actionable migration error pointing at the replacement (no silent aliasing).</p>
+</li>
+<li>
+<p><strong><code>show_columns</code> group tokens</strong> (Stata / SPSS / SAS-style presets). Each group expands to a fixed vector of atomic tokens before validation:</p>
+<ul><li>
+<code>"all_b"</code> -&gt; <code>c("b", "se", "ci", "p")</code> (single-model default)</li>
+<li>
+<code>"all_b_compact"</code> -&gt; <code>c("b", "se", "p")</code> (multi-model default)</li>
+<li>
+<code>"all_b_full"</code> -&gt; <code>c("b", "se", "ci", "t", "p")</code>
+</li>
+<li>
+<code>"all_beta"</code> -&gt; <code>c("b", "beta", "se", "ci", "p")</code>
+</li>
+<li>
+<code>"all_ame"</code> -&gt; <code>c("ame", "ame_se", "ame_ci", "ame_p")</code>
+</li>
+<li>
+<code>"all_ame_compact"</code> -&gt; <code>c("ame", "ame_p")</code>
+</li>
+<li>
+<code>"all_f2"</code> / <code>"all_eta2"</code> / <code>"all_omega2"</code> -&gt; <code>partial_*</code> + its <code>_ci</code> companion</li>
+</ul><p>Mix groups and atomic tokens freely: <code>show_columns = c("all_b", "ame", "ame_p")</code>.</p>
+</li>
+<li><p><strong>Regression-type declared in the footer note</strong>. Every footer now starts with the model’s regression type (“Linear regression.”, “Logistic regression.”, “Poisson regression.”, …). Multi-model same-type tables use the plural form (“Linear regression models.”); mixed-class multi-model tables enumerate per position (“Model 1: linear regression; Model 2: logistic regression.”). The title now also carries the type for <code>lm</code> (“Linear regression: mpg” instead of “Regression: mpg”).</p></li>
+<li><p><strong>AME / B-p caveat narrowed and trimmed</strong>. The warning that fired when <code>ame</code> and <code>p</code> are shown without <code>ame_p</code> is now only raised when divergence between the two p-values is actually plausible — i.e., any model is a <code>glm</code> (non-identity link) or has an interaction / non-linear transform. For a pure additive <code>lm</code>, the two p-values are mathematically identical, so the caveat is suppressed. The message is also shorter: one main line + one hint (was three lines).</p></li>
+<li><p><strong>Ordered-factor (<code>contr.poly</code>) grouping + auto note</strong>. Ordered factors are no longer rendered as a flat list of <code>&lt;var&gt;.L</code>, <code>&lt;var&gt;.Q</code>, … rows mixed in with the numeric predictors. They are now grouped under the factor name (like a treatment factor) with sublabels <code>.L</code>, <code>.Q</code>, <code>.C</code>, <code>^k</code> in polynomial- degree order. No reference row is emitted (none exists for <code>contr.poly</code>). An auto English footer note explains the parameterisation and points the user to the per-level alternative (<code>factor(x, ordered = FALSE)</code> or <code>options(contrasts = ...)</code>). Other R packages (modelsummary, gtsummary, parameters, jtools, sjPlot) display the bare suffixes without grouping or context — this is the first R package to surface the issue.</p></li>
 <li><p>Auto-generated APA footer documents the SE family, the AME- Satterthwaite path (when active), the exponentiate transform, the standardisation method, the multiple-comparison adjustment, the significance-stars threshold, and any rank-deficient or hierarchical metadata — no manual annotation needed.</p></li>
 <li><p>Cross-validated to machine precision against <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code> (B / SE / <em>z</em> / <em>p</em> / Wald CI), <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> (profile CI), <code>performance::r2_*</code> (McFadden / Nagelkerke / Tjur pseudo-R²), and <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code> (AME).</p></li>
 <li><p>See <code><a href="../reference/table_regression.html">?table_regression</a></code> and <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> for the full argument reference, runnable examples spanning every feature, and the cross-software equivalence map (Stata / SPSS / SAS conventions).</p></li>

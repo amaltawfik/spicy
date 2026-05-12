@@ -89,6 +89,7 @@ wider than the console. Wraps the internal renderer
 <span>  align_left_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  align_center_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  center_headers <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  total_row_idx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"total_row_idx"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -156,6 +157,14 @@ center-align. Defaults to <code>integer(0)</code>.</p></dd>
 centered above their column content even when the data itself
 is right-aligned. Passed through to <code><a href="build_ascii_table.html">build_ascii_table()</a></code>.
 Defaults to <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-spanners">spanners<a class="anchor" aria-label="anchor" href="#arg-spanners"></a></dt>
+<dd><p>Optional named list of column-group labels (label →
+integer column indices). Passed through to <code><a href="build_ascii_table.html">build_ascii_table()</a></code>;
+when the table is split into horizontal panels each panel keeps
+only the spanners whose columns are fully contained in it.
+Defaults to <code>NULL</code> (no spanner row).</p></dd>
 
 
 <dt id="arg-group-sep-rows">group_sep_rows<a class="anchor" aria-label="anchor" href="#arg-group-sep-rows"></a></dt>

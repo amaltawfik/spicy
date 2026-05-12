@@ -75,24 +75,25 @@ and `p`, plus a fit-stats footer (`n`, `R²`, `Adj.R²`):
 
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit)
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     65.20    1.66    [61.95, 68.45]    <.001 
-#>  age               │      0.05    0.03    [-0.01,  0.11]     .130 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.86    0.91    [ 2.08,  5.63]    <.001 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │     -1.72    1.11    [-3.89,  0.45]     .121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                       
-#>  R²                │      0.02                                    
-#>  Adj.R²            │      0.02                                    
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │    —     —           —         —     
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 ```
 
 Reference levels of factor predictors carry the `(ref.)` annotation and
@@ -110,24 +111,25 @@ small-sample-friendly default (Long and Ervin 2000):
 
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, vcov = "HC3")
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     65.20    1.61    [62.05, 68.35]    <.001 
-#>  age               │      0.05    0.03    [-0.01,  0.11]     .127 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.86    0.91    [ 2.07,  5.64]    <.001 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │     -1.72    1.11    [-3.91,  0.47]     .123 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                       
-#>  R²                │      0.02                                    
-#>  Adj.R²            │      0.02                                    
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.61  [62.05, 68.35]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .127 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.86  0.91  [ 2.07,  5.64]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │    —     —           —         —     
+#>    Yes           │   -1.72  1.11  [-3.91,  0.47]   .123 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Linear regression.
+#> Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 The footer reads “*Std. errors: heteroskedasticity-robust (HC3)*”; the
@@ -153,24 +155,25 @@ table_regression(
 #> Registered S3 method overwritten by 'clubSandwich':
 #>   method    from    
 #>   bread.mlm sandwich
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     65.00    1.74    [60.49, 69.51]    <.001 
-#>  age               │      0.05    0.04    [-0.05,  0.15]     .247 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.88    0.85    [ 1.68,  6.07]     .006 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │     -1.68    1.55    [-5.72,  2.37]     .331 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1163                                       
-#>  R²                │      0.02                                    
-#>  Adj.R²            │      0.02                                    
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001 
+#>  age             │    0.05  0.04  [-0.05,  0.15]   .247 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006 
+#>  smoking:        │                                      
+#>    No (ref.)     │    —     —           —         —     
+#>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
-#> Note. Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression.
+#> Std. errors: cluster-robust (CR2), clusters by region.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -182,9 +185,11 @@ when AME is also requested (next section).
 
 ## Average Marginal Effects with Satterthwaite df
 
-Add `"AME"` to `show_columns` to display the average marginal effect of
-each predictor with its compact `value [CI]` cell. When the variance
-estimator is cluster-robust,
+Add `"ame"` to `show_columns` to display the average marginal effect of
+each predictor. Use `"ame_ci"` and `"ame_p"` for the corresponding CI
+and p-value columns; the shortcut `"all_ame"` expands to
+`c("ame", "ame_se", "ame_ci", "ame_p")`. When the variance estimator is
+cluster-robust,
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 constructs the linear contrast representing each AME and inverts it
 through
@@ -199,47 +204,48 @@ table_regression(
   fit,
   vcov = "CR2",
   cluster = sochealth_cc$region,
-  show_columns = c("B", "SE", "CI", "p", "AME", "AME_p")
+  show_columns = c("b", "se", "ci", "p", "ame", "ame_ci", "ame_p")
 )
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     65.00    1.74    [60.49, 69.51]    <.001 
-#>  age               │      0.05    0.04    [-0.05,  0.15]     .247 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.88    0.85    [ 1.68,  6.07]     .006 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │     -1.68    1.55    [-5.72,  2.37]     .331 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1163                                       
-#>  R²                │      0.02                                    
-#>  Adj.R²            │      0.02                                    
+#>  Variable        │    B      SE       95% CI        p     AME    AME 95% CI   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001                       
+#>  age             │    0.05  0.04  [-0.05,  0.15]   .247   0.05  [-0.05, 0.15] 
+#>  sex:            │                                                            
+#>    Female (ref.) │    —     —           —         —       —           —       
+#>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006   3.88  [ 1.68, 6.07] 
+#>  smoking:        │                                                            
+#>    No (ref.)     │    —     —           —         —       —           —       
+#>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331  -1.68  [-5.72, 2.37] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                                       
+#>  R²              │    0.02                                                    
+#>  Adj.R²          │    0.02                                                    
 #> 
-#>  Variable          │           AME            AME p 
-#> ───────────────────┼────────────────────────────────
-#>  (Intercept)       │                                
-#>  age               │    0.05 [-0.05, 0.15]     .247 
-#>  sex:              │                                
-#>    Female (ref.)   │    —                     —     
-#>    Male            │    3.88 [1.68, 6.07]      .006 
-#>  smoking:          │                                
-#>    No (ref.)       │    —                     —     
-#>    Yes             │   -1.68 [-5.72, 2.37]     .331 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                                
-#>  R²                │                                
-#>  Adj.R²            │                                
+#>  Variable        │ AME p 
+#> ─────────────────┼───────
+#>  (Intercept)     │       
+#>  age             │  .247 
+#>  sex:            │       
+#>    Female (ref.) │ —     
+#>    Male          │  .006 
+#>  smoking:        │       
+#>    No (ref.)     │ —     
+#>    Yes           │  .331 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n               │       
+#>  R²              │       
+#>  Adj.R²          │       
 #> 
-#> Note. Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression.
+#> Std. errors: cluster-robust (CR2), clusters by region.
 #> AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`.
 ```
 
 Note that `"p"` always refers to the B (or β) coefficient, never to the
-AME. To display the AME-specific p-value, include `"AME_p"` in
-`show_columns`. Placing `"AME"` after `"p"` makes the “which p belongs
+AME. To display the AME-specific p-value, include `"ame_p"` in
+`show_columns`. Placing `"ame"` after `"p"` makes the “which p belongs
 to what” reading unambiguous.
 
 The footer now reads “*AME inference: t-distribution with
@@ -268,30 +274,31 @@ literature (Cohen et al. 2003 §3.4; Gelman 2008):
   by `2 × SD(X)`; binary predictors centred only.
 
 When non-`"none"`, the `"beta"` token is auto-injected into
-`show_columns` immediately after `"B"`:
+`show_columns` immediately after `"b"`:
 
 ``` r
 
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, standardized = "refit")
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B         β       SE         95% CI          p   
-#> ───────────────────┼───────────────────────────────────────────────────────
-#>  (Intercept)       │     65.20    -0.10    1.66    [61.95, 68.45]    <.001 
-#>  age               │      0.05     0.04    0.03    [-0.01,  0.11]     .130 
-#>  sex:              │                                                       
-#>    Female (ref.)   │      —        —       —             —           —     
-#>    Male            │      3.86     0.25    0.91    [ 2.08,  5.63]    <.001 
-#>  smoking:          │                                                       
-#>    No (ref.)       │      —        —       —             —           —     
-#>    Yes             │     -1.72    -0.11    1.11    [-3.89,  0.45]     .121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                                
-#>  R²                │      0.02                                             
-#>  Adj.R²            │      0.02                                             
+#>  Variable        │    B       β     SE       95% CI        p   
+#> ─────────────────┼─────────────────────────────────────────────
+#>  (Intercept)     │   65.20  -0.10  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05   0.04  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                             
+#>    Female (ref.) │    —      —     —           —         —     
+#>    Male          │    3.86   0.25  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                             
+#>    No (ref.)     │    —      —     —           —         —     
+#>    Yes           │   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                        
+#>  R²              │    0.02                                     
+#>  Adj.R²          │    0.02                                     
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 ```
 
 For models with interactions or transformed predictors, the function
@@ -304,10 +311,12 @@ displayed, with the limitation made explicit at the point of use.
 
 Three partial effect-size tokens are available — Cohen’s f²
 (`partial_f2`), Pearson’s partial η² (`partial_eta2`), and the
-Olejnik-Algina bias-corrected partial ω² (`partial_omega2`). All three
-include a confidence interval derived from noncentral-F inversion
-(Steiger 2004; Smithson 2003) and render as a single
-`value [CI_low, CI_high]` cell:
+Olejnik-Algina bias-corrected partial ω² (`partial_omega2`). Each
+estimate has a CI derived from noncentral-F inversion (Steiger 2004;
+Smithson 2003), exposed as a separate `<token>_ci` column
+(`partial_f2_ci`, `partial_eta2_ci`, `partial_omega2_ci`). The group
+shortcuts `"all_f2"`, `"all_eta2"`, `"all_omega2"` expand to the pair in
+one go:
 
 ``` r
 
@@ -315,45 +324,31 @@ fit <- lm(wellbeing_score ~ age + sex + smoking + education,
           data = sochealth)
 table_regression(
   fit,
-  show_columns = c("B", "p", "partial_eta2", "partial_omega2")
+  show_columns = c("b", "p", "all_eta2", "all_omega2")
 )
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B         p             η²         
-#> ───────────────────┼─────────────────────────────────────────
-#>  (Intercept)       │     64.49    <.001                      
-#>  age               │      0.03     .344    0.00 [0.00, 0.01] 
-#>  sex:              │                                         
-#>    Female (ref.)   │      —       —        —                 
-#>    Male            │      3.57    <.001    0.02 [0.01, 0.03] 
-#>  smoking:          │                                         
-#>    No (ref.)       │      —       —        —                 
-#>    Yes             │      0.68     .496    0.00 [0.00, 0.01] 
-#>  education.L       │     13.94    <.001    0.21 [0.17, 0.25] 
-#>  education.Q       │     -1.66     .013    0.21 [0.17, 0.25] 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                  
-#>  R²                │      0.22                               
-#>  Adj.R²            │      0.22                               
+#>  Variable        │    B       p     η²    η² 95% CI     ω²    ω² 95% CI   
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.49  <.001                                         
+#>  age             │    0.03   .344  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] 
+#>  sex:            │                                                        
+#>    Female (ref.) │    —     —      —          —        —          —       
+#>    Male          │    3.57  <.001  0.02  [0.01, 0.03]  0.02  [0.01, 0.03] 
+#>  smoking:        │                                                        
+#>    No (ref.)     │    —     —      —          —        —          —       
+#>    Yes           │    0.68   .496  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] 
+#>  education:      │                                                        
+#>    .L            │   13.94  <.001  0.21  [0.17, 0.25]  0.21  [0.17, 0.25] 
+#>    .Q            │   -1.66   .013  0.21  [0.17, 0.25]  0.21  [0.17, 0.25] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                                   
+#>  R²              │    0.22                                                
+#>  Adj.R²          │    0.22                                                
 #> 
-#>  Variable          │          ω²         
-#> ───────────────────┼─────────────────────
-#>  (Intercept)       │                     
-#>  age               │   0.00 [0.00, 0.01] 
-#>  sex:              │                     
-#>    Female (ref.)   │   —                 
-#>    Male            │   0.02 [0.01, 0.03] 
-#>  smoking:          │                     
-#>    No (ref.)       │   —                 
-#>    Yes             │   0.00 [0.00, 0.01] 
-#>  education.L       │   0.21 [0.17, 0.25] 
-#>  education.Q       │   0.21 [0.17, 0.25] 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                     
-#>  R²                │                     
-#>  Adj.R²            │                     
-#> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
 ```
 
 The η² point estimate matches `effectsize::eta_squared(partial = TRUE)`
@@ -385,27 +380,30 @@ within the same call. Available methods are the same as in
 fit <- lm(wellbeing_score ~ age + sex + smoking + education,
           data = sochealth)
 table_regression(fit, p_adjust = "bonferroni")
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     64.49    1.48    [61.58, 67.40]    <.001 
-#>  age               │      0.03    0.03    [-0.03,  0.08]    1.000 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.57    0.81    [ 1.99,  5.15]    <.001 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │      0.68    0.99    [-1.27,  2.63]    1.000 
-#>  education.L       │     13.94    0.79    [12.38, 15.49]    <.001 
-#>  education.Q       │     -1.66    0.67    [-2.97, -0.35]     .065 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                       
-#>  R²                │      0.22                                    
-#>  Adj.R²            │      0.22                                    
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   64.49  1.48  [61.58, 67.40]  <.001 
+#>  age             │    0.03  0.03  [-0.03,  0.08]  1.000 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.57  0.81  [ 1.99,  5.15]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │    —     —           —         —     
+#>    Yes           │    0.68  0.99  [-1.27,  2.63]  1.000 
+#>  education:      │                                      
+#>    .L            │   13.94  0.79  [12.38, 15.49]  <.001 
+#>    .Q            │   -1.66  0.67  [-2.97, -0.35]   .065 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.22                              
+#>  Adj.R²          │    0.22                              
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 #> P-values adjusted via stats::p.adjust(method = 'bonferroni'); m = 5 coefficient(s) per model.
+#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
 ```
 
 The footer documents the chosen method and the family size; the SE
@@ -445,44 +443,48 @@ control variables. Multiple patterns combine with logical OR.
 fit <- lm(wellbeing_score ~ age + sex + smoking + bmi + education,
           data = sochealth)
 table_regression(fit, keep = c("^smoking", "^bmi$"))
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable      │      B        SE        95% CI          p   
-#> ───────────────┼─────────────────────────────────────────────
-#>  smoking:      │                                             
-#>    No (ref.)   │      —       —             —          —     
-#>    Yes         │      0.79    1.00    [-1.17, 2.75]     .428 
-#>  bmi           │      0.10    0.12    [-0.14, 0.33]     .418 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n             │   1163                                      
-#>  R²            │      0.23                                   
-#>  Adj.R²        │      0.22                                   
+#>  Variable    │    B      SE      95% CI        p   
+#> ─────────────┼─────────────────────────────────────
+#>  smoking:    │                                     
+#>    No (ref.) │    —     —           —        —     
+#>    Yes       │    0.79  1.00  [-1.17, 2.75]   .428 
+#>  bmi         │    0.10  0.12  [-0.14, 0.33]   .418 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 1163                                
+#>  R²          │    0.23                             
+#>  Adj.R²      │    0.22                             
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
 ```
 
 ``` r
 
 table_regression(fit, drop = "^education")
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │      B        SE         95% CI          p   
-#> ───────────────────┼──────────────────────────────────────────────
-#>  (Intercept)       │     62.12    3.23    [55.78, 68.45]    <.001 
-#>  age               │      0.02    0.03    [-0.03,  0.08]     .407 
-#>  sex:              │                                              
-#>    Female (ref.)   │      —       —             —           —     
-#>    Male            │      3.50    0.81    [ 1.91,  5.10]    <.001 
-#>  smoking:          │                                              
-#>    No (ref.)       │      —       —             —           —     
-#>    Yes             │      0.79    1.00    [-1.17,  2.75]     .428 
-#>  bmi               │      0.10    0.12    [-0.14,  0.33]     .418 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1163                                       
-#>  R²                │      0.23                                    
-#>  Adj.R²            │      0.22                                    
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   62.12  3.23  [55.78, 68.45]  <.001 
+#>  age             │    0.02  0.03  [-0.03,  0.08]   .407 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.50  0.81  [ 1.91,  5.10]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │    —     —           —         —     
+#>    Yes           │    0.79  1.00  [-1.17,  2.75]   .428 
+#>  bmi             │    0.10  0.12  [-0.14,  0.33]   .418 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                 
+#>  R²              │    0.23                              
+#>  Adj.R²          │    0.22                              
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
 ```
 
 Together with `p_adjust`, this is the article-ready workflow: adjust on
@@ -504,57 +506,27 @@ m_wellbeing <- lm(wellbeing_score ~ age + sex + smoking,
 m_bmi       <- lm(bmi             ~ age + sex + smoking,
                    data = sochealth)
 table_regression(list(m_wellbeing, m_bmi))
-#> Regression comparison
+#> Linear regression comparison
 #> 
-#>  Variable          │              Model 1: B               Model 1: SE 
-#> ───────────────────┼───────────────────────────────────────────────────
-#>  Outcome           │   WHO-5 wellbeing index (0-100)                   
-#>  (Intercept)       │                              65.20           1.66 
-#>  age               │                               0.05           0.03 
-#>  sex:              │                                                   
-#>    Female (ref.)   │                               —              —    
-#>    Male            │                               3.86           0.91 
-#>  smoking:          │                                                   
-#>    No (ref.)       │                               —              —    
-#>    Yes             │                              -1.72           1.11 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                            1175                   
-#>  R²                │                               0.02                
-#>  Adj.R²            │                               0.02                
+#>                      wellbeing_score             bmi          
+#>                    ────────────────────  ──────────────────── 
+#>  Variable        │    B      SE     p       B      SE     p   
+#> ─────────────────┼────────────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  <.001    23.98  0.40  <.001 
+#>  age             │    0.05  0.03   .130     0.04  0.01  <.001 
+#>  sex:            │                                            
+#>    Female (ref.) │    —     —     —         —     —     —     
+#>    Male          │    3.86  0.91  <.001     0.51  0.22   .018 
+#>  smoking:        │                                            
+#>    No (ref.)     │    —     —     —         —     —     —     
+#>    Yes           │   -1.72  1.11   .121    -0.06  0.26   .822 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                  1163                 
+#>  R²              │    0.02                  0.02              
+#>  Adj.R²          │    0.02                  0.02              
 #> 
-#>  Variable          │   Model 1: 95% CI    Model 1: p        Model 2: B     
-#> ───────────────────┼───────────────────────────────────────────────────────
-#>  Outcome           │                                    Body mass index    
-#>  (Intercept)       │    [61.95, 68.45]         <.001                 23.98 
-#>  age               │    [-0.01,  0.11]          .130                  0.04 
-#>  sex:              │                                                       
-#>    Female (ref.)   │          —                —                      —    
-#>    Male            │    [ 2.08,  5.63]         <.001                  0.51 
-#>  smoking:          │                                                       
-#>    No (ref.)       │          —                —                      —    
-#>    Yes             │    [-3.89,  0.45]          .121                 -0.06 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                                               1163    
-#>  R²                │                                                  0.02 
-#>  Adj.R²            │                                                  0.02 
-#> 
-#>  Variable          │   Model 2: SE    Model 2: 95% CI    Model 2: p 
-#> ───────────────────┼────────────────────────────────────────────────
-#>  Outcome           │                                                
-#>  (Intercept)       │          0.40     [23.20, 24.75]         <.001 
-#>  age               │          0.01     [ 0.02,  0.05]         <.001 
-#>  sex:              │                                                
-#>    Female (ref.)   │          —              —                —     
-#>    Male            │          0.22     [ 0.09,  0.94]          .018 
-#>  smoking:          │                                                
-#>    No (ref.)       │          —              —                —     
-#>    Yes             │          0.26     [-0.58,  0.46]          .822 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                                                
-#>  R²                │                                                
-#>  Adj.R²            │                                                
-#> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
 ```
 
 When all models share the dependent variable, the outcome row is
@@ -576,73 +548,46 @@ m1 <- lm(wellbeing_score ~ age + sex,                 data = sochealth_cc)
 m2 <- lm(wellbeing_score ~ age + sex + smoking,       data = sochealth_cc)
 m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
 table_regression(list(m1, m2, m3), nested = TRUE)
-#> Hierarchical regression: wellbeing_score
+#> Hierarchical linear regression: wellbeing_score
 #> 
-#>  Variable          │   Model 1: B    Model 1: SE    Model 1: 95% CI 
-#> ───────────────────┼────────────────────────────────────────────────
-#>  (Intercept)       │        64.70           1.66     [61.45, 67.95] 
-#>  age               │         0.05           0.03     [-0.01,  0.11] 
-#>  sex:              │                                                
-#>    Female (ref.)   │         —              —              —        
-#>    Male            │         3.89           0.91     [ 2.10,  5.68] 
-#>  smoking:          │                                                
-#>    No (ref.)       │         —              —              —        
-#>    Yes             │                                                
-#>  bmi               │                                                
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │      1163                                      
-#>  R²                │         0.02                                   
-#>  Adj.R²            │         0.02                                   
+#>                          Model 1               Model 2            Model 3    
+#>                    ────────────────────  ────────────────────  ───────────── 
+#>  Variable        │    B      SE     p       B      SE     p       B      SE  
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.66  <.001    65.00  1.67  <.001    80.57  3.37 
+#>  age             │    0.05  0.03   .118     0.05  0.03   .109     0.07  0.03 
+#>  sex:            │                                                           
+#>    Female (ref.) │    —     —     —         —     —     —         —     —    
+#>    Male          │    3.89  0.91  <.001     3.88  0.91  <.001     4.21  0.90 
+#>  smoking:        │                                                           
+#>    No (ref.)     │    —     —     —         —     —     —         —     —    
+#>    Yes           │                         -1.68  1.11   .132    -1.71  1.10 
+#>  bmi             │                                               -0.65  0.12 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                  1163          
+#>  R²              │    0.02                  0.02                  0.04       
+#>  Adj.R²          │    0.02                  0.02                  0.04       
 #> 
-#>  Variable          │   Model 1: p    Model 2: B    Model 2: SE 
-#> ───────────────────┼───────────────────────────────────────────
-#>  (Intercept)       │        <.001         65.00           1.67 
-#>  age               │         .118          0.05           0.03 
-#>  sex:              │                                           
-#>    Female (ref.)   │        —              —              —    
-#>    Male            │        <.001          3.88           0.91 
-#>  smoking:          │                                           
-#>    No (ref.)       │        —              —              —    
-#>    Yes             │                      -1.68           1.11 
-#>  bmi               │                                           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                    1163                   
-#>  R²                │                       0.02                
-#>  Adj.R²            │                       0.02                
+#>                    Model 
+#>                    ───── 
+#>  Variable        │   p   
+#> ─────────────────┼───────
+#>  (Intercept)     │ <.001 
+#>  age             │  .019 
+#>  sex:            │       
+#>    Female (ref.) │ —     
+#>    Male          │ <.001 
+#>  smoking:        │       
+#>    No (ref.)     │ —     
+#>    Yes           │  .119 
+#>  bmi             │ <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n               │       
+#>  R²              │       
+#>  Adj.R²          │       
 #> 
-#>  Variable          │   Model 2: 95% CI    Model 2: p    Model 3: B 
-#> ───────────────────┼───────────────────────────────────────────────
-#>  (Intercept)       │    [61.73, 68.27]         <.001         80.57 
-#>  age               │    [-0.01,  0.11]          .109          0.07 
-#>  sex:              │                                               
-#>    Female (ref.)   │          —                —              —    
-#>    Male            │    [ 2.09,  5.66]         <.001          4.21 
-#>  smoking:          │                                               
-#>    No (ref.)       │          —                —              —    
-#>    Yes             │    [-3.86,  0.50]          .132         -1.71 
-#>  bmi               │                                         -0.65 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                                       1163    
-#>  R²                │                                          0.04 
-#>  Adj.R²            │                                          0.04 
-#> 
-#>  Variable          │   Model 3: SE    Model 3: 95% CI    Model 3: p 
-#> ───────────────────┼────────────────────────────────────────────────
-#>  (Intercept)       │          3.37     [73.97, 87.18]         <.001 
-#>  age               │          0.03     [ 0.01,  0.13]          .019 
-#>  sex:              │                                                
-#>    Female (ref.)   │          —              —                —     
-#>    Male            │          0.90     [ 2.44,  5.98]         <.001 
-#>  smoking:          │                                                
-#>    No (ref.)       │          —              —                —     
-#>    Yes             │          1.10     [-3.87,  0.44]          .119 
-#>  bmi               │          0.12     [-0.89, -0.41]         <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │                                                
-#>  R²                │                                                
-#>  Adj.R²            │                                                
-#> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
 #> 
 #> ── Model comparison ──
 #> Model 2 vs Model 1: ΔR² = +0.00, F = +2.28, p = .132
@@ -676,18 +621,19 @@ fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
 table_regression(fit)
 #> Logistic regression: am
 #> 
-#>  Variable          │     B       SE          95% CI          p   
-#> ───────────────────┼─────────────────────────────────────────────
-#>  (Intercept)       │   25.89    12.19    [  1.99, 49.79]    .034 
-#>  mpg               │   -0.32     0.24    [ -0.79,  0.15]    .176 
-#>  wt                │   -6.42     2.55    [-11.41, -1.42]    .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   32                                        
-#>  R² (McFadden)     │    0.60                                     
-#>  R² (Nagelkerke)   │    0.75                                     
-#>  AIC               │   23.2                                      
+#>  Variable        │   B     SE        95% CI        p   
+#> ─────────────────┼─────────────────────────────────────
+#>  (Intercept)     │ 25.89  12.19  [  1.99, 49.79]  .034 
+#>  mpg             │ -0.32   0.24  [ -0.79,  0.15]  .176 
+#>  wt              │ -6.42   2.55  [-11.41, -1.42]  .012 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 32                                  
+#>  R² (McFadden)   │  0.60                               
+#>  R² (Nagelkerke) │  0.75                               
+#>  AIC             │ 23.2                                
 #> 
-#> Note. Std. errors: classical (MLE inverse Hessian).
+#> Note. Logistic regression.
+#> Std. errors: classical (MLE inverse Hessian).
 ```
 
 ### Response-scale display: `exponentiate = TRUE`
@@ -707,18 +653,19 @@ transformation:
 table_regression(fit, exponentiate = TRUE)
 #> Logistic regression: am
 #> 
-#>  Variable          │      OR           SE            95% CI          p   
-#> ───────────────────┼─────────────────────────────────────────────────────
-#>  (Intercept)       │    1.75e+11    2.13e+12    [7.30, 4.18e+21]    .034 
-#>  mpg               │    0.72        0.17        [0.45, 1.16    ]    .176 
-#>  wt                │    0.00        0.00        [0.00, 0.24    ]    .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   32                                                
-#>  R² (McFadden)     │    0.60                                             
-#>  R² (Nagelkerke)   │    0.75                                             
-#>  AIC               │   23.2                                              
+#>  Variable        │    OR         SE          95% CI        p   
+#> ─────────────────┼─────────────────────────────────────────────
+#>  (Intercept)     │  1.75e+11  2.13e+12  [7.30, 4.18e+21]  .034 
+#>  mpg             │  0.72      0.17      [0.45, 1.16    ]  .176 
+#>  wt              │  0.00      0.00      [0.00, 0.24    ]  .012 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 32                                          
+#>  R² (McFadden)   │  0.60                                       
+#>  R² (Nagelkerke) │  0.75                                       
+#>  AIC             │ 23.2                                        
 #> 
-#> Note. Std. errors: classical (MLE inverse Hessian).
+#> Note. Logistic regression.
+#> Std. errors: classical (MLE inverse Hessian).
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated; SE delta-method approximation: SE_OR = OR × SE_link.
 ```
 
@@ -734,24 +681,25 @@ df) read at a glance:
 
 mt <- mtcars; mt$cyl <- factor(mt$cyl)
 fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
-table_regression(fit2, show_columns = c("B", "partial_chi2", "p"))
+table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #> Logistic regression: am
 #> 
-#>  Variable          │     B         χ²         p   
-#> ───────────────────┼──────────────────────────────
-#>  (Intercept)       │   -8.34                 .104 
-#>  mpg               │    0.37    4.53 (1)     .080 
-#>  cyl:              │                              
-#>    4 (ref.)        │    —       —           —     
-#>    6               │    0.73    0.27 (2)     .605 
-#>    8               │    0.70    0.27 (2)     .720 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   32                         
-#>  R² (McFadden)     │    0.32                      
-#>  R² (Nagelkerke)   │    0.47                      
-#>  AIC               │   37.4                       
+#>  Variable        │   B       χ²       p   
+#> ─────────────────┼────────────────────────
+#>  (Intercept)     │ -8.34             .104 
+#>  mpg             │  0.37  4.53 (1)   .080 
+#>  cyl:            │                        
+#>    4 (ref.)      │  —     —         —     
+#>    6             │  0.73  0.27 (2)   .605 
+#>    8             │  0.70  0.27 (2)   .720 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 32                     
+#>  R² (McFadden)   │  0.32                  
+#>  R² (Nagelkerke) │  0.47                  
+#>  AIC             │ 37.4                   
 #> 
-#> Note. Std. errors: classical (MLE inverse Hessian).
+#> Note. Logistic regression.
+#> Std. errors: classical (MLE inverse Hessian).
 ```
 
 ### Standardised coefficients: `refit` and the new `pseudo`
@@ -776,7 +724,7 @@ table_regression(fit, standardized = "pseudo")
 
 ### Average Marginal Effects (AME)
 
-The `AME` token returns response-scale marginal effects via
+The `ame` token returns response-scale marginal effects via
 [`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html).
 For `glm`, AME is computed as the average of `dE[Y|X]/dx` over the
 observed sample (so for logistic regression the displayed AME is in
@@ -788,7 +736,7 @@ approximation for nonlinear contrasts:
 
 ``` r
 
-table_regression(fit, show_columns = c("B", "p", "AME", "AME_p"))
+table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 ```
 
 ### Profile-likelihood CIs: `ci_method = "profile"`
@@ -847,24 +795,25 @@ for custom thresholds:
 
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit, stars = TRUE)
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable          │       B          SE         95% CI          p   
-#> ───────────────────┼─────────────────────────────────────────────────
-#>  (Intercept)       │     65.20***    1.66    [61.95, 68.45]    <.001 
-#>  age               │      0.05       0.03    [-0.01,  0.11]     .130 
-#>  sex:              │                                                 
-#>    Female (ref.)   │      —          —             —           —     
-#>    Male            │      3.86***    0.91    [ 2.08,  5.63]    <.001 
-#>  smoking:          │                                                 
-#>    No (ref.)       │      —          —             —           —     
-#>    Yes             │     -1.72       1.11    [-3.89,  0.45]     .121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                 │   1175                                          
-#>  R²                │      0.02                                       
-#>  Adj.R²            │      0.02                                       
+#>  Variable        │     B        SE       95% CI        p   
+#> ─────────────────┼─────────────────────────────────────────
+#>  (Intercept)     │   65.20***  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05     0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                         
+#>    Female (ref.) │    —        —           —         —     
+#>    Male          │    3.86***  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                         
+#>    No (ref.)     │    —        —           —         —     
+#>    Yes           │   -1.72     1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                    
+#>  R²              │    0.02                                 
+#>  Adj.R²          │    0.02                                 
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 #> *** p < .001, ** p < .01, * p < .05.
 ```
 
@@ -898,22 +847,25 @@ table_regression(
   intercept_position = "last",
   decimal_mark = ","
 )
-#> Regression: wellbeing_score
+#> Linear regression: wellbeing_score
 #> 
-#>  Variable             │      B        SE         95% CI          p   
-#> ──────────────────────┼──────────────────────────────────────────────
-#>  Age (years)          │      0,03    0,03    [-0,03;  0,08]     ,343 
-#>  Sex: [ref: Female]   │                                              
-#>    Male               │      3,65    0,80    [ 2,09;  5,22]    <,001 
-#>  education.L          │     13,80    0,78    [12,28; 15,32]    <,001 
-#>  education.Q          │     -1,71    0,66    [-3,00; -0,41]     ,010 
-#>  (Intercept)          │     64,63    1,46    [61,78; 67,49]    <,001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                    │   1200                                       
-#>  R²                   │      0,22                                    
-#>  Adj.R²               │      0,22                                    
+#>  Variable           │    B      SE       95% CI        p   
+#> ────────────────────┼──────────────────────────────────────
+#>  Age (years)        │    0,03  0,03  [-0,03;  0,08]   ,343 
+#>  Sex: [ref: Female] │                                      
+#>    Male             │    3,65  0,80  [ 2,09;  5,22]  <,001 
+#>  Education:         │                                      
+#>    .L               │   13,80  0,78  [12,28; 15,32]  <,001 
+#>    .Q               │   -1,71  0,66  [-3,00; -0,41]   ,010 
+#>  (Intercept)        │   64,63  1,46  [61,78; 67,49]  <,001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1200                                 
+#>  R²                 │    0,22                              
+#>  Adj.R²             │    0,22                              
 #> 
-#> Note. Std. errors: classical (OLS).
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
 ```
 
 ## Output formats
@@ -937,24 +889,24 @@ str(out)
 #>  $ SE      : chr  "1.66" "0.03" "    " "—   " ...
 #>  $ 95% CI  : chr  "[61.95, 68.45]" "[-0.01,  0.11]" "              " "      —       " ...
 #>  $ p       : chr  "<.001" " .130" "     " "—    " ...
-#>  - attr(*, "title")= chr "Regression: wellbeing_score"
-#>  - attr(*, "note")= chr "Note. Std. errors: classical (OLS)."
+#>  - attr(*, "title")= chr "Linear regression: wellbeing_score"
+#>  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."
 #>  - attr(*, "col_spec")=List of 4
 #>   ..$ :List of 5
 #>   .. ..$ col_name     : chr "B"
-#>   .. ..$ token        : chr "B"
+#>   .. ..$ token        : chr "b"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr "estimate"
 #>   ..$ :List of 5
 #>   .. ..$ col_name     : chr "SE"
-#>   .. ..$ token        : chr "SE"
+#>   .. ..$ token        : chr "se"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr "se"
 #>   ..$ :List of 5
 #>   .. ..$ col_name     : chr "95% CI"
-#>   .. ..$ token        : chr "CI"
+#>   .. ..$ token        : chr "ci"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr [1:2] "ci_low" "ci_high"
@@ -966,7 +918,7 @@ str(out)
 #>   .. ..$ fields       : chr "p_value"
 #>  - attr(*, "group_sep_rows")= int 9
 #>  - attr(*, "align")= chr "decimal"
-#>  - attr(*, "padding")= int 2
+#>  - attr(*, "padding")= int 0
 ```
 
 ``` r
@@ -996,21 +948,21 @@ pkgdown_dark_gt(
 )
 ```
 
-| Regression: wellbeing_score         |       |      |                  |        |
-|-------------------------------------|-------|------|------------------|--------|
-| Variable                            | B     | SE   | 95% CI           | p      |
-| (Intercept)                         | 65.20 | 1.66 | \[61.95, 68.45\] | \<.001 |
-| age                                 | 0.05  | 0.03 | \[-0.01, 0.11\]  | .130   |
-| sex:                                |       |      |                  |        |
-| Female (ref.)                       | —     | —    | —                | —      |
-| Male                                | 3.86  | 0.91 | \[ 2.08, 5.63\]  | \<.001 |
-| smoking:                            |       |      |                  |        |
-| No (ref.)                           | —     | —    | —                | —      |
-| Yes                                 | -1.72 | 1.11 | \[-3.89, 0.45\]  | .121   |
-| n                                   | 1175  |      |                  |        |
-| R²                                  | 0.02  |      |                  |        |
-| Adj.R²                              | 0.02  |      |                  |        |
-| Note. Std. errors: classical (OLS). |       |      |                  |        |
+| Linear regression: wellbeing_score |  |  |  |  |
+|----|----|----|----|----|
+| Variable | B | SE | 95% CI | p |
+| (Intercept) | 65.20 | 1.66 | \[61.95, 68.45\] | \<.001 |
+| age | 0.05 | 0.03 | \[-0.01, 0.11\] | .130 |
+| sex: |  |  |  |  |
+| Female (ref.) | — | — | — | — |
+| Male | 3.86 | 0.91 | \[ 2.08, 5.63\] | \<.001 |
+| smoking: |  |  |  |  |
+| No (ref.) | — | — | — | — |
+| Yes | -1.72 | 1.11 | \[-3.89, 0.45\] | .121 |
+| n | 1175 |  |  |  |
+| R² | 0.02 |  |  |  |
+| Adj.R² | 0.02 |  |  |  |
+| Note. Linear regression. Std. errors: classical (OLS). |  |  |  |  |
 
 ## broom integration
 

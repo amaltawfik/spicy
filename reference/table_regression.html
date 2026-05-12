@@ -119,7 +119,7 @@ models (<code>lmerMod</code>, <code>glmerMod</code>) are planned for spicy 0.16+
 <span>  standardized <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"refit"</span>, <span class="st">"posthoc"</span>, <span class="st">"basic"</span>, <span class="st">"smart"</span>, <span class="st">"pseudo"</span><span class="op">)</span>,</span>
 <span>  exponentiate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  p_adjust <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"SE"</span>, <span class="st">"CI"</span>, <span class="st">"p"</span><span class="op">)</span>,</span>
+<span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  keep <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  drop <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_intercept <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -140,7 +140,7 @@ models (<code>lmerMod</code>, <code>glmerMod</code>) are planned for spicy 0.16+
 <span>  ic_digits <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span>, <span class="st">"auto"</span><span class="op">)</span>,</span>
-<span>  padding <span class="op">=</span> <span class="fl">2L</span>,</span>
+<span>  padding <span class="op">=</span> <span class="fl">0L</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"tinytable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
@@ -281,9 +281,13 @@ always refers to B / beta), <code>"AME_SE"</code>.</p></li>
 (likelihood-ratio chi-square via
 <code>drop1(test = "LRT")</code>, rendered as <code>value (df)</code>).</p></li>
 </ul><p>The <code>"p"</code> token always refers to the B (or beta if standardised)
-p-value; for AME use <code>"AME_p"</code>. Default <code>c("B", "SE", "CI", "p")</code>.
-See <em>Vocabulary tokens</em> and <em>Multi-model semantics</em> for ordering
-and rendering details.</p></dd>
+p-value; for AME use <code>"AME_p"</code>. Default <code>NULL</code> selects a
+context-aware default: <code>c("B", "SE", "CI", "p")</code> for a single
+model (APA-7 §6.46 publication layout), and <code>c("B", "SE", "p")</code>
+for <code>≥2</code> models (CI dropped to fit the side-by-side
+layout — restore it explicitly when needed). See <em>Vocabulary
+tokens</em> and <em>Multi-model semantics</em> for ordering and rendering
+details.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
@@ -361,20 +365,31 @@ em-dashes the inappropriate cell).</p></dd>
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>
 <dd><p>Column / model labels for multi-model
-tables. <code>NULL</code> (default) uses smart auto-generation: hidden
-for a single model, <code>"Model 1, 2, 3"</code> or <code>names(list)</code> for
-multiple models. A character vector of length <code>length(models)</code>
-forces explicit per-column labels.</p></dd>
+tables. These also become the <strong>column-group spanner</strong> labels
+drawn above each model's sub-columns (in the console output
+and in the gt / flextable / tinytable / Excel / Word
+renderers). <code>NULL</code> (default) uses smart auto-generation:
+hidden for a single model; <code>names(list)</code> if the input is a
+named list; otherwise — when models have all-distinct
+response variables — the bare response-variable name (from
+<code>formula(fit)[[2]]</code>; <code>attr("label")</code> is intentionally NOT
+used here, since it can be a long phrase that distorts
+column widths), and the Outcome body row is folded into the
+header; otherwise <code>"Model 1, 2, ..."</code>. A character vector of
+length <code>length(models)</code> forces explicit labels.</p></dd>
 
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
-<dd><p>Per-model response-variable row.
-<code>NULL</code> (default) uses smart auto: row hidden when all DVs
-identical, row shown when DVs differ. Auto-derived from
-<code>attr(data[[dv]], "label")</code> if present, else from
-<code>formula(fit)[[2]]</code>. A character vector of length
-<code>length(models)</code> forces explicit labels. <code>FALSE</code> suppresses
-the row entirely.</p></dd>
+<dd><p>Optional <strong>Outcome body row</strong> override.
+<code>NULL</code> (default) hides the row entirely — with the multi-model
+spanner (and the DV smart-default that lifts the bare DV name
+into the spanner when DVs differ and no <code>model_labels</code> /
+<code>names(list)</code> is supplied), the DV is already visible above
+the data. A character vector of length <code>length(models)</code>
+forces an explicit Outcome row with those values (the spanner
+stays as <code>"Model 1, ..."</code> unless <code>model_labels</code> is also
+supplied). <code>FALSE</code> is accepted for backward compatibility and
+also suppresses the row.</p></dd>
 
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
@@ -466,11 +481,10 @@ alignment.</p></dd>
 <dt id="arg-padding">padding<a class="anchor" aria-label="anchor" href="#arg-padding"></a></dt>
 <dd><p>Non-negative integer giving the extra characters
 added to each data column's auto-computed width when the
-default <code>print</code> method renders the table. Default <code>2L</code>
-(Stata-like spacing). Use <code>0L</code> or <code>1L</code> for a more compact
-layout when the table has many columns (e.g.,
-<code>c("B", "SE", "CI", "p", "AME", "AME_p")</code> side by side); use
-<code>4L</code> for a more spacious layout. Headers are centered above
+default <code>print</code> method renders the table. Default <code>0L</code>
+(compact, modelsummary-like spacing — fits more models in
+the same console / page width). Use <code>2L</code> (Stata-like) or
+<code>4L</code> for a more spacious look. Headers stay centered above
 the data region regardless of padding.</p></dd>
 
 

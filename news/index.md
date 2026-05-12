@@ -73,6 +73,121 @@
   [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
   integration for downstream `modelsummary` / custom workflows.
 
+- **Multi-model column spanners**: when two or more fits share the
+  table, each model’s sub-columns (`B` / `SE` / `95% CI` / `p` / …) are
+  grouped under a centered spanner label drawn above the header — by
+  default in the console (ASCII), and via the native spanner API in
+  [`gt::tab_spanner()`](https://gt.rstudio.com/reference/tab_spanner.html),
+  [`flextable::add_header_row()`](https://davidgohel.github.io/flextable/reference/add_header_row.html),
+  [`tinytable::group_tt()`](https://vincentarelbundock.github.io/tinytable/man/group_tt.html),
+  and
+  [`openxlsx2::wb_merge_cells()`](https://janmarvin.github.io/openxlsx2/reference/wb_merge_cells.html)
+  (Word follows `flextable`). The redundant `"Step 1: B"`-style prefix
+  is stripped from displayed sub-column headers when a spanner is shown.
+  Plain `data.frame` / `long` / `clipboard` outputs keep the unambiguous
+  prefixed names.
+
+- **DV-in-spanner smart default**: when models have all-distinct
+  response variables and no explicit `model_labels` / `names(list)` is
+  supplied, the bare DV name (from `formula(fit)[[2]]`, *not*
+  `attr("label")`, which can be long and would distort column widths) is
+  lifted into the spanner labels instead of the generic
+  `"Model 1, 2, ..."`. User-supplied `model_labels` / list names always
+  win.
+
+- **`outcome_labels` row hidden by default**. With the multi-model
+  spanner now carrying the DV / model name, the body Outcome row is
+  redundant. `outcome_labels = NULL` (the default) hides it; pass
+  `outcome_labels = c(...)` to opt back in.
+
+- **Context-aware `show_columns` default**. A single-model table keeps
+  the APA-7 §6.46 publication layout `c("B", "SE", "CI", "p")`; a
+  multi-model table drops `"CI"` to fit the side-by-side layout
+  (`c("B", "SE", "p")`). Override explicitly via `show_columns` when
+  needed. Matches the modelsummary default.
+
+- **Compact `padding = 0L` default**. The console renderer now uses zero
+  extra column padding by default for
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  (was `2L`), matching modelsummary’s tight layout. Pass `padding = 2L`
+  or `4L` to restore the previous look. Other spicy tables
+  ([`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) /
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  /
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  /
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md))
+  keep their original `padding = 2L` default.
+
+- **Partial naming of the models list is accepted**.
+  `list("Step 1" = m1, m2)` now works: the named slot keeps its label,
+  the unnamed slot auto-fills as `"Model <position>"` (here
+  `"Model 2"`). Previously this was a hard error. Duplicate explicit
+  names are still rejected (they would silently collide in the
+  long-format model_id key).
+
+- **`show_columns` vocabulary — lowercase atomic tokens + group
+  presets**. The token vocabulary is now all-lowercase and
+  one-token-per-displayed-column (no more bundled `value [CI]` cells
+  outside `partial_chi2`):
+
+  | \<= 0.11 (mixed case + bundled) | 0.12 atomic (lowercase) |
+  |----|----|
+  | `"B"`, `"SE"`, `"CI"`, `"t"`, `"p"`, `"beta"` | `"b"`, `"se"`, `"ci"`, `"t"`, `"p"`, `"beta"` |
+  | `"AME"` (bundled `value [CI]`) | `"ame"` + `"ame_ci"` (split) |
+  | `"AME_SE"`, `"AME_p"` | `"ame_se"`, `"ame_p"` |
+  | `"partial_f2"` (bundled), `"partial_eta2"`, `"partial_omega2"` | `"partial_f2"` + `"partial_f2_ci"` (split); same for eta² / omega² |
+  | `"partial_chi2"` (bundled `value (df)`) | `"partial_chi2"` (kept bundled — universal `χ²(df)` convention) |
+
+  Passing a legacy uppercase token raises an actionable migration error
+  pointing at the replacement (no silent aliasing).
+
+- **`show_columns` group tokens** (Stata / SPSS / SAS-style presets).
+  Each group expands to a fixed vector of atomic tokens before
+  validation:
+
+  - `"all_b"` -\> `c("b", "se", "ci", "p")` (single-model default)
+  - `"all_b_compact"` -\> `c("b", "se", "p")` (multi-model default)
+  - `"all_b_full"` -\> `c("b", "se", "ci", "t", "p")`
+  - `"all_beta"` -\> `c("b", "beta", "se", "ci", "p")`
+  - `"all_ame"` -\> `c("ame", "ame_se", "ame_ci", "ame_p")`
+  - `"all_ame_compact"` -\> `c("ame", "ame_p")`
+  - `"all_f2"` / `"all_eta2"` / `"all_omega2"` -\> `partial_*` + its
+    `_ci` companion
+
+  Mix groups and atomic tokens freely:
+  `show_columns = c("all_b", "ame", "ame_p")`.
+
+- **Regression-type declared in the footer note**. Every footer now
+  starts with the model’s regression type (“Linear regression.”,
+  “Logistic regression.”, “Poisson regression.”, …). Multi-model
+  same-type tables use the plural form (“Linear regression models.”);
+  mixed-class multi-model tables enumerate per position (“Model 1:
+  linear regression; Model 2: logistic regression.”). The title now also
+  carries the type for `lm` (“Linear regression: mpg” instead of
+  “Regression: mpg”).
+
+- **AME / B-p caveat narrowed and trimmed**. The warning that fired when
+  `ame` and `p` are shown without `ame_p` is now only raised when
+  divergence between the two p-values is actually plausible — i.e., any
+  model is a `glm` (non-identity link) or has an interaction /
+  non-linear transform. For a pure additive `lm`, the two p-values are
+  mathematically identical, so the caveat is suppressed. The message is
+  also shorter: one main line + one hint (was three lines).
+
+- **Ordered-factor (`contr.poly`) grouping + auto note**. Ordered
+  factors are no longer rendered as a flat list of `<var>.L`, `<var>.Q`,
+  … rows mixed in with the numeric predictors. They are now grouped
+  under the factor name (like a treatment factor) with sublabels `.L`,
+  `.Q`, `.C`, `^k` in polynomial- degree order. No reference row is
+  emitted (none exists for `contr.poly`). An auto English footer note
+  explains the parameterisation and points the user to the per-level
+  alternative (`factor(x, ordered = FALSE)` or
+  `options(contrasts = ...)`). Other R packages (modelsummary,
+  gtsummary, parameters, jtools, sjPlot) display the bare suffixes
+  without grouping or context — this is the first R package to surface
+  the issue.
+
 - Auto-generated APA footer documents the SE family, the AME-
   Satterthwaite path (when active), the exponentiate transform, the
   standardisation method, the multiple-comparison adjustment, the
