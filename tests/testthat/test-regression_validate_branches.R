@@ -167,15 +167,15 @@ test_that("validate_vcov_cluster_lists — cluster vector length mismatch errors
 # detect_ame_satterthwaite_path — flag detection
 # ============================================================================
 
-test_that("detect_ame_satterthwaite_path — TRUE only when AME requested AND any vcov is CR*", {
-  expect_true(spicy:::detect_ame_satterthwaite_path("CR2", c("B", "AME")))
+test_that("detect_ame_satterthwaite_path — TRUE only when ame requested AND any vcov is CR*", {
+  expect_true(spicy:::detect_ame_satterthwaite_path("CR2", c("b", "ame")))
   expect_true(spicy:::detect_ame_satterthwaite_path(
-    list("CR2", "classical"), c("B", "AME")
+    list("CR2", "classical"), c("b", "ame")
   ))
-  expect_false(spicy:::detect_ame_satterthwaite_path("HC3", c("B", "AME")))
-  expect_false(spicy:::detect_ame_satterthwaite_path("CR2", c("B", "p")))
+  expect_false(spicy:::detect_ame_satterthwaite_path("HC3", c("b", "ame")))
+  expect_false(spicy:::detect_ame_satterthwaite_path("CR2", c("b", "p")))
   expect_false(spicy:::detect_ame_satterthwaite_path(
-    list("classical", "HC3"), c("B", "AME")
+    list("classical", "HC3"), c("b", "ame")
   ))
 })
 

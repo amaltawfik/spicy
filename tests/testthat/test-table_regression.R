@@ -13,7 +13,7 @@ test_that("table_regression — default output: spicy_regression_table class + a
   expect_s3_class(out, "spicy_regression_table")
   expect_s3_class(out, "spicy_table")
   expect_s3_class(out, "data.frame")
-  expect_match(attr(out, "title"), "^Regression: mpg")
+  expect_match(attr(out, "title"), "^Linear regression: mpg")
   expect_match(attr(out, "note"), "^Note\\. ")
 })
 
@@ -49,16 +49,21 @@ test_that("table_regression — standardized != 'none' auto-injects 'beta'", {
 test_that("table_regression — 'beta' without standardized errors with spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, show_columns = c("B", "beta")),
+    table_regression(fit, show_columns = c("b", "beta")),
     class = "spicy_invalid_input"
   )
 })
 
-test_that("table_regression — partial_eta2 cell uses Q19 compact 'value [CI]'", {
+test_that("table_regression — partial_eta2 + partial_eta2_ci render as atomic columns", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit, show_columns = c("B", "partial_eta2"))
+  out <- table_regression(fit,
+                          show_columns = c("b", "partial_eta2",
+                                            "partial_eta2_ci"))
   wt_row <- out[out$Variable == "wt", , drop = FALSE]
-  expect_match(wt_row$`η²`, "^[0-9]+\\.[0-9]+ \\[")
+  # `partial_eta2` is the estimate-only cell (no brackets); the CI
+  # is in its own column under "η² 95% CI".
+  expect_match(trimws(wt_row$`η²`), "^[0-9]+\\.[0-9]+$")
+  expect_match(trimws(wt_row$`η² 95% CI`), "^\\[.*\\]$")
 })
 
 
@@ -107,7 +112,7 @@ test_that("table_regression — nested = TRUE adds comparison block to footer", 
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
-  expect_match(attr(out, "title"), "^Hierarchical regression")
+  expect_match(attr(out, "title"), "^Hierarchical linear regression")
   expect_match(attr(out, "note"), "── Model comparison ──")
   expect_match(attr(out, "note"), "Model 2 vs Model 1")
 })
@@ -232,7 +237,7 @@ test_that("AME — binary numeric var keeps the var name (not '<var>1')", {
   # mistake that for a factor and concatenate `am1`. The AME row
   # must align with the B coef row, both keyed `am`.
   fit <- lm(mpg ~ wt + am, data = mtcars)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   expect_true("am" %in% ame$term)
   expect_false("am1" %in% ame$term)
@@ -242,7 +247,7 @@ test_that("AME — true factor still gets <var><level> naming", {
   # Sanity: factor predictors must still produce <var><level> AME
   # rows so they align with the B coef rows (cyl6, cyl8).
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   ame_terms <- td$term[td$estimate_type == "AME"]
   expect_true(all(c("cyl6", "cyl8") %in% ame_terms))
 })
@@ -361,7 +366,7 @@ test_that("ci_level — out of range errors spicy_invalid_input", {
 test_that("show_columns — unknown token errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, show_columns = c("B", "BOGUS")),
+    table_regression(fit, show_columns = c("b", "BOGUS")),
     class = "spicy_invalid_input"
   )
 })
@@ -605,22 +610,20 @@ test_that("duplicate values in `model_labels` error spicy_invalid_input", {
   )
 })
 
-test_that("outcome auto-row uses attr('label') when available", {
-  # Build a small fit on a labelled response (mimicking what
-  # `labelled::var_label()` / haven imports produce).
+test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
+  # With distinct DVs and no explicit labels, the response variable
+  # NAME is lifted into the spanner -- not `attr("label")`, which
+  # can be a long phrase that would distort column widths. The
+  # Outcome body row is suppressed (info is in the header).
   df <- data.frame(y = rnorm(50), x = rnorm(50))
-  attr(df$y, "label") <- "Wellbeing score (0-100)"
+  attr(df$y, "label") <- "Wellbeing score (0-100)"   # NOT used
   fit_a <- lm(y ~ x, data = df)
-  fit_b <- lm(x ~ y, data = df)   # different DV (`x`), no label
+  fit_b <- lm(x ~ y, data = df)
 
   out <- table_regression(list(fit_a, fit_b))
-  outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
-  expect_equal(nrow(outcome_row), 1L)
-
-  m1_label <- trimws(outcome_row[1, "Model 1: B"])
-  m2_label <- trimws(outcome_row[1, "Model 2: B"])
-  expect_equal(m1_label, "Wellbeing score (0-100)")  # attr used
-  expect_equal(m2_label, "x")                          # bare name fallback
+  expect_false("Outcome" %in% out$Variable)
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("y", "x"))
 })
 
 test_that("outcome auto-row identical-DV check uses variable name (not label)", {
@@ -710,15 +713,16 @@ test_that("outcome_labels — multi-model identical DVs: NULL hides the row", {
   expect_false("Outcome" %in% out$Variable)
 })
 
-test_that("outcome_labels — multi-model differing DVs: NULL shows the row with auto labels", {
+test_that("outcome_labels — multi-model differing DVs: NULL lifts DVs into spanner", {
+  # When `outcome_labels = NULL` (default) and DVs differ, the
+  # smart default moves the auto-detected DV names into the
+  # multi-model spanner and suppresses the body Outcome row.
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
-  expect_true("Outcome" %in% out$Variable)
-  outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
-  # Auto labels = variable names; in M1 first col, in M2 first col.
-  expect_true(any(grepl("mpg", outcome_row[, "Model 1: B"])))
-  expect_true(any(grepl("hp",  outcome_row[, "Model 2: B"])))
+  expect_false("Outcome" %in% out$Variable)
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("mpg", "hp"))
 })
 
 test_that("outcome_labels — explicit labels take precedence", {
@@ -849,4 +853,209 @@ test_that("snapshot — standardized + stars + reference annotation", {
   out <- table_regression(fit, standardized = "refit", stars = TRUE,
                           reference_style = "annotation")
   expect_snapshot(cat(capture_norm(out)))
+})
+
+
+# ============================================================================
+# Multi-model column spanners (model name above each model's sub-columns)
+# ============================================================================
+
+test_that("spanner — single model: no spanner attribute", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit)
+  expect_null(attr(out, "spanners"))
+})
+
+test_that("spanner — multi-model named list: names become spanner labels", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("Step 1", "Step 2"))
+  # Multi-model context-aware default drops CI: each model owns
+  # 3 contiguous sub-columns (B / SE / p). Restore CI explicitly
+  # via show_columns when needed.
+  expect_equal(spans[["Step 1"]], 2:4)
+  expect_equal(spans[["Step 2"]], 5:7)
+})
+
+test_that("spanner — multi-model unnamed + same DV: 'Model N' labels", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list(m1, m2))
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("Model 1", "Model 2"))
+})
+
+test_that("spanner — multi-model unnamed + distinct DVs: DV smart default", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp))
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("mpg", "hp"))
+  # Outcome row is folded into the spanner -> not in the body.
+  expect_false("Outcome" %in% out$Variable)
+})
+
+test_that("spanner — explicit model_labels override DV smart default", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp),
+                          model_labels = c("Fuel", "Power"))
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("Fuel", "Power"))
+})
+
+test_that("spanner — explicit outcome_labels keep the row; spanner stays generic", {
+  m_mpg <- lm(mpg ~ wt, data = mt)
+  m_hp  <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp),
+                          outcome_labels = c("Fuel economy", "Horsepower"))
+  spans <- attr(out, "spanners")
+  expect_equal(names(spans), c("Model 1", "Model 2"))
+  expect_true("Outcome" %in% out$Variable)
+})
+
+test_that("spanner — multi-model print strips 'Label: ' prefix from headers", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(list("A" = m1, "B" = m2))
+  txt <- capture.output(print(out))
+  joined <- paste(txt, collapse = "\n")
+  # The spanner labels appear above the sub-columns.
+  expect_match(joined, "A")
+  expect_match(joined, "B")
+  # The bare sub-column tokens are shown twice (one per model);
+  # the "A: B" / "B: B" prefixed form must not appear in the header.
+  expect_false(grepl("A: B", joined, fixed = TRUE))
+})
+
+test_that("spanner — .validate_spanners catches malformed input", {
+  df <- data.frame(a = 1, b = 2, c = 3, d = 4)
+  expect_error(
+    build_ascii_table(df, spanners = list(2:3)),     # unnamed
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    build_ascii_table(df, spanners = list(g = 5:6)), # out of range
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    build_ascii_table(df, spanners = list(g = c(2, 4))),  # non-contiguous
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    build_ascii_table(df, spanners = list(a = 2:3, b = 3:4)), # overlapping
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("spanner — gt output applies tab_spanner + cols_label", {
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  g <- table_regression(list("A" = m1, "B" = m2), output = "gt")
+  html <- as.character(gt::as_raw_html(g))
+  expect_match(html, ">A<")           # spanner label present
+  expect_match(html, ">B<")
+  # Bare sub-column labels are used (cols_label stripped the prefix).
+  # ">B<" matches both the spanner "B" and the bare-token "B"; ensure
+  # the prefixed "A: B" form does NOT appear as a rendered label.
+  expect_false(grepl(">A: B<", html, fixed = TRUE))
+})
+
+test_that("spanner — flextable output adds a header row with spanners", {
+  skip_if_not_installed("flextable")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  f <- table_regression(list("A" = m1, "B" = m2), output = "flextable")
+  hdr <- f$header$dataset
+  expect_equal(nrow(hdr), 2L)                          # spanner + sub-cols
+  expect_true(any(unlist(hdr[1, ]) == "A"))
+  expect_true(any(unlist(hdr[1, ]) == "B"))
+})
+
+test_that("ordered factor — grouped under header, poly-order, auto footer note", {
+  set.seed(1)
+  df <- data.frame(
+    y   = rnorm(200),
+    x   = rnorm(200),
+    edu = ordered(sample(c("Low", "Med", "High", "Top"), 200,
+                          replace = TRUE),
+                  levels = c("Low", "Med", "High", "Top"))
+  )
+  fit <- lm(y ~ x + edu, df)
+  out <- table_regression(fit)
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("edu:" %in% vars)
+  # Poly-order: .L < .Q < .C (alphabetical sort would yield .C first).
+  l_pos <- which(vars == ".L")
+  q_pos <- which(vars == ".Q")
+  c_pos <- which(vars == ".C")
+  expect_true(l_pos < q_pos)
+  expect_true(q_pos < c_pos)
+  # No reference row (poly contrasts have none).
+  expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
+  # Auto footer mentions the poly contrasts.
+  note <- attr(out, "note")
+  expect_match(note, "Ordered factor `edu` uses orthogonal polynomial")
+  expect_match(note, "linear trend", fixed = TRUE)
+})
+
+test_that("ordered factor — fitting with factor(ordered = FALSE) restores treatment layout", {
+  set.seed(1)
+  df <- data.frame(
+    y   = rnorm(200),
+    edu = ordered(sample(c("Low", "Med", "High"), 200, replace = TRUE),
+                  levels = c("Low", "Med", "High"))
+  )
+  df$edu_t <- factor(df$edu, ordered = FALSE)
+  fit <- lm(y ~ edu_t, df)
+  out <- table_regression(fit)
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("edu_t:" %in% vars)
+  expect_true(any(grepl("Low (ref.)", vars, fixed = TRUE)))
+  # No poly footer for this fit.
+  note <- attr(out, "note")
+  expect_false(grepl("orthogonal polynomial", note))
+})
+
+
+test_that("default show_columns context-aware: single keeps CI, multi drops it", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out1 <- table_regression(m1)
+  expect_true(any(grepl("95% CI", names(out1))))
+  out2 <- table_regression(list(m1, m2))
+  expect_false(any(grepl("95% CI", names(out2))))
+  # Explicit user override restores CI even in multi-model.
+  out3 <- table_regression(list(m1, m2),
+                            show_columns = c("b", "se", "ci", "p"))
+  expect_true(any(grepl("95% CI", names(out3))))
+})
+
+
+test_that("outcome_labels — NULL hides the row even when DVs differ + names supplied", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(hp  ~ wt, data = mt)
+  out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
+  expect_false("Outcome" %in% out$Variable)
+  # Explicit opt-in still works.
+  out2 <- table_regression(list("Step 1" = m1, "Step 2" = m2),
+                            outcome_labels = c("Fuel", "Power"))
+  expect_true("Outcome" %in% out2$Variable)
+})
+
+
+test_that("spanner — tinytable output uses group_tt for column groups", {
+  skip_if_not_installed("tinytable")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  tt <- table_regression(list("A" = m1, "B" = m2), output = "tinytable")
+  # tinytable renders the spanner row inside the printed markdown.
+  txt <- capture.output(print(tt, output = "markdown"))
+  joined <- paste(txt, collapse = "\n")
+  # The spanner labels appear above the sub-column headers.
+  expect_match(joined, "| A ", fixed = TRUE)
+  expect_match(joined, "| B ", fixed = TRUE)
 })

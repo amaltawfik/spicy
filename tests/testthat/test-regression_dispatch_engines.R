@@ -37,7 +37,7 @@ test_that("output = 'excel' with title + footer writes title row + footer rows",
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
   # First cell of first row contains the title
-  expect_match(as.character(cells[[1L]][1L]), "^Regression: ")
+  expect_match(as.character(cells[[1L]][1L]), "^Linear regression: ")
 })
 
 
@@ -115,7 +115,7 @@ test_that("output = 'gt' attaches header title + source_note from footer", {
   # gt uses a list-based internal structure; check that header and
   # source_notes were populated
   internal <- gt:::dt_heading_get(out)
-  expect_match(internal$title, "Regression: ")
+  expect_match(internal$title, "Linear regression: ")
 })
 
 

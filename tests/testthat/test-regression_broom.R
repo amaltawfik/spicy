@@ -63,7 +63,7 @@ test_that("tidy — estimate values match the underlying lm fit", {
 
 test_that("tidy — partial_eta2 rows have NA std.error and finite estimate", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit, show_columns = c("B", "partial_eta2"))
+  out <- table_regression(fit, show_columns = c("b", "partial_eta2"))
   td <- broom::tidy(out)
   pe <- td[td$estimate_type == "partial_eta2", ]
   expect_true(nrow(pe) > 0L)
@@ -142,7 +142,7 @@ test_that("as.data.frame — strips spicy classes, keeps title/note", {
   expect_s3_class(df, "data.frame")
   expect_false(inherits(df, "spicy_regression_table"))
   expect_false(inherits(df, "spicy_table"))
-  expect_match(attr(df, "title"), "^Regression: mpg")
+  expect_match(attr(df, "title"), "^Linear regression: mpg")
   expect_match(attr(df, "note"), "^Note\\.")
 })
 

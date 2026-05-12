@@ -310,9 +310,13 @@
 #'       `drop1(test = "LRT")`, rendered as `value (df)`).
 #'   }
 #'   The `"p"` token always refers to the B (or beta if standardised)
-#'   p-value; for AME use `"AME_p"`. Default `c("B", "SE", "CI", "p")`.
-#'   See *Vocabulary tokens* and *Multi-model semantics* for ordering
-#'   and rendering details.
+#'   p-value; for AME use `"AME_p"`. Default `NULL` selects a
+#'   context-aware default: `c("B", "SE", "CI", "p")` for a single
+#'   model (APA-7 §6.46 publication layout), and `c("B", "SE", "p")`
+#'   for `≥2` models (CI dropped to fit the side-by-side
+#'   layout — restore it explicitly when needed). See *Vocabulary
+#'   tokens* and *Multi-model semantics* for ordering and rendering
+#'   details.
 #' @param keep Character vector of regular expressions; when
 #'   supplied, only coefficient rows whose term name matches at
 #'   least one of the patterns are kept. Useful when a model has
@@ -366,17 +370,28 @@
 #'   Mixed `lm` + `glm` sets union both groups (renderer per-row
 #'   em-dashes the inappropriate cell).
 #' @param model_labels Column / model labels for multi-model
-#'   tables. `NULL` (default) uses smart auto-generation: hidden
-#'   for a single model, `"Model 1, 2, 3"` or `names(list)` for
-#'   multiple models. A character vector of length `length(models)`
-#'   forces explicit per-column labels.
-#' @param outcome_labels Per-model response-variable row.
-#'   `NULL` (default) uses smart auto: row hidden when all DVs
-#'   identical, row shown when DVs differ. Auto-derived from
-#'   `attr(data[[dv]], "label")` if present, else from
-#'   `formula(fit)[[2]]`. A character vector of length
-#'   `length(models)` forces explicit labels. `FALSE` suppresses
-#'   the row entirely.
+#'   tables. These also become the **column-group spanner** labels
+#'   drawn above each model's sub-columns (in the console output
+#'   and in the gt / flextable / tinytable / Excel / Word
+#'   renderers). `NULL` (default) uses smart auto-generation:
+#'   hidden for a single model; `names(list)` if the input is a
+#'   named list; otherwise — when models have all-distinct
+#'   response variables — the bare response-variable name (from
+#'   `formula(fit)[[2]]`; `attr("label")` is intentionally NOT
+#'   used here, since it can be a long phrase that distorts
+#'   column widths), and the Outcome body row is folded into the
+#'   header; otherwise `"Model 1, 2, ..."`. A character vector of
+#'   length `length(models)` forces explicit labels.
+#' @param outcome_labels Optional **Outcome body row** override.
+#'   `NULL` (default) hides the row entirely — with the multi-model
+#'   spanner (and the DV smart-default that lifts the bare DV name
+#'   into the spanner when DVs differ and no `model_labels` /
+#'   `names(list)` is supplied), the DV is already visible above
+#'   the data. A character vector of length `length(models)`
+#'   forces an explicit Outcome row with those values (the spanner
+#'   stays as `"Model 1, ..."` unless `model_labels` is also
+#'   supplied). `FALSE` is accepted for backward compatibility and
+#'   also suppresses the row.
 #' @param stars Significance asterisk display.
 #'   `FALSE` (default, APA-aligned) — no stars; p-values reported
 #'   as numbers only. APA 7 §6.46 explicitly discourages stars.
@@ -438,11 +453,10 @@
 #'   alignment.
 #' @param padding Non-negative integer giving the extra characters
 #'   added to each data column's auto-computed width when the
-#'   default `print` method renders the table. Default `2L`
-#'   (Stata-like spacing). Use `0L` or `1L` for a more compact
-#'   layout when the table has many columns (e.g.,
-#'   `c("B", "SE", "CI", "p", "AME", "AME_p")` side by side); use
-#'   `4L` for a more spacious layout. Headers are centered above
+#'   default `print` method renders the table. Default `0L`
+#'   (compact, modelsummary-like spacing — fits more models in
+#'   the same console / page width). Use `2L` (Stata-like) or
+#'   `4L` for a more spacious look. Headers stay centered above
 #'   the data region regardless of padding.
 #' @param labels Named character vector overriding per-coefficient
 #'   row labels. Names are coefficient term names (from
@@ -589,7 +603,7 @@ table_regression <- function(
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
-  show_columns = c("B", "SE", "CI", "p"),
+  show_columns = NULL,
   keep = NULL,
   drop = NULL,
   show_intercept = TRUE,
@@ -610,7 +624,7 @@ table_regression <- function(
   ic_digits = 1L,
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
-  padding = 2L,
+  padding = 0L,
   labels = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable",
              "tinytable", "excel", "clipboard", "word"),
@@ -649,6 +663,24 @@ table_regression <- function(
   validate_nested_alignment(models, nested)
   validate_vcov_cluster_lists(vcov, cluster, models)
 
+  # Context-aware `show_columns` default. APA-7 §6.46 recommends
+  # CIs for inference, so a single-model table (the publication
+  # workflow) keeps CI in the default ("all_b"). Multi-model tables
+  # drop CI to fit the side-by-side layout in a typical console /
+  # page width ("all_b_compact"). The user can pass
+  # `show_columns = "all_b"` (or atomic tokens) to restore CI.
+  # Matches modelsummary's behaviour.
+  if (is.null(show_columns)) {
+    is_multi <- is.list(models) && !inherits(models, "lm") &&
+                  length(models) >= 2L
+    show_columns <- if (is_multi) "all_b_compact" else "all_b"
+  }
+  # Expand group tokens (`"all_b"`, `"all_ame"`, ...) to atomic
+  # tokens before validation; also raises an actionable migration
+  # error if a legacy uppercase token (`"B"`, `"AME"`, ...) slips
+  # through from < 0.12 code.
+  show_columns <- expand_show_columns(show_columns)
+
   # Phase C — vocabulary tokens (steps 9–12). validate_show_columns
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
@@ -676,7 +708,7 @@ table_regression <- function(
   # reject-beta-without-method branch fires before the orchestrator
   # mutates the user's show_columns.
   if (!identical(standardized, "none") && !"beta" %in% show_columns) {
-    b_idx <- which(show_columns == "B")
+    b_idx <- which(show_columns == "b")
     show_columns <- if (length(b_idx)) {
       append(show_columns, "beta", after = b_idx[1])
     } else {
@@ -870,18 +902,18 @@ table_regression <- function(
   # value, NOT the AME p-value -- which can differ substantially in
   # the presence of interactions or non-linear formulas. Emit a
   # caveat so the user adds `"AME_p"` if AME's p was the intent.
-  if (all(c("AME", "p") %in% show_columns) &&
-        !("AME_p" %in% show_columns)) {
+  if (all(c("ame", "p") %in% show_columns) &&
+        !("ame_p" %in% show_columns)) {
     spicy_warn(
       c(
-        paste0("`\"AME\"` and `\"p\"` are both in `show_columns`, but ",
-               "`\"AME_p\"` is not. The displayed `p` column refers to ",
+        paste0("`\"ame\"` and `\"p\"` are both in `show_columns`, but ",
+               "`\"ame_p\"` is not. The displayed `p` column refers to ",
                "the B (or beta if standardised) coefficient, not to the ",
                "AME."),
         "i" = paste0(
-          "Add `\"AME_p\"` to `show_columns` to display the AME-specific ",
+          "Add `\"ame_p\"` to `show_columns` to display the AME-specific ",
           "p-value alongside, e.g., ",
-          "`show_columns = c(\"B\", \"p\", \"AME\", \"AME_p\")`."
+          "`show_columns = c(\"b\", \"p\", \"ame\", \"ame_p\")`."
         ),
         "i" = paste0(
           "The two p-values are identical for `lm` linear formulas ",
@@ -929,7 +961,7 @@ table_regression <- function(
   any_cr <- any(vapply(vcov_list,
                        function(v) is.character(v) && startsWith(v, "CR"),
                        logical(1)))
-  use_ame_satt <- any_cr && "AME" %in% show_columns
+  use_ame_satt <- any_cr && "ame" %in% show_columns
 
   # ---- Per-model extraction (Layer 1) ------------------------------------
   default_id <- function(i) paste0("M", i)
@@ -1021,10 +1053,17 @@ table_regression <- function(
 
   # ---- Render (Layer 3) --------------------------------------------------
   # Q1: model_labels precedence is explicit > names(list) > default.
+  # Partial-name auto-fill: `list("Step 1" = m1, m2)` becomes
+  # `c("Step 1", "Model 2")`. validate_models_input() rejects
+  # duplicates but accepts partial naming since user intent is
+  # unambiguous (named slots win, unnamed slots default).
   effective_model_labels <- if (!is.null(model_labels)) {
     model_labels
-  } else if (!is.null(names(models)) && all(nzchar(names(models)))) {
-    names(models)
+  } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
+    nms <- names(models)
+    missing_idx <- which(!nzchar(nms))
+    nms[missing_idx] <- paste0("Model ", missing_idx)
+    nms
   } else {
     NULL  # render_regression_table generates "Model 1", ... as fallback
   }

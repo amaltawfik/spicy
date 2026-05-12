@@ -9,7 +9,8 @@ mk_extract <- function(outcome = "y",
                        use_ame_satterthwaite = FALSE,
                        has_singular = FALSE,
                        fit = NULL,
-                       non_additive = NULL) {
+                       non_additive = NULL,
+                       title_prefix = "Linear regression") {
   list(
     outcome = outcome,
     vcov_type = vcov_type,
@@ -17,7 +18,8 @@ mk_extract <- function(outcome = "y",
     use_ame_satterthwaite = use_ame_satterthwaite,
     has_singular = has_singular,
     fit = fit,
-    non_additive = non_additive
+    non_additive = non_additive,
+    title_prefix = title_prefix
   )
 }
 
@@ -26,22 +28,22 @@ mk_extract <- function(outcome = "y",
 # Title (Q13)
 # ============================================================================
 
-test_that("title — single model uses 'Regression: <DV>'", {
+test_that("title — single model uses '<type> regression: <DV>'", {
   expect_equal(
     spicy:::build_regression_title(list(mk_extract(outcome = "mpg"))),
-    "Regression: mpg"
+    "Linear regression: mpg"
   )
 })
 
-test_that("title — nested = TRUE uses 'Hierarchical regression: <DV>'", {
+test_that("title — nested = TRUE uses 'Hierarchical <type> regression: <DV>'", {
   ext <- list(mk_extract(outcome = "mpg"), mk_extract(outcome = "mpg"))
   expect_equal(
     spicy:::build_regression_title(ext, nested = TRUE),
-    "Hierarchical regression: mpg"
+    "Hierarchical linear regression: mpg"
   )
 })
 
-test_that("title — multi-model identical DV uses 'Regression comparison: <DV>'", {
+test_that("title — multi-model identical DV uses '<type> regression comparison: <DV>'", {
   ext <- list(
     mk_extract(outcome = "mpg"),
     mk_extract(outcome = "mpg"),
@@ -49,15 +51,15 @@ test_that("title — multi-model identical DV uses 'Regression comparison: <DV>'
   )
   expect_equal(
     spicy:::build_regression_title(ext, nested = FALSE),
-    "Regression comparison: mpg"
+    "Linear regression comparison: mpg"
   )
 })
 
-test_that("title — multi-model mixed DVs uses 'Regression comparison'", {
+test_that("title — multi-model mixed DVs uses '<type> regression comparison'", {
   ext <- list(mk_extract(outcome = "mpg"), mk_extract(outcome = "hp"))
   expect_equal(
     spicy:::build_regression_title(ext, nested = FALSE),
-    "Regression comparison"
+    "Linear regression comparison"
   )
 })
 
@@ -129,10 +131,10 @@ test_that("vcov block — bootstrap label is bare", {
 # Footer — AME-Satterthwaite block (Q14b)
 # ============================================================================
 
-test_that("AME-Satt block — emitted only when AME ∈ show_columns AND any model uses Satt", {
+test_that("AME-Satt block — emitted only when ame in show_columns AND any model uses Satt", {
   ext_satt <- list(mk_extract(use_ame_satterthwaite = TRUE))
   ext_no   <- list(mk_extract(use_ame_satterthwaite = FALSE))
-  cols     <- c("B", "AME")
+  cols     <- c("b", "ame")
 
   expect_match(
     spicy:::build_ame_satterthwaite_footer_block(ext_satt, cols),
@@ -140,7 +142,7 @@ test_that("AME-Satt block — emitted only when AME ∈ show_columns AND any mod
   )
   expect_null(spicy:::build_ame_satterthwaite_footer_block(ext_no, cols))
   expect_null(spicy:::build_ame_satterthwaite_footer_block(ext_satt,
-                                                           c("B", "SE")))
+                                                           c("b", "se")))
 })
 
 
@@ -270,24 +272,24 @@ test_that("full footer — combines themes with leading 'Note. ' and \\n separat
     standardized = "none",
     stars = TRUE,
     nested = FALSE,
-    show_columns = c("B", "SE", "AME", "p")
+    show_columns = c("b", "se", "ame", "p")
   )
   expect_match(out, "^Note\\. ")
-  # vcov + AME-Satt + stars => 3 themes, 2 newlines
-  expect_equal(length(strsplit(out, "\n", fixed = TRUE)[[1]]), 3L)
+  # type + vcov + AME-Satt + stars => 4 themes, 3 newlines
+  expect_equal(length(strsplit(out, "\n", fixed = TRUE)[[1]]), 4L)
   expect_match(out, "Std\\. errors: cluster-robust \\(CR2\\)")
   expect_match(out, "Satterthwaite")
   expect_match(out, "\\*\\*\\* p < \\.001")
 })
 
-test_that("full footer — returns NULL when no theme applies", {
+test_that("full footer — always carries the regression-type declaration", {
   ext <- list(mk_extract(vcov_type = "classical"))
-  # classical vcov DOES emit a line ("Std. errors: classical (OLS).") so
-  # we'd get a footer — that's correct: a regression table always has at
-  # minimum a vcov declaration. Sanity-check that footer is non-NULL.
+  # A regression table always has at minimum a type + vcov declaration.
   out <- spicy:::build_regression_footer(
     ext, standardized = "none", stars = FALSE, nested = FALSE,
-    show_columns = c("B")
+    show_columns = c("b")
   )
-  expect_match(out, "^Note\\. Std\\. errors:")
+  expect_match(out, "^Note\\. ")
+  expect_match(out, "regression\\.")
+  expect_match(out, "Std\\. errors:")
 })

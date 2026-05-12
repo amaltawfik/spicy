@@ -14,7 +14,7 @@ table_regression(
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
-  show_columns = c("B", "SE", "CI", "p"),
+  show_columns = NULL,
   keep = NULL,
   drop = NULL,
   show_intercept = TRUE,
@@ -35,7 +35,7 @@ table_regression(
   ic_digits = 1L,
   decimal_mark = ".",
   align = c("decimal", "center", "right", "auto"),
-  padding = 2L,
+  padding = 0L,
   labels = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
@@ -157,9 +157,13 @@ always refers to B / beta), \code{"AME_SE"}.
 \code{drop1(test = "LRT")}, rendered as \code{value (df)}).
 }
 The \code{"p"} token always refers to the B (or beta if standardised)
-p-value; for AME use \code{"AME_p"}. Default \code{c("B", "SE", "CI", "p")}.
-See \emph{Vocabulary tokens} and \emph{Multi-model semantics} for ordering
-and rendering details.}
+p-value; for AME use \code{"AME_p"}. Default \code{NULL} selects a
+context-aware default: \code{c("B", "SE", "CI", "p")} for a single
+model (APA-7 §6.46 publication layout), and \code{c("B", "SE", "p")}
+for \verb{≥2} models (CI dropped to fit the side-by-side
+layout — restore it explicitly when needed). See \emph{Vocabulary
+tokens} and \emph{Multi-model semantics} for ordering and rendering
+details.}
 
 \item{keep}{Character vector of regular expressions; when
 supplied, only coefficient rows whose term name matches at
@@ -222,18 +226,29 @@ Mixed \code{lm} + \code{glm} sets union both groups (renderer per-row
 em-dashes the inappropriate cell).}
 
 \item{model_labels}{Column / model labels for multi-model
-tables. \code{NULL} (default) uses smart auto-generation: hidden
-for a single model, \code{"Model 1, 2, 3"} or \code{names(list)} for
-multiple models. A character vector of length \code{length(models)}
-forces explicit per-column labels.}
+tables. These also become the \strong{column-group spanner} labels
+drawn above each model's sub-columns (in the console output
+and in the gt / flextable / tinytable / Excel / Word
+renderers). \code{NULL} (default) uses smart auto-generation:
+hidden for a single model; \code{names(list)} if the input is a
+named list; otherwise — when models have all-distinct
+response variables — the bare response-variable name (from
+\code{formula(fit)[[2]]}; \code{attr("label")} is intentionally NOT
+used here, since it can be a long phrase that distorts
+column widths), and the Outcome body row is folded into the
+header; otherwise \code{"Model 1, 2, ..."}. A character vector of
+length \code{length(models)} forces explicit labels.}
 
-\item{outcome_labels}{Per-model response-variable row.
-\code{NULL} (default) uses smart auto: row hidden when all DVs
-identical, row shown when DVs differ. Auto-derived from
-\code{attr(data[[dv]], "label")} if present, else from
-\code{formula(fit)[[2]]}. A character vector of length
-\code{length(models)} forces explicit labels. \code{FALSE} suppresses
-the row entirely.}
+\item{outcome_labels}{Optional \strong{Outcome body row} override.
+\code{NULL} (default) hides the row entirely — with the multi-model
+spanner (and the DV smart-default that lifts the bare DV name
+into the spanner when DVs differ and no \code{model_labels} /
+\code{names(list)} is supplied), the DV is already visible above
+the data. A character vector of length \code{length(models)}
+forces an explicit Outcome row with those values (the spanner
+stays as \code{"Model 1, ..."} unless \code{model_labels} is also
+supplied). \code{FALSE} is accepted for backward compatibility and
+also suppresses the row.}
 
 \item{stars}{Significance asterisk display.
 \code{FALSE} (default, APA-aligned) — no stars; p-values reported
@@ -306,11 +321,10 @@ alignment.}
 
 \item{padding}{Non-negative integer giving the extra characters
 added to each data column's auto-computed width when the
-default \code{print} method renders the table. Default \code{2L}
-(Stata-like spacing). Use \code{0L} or \code{1L} for a more compact
-layout when the table has many columns (e.g.,
-\code{c("B", "SE", "CI", "p", "AME", "AME_p")} side by side); use
-\code{4L} for a more spacious layout. Headers are centered above
+default \code{print} method renders the table. Default \code{0L}
+(compact, modelsummary-like spacing — fits more models in
+the same console / page width). Use \code{2L} (Stata-like) or
+\code{4L} for a more spacious look. Headers stay centered above
 the data region regardless of padding.}
 
 \item{labels}{Named character vector overriding per-coefficient

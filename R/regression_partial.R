@@ -45,11 +45,17 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
 
   # lm path: variance-explained partition (partial_f2 / partial_eta2 /
   # partial_omega2). partial_chi2 was rejected upstream for lm.
-  partial_tokens <- c("partial_f2", "partial_eta2", "partial_omega2")
-  active_tokens <- intersect(show_columns, partial_tokens)
-  if (length(active_tokens) == 0L) {
+  # Map both atomic tokens AND their _ci counterparts to the same
+  # underlying long-data computation: `partial_f2_ci` reuses the same
+  # CI columns built by `partial_f2`.
+  partial_tokens <- c("partial_f2", "partial_f2_ci",
+                       "partial_eta2", "partial_eta2_ci",
+                       "partial_omega2", "partial_omega2_ci")
+  active <- intersect(show_columns, partial_tokens)
+  if (length(active) == 0L) {
     return(empty_coefs_long())
   }
+  active_tokens <- unique(sub("_ci$", "", active))
 
   cf <- stats::coef(fit)
   cf_names <- names(cf)

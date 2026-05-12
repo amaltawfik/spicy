@@ -88,6 +88,7 @@ build_regression_footer <- function(
     nested = FALSE,
     show_columns = character(0)) {
   themes <- list(
+    build_regression_type_footer_block(extracts),
     build_vcov_footer_block(extracts),
     build_ame_satterthwaite_footer_block(extracts, show_columns),
     build_exponentiate_footer_block(extracts),
@@ -95,11 +96,48 @@ build_regression_footer <- function(
     build_p_adjust_footer_block(extracts, p_adjust),
     build_stars_footer_block(stars),
     build_singular_footer_block(extracts),
+    build_polynomial_contrasts_footer_block(extracts),
     build_nested_footer_block(nested)
   )
   themes <- Filter(function(x) !is.null(x) && nzchar(x), themes)
   if (length(themes) == 0L) return(NULL)
   paste0("Note. ", paste(themes, collapse = "\n"))
+}
+
+
+# ---- Theme: regression-type block ----------------------------------------
+
+# Emits a one-line declaration of each model's regression type at the
+# top of the footer note. Especially useful in multi-model tables that
+# mix lm / glm (or different glm families) -- the title only carries
+# the DV name, not the inference family.
+#
+# Uniform across models -> "Linear regression."
+# Heterogeneous         -> "Model 1: linear regression; Model 2: logistic regression."
+build_regression_type_footer_block <- function(extracts) {
+  if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
+  types <- vapply(extracts, function(e) {
+    tp <- e$title_prefix %||% "Regression"
+    # Sentence-case but keep the word "regression" lowercased after the
+    # leading capital so the footer reads "Linear regression" rather
+    # than "Linear Regression" (matches APA / sentence-case prose).
+    tolower(tp)
+  }, character(1))
+  if (length(types) == 1L) {
+    return(paste0(capitalize_first(types[1]), "."))
+  }
+  if (length(unique(types)) == 1L) {
+    return(paste0("All models: ", types[1], "."))
+  }
+  per <- vapply(seq_along(types), function(i) {
+    sprintf("Model %d: %s", i, types[i])
+  }, character(1))
+  paste0(paste(per, collapse = "; "), ".")
+}
+
+capitalize_first <- function(s) {
+  if (!length(s) || !nzchar(s)) return(s)
+  paste0(toupper(substr(s, 1L, 1L)), substring(s, 2L))
 }
 
 
@@ -153,7 +191,7 @@ format_vcov_label <- function(extract) {
 # ---- Theme: AME-Satterthwaite affirmative (Q14b) -------------------------
 
 build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
-  if (!"AME" %in% show_columns) return(NULL)
+  if (!"ame" %in% show_columns) return(NULL)
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
   any_satt <- any(vapply(extracts,
                          function(e) isTRUE(e$use_ame_satterthwaite),
@@ -354,6 +392,47 @@ build_p_adjust_footer_block <- function(extracts, p_adjust) {
   sprintf(
     "P-values adjusted via stats::p.adjust(method = %s); %s.",
     shQuote(p_adjust), size_part
+  )
+}
+
+
+# ---- Theme: polynomial contrasts (ordered factors) -----------------------
+
+# Emits a one-line note when one or more factors in the model are
+# fitted under `contr.poly` (R's default for `ordered()`). Most users
+# don't know that ordered factors don't get treatment contrasts in R
+# and produce trend coefficients (.L = linear, .Q = quadratic, ...)
+# instead of per-level deviations -- the note tells them what they're
+# looking at and how to switch parameterisations. Stata / SPSS / SAS
+# all default to per-level for ordered categorical, so a user crossing
+# software has every reason to be confused.
+build_polynomial_contrasts_footer_block <- function(extracts) {
+  if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
+  poly_vars <- character(0)
+  for (e in extracts) {
+    coefs <- e$coefs
+    if (is.null(coefs) || nrow(coefs) == 0L) next
+    is_poly <- !is.na(coefs$factor_level) &
+      (startsWith(coefs$factor_level, ".") |
+         startsWith(coefs$factor_level, "^"))
+    if (any(is_poly)) {
+      poly_vars <- union(poly_vars,
+                          unique(coefs$factor_term[is_poly]))
+    }
+  }
+  if (length(poly_vars) == 0L) return(NULL)
+  vars_str <- paste0("`", poly_vars, "`", collapse = ", ")
+  plural <- length(poly_vars) > 1L
+  paste0(
+    if (plural) "Ordered factors " else "Ordered factor ",
+    vars_str, if (plural) " use " else " uses ",
+    "orthogonal polynomial contrasts (R default `contr.poly`): ",
+    "`.L` = linear trend, `.Q` = quadratic, `.C` = cubic, ",
+    "`^k` = degree k. Coefficients are trends across the ordered ",
+    "levels, not per-level effects against a reference. ",
+    "Refit with `factor(x, ordered = FALSE)` or set ",
+    "`options(contrasts = c(\"contr.treatment\", \"contr.treatment\"))` ",
+    "for a per-level layout."
   )
 }
 

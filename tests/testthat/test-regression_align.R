@@ -7,7 +7,7 @@ mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
 mk_extract_lm <- function(formula, model_id, data = mt,
-                           show_columns = c("B", "SE", "CI", "p")) {
+                           show_columns = c("b", "se", "ci", "p")) {
   fit <- lm(formula, data = data)
   spicy:::extract_lm_phase1(fit, model_id = model_id,
                             show_columns = show_columns)
@@ -182,9 +182,9 @@ test_that("pivot_aligned_wide — bad model_labels length errors", {
 test_that("pivot_aligned_wide — wide row count == unique (term, estimate_type) keys", {
   ex <- list(
     mk_extract_lm(mpg ~ wt + cyl, "M1",
-                  show_columns = c("B", "SE", "p", "partial_eta2")),
+                  show_columns = c("b", "se", "p", "partial_eta2")),
     mk_extract_lm(mpg ~ wt + cyl + am, "M2",
-                  show_columns = c("B", "SE", "p", "partial_eta2"))
+                  show_columns = c("b", "se", "p", "partial_eta2"))
   )
   aligned <- spicy:::align_extracts(ex)
   wide <- spicy:::pivot_aligned_wide(aligned)

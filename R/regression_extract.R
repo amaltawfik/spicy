@@ -34,7 +34,7 @@ extract_lm_phase1 <- function(
   ci_method = "wald",
   standardized = "none",
   exponentiate = FALSE,
-  show_columns = c("B", "SE", "CI", "p"),
+  show_columns = c("b", "se", "ci", "p"),
   show_fit_stats = c("nobs", "r2", "adj_r2"),
   use_ame_satterthwaite = FALSE,
   cluster_name = NULL
@@ -116,7 +116,7 @@ extract_lm_phase1 <- function(
   }
 
   # ---- AME rows (Step 5) --------------------------------------------------
-  if ("AME" %in% show_columns) {
+  if ("ame" %in% show_columns) {
     ame_rows <- extract_ame_rows(
       fit = fit,
       vc = vc,
@@ -133,7 +133,9 @@ extract_lm_phase1 <- function(
   }
 
   # ---- Partial effect-size rows (Step 6 + Phase 3 Step 3) ----------------
-  if (any(c("partial_f2", "partial_eta2", "partial_omega2",
+  if (any(c("partial_f2", "partial_f2_ci",
+            "partial_eta2", "partial_eta2_ci",
+            "partial_omega2", "partial_omega2_ci",
             "partial_chi2") %in% show_columns)) {
     partial_rows <- extract_partial_effect_rows(
       fit = fit,
@@ -181,7 +183,7 @@ extract_lm_phase1 <- function(
     nobs = stats::nobs(fit),
     is_glm = is_glm,
     family_info = family_info,
-    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Regression",
+    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Linear regression",
     exp_applied = exp_applied,
     exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_
   )
@@ -397,29 +399,61 @@ detect_factor_terms <- function(fit) {
     # we don't emit reference rows for them.
     if (!(var %in% trms)) next
     lvls <- xlevels[[var]]
-    # Treatment-contrast detection: at least one coef must follow the
-    # canonical `<var><level>` pattern (i.e., `paste0(var, level)` is
-    # in coef names). Ordered factors with polynomial contrasts
-    # (R's default for `Ord.factor`) instead produce names like
-    # `<var>.L`, `<var>.Q`, `<var>.C` — there is no "reference level"
-    # in the contr.treatment sense, so we skip factor-grouping
-    # entirely and let the renderer treat the .L/.Q/.C coefs as
-    # plain numeric rows. Same for any user-supplied non-treatment
-    # contrast (Helmert, sum-to-zero, custom).
+    # First try treatment-contrast detection: at least one coef must
+    # follow the canonical `<var><level>` pattern.
     candidate_level_coefs <- paste0(var, lvls)
     is_treatment <- any(candidate_level_coefs %in% cf_names)
-    if (!is_treatment) next
-
-    first_level_coef <- candidate_level_coefs[1L]
-    dropped <- !(first_level_coef %in% cf_names)
-    out[[length(out) + 1L]] <- list(
-      factor_term = var,
-      reference_level = if (dropped) lvls[1L] else NA_character_,
-      reference_dropped = dropped,
-      levels = lvls
-    )
+    if (is_treatment) {
+      first_level_coef <- candidate_level_coefs[1L]
+      dropped <- !(first_level_coef %in% cf_names)
+      out[[length(out) + 1L]] <- list(
+        factor_term = var,
+        reference_level = if (dropped) lvls[1L] else NA_character_,
+        reference_dropped = dropped,
+        contrast_type = "treatment",
+        levels = lvls,
+        poly_suffixes = character(0)
+      )
+      next
+    }
+    # Polynomial-contrast detection (R's default for `ordered()`,
+    # `contr.poly`): names like `<var>.L`, `<var>.Q`, `<var>.C`,
+    # `<var>^4`, `<var>^5`, ... Each coef represents an orthogonal
+    # polynomial trend across the ordered levels, NOT a per-level
+    # contrast against a reference. There is no reference row.
+    poly_names <- poly_suffix_names(length(lvls))
+    poly_coefs <- paste0(var, poly_names)
+    found <- intersect(poly_coefs, cf_names)
+    if (length(found)) {
+      suffixes <- substring(found, nchar(var) + 1L)
+      out[[length(out) + 1L]] <- list(
+        factor_term = var,
+        reference_level = NA_character_,
+        reference_dropped = FALSE,
+        contrast_type = "polynomial",
+        levels = lvls,
+        poly_suffixes = suffixes
+      )
+      next
+    }
+    # Any other coding (Helmert, sum-to-zero, custom) is left
+    # ungrouped — we don't know how to name the contrasts in a
+    # way that's universally meaningful.
   }
   out
+}
+
+# The orthogonal-polynomial suffix names R appends to a factor of
+# length k when `contr.poly` is in effect: `.L` (k=2), `.L .Q`
+# (k=3), `.L .Q .C` (k=4), then `^4 ^5 ...` for k >= 5. Returns
+# the first k-1 suffixes (one fewer than the number of levels —
+# the same df budget as treatment contrasts).
+poly_suffix_names <- function(k) {
+  if (k < 2L) return(character(0))
+  base <- c(".L", ".Q", ".C")
+  n_contrasts <- k - 1L
+  if (n_contrasts <= 3L) return(base[seq_len(n_contrasts)])
+  c(base, paste0("^", seq.int(4L, n_contrasts)))
 }
 
 # Inverse map: for each *coefficient name* in coef(fit), is it a
@@ -443,23 +477,30 @@ detect_factor_term_meta <- function(fit) {
 }
 
 # For a given coef name, find which factor it belongs to (if any) and
-# which level. The naming is `<var><level>` for contr.treatment with
-# no separator. Matches ANY factor level (not just non-reference) so
-# no-intercept formulas like `y ~ 0 + cyl` — where R fits all k
-# levels of the first factor as real coefs — get their first-level
-# coef recognised as belonging to the factor group.
+# which level / contrast suffix. Naming under `contr.treatment` is
+# `<var><level>` (no separator); under `contr.poly` (R's default for
+# `ordered()`) it's `<var>.L`, `<var>.Q`, `<var>.C`, `<var>^4`, ...
+# For poly contrasts `factor_level` holds the suffix (e.g. ".L") —
+# the renderer treats it as the sub-row label under the factor group
+# header.
 match_coef_to_factor <- function(coef_name, xlevels) {
   if (coef_name == "(Intercept)") return(NULL)
   # Skip interaction terms — they involve multiple factors / numerics
   if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
 
   for (var in names(xlevels)) {
-    if (startsWith(coef_name, var)) {
-      candidate_level <- substring(coef_name, nchar(var) + 1L)
-      lvls <- xlevels[[var]]
-      if (candidate_level %in% lvls) {
-        return(list(factor_term = var, factor_level = candidate_level))
-      }
+    if (!startsWith(coef_name, var)) next
+    suffix <- substring(coef_name, nchar(var) + 1L)
+    lvls <- xlevels[[var]]
+    # Treatment-contrast match: suffix equals one of the actual levels.
+    if (suffix %in% lvls) {
+      return(list(factor_term = var, factor_level = suffix))
+    }
+    # Polynomial-contrast match: suffix is one of the poly names R
+    # generates for a k-level factor under `contr.poly`.
+    poly_names <- poly_suffix_names(length(lvls))
+    if (suffix %in% poly_names) {
+      return(list(factor_term = var, factor_level = suffix))
     }
   }
   NULL

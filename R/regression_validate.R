@@ -29,13 +29,25 @@
 # checked separately by `validate_class_appropriate_tokens()` and
 # `validate_class_appropriate_nested_stats()`.
 .regression_tokens <- list(
-  show_columns = c(
-    "B", "beta", "SE", "CI", "t", "p",
-    # Variance-explained partials (lm only)
-    "partial_f2", "partial_eta2", "partial_omega2",
-    # LRT-based partial chi-square (glm; analog of partial F)
-    "partial_chi2",
-    "AME", "AME_p", "AME_SE"
+  # ATOMIC tokens for `show_columns`: one token = one displayed
+  # column. All lowercase (idiomatic R / broom convention). Group
+  # tokens like "all_b", "all_ame" expand to a fixed subset of
+  # these (see `.show_columns_groups` below).
+  show_columns_atomic = c(
+    # B-coefficient family
+    "b", "beta", "se", "ci", "t", "p",
+    # Average marginal effects (AME)
+    "ame", "ame_se", "ame_ci", "ame_p",
+    # Variance-explained partials (lm only) \u2014 split into
+    # estimate-only + CI-only, matching the b / ci asymmetry-free
+    # convention.
+    "partial_f2",     "partial_f2_ci",
+    "partial_eta2",   "partial_eta2_ci",
+    "partial_omega2", "partial_omega2_ci",
+    # LRT-based partial chi-square (glm; analog of partial F) \u2014
+    # kept BUNDLED as "value (df)" because that is the standard
+    # statistical-reporting convention (e.g. "chi2(2) = 5.34").
+    "partial_chi2"
   ),
   show_fit_stats = c(
     "nobs", "weighted_nobs",
@@ -53,6 +65,37 @@
     "LRT", "AIC", "AICc", "BIC",
     "deviance_change", "p"
   )
+)
+
+# Predefined group tokens for `show_columns`. Each group expands
+# to a fixed vector of atomic tokens. Inspired by Stata / SPSS /
+# SAS keyword presets \u2014 lets the user write
+# `show_columns = c("all_b", "all_ame")` instead of enumerating 8
+# atomic tokens. The expansion runs once, before validation, so
+# downstream code only ever sees atomic tokens.
+.show_columns_groups <- list(
+  all_b         = c("b", "se", "ci", "p"),
+  all_b_compact = c("b", "se", "p"),
+  all_b_full    = c("b", "se", "ci", "t", "p"),
+  all_beta      = c("b", "beta", "se", "ci", "p"),
+  all_ame         = c("ame", "ame_se", "ame_ci", "ame_p"),
+  all_ame_compact = c("ame", "ame_p"),
+  all_f2     = c("partial_f2",     "partial_f2_ci"),
+  all_eta2   = c("partial_eta2",   "partial_eta2_ci"),
+  all_omega2 = c("partial_omega2", "partial_omega2_ci")
+)
+
+# Migration map for the spicy 0.11.x -> 0.12 token rename. When a
+# user passes an old-style uppercase token we throw an actionable
+# error pointing at the replacement instead of silently aliasing
+# (per the pre-1.0 "hard errors over silent changes" policy).
+.show_columns_legacy <- list(
+  B       = c("b"),
+  SE      = c("se"),
+  CI      = c("ci"),
+  AME     = c("ame", "ame_ci"),     # old AME bundled estimate + CI
+  AME_p   = c("ame_p"),
+  AME_SE  = c("ame_se")
 )
 
 
@@ -98,38 +141,21 @@ validate_models_input <- function(models) {
     )
   }
 
-  # Step 1c: when the list is named, names must be unique AND non-
-  # empty. Duplicate names would silently collide in the long-format
-  # model_id key, causing one fit to overwrite the other in extract /
-  # align / render \u2014 a silent data loss. Empty names ("") would
-  # downstream trigger a cryptic 'zero-length variable name' error
-  # at the rbind step. Both caught upfront with actionable messages.
+  # Step 1c: when the list is named, names must be unique. Duplicate
+  # names would silently collide in the long-format model_id key,
+  # causing one fit to overwrite the other in extract / align /
+  # render \u2014 a silent data loss. Caught upfront with an actionable
+  # message.
+  #
+  # Partial naming (some elements named, others not) is accepted
+  # and auto-filled downstream: `list("Step 1" = m1, m2)` becomes
+  # `list("Step 1" = m1, "Model 2" = m2)` for label purposes. The
+  # rationale: a partially-named list is unambiguous about user
+  # intent, and forcing all-or-nothing forced the user to either
+  # repeat work or drop a meaningful name they already typed.
   nms <- names(models)
   if (!is.null(nms)) {
-    # Empty-string names: partial naming ("a", "") is more confusing
-    # than no naming, and "" is never useful as a model_id. If ANY
-    # name is empty while ANY is set, refuse upfront.
-    is_empty <- !nzchar(nms)
-    is_set   <- any(nzchar(nms))
-    if (is_set && any(is_empty)) {
-      bad_pos <- which(is_empty)
-      spicy_abort(
-        c(
-          sprintf(
-            paste0("Empty name(s) at position(s) %s of the `models` ",
-                    "list."),
-            paste(bad_pos, collapse = ", ")
-          ),
-          "i" = paste0(
-            "Names of the models list are used as model IDs in the ",
-            "rendered table. Either name ALL elements, or drop the ",
-            "names (positional list -> auto-labelled M1, M2, ...)."
-          )
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    if (is_set) {
+    if (any(nzchar(nms))) {
       dupes <- unique(nms[duplicated(nms) & nzchar(nms)])
       if (length(dupes) > 0L) {
         spicy_abort(
@@ -465,10 +491,16 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
 # ---- Phase C \u2014 vocabulary token validation --------------------------------
 
 # Step 9: show_columns (+ Step 12: beta requires standardized != "none")
+#
+# `show_columns` accepts both atomic tokens ("b", "se", "ci", "p", ...)
+# and group tokens ("all_b", "all_ame", ...). Group tokens are
+# pre-expanded by `expand_show_columns()` before this validator runs
+# so the only thing left to check here is membership + the
+# beta-without-method rule.
 validate_show_columns <- function(show_columns, standardized) {
   validate_token_vector(
     show_columns,
-    .regression_tokens$show_columns,
+    .regression_tokens$show_columns_atomic,
     arg = "show_columns"
   )
 
@@ -519,7 +551,9 @@ validate_class_appropriate_tokens <- function(models,
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
     bad <- intersect(show_columns,
-                     c("partial_f2", "partial_eta2", "partial_omega2"))
+                     c("partial_f2",     "partial_f2_ci",
+                       "partial_eta2",   "partial_eta2_ci",
+                       "partial_omega2", "partial_omega2_ci"))
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -674,6 +708,52 @@ validate_nested_stats <- function(nested_stats) {
 
 # Generic token-vector validator used by show_*, nested_stats.
 # Checks: character non-empty + no duplicates + all tokens in `valid`.
+# Expand `show_columns` group tokens to atomic tokens in place. Runs
+# before validation so the rest of the pipeline sees only atomic
+# tokens. Emits a migration error for legacy uppercase tokens from
+# spicy <= 0.11 (`"B"`, `"AME"`, ...) pointing at the new name.
+expand_show_columns <- function(tokens) {
+  if (is.null(tokens) || length(tokens) == 0L) return(tokens)
+  tokens <- as.character(tokens)
+  # Migration error: uppercase legacy tokens.
+  legacy_used <- intersect(tokens, names(.show_columns_legacy))
+  if (length(legacy_used)) {
+    msgs <- vapply(legacy_used, function(old) {
+      new_tok <- .show_columns_legacy[[old]]
+      sprintf("  `\"%s\"` -> %s", old,
+              paste(shQuote(new_tok), collapse = " + "))
+    }, character(1))
+    spicy_abort(
+      c(
+        paste0("Legacy uppercase `show_columns` token(s) used; ",
+                "spicy 0.12 switched to lowercase atomic tokens."),
+        "i" = "Replacement(s):",
+        msgs,
+        "i" = paste0("Or use a group token: \"all_b\" / ",
+                      "\"all_b_compact\" / \"all_ame\" / ",
+                      "\"all_f2\" / \"all_eta2\" / \"all_omega2\".")
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # Group expansion.
+  group_idx <- which(tokens %in% names(.show_columns_groups))
+  if (length(group_idx)) {
+    expanded <- list()
+    for (i in seq_along(tokens)) {
+      tok <- tokens[i]
+      if (tok %in% names(.show_columns_groups)) {
+        expanded[[i]] <- .show_columns_groups[[tok]]
+      } else {
+        expanded[[i]] <- tok
+      }
+    }
+    tokens <- unlist(expanded, use.names = FALSE)
+  }
+  # Dedup while preserving first-occurrence order.
+  tokens[!duplicated(tokens)]
+}
+
 validate_token_vector <- function(x, valid, arg) {
   if (!is.character(x) || length(x) == 0L) {
     spicy_abort(
@@ -1129,7 +1209,7 @@ detect_non_additive_terms <- function(fit) {
 # any vcov is CR* AND "AME" is requested. Rendering layer uses this
 # flag to dispatch to clubSandwich::linear_contrast() (Q14b).
 detect_ame_satterthwaite_path <- function(vcov, show_columns) {
-  if (!"AME" %in% show_columns) {
+  if (!"ame" %in% show_columns) {
     return(FALSE)
   }
   vcov_per <- if (is.list(vcov)) vcov else list(vcov)

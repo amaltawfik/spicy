@@ -319,7 +319,7 @@ test_that("table_regression — CR2 + AME triggers the Satterthwaite footer", {
   # flags the ambiguity of "which p column belongs to what".
   out <- table_regression(
     fit, vcov = "CR2", cluster = df$cluster,
-    show_columns = c("B", "SE", "p", "AME", "AME_p")
+    show_columns = c("b", "se", "p", "ame", "ame_p")
   )
   note <- attr(out, "note")
   expect_match(note, "AME inference: t-distribution with Satterthwaite-corrected df")

@@ -110,6 +110,23 @@ output_long <- function(aligned) {
 }
 
 
+# ---- spanner helpers (shared by rich-output dispatchers) -----------------
+
+# Strip the "Label: " prefix from spanner-covered column names. Rich
+# outputs that draw their own spanner row (gt, flextable, tinytable,
+# excel, word) display the model label above the sub-columns, so the
+# in-column prefix would be redundant.
+.strip_spanner_prefix <- function(body, spanners) {
+  for (lbl in names(spanners)) {
+    idx <- spanners[[lbl]]
+    prefix <- paste0(lbl, ": ")
+    pat <- paste0("^", regex_escape(prefix))
+    names(body)[idx] <- sub(pat, "", names(body)[idx])
+  }
+  body
+}
+
+
 # ---- tinytable -----------------------------------------------------------
 
 output_tinytable <- function(rendered) {
@@ -125,10 +142,19 @@ output_tinytable <- function(rendered) {
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE)
-  tinytable::tt(body,
-                caption = title %||% "",
-                notes = if (!is.null(note)) note else NULL)
+  spanners <- attr(rendered, "spanners")
+  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
+                         check.names = FALSE)
+  if (!is.null(spanners) && length(spanners)) {
+    body <- .strip_spanner_prefix(body, spanners)
+  }
+  tt <- tinytable::tt(body,
+                       caption = title %||% "",
+                       notes = if (!is.null(note)) note else NULL)
+  if (!is.null(spanners) && length(spanners)) {
+    tt <- tinytable::group_tt(tt, j = spanners)
+  }
+  tt
 }
 
 
@@ -146,8 +172,34 @@ output_gt <- function(rendered) {
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE)
+  spanners <- attr(rendered, "spanners")
+  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
+                         check.names = FALSE)
+  # gt addresses columns by name internally, so we keep the unique
+  # "Step 1: B" / "Step 2: B" names on the data.frame and use
+  # `cols_label()` to relabel the displayed headers to the bare
+  # tokens ("B" / "SE" / ...). The spanner row is then added via
+  # `tab_spanner()`.
+  orig_names <- names(body)
   tbl <- gt::gt(body)
+  if (!is.null(spanners) && length(spanners)) {
+    for (lbl in names(spanners)) {
+      cols_in_span <- orig_names[spanners[[lbl]]]
+      tbl <- gt::tab_spanner(tbl, label = lbl, columns = cols_in_span)
+    }
+    relabel <- list()
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      prefix <- paste0(lbl, ": ")
+      pat <- paste0("^", regex_escape(prefix))
+      for (j in idx) {
+        relabel[[ orig_names[j] ]] <- sub(pat, "", orig_names[j])
+      }
+    }
+    if (length(relabel)) {
+      tbl <- do.call(gt::cols_label, c(list(tbl), relabel))
+    }
+  }
   if (!is.null(title) && nzchar(title)) {
     tbl <- gt::tab_header(tbl, title = title)
   }
@@ -170,8 +222,55 @@ output_flextable <- function(rendered) {
     )
     # nocov end
   }
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE)
+  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
+                         check.names = FALSE)
+  spanners <- attr(rendered, "spanners")
+  orig_names <- names(body)
   ft <- flextable::flextable(body)
+  if (!is.null(spanners) && length(spanners)) {
+    # Build a `values` + `colwidths` spec for one prepended header
+    # row covering all columns: for each leftmost-to-rightmost column
+    # run, emit either a spanner label (for cols inside a span) or an
+    # empty string (for cols outside any span — typically the
+    # leading "Variable" column).
+    n_cols <- ncol(body)
+    span_by_col <- character(n_cols)
+    for (lbl in names(spanners)) {
+      span_by_col[spanners[[lbl]]] <- lbl
+    }
+    values <- character(0)
+    colwidths <- integer(0)
+    i <- 1L
+    while (i <= n_cols) {
+      run_label <- span_by_col[i]
+      j <- i
+      while (j < n_cols && span_by_col[j + 1L] == run_label) {
+        j <- j + 1L
+      }
+      values <- c(values, run_label)
+      colwidths <- c(colwidths, j - i + 1L)
+      i <- j + 1L
+    }
+    ft <- flextable::add_header_row(ft, top = TRUE,
+                                     values = values,
+                                     colwidths = colwidths)
+    # Relabel the sub-column headers (now row 2 of the header) by
+    # stripping the model prefix.
+    relabel <- as.list(orig_names)
+    names(relabel) <- orig_names
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      prefix <- paste0(lbl, ": ")
+      pat <- paste0("^", regex_escape(prefix))
+      for (j in idx) {
+        relabel[[orig_names[j]]] <- sub(pat, "", orig_names[j])
+      }
+    }
+    ft <- do.call(flextable::set_header_labels,
+                   c(list(x = ft), relabel))
+    ft <- flextable::align(ft, i = 1L, align = "center",
+                            part = "header")
+  }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   if (!is.null(title) && nzchar(title)) {
@@ -207,9 +306,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     )
     # nocov end
   }
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE)
+  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
+                         check.names = FALSE)
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
+  spanners <- attr(rendered, "spanners")
 
   wb <- openxlsx2::wb_workbook()
   wb <- openxlsx2::wb_add_worksheet(wb, sheet = excel_sheet)
@@ -220,11 +321,57 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
                                  x = title, start_row = start_row)
     start_row <- start_row + 2L
   }
-  wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                               x = body, start_row = start_row,
-                               col_names = TRUE)
+  if (!is.null(spanners) && length(spanners)) {
+    # Write a spanner row above the column headers, merge each
+    # label's span, then write the stripped sub-column header row,
+    # then the data body (no col_names — we already wrote them).
+    n_cols <- ncol(body)
+    spanner_row <- rep("", n_cols)
+    for (lbl in names(spanners)) {
+      spanner_row[spanners[[lbl]]] <- lbl
+    }
+    spanner_df <- as.data.frame(as.list(spanner_row),
+                                 stringsAsFactors = FALSE,
+                                 col.names = paste0("V", seq_len(n_cols)))
+    names(spanner_df) <- names(body)
+    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
+                                 x = spanner_df, start_row = start_row,
+                                 col_names = FALSE)
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      if (length(idx) >= 2L) {
+        # `dims = "A1:D1"`-style range string; openxlsx2 deprecated
+        # the `rows = / cols =` form in favour of `dims =`.
+        dim_range <- paste0(
+          openxlsx2::wb_dims(rows = start_row, cols = idx)
+        )
+        wb <- openxlsx2::wb_merge_cells(
+          wb, sheet = excel_sheet, dims = dim_range
+        )
+      }
+    }
+    # Sub-column header row (stripped names).
+    stripped <- .strip_spanner_prefix(body, spanners)
+    header_df <- as.data.frame(as.list(names(stripped)),
+                                stringsAsFactors = FALSE,
+                                col.names = paste0("V", seq_len(n_cols)))
+    names(header_df) <- names(body)
+    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
+                                 x = header_df,
+                                 start_row = start_row + 1L,
+                                 col_names = FALSE)
+    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
+                                 x = body, start_row = start_row + 2L,
+                                 col_names = FALSE)
+    body_end_row <- start_row + 1L + nrow(body)
+  } else {
+    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
+                                 x = body, start_row = start_row,
+                                 col_names = TRUE)
+    body_end_row <- start_row + nrow(body)
+  }
   if (!is.null(note) && nzchar(note)) {
-    foot_row <- start_row + nrow(body) + 2L
+    foot_row <- body_end_row + 2L
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
     wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
                                  x = note_lines, start_row = foot_row)
@@ -311,8 +458,25 @@ print.spicy_regression_table <- function(x, ...) {
   if (is.null(group_sep)) group_sep <- integer(0)
   # nocov end
   align <- attr(x, "align") %||% "decimal"
+  spanners <- attr(x, "spanners")
 
-  body <- as.data.frame(x, stringsAsFactors = FALSE)
+  body <- as.data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
+  # When a spanner row is present, the model label is shown above the
+  # sub-columns, so the "Step 1: " prefix in each sub-column name would
+  # be redundant. Strip it for the displayed headers (only); the
+  # underlying data.frame and the `output = "data.frame"` / `"long"`
+  # views keep the unambiguous prefixed names. `check.names = FALSE`
+  # above prevents R from suffixing the now-duplicate "B" / "SE" / ...
+  # names with `.1`, `.2`, etc.
+  if (!is.null(spanners) && length(spanners)) {
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      prefix <- paste0(lbl, ": ")
+      stripped <- sub(paste0("^", regex_escape(prefix)), "",
+                       names(body)[idx])
+      names(body)[idx] <- stripped
+    }
+  }
   data_col_idx <- setdiff(seq_along(body), 1L)
   align_center_cols <- if (identical(align, "center")) {
     data_col_idx
@@ -343,10 +507,19 @@ print.spicy_regression_table <- function(x, ...) {
         note = attr(x, "note"),
         group_sep_rows = group_sep,
         align_center_cols = align_center_cols,
-        center_headers = TRUE
+        center_headers = TRUE,
+        spanners = spanners
       ),
       dot_args
     )
   )
   invisible(x)
+}
+
+# Internal: escape regex metacharacters in a string so it can be used
+# as a literal pattern. Used for stripping the "Label: " prefix from
+# sub-column names without surprises if a model label happens to
+# contain "." or "+".
+regex_escape <- function(s) {
+  gsub("([.\\+*?\\^$()\\[\\]{}|])", "\\\\\\1", s, perl = TRUE)
 }

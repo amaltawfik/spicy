@@ -94,7 +94,7 @@ test_that("glm: explicit r2 in show_fit_stats errors with hint to pseudo_r2", {
 test_that("glm: explicit partial_f2 errors with hint to partial_chi2", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   err <- tryCatch(
-    table_regression(fit, show_columns = c("B", "partial_f2")),
+    table_regression(fit, show_columns = c("b", "partial_f2")),
     error = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
@@ -113,7 +113,7 @@ test_that("lm-only: pseudo_r2_mcfadden errors with hint to r2", {
 test_that("lm-only: partial_chi2 errors with hint to variance-explained partials", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, show_columns = c("B", "partial_chi2")),
+    table_regression(fit, show_columns = c("b", "partial_chi2")),
     class = "spicy_invalid_input"
   )
 })
@@ -309,9 +309,11 @@ test_that("exponentiate: mixed glm + lm ⇒ per-model header (OR + B)", {
     out <- table_regression(list(m_glm, m_lm), exponentiate = TRUE),
     spicy_warning = function(c) invokeRestart("muffleWarning")
   )
-  # Model 1 column is OR, Model 2 column is B (lm passes through)
-  expect_true(any(grepl("Model 1: OR", names(out))))
-  expect_true(any(grepl("Model 2: B$",  names(out))))
+  # DVs differ (am, mpg) -> smart default lifts the bare DV names
+  # into the spanner; sub-column names are prefixed by the DV name.
+  # Model 1 (glm/am) -> OR; Model 2 (lm/mpg) -> B.
+  expect_true(any(grepl("am: OR", names(out), fixed = TRUE)))
+  expect_true(any(grepl("mpg: B$", names(out))))
 })
 
 test_that("exponentiate: validation rejects non-logical scalar", {
@@ -341,7 +343,7 @@ test_that("apply_exponentiate_to_coefs — only B / beta rows transformed", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   ex <- spicy:::extract_lm_phase1(
     fit, model_id = "M1",
-    show_columns = c("B", "AME"),
+    show_columns = c("b", "ame"),
     show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "AIC")
   )
   raw <- ex$coefs
@@ -387,7 +389,7 @@ test_that("apply_exponentiate_to_coefs — singular and reference rows untouched
 
 test_that("glm: partial_chi2 matches drop1(test = 'LRT') to machine precision", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  out <- table_regression(fit, show_columns = c("B", "partial_chi2", "p"))
+  out <- table_regression(fit, show_columns = c("b", "partial_chi2", "p"))
   td <- broom::tidy(out)
   chi <- td[td$estimate_type == "partial_chi2", ]
   expect_equal(nrow(chi), 2L)  # mpg + wt, no intercept
@@ -407,7 +409,7 @@ test_that("glm: partial_chi2 matches drop1(test = 'LRT') to machine precision", 
 test_that("glm: partial_chi2 - factor term shares term-level chi2 across dummies", {
   mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
   fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
-  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   td <- broom::tidy(out)
   chi <- td[td$estimate_type == "partial_chi2", ]
   # cyl has 2 non-reference dummies (cyl6, cyl8), both share term-level chi2
@@ -423,7 +425,7 @@ test_that("glm: partial_chi2 - factor term shares term-level chi2 across dummies
 
 test_that("glm: partial_chi2 cell renders 'value (df)' format - SAS TYPE3", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   chi_col <- grep("χ", names(body), value = TRUE)
   expect_length(chi_col, 1L)
@@ -434,7 +436,7 @@ test_that("glm: partial_chi2 cell renders 'value (df)' format - SAS TYPE3", {
 
 test_that("glm: partial_chi2 column header is chi-squared (UTF-8 safe)", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
-  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   expect_true(any(grepl("χ²", names(body))))
 })
@@ -442,12 +444,12 @@ test_that("glm: partial_chi2 column header is chi-squared (UTF-8 safe)", {
 test_that("lm + partial_chi2 - rejected with hint to partial_f2 / eta2 / omega2", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
-    table_regression(fit, show_columns = c("B", "partial_chi2")),
+    table_regression(fit, show_columns = c("b", "partial_chi2")),
     class = "spicy_invalid_input"
   )
   # Hint message mentions the lm-appropriate analogs
   err <- tryCatch(
-    table_regression(fit, show_columns = c("B", "partial_chi2")),
+    table_regression(fit, show_columns = c("b", "partial_chi2")),
     spicy_invalid_input = function(e) e
   )
   expect_match(conditionMessage(err), "partial_f2", fixed = TRUE)
@@ -458,7 +460,7 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
   fit_glm <- glm(am ~ mpg + wt, data = mt, family = binomial)
   expect_no_error(
     out <- table_regression(list(fit_lm, fit_glm),
-                            show_columns = c("B", "partial_chi2"))
+                            show_columns = c("b", "partial_chi2"))
   )
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   chi_cols <- grep("χ", names(body), value = TRUE)
@@ -484,7 +486,7 @@ test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), em-dashed"
   set.seed(123)
   d <- data.frame(y = rpois(50, 3), x = rnorm(50))
   fit <- glm(y ~ x, data = d, family = quasipoisson)
-  out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+  out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   td <- broom::tidy(out)
   chi <- td[td$estimate_type == "partial_chi2" & td$term == "x", ]
   # Either no row (extract returned empty) OR row with finite estimate
@@ -495,7 +497,7 @@ test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), em-dashed"
 test_that("glm: partial_chi2 with intercept-only fit -> empty rows (no crash)", {
   fit <- glm(am ~ 1, data = mt, family = binomial)
   expect_no_error(
-    out <- table_regression(fit, show_columns = c("B", "partial_chi2"))
+    out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   )
   td <- broom::tidy(out)
   expect_equal(sum(td$estimate_type == "partial_chi2"), 0L)
@@ -664,7 +666,7 @@ test_that("glm pseudo: log-binomial treated as logit-equivalent (var_link = pi^2
 
 test_that("glm AME: matches marginaleffects::avg_slopes() to machine precision", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   oracle <- marginaleffects::avg_slopes(fit)
   for (term_nm in c("mpg", "wt")) {
@@ -683,7 +685,7 @@ test_that("glm AME: matches marginaleffects::avg_slopes() to machine precision",
 
 test_that("glm AME: classical vcov uses z-asymptotic (df = Inf, test_type = 'z')", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   expect_true(all(is.infinite(ame$df)))
   expect_true(all(ame$test_type == "z"))
@@ -696,7 +698,7 @@ test_that("glm AME + CR2: Satterthwaite df from coef_test on dominant coef", {
                   clinic = rep(letters[1:20], each = 10))
   fit <- glm(y ~ x1 + x2, data = d, family = binomial)
   td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = d$clinic,
-                                       show_columns = c("B", "AME")))
+                                       show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   expect_true(all(ame$test_type == "t"))
   # Cross-check: AME df_Satt should equal the dominant-coef df_Satt
@@ -721,7 +723,7 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
                   clinic = rep(letters[1:20], each = 10))
   fit <- glm(y ~ x, data = d, family = binomial)
   out <- table_regression(fit, vcov = "CR2", cluster = d$clinic,
-                           show_columns = c("B", "AME"))
+                           show_columns = c("b", "ame"))
   note <- attr(out, "note")
   expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
   expect_match(note, "coef_test", fixed = TRUE)
@@ -732,7 +734,7 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
 test_that("glm AME with factor predictor: each level gets its own AME row", {
   mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
   fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   # mpg + cyl6 + cyl8 = 3 AME rows
   expect_true("mpg" %in% ame$term)
@@ -746,7 +748,7 @@ test_that("glm AME: response-scale (NOT link-scale) - AME != B for logit", {
   # use Path A for glm; instead the response-scale AME from
   # marginaleffects must differ from B.
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  td <- broom::tidy(table_regression(fit, show_columns = c("B", "AME")))
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
   ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
   # Response-scale AME for logistic mpg coef is order-of-magnitude
@@ -757,7 +759,7 @@ test_that("glm AME: response-scale (NOT link-scale) - AME != B for logit", {
 test_that("glm AME: HC* vcov uses z-asymptotic (no Satterthwaite)", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   td <- broom::tidy(table_regression(fit, vcov = "HC1",
-                                       show_columns = c("B", "AME")))
+                                       show_columns = c("b", "ame")))
   ame <- td[td$estimate_type == "AME", ]
   expect_true(all(is.infinite(ame$df)))
   expect_true(all(ame$test_type == "z"))
@@ -905,7 +907,7 @@ test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized",
     fit,
     exponentiate = TRUE,
     standardized = "pseudo",
-    show_columns = c("B", "beta", "p", "AME", "AME_p", "partial_chi2")
+    show_columns = c("b", "beta", "p", "ame", "ame_p", "partial_chi2")
   )
   expect_s3_class(out, "spicy_regression_table")
   expect_match(attr(out, "title"), "^Logistic regression: am$")
@@ -958,7 +960,7 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   out <- table_regression(
     list(m1, m2),
     vcov = "CR2", cluster = d$clinic,
-    show_columns = c("B", "p", "AME", "AME_p"),
+    show_columns = c("b", "p", "ame", "ame_p"),
     nested = TRUE
   )
   note <- attr(out, "note")
@@ -995,7 +997,7 @@ test_that("E2E: broom::tidy() schema stable for glm output", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(
     fit,
-    show_columns = c("B", "p", "AME", "AME_p", "partial_chi2")
+    show_columns = c("b", "p", "ame", "ame_p", "partial_chi2")
   )
   td <- broom::tidy(out)
   # Required broom-style columns
@@ -1027,7 +1029,7 @@ test_that("E2E: full feature surface in a single call (acceptance)", {
       ci_method = "profile",
       standardized = "pseudo",
       p_adjust = "holm",
-      show_columns = c("B", "beta", "CI", "p", "AME", "AME_p", "partial_chi2"),
+      show_columns = c("b", "beta", "ci", "p", "ame", "ame_p", "partial_chi2"),
       show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_tjur",
                           "AIC", "BIC"),
       labels = c(mpg = "Miles per gallon", wt = "Weight (1000 lbs)"),
@@ -1326,7 +1328,7 @@ test_that("AUDIT: glm + NA in predictors -> nobs reflects na.omit, no crash", {
   d <- data.frame(y = rbinom(50, 1, 0.5), x1 = rnorm(50), x2 = rnorm(50))
   d$x1[1:5] <- NA
   fit <- glm(y ~ x1 + x2, data = d, family = binomial)
-  out <- table_regression(fit, show_columns = c("B", "AME", "partial_chi2"))
+  out <- table_regression(fit, show_columns = c("b", "ame", "partial_chi2"))
   expect_equal(nobs(fit), 45L)
   td <- broom::tidy(out)
   expect_true(all(is.finite(td$estimate[!is.na(td$estimate)])))
@@ -1450,7 +1452,7 @@ test_that("AUDIT: rich output formats work for glm + exponentiate", {
 test_that("AUDIT: beta token without standardized -> hint lists all 5 methods", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   err <- tryCatch(
-    table_regression(fit, show_columns = c("B", "beta")),
+    table_regression(fit, show_columns = c("b", "beta")),
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
@@ -1516,8 +1518,12 @@ test_that("AUDIT B5: mixed lm + glm with non-alphabetical labels", {
   mpg_row <- df[df$Variable == "mpg", , drop = FALSE]
   expect_equal(trimws(mpg_row$`OLS: B`), "")
   expect_match(mpg_row$`Logit: OR`, "1\\.36")
-  # Outcome row: mpg under OLS, am under Logit
-  out_row <- df[df$Variable == "Outcome", , drop = FALSE]
+  # Outcome row is hidden by default; opt back in via outcome_labels.
+  out2 <- table_regression(list("OLS" = m_lm, "Logit" = m_glm),
+                            exponentiate = TRUE,
+                            outcome_labels = c("mpg", "am"))
+  df2 <- as.data.frame(out2, stringsAsFactors = FALSE)
+  out_row <- df2[df2$Variable == "Outcome", , drop = FALSE]
   expect_equal(trimws(out_row$`OLS: B`), "mpg")
   expect_equal(trimws(out_row$`Logit: OR`), "am")
 })
@@ -1567,16 +1573,22 @@ test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
 # AUDIT round 5: B6 (empty model name) + B7 (poly contrasts)
 # ============================================================================
 
-test_that("AUDIT B6: empty model name (set programmatically) is rejected", {
+test_that("AUDIT B6: partially-named models list auto-fills missing slots", {
+  # Pre-0.12: empty names were rejected outright. New behaviour:
+  # partial naming is unambiguous user intent (the named slots keep
+  # their label, unnamed slots fall back to "Model <position>"),
+  # so we accept it without warning. Duplicate explicit names are
+  # still rejected (see next test).
   m1 <- lm(mpg ~ wt, data = mtcars)
   m2 <- lm(mpg ~ wt + cyl, data = mtcars)
   models <- list(m1, m2)
   names(models) <- c("", "B")
-  err <- tryCatch(table_regression(models),
-                   spicy_invalid_input = function(e) e)
-  expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "Empty name", fixed = TRUE)
-  expect_match(conditionMessage(err), "position(s) 1", fixed = TRUE)
+  out <- table_regression(models)
+  cols <- names(as.data.frame(out, stringsAsFactors = FALSE,
+                                check.names = FALSE))
+  # The unnamed slot gets "Model 1" as label, the named slot keeps "B".
+  expect_true(any(grepl("Model 1:", cols, fixed = TRUE)))
+  expect_true(any(grepl("B:", cols, fixed = TRUE)))
 })
 
 test_that("AUDIT B6: existing duplicate-name validator still fires cleanly", {
@@ -1590,25 +1602,37 @@ test_that("AUDIT B6: existing duplicate-name validator still fires cleanly", {
   expect_match(conditionMessage(err), "Duplicate name", fixed = TRUE)
 })
 
-test_that("AUDIT B7: ordered factor with poly contrasts -- no bogus ref row", {
-  # Bug: detect_factor_terms() assumed contr.treatment naming
-  # (`<var><level>`). For ordered factors R uses contr.poly which
-  # produces `<var>.L`, `<var>.Q`, `<var>.C` -- no "reference level"
-  # in the contr.treatment sense. The bug was: a bogus reference row
-  # was emitted under a "education:" factor header, while the .L /
-  # .Q coefs were rendered as plain numeric rows. Confusing and
-  # incorrect.
+test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header", {
+  # Ordered factors under `contr.poly` (R default for `ordered()`)
+  # produce `<var>.L`, `<var>.Q`, `<var>.C`, ... — orthogonal trend
+  # coefficients, NOT per-level contrasts. They are grouped under
+  # the factor name (like a treatment factor) but with the bare
+  # poly suffix (`.L` / `.Q` / `.C` / `^k`) as the sub-row label,
+  # in polynomial degree order, and with NO reference row (none
+  # exists for poly contrasts). The footer adds an auto note
+  # explaining the parameterisation.
   fit <- glm(dentist_12m ~ age + sex + education,
               data = sochealth, family = binomial)
   out <- table_regression(fit)
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
-  # NO "education:" factor header (poly coding -> no ref level)
-  expect_false(any(vars == "education:"))
-  # NO reference row for education ("Lower secondary (ref.)")
+  vars <- as.data.frame(out, stringsAsFactors = FALSE,
+                         check.names = FALSE)$Variable
+  vars_trimmed <- trimws(vars)
+  # The factor header IS present (poly factors are now grouped).
+  expect_true(any(vars == "education:"))
+  # NO reference row for education (poly contrasts have none). The
+  # presence of "(ref.)" anywhere is fine -- `sex` is a treatment
+  # factor and KEEPS its reference row.
   expect_false(any(grepl("Lower secondary", vars)))
-  # The two poly contrasts ARE displayed as plain rows
-  expect_true("education.L" %in% vars)
-  expect_true("education.Q" %in% vars)
+  # The poly contrasts are sublabelled with the bare suffix and
+  # appear in linear -> quadratic order.
+  expect_true(".L" %in% vars_trimmed)
+  expect_true(".Q" %in% vars_trimmed)
+  l_pos <- which(vars_trimmed == ".L")
+  q_pos <- which(vars_trimmed == ".Q")
+  expect_true(l_pos < q_pos)
+  # Auto footer mentions the poly contrasts.
+  expect_match(attr(out, "note"),
+                "Ordered factor `education` uses orthogonal polynomial")
   # sex (treatment factor) still groups correctly with ref row
   expect_true(any(grepl("^sex:", vars)))
   expect_true(any(grepl("Female.*ref", vars)))
@@ -1832,20 +1856,20 @@ test_that("AUDIT: response types (logical, integer, character->factor)", {
 test_that("AME caveat: spicy_caveat fires when AME + p without AME_p", {
   fit <- lm(mpg ~ wt + cyl, data = mtcars)
   expect_warning(
-    table_regression(fit, show_columns = c("B", "AME", "p")),
+    table_regression(fit, show_columns = c("b", "ame", "p")),
     class = "spicy_caveat"
   )
   # Suppress the caveat for a cleaner cnd capture
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, show_columns = c("B", "AME", "p")),
+    table_regression(fit, show_columns = c("b", "ame", "p")),
     spicy_caveat = function(c) {
       cnd <<- c
       invokeRestart("muffleWarning")
     }
   )
   msg <- conditionMessage(cnd)
-  expect_match(msg, "AME_p", fixed = TRUE)
+  expect_match(msg, "ame_p", fixed = TRUE)
   expect_match(msg, "B (or beta", fixed = TRUE)
 })
 
@@ -1853,7 +1877,7 @@ test_that("AME caveat: NO caveat when AME + p + AME_p all present", {
   fit <- lm(mpg ~ wt + cyl, data = mtcars)
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, show_columns = c("B", "p", "AME", "AME_p")),
+    table_regression(fit, show_columns = c("b", "p", "ame", "ame_p")),
     spicy_caveat = function(c) {
       cnd <<- c
       invokeRestart("muffleWarning")
@@ -1907,27 +1931,24 @@ test_that("partial_chi2 cell renders em-dash when estimate is NA (direct)", {
                                      digits = 2L, p_digits = 3L,
                                      effect_size_digits = 2L,
                                      decimal_mark = ".",
-                                     show_columns = c("B", "partial_chi2"))
+                                     show_columns = c("b", "partial_chi2"))
   expect_equal(out, "—")
 })
 
-test_that("AME cell renders em-dash when estimate is NA", {
-  # Exercises is.na(est) branch of the 'value [CI]' compact form.
-  # Construct a model where the AME marginaleffects path may return
-  # NA for a singular coefficient. We force an NA AME estimate by
-  # manipulating the rendered cell directly through a small custom
-  # data.frame -- simplest path with predictable input.
+test_that("AME cell renders em-dash when estimate is NA (estimate-only token)", {
+  # Post-split (0.12): the `ame` token is estimate-only. The is.na(val)
+  # branch of the single-field path returns the em-dash.
   format_cell <- spicy:::format_cell_value
   long_row <- data.frame(
-    estimate = NA_real_, ci_low = NA_real_, ci_high = NA_real_,
+    estimate = NA_real_,
     stringsAsFactors = FALSE
   )
-  cs <- list(token = "AME", fields = c("estimate", "ci_low", "ci_high"))
+  cs <- list(token = "ame", fields = "estimate")
   out <- format_cell(long_row, cs, stars_map = NULL,
                        digits = 2L, p_digits = 3L,
                        effect_size_digits = 2L,
                        decimal_mark = ".",
-                       show_columns = c("B", "AME"))
+                       show_columns = c("b", "ame"))
   expect_equal(out, "—")
 })
 
@@ -2242,7 +2263,7 @@ test_that("AME-Satterthwaite footer: mixed lm + glm uses compound wording", {
   out <- table_regression(
     list(m_lm, m_gl),
     vcov = "CR2", cluster = d$clinic,
-    show_columns = c("B", "AME", "AME_p", "p")
+    show_columns = c("b", "ame", "ame_p", "p")
   )
   note <- attr(out, "note")
   expect_match(note, "linear_contrast", fixed = TRUE)

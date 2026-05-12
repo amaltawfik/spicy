@@ -4,14 +4,14 @@ mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
 mk_extract_lm <- function(formula, model_id, data = mt,
-                           show_columns = c("B", "SE", "CI", "p")) {
+                           show_columns = c("b", "se", "ci", "p")) {
   fit <- lm(formula, data = data)
   spicy:::extract_lm_phase1(fit, model_id = model_id,
                             show_columns = show_columns)
 }
 
 mk_aligned <- function(formulas, ids,
-                        show_columns = c("B", "SE", "CI", "p"),
+                        show_columns = c("b", "se", "ci", "p"),
                         ...) {
   ex <- Map(
     function(f, i) mk_extract_lm(f, i, show_columns = show_columns),
@@ -158,36 +158,40 @@ test_that("render — show_intercept = FALSE drops intercept row", {
 # Q19 compact rendering for partial effect sizes + AME
 # ============================================================================
 
-test_that("render — partial_eta2 renders as 'value [CI]' single cell", {
+test_that("render — partial_eta2 + partial_eta2_ci as separate cells", {
   aligned <- mk_aligned(
     list(mpg ~ wt + cyl), list("M1"),
-    show_columns = c("B", "partial_eta2")
+    show_columns = c("b", "partial_eta2", "partial_eta2_ci")
   )
   rt <- spicy:::render_regression_table(
     aligned,
-    show_columns = c("B", "partial_eta2"),
+    show_columns = c("b", "partial_eta2", "partial_eta2_ci"),
     effect_size_digits = 2L
   )
   expect_true("η²" %in% names(rt))
+  expect_true("η² 95% CI" %in% names(rt))
   wt_row <- rt[rt$Variable == "wt", , drop = FALSE]
-  # "0.31 [0.05, 0.52]" pattern
-  expect_match(wt_row$`η²`, "^[0-9]+\\.[0-9]+ \\[[0-9]+\\.[0-9]+, [0-9]+\\.[0-9]+\\]$")
+  expect_match(trimws(wt_row$`η²`),
+                "^[0-9]+\\.[0-9]+$")
+  expect_match(trimws(wt_row$`η² 95% CI`),
+                "^\\[[0-9]+\\.[0-9]+, [0-9]+\\.[0-9]+\\]$")
 })
 
 test_that("render — partial_omega2 column uses effect_size_digits", {
   aligned <- mk_aligned(
     list(mpg ~ wt + cyl), list("M1"),
-    show_columns = c("B", "partial_omega2")
+    show_columns = c("b", "partial_omega2")
   )
   rt <- spicy:::render_regression_table(
     aligned,
-    show_columns = c("B", "partial_omega2"),
+    show_columns = c("b", "partial_omega2"),
     effect_size_digits = 3L
   )
   expect_true("ω²" %in% names(rt))
-  # 3 decimals → at least three digits after the dot
-  wt_cell <- rt[rt$Variable == "wt", "ω²"]
-  expect_match(wt_cell, "^[0-9]+\\.[0-9]{3} \\[")
+  # 3 decimals → exactly three digits after the dot (estimate-only,
+  # no [CI] bundled since 0.12)
+  wt_cell <- trimws(rt[rt$Variable == "wt", "ω²"])
+  expect_match(wt_cell, "^[0-9]+\\.[0-9]{3}$")
 })
 
 

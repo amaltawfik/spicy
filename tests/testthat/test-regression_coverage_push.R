@@ -229,7 +229,7 @@ test_that("token_label — unknown token falls back to the token string", {
 test_that("extract_partial_effect_rows — empty when no partial token requested", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- spicy:::extract_partial_effect_rows(
-    fit, ci_level = 0.95, show_columns = c("B", "SE"),
+    fit, ci_level = 0.95, show_columns = c("b", "se"),
     model_id = "M1", outcome = "mpg"
   )
   expect_equal(nrow(out), 0L)
@@ -239,7 +239,7 @@ test_that("extract_partial_effect_rows — intercept-only model returns empty", 
   fit <- lm(mpg ~ 1, data = mt)
   out <- spicy:::extract_partial_effect_rows(
     fit, ci_level = 0.95,
-    show_columns = c("B", "partial_eta2"),
+    show_columns = c("b", "partial_eta2"),
     model_id = "M1", outcome = "mpg"
   )
   expect_equal(nrow(out), 0L)
@@ -507,7 +507,7 @@ test_that("emit_standardized_caveat — transforms-only path lists 'transforms:'
 test_that("table_regression — beta auto-injection when no B token", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, standardized = "refit",
-                          show_columns = c("SE", "p"))
+                          show_columns = c("se", "p"))
   expect_true("β" %in% names(out))
 })
 
@@ -521,7 +521,7 @@ test_that("render: singular coef row exists and partial_eta2 is empty / em-dash"
   mt2$wt2 <- mt2$wt
   fit <- suppressWarnings(lm(mpg ~ wt + wt2 + cyl, data = mt2))
   out <- table_regression(fit,
-                          show_columns = c("B", "partial_eta2"))
+                          show_columns = c("b", "partial_eta2"))
   wt2_row <- out[out$Variable == "wt2", , drop = FALSE]
   expect_equal(nrow(wt2_row), 1L)
   # Singular coef → B cell is em-dash (NA in raw long format),
@@ -537,7 +537,7 @@ test_that("partial: singular coef is skipped (em-dashed by renderer)", {
   fit <- suppressWarnings(lm(mpg ~ wt + wt2, data = mt2))
   rows <- spicy:::extract_partial_effect_rows(
     fit, ci_level = 0.95,
-    show_columns = c("B", "partial_eta2"),
+    show_columns = c("b", "partial_eta2"),
     model_id = "M1", outcome = "mpg"
   )
   # Singular wt2 NOT in the partial rows

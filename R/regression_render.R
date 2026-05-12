@@ -37,7 +37,7 @@
 
 render_regression_table <- function(
     aligned,
-    show_columns = c("B", "SE", "CI", "p"),
+    show_columns = c("b", "se", "ci", "p"),
     show_fit_stats = c("nobs", "r2", "adj_r2"),
     model_labels = NULL,
     reference_label = "(ref.)",
@@ -71,6 +71,45 @@ render_regression_table <- function(
   # `aligned$model_ids`.
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
+
+  # Smart default — when the user did NOT supply any spanner-label
+  # source (neither `model_labels` nor `names(models)`), AND no
+  # explicit Outcome-row override (`outcome_labels = NULL`), AND the
+  # models have all-distinct response variables, lift the auto-
+  # detected DV name into the column-group spanner instead of the
+  # generic "Model 1, 2, ..." auto-fill. The would-be "Outcome" body
+  # row is then redundant and is suppressed. Matches the
+  # modelsummary / Stata `estout` convention for comparison tables
+  # across outcomes.
+  #
+  # Falls back to "Model 1, ..." (and keeps the Outcome row) when:
+  #   * DVs are not all distinct (duplicates would yield an
+  #     ambiguous spanner like "mpg / mpg / hp");
+  #   * DVs are identical (no extra information to show — DV is in
+  #     the title);
+  #   * the user supplied `outcome_labels = c(...)` (explicit row
+  #     labels — left as a row override, since `model_labels` is the
+  #     dedicated spanner knob);
+  #   * `outcome_labels = FALSE` (user explicitly suppressed DV
+  #     display entirely).
+  labels_from_outcomes <- FALSE
+  if (is.null(model_labels) && n_models >= 2L && is.null(outcome_labels)) {
+    # Use the bare response-variable NAME (from `formula(fit)[[2]]`)
+    # for the spanner -- not `attr("label")`, which can be a long
+    # human-readable phrase (e.g. "Wellbeing score (0-100)") that
+    # would distort column widths.
+    model_outcomes <- vapply(model_ids, function(m_id) {
+      fs <- aligned$fit_stats_aligned
+      out <- fs$outcome[fs$model_id == m_id][1]
+      if (length(out) == 0L || is.na(out)) NA_character_ else out
+    }, character(1))
+    if (length(unique(model_outcomes)) == n_models &&
+          all(!is.na(model_outcomes)) &&
+          all(nzchar(model_outcomes))) {
+      model_labels <- model_outcomes
+      labels_from_outcomes <- TRUE
+    }
+  }
   if (is.null(model_labels)) {
     model_labels <- if (n_models == 1L) "" else paste0("Model ", seq_len(n_models))
   }
@@ -165,10 +204,17 @@ render_regression_table <- function(
   } else {
     model_outcomes
   }
+  # When DV names were lifted into the spanner labels above, the
+  # body Outcome row would just repeat the spanner. Suppress it.
+  effective_outcome_labels <- if (isTRUE(labels_from_outcomes)) {
+    FALSE
+  } else {
+    outcome_labels
+  }
   outcome_row <- build_outcome_row(
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels,
-    outcome_labels = outcome_labels,
+    outcome_labels = effective_outcome_labels,
     model_ids = model_ids,
     label_map = label_map,
     col_spec = col_spec
@@ -232,7 +278,46 @@ render_regression_table <- function(
   attr(body, "col_spec") <- col_spec
   attr(body, "group_sep_rows") <- group_sep
   attr(body, "align") <- align
+  attr(body, "spanners") <- build_model_spanners(body, col_spec, label_map)
   body
+}
+
+
+# ---- Multi-model column spanners -----------------------------------------
+
+# Compute the column-group spanner spec consumed by the print method
+# and the rich-output dispatchers. Returns NULL when there is nothing
+# to span (single model, or all model labels empty).
+#
+# Output: a named list `label -> integer body-column indices`. Indices
+# point into `body` (so they include the leading "Variable" column at
+# position 1, which is excluded from every spanner).
+build_model_spanners <- function(body, col_spec, label_map) {
+  if (length(col_spec) == 0L) return(NULL)
+  labels <- unique(unname(label_map))
+  if (length(labels) <= 1L) return(NULL)
+  if (!any(nzchar(labels))) return(NULL)
+
+  body_names <- names(body)
+  spec_names <- vapply(col_spec, `[[`, character(1), "col_name")
+  spec_model <- vapply(col_spec, `[[`, character(1), "model_id")
+
+  out <- list()
+  for (m_id in unique(spec_model)) {
+    m_lbl <- label_map[[m_id]]
+    if (!nzchar(m_lbl)) next
+    cols_in_model <- spec_names[spec_model == m_id]
+    idx <- match(cols_in_model, body_names)
+    idx <- idx[!is.na(idx)]
+    if (!length(idx)) next
+    idx <- sort(idx)
+    # Spanners must be contiguous; build_column_spec emits columns in
+    # model order so this holds by construction. Defensive check kept
+    # so a future reordering surfaces loudly.
+    if (any(diff(idx) != 1L)) next   # nocov
+    out[[m_lbl]] <- as.integer(idx)
+  }
+  if (!length(out)) NULL else out
 }
 
 
@@ -252,46 +337,64 @@ build_column_spec <- function(show_columns, model_ids, label_map,
       model_ids
     )
   }
+  ci_hdr <- paste0(ci_pct, "% CI")
   base <- list(
-    B              = list(estimate_type = "B",
-                          fields = "estimate",
-                          header_short = "B"),
-    SE             = list(estimate_type = "B",
-                          fields = "se",
-                          header_short = "SE"),
-    CI             = list(estimate_type = "B",
-                          fields = c("ci_low", "ci_high"),
-                          header_short = paste0(ci_pct, "% CI")),
-    t              = list(estimate_type = "B",
-                          fields = "statistic",
-                          header_short = "t"),
-    p              = list(estimate_type = "B",
-                          fields = "p_value",
-                          header_short = "p"),
-    beta           = list(estimate_type = "beta",
-                          fields = "estimate",
-                          header_short = "\u03B2"),
-    AME            = list(estimate_type = "AME",
-                          fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "AME"),
-    AME_p          = list(estimate_type = "AME",
-                          fields = "p_value",
-                          header_short = "AME p"),
-    AME_SE         = list(estimate_type = "AME",
-                          fields = "se",
-                          header_short = "AME SE"),
-    partial_f2     = list(estimate_type = "partial_f2",
-                          fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "f\u00B2"),
-    partial_eta2   = list(estimate_type = "partial_eta2",
-                          fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "\u03B7\u00B2"),
-    partial_omega2 = list(estimate_type = "partial_omega2",
-                          fields = c("estimate", "ci_low", "ci_high"),
-                          header_short = "\u03C9\u00B2"),
-    partial_chi2   = list(estimate_type = "partial_chi2",
-                          fields = c("estimate", "df"),
-                          header_short = "\u03C7\u00B2")
+    # B-coefficient family \u2014 atomic, one cell = one component.
+    b      = list(estimate_type = "B",
+                  fields = "estimate",
+                  header_short = "B"),
+    se     = list(estimate_type = "B",
+                  fields = "se",
+                  header_short = "SE"),
+    ci     = list(estimate_type = "B",
+                  fields = c("ci_low", "ci_high"),
+                  header_short = ci_hdr),
+    t      = list(estimate_type = "B",
+                  fields = "statistic",
+                  header_short = "t"),
+    p      = list(estimate_type = "B",
+                  fields = "p_value",
+                  header_short = "p"),
+    beta   = list(estimate_type = "beta",
+                  fields = "estimate",
+                  header_short = "\u03B2"),
+    # AME family \u2014 split (was bundled "value [CI]" in <= 0.11).
+    ame    = list(estimate_type = "AME",
+                  fields = "estimate",
+                  header_short = "AME"),
+    ame_se = list(estimate_type = "AME",
+                  fields = "se",
+                  header_short = "AME SE"),
+    ame_ci = list(estimate_type = "AME",
+                  fields = c("ci_low", "ci_high"),
+                  header_short = paste0("AME ", ci_hdr)),
+    ame_p  = list(estimate_type = "AME",
+                  fields = "p_value",
+                  header_short = "AME p"),
+    # Partial-variance-explained \u2014 split (was bundled too).
+    partial_f2        = list(estimate_type = "partial_f2",
+                              fields = "estimate",
+                              header_short = "f\u00B2"),
+    partial_f2_ci     = list(estimate_type = "partial_f2",
+                              fields = c("ci_low", "ci_high"),
+                              header_short = paste0("f\u00B2 ", ci_hdr)),
+    partial_eta2      = list(estimate_type = "partial_eta2",
+                              fields = "estimate",
+                              header_short = "\u03B7\u00B2"),
+    partial_eta2_ci   = list(estimate_type = "partial_eta2",
+                              fields = c("ci_low", "ci_high"),
+                              header_short = paste0("\u03B7\u00B2 ", ci_hdr)),
+    partial_omega2    = list(estimate_type = "partial_omega2",
+                              fields = "estimate",
+                              header_short = "\u03C9\u00B2"),
+    partial_omega2_ci = list(estimate_type = "partial_omega2",
+                              fields = c("ci_low", "ci_high"),
+                              header_short = paste0("\u03C9\u00B2 ", ci_hdr)),
+    # Partial chi-square (glm) \u2014 kept BUNDLED as "value (df)".
+    # That's the universal reporting convention "chi2(df) = value".
+    partial_chi2      = list(estimate_type = "partial_chi2",
+                              fields = c("estimate", "df"),
+                              header_short = "\u03C7\u00B2")
   )
 
   out <- list()
@@ -302,7 +405,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
       desc <- base[[tk]]
       if (is.null(desc)) next
       # Per-model B-header rebrand under exponentiate (Step 2 / glm).
-      header_short <- if (identical(tk, "B") &&
+      header_short <- if (identical(tk, "b") &&
                             !is.na(exp_hdr) &&
                             nzchar(exp_hdr)) {
         exp_hdr
@@ -383,7 +486,9 @@ format_cell_value <- function(long_row, cs, stars_map,
                                digits, p_digits, effect_size_digits,
                                decimal_mark, show_columns) {
   tk <- cs$token
-  is_es <- tk %in% c("partial_f2", "partial_eta2", "partial_omega2",
+  is_es <- tk %in% c("partial_f2", "partial_f2_ci",
+                     "partial_eta2", "partial_eta2_ci",
+                     "partial_omega2", "partial_omega2_ci",
                      "partial_chi2")
   digits_to_use <- if (is_es) effect_size_digits else digits
 
@@ -401,27 +506,8 @@ format_cell_value <- function(long_row, cs, stars_map,
     return(paste0(val_str, df_str))
   }
 
-  # Compact "value [CI]" rendering for AME and partial_*  (Q19 / Q14a)
-  if (length(cs$fields) == 3L &&
-      identical(cs$fields, c("estimate", "ci_low", "ci_high"))) {
-    est <- long_row$estimate[1]
-    lo  <- long_row$ci_low[1]
-    hi  <- long_row$ci_high[1]
-    if (is.na(est)) return("\u2014")
-    val_str <- format_number(est, digits_to_use, decimal_mark)
-    ci_sep <- ci_bracket_separator(decimal_mark)
-    ci_str <- if (is.na(lo) || is.na(hi)) {
-      ""
-    } else {
-      paste0(" [",
-             format_number(lo, digits_to_use, decimal_mark), ci_sep,
-             format_number(hi, digits_to_use, decimal_mark),
-             "]")
-    }
-    return(paste0(val_str, ci_str))
-  }
-
-  # CI-only rendering: "[lo, hi]"
+  # CI-only rendering: "[lo, hi]" -- shared by `ci`, `ame_ci`,
+  # `partial_f2_ci`, `partial_eta2_ci`, `partial_omega2_ci`.
   if (length(cs$fields) == 2L &&
       identical(cs$fields, c("ci_low", "ci_high"))) {
     lo <- long_row$ci_low[1]
@@ -449,7 +535,7 @@ format_cell_value <- function(long_row, cs, stars_map,
 
   # Stars suffix on B (or β if standardized && beta requested instead of B)
   apply_stars <- !is.null(stars_map) && (
-    (tk == "B" && !"beta" %in% show_columns) ||
+    (tk == "b" && !"beta" %in% show_columns) ||
     (tk == "beta")
   )
   if (apply_stars) {
@@ -542,14 +628,12 @@ build_outcome_row <- function(model_outcomes,
   if (n_models <= 1L) {
     return(NULL)                              # DV is in title for single model
   }
-
-  if (is.null(outcome_labels)) {
-    # Smart auto: hide when all formula DVs are identical (regardless
-    # of any label differences); show otherwise. The displayed values
-    # are the auto labels (attr("label") || variable name).
-    if (length(unique(model_outcomes)) <= 1L) return(NULL)
-    outcome_labels <- model_outcome_labels
-  }
+  # Default (NULL) = hide. With the multi-model spanner now showing
+  # the model label (or the DV name, via the smart-default in
+  # render_regression_table), the Outcome body row would just repeat
+  # information already in the header. The row appears only when the
+  # user explicitly passes `outcome_labels = c(...)`.
+  if (is.null(outcome_labels)) return(NULL)
 
   # Place each outcome label in the FIRST sub-column of its model
   # (mirrors the fit-stats footer convention).

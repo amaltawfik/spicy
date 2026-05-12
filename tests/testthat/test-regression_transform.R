@@ -60,7 +60,7 @@ test_that("apply_p_adjust — adjusts B and AME independently", {
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   ex <- spicy:::extract_lm_phase1(
     fit, model_id = "M1",
-    show_columns = c("B", "SE", "p", "AME")
+    show_columns = c("b", "se", "p", "ame")
   )
   raw <- ex$coefs
   out <- spicy:::apply_p_adjust(raw, "bonferroni")

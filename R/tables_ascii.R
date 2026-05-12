@@ -26,6 +26,54 @@
   padding
 }
 
+# Internal: validate / normalise the `spanners` argument. Returns
+# either NULL (no spanner row) or a named list whose values are
+# unique sorted integer column indices in 1..n_cols. Each group
+# must be contiguous (the renderer centers one label over one
+# continuous range; gaps would require multiple spanner rows).
+.validate_spanners <- function(spanners, n_cols) {
+  if (is.null(spanners)) return(NULL)
+  if (!is.list(spanners) || is.null(names(spanners)) ||
+        any(!nzchar(names(spanners)))) {
+    spicy_abort(
+      c("`spanners` must be a named list (label → integer column indices).",
+        "i" = "Example: `list(\"Step 1\" = 2:5, \"Step 2\" = 6:9)`."),
+      class = "spicy_invalid_input"
+    )
+  }
+  out <- list()
+  used <- integer(0)
+  for (lbl in names(spanners)) {
+    idx <- suppressWarnings(as.integer(spanners[[lbl]]))
+    if (length(idx) == 0L || any(is.na(idx)) ||
+          any(idx < 1L) || any(idx > n_cols)) {
+      spicy_abort(
+        sprintf("`spanners[[\"%s\"]]` must be integers in 1..%d.",
+                lbl, n_cols),
+        class = "spicy_invalid_input"
+      )
+    }
+    idx <- sort(unique(idx))
+    if (any(diff(idx) != 1L)) {
+      spicy_abort(
+        sprintf("`spanners[[\"%s\"]]` must be a contiguous column range.",
+                lbl),
+        class = "spicy_invalid_input"
+      )
+    }
+    if (any(idx %in% used)) {
+      spicy_abort(
+        sprintf("Spanner \"%s\" overlaps with another spanner.", lbl),
+        class = "spicy_invalid_input"
+      )
+    }
+    used <- c(used, idx)
+    out[[lbl]] <- idx
+  }
+  # Sort spanners by leftmost column for stable rendering order.
+  out[order(vapply(out, min, integer(1)))]
+}
+
 
 #' Build a formatted ASCII table
 #'
@@ -83,6 +131,15 @@
 #'   columns (per `align_left_cols`) keep their header on the
 #'   left. Defaults to `FALSE` for backward compatibility; the
 #'   `print.spicy_regression_table` method enables it.
+#' @param spanners Optional named list defining a *column group row*
+#'   drawn above the column headers (the "spanner" / "supra-header"
+#'   convention used by gt, flextable, kableExtra, modelsummary).
+#'   Names are spanner labels; values are integer vectors of 1-based
+#'   column indices the label spans (must be contiguous). A thin
+#'   underline rule is drawn below each spanner across its span.
+#'   Used by `print.spicy_regression_table()` to display the model
+#'   name above each model's block of sub-columns. Defaults to
+#'   `NULL` (no spanner row).
 #' @param group_sep_rows Integer vector of row indices before which a
 #'   light dashed separator line is drawn. Defaults to `integer(0)`.
 #' @param total_row_idx Optional integer vector of 1-based row indices
@@ -127,12 +184,14 @@ build_ascii_table <- function(
   align_left_cols = c(1L, 2L),
   align_center_cols = integer(0),
   center_headers = FALSE,
+  spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   ...
 ) {
   stopifnot(is.data.frame(x))
   padding <- .validate_padding(padding)
+  spanners <- .validate_spanners(spanners, ncol(x))
 
   df <- as.data.frame(x, check.names = FALSE)
   df[] <- lapply(df, as.character)
@@ -273,6 +332,56 @@ build_ascii_table <- function(
   } # nocov end
 
   out <- character(0)
+
+  # --- Spanner row (column group labels above the header) ---------------
+  # Each spanner label is centered across the cell-content range of the
+  # columns it spans (start of leftmost cell -> end of rightmost cell,
+  # including the inner gutters and any separators between them). A thin
+  # underline rule (U+2500) is drawn just below the spanner, covering the
+  # same range only, so empty (un-spanned) columns get neither label nor
+  # underline. The spanner row itself contains no vertical bars.
+  if (!is.null(spanners) && length(spanners)) {
+    # Compute 1-based char-position ranges of each column's cell (the
+    # widths[i]-wide region, excluding its left/right gutters and any
+    # separator).
+    col_starts <- integer(length(w))
+    col_ends   <- integer(length(w))
+    pos <- 0L
+    for (i in seq_along(w)) {
+      pos <- pos + 1L           # left gutter
+      col_starts[i] <- pos + 1L # next char is the first cell char
+      pos <- pos + w[i]         # cell content
+      col_ends[i] <- pos
+      pos <- pos + 1L           # right gutter
+      if (i %in% sep_after) pos <- pos + 1L
+    }
+
+    spanner_chars <- rep(" ", full_width)
+    underline_chars <- rep(" ", full_width)
+    for (lbl in names(spanners)) {
+      cols <- spanners[[lbl]]
+      span_start <- col_starts[min(cols)]
+      span_end   <- col_ends[max(cols)]
+      span_width <- span_end - span_start + 1L
+      if (span_width <= 0L) next
+      lab_disp <- if (nchar(lbl, type = "width") > span_width) {
+        substr(lbl, 1L, span_width)   # truncate over-wide labels
+      } else {
+        lbl
+      }
+      n_lab <- nchar(lab_disp, type = "width")
+      left_pad <- (span_width - n_lab) %/% 2L
+      lab_pos <- span_start + left_pad
+      lab_chars <- strsplit(lab_disp, "", fixed = TRUE)[[1]]
+      for (k in seq_along(lab_chars)) {
+        spanner_chars[lab_pos + k - 1L] <- lab_chars[k]
+      }
+      for (p in span_start:span_end) underline_chars[p] <- "─"
+    }
+    spanner_line <- paste(spanner_chars, collapse = "")
+    underline_line <- style(paste(underline_chars, collapse = ""))
+    out <- c(out, spanner_line, underline_line)
+  }
 
   # --- Add header
   out <- c(out, header_txt, header_rule)
@@ -477,6 +586,11 @@ ascii_table_panels <- function(
 #'   centered above their column content even when the data itself
 #'   is right-aligned. Passed through to [build_ascii_table()].
 #'   Defaults to `FALSE`.
+#' @param spanners Optional named list of column-group labels (label →
+#'   integer column indices). Passed through to [build_ascii_table()];
+#'   when the table is split into horizontal panels each panel keeps
+#'   only the spanners whose columns are fully contained in it.
+#'   Defaults to `NULL` (no spanner row).
 #' @param group_sep_rows Integer vector of row indices before which a
 #'   light dashed separator line is drawn. Defaults to `integer(0)`.
 #' @param total_row_idx Optional integer vector of 1-based row indices
@@ -520,12 +634,14 @@ spicy_print_table <- function(
   align_left_cols = NULL,
   align_center_cols = integer(0),
   center_headers = FALSE,
+  spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   ...
 ) {
   stopifnot(is.data.frame(x))
   padding <- .validate_padding(padding)
+  spanners <- .validate_spanners(spanners, ncol(x))
 
   table_type <- if (any(grepl("^Category$", names(x)))) "freq" else "cross"
 
@@ -552,8 +668,37 @@ spicy_print_table <- function(
   txt <- vapply(
     panel_cols,
     function(cols) {
+      # Remap spanners to per-panel column indices. When a model's
+      # columns are split across panels, each panel displays the
+      # spanner label over the surviving subset (matches modelsummary
+      # panel-split behaviour: the model name reappears at the top of
+      # every panel where any of its columns are visible).
+      panel_spanners <- NULL
+      if (!is.null(spanners) && length(spanners)) {
+        panel_spanners <- list()
+        for (lbl in names(spanners)) {
+          surviving <- intersect(spanners[[lbl]], cols)
+          if (length(surviving)) {
+            local_idx <- sort(match(surviving, cols))
+            # Drop discontiguous slivers (e.g. sticky col 1 between
+            # data cols of the same model would break contiguity --
+            # that doesn't arise in practice because the Variable
+            # column is never in a spanner).
+            if (length(local_idx) == 1L ||
+                all(diff(local_idx) == 1L)) {
+              panel_spanners[[lbl]] <- local_idx
+            }
+          }
+        }
+        if (!length(panel_spanners)) panel_spanners <- NULL
+      }
+      # `x[, cols]` uniquifies duplicate names ("B"/"B" -> "B"/"B.1");
+      # restore the originals so the header row prints the unprefixed
+      # names that the print method handed us.
+      sub <- x[, cols, drop = FALSE]
+      names(sub) <- names(x)[cols]
       build_ascii_table(
-        x[, cols, drop = FALSE],
+        sub,
         padding = padding,
         first_column_line = first_column_line,
         row_total_line = row_total_line,
@@ -563,6 +708,7 @@ spicy_print_table <- function(
         align_left_cols = which(cols %in% align_left_cols),
         align_center_cols = which(cols %in% align_center_cols),
         center_headers = center_headers,
+        spanners = panel_spanners,
         group_sep_rows = group_sep_rows,
         total_row_idx = total_row_idx,
         ...
