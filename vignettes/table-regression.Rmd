@@ -139,10 +139,12 @@ when AME is also requested (next section).
 
 ## Average Marginal Effects with Satterthwaite df
 
-Add `"AME"` to `show_columns` to display the average marginal effect of
-each predictor with its compact `value [CI]` cell. When the variance
-estimator is cluster-robust, `table_regression()` constructs the linear
-contrast representing each AME and inverts it through
+Add `"ame"` to `show_columns` to display the average marginal effect of
+each predictor. Use `"ame_ci"` and `"ame_p"` for the corresponding CI
+and p-value columns; the shortcut `"all_ame"` expands to
+`c("ame", "ame_se", "ame_ci", "ame_p")`. When the variance estimator is
+cluster-robust, `table_regression()` constructs the linear contrast
+representing each AME and inverts it through
 `clubSandwich::linear_contrast()` with the Satterthwaite framework, so
 B and AME share the same t-distribution with the same df:
 
@@ -152,13 +154,13 @@ table_regression(
   fit,
   vcov = "CR2",
   cluster = sochealth_cc$region,
-  show_columns = c("B", "SE", "CI", "p", "AME", "AME_p")
+  show_columns = c("b", "se", "ci", "p", "ame", "ame_ci", "ame_p")
 )
 ```
 
 Note that `"p"` always refers to the B (or β) coefficient, never to
-the AME. To display the AME-specific p-value, include `"AME_p"` in
-`show_columns`. Placing `"AME"` after `"p"` makes the "which p
+the AME. To display the AME-specific p-value, include `"ame_p"` in
+`show_columns`. Placing `"ame"` after `"p"` makes the "which p
 belongs to what" reading unambiguous.
 
 The footer now reads "*AME inference: t-distribution with
@@ -187,7 +189,7 @@ literature (Cohen et al. 2003 §3.4; Gelman 2008):
   divided by `2 × SD(X)`; binary predictors centred only.
 
 When non-`"none"`, the `"beta"` token is auto-injected into
-`show_columns` immediately after `"B"`:
+`show_columns` immediately after `"b"`:
 
 ```{r beta}
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
@@ -204,17 +206,19 @@ displayed, with the limitation made explicit at the point of use.
 
 Three partial effect-size tokens are available — Cohen's f²
 (`partial_f2`), Pearson's partial η² (`partial_eta2`), and the
-Olejnik-Algina bias-corrected partial ω² (`partial_omega2`). All three
-include a confidence interval derived from noncentral-F inversion
-(Steiger 2004; Smithson 2003) and render as a single
-`value [CI_low, CI_high]` cell:
+Olejnik-Algina bias-corrected partial ω² (`partial_omega2`). Each
+estimate has a CI derived from noncentral-F inversion (Steiger 2004;
+Smithson 2003), exposed as a separate `<token>_ci` column
+(`partial_f2_ci`, `partial_eta2_ci`, `partial_omega2_ci`). The group
+shortcuts `"all_f2"`, `"all_eta2"`, `"all_omega2"` expand to the pair
+in one go:
 
 ```{r partial}
 fit <- lm(wellbeing_score ~ age + sex + smoking + education,
           data = sochealth)
 table_regression(
   fit,
-  show_columns = c("B", "p", "partial_eta2", "partial_omega2")
+  show_columns = c("b", "p", "all_eta2", "all_omega2")
 )
 ```
 
@@ -380,7 +384,7 @@ terms (k−1 df) and numeric terms (1 df) read at a glance:
 ```{r glm-partial-chi2}
 mt <- mtcars; mt$cyl <- factor(mt$cyl)
 fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
-table_regression(fit2, show_columns = c("B", "partial_chi2", "p"))
+table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 ```
 
 ### Standardised coefficients: `refit` and the new `pseudo`
@@ -405,7 +409,7 @@ table_regression(fit, standardized = "pseudo")
 
 ### Average Marginal Effects (AME)
 
-The `AME` token returns response-scale marginal effects via
+The `ame` token returns response-scale marginal effects via
 `marginaleffects::avg_slopes()`. For `glm`, AME is computed as
 the average of `dE[Y|X]/dx` over the observed sample (so for
 logistic regression the displayed AME is in probability units, not
@@ -416,7 +420,7 @@ inference uses Satterthwaite df from
 contrasts:
 
 ```{r glm-ame, eval = FALSE}
-table_regression(fit, show_columns = c("B", "p", "AME", "AME_p"))
+table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 ```
 
 ### Profile-likelihood CIs: `ci_method = "profile"`
