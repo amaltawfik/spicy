@@ -1213,17 +1213,6 @@ test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing 
   expect_null(cnd)
 })
 
-test_that("migration: passing group_factor_levels = TRUE/FALSE raises spicy_invalid_input", {
-  fit <- lm(mpg ~ wt + cyl, data = mt)
-  err <- tryCatch(
-    table_regression(fit, group_factor_levels = TRUE),
-    spicy_invalid_input = function(e) e
-  )
-  expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "group_factor_levels", fixed = TRUE)
-  expect_match(conditionMessage(err), "factor_layout", fixed = TRUE)
-})
-
 test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, factor_layout = "flat")

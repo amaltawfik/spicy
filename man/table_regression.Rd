@@ -20,7 +20,6 @@ table_regression(
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
-  group_factor_levels,
   reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,

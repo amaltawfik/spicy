@@ -644,7 +644,6 @@ table_regression <- function(
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
-  group_factor_levels,         # migration sentinel; see body below
   reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
@@ -683,23 +682,6 @@ table_regression <- function(
   factor_layout <- match.arg(factor_layout)
   align <- match.arg(align)
   output <- match.arg(output)
-
-  # Migration error: `group_factor_levels` was renamed to
-  # `factor_layout = c("grouped", "flat")` in 0.12. The arg is kept
-  # in the signature WITHOUT a default so callers passing
-  # `group_factor_levels = ...` reach this body code (instead of
-  # R's "unused argument" error). `missing()` detects whether the
-  # user supplied it; either supplied value (TRUE/FALSE/anything)
-  # is rejected with the migration hint.
-  if (!missing(group_factor_levels)) {
-    spicy_abort(
-      c(paste0("`group_factor_levels` was renamed to `factor_layout` ",
-               "in spicy 0.12."),
-        "i" = "Replace `group_factor_levels = TRUE`  with `factor_layout = \"grouped\"`.",
-        "i" = "Replace `group_factor_levels = FALSE` with `factor_layout = \"flat\"`."),
-      class = "spicy_invalid_input"
-    )
-  }
 
   # ====================================================================
   # Validation cascade (Q21 — 6 phases, ~29 steps, fail-fast).

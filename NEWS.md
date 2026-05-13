@@ -156,17 +156,14 @@
   the type for `lm` ("Linear regression: mpg" instead of
   "Regression: mpg").
 
-* **`group_factor_levels` renamed to `factor_layout`** (enum,
-  not boolean). The new argument takes `"grouped"` (default,
-  factor variable on its own header row + indented levels — APA /
-  `gtsummary`) or `"flat"` (concatenated `<var><level>` rows, no
-  header — `parameters` / `modelsummary` / Stata convention).
-  Auto-documenting: no more TRUE/FALSE to memorise. The doc also
-  clarifies that the layout applies to **any categorical
-  predictor** (factor, ordered, character, logical) because
-  [stats::model.frame()] coerces character / logical columns to
-  factors at fit time. Passing the legacy boolean raises an
-  actionable migration error.
+* **`factor_layout = c("grouped", "flat")`** controls how factor
+  predictors are rendered. `"grouped"` (default) puts the factor
+  name on its own header row + indents each level (APA /
+  `gtsummary` convention). `"flat"` concatenates `<var><level>` on
+  each row, no header (Stata / `parameters` / `modelsummary`
+  convention). Applies to **any categorical predictor** (factor,
+  ordered, character, logical) -- R's [stats::model.frame()]
+  coerces character / logical to factors at fit time.
 
 * **`reference_style` extended to 4 modes** (was 2). Distinguishes
   WHERE the reference category is exposed:
