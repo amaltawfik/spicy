@@ -4,6 +4,7 @@ AStA
 Agresti
 Algina
 BMI
+BMJ
 Biometrika
 CHF
 CMD
@@ -64,6 +65,7 @@ Mahwah
 McCaffrey
 Menard
 Mulaik
+NEJM
 Nagelkerke
 Neto
 Noncentral
@@ -132,6 +134,7 @@ colours
 coverages
 crosstable
 customisable
+customise
 da
 deduplicates
 df
@@ -178,6 +181,7 @@ pkgdown
 poisson
 posthoc
 pre
+quartic
 rebrand
 rebranded
 rebrands

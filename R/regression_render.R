@@ -1,7 +1,7 @@
-# Rendering layer for table_regression() — Layer 3.
+# Rendering layer for table_regression() \u2014 Layer 3.
 #
 # Per dev/table_regression_design.md Layer 3:
-#   "Pivot wide on (term, statistic) → m1, m2, m3...
+#   "Pivot wide on (term, statistic) \u2192 m1, m2, m3...
 #    Apply show_columns, digits, decimal alignment, APA formatting."
 #
 # Takes an aligned long extract (output of align_extracts()) plus
@@ -18,19 +18,19 @@
 # For a single model, sub-column headers are bare ("B", "SE", "95% CI",
 # "p"); for multi-model, headers are prefixed with the model label.
 #
-# Token → (estimate_type, fields) mapping:
-#   B           → ("B", "estimate")
-#   SE          → ("B", "se")
-#   CI          → ("B", c("ci_low", "ci_high"))     -> "[lo, hi]"
-#   t           → ("B", "statistic")
-#   p           → ("B", "p_value")
-#   beta        → ("beta", "estimate")
-#   AME         → ("AME", c("estimate","ci_low","ci_high"))
-#   AME_p       → ("AME", "p_value")
-#   AME_SE      → ("AME", "se")
-#   partial_f2  → ("partial_f2", c("estimate","ci_low","ci_high"))
-#   partial_eta2→ ("partial_eta2", ...)
-#   partial_omega2→ ("partial_omega2", ...)
+# Token \u2192 (estimate_type, fields) mapping:
+#   B           \u2192 ("B", "estimate")
+#   SE          \u2192 ("B", "se")
+#   CI          \u2192 ("B", c("ci_low", "ci_high"))     -> "[lo, hi]"
+#   t           \u2192 ("B", "statistic")
+#   p           \u2192 ("B", "p_value")
+#   beta        \u2192 ("beta", "estimate")
+#   AME         \u2192 ("AME", c("estimate","ci_low","ci_high"))
+#   AME_p       \u2192 ("AME", "p_value")
+#   AME_SE      \u2192 ("AME", "se")
+#   partial_f2  \u2192 ("partial_f2", c("estimate","ci_low","ci_high"))
+#   partial_eta2\u2192 ("partial_eta2", ...)
+#   partial_omega2\u2192 ("partial_omega2", ...)
 
 
 # ---- Public-internal entry point -----------------------------------------
@@ -77,7 +77,7 @@ render_regression_table <- function(
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
 
-  # Smart default — when the user did NOT supply any spanner-label
+  # Smart default \u2014 when the user did NOT supply any spanner-label
   # source (neither `model_labels` nor `names(models)`), AND no
   # explicit Outcome-row override (`outcome_labels = NULL`), AND the
   # models have all-distinct response variables, lift the auto-
@@ -90,10 +90,10 @@ render_regression_table <- function(
   # Falls back to "Model 1, ..." (and keeps the Outcome row) when:
   #   * DVs are not all distinct (duplicates would yield an
   #     ambiguous spanner like "mpg / mpg / hp");
-  #   * DVs are identical (no extra information to show — DV is in
+  #   * DVs are identical (no extra information to show \u2014 DV is in
   #     the title);
   #   * the user supplied `outcome_labels = c(...)` (explicit row
-  #     labels — left as a row override, since `model_labels` is the
+  #     labels \u2014 left as a row override, since `model_labels` is the
   #     dedicated spanner knob);
   #   * `outcome_labels = FALSE` (user explicitly suppressed DV
   #     display entirely).
@@ -202,12 +202,12 @@ render_regression_table <- function(
 
   body <- do.call(rbind, rows)
 
-  # Prepend outcome row when applicable (Q11b — multi-DV display).
+  # Prepend outcome row when applicable (Q11b \u2014 multi-DV display).
   #
   # Two vectors per model:
-  #   * `model_outcomes`        — variable name from formula(fit)[[2]],
+  #   * `model_outcomes`        \u2014 variable name from formula(fit)[[2]],
   #                               used for the identical-DV decision
-  #   * `model_outcome_labels`  — display string: attr("label") if
+  #   * `model_outcome_labels`  \u2014 display string: attr("label") if
   #                               set on the response (labelled,
   #                               haven, SPSS), else the variable name
   #
@@ -356,7 +356,7 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # For each requested token build a column descriptor:
 #   list(token, estimate_type, fields, header_short, header_with_model)
 # `model_ids`     : vector of model IDs (long format keys)
-# `label_map`     : named character vector mapping model_id → label
+# `label_map`     : named character vector mapping model_id \u2192 label
 build_column_spec <- function(show_columns, model_ids, label_map,
                               ci_level = 0.95,
                               model_exp_headers = NULL) {
@@ -522,7 +522,7 @@ format_cell_value <- function(long_row, cs, stars_map,
                      "partial_chi2")
   digits_to_use <- if (is_es) effect_size_digits else digits
 
-  # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) —
+  # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2014
   # SAS PROC LOGISTIC TYPE3 / car::Anova(type = 3) convention. Df sits
   # in parens to disambiguate factor terms (k-1 df) from numeric terms
   # (1 df) without burning an extra column.
@@ -563,7 +563,7 @@ format_cell_value <- function(long_row, cs, stars_map,
 
   out <- format_number(val, digits_to_use, decimal_mark)
 
-  # Stars suffix on B (or β if standardized && beta requested instead of B)
+  # Stars suffix on B (or \u03b2 if standardized && beta requested instead of B)
   apply_stars <- !is.null(stars_map) && (
     (tk == "b" && !"beta" %in% show_columns) ||
     (tk == "beta")
@@ -589,7 +589,7 @@ format_term_label <- function(term_row, reference_label, reference_style,
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
     if (isTRUE(group_factor_levels)) {
-      # Grouped: factor header carries var name → indent + bare level.
+      # Grouped: factor header carries var name \u2192 indent + bare level.
       # Label lookup tries the coef-style key (e.g. "cyl4") first so
       # users can relabel individual reference rows; falls back to
       # the bare factor_level string.
@@ -597,7 +597,7 @@ format_term_label <- function(term_row, reference_label, reference_style,
       if (identical(lbl, term)) lbl <- lvl
       return(paste0("  ", lbl, " ", reference_label))
     }
-    # Flat: no factor header → render as <var><level> (matching the
+    # Flat: no factor header \u2192 render as <var><level> (matching the
     # coef-name convention used for non-reference dummies).
     ft <- term_row$factor_term
     flat_key <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
@@ -607,7 +607,7 @@ format_term_label <- function(term_row, reference_label, reference_style,
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
-    # Coef-style key first ("cyl6" → "6 cylinders"); otherwise the
+    # Coef-style key first ("cyl6" \u2192 "6 cylinders"); otherwise the
     # bare factor level.
     lbl <- resolve_label(term, labels)
     if (identical(lbl, term)) lbl <- lvl
@@ -630,12 +630,12 @@ resolve_label <- function(term, labels) {
 
 # Smart auto + explicit + suppress logic per Q11b.
 #
-# `model_outcomes` — variable names from formula(fit)[[2]] per model;
+# `model_outcomes` \u2014 variable names from formula(fit)[[2]] per model;
 #                    used ONLY for the "are DVs identical?" decision.
-# `model_outcome_labels` — auto-display strings: attr("label") if set,
+# `model_outcome_labels` \u2014 auto-display strings: attr("label") if set,
 #                    else the variable name; used as the default
 #                    auto-shown labels when outcome_labels = NULL.
-# `outcome_labels` — user-supplied: NULL (auto), FALSE (suppress),
+# `outcome_labels` \u2014 user-supplied: NULL (auto), FALSE (suppress),
 #                    or a character vector of length n_models
 #                    (explicit override).
 #
@@ -773,25 +773,25 @@ fit_stat_label <- function(token) {
 }
 
 # Per-token precision bucket per the design Q digits decision matrix:
-#   nobs / weighted_nobs       → integer (0 decimals)
-#   r2 / adj_r2 / omega2 / f2  → fit_digits
-#   sigma / rmse               → fit_digits
-#   AIC / AICc / BIC           → ic_digits
-#   deviance                   → digits
+#   nobs / weighted_nobs       \u2192 integer (0 decimals)
+#   r2 / adj_r2 / omega2 / f2  \u2192 fit_digits
+#   sigma / rmse               \u2192 fit_digits
+#   AIC / AICc / BIC           \u2192 ic_digits
+#   deviance                   \u2192 digits
 format_fit_stat_value <- function(token, val,
                                     digits, fit_digits, ic_digits,
                                     p_digits = 3L,
                                     decimal_mark = ".") {
   # Change tokens render an em-dash on NA -- typically the first
   # model's column (no previous to compare to). Absolute fit stats
-  # render an empty string (e.g. R² is NA for a glm row in a mixed
+  # render an empty string (e.g. R\u00b2 is NA for a glm row in a mixed
   # table, which the user reads as "not applicable").
   is_change <- token %in% c("r2_change", "adj_r2_change",
                              "f_change", "f2_change", "lrt_change",
                              "aic_change", "aicc_change", "bic_change",
                              "deviance_change", "p_change")
   if (is.null(val) || is.na(val)) {
-    return(if (is_change) "—" else "")
+    return(if (is_change) "\u2014" else "")
   }
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
@@ -828,7 +828,7 @@ format_fit_stat_value <- function(token, val,
   )
   if (is_change) {
     # Explicit "+" prefix on positive change values (signals
-    # improvement on R² / Δχ² / Δf², worsening on Δdeviance / ΔAIC
+    # improvement on R\u00b2 / \u0394\u03c7\u00b2 / \u0394f\u00b2, worsening on \u0394deviance / \u0394AIC
     # depending on direction). Same convention as APA / modelsummary.
     return(format_signed(val, prec))
   }
@@ -847,7 +847,7 @@ build_factor_header_row <- function(factor_term, col_spec, labels,
     factor_term
   }
   header <- paste0(display, ":")
-  # Q5 — annotation mode bakes "[ref: <level>]" into the factor
+  # Q5 \u2014 annotation mode bakes "[ref: <level>]" into the factor
   # header so the reference level remains readable even though the
   # ref ROW was dropped during alignment.
   if (identical(reference_style, "annotation") &&
@@ -865,7 +865,7 @@ build_factor_header_row <- function(factor_term, col_spec, labels,
 # ---- Stars (Q12) ---------------------------------------------------------
 
 # Resolve stars argument to a named numeric vector (or NULL when off).
-# Sorted strictest first → applied with cumulative "lowest threshold met"
+# Sorted strictest first \u2192 applied with cumulative "lowest threshold met"
 # semantics in format_stars().
 resolve_stars_thresholds <- function(stars) {
   if (isFALSE(stars) || is.null(stars)) return(NULL)
