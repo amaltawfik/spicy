@@ -455,10 +455,9 @@ Requires \code{cluster}.
 }
 
 For multi-model use, both \code{vcov} and \code{cluster} accept a single
-value (recycled to all models) \strong{or} a list (one per model).
-The pedagogical use case \code{list(fit, fit, fit)} with
-\code{vcov = list("classical", "HC3", "CR2")} enables side-by-side
-SE-comparison in a single table.
+value (recycled to all models) or a list (one per model). The
+same fit can appear several times with different estimators to
+compare standard errors side-by-side.
 
 Inferential regimes (B and AME share the same regime):
 \itemize{
