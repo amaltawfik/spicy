@@ -45,19 +45,17 @@ table_regression(
 )
 }
 \arguments{
-\item{models}{An \code{lm} or \code{glm} fitted model \strong{or} a list of
-such fits (named or unnamed; lm and glm fits may be mixed in
-the same list). Single fits are auto-promoted to a one-element
-list internally. \code{merMod} and other classes are rejected with
-an actionable error. Raw data + formula is \strong{not} accepted
-(fit-only API, matching \code{broom}, \code{modelsummary}, \code{gtsummary},
-and \code{marginaleffects}).}
+\item{models}{An \code{lm} or \code{glm} fitted model, or a list of such
+fits (named or unnamed; \code{lm} and \code{glm} may be mixed). Single
+fits are auto-promoted to a 1-element list. \code{merMod} and
+other classes raise \code{spicy_unsupported}. Raw data + formula
+is not accepted -- fit-only API.}
 
-\item{vcov}{Variance-covariance estimator. A single string
-(one of \code{"classical"}, \code{"HC0"} to \code{"HC5"}, \code{"CR0"} to
-\code{"CR3"}, \code{"bootstrap"}, \code{"jackknife"}) recycled to all models,
-\strong{or} a list of strings (one per model) for the pedagogical
-side-by-side SE-comparison use case. Default \code{"classical"}.}
+\item{vcov}{Variance-covariance estimator: \code{"classical"},
+\code{"HC0"}-\code{"HC5"}, \code{"CR0"}-\code{"CR3"}, \code{"bootstrap"}, or
+\code{"jackknife"}. A scalar is recycled to all models; a list
+(one string per model) allows mixed estimators. Default
+\code{"classical"}. See \emph{Inference and standard errors}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
 (used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /
@@ -78,15 +76,13 @@ For multi-model use, pass a list of one form per model
 \item{ci_level}{Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 AME, partial effect sizes). Default \code{0.95}.}
 
-\item{ci_method}{CI construction method. \code{"wald"} (default) uses
-the symmetric Wald formula \verb{estimate ± z × SE} (or \verb{t × SE} for
-\code{lm}); for \code{glm} this matches \code{summary.glm} and \code{confint.default}.
-\code{"profile"} (\emph{glm only}) uses the profile-likelihood CI from
-\code{MASS::confint.glm()} — asymmetric, exact for likelihood-based
-inference, and the gold standard under sparse data or near-
-boundary estimates (Venables & Ripley \emph{MASS} §7.2). The estimate,
-SE, statistic and p-value remain Wald; \code{"profile"} only refines
-the CI bounds. Using \code{"profile"} with \code{lm} raises
+\item{ci_method}{CI construction. \code{"wald"} (default) uses
+\verb{estimate ± z × SE} (\verb{t × SE} for \code{lm}). \code{"profile"}
+(\emph{glm only}) uses the profile-likelihood CI from
+\code{\link[MASS:confint.glm]{MASS::confint.glm()}} -- asymmetric, exact for
+likelihood-based inference (Venables & Ripley \emph{MASS} §7.2).
+Only the CI bounds change; estimate, SE, statistic and
+p-value remain Wald. \code{"profile"} with \code{lm} raises
 \code{spicy_invalid_input}.}
 
 \item{boot_n}{Number of bootstrap replicates when
@@ -101,52 +97,26 @@ column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 section.}
 
 \item{exponentiate}{Logical. When \code{TRUE} and the model is a
-\code{glm()} with a non-identity link, the displayed coefficient
-(\code{B}), confidence interval bounds, and standard error are
-transformed to the response scale via \code{exp()}. The column
-header is rebranded per family / link: \code{OR} for binomial(logit),
-\code{IRR} for poisson(log), \code{HR} for binomial(cloglog), \code{RR} for
-binomial(log), \code{MR} for Gamma(log), and the generic \code{exp(B)}
-otherwise. The standard error follows the delta-method
-approximation \verb{SE_OR = OR × SE_log-odds} (Stata \verb{logit, or},
-\code{parameters::model_parameters()}); the test statistic and the
-p-value remain on the link scale (both are invariant under
-monotone transformation). Default \code{FALSE} (parameters /
-modelsummary convention — explicit opt-in over silent transform).
-Has no effect on \code{lm()} fits or on identity-link glm; emits a
-\code{spicy_ignored_arg} warning in those cases.}
+\code{glm} with a non-identity link, \code{B}, the CI bounds, and the
+SE are transformed via \code{exp()} (delta method:
+\verb{SE_OR = OR × SE_log-odds}). The column header is rebranded
+per family / link: \code{OR} (binomial logit), \code{IRR} (poisson
+log), \code{HR} (binomial cloglog), \code{RR} (binomial log), \code{MR}
+(Gamma log), else \code{exp(B)}. The statistic and p-value stay
+on the link scale (invariant under monotone transformation).
+Default \code{FALSE}. No effect on \code{lm} or identity-link glm;
+emits a \code{spicy_ignored_arg} warning in those cases.}
 
-\item{p_adjust}{Multiple-comparison adjustment method applied to
-the family of estimated coefficient p-values within each model
-(intercept and reference rows excluded by convention). One of
-\code{"none"} (default — no adjustment), \code{"holm"}, \code{"hochberg"},
-\code{"hommel"}, \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}. The
-adjustment is delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}} and applied
-per-model and per \code{estimate_type} (so B and AME p-values are
-adjusted independently within their own families). When active,
-a footer note documents the method and the family size. The
-adjustment runs \strong{before} any \code{keep} / \code{drop} filtering so the
-family is the model's full coefficient set, not just the
-displayed subset (modelsummary convention).
-
-\strong{Methodological note.} Adjusting the p-values of all
-coefficients of a single regression model is \emph{not} the standard
-convention in social-science / clinical reporting. Each
-coefficient tests a scientifically distinct hypothesis on a
-distinct predictor, which is not the situation multiple-testing
-procedures were designed for (Rothman 1990; Greenland 2017).
-The default \code{"none"} reflects this: APA Manual 7 §6.46,
-Harrell (\emph{Regression Modeling Strategies}, §5.4), and Gelman,
-Hill & Yajima (2012) all recommend reporting unadjusted
-p-values for the coefficients of a pre-specified regression
-model. Cases where adjustment IS appropriate include mass
-screening with many candidate predictors and no prior
-hypothesis (typically \code{"BH"} / FDR), pre-registered
-multi-endpoint confirmatory designs (typically \code{"holm"}), or
-when a journal / SAP explicitly requests it. spicy exposes the
-argument under the same "transparency over rejection" rule
-used for \code{standardized}: the tool is available, the
-methodological choice is yours.}
+\item{p_adjust}{Multiple-comparison adjustment method applied
+to the family of estimated coefficient p-values within each
+model (intercept and reference rows excluded). One of
+\code{"none"} (default), \code{"holm"}, \code{"hochberg"}, \code{"hommel"},
+\code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}. Delegated to
+\code{\link[stats:p.adjust]{stats::p.adjust()}}; applied per-model and per \code{estimate_type}
+(B and AME p-values are adjusted independently within their
+own families). Active adjustments are documented in the
+footer (method + family size). See the \emph{Multiple-comparison
+adjustment} section for when this is and is not appropriate.}
 
 \item{show_columns}{Character vector of tokens selecting the
 per-coefficient columns and their display order. Accepts
@@ -163,22 +133,16 @@ layout: \code{"all_b"} (single model) or \code{"all_b_compact"} (multi-
 model). The \code{"p"} token is always the B / beta p-value; for
 the AME-specific p-value use \code{"ame_p"}.}
 
-\item{keep}{Character vector of regular expressions; when
-supplied, only coefficient rows whose term name matches at
-least one of the patterns are kept. Useful when a model has
-many control variables and you want to display only the focal
-predictors. Mutually exclusive with \code{drop}. Matching is
-applied to the coefficient name as it appears in
-\code{\link[stats:coef]{stats::coef()}} (e.g., \code{"wt"}, \code{"cyl6"}, \code{"factor(cyl)8"}).
-\code{p_adjust} is computed before the filter, so adjusted p-values
-reflect the model's full coefficient family. Default \code{NULL}
-(no filter).}
+\item{keep}{Character vector of regexes. Only coefficient rows
+whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
+\code{"cyl6"}, \code{"factor(cyl)8"}) matches at least one pattern are
+kept. Mutually exclusive with \code{drop}. Filtering is a display
+choice; \code{p_adjust} runs against the full coefficient family
+before filtering. Default \code{NULL} (no filter).}
 
-\item{drop}{Character vector of regular expressions; when
-supplied, coefficient rows whose term name matches any of the
-patterns are removed. Mutually exclusive with \code{keep}. Useful
-for hiding control variables from a publication-ready table.
-Same matching semantics as \code{keep}. Default \code{NULL} (no filter).}
+\item{drop}{Character vector of regexes. Coefficient rows
+matching any pattern are removed. Mutually exclusive with
+\code{keep}. Default \code{NULL}.}
 
 \item{show_intercept}{Whether to display the intercept row.
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}
@@ -237,39 +201,19 @@ by the other three modes (which use structural English
 wording -- "ref:", "vs", "Reference categories:").}
 
 \item{show_fit_stats}{Character vector of tokens for the
-model-level fit-stats footer, or \code{NULL} (default) to apply
-the class-aware default. Available tokens:
-\itemize{
-\item Counts: \code{"nobs"}, \code{"weighted_nobs"}.
-\item Variance explained -- \code{lm} only: \code{"r2"}, \code{"adj_r2"},
-\code{"omega2"}.
-\item Pseudo-\eqn{R^2}{R^2} -- \code{glm} only: \code{"pseudo_r2_mcfadden"},
-\code{"pseudo_r2_nagelkerke"}, \code{"pseudo_r2_tjur"} (binomial only).
-\item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
-/ glm dispersion), \code{"rmse"}.
-\item Effect size: \code{"f2"}.
-\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"},
-\code{"deviance"}.
-}
-Class-aware default: for all-\code{lm}, \code{c("nobs", "r2", "adj_r2")};
-for all-\code{glm},
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
-Mixed \code{lm} + \code{glm} sets union both groups (renderer per-row
-em-dashes the inappropriate cell).}
+model-level rows below the coefficients; row order follows
+token order. \code{NULL} (default) applies a class-aware default;
+under \code{nested = TRUE} the default is extended with the
+change-stat tokens. See \emph{Vocabulary tokens} (\code{show_fit_stats}
+subsection) and \emph{Hierarchical (nested) model comparison} in
+the details.}
 
-\item{model_labels}{Column / model labels for multi-model
-tables. These also become the \strong{column-group spanner} labels
-drawn above each model's sub-columns (in the console output
-and in the gt / flextable / tinytable / Excel / Word
-renderers). \code{NULL} (default) uses smart auto-generation:
-hidden for a single model; \code{names(list)} if the input is a
-named list; otherwise — when models have all-distinct
-response variables — the bare response-variable name (from
-\code{formula(fit)[[2]]}; \code{attr("label")} is intentionally NOT
-used here, since it can be a long phrase that distorts
-column widths), and the Outcome body row is folded into the
-header; otherwise \code{"Model 1, 2, ..."}. A character vector of
-length \code{length(models)} forces explicit labels.}
+\item{model_labels}{Per-model labels used as the \strong{column-group
+spanner} above each model's sub-columns (console + gt /
+flextable / tinytable / Excel / Word renderers). \code{NULL}
+(default) resolves automatically; see \emph{Multi-model semantics}
+for the full rule. A character vector of length
+\code{length(models)} overrides.}
 
 \item{outcome_labels}{Optional \strong{Outcome body row} override.
 \code{NULL} (default) hides the row entirely -- under the
@@ -279,20 +223,17 @@ explicit Outcome row with those values (the spanner stays as
 \code{"Model 1, ..."} unless \code{model_labels} is also supplied).
 \code{FALSE} also suppresses the row.}
 
-\item{stars}{Significance asterisk display.
-\code{FALSE} (default, APA-aligned) — no stars; p-values reported
-as numbers only. APA 7 §6.46 explicitly discourages stars.
-\code{TRUE} — APA-conventional cutoffs
-\code{c("*" = 0.05, "**" = 0.01, "***" = 0.001)}.
-A named numeric vector — custom thresholds and symbols (e.g.
-\code{c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}).}
+\item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
+§6.46) -- no stars. \code{TRUE} -- APA cutoffs
+\code{c("*" = 0.05, "**" = 0.01, "***" = 0.001)}. A named numeric
+vector specifies custom thresholds, e.g.
+\code{c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.}
 
-\item{nested}{Whether to add a hierarchical-comparison footer
-block (each model vs the previous via \code{\link[stats:anova]{stats::anova()}} or
-equivalent). \code{FALSE} (default) — pure side-by-side display
-without comparison statistics. \code{TRUE} — adds the comparison
-footer; requires identical \code{nobs} and identical response
-variable across all models.}
+\item{nested}{Whether to inject pairwise change-statistic rows
+for adjacent models (M2 vs M1, M3 vs M2, ...). \code{FALSE}
+(default) -- pure side-by-side display. \code{TRUE} -- requires
+identical \code{nobs} and identical response variable across all
+models. See \emph{Hierarchical (nested) model comparison}.}
 
 \item{digits}{Decimal places for general numeric tokens
 (\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change},
@@ -333,10 +274,10 @@ alignment.}
 \item{padding}{Non-negative integer giving the extra characters
 added to each data column's auto-computed width when the
 default \code{print} method renders the table. Default \code{0L}
-(compact, modelsummary-like spacing — fits more models in
-the same console / page width). Use \code{2L} (Stata-like) or
-\code{4L} for a more spacious look. Headers stay centered above
-the data region regardless of padding.}
+(compact -- fits more models in the same console / page
+width). Use \code{2L} (Stata-like) or \code{4L} for a more spacious
+look. Headers stay centered above the data region regardless
+of padding.}
 
 \item{labels}{Named character vector overriding per-coefficient
 row labels. Names are coefficient term names (from
@@ -376,23 +317,16 @@ format-specific object (\code{gt_tbl}, \code{flextable}, \code{tinytable},
 outputs).
 }
 \description{
-Build a publication-ready coefficient summary from one or more
-fitted regression models. Beyond the standard \code{B} / \code{SE} / \code{CI} /
-\code{p} columns, the same table layout supports \strong{standardised
-coefficients} (\eqn{\beta}{beta}), \strong{average marginal effects}
-(AME, with its own SE / \emph{p} / CI), \strong{partial effect sizes}
-(\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} / \emph{\eqn{\omega^2}{omega^2}}
-for \code{lm}, partial \emph{\eqn{\chi^2}{chi-squared}} for \code{glm}),
-\strong{pseudo-\eqn{R^2}{R^2}} for \code{glm}, and a wide vocabulary of
-variance estimators (classical / HC* / cluster-robust with
-Satterthwaite-corrected df / bootstrap / jackknife). Designed for
-\strong{APA-strict} reporting in psychology, public health, sociology,
-and biostatistics, with optional opt-in conventions for
-econometrics and clinical trials.
-
-Supports \code{lm} and \code{glm} (binomial / poisson / Gamma /
-inverse.gaussian / quasi families with any link). Mixed-effects
-models (\code{lmerMod}, \code{glmerMod}) are planned for spicy 0.16+.
+Publication-ready coefficient table from one or more fitted
+\code{lm} / \code{glm} models. Supports standardised coefficients
+(\eqn{\beta}{beta}), average marginal effects (AME), partial
+effect sizes (\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} /
+\emph{\eqn{\omega^2}{omega^2}} for \code{lm}; partial
+\emph{\eqn{\chi^2}{chi-squared}} for \code{glm}), pseudo-\eqn{R^2}{R^2}
+(\code{glm}), and a full vocabulary of variance estimators
+(classical / HC* / cluster-robust with Satterthwaite-corrected
+df / bootstrap / jackknife). \code{glm} covers binomial / poisson /
+Gamma / inverse.gaussian / quasi families with any link.
 }
 \section{Vocabulary tokens}{
 Two vector arguments -- \code{show_columns} and \code{show_fit_stats} --
@@ -525,6 +459,18 @@ value (recycled to all models) \strong{or} a list (one per model).
 The pedagogical use case \code{list(fit, fit, fit)} with
 \code{vcov = list("classical", "HC3", "CR2")} enables side-by-side
 SE-comparison in a single table.
+
+Inferential regimes (B and AME share the same regime):
+\itemize{
+\item \code{classical}, \verb{HC*} -> t with \code{df.residual}.
+\item \code{bootstrap}, \code{jackknife} -> z asymptotic.
+\item \code{CR0}-\code{CR3} -> t with \strong{Satterthwaite-corrected df} (B
+via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
+\code{\link[clubSandwich:linear_contrast]{clubSandwich::linear_contrast()}}; Pustejovsky & Tipton
+2018). Under non-linear terms (\code{poly()}, \code{I()}, \code{log()},
+\code{splines::ns()}), AME falls back to z-asymptotic with a
+\code{spicy_fallback} warning.
+}
 \subsection{How to specify \code{cluster}}{
 
 Three accepted forms, in order of preference:
@@ -582,108 +528,101 @@ all-glm hierarchy raise \code{spicy_invalid_input} (the
 residual-sum-of-squares partition does not apply outside the
 least-squares framework -- the renderer points the user at
 \code{lrt_change}).
-
-Inferential regimes (B and AME share the same regime by design):
-\itemize{
-\item \code{classical}, \verb{HC*} → t with \code{df.residual}
-\item \code{bootstrap}, \code{jackknife} → z asymptotic
-\item \verb{CR0–CR3} → t with \strong{Satterthwaite-corrected df} (B via
-\code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
-\code{\link[clubSandwich:linear_contrast]{clubSandwich::linear_contrast()}} — see
-Pustejovsky & Tipton 2018). spicy is the first R package to
-offer AME-Satterthwaite under cluster-robust variance for
-\code{lm}. For models with non-linear formulas (\code{poly()}, \code{I()},
-\code{log()}, \code{splines::ns()}), AME inference falls back to
-z-asymptotic with a \code{spicy_fallback} warning.
-}
 }
 
 \section{Standardised coefficients}{
-\code{standardized} controls the standardisation method when \code{"beta"}
-is in \code{show_columns}:
+\code{standardized} controls the method when \code{"beta"} is in
+\code{show_columns}:
 \itemize{
-\item \code{"refit"} — refit the model on z-scored predictors. For \code{lm},
-the response is also z-scored (Cohen et al. 2003 gold standard);
-for \code{glm}, the response stays on its observed scale and only
-numeric predictors are standardised (Long & Freese 2014 §4.3.4
+\item \code{"refit"} -- refit on z-scored data. For \code{lm} both X
+and Y are z-scored (Cohen et al. 2003 gold standard); for
+\code{glm} only numeric X (Long & Freese 2014 §4.3.4
 "x-standardization").
-\item \code{"posthoc"} — post-hoc scaling. For \code{lm}:
-\verb{\eqn{\beta}{beta} = B × SD(X) / SD(Y)}; for \code{glm}: X-only \verb{\eqn{\beta}{beta} = B × SD(X)} (the
-response side is undefined on the link scale —
-\code{parameters} / \code{effectsize} convention).
-\item \code{"basic"} — like posthoc but factor-derived dummies are scaled
-by their column SD (treated as numeric).
-\item \code{"smart"} — Gelman (2008) recommendation: divide binary
-predictors by \verb{2 × SD} instead of \code{SD}.
-\item \code{"pseudo"} — \emph{glm only}. Menard (2004, 2011) fully-standardised
-\verb{\eqn{\beta}{beta} = B × SD(X) / SD(Y*)}, where \verb{Y*} is the latent variable on
-the link scale and
-\verb{SD(Y*) = sqrt(var(\eqn{\hat{\eta}}{eta-hat}) + var_link)} with \code{var_link} =
-\eqn{\pi}{pi}²/3 (logit), 1 (probit), \eqn{\pi}{pi}²/6 (cloglog). Defined for binomial
-families; non-binomial returns NA with a \code{spicy_caveat}.
-\item \code{"none"} (default) — no \eqn{\beta}{beta} computed.
+\item \code{"posthoc"} -- post-hoc scaling. lm:
+\eqn{\beta = B \times SD(X) / SD(Y)}{beta = B * SD(X) / SD(Y)};
+glm: X-only \eqn{\beta = B \times SD(X)}{beta = B * SD(X)}
+(Y is undefined on the link scale).
+\item \code{"basic"} -- like \code{"posthoc"} but factor dummies are
+scaled by their column SD.
+\item \code{"smart"} -- Gelman (2008): divide binary predictors
+by \code{2 * SD} instead of \code{SD}.
+\item \code{"pseudo"} -- \emph{glm only}. Menard (2004, 2011)
+fully-standardised \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
+with \eqn{Y^*}{Y*} the latent variable on the link scale and
+\eqn{SD(Y^*) = \sqrt{Var(\hat{\eta}) + Var_{link}}}{SD(Y*) = sqrt(Var(eta-hat) + Var_link)}
+(\eqn{\pi^2/3}{pi^2/3} logit, \code{1} probit,
+\eqn{\pi^2/6}{pi^2/6} cloglog). Binomial families only;
+non-binomial returns NA with a \code{spicy_caveat}.
+\item \code{"none"} (default) -- no \eqn{\beta}{beta} computed.
 }
 
-For models with interactions or transformed predictors (\code{I()},
-\code{poly()}, \code{log()}, \code{splines::ns()}), a \code{spicy_caveat} warning is
-emitted reminding that standardised coefficients on such terms
-should be interpreted with care (Cohen et al. 2003 §7.7;
-Aiken & West 1991). The footer auto-documents the caveat.
+Under interactions or transformed predictors (\code{I()}, \code{poly()},
+\code{log()}, \code{splines::ns()}), a \code{spicy_caveat} warns that
+standardised coefficients on such terms are subtle to interpret
+(Cohen et al. 2003 §7.7; Aiken & West 1991). The caveat is
+auto-documented in the footer.
+}
+
+\section{Multiple-comparison adjustment}{
+Adjusting the p-values of all coefficients of a single
+regression model is \strong{not} the standard convention. Each
+coefficient tests a distinct hypothesis on a distinct
+predictor -- not the situation multiple-testing procedures
+were designed for (Rothman 1990; Greenland 2017; APA Manual 7
+§6.46; Harrell \emph{Regression Modeling Strategies} §5.4; Gelman,
+Hill & Yajima 2012). Hence the default \code{p_adjust = "none"}.
+
+Adjustment is appropriate for: mass screening with no prior
+hypothesis (typically \code{"BH"} / FDR), pre-registered
+multi-endpoint confirmatory designs (typically \code{"holm"}), or
+when a journal / SAP explicitly requests it.
+
+The adjustment runs \strong{before} any \code{keep} / \code{drop} filtering,
+so the family is the model's full coefficient set (intercept
+and reference rows excluded), not the displayed subset --
+filtering is a display choice and must not change the
+inferential family.
 }
 
 \section{Output formats and broom integration}{
 \code{output} selects the return type:
 \itemize{
-\item \code{"default"} — a \code{spicy_regression_table} object (a
-\code{data.frame} subclass) printed via \code{\link[=spicy_print_table]{spicy_print_table()}}.
-\item \code{"data.frame"} / \code{"long"} — raw data.frame / long-format
-tibble (the underlying analytic representation).
-\item \code{"gt"} / \code{"flextable"} / \code{"tinytable"} — rich-format HTML /
-Word / PDF tables (requires the corresponding package).
-\item \code{"excel"} — writes to \code{excel_path} via
-\code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}} (returns \code{invisible(x)}).
-\item \code{"clipboard"} — copies to system clipboard via
-\code{\link[clipr:write_clip]{clipr::write_clip()}} (returns \code{invisible(x)}).
+\item \code{"default"} -- a \code{spicy_regression_table}
+(\code{data.frame} subclass) printed via \code{\link[=spicy_print_table]{spicy_print_table()}}.
+\item \code{"data.frame"} / \code{"long"} -- raw data.frame /
+long-format tibble.
+\item \code{"gt"} / \code{"flextable"} / \code{"tinytable"} -- rich-format
+HTML / Word / PDF tables (require the corresponding
+Suggests package).
+\item \code{"excel"} -- writes to \code{excel_path} via
+\code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}}.
+\item \code{"word"} -- writes to \code{word_path} via
+\code{flextable::save_as_docx()}.
+\item \code{"clipboard"} -- copies to the system clipboard via
+\code{\link[clipr:write_clip]{clipr::write_clip()}}.
 }
 
 \code{\link[broom:tidy]{broom::tidy()}} returns a long tibble with one row per
 \verb{(model_id, term, estimate_type)} and broom-canonical column
 names (\code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high},
 \code{statistic}, \code{p.value}). \code{\link[broom:glance]{broom::glance()}} returns one row per
-model with the model-level statistics. \code{df.residual} is kept
-numeric (not integer) so cluster-robust Satterthwaite df is
-preserved verbatim.
-}
-
-\section{Output encoding}{
-\code{table_regression()} produces UTF-8 output with Unicode
-box-drawing for table layout and Greek / mathematical symbols
-(\eqn{\beta}{beta}, \eqn{\omega^2}{omega^2}, \eqn{\chi^2}{chi-squared}, \eqn{f^2}{f^2}, \eqn{\Delta}{Delta}, †, em-dash). A UTF-8 capable terminal is
-required (default in RStudio, R \eqn{\ge}{>=} 4.0 on Windows 10+, macOS,
-modern Linux).
-}
-
-\section{Internationalisation}{
-Output is in English. To localise visible text:
-\itemize{
-\item Use \code{reference_label}, \code{model_labels}, \code{outcome_labels},
-and \code{labels} to override user-customisable strings.
-\item For the title and footer, post-process the result via
-\code{attr(result, "title") <- "..."} and
-\code{attr(result, "note") <- "..."}.
-}
+model with the model-level statistics; \code{df.residual} is kept
+numeric so cluster-robust Satterthwaite df is preserved.
 }
 
 \section{Weights}{
-There is \strong{no} \code{weights} argument. Weights are a property of
-the fitted model (extracted via \code{\link[stats:weights]{stats::weights()}}); pass them
-when fitting:
-\preformatted{
-fit <- lm(y ~ x, data = df, weights = w)
-table_regression(fit)
+No \code{weights} argument: weights are a property of the fit
+(extracted via \code{\link[stats:weights]{stats::weights()}}). Pass them when fitting:
+\code{lm(y ~ x, data = df, weights = w)}. All downstream
+computations (vcov, AME, standardisation, \code{weighted_nobs})
+extract them automatically.
 }
-All downstream computations (vcov, AME, standardisation,
-\code{weighted_nobs}) extract the weights automatically.
+
+\section{Internationalisation}{
+Output is in English. Override user-facing strings via
+\code{reference_label}, \code{model_labels}, \code{outcome_labels}, and
+\code{labels}. The title and footer are post-processable via
+\code{attr(result, "title")} and \code{attr(result, "note")}.
 }
 
 \section{Classed conditions}{

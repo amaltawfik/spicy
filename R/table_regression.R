@@ -1,23 +1,16 @@
 #' Regression coefficient summary table
 #'
 #' @description
-#' Build a publication-ready coefficient summary from one or more
-#' fitted regression models. Beyond the standard `B` / `SE` / `CI` /
-#' `p` columns, the same table layout supports **standardised
-#' coefficients** (\eqn{\beta}{beta}), **average marginal effects**
-#' (AME, with its own SE / *p* / CI), **partial effect sizes**
-#' (*\eqn{f^2}{f^2}* / *\eqn{\eta^2}{eta^2}* / *\eqn{\omega^2}{omega^2}*
-#' for `lm`, partial *\eqn{\chi^2}{chi-squared}* for `glm`),
-#' **pseudo-\eqn{R^2}{R^2}** for `glm`, and a wide vocabulary of
-#' variance estimators (classical / HC* / cluster-robust with
-#' Satterthwaite-corrected df / bootstrap / jackknife). Designed for
-#' **APA-strict** reporting in psychology, public health, sociology,
-#' and biostatistics, with optional opt-in conventions for
-#' econometrics and clinical trials.
-#'
-#' Supports `lm` and `glm` (binomial / poisson / Gamma /
-#' inverse.gaussian / quasi families with any link). Mixed-effects
-#' models (`lmerMod`, `glmerMod`) are planned for spicy 0.16+.
+#' Publication-ready coefficient table from one or more fitted
+#' `lm` / `glm` models. Supports standardised coefficients
+#' (\eqn{\beta}{beta}), average marginal effects (AME), partial
+#' effect sizes (*\eqn{f^2}{f^2}* / *\eqn{\eta^2}{eta^2}* /
+#' *\eqn{\omega^2}{omega^2}* for `lm`; partial
+#' *\eqn{\chi^2}{chi-squared}* for `glm`), pseudo-\eqn{R^2}{R^2}
+#' (`glm`), and a full vocabulary of variance estimators
+#' (classical / HC* / cluster-robust with Satterthwaite-corrected
+#' df / bootstrap / jackknife). `glm` covers binomial / poisson /
+#' Gamma / inverse.gaussian / quasi families with any link.
 #'
 #' @details
 #' # Vocabulary tokens
@@ -152,6 +145,18 @@
 #' `vcov = list("classical", "HC3", "CR2")` enables side-by-side
 #' SE-comparison in a single table.
 #'
+#' Inferential regimes (B and AME share the same regime):
+#' \itemize{
+#'   \item `classical`, `HC*` -> t with `df.residual`.
+#'   \item `bootstrap`, `jackknife` -> z asymptotic.
+#'   \item `CR0`-`CR3` -> t with **Satterthwaite-corrected df** (B
+#'     via [clubSandwich::coef_test()]; AME via
+#'     [clubSandwich::linear_contrast()]; Pustejovsky & Tipton
+#'     2018). Under non-linear terms (`poly()`, `I()`, `log()`,
+#'     `splines::ns()`), AME falls back to z-asymptotic with a
+#'     `spicy_fallback` warning.
+#' }
+#'
 #' ## How to specify `cluster`
 #'
 #' Three accepted forms, in order of preference:
@@ -209,112 +214,111 @@
 #' least-squares framework -- the renderer points the user at
 #' `lrt_change`).
 #'
-#' Inferential regimes (B and AME share the same regime by design):
-#'   * `classical`, `HC*` → t with `df.residual`
-#'   * `bootstrap`, `jackknife` → z asymptotic
-#'   * `CR0–CR3` → t with **Satterthwaite-corrected df** (B via
-#'     [clubSandwich::coef_test()]; AME via
-#'     [clubSandwich::linear_contrast()] — see
-#'     Pustejovsky & Tipton 2018). spicy is the first R package to
-#'     offer AME-Satterthwaite under cluster-robust variance for
-#'     `lm`. For models with non-linear formulas (`poly()`, `I()`,
-#'     `log()`, `splines::ns()`), AME inference falls back to
-#'     z-asymptotic with a `spicy_fallback` warning.
-#'
 #' # Standardised coefficients
 #'
-#' `standardized` controls the standardisation method when `"beta"`
-#' is in `show_columns`:
-#'   * `"refit"` — refit the model on z-scored predictors. For `lm`,
-#'     the response is also z-scored (Cohen et al. 2003 gold standard);
-#'     for `glm`, the response stays on its observed scale and only
-#'     numeric predictors are standardised (Long & Freese 2014 §4.3.4
+#' `standardized` controls the method when `"beta"` is in
+#' `show_columns`:
+#' \itemize{
+#'   \item `"refit"` -- refit on z-scored data. For `lm` both X
+#'     and Y are z-scored (Cohen et al. 2003 gold standard); for
+#'     `glm` only numeric X (Long & Freese 2014 §4.3.4
 #'     "x-standardization").
-#'   * `"posthoc"` — post-hoc scaling. For `lm`:
-#'     `\eqn{\beta}{beta} = B × SD(X) / SD(Y)`; for `glm`: X-only `\eqn{\beta}{beta} = B × SD(X)` (the
-#'     response side is undefined on the link scale —
-#'     `parameters` / `effectsize` convention).
-#'   * `"basic"` — like posthoc but factor-derived dummies are scaled
-#'     by their column SD (treated as numeric).
-#'   * `"smart"` — Gelman (2008) recommendation: divide binary
-#'     predictors by `2 × SD` instead of `SD`.
-#'   * `"pseudo"` — *glm only*. Menard (2004, 2011) fully-standardised
-#'     `\eqn{\beta}{beta} = B × SD(X) / SD(Y*)`, where `Y*` is the latent variable on
-#'     the link scale and
-#'     `SD(Y*) = sqrt(var(\eqn{\hat{\eta}}{eta-hat}) + var_link)` with `var_link` =
-#'     \eqn{\pi}{pi}²/3 (logit), 1 (probit), \eqn{\pi}{pi}²/6 (cloglog). Defined for binomial
-#'     families; non-binomial returns NA with a `spicy_caveat`.
-#'   * `"none"` (default) — no \eqn{\beta}{beta} computed.
+#'   \item `"posthoc"` -- post-hoc scaling. lm:
+#'     \eqn{\beta = B \times SD(X) / SD(Y)}{beta = B * SD(X) / SD(Y)};
+#'     glm: X-only \eqn{\beta = B \times SD(X)}{beta = B * SD(X)}
+#'     (Y is undefined on the link scale).
+#'   \item `"basic"` -- like `"posthoc"` but factor dummies are
+#'     scaled by their column SD.
+#'   \item `"smart"` -- Gelman (2008): divide binary predictors
+#'     by `2 * SD` instead of `SD`.
+#'   \item `"pseudo"` -- *glm only*. Menard (2004, 2011)
+#'     fully-standardised \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
+#'     with \eqn{Y^*}{Y*} the latent variable on the link scale and
+#'     \eqn{SD(Y^*) = \sqrt{Var(\hat{\eta}) + Var_{link}}}{SD(Y*) = sqrt(Var(eta-hat) + Var_link)}
+#'     (\eqn{\pi^2/3}{pi^2/3} logit, `1` probit,
+#'     \eqn{\pi^2/6}{pi^2/6} cloglog). Binomial families only;
+#'     non-binomial returns NA with a `spicy_caveat`.
+#'   \item `"none"` (default) -- no \eqn{\beta}{beta} computed.
+#' }
 #'
-#' For models with interactions or transformed predictors (`I()`,
-#' `poly()`, `log()`, `splines::ns()`), a `spicy_caveat` warning is
-#' emitted reminding that standardised coefficients on such terms
-#' should be interpreted with care (Cohen et al. 2003 §7.7;
-#' Aiken & West 1991). The footer auto-documents the caveat.
+#' Under interactions or transformed predictors (`I()`, `poly()`,
+#' `log()`, `splines::ns()`), a `spicy_caveat` warns that
+#' standardised coefficients on such terms are subtle to interpret
+#' (Cohen et al. 2003 §7.7; Aiken & West 1991). The caveat is
+#' auto-documented in the footer.
+#'
+#' # Multiple-comparison adjustment
+#'
+#' Adjusting the p-values of all coefficients of a single
+#' regression model is **not** the standard convention. Each
+#' coefficient tests a distinct hypothesis on a distinct
+#' predictor -- not the situation multiple-testing procedures
+#' were designed for (Rothman 1990; Greenland 2017; APA Manual 7
+#' §6.46; Harrell *Regression Modeling Strategies* §5.4; Gelman,
+#' Hill & Yajima 2012). Hence the default `p_adjust = "none"`.
+#'
+#' Adjustment is appropriate for: mass screening with no prior
+#' hypothesis (typically `"BH"` / FDR), pre-registered
+#' multi-endpoint confirmatory designs (typically `"holm"`), or
+#' when a journal / SAP explicitly requests it.
+#'
+#' The adjustment runs **before** any `keep` / `drop` filtering,
+#' so the family is the model's full coefficient set (intercept
+#' and reference rows excluded), not the displayed subset --
+#' filtering is a display choice and must not change the
+#' inferential family.
 #'
 #' # Output formats and broom integration
 #'
 #' `output` selects the return type:
-#'   * `"default"` — a `spicy_regression_table` object (a
-#'     `data.frame` subclass) printed via [spicy_print_table()].
-#'   * `"data.frame"` / `"long"` — raw data.frame / long-format
-#'     tibble (the underlying analytic representation).
-#'   * `"gt"` / `"flextable"` / `"tinytable"` — rich-format HTML /
-#'     Word / PDF tables (requires the corresponding package).
-#'   * `"excel"` — writes to `excel_path` via
-#'     [openxlsx2::write_xlsx()] (returns `invisible(x)`).
-#'   * `"clipboard"` — copies to system clipboard via
-#'     [clipr::write_clip()] (returns `invisible(x)`).
+#' \itemize{
+#'   \item `"default"` -- a `spicy_regression_table`
+#'     (`data.frame` subclass) printed via [spicy_print_table()].
+#'   \item `"data.frame"` / `"long"` -- raw data.frame /
+#'     long-format tibble.
+#'   \item `"gt"` / `"flextable"` / `"tinytable"` -- rich-format
+#'     HTML / Word / PDF tables (require the corresponding
+#'     Suggests package).
+#'   \item `"excel"` -- writes to `excel_path` via
+#'     [openxlsx2::write_xlsx()].
+#'   \item `"word"` -- writes to `word_path` via
+#'     `flextable::save_as_docx()`.
+#'   \item `"clipboard"` -- copies to the system clipboard via
+#'     [clipr::write_clip()].
+#' }
 #'
 #' [broom::tidy()] returns a long tibble with one row per
 #' `(model_id, term, estimate_type)` and broom-canonical column
 #' names (`estimate`, `std.error`, `conf.low`, `conf.high`,
 #' `statistic`, `p.value`). [broom::glance()] returns one row per
-#' model with the model-level statistics. `df.residual` is kept
-#' numeric (not integer) so cluster-robust Satterthwaite df is
-#' preserved verbatim.
-#'
-#' # Output encoding
-#'
-#' `table_regression()` produces UTF-8 output with Unicode
-#' box-drawing for table layout and Greek / mathematical symbols
-#' (\eqn{\beta}{beta}, \eqn{\omega^2}{omega^2}, \eqn{\chi^2}{chi-squared}, \eqn{f^2}{f^2}, \eqn{\Delta}{Delta}, †, em-dash). A UTF-8 capable terminal is
-#' required (default in RStudio, R \eqn{\ge}{>=} 4.0 on Windows 10+, macOS,
-#' modern Linux).
-#'
-#' # Internationalisation
-#'
-#' Output is in English. To localise visible text:
-#'   * Use `reference_label`, `model_labels`, `outcome_labels`,
-#'     and `labels` to override user-customisable strings.
-#'   * For the title and footer, post-process the result via
-#'     `attr(result, "title") <- "..."` and
-#'     `attr(result, "note") <- "..."`.
+#' model with the model-level statistics; `df.residual` is kept
+#' numeric so cluster-robust Satterthwaite df is preserved.
 #'
 #' # Weights
 #'
-#' There is **no** `weights` argument. Weights are a property of
-#' the fitted model (extracted via [stats::weights()]); pass them
-#' when fitting:
-#' \preformatted{
-#' fit <- lm(y ~ x, data = df, weights = w)
-#' table_regression(fit)
-#' }
-#' All downstream computations (vcov, AME, standardisation,
-#' `weighted_nobs`) extract the weights automatically.
+#' No `weights` argument: weights are a property of the fit
+#' (extracted via [stats::weights()]). Pass them when fitting:
+#' `lm(y ~ x, data = df, weights = w)`. All downstream
+#' computations (vcov, AME, standardisation, `weighted_nobs`)
+#' extract them automatically.
 #'
-#' @param models An `lm` or `glm` fitted model **or** a list of
-#'   such fits (named or unnamed; lm and glm fits may be mixed in
-#'   the same list). Single fits are auto-promoted to a one-element
-#'   list internally. `merMod` and other classes are rejected with
-#'   an actionable error. Raw data + formula is **not** accepted
-#'   (fit-only API, matching `broom`, `modelsummary`, `gtsummary`,
-#'   and `marginaleffects`).
-#' @param vcov Variance-covariance estimator. A single string
-#'   (one of `"classical"`, `"HC0"` to `"HC5"`, `"CR0"` to
-#'   `"CR3"`, `"bootstrap"`, `"jackknife"`) recycled to all models,
-#'   **or** a list of strings (one per model) for the pedagogical
-#'   side-by-side SE-comparison use case. Default `"classical"`.
+#' # Internationalisation
+#'
+#' Output is in English. Override user-facing strings via
+#' `reference_label`, `model_labels`, `outcome_labels`, and
+#' `labels`. The title and footer are post-processable via
+#' `attr(result, "title")` and `attr(result, "note")`.
+#'
+#' @param models An `lm` or `glm` fitted model, or a list of such
+#'   fits (named or unnamed; `lm` and `glm` may be mixed). Single
+#'   fits are auto-promoted to a 1-element list. `merMod` and
+#'   other classes raise `spicy_unsupported`. Raw data + formula
+#'   is not accepted -- fit-only API.
+#' @param vcov Variance-covariance estimator: `"classical"`,
+#'   `"HC0"`-`"HC5"`, `"CR0"`-`"CR3"`, `"bootstrap"`, or
+#'   `"jackknife"`. A scalar is recycled to all models; a list
+#'   (one string per model) allows mixed estimators. Default
+#'   `"classical"`. See *Inference and standard errors*.
 #' @param cluster Cluster identifier for cluster-robust variance
 #'   (used when `vcov` is `"CR0"`-`"CR3"` or a cluster-bootstrap /
 #'   cluster-jackknife). Three accepted forms (see *How to specify
@@ -335,15 +339,13 @@
 #' @param boot_n Number of bootstrap replicates when
 #'   `vcov = "bootstrap"`. Single positive integer. Default
 #'   `1000L`.
-#' @param ci_method CI construction method. `"wald"` (default) uses
-#'   the symmetric Wald formula `estimate ± z × SE` (or `t × SE` for
-#'   `lm`); for `glm` this matches `summary.glm` and `confint.default`.
-#'   `"profile"` (*glm only*) uses the profile-likelihood CI from
-#'   `MASS::confint.glm()` — asymmetric, exact for likelihood-based
-#'   inference, and the gold standard under sparse data or near-
-#'   boundary estimates (Venables & Ripley *MASS* §7.2). The estimate,
-#'   SE, statistic and p-value remain Wald; `"profile"` only refines
-#'   the CI bounds. Using `"profile"` with `lm` raises
+#' @param ci_method CI construction. `"wald"` (default) uses
+#'   `estimate ± z × SE` (`t × SE` for `lm`). `"profile"`
+#'   (*glm only*) uses the profile-likelihood CI from
+#'   [MASS::confint.glm()] -- asymmetric, exact for
+#'   likelihood-based inference (Venables & Ripley *MASS* §7.2).
+#'   Only the CI bounds change; estimate, SE, statistic and
+#'   p-value remain Wald. `"profile"` with `lm` raises
 #'   `spicy_invalid_input`.
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
@@ -352,51 +354,25 @@
 #'   `spicy_invalid_input`. See the *Standardised coefficients*
 #'   section.
 #' @param exponentiate Logical. When `TRUE` and the model is a
-#'   `glm()` with a non-identity link, the displayed coefficient
-#'   (`B`), confidence interval bounds, and standard error are
-#'   transformed to the response scale via `exp()`. The column
-#'   header is rebranded per family / link: `OR` for binomial(logit),
-#'   `IRR` for poisson(log), `HR` for binomial(cloglog), `RR` for
-#'   binomial(log), `MR` for Gamma(log), and the generic `exp(B)`
-#'   otherwise. The standard error follows the delta-method
-#'   approximation `SE_OR = OR × SE_log-odds` (Stata `logit, or`,
-#'   `parameters::model_parameters()`); the test statistic and the
-#'   p-value remain on the link scale (both are invariant under
-#'   monotone transformation). Default `FALSE` (parameters /
-#'   modelsummary convention — explicit opt-in over silent transform).
-#'   Has no effect on `lm()` fits or on identity-link glm; emits a
-#'   `spicy_ignored_arg` warning in those cases.
-#' @param p_adjust Multiple-comparison adjustment method applied to
-#'   the family of estimated coefficient p-values within each model
-#'   (intercept and reference rows excluded by convention). One of
-#'   `"none"` (default — no adjustment), `"holm"`, `"hochberg"`,
-#'   `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`. The
-#'   adjustment is delegated to [stats::p.adjust()] and applied
-#'   per-model and per `estimate_type` (so B and AME p-values are
-#'   adjusted independently within their own families). When active,
-#'   a footer note documents the method and the family size. The
-#'   adjustment runs **before** any `keep` / `drop` filtering so the
-#'   family is the model's full coefficient set, not just the
-#'   displayed subset (modelsummary convention).
-#'
-#'   **Methodological note.** Adjusting the p-values of all
-#'   coefficients of a single regression model is *not* the standard
-#'   convention in social-science / clinical reporting. Each
-#'   coefficient tests a scientifically distinct hypothesis on a
-#'   distinct predictor, which is not the situation multiple-testing
-#'   procedures were designed for (Rothman 1990; Greenland 2017).
-#'   The default `"none"` reflects this: APA Manual 7 §6.46,
-#'   Harrell (*Regression Modeling Strategies*, §5.4), and Gelman,
-#'   Hill & Yajima (2012) all recommend reporting unadjusted
-#'   p-values for the coefficients of a pre-specified regression
-#'   model. Cases where adjustment IS appropriate include mass
-#'   screening with many candidate predictors and no prior
-#'   hypothesis (typically `"BH"` / FDR), pre-registered
-#'   multi-endpoint confirmatory designs (typically `"holm"`), or
-#'   when a journal / SAP explicitly requests it. spicy exposes the
-#'   argument under the same "transparency over rejection" rule
-#'   used for `standardized`: the tool is available, the
-#'   methodological choice is yours.
+#'   `glm` with a non-identity link, `B`, the CI bounds, and the
+#'   SE are transformed via `exp()` (delta method:
+#'   `SE_OR = OR × SE_log-odds`). The column header is rebranded
+#'   per family / link: `OR` (binomial logit), `IRR` (poisson
+#'   log), `HR` (binomial cloglog), `RR` (binomial log), `MR`
+#'   (Gamma log), else `exp(B)`. The statistic and p-value stay
+#'   on the link scale (invariant under monotone transformation).
+#'   Default `FALSE`. No effect on `lm` or identity-link glm;
+#'   emits a `spicy_ignored_arg` warning in those cases.
+#' @param p_adjust Multiple-comparison adjustment method applied
+#'   to the family of estimated coefficient p-values within each
+#'   model (intercept and reference rows excluded). One of
+#'   `"none"` (default), `"holm"`, `"hochberg"`, `"hommel"`,
+#'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`. Delegated to
+#'   [stats::p.adjust()]; applied per-model and per `estimate_type`
+#'   (B and AME p-values are adjusted independently within their
+#'   own families). Active adjustments are documented in the
+#'   footer (method + family size). See the *Multiple-comparison
+#'   adjustment* section for when this is and is not appropriate.
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
@@ -411,21 +387,15 @@
 #'   layout: `"all_b"` (single model) or `"all_b_compact"` (multi-
 #'   model). The `"p"` token is always the B / beta p-value; for
 #'   the AME-specific p-value use `"ame_p"`.
-#' @param keep Character vector of regular expressions; when
-#'   supplied, only coefficient rows whose term name matches at
-#'   least one of the patterns are kept. Useful when a model has
-#'   many control variables and you want to display only the focal
-#'   predictors. Mutually exclusive with `drop`. Matching is
-#'   applied to the coefficient name as it appears in
-#'   [stats::coef()] (e.g., `"wt"`, `"cyl6"`, `"factor(cyl)8"`).
-#'   `p_adjust` is computed before the filter, so adjusted p-values
-#'   reflect the model's full coefficient family. Default `NULL`
-#'   (no filter).
-#' @param drop Character vector of regular expressions; when
-#'   supplied, coefficient rows whose term name matches any of the
-#'   patterns are removed. Mutually exclusive with `keep`. Useful
-#'   for hiding control variables from a publication-ready table.
-#'   Same matching semantics as `keep`. Default `NULL` (no filter).
+#' @param keep Character vector of regexes. Only coefficient rows
+#'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
+#'   `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are
+#'   kept. Mutually exclusive with `drop`. Filtering is a display
+#'   choice; `p_adjust` runs against the full coefficient family
+#'   before filtering. Default `NULL` (no filter).
+#' @param drop Character vector of regexes. Coefficient rows
+#'   matching any pattern are removed. Mutually exclusive with
+#'   `keep`. Default `NULL`.
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param intercept_position Where to place the intercept when
@@ -478,38 +448,18 @@
 #'   by the other three modes (which use structural English
 #'   wording -- "ref:", "vs", "Reference categories:").
 #' @param show_fit_stats Character vector of tokens for the
-#'   model-level fit-stats footer, or `NULL` (default) to apply
-#'   the class-aware default. Available tokens:
-#'   \itemize{
-#'     \item Counts: `"nobs"`, `"weighted_nobs"`.
-#'     \item Variance explained -- `lm` only: `"r2"`, `"adj_r2"`,
-#'       `"omega2"`.
-#'     \item Pseudo-\eqn{R^2}{R^2} -- `glm` only: `"pseudo_r2_mcfadden"`,
-#'       `"pseudo_r2_nagelkerke"`, `"pseudo_r2_tjur"` (binomial only).
-#'     \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
-#'       / glm dispersion), `"rmse"`.
-#'     \item Effect size: `"f2"`.
-#'     \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`,
-#'       `"deviance"`.
-#'   }
-#'   Class-aware default: for all-`lm`, `c("nobs", "r2", "adj_r2")`;
-#'   for all-`glm`,
-#'   `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
-#'   Mixed `lm` + `glm` sets union both groups (renderer per-row
-#'   em-dashes the inappropriate cell).
-#' @param model_labels Column / model labels for multi-model
-#'   tables. These also become the **column-group spanner** labels
-#'   drawn above each model's sub-columns (in the console output
-#'   and in the gt / flextable / tinytable / Excel / Word
-#'   renderers). `NULL` (default) uses smart auto-generation:
-#'   hidden for a single model; `names(list)` if the input is a
-#'   named list; otherwise — when models have all-distinct
-#'   response variables — the bare response-variable name (from
-#'   `formula(fit)[[2]]`; `attr("label")` is intentionally NOT
-#'   used here, since it can be a long phrase that distorts
-#'   column widths), and the Outcome body row is folded into the
-#'   header; otherwise `"Model 1, 2, ..."`. A character vector of
-#'   length `length(models)` forces explicit labels.
+#'   model-level rows below the coefficients; row order follows
+#'   token order. `NULL` (default) applies a class-aware default;
+#'   under `nested = TRUE` the default is extended with the
+#'   change-stat tokens. See *Vocabulary tokens* (`show_fit_stats`
+#'   subsection) and *Hierarchical (nested) model comparison* in
+#'   the details.
+#' @param model_labels Per-model labels used as the **column-group
+#'   spanner** above each model's sub-columns (console + gt /
+#'   flextable / tinytable / Excel / Word renderers). `NULL`
+#'   (default) resolves automatically; see *Multi-model semantics*
+#'   for the full rule. A character vector of length
+#'   `length(models)` overrides.
 #' @param outcome_labels Optional **Outcome body row** override.
 #'   `NULL` (default) hides the row entirely -- under the
 #'   multi-model spanner the DV is already visible above the data.
@@ -517,19 +467,16 @@
 #'   explicit Outcome row with those values (the spanner stays as
 #'   `"Model 1, ..."` unless `model_labels` is also supplied).
 #'   `FALSE` also suppresses the row.
-#' @param stars Significance asterisk display.
-#'   `FALSE` (default, APA-aligned) — no stars; p-values reported
-#'   as numbers only. APA 7 §6.46 explicitly discourages stars.
-#'   `TRUE` — APA-conventional cutoffs
-#'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`.
-#'   A named numeric vector — custom thresholds and symbols (e.g.
-#'   `c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`).
-#' @param nested Whether to add a hierarchical-comparison footer
-#'   block (each model vs the previous via [stats::anova()] or
-#'   equivalent). `FALSE` (default) — pure side-by-side display
-#'   without comparison statistics. `TRUE` — adds the comparison
-#'   footer; requires identical `nobs` and identical response
-#'   variable across all models.
+#' @param stars Significance asterisks. `FALSE` (default, APA 7
+#'   §6.46) -- no stars. `TRUE` -- APA cutoffs
+#'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
+#'   vector specifies custom thresholds, e.g.
+#'   `c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
+#' @param nested Whether to inject pairwise change-statistic rows
+#'   for adjacent models (M2 vs M1, M3 vs M2, ...). `FALSE`
+#'   (default) -- pure side-by-side display. `TRUE` -- requires
+#'   identical `nobs` and identical response variable across all
+#'   models. See *Hierarchical (nested) model comparison*.
 #' @param digits Decimal places for general numeric tokens
 #'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`,
 #'   `deviance`, `deviance_change`, `ame`, `ame_se`,
@@ -562,10 +509,10 @@
 #' @param padding Non-negative integer giving the extra characters
 #'   added to each data column's auto-computed width when the
 #'   default `print` method renders the table. Default `0L`
-#'   (compact, modelsummary-like spacing — fits more models in
-#'   the same console / page width). Use `2L` (Stata-like) or
-#'   `4L` for a more spacious look. Headers stay centered above
-#'   the data region regardless of padding.
+#'   (compact -- fits more models in the same console / page
+#'   width). Use `2L` (Stata-like) or `4L` for a more spacious
+#'   look. Headers stay centered above the data region regardless
+#'   of padding.
 #' @param labels Named character vector overriding per-coefficient
 #'   row labels. Names are coefficient term names (from
 #'   [stats::terms()]); values are the displayed labels. E.g.
