@@ -174,11 +174,17 @@ side-by-side SE-comparison use case. Default <code>"classical"</code>.</p></dd>
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
 <dd><p>Cluster identifier for cluster-robust variance
-(<code>vcov</code> in <code>"CR0"</code> to <code>"CR3"</code> or <code>"bootstrap"</code> /
-<code>"jackknife"</code> cluster forms). Either an unquoted column name,
-a single string column name, an atomic vector of length
-<code>nobs(model)</code>, or a list (one per model). Default <code>NULL</code>
-(no clustering).</p></dd>
+(used when <code>vcov</code> is <code>"CR0"</code>-<code>"CR3"</code> or a cluster-bootstrap /
+cluster-jackknife). Three accepted forms (see <em>How to specify
+<code>cluster</code></em> in the details):</p><ul><li><p>Formula: <code>~region</code>, <code>~region:year</code> (recommended).</p></li>
+<li><p>String column name: <code>"region"</code>.</p></li>
+<li><p>Atomic vector of length <code>nobs(fit)</code>: <code>df$region</code>,
+<code>interaction(df$region, df$year)</code>, ... (for keys derived
+on the fly).</p></li>
+</ul><p>For multi-model use, pass a list of one form per model
+(mix-and-match allowed). Bare unquoted names
+(<code>cluster = region</code>) are NOT accepted – use <code>~region</code> or
+<code>"region"</code>. Default <code>NULL</code> (no clustering).</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -266,28 +272,20 @@ methodological choice is yours.</p></dd>
 
 
 <dt id="arg-show-columns">show_columns<a class="anchor" aria-label="anchor" href="#arg-show-columns"></a></dt>
-<dd><p>Character vector of tokens controlling
-which per-coefficient columns to display, <strong>and</strong> in which
-order. Available tokens:</p><ul><li><p>Coefficient: <code>"B"</code>, <code>"beta"</code> (standardised; requires
-<code>standardized != "none"</code>), <code>"SE"</code>, <code>"CI"</code>, <code>"t"</code>, <code>"p"</code>.</p></li>
-<li><p>Marginal effects: <code>"AME"</code> (compact <code>value [CI]</code> cell),
-<code>"AME_p"</code> (AME-specific p-value, distinct from <code>"p"</code> which
-always refers to B / beta), <code>"AME_SE"</code>.</p></li>
-<li><p>Effect sizes – <code>lm</code> only: <code>"partial_f2"</code>,
-<code>"partial_eta2"</code>, <code>"partial_omega2"</code> (each as
-<code>value [CI]</code> with noncentral-<em>F</em> bounds).</p></li>
-<li><p>Effect sizes – <code>glm</code> only: <code>"partial_chi2"</code>
-(likelihood-ratio chi-square via
-<code>drop1(test = "LRT")</code>, rendered as <code>value (df)</code>).</p></li>
-</ul><p>The <code>"p"</code> token always refers to the B (or beta if standardised)
-p-value; for AME use <code>"ame_p"</code>. Default <code>NULL</code> selects a
-context-aware default: <code>c("b", "se", "ci", "p")</code> (= the
-<code>"all_b"</code> group) for a single model (APA-7 §6.46 publication
-layout), and <code>c("b", "se", "p")</code> (= the <code>"all_b_compact"</code>
-group) for \(\geq 2\) models (CI dropped to fit the
-side-by-side layout – restore it explicitly when needed).
-See <em>Vocabulary tokens</em> and <em>Multi-model semantics</em> for
-ordering and rendering details.</p></dd>
+<dd><p>Character vector of tokens selecting the
+per-coefficient columns and their display order. Accepts
+<strong>atomic tokens</strong> (<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>,
+<code>"beta"</code>, <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>, <code>"ame_p"</code>,
+<code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
+<code>"partial_eta2_ci"</code>, <code>"partial_omega2"</code> +
+<code>"partial_omega2_ci"</code>, <code>"partial_chi2"</code>) and <strong>group tokens</strong>
+(<code>"all_b"</code>, <code>"all_b_compact"</code>, <code>"all_b_full"</code>, <code>"all_beta"</code>,
+<code>"all_ame"</code>, <code>"all_ame_compact"</code>, <code>"all_f2"</code>, <code>"all_eta2"</code>,
+<code>"all_omega2"</code>). See <em>Vocabulary tokens</em> in the details for
+the full enumeration. Default <code>NULL</code> selects a context-aware
+layout: <code>"all_b"</code> (single model) or <code>"all_b_compact"</code> (multi-
+model). The <code>"p"</code> token is always the B / beta p-value; for
+the AME-specific p-value use <code>"ame_p"</code>.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
@@ -411,15 +409,12 @@ length <code>length(models)</code> forces explicit labels.</p></dd>
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
 <dd><p>Optional <strong>Outcome body row</strong> override.
-<code>NULL</code> (default) hides the row entirely — with the multi-model
-spanner (and the DV smart-default that lifts the bare DV name
-into the spanner when DVs differ and no <code>model_labels</code> /
-<code>names(list)</code> is supplied), the DV is already visible above
-the data. A character vector of length <code>length(models)</code>
-forces an explicit Outcome row with those values (the spanner
-stays as <code>"Model 1, ..."</code> unless <code>model_labels</code> is also
-supplied). <code>FALSE</code> is accepted for backward compatibility and
-also suppresses the row.</p></dd>
+<code>NULL</code> (default) hides the row entirely – under the
+multi-model spanner the DV is already visible above the data.
+A character vector of length <code>length(models)</code> forces an
+explicit Outcome row with those values (the spanner stays as
+<code>"Model 1, ..."</code> unless <code>model_labels</code> is also supplied).
+<code>FALSE</code> also suppresses the row.</p></dd>
 
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
@@ -442,17 +437,17 @@ variable across all models.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimal places for general numeric
-tokens (<code>B</code>, <code>beta</code>, <code>SE</code>, <code>CI</code>, <code>t</code>, <code>F</code>, <code>LRT</code>, <code>deviance</code>,
-<code>deviance_change</code>, <code>AME</code>, <code>AME_SE</code>, <code>weighted_nobs</code>).
-Default <code>2L</code>.</p></dd>
+<dd><p>Decimal places for general numeric tokens
+(<code>b</code>, <code>beta</code>, <code>se</code>, <code>ci</code>, <code>t</code>, <code>f_change</code>, <code>lrt_change</code>,
+<code>deviance</code>, <code>deviance_change</code>, <code>ame</code>, <code>ame_se</code>,
+<code>weighted_nobs</code>). Default <code>2L</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
-<dd><p>Decimal places for p-values (<code>p</code>, <code>AME_p</code>, and
-<code>p</code> inside <code>nested_stats</code>). APA-strict: leading zero stripped,
-<code>&lt;.001</code> (or <code>&lt;.0001</code> etc. depending on <code>p_digits</code>) for small
-values. Default <code>3L</code>.</p></dd>
+<dd><p>Decimal places for p-values (<code>p</code>, <code>ame_p</code>,
+<code>p_change</code>). APA-strict: leading zero stripped, <code>&lt;.001</code> (or
+<code>&lt;.0001</code> etc. depending on <code>p_digits</code>) for small values.
+Default <code>3L</code>.</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
@@ -464,14 +459,13 @@ Default <code>2L</code>.</p></dd>
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
 <dd><p>Decimals for variance-explained / model-level
 effect-size fit stats (<code>r2</code>, <code>adj_r2</code>, <code>r2_change</code>,
-<code>adj_r2_change</code>, <code>omega2</code>, <code>f2</code>, <code>f2_change</code>, <code>sigma</code>, <code>rmse</code>).
-Default <code>2L</code>.</p></dd>
+<code>adj_r2_change</code>, <code>omega2</code>, <code>f2</code>, <code>f2_change</code>, <code>sigma</code>,
+<code>rmse</code>). Default <code>2L</code>.</p></dd>
 
 
 <dt id="arg-ic-digits">ic_digits<a class="anchor" aria-label="anchor" href="#arg-ic-digits"></a></dt>
 <dd><p>Decimals for information criteria (<code>AIC</code>,
-<code>AICc</code>, <code>BIC</code> in both <code>show_fit_stats</code> and <code>nested_stats</code>,
-plus their \(\Delta\)-form). Default <code>1L</code>.</p></dd>
+<code>AICc</code>, <code>BIC</code>, and their <code>_change</code> form). Default <code>1L</code>.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
@@ -554,89 +548,170 @@ outputs).</p>
     </div>
     <div class="section level2">
     <h2 id="vocabulary-tokens">Vocabulary tokens<a class="anchor" aria-label="anchor" href="#vocabulary-tokens"></a></h2>
-    <p>Three vector arguments — <code>show_columns</code>, <code>show_fit_stats</code>, and
-<code>nested_stats</code> — accept named tokens that select <strong>what</strong> to
-display and in <strong>what order</strong>. Tokens use snake_case (lowercase),
-with capitalisation preserved only for canonical statistical
-abbreviations (<code>AIC</code>, <code>BIC</code>, <code>F</code>, <code>LRT</code>, <code>B</code>, <code>SE</code>, <code>CI</code>, <code>AME</code>).</p><div class="section">
-<h3 id="show-columns-per-coefficient-columns-in-main-table-"><code>show_columns</code> — per-coefficient columns (in main table)<a class="anchor" aria-label="anchor" href="#show-columns-per-coefficient-columns-in-main-table-"></a></h3>
+    <p>Two vector arguments – <code>show_columns</code> and <code>show_fit_stats</code> –
+accept named tokens that select <strong>what</strong> to display and in
+<strong>what order</strong>. All tokens are lowercase
+(snake_case for compound tokens). Group tokens
+(<code>"all_b"</code>, <code>"all_ame"</code>, ...) expand to a fixed vector of
+atomic tokens; see <code>show_columns</code> below.</p><div class="section">
+<h3 id="show-columns-per-coefficient-columns"><code>show_columns</code> – per-coefficient columns<a class="anchor" aria-label="anchor" href="#show-columns-per-coefficient-columns"></a></h3>
 
 
-<p>Estimate-related: <code>B</code>, <code>beta</code>, <code>SE</code>, <code>CI</code>, <code>t</code>, <code>p</code>.
-Effect sizes (lm only): <code>partial_f2</code>, <code>partial_eta2</code>,
-<code>partial_omega2</code> (compact <code>value [CI]</code> rendering).
-Effect sizes (glm only): <code>partial_chi2</code> — term-level partial
-likelihood-ratio chi-square via <code>drop1(test = "LRT")</code>, the
-generalised analog of the partial F-test (SAS PROC LOGISTIC
-<code>TYPE3</code>; Long &amp; Freese 2014 §3.5; Allison "TYPE3"). Compact
-<code>value (df)</code> rendering; the df slot disambiguates factor terms
-(k-1 df) from numeric terms (1 df).
-Marginal effects: <code>AME</code>, <code>AME_p</code>, <code>AME_SE</code> (compact for <code>AME</code>).</p>
-<p>Default: <code>c("B", "SE", "CI", "p")</code>.
-If <code>standardized != "none"</code> and <code>"beta"</code> is not in <code>show_columns</code>,
-it is auto-injected after <code>B</code>. Asking for <code>"beta"</code> while
-<code>standardized = "none"</code> raises <code>spicy_invalid_input</code>.</p>
+<p>Each token = one displayed column.</p>
+<ul><li><p>Coefficient family: <code>"b"</code>, <code>"beta"</code> (standardised),
+<code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>.</p></li>
+<li><p>Marginal effects: <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
+<code>"ame_p"</code>. <code>"p"</code> always refers to the B-coefficient
+p-value; for the AME-specific p-value use <code>"ame_p"</code>.</p></li>
+<li><p>Partial effect sizes – <code>lm</code> only: <code>"partial_f2"</code>,
+<code>"partial_eta2"</code>, <code>"partial_omega2"</code>, each with a paired
+<code>_ci</code> companion (<code>"partial_f2_ci"</code>, ...).</p></li>
+<li><p>Partial effect size – <code>glm</code> only: <code>"partial_chi2"</code>
+(likelihood-ratio chi-square via <code>drop1(test = "LRT")</code>;
+SAS PROC LOGISTIC <code>TYPE3</code>; Long &amp; Freese 2014 §3.5).
+Rendered as <code>value (df)</code> to disambiguate factor terms
+(k-1 df) from numeric terms (1 df).</p></li>
+</ul><p><strong>Group tokens</strong> (presets) expand to a fixed atomic vector
+before validation:</p>
+<ul><li><p><code>"all_b"</code>         -&gt; <code>c("b", "se", "ci", "p")</code></p></li>
+<li><p><code>"all_b_compact"</code> -&gt; <code>c("b", "se", "p")</code></p></li>
+<li><p><code>"all_b_full"</code>    -&gt; <code>c("b", "se", "ci", "t", "p")</code></p></li>
+<li><p><code>"all_beta"</code>      -&gt; <code>c("b", "beta", "se", "ci", "p")</code></p></li>
+<li><p><code>"all_ame"</code>       -&gt; <code>c("ame", "ame_se", "ame_ci", "ame_p")</code></p></li>
+<li><p><code>"all_ame_compact"</code> -&gt; <code>c("ame", "ame_p")</code></p></li>
+<li><p><code>"all_f2"</code> / <code>"all_eta2"</code> / <code>"all_omega2"</code> -&gt; <code>partial_*</code>
++ its <code>_ci</code> companion.</p></li>
+</ul><p>Mix groups and atomic tokens:
+<code>show_columns = c("all_b", "ame", "ame_p")</code>. Duplicates after
+expansion are deduplicated; the order of tokens controls the
+order of the displayed columns. If <code>standardized != "none"</code> and
+<code>"beta"</code> is not already requested, it is auto-injected after
+<code>"b"</code>. Asking for <code>"beta"</code> while <code>standardized = "none"</code> raises
+<code>spicy_invalid_input</code>.</p>
+<p><strong>Default</strong> (<code>show_columns = NULL</code>) is context-aware:
+<code>"all_b"</code> for a single model (APA-7 §6.46 publication layout),
+<code>"all_b_compact"</code> for two or more models (CI dropped to fit the
+side-by-side layout; restore it explicitly when needed).</p>
 </div>
 
 <div class="section">
-<h3 id="show-fit-stats-model-level-statistics-in-footer-"><code>show_fit_stats</code> — model-level statistics (in footer)<a class="anchor" aria-label="anchor" href="#show-fit-stats-model-level-statistics-in-footer-"></a></h3>
+<h3 id="show-fit-stats-model-level-rows-below-the-coefficients"><code>show_fit_stats</code> – model-level rows below the coefficients<a class="anchor" aria-label="anchor" href="#show-fit-stats-model-level-rows-below-the-coefficients"></a></h3>
 
 
-<p>Counts: <code>nobs</code>, <code>weighted_nobs</code>.
-Variance explained (<code>lm</code> only): <code>r2</code>, <code>adj_r2</code>, <code>omega2</code>.
-Pseudo-\(R^2\) (<code>glm</code> only): <code>pseudo_r2_mcfadden</code> (McFadden 1974),
-<code>pseudo_r2_nagelkerke</code> (Nagelkerke 1991),
-<code>pseudo_r2_tjur</code> (Tjur 2009; binomial only).
-Residual scale: <code>sigma</code> (lm \(\hat{\sigma}\) / glm dispersion), <code>rmse</code>.
-Effect size: <code>f2</code>.
-Information criteria: <code>AIC</code>, <code>AICc</code>, <code>BIC</code>, <code>deviance</code>.</p>
-<p>Default is class-aware (resolved when <code>NULL</code>): for <code>lm</code>,
-<code>c("nobs", "r2", "adj_r2")</code>; for <code>glm</code>,
-<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>.</p>
-</div>
-
-<div class="section">
-<h3 id="nested-stats-hierarchical-comparison-footer"><code>nested_stats</code> — hierarchical comparison footer<a class="anchor" aria-label="anchor" href="#nested-stats-hierarchical-comparison-footer"></a></h3>
-
-
-<p>Activates when <code>nested = TRUE</code>. Tokens: <code>r2_change</code>,
-<code>adj_r2_change</code>, <code>F</code>, <code>f2_change</code> (<code>lm</code> only), <code>LRT</code>, <code>AIC</code>,
-<code>AICc</code>, <code>BIC</code>, <code>deviance_change</code>, <code>p</code>.</p>
-<p>Default is class-aware (resolved when <code>NULL</code>): for <code>lm</code>
-hierarchies, <code>c("r2_change", "F", "p")</code> (APA hierarchical
-regression standard); for <code>glm</code> hierarchies, <code>c("LRT", "p")</code>
-(APA hierarchical-logistic standard; Hosmer &amp; Lemeshow §3.5;
-Long &amp; Freese 2014 §3.6). Variance-explained tokens (<code>r2_change</code>,
-<code>adj_r2_change</code>, <code>F</code>, <code>f2_change</code>) are not defined for <code>glm</code> and
-raise <code>spicy_invalid_input</code> if requested for an all-<code>glm</code>
-hierarchy.</p>
+<ul><li><p>Counts: <code>"nobs"</code>, <code>"weighted_nobs"</code>.</p></li>
+<li><p>Variance explained (<code>lm</code> only): <code>"r2"</code>, <code>"adj_r2"</code>,
+<code>"omega2"</code>.</p></li>
+<li><p>Pseudo-\(R^2\) (<code>glm</code> only): <code>"pseudo_r2_mcfadden"</code>
+(McFadden 1974), <code>"pseudo_r2_nagelkerke"</code> (Nagelkerke 1991),
+<code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
+<li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
+/ glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Effect size: <code>"f2"</code>.</p></li>
+<li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>,
+<code>"deviance"</code>.</p></li>
+<li><p>Change-stats for hierarchical comparison
+(active under <code>nested = TRUE</code>; see <em>Hierarchical
+comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
+<code>"f_change"</code>, <code>"f2_change"</code>, <code>"lrt_change"</code>,
+<code>"aic_change"</code>, <code>"aicc_change"</code>, <code>"bic_change"</code>,
+<code>"deviance_change"</code>, <code>"p_change"</code>.</p></li>
+</ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm fits get
+<code>c("nobs", "r2", "adj_r2")</code>; glm fits get
+<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>;
+mixed lm + glm sets union both groups (the renderer per-row
+em-dashes the inappropriate cell). When <code>nested = TRUE</code>, the
+class-aware default is extended with change tokens
+(<code>c("r2_change", "f_change", "p_change")</code> for lm,
+<code>c("lrt_change", "p_change")</code> for glm). The order of tokens in
+<code>show_fit_stats</code> controls the order of the rows.</p>
 </div>
 
     </div>
     <div class="section level2">
     <h2 id="multi-model-semantics">Multi-model semantics<a class="anchor" aria-label="anchor" href="#multi-model-semantics"></a></h2>
-    <p>Pass a single <code>lm</code> fit or a <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of fits. A named list
-(<code>list("Naive" = m1, "Adjusted" = m2)</code>) provides column headers
-automatically; an unnamed list defaults to <code>"Model 1, 2, ..."</code>.
-<code>model_labels</code> overrides both with explicit per-column labels.</p>
-<p>For models with <strong>different response variables</strong>, the DV name is
-shown automatically in a header row (controllable via
-<code>outcome_labels</code>). For models sharing the same DV, the DV is
-mentioned in the table title only.</p>
+    <p>Pass a single fit or a <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of fits. Multi-model layout
+draws a centred <strong>spanner label</strong> above each model's
+sub-columns:</p>
+<ul><li><p><code>list("Naive" = m1, "Adjusted" = m2)</code> -&gt; spanner labels
+<code>"Naive"</code> / <code>"Adjusted"</code>. Partial naming (<code>list("Naive" = m1, m2)</code>)
+auto-fills missing slots as <code>"Model &lt;position&gt;"</code>.</p></li>
+<li><p><code>list(m1, m2)</code> (unnamed) -&gt; if all response variables
+differ, the bare DV name (from <code>formula(fit)[[2]]</code>) becomes
+the spanner label and the redundant Outcome body row is
+suppressed. If DVs match, the labels default to
+<code>"Model 1, 2, ..."</code>.</p></li>
+<li><p><code>model_labels = c("A", "B")</code> overrides everything.</p></li>
+</ul><p>Duplicate explicit names in the list are rejected
+(<code>spicy_invalid_input</code>) – they would silently collide in the
+internal model_id key.</p>
     </div>
     <div class="section level2">
     <h2 id="inference-and-standard-errors">Inference and standard errors<a class="anchor" aria-label="anchor" href="#inference-and-standard-errors"></a></h2>
-    <p><code>vcov</code> selects the variance-covariance estimator: <code>"classical"</code>
-(OLS), <code>"HC0"</code> to <code>"HC5"</code> (heteroskedasticity-consistent via
-<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>), <code>"CR0"</code> to <code>"CR3"</code> (cluster-robust via
-<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> with Satterthwaite-corrected df),
-<code>"bootstrap"</code> (nonparametric or cluster bootstrap), or
-<code>"jackknife"</code> (leave-one-out / leave-one-cluster-out).</p>
-<p>For multi-model use, both <code>vcov</code> and <code>cluster</code> accept either a
-single value (recycled to all models) <strong>or</strong> a list (one per
-model). The pedagogical use case <code>list(fit, fit, fit)</code> with
+    <p><code>vcov</code> selects the variance-covariance estimator:</p>
+<ul><li><p><code>"classical"</code> – OLS (lm) / MLE inverse Hessian (glm).</p></li>
+<li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
+(via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
+<li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
+Satterthwaite-corrected df (via <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
+Requires <code>cluster</code>.</p></li>
+<li><p><code>"bootstrap"</code> – nonparametric or cluster bootstrap
+(<code>boot_n</code> replicates).</p></li>
+<li><p><code>"jackknife"</code> – leave-one-out / leave-one-cluster-out.</p></li>
+</ul><p>For multi-model use, both <code>vcov</code> and <code>cluster</code> accept a single
+value (recycled to all models) <strong>or</strong> a list (one per model).
+The pedagogical use case <code>list(fit, fit, fit)</code> with
 <code>vcov = list("classical", "HC3", "CR2")</code> enables side-by-side
-SE-comparison in a single table.</p>
+SE-comparison in a single table.</p><div class="section">
+<h3 id="how-to-specify-cluster">How to specify <code>cluster</code><a class="anchor" aria-label="anchor" href="#how-to-specify-cluster"></a></h3>
+
+
+<p>Three accepted forms, in order of preference:</p>
+<ol><li><p><strong>Formula</strong> – <code>cluster = ~region</code> (or
+<code>cluster = ~region:year</code> for the interaction of two
+variables). The variables are looked up in
+<code>model.frame(fit)</code> first, then in the original <code>data</code>
+argument captured by the fit. <strong>Recommended</strong>: independent
+of the dataset's name, composable for multi-way clustering,
+consistent with <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
+<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
+<li><p><strong>String</strong> – <code>cluster = "region"</code>. A single column
+name resolved the same way as the formula. Convenient but
+cannot express interactions.</p></li>
+<li><p><strong>Vector</strong> – <code>cluster = df$region</code>. An atomic vector of
+length <code>nobs(fit)</code>. Use this when the cluster key is
+<strong>derived on the fly</strong> (<code>cluster = interaction(df$region, df$year)</code>,
+<code>cluster = as.integer(format(df$date, "%Y"))</code>), comes from
+a <strong>different dataset</strong> with matching row order, or is
+otherwise not a column of the model's <code>data</code>.</p></li>
+</ol><p>Bare unquoted names (<code>cluster = region</code>) are <strong>not</strong> accepted –
+they would require non-standard evaluation magic that breaks
+under programmatic use (function wrapping, dynamic column
+choice, loops). Use <code>~region</code> or <code>"region"</code> instead.</p>
+<p>For multi-model use, mix forms freely:
+<code>cluster = list(~region, "region", df$region)</code>.</p>
+</div>
+
+    </div>
+    <div class="section level2">
+    <h2 id="hierarchical-nested-model-comparison">Hierarchical (nested) model comparison<a class="anchor" aria-label="anchor" href="#hierarchical-nested-model-comparison"></a></h2>
+    <p><code>nested = TRUE</code> adds <strong>per-pair change statistics as in-table
+rows</strong> (APA Table 7.13 / Stata <code>esttab</code> / SPSS Model Summary
+convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
+contributes one column of change stats; the FIRST model column
+gets em-dashes (no previous model to compare to). Validation
+requires identical <code>nobs</code> and identical response variable
+across all models.</p>
+<p>Default change tokens auto-injected when <code>show_fit_stats</code> is
+<code>NULL</code>:</p><ul><li><p>All-lm: <code>c("r2_change", "f_change", "p_change")</code> –
+APA hierarchical regression standard.</p></li>
+<li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
+Lemeshow §3.5; Long &amp; Freese 2014 §3.6.</p></li>
+</ul><p>To customise, pass the change tokens directly to
+<code>show_fit_stats</code>. Variance-explained change tokens on an
+all-glm hierarchy raise <code>spicy_invalid_input</code> (the
+residual-sum-of-squares partition does not apply outside the
+least-squares framework – the renderer points the user at
+<code>lrt_change</code>).</p>
 <p>Inferential regimes (B and AME share the same regime by design):</p><ul><li><p><code>classical</code>, <code>HC*</code> → t with <code>df.residual</code></p></li>
 <li><p><code>bootstrap</code>, <code>jackknife</code> → z asymptotic</p></li>
 <li><p><code>CR0–CR3</code> → t with <strong>Satterthwaite-corrected df</strong> (B via
@@ -676,16 +751,6 @@ families; non-binomial returns NA with a <code>spicy_caveat</code>.</p></li>
 emitted reminding that standardised coefficients on such terms
 should be interpreted with care (Cohen et al. 2003 §7.7;
 Aiken &amp; West 1991). The footer auto-documents the caveat.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="hierarchical-nested-model-comparison">Hierarchical (nested) model comparison<a class="anchor" aria-label="anchor" href="#hierarchical-nested-model-comparison"></a></h2>
-    <p>Set <code>nested = TRUE</code> to add a footer block comparing each model
-to the previous one. spicy validates that all models share
-identical <code>nobs</code> AND identical response variable, raising
-<code>spicy_invalid_input</code> otherwise (with a remediation snippet).</p>
-<p>Class-aware default <code>nested_stats</code> for <code>lm</code>:
-<code>c("r2_change", "F", "p")</code>. Customise via the <code>nested_stats</code>
-argument with any combination of supported tokens.</p>
     </div>
     <div class="section level2">
     <h2 id="output-formats-and-broom-integration">Output formats and broom integration<a class="anchor" aria-label="anchor" href="#output-formats-and-broom-integration"></a></h2>
@@ -731,33 +796,6 @@ when fitting:</p><div class="sourceCode"><pre><code><span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">df</span>, weights <span class="op">=</span> <span class="va">w</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div><p>All downstream computations (vcov, AME, standardisation,
 <code>weighted_nobs</code>) extract the weights automatically.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="hierarchical-nested-comparison-stats">Hierarchical / nested comparison stats<a class="anchor" aria-label="anchor" href="#hierarchical-nested-comparison-stats"></a></h2>
-
-
-<p>Setting <code>nested = TRUE</code> auto-injects change-comparison tokens
-into <code>show_fit_stats</code> so the table reads as an APA Table 7.13
-hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
-...) contributes one column of change stats; the FIRST model
-column gets em-dashes (no previous model to compare to).
-Available change tokens (use them like any other
-<code>show_fit_stats</code> token):</p><ul><li><p>Variance explained – <code>lm</code> only: <code>"r2_change"</code>,
-<code>"adj_r2_change"</code>, <code>"f_change"</code>, <code>"f2_change"</code>.</p></li>
-<li><p>Likelihood-based: <code>"lrt_change"</code>, <code>"deviance_change"</code>.</p></li>
-<li><p>Information criteria: <code>"aic_change"</code>, <code>"aicc_change"</code>,
-<code>"bic_change"</code>.</p></li>
-<li><p><code>"p_change"</code> – p-value of the change test (<code>f_change</code>
-for <code>lm</code> hierarchies, <code>lrt_change</code> for <code>glm</code> hierarchies).</p></li>
-</ul><p>Class-aware default auto-injection (when <code>show_fit_stats</code> is
-<code>NULL</code> and <code>nested = TRUE</code>):</p><ul><li><p>All-<code>lm</code>: <code>c("r2_change", "f_change", "p_change")</code> –
-APA hierarchical-regression standard.</p></li>
-<li><p>All-<code>glm</code>: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
-Lemeshow §3.5; Long &amp; Freese 2014 §3.6.</p></li>
-</ul><p>To customise, pass <code>show_fit_stats = c(...)</code> explicitly with
-the change tokens of your choice. Variance-explained change
-tokens on glm rows render as em-dashes (not defined outside
-the least-squares framework).</p>
     </div>
     <div class="section level2">
     <h2 id="classed-conditions">Classed conditions<a class="anchor" aria-label="anchor" href="#classed-conditions"></a></h2>
@@ -810,15 +848,10 @@ broom integration:
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># ------------------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co"># Default output (`output = "default"`): the printable</span></span></span>
-<span class="r-in"><span><span class="co"># spicy_regression_table -- examples below run under</span></span></span>
-<span class="r-in"><span><span class="co"># `R CMD check --examples` and on the help page.</span></span></span>
-<span class="r-in"><span><span class="co"># ------------------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Single model, default APA layout</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,</span></span>
 <span class="r-in"><span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Default APA layout (single model)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">ℹ</span> To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.</span>
@@ -844,12 +877,194 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Hierarchical regression: nested = TRUE adds the comparison</span></span></span>
-<span class="r-in"><span><span class="co"># footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)</span></span></span>
-<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>         data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Standardised coefficients (beta) alongside B</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B       β     SE       95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  -0.20  1.46  [61.78, 67.49]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03   0.02  0.03  [-0.03,  0.08]   .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —      —     —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65   0.23  0.80  [ 2.09,  5.22]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80   0.88  0.78  [12.28, 15.32]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  -0.11  0.66  [-3.00, -0.41]   .010 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Custom column set: AME alongside its own p-value</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>    B       p     AME     AME 95% CI    AME p </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>   64.63  &lt;.001                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span>    0.03   .343   0.03  [-0.03,  0.08]   .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>    —     —       —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span>    3.65  &lt;.001   3.65  [ 2.09,  5.22]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>   13.80  &lt;.001                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>   -1.71   .010                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span>                 19.52  [17.36, 21.67]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span>                 11.85  [ 9.81, 13.89]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span> 1200                                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Group-token shortcuts: "all_b" + "all_ame" expand to the</span></span></span>
+<span class="r-in"><span><span class="co"># full B / AME column families.</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all_b"</span>, <span class="st">"all_ame"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME   AME SE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>   64.63  1.46  [61.78, 67.49]  &lt;.001                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.03,  0.08]   .343   0.03    0.03 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>    —     —           —         —       —       —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span>    3.65  0.80  [ 2.09,  5.22]  &lt;.001   3.65    0.80 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>   13.80  0.78  [12.28, 15.32]  &lt;.001                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>   -1.71  0.66  [-3.00, -0.41]   .010                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span>                                       19.52    1.10 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span>                                       11.85    1.04 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span> 1200                                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>   AME 95% CI    AME p </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span> [-0.03,  0.08]   .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>       —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span> [ 2.09,  5.22]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span> [17.36, 21.67]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span> [ 9.81, 13.89]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Cluster-robust SE (CR2 with Satterthwaite df). Three accepted</span></span></span>
+<span class="r-in"><span><span class="co"># forms for `cluster`; the formula is preferred.</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="st">"region"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">region</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Multi-way clustering via formula interaction</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">:</span><span class="va">age_group</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.41  [61.62, 67.65]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.02  [-0.03,  0.08]   .301 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —           —         —     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.79  [ 2.02,  5.29]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.86  [12.02, 15.58]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.87  [-3.50,  0.09]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region:age_group.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Hierarchical (nested) regression: change-stat rows appear</span></span></span>
+<span class="r-in"><span><span class="co"># below R-squared / Adj.R-squared.</span></span></span>
+<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>,                       data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>,                 data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,     data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Step 1"</span> <span class="op">=</span> <span class="va">m1</span>, <span class="st">"Step 2"</span> <span class="op">=</span> <span class="va">m2</span>, <span class="st">"Step 3"</span> <span class="op">=</span> <span class="va">m3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  nested <span class="op">=</span> <span class="cn">TRUE</span></span></span>
@@ -900,66 +1115,11 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Standardised coefficients (\eqn{\beta}{beta}) alongside B</span></span></span>
-<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B       β     SE       95% CI        p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  -0.20  1.46  [61.78, 67.49]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03   0.02  0.03  [-0.03,  0.08]   .343 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —      —     —           —         —     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65   0.23  0.80  [ 2.09,  5.22]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80   0.88  0.78  [12.28, 15.32]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  -0.11  0.66  [-3.00, -0.41]   .010 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Custom column set with AME alongside its own p-value.</span></span></span>
-<span class="r-in"><span><span class="co"># `"p"` always refers to the B coefficient; for the AME-specific</span></span></span>
-<span class="r-in"><span><span class="co"># p-value use `"ame_p"`. Placing AME after the B p-value makes</span></span></span>
-<span class="r-in"><span><span class="co"># the "which p belongs to what" reading unambiguous.</span></span></span>
-<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">fit</span>,</span></span>
-<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"partial_f2"</span>, <span class="st">"ame"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>    B       p     f²    AME   AME p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>   64.63  &lt;.001                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span>    0.03   .343  0.00   0.03   .343 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                                    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>    —     —      —      —     —     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span>    3.65  &lt;.001  0.02   3.65  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                                    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>   13.80  &lt;.001  0.26               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>   -1.71   .010  0.26               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span>                       19.52  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span>                       11.85  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span> 1200                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>    0.22                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Pedagogical side-by-side SE comparison (same fit, three vcovs).</span></span></span>
-<span class="r-in"><span><span class="co"># Cluster-robust uses `region` -- a real column of `sochealth`.</span></span></span>
+<span class="r-in"><span><span class="co"># Side-by-side SE comparison (same fit, three vcovs)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Classical"</span> <span class="op">=</span> <span class="va">fit</span>, <span class="st">"HC3"</span> <span class="op">=</span> <span class="va">fit</span>, <span class="st">"CR2"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  vcov <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"classical"</span>, <span class="st">"HC3"</span>, <span class="st">"CR2"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="cn">NULL</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">region</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  vcov    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"classical"</span>, <span class="st">"HC3"</span>, <span class="st">"CR2"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="cn">NULL</span>, <span class="op">~</span><span class="va">region</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression comparison: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1017,25 +1177,19 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># ------------------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co"># Non-default outputs (rich engines / file writes / clipboard):</span></span></span>
-<span class="r-in"><span><span class="co"># wrapped in \dontrun{} so `R CMD check` doesn't depend on the</span></span></span>
-<span class="r-in"><span><span class="co"># optional Suggests packages or write side-effects in the</span></span></span>
-<span class="r-in"><span><span class="co"># check sandbox.</span></span></span>
-<span class="r-in"><span><span class="co"># ------------------------------------------------------------</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># gt / flextable / tinytable -- Suggests packages</span></span></span>
+<span class="r-in"><span><span class="co"># Rich-format outputs (require optional Suggests packages)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Excel / Word -- write a file at the supplied path</span></span></span>
+<span class="r-in"><span><span class="co"># File outputs</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
 <span class="r-in"><span>                 excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"word"</span>,</span></span>
-<span class="r-in"><span>                 word_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                 word_path  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Clipboard -- requires a system clipboard (interactive use)</span></span></span>
+<span class="r-in"><span><span class="co"># System clipboard (interactive use)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"clipboard"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

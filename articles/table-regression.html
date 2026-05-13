@@ -230,14 +230,38 @@ tracks <code>ci_level</code>.</p>
 <p>For clustered observations, <code>vcov = "CR*"</code> requests
 cluster-robust variance via
 [<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>][clubSandwich::vcovCR], with the
-cluster identifier supplied through <code>cluster</code>. The
-orchestrator detects the column name and prints it in the footer:</p>
+cluster identifier supplied through <code>cluster</code>. Three forms
+are accepted, in order of preference:</p>
+<ul>
+<li>
+<strong>Formula</strong> – <code>cluster = ~region</code>. The
+variables are looked up in <code>model.frame(fit)</code> first, then in
+the model’s original <code>data</code> argument. Recommended:
+independent of the dataset’s name, composable for multi-way clustering
+(<code>cluster = ~region:year</code>).</li>
+<li>
+<strong>String</strong> – <code>cluster = "region"</code>. Single
+column name resolved the same way as the formula. Convenient but cannot
+express interactions.</li>
+<li>
+<strong>Vector</strong> – <code>cluster = df$region</code>. An
+atomic vector of length <code>nobs(fit)</code>. Use this when the
+cluster key is <strong>derived on the fly</strong>
+(<code>cluster = interaction(df$region, df$year)</code>,
+<code>cluster = as.integer(format(df$date, "%Y"))</code>), or pulled
+from a different dataset with matching row order.</li>
+</ul>
+<p>Bare unquoted names (<code>cluster = region</code>) are
+<strong>not</strong> accepted – they would require non-standard
+evaluation that breaks under programmatic use (function wrapping, loops,
+dynamic column choice). Use <code>~region</code> or
+<code>"region"</code> instead.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
 <span>  vcov <span class="op">=</span> <span class="st">"CR2"</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">$</span><span class="va">region</span></span>
+<span>  cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Registered S3 method overwritten by 'clubSandwich':</span></span>
 <span><span class="co">#&gt;   method    from    </span></span>
@@ -265,7 +289,7 @@ orchestrator detects the column name and prints it in the footer:</p>
 default under few clusters (Pustejovsky and Tipton 2018; Imbens and
 Kolesár 2016). Coefficient inference uses
 [<code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>][clubSandwich::coef_test] with
-Satterthwaite-corrected degrees of freedom — visible in the footer when
+Satterthwaite-corrected degrees of freedom – visible in the footer when
 AME is also requested (next section).</p>
 </div>
 <div class="section level2">
@@ -286,7 +310,7 @@ df:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
 <span>  vcov <span class="op">=</span> <span class="st">"CR2"</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">$</span><span class="va">region</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
@@ -576,11 +600,13 @@ cares about —
 <div class="section level2">
 <h2 id="multiple-models-side-by-side">Multiple models side by side<a class="anchor" aria-label="anchor" href="#multiple-models-side-by-side"></a>
 </h2>
-<p>Pass a list of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> fits. The default column layout puts
-each model in its own panel with its own <code>B / SE / CI / p</code>.
-When the dependent variables differ across models, an “Outcome” row is
-auto-added at the top of the body so each model is unambiguously
-labelled:</p>
+<p>Pass a list of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> fits. The default column layout
+places each model in its own panel under a centered <strong>spanner
+label</strong> showing the model name; sub-columns
+(<code>B / SE / p</code>) are shared across the spanner. When dependent
+variables differ across models and the user did not supply labels
+(<code>model_labels =</code> or named list), the bare DV name is lifted
+into the spanner automatically:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m_wellbeing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>,</span>
 <span>                   data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
@@ -608,21 +634,20 @@ labelled:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
-<p>When all models share the dependent variable, the outcome row is
-suppressed (the DV appears in the title). Use a named list — e.g.
-<code>list(Crude = m1, Adjusted = m2)</code> — to control the
-column-header labels; pass <code>model_labels = c(...)</code> to
-override the names; pass <code>outcome_labels = FALSE</code> to suppress
-the outcome row regardless.</p>
+<p>When all models share the same DV, the DV appears in the title. Use a
+named list – e.g. <code>list(Crude = m1, Adjusted = m2)</code> – to set
+the spanner labels explicitly; pass <code>model_labels = c(...)</code>
+to override the names from the list.</p>
 </div>
 <div class="section level2">
 <h2 id="hierarchical-nested-regression">Hierarchical / nested regression<a class="anchor" aria-label="anchor" href="#hierarchical-nested-regression"></a>
 </h2>
-<p>Set <code>nested = TRUE</code> to add a “Model comparison” footer
-block with the change statistics for each adjacent pair (Cohen et
-al. 2003 §5.4). The default tokens for <code>lm</code> are
-<code>r2_change</code>, <code>F</code>, and <code>p</code> — the
-APA-conventional layout for hierarchical regression:</p>
+<p>Set <code>nested = TRUE</code> to add <strong>in-table
+change-statistic rows</strong> (APA Table 7.13 / Stata
+<code>esttab</code> / SPSS Model Summary convention). Each adjacent pair
+(M2 vs M1, M3 vs M2, …) contributes one column of change stats below
+<code>R² / Adj.R²</code>; the FIRST model column gets em-dashes (no
+previous model to compare to):</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>,                 data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>,       data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span>
@@ -674,16 +699,21 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<p>Default change tokens auto-injected:
+<code>c("r2_change", "f_change", "p_change")</code> for <code>lm</code>
+(APA hierarchical-regression standard),
+<code>c("lrt_change", "p_change")</code> for <code>glm</code> (Hosmer
+&amp; Lemeshow §3.5). Customise via <code>show_fit_stats</code>; the
+order of tokens controls the order of the rows. Other change tokens are
+available: <code>"adj_r2_change"</code>, <code>"f2_change"</code>,
+<code>"deviance_change"</code>, <code>"aic_change"</code> /
+<code>"aicc_change"</code> / <code>"bic_change"</code>.</p>
 <p>Validation is strict: identical <code>nobs</code> AND identical
 response variable across all models, otherwise a
 <code>spicy_invalid_input</code> error explains that R’s listwise
 deletion may produce different <code>n</code> per model and suggests
 refitting on the common subset (the reason for <code>sochealth_cc</code>
-being prepared at the top of the vignette). Other comparison tokens are
-available — <code>LRT</code> (likelihood-ratio χ²), <code>AIC</code> /
-<code>AICc</code> / <code>BIC</code> (deltas), <code>f2_change</code>,
-<code>deviance_change</code> — selectable via
-<code>nested_stats</code>.</p>
+being prepared at the top of the vignette).</p>
 </div>
 <div class="section level2">
 <h2 id="generalised-linear-models-glm">Generalised linear models (<code>glm</code>)<a class="anchor" aria-label="anchor" href="#generalised-linear-models-glm"></a>

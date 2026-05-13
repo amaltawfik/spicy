@@ -141,8 +141,25 @@ column header for the confidence interval automatically tracks
 For clustered observations, `vcov = "CR*"` requests cluster-robust
 variance via
 \[[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)\]\[clubSandwich::vcovCR\],
-with the cluster identifier supplied through `cluster`. The orchestrator
-detects the column name and prints it in the footer:
+with the cluster identifier supplied through `cluster`. Three forms are
+accepted, in order of preference:
+
+- **Formula** – `cluster = ~region`. The variables are looked up in
+  `model.frame(fit)` first, then in the model’s original `data`
+  argument. Recommended: independent of the dataset’s name, composable
+  for multi-way clustering (`cluster = ~region:year`).
+- **String** – `cluster = "region"`. Single column name resolved the
+  same way as the formula. Convenient but cannot express interactions.
+- **Vector** – `cluster = df$region`. An atomic vector of length
+  `nobs(fit)`. Use this when the cluster key is **derived on the fly**
+  (`cluster = interaction(df$region, df$year)`,
+  `cluster = as.integer(format(df$date, "%Y"))`), or pulled from a
+  different dataset with matching row order.
+
+Bare unquoted names (`cluster = region`) are **not** accepted – they
+would require non-standard evaluation that breaks under programmatic use
+(function wrapping, loops, dynamic column choice). Use `~region` or
+`"region"` instead.
 
 ``` r
 
@@ -150,7 +167,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth_cc)
 table_regression(
   fit,
   vcov = "CR2",
-  cluster = sochealth_cc$region
+  cluster = ~region
 )
 #> Registered S3 method overwritten by 'clubSandwich':
 #>   method    from    
@@ -180,7 +197,7 @@ table_regression(
 few clusters (Pustejovsky and Tipton 2018; Imbens and Kolesár 2016).
 Coefficient inference uses
 \[[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)\]\[clubSandwich::coef_test\]
-with Satterthwaite-corrected degrees of freedom — visible in the footer
+with Satterthwaite-corrected degrees of freedom – visible in the footer
 when AME is also requested (next section).
 
 ## Average Marginal Effects with Satterthwaite df
@@ -203,7 +220,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth_cc)
 table_regression(
   fit,
   vcov = "CR2",
-  cluster = sochealth_cc$region,
+  cluster = ~region,
   show_columns = c("b", "se", "ci", "p", "ame", "ame_ci", "ame_p")
 )
 #> Linear regression: wellbeing_score
@@ -497,10 +514,12 @@ the full model, display only the rows the reader cares about —
 ## Multiple models side by side
 
 Pass a list of [`lm()`](https://rdrr.io/r/stats/lm.html) fits. The
-default column layout puts each model in its own panel with its own
-`B / SE / CI / p`. When the dependent variables differ across models, an
-“Outcome” row is auto-added at the top of the body so each model is
-unambiguously labelled:
+default column layout places each model in its own panel under a
+centered **spanner label** showing the model name; sub-columns
+(`B / SE / p`) are shared across the spanner. When dependent variables
+differ across models and the user did not supply labels
+(`model_labels =` or named list), the bare DV name is lifted into the
+spanner automatically:
 
 ``` r
 
@@ -532,18 +551,18 @@ table_regression(list(m_wellbeing, m_bmi))
 #> Std. errors: classical (OLS).
 ```
 
-When all models share the dependent variable, the outcome row is
-suppressed (the DV appears in the title). Use a named list — e.g.
-`list(Crude = m1, Adjusted = m2)` — to control the column-header labels;
-pass `model_labels = c(...)` to override the names; pass
-`outcome_labels = FALSE` to suppress the outcome row regardless.
+When all models share the same DV, the DV appears in the title. Use a
+named list – e.g. `list(Crude = m1, Adjusted = m2)` – to set the spanner
+labels explicitly; pass `model_labels = c(...)` to override the names
+from the list.
 
 ## Hierarchical / nested regression
 
-Set `nested = TRUE` to add a “Model comparison” footer block with the
-change statistics for each adjacent pair (Cohen et al. 2003 §5.4). The
-default tokens for `lm` are `r2_change`, `F`, and `p` — the
-APA-conventional layout for hierarchical regression:
+Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
+7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
+pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
+below `R² / Adj.R²`; the FIRST model column gets em-dashes (no previous
+model to compare to):
 
 ``` r
 
@@ -599,14 +618,19 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> Std. errors: classical (OLS).
 ```
 
+Default change tokens auto-injected:
+`c("r2_change", "f_change", "p_change")` for `lm` (APA
+hierarchical-regression standard), `c("lrt_change", "p_change")` for
+`glm` (Hosmer & Lemeshow §3.5). Customise via `show_fit_stats`; the
+order of tokens controls the order of the rows. Other change tokens are
+available: `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
+`"aic_change"` / `"aicc_change"` / `"bic_change"`.
+
 Validation is strict: identical `nobs` AND identical response variable
 across all models, otherwise a `spicy_invalid_input` error explains that
 R’s listwise deletion may produce different `n` per model and suggests
 refitting on the common subset (the reason for `sochealth_cc` being
-prepared at the top of the vignette). Other comparison tokens are
-available — `LRT` (likelihood-ratio χ²), `AIC` / `AICc` / `BIC`
-(deltas), `f2_change`, `deviance_change` — selectable via
-`nested_stats`.
+prepared at the top of the vignette).
 
 ## Generalised linear models (`glm`)
 
