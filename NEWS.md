@@ -202,6 +202,26 @@
   so the caveat is suppressed. The message is also shorter:
   one main line + one hint (was three lines).
 
+* **`cluster` accepts formula / string / vector** (in order of
+  preference). Aligns the public API with the rest of the stats
+  R ecosystem (sandwich, clubSandwich, fixest, marginaleffects,
+  parameters):
+
+  * `cluster = ~region` (formula): variables looked up in
+    `model.frame(fit)` first, then in the original `data`
+    argument. Composable for multi-way clustering
+    (`cluster = ~region:year`). **Recommended.**
+  * `cluster = "region"` (string): single column name, same
+    resolution.
+  * `cluster = df$region` (vector): atomic vector of length
+    `nobs(fit)`. Use for derived keys
+    (`cluster = interaction(df$a, df$b)`, etc.) or external data.
+
+  Bare unquoted names (`cluster = region`) are explicitly rejected
+  -- they require non-standard evaluation magic that breaks under
+  programmatic use (function wrapping, dynamic column choice,
+  loops). The error message points to the formula form.
+
 * **Nested model comparison moved from footer to in-table rows**
   (APA Table 7.13 / Stata `esttab` / SPSS "Model Summary"
   convention). When `nested = TRUE`, each adjacent pair (M2 vs

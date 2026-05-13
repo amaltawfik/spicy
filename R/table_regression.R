@@ -22,86 +22,192 @@
 #' @details
 #' # Vocabulary tokens
 #'
-#' Three vector arguments — `show_columns`, `show_fit_stats`, and
-#' `nested_stats` — accept named tokens that select **what** to
-#' display and in **what order**. Tokens use snake_case (lowercase),
-#' with capitalisation preserved only for canonical statistical
-#' abbreviations (`AIC`, `BIC`, `F`, `LRT`, `B`, `SE`, `CI`, `AME`).
+#' Two vector arguments -- `show_columns` and `show_fit_stats` --
+#' accept named tokens that select **what** to display and in
+#' **what order**. All tokens are lowercase
+#' (snake_case for compound tokens). Group tokens
+#' (`"all_b"`, `"all_ame"`, ...) expand to a fixed vector of
+#' atomic tokens; see `show_columns` below.
 #'
-#' ## `show_columns` — per-coefficient columns (in main table)
+#' ## `show_columns` -- per-coefficient columns
 #'
-#' Estimate-related: `B`, `beta`, `SE`, `CI`, `t`, `p`.
-#' Effect sizes (lm only): `partial_f2`, `partial_eta2`,
-#' `partial_omega2` (compact `value [CI]` rendering).
-#' Effect sizes (glm only): `partial_chi2` — term-level partial
-#' likelihood-ratio chi-square via `drop1(test = "LRT")`, the
-#' generalised analog of the partial F-test (SAS PROC LOGISTIC
-#' `TYPE3`; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
-#' `value (df)` rendering; the df slot disambiguates factor terms
-#' (k-1 df) from numeric terms (1 df).
-#' Marginal effects: `AME`, `AME_p`, `AME_SE` (compact for `AME`).
+#' Each token = one displayed column.
 #'
-#' Default: `c("B", "SE", "CI", "p")`.
-#' If `standardized != "none"` and `"beta"` is not in `show_columns`,
-#' it is auto-injected after `B`. Asking for `"beta"` while
-#' `standardized = "none"` raises `spicy_invalid_input`.
+#' \itemize{
+#'   \item Coefficient family: `"b"`, `"beta"` (standardised),
+#'     `"se"`, `"ci"`, `"t"`, `"p"`.
+#'   \item Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`,
+#'     `"ame_p"`. `"p"` always refers to the B-coefficient
+#'     p-value; for the AME-specific p-value use `"ame_p"`.
+#'   \item Partial effect sizes -- `lm` only: `"partial_f2"`,
+#'     `"partial_eta2"`, `"partial_omega2"`, each with a paired
+#'     `_ci` companion (`"partial_f2_ci"`, ...).
+#'   \item Partial effect size -- `glm` only: `"partial_chi2"`
+#'     (likelihood-ratio chi-square via `drop1(test = "LRT")`;
+#'     SAS PROC LOGISTIC `TYPE3`; Long & Freese 2014 §3.5).
+#'     Rendered as `value (df)` to disambiguate factor terms
+#'     (k-1 df) from numeric terms (1 df).
+#' }
 #'
-#' ## `show_fit_stats` — model-level statistics (in footer)
+#' **Group tokens** (presets) expand to a fixed atomic vector
+#' before validation:
 #'
-#' Counts: `nobs`, `weighted_nobs`.
-#' Variance explained (`lm` only): `r2`, `adj_r2`, `omega2`.
-#' Pseudo-\eqn{R^2}{R^2} (`glm` only): `pseudo_r2_mcfadden` (McFadden 1974),
-#' `pseudo_r2_nagelkerke` (Nagelkerke 1991),
-#' `pseudo_r2_tjur` (Tjur 2009; binomial only).
-#' Residual scale: `sigma` (lm \eqn{\hat{\sigma}}{sigma-hat} / glm dispersion), `rmse`.
-#' Effect size: `f2`.
-#' Information criteria: `AIC`, `AICc`, `BIC`, `deviance`.
+#' \itemize{
+#'   \item `"all_b"`         -> `c("b", "se", "ci", "p")`
+#'   \item `"all_b_compact"` -> `c("b", "se", "p")`
+#'   \item `"all_b_full"`    -> `c("b", "se", "ci", "t", "p")`
+#'   \item `"all_beta"`      -> `c("b", "beta", "se", "ci", "p")`
+#'   \item `"all_ame"`       -> `c("ame", "ame_se", "ame_ci", "ame_p")`
+#'   \item `"all_ame_compact"` -> `c("ame", "ame_p")`
+#'   \item `"all_f2"` / `"all_eta2"` / `"all_omega2"` -> `partial_*`
+#'     + its `_ci` companion.
+#' }
 #'
-#' Default is class-aware (resolved when `NULL`): for `lm`,
-#' `c("nobs", "r2", "adj_r2")`; for `glm`,
-#' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
+#' Mix groups and atomic tokens:
+#' `show_columns = c("all_b", "ame", "ame_p")`. Duplicates after
+#' expansion are deduplicated; the order of tokens controls the
+#' order of the displayed columns. If `standardized != "none"` and
+#' `"beta"` is not already requested, it is auto-injected after
+#' `"b"`. Asking for `"beta"` while `standardized = "none"` raises
+#' `spicy_invalid_input`.
 #'
-#' ## `nested_stats` — hierarchical comparison footer
+#' **Default** (`show_columns = NULL`) is context-aware:
+#' `"all_b"` for a single model (APA-7 §6.46 publication layout),
+#' `"all_b_compact"` for two or more models (CI dropped to fit the
+#' side-by-side layout; restore it explicitly when needed).
 #'
-#' Activates when `nested = TRUE`. Tokens: `r2_change`,
-#' `adj_r2_change`, `F`, `f2_change` (`lm` only), `LRT`, `AIC`,
-#' `AICc`, `BIC`, `deviance_change`, `p`.
+#' ## `show_fit_stats` -- model-level rows below the coefficients
 #'
-#' Default is class-aware (resolved when `NULL`): for `lm`
-#' hierarchies, `c("r2_change", "F", "p")` (APA hierarchical
-#' regression standard); for `glm` hierarchies, `c("LRT", "p")`
-#' (APA hierarchical-logistic standard; Hosmer & Lemeshow §3.5;
-#' Long & Freese 2014 §3.6). Variance-explained tokens (`r2_change`,
-#' `adj_r2_change`, `F`, `f2_change`) are not defined for `glm` and
-#' raise `spicy_invalid_input` if requested for an all-`glm`
-#' hierarchy.
+#' \itemize{
+#'   \item Counts: `"nobs"`, `"weighted_nobs"`.
+#'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
+#'     `"omega2"`.
+#'   \item Pseudo-\eqn{R^2}{R^2} (`glm` only): `"pseudo_r2_mcfadden"`
+#'     (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991),
+#'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
+#'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
+#'     / glm dispersion), `"rmse"`.
+#'   \item Effect size: `"f2"`.
+#'   \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`,
+#'     `"deviance"`.
+#'   \item Change-stats for hierarchical comparison
+#'     (active under `nested = TRUE`; see *Hierarchical
+#'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
+#'     `"f_change"`, `"f2_change"`, `"lrt_change"`,
+#'     `"aic_change"`, `"aicc_change"`, `"bic_change"`,
+#'     `"deviance_change"`, `"p_change"`.
+#' }
+#'
+#' Default (resolved when `NULL`) is class-aware: lm fits get
+#' `c("nobs", "r2", "adj_r2")`; glm fits get
+#' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`;
+#' mixed lm + glm sets union both groups (the renderer per-row
+#' em-dashes the inappropriate cell). When `nested = TRUE`, the
+#' class-aware default is extended with change tokens
+#' (`c("r2_change", "f_change", "p_change")` for lm,
+#' `c("lrt_change", "p_change")` for glm). The order of tokens in
+#' `show_fit_stats` controls the order of the rows.
 #'
 #' # Multi-model semantics
 #'
-#' Pass a single `lm` fit or a `list()` of fits. A named list
-#' (`list("Naive" = m1, "Adjusted" = m2)`) provides column headers
-#' automatically; an unnamed list defaults to `"Model 1, 2, ..."`.
-#' `model_labels` overrides both with explicit per-column labels.
+#' Pass a single fit or a `list()` of fits. Multi-model layout
+#' draws a centred **spanner label** above each model's
+#' sub-columns:
 #'
-#' For models with **different response variables**, the DV name is
-#' shown automatically in a header row (controllable via
-#' `outcome_labels`). For models sharing the same DV, the DV is
-#' mentioned in the table title only.
+#' \itemize{
+#'   \item `list("Naive" = m1, "Adjusted" = m2)` -> spanner labels
+#'     `"Naive"` / `"Adjusted"`. Partial naming (`list("Naive" = m1, m2)`)
+#'     auto-fills missing slots as `"Model <position>"`.
+#'   \item `list(m1, m2)` (unnamed) -> if all response variables
+#'     differ, the bare DV name (from `formula(fit)[[2]]`) becomes
+#'     the spanner label and the redundant Outcome body row is
+#'     suppressed. If DVs match, the labels default to
+#'     `"Model 1, 2, ..."`.
+#'   \item `model_labels = c("A", "B")` overrides everything.
+#' }
+#'
+#' Duplicate explicit names in the list are rejected
+#' (`spicy_invalid_input`) -- they would silently collide in the
+#' internal model_id key.
 #'
 #' # Inference and standard errors
 #'
-#' `vcov` selects the variance-covariance estimator: `"classical"`
-#' (OLS), `"HC0"` to `"HC5"` (heteroskedasticity-consistent via
-#' [sandwich::vcovHC()]), `"CR0"` to `"CR3"` (cluster-robust via
-#' [clubSandwich::vcovCR()] with Satterthwaite-corrected df),
-#' `"bootstrap"` (nonparametric or cluster bootstrap), or
-#' `"jackknife"` (leave-one-out / leave-one-cluster-out).
+#' `vcov` selects the variance-covariance estimator:
 #'
-#' For multi-model use, both `vcov` and `cluster` accept either a
-#' single value (recycled to all models) **or** a list (one per
-#' model). The pedagogical use case `list(fit, fit, fit)` with
+#' \itemize{
+#'   \item `"classical"` -- OLS (lm) / MLE inverse Hessian (glm).
+#'   \item `"HC0"` to `"HC5"` -- heteroskedasticity-consistent
+#'     (via [sandwich::vcovHC()]).
+#'   \item `"CR0"` to `"CR3"` -- cluster-robust with
+#'     Satterthwaite-corrected df (via [clubSandwich::vcovCR()]).
+#'     Requires `cluster`.
+#'   \item `"bootstrap"` -- nonparametric or cluster bootstrap
+#'     (`boot_n` replicates).
+#'   \item `"jackknife"` -- leave-one-out / leave-one-cluster-out.
+#' }
+#'
+#' For multi-model use, both `vcov` and `cluster` accept a single
+#' value (recycled to all models) **or** a list (one per model).
+#' The pedagogical use case `list(fit, fit, fit)` with
 #' `vcov = list("classical", "HC3", "CR2")` enables side-by-side
 #' SE-comparison in a single table.
+#'
+#' ## How to specify `cluster`
+#'
+#' Three accepted forms, in order of preference:
+#'
+#' \enumerate{
+#'   \item **Formula** -- `cluster = ~region` (or
+#'     `cluster = ~region:year` for the interaction of two
+#'     variables). The variables are looked up in
+#'     `model.frame(fit)` first, then in the original `data`
+#'     argument captured by the fit. **Recommended**: independent
+#'     of the dataset's name, composable for multi-way clustering,
+#'     consistent with [sandwich::vcovCL()] /
+#'     [clubSandwich::vcovCR()].
+#'   \item **String** -- `cluster = "region"`. A single column
+#'     name resolved the same way as the formula. Convenient but
+#'     cannot express interactions.
+#'   \item **Vector** -- `cluster = df$region`. An atomic vector of
+#'     length `nobs(fit)`. Use this when the cluster key is
+#'     **derived on the fly** (`cluster = interaction(df$region, df$year)`,
+#'     `cluster = as.integer(format(df$date, "%Y"))`), comes from
+#'     a **different dataset** with matching row order, or is
+#'     otherwise not a column of the model's `data`.
+#' }
+#'
+#' Bare unquoted names (`cluster = region`) are **not** accepted --
+#' they would require non-standard evaluation magic that breaks
+#' under programmatic use (function wrapping, dynamic column
+#' choice, loops). Use `~region` or `"region"` instead.
+#'
+#' For multi-model use, mix forms freely:
+#' `cluster = list(~region, "region", df$region)`.
+#'
+#' # Hierarchical (nested) model comparison
+#'
+#' `nested = TRUE` adds **per-pair change statistics as in-table
+#' rows** (APA Table 7.13 / Stata `esttab` / SPSS Model Summary
+#' convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
+#' contributes one column of change stats; the FIRST model column
+#' gets em-dashes (no previous model to compare to). Validation
+#' requires identical `nobs` and identical response variable
+#' across all models.
+#'
+#' Default change tokens auto-injected when `show_fit_stats` is
+#' `NULL`:
+#' \itemize{
+#'   \item All-lm: `c("r2_change", "f_change", "p_change")` --
+#'     APA hierarchical regression standard.
+#'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
+#'     Lemeshow §3.5; Long & Freese 2014 §3.6.
+#' }
+#' To customise, pass the change tokens directly to
+#' `show_fit_stats`. Variance-explained change tokens on an
+#' all-glm hierarchy raise `spicy_invalid_input` (the
+#' residual-sum-of-squares partition does not apply outside the
+#' least-squares framework -- the renderer points the user at
+#' `lrt_change`).
 #'
 #' Inferential regimes (B and AME share the same regime by design):
 #'   * `classical`, `HC*` → t with `df.residual`
@@ -145,17 +251,6 @@
 #' emitted reminding that standardised coefficients on such terms
 #' should be interpreted with care (Cohen et al. 2003 §7.7;
 #' Aiken & West 1991). The footer auto-documents the caveat.
-#'
-#' # Hierarchical (nested) model comparison
-#'
-#' Set `nested = TRUE` to add a footer block comparing each model
-#' to the previous one. spicy validates that all models share
-#' identical `nobs` AND identical response variable, raising
-#' `spicy_invalid_input` otherwise (with a remediation snippet).
-#'
-#' Class-aware default `nested_stats` for `lm`:
-#' `c("r2_change", "F", "p")`. Customise via the `nested_stats`
-#' argument with any combination of supported tokens.
 #'
 #' # Output formats and broom integration
 #'
@@ -221,11 +316,20 @@
 #'   **or** a list of strings (one per model) for the pedagogical
 #'   side-by-side SE-comparison use case. Default `"classical"`.
 #' @param cluster Cluster identifier for cluster-robust variance
-#'   (`vcov` in `"CR0"` to `"CR3"` or `"bootstrap"` /
-#'   `"jackknife"` cluster forms). Either an unquoted column name,
-#'   a single string column name, an atomic vector of length
-#'   `nobs(model)`, or a list (one per model). Default `NULL`
-#'   (no clustering).
+#'   (used when `vcov` is `"CR0"`-`"CR3"` or a cluster-bootstrap /
+#'   cluster-jackknife). Three accepted forms (see *How to specify
+#'   `cluster`* in the details):
+#'   \itemize{
+#'     \item Formula: `~region`, `~region:year` (recommended).
+#'     \item String column name: `"region"`.
+#'     \item Atomic vector of length `nobs(fit)`: `df$region`,
+#'       `interaction(df$region, df$year)`, ... (for keys derived
+#'       on the fly).
+#'   }
+#'   For multi-model use, pass a list of one form per model
+#'   (mix-and-match allowed). Bare unquoted names
+#'   (`cluster = region`) are NOT accepted -- use `~region` or
+#'   `"region"`. Default `NULL` (no clustering).
 #' @param ci_level Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 #'   AME, partial effect sizes). Default `0.95`.
 #' @param boot_n Number of bootstrap replicates when
@@ -293,31 +397,20 @@
 #'   argument under the same "transparency over rejection" rule
 #'   used for `standardized`: the tool is available, the
 #'   methodological choice is yours.
-#' @param show_columns Character vector of tokens controlling
-#'   which per-coefficient columns to display, **and** in which
-#'   order. Available tokens:
-#'   \itemize{
-#'     \item Coefficient: `"B"`, `"beta"` (standardised; requires
-#'       `standardized != "none"`), `"SE"`, `"CI"`, `"t"`, `"p"`.
-#'     \item Marginal effects: `"AME"` (compact `value [CI]` cell),
-#'       `"AME_p"` (AME-specific p-value, distinct from `"p"` which
-#'       always refers to B / beta), `"AME_SE"`.
-#'     \item Effect sizes -- `lm` only: `"partial_f2"`,
-#'       `"partial_eta2"`, `"partial_omega2"` (each as
-#'       `value [CI]` with noncentral-*F* bounds).
-#'     \item Effect sizes -- `glm` only: `"partial_chi2"`
-#'       (likelihood-ratio chi-square via
-#'       `drop1(test = "LRT")`, rendered as `value (df)`).
-#'   }
-#'   The `"p"` token always refers to the B (or beta if standardised)
-#'   p-value; for AME use `"ame_p"`. Default `NULL` selects a
-#'   context-aware default: `c("b", "se", "ci", "p")` (= the
-#'   `"all_b"` group) for a single model (APA-7 §6.46 publication
-#'   layout), and `c("b", "se", "p")` (= the `"all_b_compact"`
-#'   group) for \eqn{\geq 2}{>= 2} models (CI dropped to fit the
-#'   side-by-side layout -- restore it explicitly when needed).
-#'   See *Vocabulary tokens* and *Multi-model semantics* for
-#'   ordering and rendering details.
+#' @param show_columns Character vector of tokens selecting the
+#'   per-coefficient columns and their display order. Accepts
+#'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
+#'   `"beta"`, `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`,
+#'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
+#'   `"partial_eta2_ci"`, `"partial_omega2"` +
+#'   `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
+#'   (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
+#'   `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
+#'   `"all_omega2"`). See *Vocabulary tokens* in the details for
+#'   the full enumeration. Default `NULL` selects a context-aware
+#'   layout: `"all_b"` (single model) or `"all_b_compact"` (multi-
+#'   model). The `"p"` token is always the B / beta p-value; for
+#'   the AME-specific p-value use `"ame_p"`.
 #' @param keep Character vector of regular expressions; when
 #'   supplied, only coefficient rows whose term name matches at
 #'   least one of the patterns are kept. Useful when a model has
@@ -418,15 +511,12 @@
 #'   header; otherwise `"Model 1, 2, ..."`. A character vector of
 #'   length `length(models)` forces explicit labels.
 #' @param outcome_labels Optional **Outcome body row** override.
-#'   `NULL` (default) hides the row entirely — with the multi-model
-#'   spanner (and the DV smart-default that lifts the bare DV name
-#'   into the spanner when DVs differ and no `model_labels` /
-#'   `names(list)` is supplied), the DV is already visible above
-#'   the data. A character vector of length `length(models)`
-#'   forces an explicit Outcome row with those values (the spanner
-#'   stays as `"Model 1, ..."` unless `model_labels` is also
-#'   supplied). `FALSE` is accepted for backward compatibility and
-#'   also suppresses the row.
+#'   `NULL` (default) hides the row entirely -- under the
+#'   multi-model spanner the DV is already visible above the data.
+#'   A character vector of length `length(models)` forces an
+#'   explicit Outcome row with those values (the spanner stays as
+#'   `"Model 1, ..."` unless `model_labels` is also supplied).
+#'   `FALSE` also suppresses the row.
 #' @param stars Significance asterisk display.
 #'   `FALSE` (default, APA-aligned) — no stars; p-values reported
 #'   as numbers only. APA 7 §6.46 explicitly discourages stars.
@@ -440,53 +530,23 @@
 #'   without comparison statistics. `TRUE` — adds the comparison
 #'   footer; requires identical `nobs` and identical response
 #'   variable across all models.
-#' @section Hierarchical / nested comparison stats:
-#' Setting `nested = TRUE` auto-injects change-comparison tokens
-#' into `show_fit_stats` so the table reads as an APA Table 7.13
-#' hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
-#' ...) contributes one column of change stats; the FIRST model
-#' column gets em-dashes (no previous model to compare to).
-#' Available change tokens (use them like any other
-#' `show_fit_stats` token):
-#' \itemize{
-#'   \item Variance explained -- `lm` only: `"r2_change"`,
-#'     `"adj_r2_change"`, `"f_change"`, `"f2_change"`.
-#'   \item Likelihood-based: `"lrt_change"`, `"deviance_change"`.
-#'   \item Information criteria: `"aic_change"`, `"aicc_change"`,
-#'     `"bic_change"`.
-#'   \item `"p_change"` -- p-value of the change test (`f_change`
-#'     for `lm` hierarchies, `lrt_change` for `glm` hierarchies).
-#' }
-#' Class-aware default auto-injection (when `show_fit_stats` is
-#' `NULL` and `nested = TRUE`):
-#' \itemize{
-#'   \item All-`lm`: `c("r2_change", "f_change", "p_change")` --
-#'     APA hierarchical-regression standard.
-#'   \item All-`glm`: `c("lrt_change", "p_change")` -- Hosmer &
-#'     Lemeshow §3.5; Long & Freese 2014 §3.6.
-#' }
-#' To customise, pass `show_fit_stats = c(...)` explicitly with
-#' the change tokens of your choice. Variance-explained change
-#' tokens on glm rows render as em-dashes (not defined outside
-#' the least-squares framework).
-#' @param digits Number of decimal places for general numeric
-#'   tokens (`B`, `beta`, `SE`, `CI`, `t`, `F`, `LRT`, `deviance`,
-#'   `deviance_change`, `AME`, `AME_SE`, `weighted_nobs`).
-#'   Default `2L`.
-#' @param p_digits Decimal places for p-values (`p`, `AME_p`, and
-#'   `p` inside `nested_stats`). APA-strict: leading zero stripped,
-#'   `<.001` (or `<.0001` etc. depending on `p_digits`) for small
-#'   values. Default `3L`.
+#' @param digits Decimal places for general numeric tokens
+#'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`,
+#'   `deviance`, `deviance_change`, `ame`, `ame_se`,
+#'   `weighted_nobs`). Default `2L`.
+#' @param p_digits Decimal places for p-values (`p`, `ame_p`,
+#'   `p_change`). APA-strict: leading zero stripped, `<.001` (or
+#'   `<.0001` etc. depending on `p_digits`) for small values.
+#'   Default `3L`.
 #' @param effect_size_digits Decimals for per-coefficient effect
 #'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`).
 #'   Default `2L`.
 #' @param fit_digits Decimals for variance-explained / model-level
 #'   effect-size fit stats (`r2`, `adj_r2`, `r2_change`,
-#'   `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`, `rmse`).
-#'   Default `2L`.
+#'   `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`,
+#'   `rmse`). Default `2L`.
 #' @param ic_digits Decimals for information criteria (`AIC`,
-#'   `AICc`, `BIC` in both `show_fit_stats` and `nested_stats`,
-#'   plus their \eqn{\Delta}{Delta}-form). Default `1L`.
+#'   `AICc`, `BIC`, and their `_change` form). Default `1L`.
 #' @param decimal_mark Decimal mark used in numeric display.
 #'   `"."` (default) or `","` (European convention). When
 #'   `","` is used, the CI bracket separator switches to `"; "`
@@ -566,70 +626,67 @@
 #' [broom::tidy()], [broom::glance()].
 #'
 #' @examples
-#' # ------------------------------------------------------------
-#' # Default output (`output = "default"`): the printable
-#' # spicy_regression_table -- examples below run under
-#' # `R CMD check --examples` and on the help page.
-#' # ------------------------------------------------------------
-#'
-#' # Single model, default APA layout
 #' fit <- lm(wellbeing_score ~ age + sex + education,
 #'           data = sochealth)
+#'
+#' # Default APA layout (single model)
 #' table_regression(fit)
 #'
-#' # Hierarchical regression: nested = TRUE adds the comparison
-#' # footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)
-#' m1 <- lm(wellbeing_score ~ age, data = sochealth)
-#' m2 <- lm(wellbeing_score ~ age + sex, data = sochealth)
-#' m3 <- lm(wellbeing_score ~ age + sex + education,
-#'          data = sochealth)
+#' # Standardised coefficients (beta) alongside B
+#' table_regression(fit, standardized = "refit")
+#'
+#' # Custom column set: AME alongside its own p-value
+#' table_regression(
+#'   fit,
+#'   show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
+#' )
+#'
+#' # Group-token shortcuts: "all_b" + "all_ame" expand to the
+#' # full B / AME column families.
+#' table_regression(fit, show_columns = c("all_b", "all_ame"))
+#'
+#' # Cluster-robust SE (CR2 with Satterthwaite df). Three accepted
+#' # forms for `cluster`; the formula is preferred.
+#' table_regression(fit, vcov = "CR2", cluster = ~region)
+#' table_regression(fit, vcov = "CR2", cluster = "region")
+#' table_regression(fit, vcov = "CR2", cluster = sochealth$region)
+#'
+#' # Multi-way clustering via formula interaction
+#' table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
+#'
+#' # Hierarchical (nested) regression: change-stat rows appear
+#' # below R-squared / Adj.R-squared.
+#' m1 <- lm(wellbeing_score ~ age,                       data = sochealth)
+#' m2 <- lm(wellbeing_score ~ age + sex,                 data = sochealth)
+#' m3 <- lm(wellbeing_score ~ age + sex + education,     data = sochealth)
 #' table_regression(
 #'   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
 #'   nested = TRUE
 #' )
 #'
-#' # Standardised coefficients (\eqn{\beta}{beta}) alongside B
-#' table_regression(fit, standardized = "refit")
-#'
-#' # Custom column set with AME alongside its own p-value.
-#' # `"p"` always refers to the B coefficient; for the AME-specific
-#' # p-value use `"ame_p"`. Placing AME after the B p-value makes
-#' # the "which p belongs to what" reading unambiguous.
-#' table_regression(
-#'   fit,
-#'   show_columns = c("b", "p", "partial_f2", "ame", "ame_p")
-#' )
-#'
-#' # Pedagogical side-by-side SE comparison (same fit, three vcovs).
-#' # Cluster-robust uses `region` -- a real column of `sochealth`.
+#' # Side-by-side SE comparison (same fit, three vcovs)
 #' table_regression(
 #'   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
-#'   vcov = list("classical", "HC3", "CR2"),
-#'   cluster = list(NULL, NULL, sochealth$region)
+#'   vcov    = list("classical", "HC3", "CR2"),
+#'   cluster = list(NULL, NULL, ~region)
 #' )
 #'
 #' # Tidy long format for downstream pipelines
 #' broom::tidy(table_regression(fit))
 #'
-#' # ------------------------------------------------------------
-#' # Non-default outputs (rich engines / file writes / clipboard):
-#' # wrapped in \dontrun{} so `R CMD check` doesn't depend on the
-#' # optional Suggests packages or write side-effects in the
-#' # check sandbox.
-#' # ------------------------------------------------------------
 #' \dontrun{
-#' # gt / flextable / tinytable -- Suggests packages
+#' # Rich-format outputs (require optional Suggests packages)
 #' table_regression(fit, output = "gt")
 #' table_regression(fit, output = "flextable")
 #' table_regression(fit, output = "tinytable")
 #'
-#' # Excel / Word -- write a file at the supplied path
+#' # File outputs
 #' table_regression(fit, output = "excel",
 #'                  excel_path = tempfile(fileext = ".xlsx"))
 #' table_regression(fit, output = "word",
-#'                  word_path = tempfile(fileext = ".docx"))
+#'                  word_path  = tempfile(fileext = ".docx"))
 #'
-#' # Clipboard -- requires a system clipboard (interactive use)
+#' # System clipboard (interactive use)
 #' table_regression(fit, output = "clipboard")
 #' }
 #'
@@ -719,6 +776,15 @@ table_regression <- function(
   # Phase A — input class (steps 1–3)
   models <- validate_models_input(models)
   n_models <- length(models)
+
+  # Resolve `cluster` to a list of vectors (one per model) so the
+  # rest of the pipeline sees a uniform atomic form. `cluster` may
+  # be a formula (`~region`), a string (`"region"`), a vector
+  # (`df$region`), a list of any of these (per-model), or NULL.
+  # Vectors flow through unchanged; formulas / strings are looked
+  # up in `model.frame(fit)`. See `?table_regression` @param
+  # cluster for the full spec.
+  cluster <- resolve_cluster_arg(cluster, models)
 
   # Phase B — multi-model alignment (steps 4–8)
   validate_nested_alignment(models, nested)

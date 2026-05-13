@@ -2241,3 +2241,90 @@ test_that("AME-Satterthwaite footer: mixed lm + glm uses compound wording", {
   expect_match(note, "coef_test", fixed = TRUE)
   expect_match(note, "closed-form", fixed = TRUE)
 })
+
+
+# ============================================================================
+# cluster argument: formula / string / vector forms (no NSE)
+# ============================================================================
+
+test_that("cluster - formula form (~region) resolves against model.frame", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(1)
+  d <- data.frame(y = rnorm(100), x = rnorm(100),
+                  region = rep(letters[1:10], each = 10))
+  fit <- lm(y ~ x, data = d)
+  out <- table_regression(fit, vcov = "CR2", cluster = ~region)
+  expect_match(attr(out, "note"), "clusters by region", fixed = TRUE)
+})
+
+test_that("cluster - string form ('region') resolves identically", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(2)
+  d <- data.frame(y = rnorm(100), x = rnorm(100),
+                  region = rep(letters[1:10], each = 10))
+  fit <- lm(y ~ x, data = d)
+  out_str <- table_regression(fit, vcov = "CR2", cluster = "region")
+  out_form <- table_regression(fit, vcov = "CR2", cluster = ~region)
+  # Numeric output identical up to formatting
+  expect_equal(out_str$Variable, out_form$Variable)
+})
+
+test_that("cluster - vector form (df$region) still supported for derived keys", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(3)
+  d <- data.frame(y = rnorm(100), x = rnorm(100),
+                  region = rep(letters[1:10], each = 10))
+  fit <- lm(y ~ x, data = d)
+  # Derived cluster key not present as a column
+  derived <- as.character(d$region)
+  out <- table_regression(fit, vcov = "CR2", cluster = derived)
+  expect_s3_class(out, "spicy_regression_table")
+})
+
+test_that("cluster - formula with interaction (~region:year)", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(4)
+  d <- data.frame(
+    y = rnorm(200), x = rnorm(200),
+    region = rep(letters[1:10], each = 20),
+    year   = rep(2010:2019, times = 20)
+  )
+  fit <- lm(y ~ x, data = d)
+  out <- table_regression(fit, vcov = "CR2", cluster = ~region:year)
+  expect_match(attr(out, "note"), "clusters by region:year", fixed = TRUE)
+})
+
+test_that("cluster - unknown column raises spicy_invalid_input with hint", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  err <- tryCatch(
+    table_regression(fit, vcov = "CR2", cluster = ~bogus),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "bogus", fixed = TRUE)
+})
+
+test_that("cluster - string column not in data raises spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  err <- tryCatch(
+    table_regression(fit, vcov = "CR2", cluster = "bogus"),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+})
+
+test_that("cluster - list of mixed forms (formula / string / vector) for multi-model", {
+  skip_if_not_installed("clubSandwich")
+  set.seed(5)
+  d <- data.frame(y = rnorm(80), x = rnorm(80),
+                  region = rep(letters[1:8], each = 10))
+  m1 <- lm(y ~ x, data = d)
+  m2 <- lm(y ~ x, data = d)
+  m3 <- lm(y ~ x, data = d)
+  out <- table_regression(
+    list("A" = m1, "B" = m2, "C" = m3),
+    vcov = list("CR2", "CR2", "CR2"),
+    cluster = list(~region, "region", d$region)
+  )
+  expect_s3_class(out, "spicy_regression_table")
+})

@@ -60,11 +60,20 @@ and \code{marginaleffects}).}
 side-by-side SE-comparison use case. Default \code{"classical"}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
-(\code{vcov} in \code{"CR0"} to \code{"CR3"} or \code{"bootstrap"} /
-\code{"jackknife"} cluster forms). Either an unquoted column name,
-a single string column name, an atomic vector of length
-\code{nobs(model)}, or a list (one per model). Default \code{NULL}
-(no clustering).}
+(used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /
+cluster-jackknife). Three accepted forms (see \emph{How to specify
+\code{cluster}} in the details):
+\itemize{
+\item Formula: \code{~region}, \code{~region:year} (recommended).
+\item String column name: \code{"region"}.
+\item Atomic vector of length \code{nobs(fit)}: \code{df$region},
+\code{interaction(df$region, df$year)}, ... (for keys derived
+on the fly).
+}
+For multi-model use, pass a list of one form per model
+(mix-and-match allowed). Bare unquoted names
+(\code{cluster = region}) are NOT accepted -- use \code{~region} or
+\code{"region"}. Default \code{NULL} (no clustering).}
 
 \item{ci_level}{Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 AME, partial effect sizes). Default \code{0.95}.}
@@ -139,31 +148,20 @@ argument under the same "transparency over rejection" rule
 used for \code{standardized}: the tool is available, the
 methodological choice is yours.}
 
-\item{show_columns}{Character vector of tokens controlling
-which per-coefficient columns to display, \strong{and} in which
-order. Available tokens:
-\itemize{
-\item Coefficient: \code{"B"}, \code{"beta"} (standardised; requires
-\code{standardized != "none"}), \code{"SE"}, \code{"CI"}, \code{"t"}, \code{"p"}.
-\item Marginal effects: \code{"AME"} (compact \code{value [CI]} cell),
-\code{"AME_p"} (AME-specific p-value, distinct from \code{"p"} which
-always refers to B / beta), \code{"AME_SE"}.
-\item Effect sizes -- \code{lm} only: \code{"partial_f2"},
-\code{"partial_eta2"}, \code{"partial_omega2"} (each as
-\code{value [CI]} with noncentral-\emph{F} bounds).
-\item Effect sizes -- \code{glm} only: \code{"partial_chi2"}
-(likelihood-ratio chi-square via
-\code{drop1(test = "LRT")}, rendered as \code{value (df)}).
-}
-The \code{"p"} token always refers to the B (or beta if standardised)
-p-value; for AME use \code{"ame_p"}. Default \code{NULL} selects a
-context-aware default: \code{c("b", "se", "ci", "p")} (= the
-\code{"all_b"} group) for a single model (APA-7 §6.46 publication
-layout), and \code{c("b", "se", "p")} (= the \code{"all_b_compact"}
-group) for \eqn{\geq 2}{>= 2} models (CI dropped to fit the
-side-by-side layout -- restore it explicitly when needed).
-See \emph{Vocabulary tokens} and \emph{Multi-model semantics} for
-ordering and rendering details.}
+\item{show_columns}{Character vector of tokens selecting the
+per-coefficient columns and their display order. Accepts
+\strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
+\code{"beta"}, \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"}, \code{"ame_p"},
+\code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
+\code{"partial_eta2_ci"}, \code{"partial_omega2"} +
+\code{"partial_omega2_ci"}, \code{"partial_chi2"}) and \strong{group tokens}
+(\code{"all_b"}, \code{"all_b_compact"}, \code{"all_b_full"}, \code{"all_beta"},
+\code{"all_ame"}, \code{"all_ame_compact"}, \code{"all_f2"}, \code{"all_eta2"},
+\code{"all_omega2"}). See \emph{Vocabulary tokens} in the details for
+the full enumeration. Default \code{NULL} selects a context-aware
+layout: \code{"all_b"} (single model) or \code{"all_b_compact"} (multi-
+model). The \code{"p"} token is always the B / beta p-value; for
+the AME-specific p-value use \code{"ame_p"}.}
 
 \item{keep}{Character vector of regular expressions; when
 supplied, only coefficient rows whose term name matches at
@@ -274,15 +272,12 @@ header; otherwise \code{"Model 1, 2, ..."}. A character vector of
 length \code{length(models)} forces explicit labels.}
 
 \item{outcome_labels}{Optional \strong{Outcome body row} override.
-\code{NULL} (default) hides the row entirely — with the multi-model
-spanner (and the DV smart-default that lifts the bare DV name
-into the spanner when DVs differ and no \code{model_labels} /
-\code{names(list)} is supplied), the DV is already visible above
-the data. A character vector of length \code{length(models)}
-forces an explicit Outcome row with those values (the spanner
-stays as \code{"Model 1, ..."} unless \code{model_labels} is also
-supplied). \code{FALSE} is accepted for backward compatibility and
-also suppresses the row.}
+\code{NULL} (default) hides the row entirely -- under the
+multi-model spanner the DV is already visible above the data.
+A character vector of length \code{length(models)} forces an
+explicit Outcome row with those values (the spanner stays as
+\code{"Model 1, ..."} unless \code{model_labels} is also supplied).
+\code{FALSE} also suppresses the row.}
 
 \item{stars}{Significance asterisk display.
 \code{FALSE} (default, APA-aligned) — no stars; p-values reported
@@ -299,15 +294,15 @@ without comparison statistics. \code{TRUE} — adds the comparison
 footer; requires identical \code{nobs} and identical response
 variable across all models.}
 
-\item{digits}{Number of decimal places for general numeric
-tokens (\code{B}, \code{beta}, \code{SE}, \code{CI}, \code{t}, \code{F}, \code{LRT}, \code{deviance},
-\code{deviance_change}, \code{AME}, \code{AME_SE}, \code{weighted_nobs}).
-Default \code{2L}.}
+\item{digits}{Decimal places for general numeric tokens
+(\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change},
+\code{deviance}, \code{deviance_change}, \code{ame}, \code{ame_se},
+\code{weighted_nobs}). Default \code{2L}.}
 
-\item{p_digits}{Decimal places for p-values (\code{p}, \code{AME_p}, and
-\code{p} inside \code{nested_stats}). APA-strict: leading zero stripped,
-\verb{<.001} (or \verb{<.0001} etc. depending on \code{p_digits}) for small
-values. Default \code{3L}.}
+\item{p_digits}{Decimal places for p-values (\code{p}, \code{ame_p},
+\code{p_change}). APA-strict: leading zero stripped, \verb{<.001} (or
+\verb{<.0001} etc. depending on \code{p_digits}) for small values.
+Default \code{3L}.}
 
 \item{effect_size_digits}{Decimals for per-coefficient effect
 sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}).
@@ -315,12 +310,11 @@ Default \code{2L}.}
 
 \item{fit_digits}{Decimals for variance-explained / model-level
 effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},
-\code{adj_r2_change}, \code{omega2}, \code{f2}, \code{f2_change}, \code{sigma}, \code{rmse}).
-Default \code{2L}.}
+\code{adj_r2_change}, \code{omega2}, \code{f2}, \code{f2_change}, \code{sigma},
+\code{rmse}). Default \code{2L}.}
 
 \item{ic_digits}{Decimals for information criteria (\code{AIC},
-\code{AICc}, \code{BIC} in both \code{show_fit_stats} and \code{nested_stats},
-plus their \eqn{\Delta}{Delta}-form). Default \code{1L}.}
+\code{AICc}, \code{BIC}, and their \verb{_change} form). Default \code{1L}.}
 
 \item{decimal_mark}{Decimal mark used in numeric display.
 \code{"."} (default) or \code{","} (European convention). When
@@ -401,88 +395,193 @@ inverse.gaussian / quasi families with any link). Mixed-effects
 models (\code{lmerMod}, \code{glmerMod}) are planned for spicy 0.16+.
 }
 \section{Vocabulary tokens}{
-Three vector arguments — \code{show_columns}, \code{show_fit_stats}, and
-\code{nested_stats} — accept named tokens that select \strong{what} to
-display and in \strong{what order}. Tokens use snake_case (lowercase),
-with capitalisation preserved only for canonical statistical
-abbreviations (\code{AIC}, \code{BIC}, \code{F}, \code{LRT}, \code{B}, \code{SE}, \code{CI}, \code{AME}).
-\subsection{\code{show_columns} — per-coefficient columns (in main table)}{
+Two vector arguments -- \code{show_columns} and \code{show_fit_stats} --
+accept named tokens that select \strong{what} to display and in
+\strong{what order}. All tokens are lowercase
+(snake_case for compound tokens). Group tokens
+(\code{"all_b"}, \code{"all_ame"}, ...) expand to a fixed vector of
+atomic tokens; see \code{show_columns} below.
+\subsection{\code{show_columns} -- per-coefficient columns}{
 
-Estimate-related: \code{B}, \code{beta}, \code{SE}, \code{CI}, \code{t}, \code{p}.
-Effect sizes (lm only): \code{partial_f2}, \code{partial_eta2},
-\code{partial_omega2} (compact \code{value [CI]} rendering).
-Effect sizes (glm only): \code{partial_chi2} — term-level partial
-likelihood-ratio chi-square via \code{drop1(test = "LRT")}, the
-generalised analog of the partial F-test (SAS PROC LOGISTIC
-\code{TYPE3}; Long & Freese 2014 §3.5; Allison "TYPE3"). Compact
-\code{value (df)} rendering; the df slot disambiguates factor terms
+Each token = one displayed column.
+
+\itemize{
+\item Coefficient family: \code{"b"}, \code{"beta"} (standardised),
+\code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"}.
+\item Marginal effects: \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
+\code{"ame_p"}. \code{"p"} always refers to the B-coefficient
+p-value; for the AME-specific p-value use \code{"ame_p"}.
+\item Partial effect sizes -- \code{lm} only: \code{"partial_f2"},
+\code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
+\verb{_ci} companion (\code{"partial_f2_ci"}, ...).
+\item Partial effect size -- \code{glm} only: \code{"partial_chi2"}
+(likelihood-ratio chi-square via \code{drop1(test = "LRT")};
+SAS PROC LOGISTIC \code{TYPE3}; Long & Freese 2014 §3.5).
+Rendered as \code{value (df)} to disambiguate factor terms
 (k-1 df) from numeric terms (1 df).
-Marginal effects: \code{AME}, \code{AME_p}, \code{AME_SE} (compact for \code{AME}).
-
-Default: \code{c("B", "SE", "CI", "p")}.
-If \code{standardized != "none"} and \code{"beta"} is not in \code{show_columns},
-it is auto-injected after \code{B}. Asking for \code{"beta"} while
-\code{standardized = "none"} raises \code{spicy_invalid_input}.
 }
 
-\subsection{\code{show_fit_stats} — model-level statistics (in footer)}{
+\strong{Group tokens} (presets) expand to a fixed atomic vector
+before validation:
 
-Counts: \code{nobs}, \code{weighted_nobs}.
-Variance explained (\code{lm} only): \code{r2}, \code{adj_r2}, \code{omega2}.
-Pseudo-\eqn{R^2}{R^2} (\code{glm} only): \code{pseudo_r2_mcfadden} (McFadden 1974),
-\code{pseudo_r2_nagelkerke} (Nagelkerke 1991),
-\code{pseudo_r2_tjur} (Tjur 2009; binomial only).
-Residual scale: \code{sigma} (lm \eqn{\hat{\sigma}}{sigma-hat} / glm dispersion), \code{rmse}.
-Effect size: \code{f2}.
-Information criteria: \code{AIC}, \code{AICc}, \code{BIC}, \code{deviance}.
-
-Default is class-aware (resolved when \code{NULL}): for \code{lm},
-\code{c("nobs", "r2", "adj_r2")}; for \code{glm},
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
+\itemize{
+\item \code{"all_b"}         -> \code{c("b", "se", "ci", "p")}
+\item \code{"all_b_compact"} -> \code{c("b", "se", "p")}
+\item \code{"all_b_full"}    -> \code{c("b", "se", "ci", "t", "p")}
+\item \code{"all_beta"}      -> \code{c("b", "beta", "se", "ci", "p")}
+\item \code{"all_ame"}       -> \code{c("ame", "ame_se", "ame_ci", "ame_p")}
+\item \code{"all_ame_compact"} -> \code{c("ame", "ame_p")}
+\item \code{"all_f2"} / \code{"all_eta2"} / \code{"all_omega2"} -> \verb{partial_*}
++ its \verb{_ci} companion.
 }
 
-\subsection{\code{nested_stats} — hierarchical comparison footer}{
+Mix groups and atomic tokens:
+\code{show_columns = c("all_b", "ame", "ame_p")}. Duplicates after
+expansion are deduplicated; the order of tokens controls the
+order of the displayed columns. If \code{standardized != "none"} and
+\code{"beta"} is not already requested, it is auto-injected after
+\code{"b"}. Asking for \code{"beta"} while \code{standardized = "none"} raises
+\code{spicy_invalid_input}.
 
-Activates when \code{nested = TRUE}. Tokens: \code{r2_change},
-\code{adj_r2_change}, \code{F}, \code{f2_change} (\code{lm} only), \code{LRT}, \code{AIC},
-\code{AICc}, \code{BIC}, \code{deviance_change}, \code{p}.
+\strong{Default} (\code{show_columns = NULL}) is context-aware:
+\code{"all_b"} for a single model (APA-7 §6.46 publication layout),
+\code{"all_b_compact"} for two or more models (CI dropped to fit the
+side-by-side layout; restore it explicitly when needed).
+}
 
-Default is class-aware (resolved when \code{NULL}): for \code{lm}
-hierarchies, \code{c("r2_change", "F", "p")} (APA hierarchical
-regression standard); for \code{glm} hierarchies, \code{c("LRT", "p")}
-(APA hierarchical-logistic standard; Hosmer & Lemeshow §3.5;
-Long & Freese 2014 §3.6). Variance-explained tokens (\code{r2_change},
-\code{adj_r2_change}, \code{F}, \code{f2_change}) are not defined for \code{glm} and
-raise \code{spicy_invalid_input} if requested for an all-\code{glm}
-hierarchy.
+\subsection{\code{show_fit_stats} -- model-level rows below the coefficients}{
+
+\itemize{
+\item Counts: \code{"nobs"}, \code{"weighted_nobs"}.
+\item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
+\code{"omega2"}.
+\item Pseudo-\eqn{R^2}{R^2} (\code{glm} only): \code{"pseudo_r2_mcfadden"}
+(McFadden 1974), \code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991),
+\code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
+\item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
+/ glm dispersion), \code{"rmse"}.
+\item Effect size: \code{"f2"}.
+\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"},
+\code{"deviance"}.
+\item Change-stats for hierarchical comparison
+(active under \code{nested = TRUE}; see \emph{Hierarchical
+comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
+\code{"f_change"}, \code{"f2_change"}, \code{"lrt_change"},
+\code{"aic_change"}, \code{"aicc_change"}, \code{"bic_change"},
+\code{"deviance_change"}, \code{"p_change"}.
+}
+
+Default (resolved when \code{NULL}) is class-aware: lm fits get
+\code{c("nobs", "r2", "adj_r2")}; glm fits get
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")};
+mixed lm + glm sets union both groups (the renderer per-row
+em-dashes the inappropriate cell). When \code{nested = TRUE}, the
+class-aware default is extended with change tokens
+(\code{c("r2_change", "f_change", "p_change")} for lm,
+\code{c("lrt_change", "p_change")} for glm). The order of tokens in
+\code{show_fit_stats} controls the order of the rows.
 }
 }
 
 \section{Multi-model semantics}{
-Pass a single \code{lm} fit or a \code{list()} of fits. A named list
-(\code{list("Naive" = m1, "Adjusted" = m2)}) provides column headers
-automatically; an unnamed list defaults to \code{"Model 1, 2, ..."}.
-\code{model_labels} overrides both with explicit per-column labels.
+Pass a single fit or a \code{list()} of fits. Multi-model layout
+draws a centred \strong{spanner label} above each model's
+sub-columns:
 
-For models with \strong{different response variables}, the DV name is
-shown automatically in a header row (controllable via
-\code{outcome_labels}). For models sharing the same DV, the DV is
-mentioned in the table title only.
+\itemize{
+\item \code{list("Naive" = m1, "Adjusted" = m2)} -> spanner labels
+\code{"Naive"} / \code{"Adjusted"}. Partial naming (\code{list("Naive" = m1, m2)})
+auto-fills missing slots as \code{"Model <position>"}.
+\item \code{list(m1, m2)} (unnamed) -> if all response variables
+differ, the bare DV name (from \code{formula(fit)[[2]]}) becomes
+the spanner label and the redundant Outcome body row is
+suppressed. If DVs match, the labels default to
+\code{"Model 1, 2, ..."}.
+\item \code{model_labels = c("A", "B")} overrides everything.
+}
+
+Duplicate explicit names in the list are rejected
+(\code{spicy_invalid_input}) -- they would silently collide in the
+internal model_id key.
 }
 
 \section{Inference and standard errors}{
-\code{vcov} selects the variance-covariance estimator: \code{"classical"}
-(OLS), \code{"HC0"} to \code{"HC5"} (heteroskedasticity-consistent via
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}), \code{"CR0"} to \code{"CR3"} (cluster-robust via
-\code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} with Satterthwaite-corrected df),
-\code{"bootstrap"} (nonparametric or cluster bootstrap), or
-\code{"jackknife"} (leave-one-out / leave-one-cluster-out).
+\code{vcov} selects the variance-covariance estimator:
 
-For multi-model use, both \code{vcov} and \code{cluster} accept either a
-single value (recycled to all models) \strong{or} a list (one per
-model). The pedagogical use case \code{list(fit, fit, fit)} with
+\itemize{
+\item \code{"classical"} -- OLS (lm) / MLE inverse Hessian (glm).
+\item \code{"HC0"} to \code{"HC5"} -- heteroskedasticity-consistent
+(via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}).
+\item \code{"CR0"} to \code{"CR3"} -- cluster-robust with
+Satterthwaite-corrected df (via \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}}).
+Requires \code{cluster}.
+\item \code{"bootstrap"} -- nonparametric or cluster bootstrap
+(\code{boot_n} replicates).
+\item \code{"jackknife"} -- leave-one-out / leave-one-cluster-out.
+}
+
+For multi-model use, both \code{vcov} and \code{cluster} accept a single
+value (recycled to all models) \strong{or} a list (one per model).
+The pedagogical use case \code{list(fit, fit, fit)} with
 \code{vcov = list("classical", "HC3", "CR2")} enables side-by-side
 SE-comparison in a single table.
+\subsection{How to specify \code{cluster}}{
+
+Three accepted forms, in order of preference:
+
+\enumerate{
+\item \strong{Formula} -- \code{cluster = ~region} (or
+\code{cluster = ~region:year} for the interaction of two
+variables). The variables are looked up in
+\code{model.frame(fit)} first, then in the original \code{data}
+argument captured by the fit. \strong{Recommended}: independent
+of the dataset's name, composable for multi-way clustering,
+consistent with \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} /
+\code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}}.
+\item \strong{String} -- \code{cluster = "region"}. A single column
+name resolved the same way as the formula. Convenient but
+cannot express interactions.
+\item \strong{Vector} -- \code{cluster = df$region}. An atomic vector of
+length \code{nobs(fit)}. Use this when the cluster key is
+\strong{derived on the fly} (\code{cluster = interaction(df$region, df$year)},
+\code{cluster = as.integer(format(df$date, "\%Y"))}), comes from
+a \strong{different dataset} with matching row order, or is
+otherwise not a column of the model's \code{data}.
+}
+
+Bare unquoted names (\code{cluster = region}) are \strong{not} accepted --
+they would require non-standard evaluation magic that breaks
+under programmatic use (function wrapping, dynamic column
+choice, loops). Use \code{~region} or \code{"region"} instead.
+
+For multi-model use, mix forms freely:
+\code{cluster = list(~region, "region", df$region)}.
+}
+}
+
+\section{Hierarchical (nested) model comparison}{
+\code{nested = TRUE} adds \strong{per-pair change statistics as in-table
+rows} (APA Table 7.13 / Stata \code{esttab} / SPSS Model Summary
+convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
+contributes one column of change stats; the FIRST model column
+gets em-dashes (no previous model to compare to). Validation
+requires identical \code{nobs} and identical response variable
+across all models.
+
+Default change tokens auto-injected when \code{show_fit_stats} is
+\code{NULL}:
+\itemize{
+\item All-lm: \code{c("r2_change", "f_change", "p_change")} --
+APA hierarchical regression standard.
+\item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
+Lemeshow §3.5; Long & Freese 2014 §3.6.
+}
+To customise, pass the change tokens directly to
+\code{show_fit_stats}. Variance-explained change tokens on an
+all-glm hierarchy raise \code{spicy_invalid_input} (the
+residual-sum-of-squares partition does not apply outside the
+least-squares framework -- the renderer points the user at
+\code{lrt_change}).
 
 Inferential regimes (B and AME share the same regime by design):
 \itemize{
@@ -530,17 +629,6 @@ For models with interactions or transformed predictors (\code{I()},
 emitted reminding that standardised coefficients on such terms
 should be interpreted with care (Cohen et al. 2003 §7.7;
 Aiken & West 1991). The footer auto-documents the caveat.
-}
-
-\section{Hierarchical (nested) model comparison}{
-Set \code{nested = TRUE} to add a footer block comparing each model
-to the previous one. spicy validates that all models share
-identical \code{nobs} AND identical response variable, raising
-\code{spicy_invalid_input} otherwise (with a remediation snippet).
-
-Class-aware default \code{nested_stats} for \code{lm}:
-\code{c("r2_change", "F", "p")}. Customise via the \code{nested_stats}
-argument with any combination of supported tokens.
 }
 
 \section{Output formats and broom integration}{
@@ -598,38 +686,6 @@ All downstream computations (vcov, AME, standardisation,
 \code{weighted_nobs}) extract the weights automatically.
 }
 
-\section{Hierarchical / nested comparison stats}{
-
-Setting \code{nested = TRUE} auto-injects change-comparison tokens
-into \code{show_fit_stats} so the table reads as an APA Table 7.13
-hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
-...) contributes one column of change stats; the FIRST model
-column gets em-dashes (no previous model to compare to).
-Available change tokens (use them like any other
-\code{show_fit_stats} token):
-\itemize{
-\item Variance explained -- \code{lm} only: \code{"r2_change"},
-\code{"adj_r2_change"}, \code{"f_change"}, \code{"f2_change"}.
-\item Likelihood-based: \code{"lrt_change"}, \code{"deviance_change"}.
-\item Information criteria: \code{"aic_change"}, \code{"aicc_change"},
-\code{"bic_change"}.
-\item \code{"p_change"} -- p-value of the change test (\code{f_change}
-for \code{lm} hierarchies, \code{lrt_change} for \code{glm} hierarchies).
-}
-Class-aware default auto-injection (when \code{show_fit_stats} is
-\code{NULL} and \code{nested = TRUE}):
-\itemize{
-\item All-\code{lm}: \code{c("r2_change", "f_change", "p_change")} --
-APA hierarchical-regression standard.
-\item All-\code{glm}: \code{c("lrt_change", "p_change")} -- Hosmer &
-Lemeshow §3.5; Long & Freese 2014 §3.6.
-}
-To customise, pass \code{show_fit_stats = c(...)} explicitly with
-the change tokens of your choice. Variance-explained change
-tokens on glm rows render as em-dashes (not defined outside
-the least-squares framework).
-}
-
 \section{Classed conditions}{
 
 Every error and warning emitted by \code{table_regression()} carries
@@ -644,70 +700,67 @@ this function include \code{spicy_invalid_input},
 }
 
 \examples{
-# ------------------------------------------------------------
-# Default output (`output = "default"`): the printable
-# spicy_regression_table -- examples below run under
-# `R CMD check --examples` and on the help page.
-# ------------------------------------------------------------
-
-# Single model, default APA layout
 fit <- lm(wellbeing_score ~ age + sex + education,
           data = sochealth)
+
+# Default APA layout (single model)
 table_regression(fit)
 
-# Hierarchical regression: nested = TRUE adds the comparison
-# footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)
-m1 <- lm(wellbeing_score ~ age, data = sochealth)
-m2 <- lm(wellbeing_score ~ age + sex, data = sochealth)
-m3 <- lm(wellbeing_score ~ age + sex + education,
-         data = sochealth)
+# Standardised coefficients (beta) alongside B
+table_regression(fit, standardized = "refit")
+
+# Custom column set: AME alongside its own p-value
+table_regression(
+  fit,
+  show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
+)
+
+# Group-token shortcuts: "all_b" + "all_ame" expand to the
+# full B / AME column families.
+table_regression(fit, show_columns = c("all_b", "all_ame"))
+
+# Cluster-robust SE (CR2 with Satterthwaite df). Three accepted
+# forms for `cluster`; the formula is preferred.
+table_regression(fit, vcov = "CR2", cluster = ~region)
+table_regression(fit, vcov = "CR2", cluster = "region")
+table_regression(fit, vcov = "CR2", cluster = sochealth$region)
+
+# Multi-way clustering via formula interaction
+table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
+
+# Hierarchical (nested) regression: change-stat rows appear
+# below R-squared / Adj.R-squared.
+m1 <- lm(wellbeing_score ~ age,                       data = sochealth)
+m2 <- lm(wellbeing_score ~ age + sex,                 data = sochealth)
+m3 <- lm(wellbeing_score ~ age + sex + education,     data = sochealth)
 table_regression(
   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
   nested = TRUE
 )
 
-# Standardised coefficients (\eqn{\beta}{beta}) alongside B
-table_regression(fit, standardized = "refit")
-
-# Custom column set with AME alongside its own p-value.
-# `"p"` always refers to the B coefficient; for the AME-specific
-# p-value use `"ame_p"`. Placing AME after the B p-value makes
-# the "which p belongs to what" reading unambiguous.
-table_regression(
-  fit,
-  show_columns = c("b", "p", "partial_f2", "ame", "ame_p")
-)
-
-# Pedagogical side-by-side SE comparison (same fit, three vcovs).
-# Cluster-robust uses `region` -- a real column of `sochealth`.
+# Side-by-side SE comparison (same fit, three vcovs)
 table_regression(
   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
-  vcov = list("classical", "HC3", "CR2"),
-  cluster = list(NULL, NULL, sochealth$region)
+  vcov    = list("classical", "HC3", "CR2"),
+  cluster = list(NULL, NULL, ~region)
 )
 
 # Tidy long format for downstream pipelines
 broom::tidy(table_regression(fit))
 
-# ------------------------------------------------------------
-# Non-default outputs (rich engines / file writes / clipboard):
-# wrapped in \dontrun{} so `R CMD check` doesn't depend on the
-# optional Suggests packages or write side-effects in the
-# check sandbox.
-# ------------------------------------------------------------
 \dontrun{
-# gt / flextable / tinytable -- Suggests packages
+# Rich-format outputs (require optional Suggests packages)
 table_regression(fit, output = "gt")
 table_regression(fit, output = "flextable")
 table_regression(fit, output = "tinytable")
 
-# Excel / Word -- write a file at the supplied path
+# File outputs
 table_regression(fit, output = "excel",
                  excel_path = tempfile(fileext = ".xlsx"))
 table_regression(fit, output = "word",
-                 word_path = tempfile(fileext = ".docx"))
+                 word_path  = tempfile(fileext = ".docx"))
 
-# Clipboard -- requires a system clipboard (interactive use)
+# System clipboard (interactive use)
 table_regression(fit, output = "clipboard")
 }
 
