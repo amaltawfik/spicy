@@ -3,20 +3,18 @@ Title: Descriptive Statistics, Summary Tables, and Data Management Tools
 Version: 0.12.0
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555", ROR = "04j47fz63"))
-Description: Provides tools for descriptive data analysis,
-    variable inspection, data management, and tabulation workflows in 'R'.
-    Summarizes variable metadata, labels, classes, missing values, and
-    representative values, with support for readable frequency tables,
-    cross-tabulations, association measures for contingency tables
-    (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D,
-    and others), categorical and continuous summary tables, model-based
-    linear-regression tables for continuous outcomes with optional
-    additive covariate adjustment, and regression coefficient tables
-    for one or more 'lm' or 'glm' fits, all with APA-style reporting
-    outputs. Includes helpers for interactive codebooks, variable label
-    extraction, clipboard export, and row-wise descriptive summaries.
-    Designed to make descriptive analysis and reporting faster, clearer,
-    and easier to work with in practice.
+Description: Provides tabulation, descriptive-summary, and
+    variable-inspection tools for applied data analysis. Frequency
+    tables and cross-tabulations with contingency-table association
+    measures (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's
+    Tau-b, Somers' D, and others); categorical and continuous
+    summary tables; regression coefficient tables for one or more
+    'lm' or 'glm' fits; and linear-regression tables for continuous
+    outcomes with optional additive covariate adjustment. All table
+    outputs follow APA conventions and expose 'broom'-compatible
+    'tidy()' / 'glance()' methods for downstream pipelines.
+    Helpers cover interactive codebooks, variable-label extraction,
+    clipboard export, and row-wise descriptive summaries.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues
