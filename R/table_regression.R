@@ -401,29 +401,26 @@
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
 #'   `show_intercept = FALSE` (with `spicy_ignored_arg` warning).
-#' @param factor_layout Layout of factor predictors in the table.
-#'   Applies to **any categorical predictor** -- `factor`, `ordered`,
-#'   `character`, or `logical`. R's [stats::model.frame()] coerces
-#'   character and logical columns to factors at fit time, so they
-#'   share the same layout logic. Two options:
+#' @param factor_layout Layout of factor predictors. Applies to
+#'   **any categorical predictor** -- `factor`, `ordered`,
+#'   `character`, or `logical` (R coerces the latter two to
+#'   factors at fit time). Two options:
 #'   \itemize{
-#'     \item `"grouped"` (default): the variable name appears on
-#'       its own header row ending with `:` (e.g., `education:`);
-#'       each level follows as an indented sub-row with the bare
-#'       level name. APA / `gtsummary` convention.
-#'     \item `"flat"`: each non-reference dummy is one row with the
-#'       `<variable><level>` form (e.g., `educationUpper`); no
-#'       header, no indent. Econometrics / `parameters` /
-#'       `modelsummary` convention.
+#'     \item `"grouped"` (default): the variable name on its own
+#'       header row ending with `:` (e.g., `education:`); each
+#'       level follows as an indented sub-row with the bare level
+#'       name. APA convention.
+#'     \item `"flat"`: each non-reference dummy is one row with
+#'       the `<variable><level>` form (e.g., `educationUpper`); no
+#'       header, no indent. Econometrics convention.
 #'   }
 #' @param reference_style Rendering of factor reference levels.
 #'   Four modes, distinguishing WHERE the reference information is
 #'   exposed (in a row, inline, in the footer, or nowhere):
 #'   \itemize{
 #'     \item `"row"` (default): explicit row `Female (ref.)` with
-#'       em-dashes in all stat columns (gtsummary / NEJM / BMJ
-#'       clinical convention). `reference_label` controls the
-#'       suffix.
+#'       em-dashes in all stat columns (NEJM / BMJ clinical
+#'       convention). `reference_label` controls the suffix.
 #'     \item `"annotation"`: the row is dropped and the reference
 #'       is shown inline. Under `factor_layout = "grouped"` the
 #'       factor header reads `education: [ref: Lower]`; under
@@ -448,11 +445,20 @@
 #'   wording -- "ref:", "vs", "Reference categories:").
 #' @param show_fit_stats Character vector of tokens for the
 #'   model-level rows below the coefficients; row order follows
-#'   token order. `NULL` (default) applies a class-aware default;
-#'   under `nested = TRUE` the default is extended with the
-#'   change-stat tokens. See *Vocabulary tokens* (`show_fit_stats`
-#'   subsection) and *Hierarchical (nested) model comparison* in
-#'   the details.
+#'   token order. `NULL` (default) resolves class-aware:
+#'   \itemize{
+#'     \item `lm`: `c("nobs", "r2", "adj_r2")`.
+#'     \item `glm`: `c("nobs", "pseudo_r2_mcfadden",
+#'       "pseudo_r2_nagelkerke", "AIC")`.
+#'     \item mixed `lm` + `glm`: the union of the two (the
+#'       renderer em-dashes per cell the stat not defined for a
+#'       given model class).
+#'   }
+#'   Under `nested = TRUE` the default is extended with the
+#'   class-appropriate change-stat tokens (e.g. `"r2_change"`,
+#'   `"f_change"` for `lm`). See *Vocabulary tokens*
+#'   (`show_fit_stats` subsection) and *Hierarchical (nested)
+#'   model comparison* in the details for the full vocabulary.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`

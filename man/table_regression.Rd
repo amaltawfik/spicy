@@ -152,20 +152,18 @@ shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,
 intercept just above the fit-stats footer). Ignored when
 \code{show_intercept = FALSE} (with \code{spicy_ignored_arg} warning).}
 
-\item{factor_layout}{Layout of factor predictors in the table.
-Applies to \strong{any categorical predictor} -- \code{factor}, \code{ordered},
-\code{character}, or \code{logical}. R's \code{\link[stats:model.frame]{stats::model.frame()}} coerces
-character and logical columns to factors at fit time, so they
-share the same layout logic. Two options:
+\item{factor_layout}{Layout of factor predictors. Applies to
+\strong{any categorical predictor} -- \code{factor}, \code{ordered},
+\code{character}, or \code{logical} (R coerces the latter two to
+factors at fit time). Two options:
 \itemize{
-\item \code{"grouped"} (default): the variable name appears on
-its own header row ending with \code{:} (e.g., \verb{education:});
-each level follows as an indented sub-row with the bare
-level name. APA / \code{gtsummary} convention.
-\item \code{"flat"}: each non-reference dummy is one row with the
-\verb{<variable><level>} form (e.g., \code{educationUpper}); no
-header, no indent. Econometrics / \code{parameters} /
-\code{modelsummary} convention.
+\item \code{"grouped"} (default): the variable name on its own
+header row ending with \code{:} (e.g., \verb{education:}); each
+level follows as an indented sub-row with the bare level
+name. APA convention.
+\item \code{"flat"}: each non-reference dummy is one row with
+the \verb{<variable><level>} form (e.g., \code{educationUpper}); no
+header, no indent. Econometrics convention.
 }}
 
 \item{reference_style}{Rendering of factor reference levels.
@@ -173,9 +171,8 @@ Four modes, distinguishing WHERE the reference information is
 exposed (in a row, inline, in the footer, or nowhere):
 \itemize{
 \item \code{"row"} (default): explicit row \code{Female (ref.)} with
-em-dashes in all stat columns (gtsummary / NEJM / BMJ
-clinical convention). \code{reference_label} controls the
-suffix.
+em-dashes in all stat columns (NEJM / BMJ clinical
+convention). \code{reference_label} controls the suffix.
 \item \code{"annotation"}: the row is dropped and the reference
 is shown inline. Under \code{factor_layout = "grouped"} the
 factor header reads \verb{education: [ref: Lower]}; under
@@ -202,11 +199,19 @@ wording -- "ref:", "vs", "Reference categories:").}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level rows below the coefficients; row order follows
-token order. \code{NULL} (default) applies a class-aware default;
-under \code{nested = TRUE} the default is extended with the
-change-stat tokens. See \emph{Vocabulary tokens} (\code{show_fit_stats}
-subsection) and \emph{Hierarchical (nested) model comparison} in
-the details.}
+token order. \code{NULL} (default) resolves class-aware:
+\itemize{
+\item \code{lm}: \code{c("nobs", "r2", "adj_r2")}.
+\item \code{glm}: \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
+\item mixed \code{lm} + \code{glm}: the union of the two (the
+renderer em-dashes per cell the stat not defined for a
+given model class).
+}
+Under \code{nested = TRUE} the default is extended with the
+class-appropriate change-stat tokens (e.g. \code{"r2_change"},
+\code{"f_change"} for \code{lm}). See \emph{Vocabulary tokens}
+(\code{show_fit_stats} subsection) and \emph{Hierarchical (nested)
+model comparison} in the details for the full vocabulary.}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /
