@@ -42,7 +42,6 @@ table_regression(
   outcome_labels = NULL,
   stars = FALSE,
   nested = FALSE,
-  nested_stats = NULL,
   digits = 2L,
   p_digits = 3L,
   effect_size_digits = 2L,
@@ -348,28 +347,6 @@ table_regression(
   `FALSE` (default) — pure side-by-side display without comparison
   statistics. `TRUE` — adds the comparison footer; requires identical
   `nobs` and identical response variable across all models.
-
-- nested_stats:
-
-  Tokens controlling which comparison statistics to display when
-  `nested = TRUE`. Available tokens:
-
-  - Variance explained – `lm` only: `"r2_change"`, `"adj_r2_change"`,
-    `"F"`, `"f2_change"`.
-
-  - Likelihood-based: `"LRT"`, `"deviance_change"`.
-
-  - Information criteria: `"AIC"`, `"AICc"`, `"BIC"`.
-
-  - `"p"` – p-value of the chosen test (`F` for `lm` hierarchies, `LRT`
-    for `glm` hierarchies).
-
-  `NULL` (default) selects the class-aware default:
-  `c("r2_change", "F", "p")` for `lm` (APA hierarchical-regression
-  standard), `c("LRT", "p")` for `glm` (APA hierarchical-logistic
-  standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
-  Variance-explained tokens on an all-`glm` hierarchy raise
-  `spicy_invalid_input`.
 
 - digits:
 
@@ -686,6 +663,38 @@ when fitting:
 All downstream computations (vcov, AME, standardisation,
 `weighted_nobs`) extract the weights automatically.
 
+## Hierarchical / nested comparison stats
+
+Setting `nested = TRUE` auto-injects change-comparison tokens into
+`show_fit_stats` so the table reads as an APA Table 7.13 hierarchical
+regression. Each adjacent pair (M2 vs M1, M3 vs M2, ...) contributes one
+column of change stats; the FIRST model column gets em-dashes (no
+previous model to compare to). Available change tokens (use them like
+any other `show_fit_stats` token):
+
+- Variance explained – `lm` only: `"r2_change"`, `"adj_r2_change"`,
+  `"f_change"`, `"f2_change"`.
+
+- Likelihood-based: `"lrt_change"`, `"deviance_change"`.
+
+- Information criteria: `"aic_change"`, `"aicc_change"`, `"bic_change"`.
+
+- `"p_change"` – p-value of the change test (`f_change` for `lm`
+  hierarchies, `lrt_change` for `glm` hierarchies).
+
+Class-aware default auto-injection (when `show_fit_stats` is `NULL` and
+`nested = TRUE`):
+
+- All-`lm`: `c("r2_change", "f_change", "p_change")` – APA
+  hierarchical-regression standard.
+
+- All-`glm`: `c("lrt_change", "p_change")` – Hosmer & Lemeshow §3.5;
+  Long & Freese 2014 §3.6.
+
+To customise, pass `show_fit_stats = c(...)` explicitly with the change
+tokens of your choice. Variance-explained change tokens on glm rows
+render as em-dashes (not defined outside the least-squares framework).
+
 ## Classed conditions
 
 Every error and warning emitted by `table_regression()` carries a
@@ -789,22 +798,25 @@ table_regression(
 )
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                           Step 1                Step 2            Step 3     
-#>                    ────────────────────  ────────────────────  ───────────── 
-#>  Variable        │    B      SE     p       B      SE     p       B      SE  
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  (Intercept)     │   67.00  1.58  <.001    65.07  1.63  <.001    64.63  1.46 
-#>  age             │    0.04  0.03   .177     0.04  0.03   .163     0.03  0.03 
-#>  sex:            │                                                           
-#>    Female (ref.) │    —     —     —         —     —     —         —     —    
-#>    Male          │                          3.90  0.90  <.001     3.65  0.80 
-#>  education:      │                                                           
-#>    .L            │                                               13.80  0.78 
-#>    .Q            │                                               -1.71  0.66 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                  1200                  1200          
-#>  R²              │    0.00                  0.02                  0.22       
-#>  Adj.R²          │    0.00                  0.02                  0.22       
+#>                           Step 1                Step 2              Step 3     
+#>                    ────────────────────  ─────────────────────  ────────────── 
+#>  Variable        │    B      SE     p       B       SE     p       B       SE  
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)     │   67.00  1.58  <.001    65.07   1.63  <.001    64.63   1.46 
+#>  age             │    0.04  0.03   .177     0.04   0.03   .163     0.03   0.03 
+#>  sex:            │                                                             
+#>    Female (ref.) │    —     —     —         —      —     —         —      —    
+#>    Male          │                          3.90   0.90  <.001     3.65   0.80 
+#>  education:      │                                                             
+#>    .L            │                                                13.80   0.78 
+#>    .Q            │                                                -1.71   0.66 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1200                  1200                   1200           
+#>  R²              │    0.00                  0.02                   0.22        
+#>  Adj.R²          │    0.00                  0.02                   0.22        
+#>  ΔR²             │    —                    +0.02                  +0.21        
+#>  F-change        │    —                   +18.94                +157.75        
+#>  p (change)      │    —                     <.001                  <.001       
 #> 
 #>                    Step  
 #>                    ───── 
@@ -822,14 +834,13 @@ table_regression(
 #>  n               │       
 #>  R²              │       
 #>  Adj.R²          │       
+#>  ΔR²             │       
+#>  F-change        │       
+#>  p (change)      │       
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
 #> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
-#> 
-#> ── Model comparison ──
-#> Model 2 vs Model 1: ΔR² = +0.02, F = +18.94, p = <.001
-#> Model 3 vs Model 2: ΔR² = +0.21, F = +157.75, p = <.001
 
 # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 table_regression(fit, standardized = "refit")

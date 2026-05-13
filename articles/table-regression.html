@@ -630,23 +630,26 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                          Model 1               Model 2            Model 3    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ────────────────────  ───────────── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B      SE     p       B      SE  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.66  &lt;.001    65.00  1.67  &lt;.001    80.57  3.37 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .118     0.05  0.03   .109     0.07  0.03 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                           </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —     —         —     —     —         —     —    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88  0.91  &lt;.001     4.21  0.90 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                           </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>    —     —     —         —     —     —         —     —    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68  1.11   .132    -1.71  1.10 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                               -0.65  0.12 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                  1163          </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                  0.04       </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                  0.02                  0.04       </span></span>
+<span><span class="co">#&gt;                          Model 1                Model 2            Model 3     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ─────────────────────  ────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.66  &lt;.001    65.00   1.67  &lt;.001    80.57   3.37 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —     —         —      —     —         —      —    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88   0.91  &lt;.001     4.21   0.90 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>    —     —     —         —      —     —         —      —    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68   1.11   .132    -1.71   1.10 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                                -0.65   0.12 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                   1163           </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
+<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>    —                    +0.00                  +0.02        </span></span>
+<span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>    —                    +2.28                 +28.13        </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>    —                      .132                  &lt;.001       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                    Model </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───── </span></span></span>
@@ -665,13 +668,12 @@ APA-conventional layout for hierarchical regression:</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>       </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>       </span></span>
 <span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; </span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; ── Model comparison ──</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2 vs Model 1: ΔR² = +0.00, F = +2.28, p = .132</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 3 vs Model 2: ΔR² = +0.02, F = +28.13, p = &lt;.001</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>Validation is strict: identical <code>nobs</code> AND identical
 response variable across all models, otherwise a
 <code>spicy_invalid_input</code> error explains that R’s listwise

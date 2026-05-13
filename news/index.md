@@ -210,6 +210,33 @@
   mathematically identical, so the caveat is suppressed. The message is
   also shorter: one main line + one hint (was three lines).
 
+- **Nested model comparison moved from footer to in-table rows** (APA
+  Table 7.13 / Stata `esttab` / SPSS “Model Summary” convention). When
+  `nested = TRUE`, each adjacent pair (M2 vs M1, M3 vs M2, …)
+  contributes one column of change stats; the FIRST model column gets
+  em-dashes (no previous model to compare to). The
+  `── Model comparison ──` footer block was removed.
+
+  Change tokens (use them like any other `show_fit_stats` entry):
+  `r2_change`, `adj_r2_change`, `f_change`, `f2_change`, `lrt_change`,
+  `aic_change`, `aicc_change`, `bic_change`, `deviance_change`,
+  `p_change`.
+
+  Class-aware auto-injection under `nested = TRUE` (when
+  `show_fit_stats` is `NULL`): lm hierarchies get
+  `c("r2_change", "f_change", "p_change")`; glm hierarchies get
+  `c("lrt_change", "p_change")`. Variance-explained change tokens on
+  all-glm fits are rejected with a hint to `lrt_change`.
+
+  Display: explicit `+` / `-` sign on delta values, APA-style p-value
+  formatting (`<.001` etc.), suffix label “(change)” on the p-value row
+  to disambiguate from the per-coefficient `p`.
+
+  The `nested_stats` argument was removed – it duplicated
+  `show_fit_stats` for the same job. Customise change-stat display by
+  passing change tokens directly to `show_fit_stats`. The order of
+  tokens in `show_fit_stats` controls the order of the resulting rows.
+
 - **Polynomial-contrast note made publication-ready** and split into two
   channels:
 

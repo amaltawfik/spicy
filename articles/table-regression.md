@@ -553,23 +553,26 @@ m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
 table_regression(list(m1, m2, m3), nested = TRUE)
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                          Model 1               Model 2            Model 3    
-#>                    ────────────────────  ────────────────────  ───────────── 
-#>  Variable        │    B      SE     p       B      SE     p       B      SE  
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  (Intercept)     │   64.70  1.66  <.001    65.00  1.67  <.001    80.57  3.37 
-#>  age             │    0.05  0.03   .118     0.05  0.03   .109     0.07  0.03 
-#>  sex:            │                                                           
-#>    Female (ref.) │    —     —     —         —     —     —         —     —    
-#>    Male          │    3.89  0.91  <.001     3.88  0.91  <.001     4.21  0.90 
-#>  smoking:        │                                                           
-#>    No (ref.)     │    —     —     —         —     —     —         —     —    
-#>    Yes           │                         -1.68  1.11   .132    -1.71  1.10 
-#>  bmi             │                                               -0.65  0.12 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                  1163                  1163          
-#>  R²              │    0.02                  0.02                  0.04       
-#>  Adj.R²          │    0.02                  0.02                  0.04       
+#>                          Model 1                Model 2            Model 3     
+#>                    ────────────────────  ─────────────────────  ────────────── 
+#>  Variable        │    B      SE     p       B       SE     p       B       SE  
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.66  <.001    65.00   1.67  <.001    80.57   3.37 
+#>  age             │    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 
+#>  sex:            │                                                             
+#>    Female (ref.) │    —     —     —         —      —     —         —      —    
+#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.90 
+#>  smoking:        │                                                             
+#>    No (ref.)     │    —     —     —         —      —     —         —      —    
+#>    Yes           │                         -1.68   1.11   .132    -1.71   1.10 
+#>  bmi             │                                                -0.65   0.12 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                   1163           
+#>  R²              │    0.02                  0.02                   0.04        
+#>  Adj.R²          │    0.02                  0.02                   0.04        
+#>  ΔR²             │    —                    +0.00                  +0.02        
+#>  F-change        │    —                    +2.28                 +28.13        
+#>  p (change)      │    —                      .132                  <.001       
 #> 
 #>                    Model 
 #>                    ───── 
@@ -588,13 +591,12 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  n               │       
 #>  R²              │       
 #>  Adj.R²          │       
+#>  ΔR²             │       
+#>  F-change        │       
+#>  p (change)      │       
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
-#> 
-#> ── Model comparison ──
-#> Model 2 vs Model 1: ΔR² = +0.00, F = +2.28, p = .132
-#> Model 3 vs Model 2: ΔR² = +0.02, F = +28.13, p = <.001
 ```
 
 Validation is strict: identical `nobs` AND identical response variable

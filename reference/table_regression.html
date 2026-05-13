@@ -132,7 +132,6 @@ models (<code>lmerMod</code>, <code>glmerMod</code>) are planned for spicy 0.16+
 <span>  outcome_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  nested <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  nested_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2L</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3L</span>,</span>
 <span>  effect_size_digits <span class="op">=</span> <span class="fl">2L</span>,</span>
@@ -442,22 +441,6 @@ footer; requires identical <code>nobs</code> and identical response
 variable across all models.</p></dd>
 
 
-<dt id="arg-nested-stats">nested_stats<a class="anchor" aria-label="anchor" href="#arg-nested-stats"></a></dt>
-<dd><p>Tokens controlling which comparison
-statistics to display when <code>nested = TRUE</code>. Available tokens:</p><ul><li><p>Variance explained – <code>lm</code> only: <code>"r2_change"</code>,
-<code>"adj_r2_change"</code>, <code>"F"</code>, <code>"f2_change"</code>.</p></li>
-<li><p>Likelihood-based: <code>"LRT"</code>, <code>"deviance_change"</code>.</p></li>
-<li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>.</p></li>
-<li><p><code>"p"</code> – p-value of the chosen test (<code>F</code> for <code>lm</code>
-hierarchies, <code>LRT</code> for <code>glm</code> hierarchies).</p></li>
-</ul><p><code>NULL</code> (default) selects the class-aware default:
-<code>c("r2_change", "F", "p")</code> for <code>lm</code> (APA hierarchical-regression
-standard), <code>c("LRT", "p")</code> for <code>glm</code> (APA hierarchical-logistic
-standard; Hosmer &amp; Lemeshow §3.5; Long &amp; Freese 2014 §3.6).
-Variance-explained tokens on an all-<code>glm</code> hierarchy raise
-<code>spicy_invalid_input</code>.</p></dd>
-
-
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Number of decimal places for general numeric
 tokens (<code>B</code>, <code>beta</code>, <code>SE</code>, <code>CI</code>, <code>t</code>, <code>F</code>, <code>LRT</code>, <code>deviance</code>,
@@ -750,6 +733,33 @@ when fitting:</p><div class="sourceCode"><pre><code><span></span>
 <code>weighted_nobs</code>) extract the weights automatically.</p>
     </div>
     <div class="section level2">
+    <h2 id="hierarchical-nested-comparison-stats">Hierarchical / nested comparison stats<a class="anchor" aria-label="anchor" href="#hierarchical-nested-comparison-stats"></a></h2>
+
+
+<p>Setting <code>nested = TRUE</code> auto-injects change-comparison tokens
+into <code>show_fit_stats</code> so the table reads as an APA Table 7.13
+hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
+...) contributes one column of change stats; the FIRST model
+column gets em-dashes (no previous model to compare to).
+Available change tokens (use them like any other
+<code>show_fit_stats</code> token):</p><ul><li><p>Variance explained – <code>lm</code> only: <code>"r2_change"</code>,
+<code>"adj_r2_change"</code>, <code>"f_change"</code>, <code>"f2_change"</code>.</p></li>
+<li><p>Likelihood-based: <code>"lrt_change"</code>, <code>"deviance_change"</code>.</p></li>
+<li><p>Information criteria: <code>"aic_change"</code>, <code>"aicc_change"</code>,
+<code>"bic_change"</code>.</p></li>
+<li><p><code>"p_change"</code> – p-value of the change test (<code>f_change</code>
+for <code>lm</code> hierarchies, <code>lrt_change</code> for <code>glm</code> hierarchies).</p></li>
+</ul><p>Class-aware default auto-injection (when <code>show_fit_stats</code> is
+<code>NULL</code> and <code>nested = TRUE</code>):</p><ul><li><p>All-<code>lm</code>: <code>c("r2_change", "f_change", "p_change")</code> –
+APA hierarchical-regression standard.</p></li>
+<li><p>All-<code>glm</code>: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
+Lemeshow §3.5; Long &amp; Freese 2014 §3.6.</p></li>
+</ul><p>To customise, pass <code>show_fit_stats = c(...)</code> explicitly with
+the change tokens of your choice. Variance-explained change
+tokens on glm rows render as em-dashes (not defined outside
+the least-squares framework).</p>
+    </div>
+    <div class="section level2">
     <h2 id="classed-conditions">Classed conditions<a class="anchor" aria-label="anchor" href="#classed-conditions"></a></h2>
 
 
@@ -846,22 +856,25 @@ broom integration:
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           Step 1                Step 2            Step 3     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────────────────────  ────────────────────  ───────────── </span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B      SE     p       B      SE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   67.00  1.58  &lt;.001    65.07  1.63  &lt;.001    64.63  1.46 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.04  0.03   .177     0.04  0.03   .163     0.03  0.03 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —     —         —     —     —         —     —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>                          3.90  0.90  &lt;.001     3.65  0.80 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>                                               13.80  0.78 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>                                               -1.71  0.66 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                  1200                  1200          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.00                  0.02                  0.22       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.00                  0.02                  0.22       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           Step 1                Step 2              Step 3     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────────────────────  ─────────────────────  ────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   67.00  1.58  &lt;.001    65.07   1.63  &lt;.001    64.63   1.46 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.04  0.03   .177     0.04   0.03   .163     0.03   0.03 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    —     —     —         —      —     —         —      —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>                          3.90   0.90  &lt;.001     3.65   0.80 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>                                                13.80   0.78 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>                                                -1.71   0.66 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                  1200                   1200           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.22        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.22        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>    —                    +0.02                  +0.21        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>    —                   +18.94                +157.75        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>    —                     &lt;.001                  &lt;.001       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    Step  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
@@ -879,14 +892,13 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ── Model comparison ──</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model 2 vs Model 1: ΔR² = +0.02, F = +18.94, p = &lt;.001</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model 3 vs Model 2: ΔR² = +0.21, F = +157.75, p = &lt;.001</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Standardised coefficients (\eqn{\beta}{beta}) alongside B</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
