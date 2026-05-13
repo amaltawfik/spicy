@@ -2,21 +2,16 @@ citHeader("To cite the spicy package in publications, use:")
 
 bibentry(
   bibtype = "Manual",
-  title = "spicy: Descriptive Statistics, Summary Tables, and Data Management Tools",
-  author = person(
-    given = "Amal",
-    family = "Tawfik",
-    email = "amal.tawfik@hesav.ch",
+  title   = "spicy: Descriptive Statistics, Summary Tables, and Data Management Tools",
+  author  = person(
+    given   = "Amal",
+    family  = "Tawfik",
+    email   = "amal.tawfik@hesav.ch",
     comment = c(ORCID = "0009-0006-2422-1555")
   ),
-  year = "2026",
-  note = paste0(
-    "R package version ",
-    as.character(meta$Version),
-    ". CRAN: https://CRAN.R-project.org/package=spicy. ",
-    "DOI: 10.32614/CRAN.package.spicy"
-  ),
-  url = "https://CRAN.R-project.org/package=spicy",
-  doi = "10.32614/CRAN.package.spicy"
+  year    = format(Sys.Date(), "%Y"),
+  note    = sprintf("R package version %s", meta$Version),
+  url     = "https://CRAN.R-project.org/package=spicy",
+  doi     = "10.32614/CRAN.package.spicy"
 )
 
