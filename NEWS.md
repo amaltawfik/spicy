@@ -302,6 +302,37 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
+### `table_regression()` — uniform monospace typography + clipboard rules
+
+* **One font across the whole table** in every rich-output engine,
+  not just the numeric body cells. Title, spanner row, sub-header,
+  body, and footer notes all render in Consolas (`excel`,
+  `flextable`) or a generic monospace stack (`gt`: `'Fira Mono',
+  'Consolas', 'Courier New', monospace`; `tinytable`: `monospace`).
+  The earlier per-cell monospace produced a mixed-typography look
+  where the title and column labels still rendered in the engine's
+  default proportional font.
+
+* **`flextable` width**: an earlier `set_table_properties(width = 1)`
+  forced the table to span 100% of the page; `flextable` output now
+  uses plain `autofit()` so columns size to their content and the
+  result does not over-stretch on wide pages.
+
+* **`flextable` numeric alignment** changed from `"right"` to
+  `"center"`. The body's numeric cells are pre-padded to a uniform
+  column width, so centring lines up decimal points and CI brackets
+  across rows; right-align placed the closing `"]"` of CI cells at
+  the column edge but let the inner commas / decimal points drift.
+
+* **Clipboard rules**: the TSV payload now inserts U+2500 `─`
+  separator rows at the four APA-rule positions (top of header,
+  bottom of header, between coefficients and fit-stats, bottom of
+  body). Each rule cell holds enough `─` characters to fill its
+  column, so pasting into a context with a fixed-width font
+  (Word with Consolas applied; plain-text editor) renders the
+  rules as continuous horizontal lines. In Excel the rules paste
+  as visible dash rows.
+
 ### `table_regression()` — visual polish for rich-output engines
 
 * **Decimal alignment** now reaches `gt`, `flextable`, `tinytable`

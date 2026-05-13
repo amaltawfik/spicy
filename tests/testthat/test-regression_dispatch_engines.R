@@ -273,15 +273,22 @@ test_that("Excel: title = FALSE suppresses the A1 title cell", {
 # Clipboard payload mirrors the Excel layout
 # ============================================================================
 
-test_that("clipboard_payload includes title, spanner, header, body, note", {
+test_that("clipboard_payload mirrors the APA layout (title, rules, spanner, header, body, note)", {
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
   rendered <- table_regression(list(m1, m2))
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
   expect_match(lines[1L], "^Linear regression")
-  expect_match(lines[2L], "Model 1\tModel 1")
-  expect_match(lines[3L], "^Variable\tB")
+  # Multi-model layout: title, top-rule, spanner, header, sub-rule,
+  # then the body. Verify each anchor without hardcoding precise
+  # column counts.
+  expect_match(lines[2L], "^─")
+  expect_match(lines[3L], "Model 1\tModel 1")
+  expect_match(lines[4L], "^Variable\tB")
+  expect_match(lines[5L], "^─")
+  # Bottom rule + at least one note line.
+  expect_true(sum(grepl("^─", lines)) >= 3L)
   expect_true(any(grepl("Std\\. errors", lines)))
 })
 
@@ -299,8 +306,22 @@ test_that("clipboard_payload single-model layout (no spanner)", {
   rendered <- table_regression(fit)
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  # No spanner row -> header is the second line (after title)
-  expect_match(lines[2L], "^Variable\t")
+  # Single-model layout: title, top-rule, header, sub-rule, body.
+  expect_match(lines[1L], "^Linear regression")
+  expect_match(lines[2L], "^─")
+  expect_match(lines[3L], "^Variable\t")
+  expect_match(lines[4L], "^─")
+})
+
+test_that("clipboard_payload hair-rule sits before the first fit-stat row", {
+  fit <- lm(mpg ~ wt, data = mt)
+  rendered <- table_regression(fit)
+  txt <- spicy:::clipboard_payload(rendered, "\t")
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
+  n_lines <- length(lines)
+  rule_lines <- grep("^─", lines)
+  # Four ─ rules: top, sub, hair (coef -> fit-stats), bottom.
+  expect_gte(length(rule_lines), 4L)
 })
 
 
