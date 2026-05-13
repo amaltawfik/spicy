@@ -585,10 +585,9 @@ Requires <code>cluster</code>.</p></li>
 (<code>boot_n</code> replicates).</p></li>
 <li><p><code>"jackknife"</code> – leave-one-out / leave-one-cluster-out.</p></li>
 </ul><p>For multi-model use, both <code>vcov</code> and <code>cluster</code> accept a single
-value (recycled to all models) <strong>or</strong> a list (one per model).
-The pedagogical use case <code>list(fit, fit, fit)</code> with
-<code>vcov = list("classical", "HC3", "CR2")</code> enables side-by-side
-SE-comparison in a single table.</p>
+value (recycled to all models) or a list (one per model). The
+same fit can appear several times with different estimators to
+compare standard errors side-by-side.</p>
 <p>Inferential regimes (B and AME share the same regime):</p><ul><li><p><code>classical</code>, <code>HC*</code> -&gt; t with <code>df.residual</code>.</p></li>
 <li><p><code>bootstrap</code>, <code>jackknife</code> -&gt; z asymptotic.</p></li>
 <li><p><code>CR0</code>-<code>CR3</code> -&gt; t with <strong>Satterthwaite-corrected df</strong> (B

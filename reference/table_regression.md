@@ -507,10 +507,9 @@ model_id key.
 - `"jackknife"` – leave-one-out / leave-one-cluster-out.
 
 For multi-model use, both `vcov` and `cluster` accept a single value
-(recycled to all models) **or** a list (one per model). The pedagogical
-use case `list(fit, fit, fit)` with
-`vcov = list("classical", "HC3", "CR2")` enables side-by-side
-SE-comparison in a single table.
+(recycled to all models) or a list (one per model). The same fit can
+appear several times with different estimators to compare standard
+errors side-by-side.
 
 Inferential regimes (B and AME share the same regime):
 
