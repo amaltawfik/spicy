@@ -326,7 +326,14 @@ tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 
 \item{clipboard_delim}{Field delimiter for
 \code{output = "clipboard"}. Default \code{"\\t"} (tab-separated, pastes
-cleanly into Excel / Google Sheets).}
+cleanly into Excel / Google Sheets). The clipboard payload
+mirrors the Excel layout (title row, spanner row, header,
+body, footer note) but is plain text -- horizontal rules,
+cell merging, decimal alignment, monospace font, and factor-
+level indentation cannot be encoded in TSV and are therefore
+absent from the paste. For a fully-formatted result, use
+\code{output = "excel"} or \code{output = "word"} and open / paste from
+the produced file.}
 
 \item{word_path}{File path for \code{output = "word"}. Default
 \code{NULL} (required when \code{output = "word"}).}

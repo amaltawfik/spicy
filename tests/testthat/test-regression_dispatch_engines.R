@@ -341,3 +341,78 @@ test_that("output = 'tinytable' renders with APA borders", {
                            output = "tinytable")
   expect_true(inherits(tt2, "tinytable"))
 })
+
+
+# ============================================================================
+# Visual styling: factor-level indent + numeric monospace + center headers
+# ============================================================================
+
+test_that(".detect_level_rows finds rows whose Variable starts with whitespace", {
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  rendered <- table_regression(m1)
+  lvl <- spicy:::.detect_level_rows(as.data.frame(rendered))
+  # Expected: the three factor(cyl) levels (rows 4, 5, 6 in default body)
+  expect_true(length(lvl) >= 2L)
+  vars <- as.data.frame(rendered)$Variable[lvl]
+  expect_true(all(grepl("^\\s+", vars)))
+})
+
+test_that(".trim_level_indent strips leading whitespace only on level rows", {
+  body <- data.frame(Variable = c("a", "  level", "b"),
+                      val = 1:3, stringsAsFactors = FALSE)
+  lvl <- spicy:::.detect_level_rows(body)
+  expect_identical(lvl, 2L)
+  trimmed <- spicy:::.trim_level_indent(body, lvl)
+  expect_identical(trimmed$Variable, c("a", "level", "b"))
+})
+
+test_that("gt output: factor-level indent + monospace numeric font + center headers", {
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  m2 <- lm(mpg ~ wt + factor(cyl) + hp, data = mt)
+  g <- table_regression(list(m1, m2), output = "gt")
+  html <- as.character(gt::as_raw_html(g))
+  expect_match(html, "text-indent")
+  expect_match(html, "Fira Mono")
+  expect_match(html, "text-align: center", fixed = TRUE)
+})
+
+test_that("flextable output: padding-left + autofit layout for factor levels", {
+  skip_if_not_installed("flextable")
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  ft <- table_regression(m1, output = "flextable")
+  expect_s3_class(ft, "flextable")
+  # padding.left attribute is set on factor-level rows
+  pl <- ft$body$styles$pars$padding.left$data
+  expect_true(any(pl > 1L, na.rm = TRUE))
+})
+
+test_that("tinytable output: monospace numerics + padding-left indent", {
+  skip_if_not_installed("tinytable")
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  tt <- table_regression(m1, output = "tinytable")
+  html <- tinytable::save_tt(tt, output = "html")
+  expect_match(html, "monospace")
+  expect_match(html, "padding-left")
+})
+
+test_that("Excel: vertical borders are NOT applied (only top/bottom rules)", {
+  skip_if_not_installed("openxlsx2")
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  m2 <- lm(mpg ~ wt + factor(cyl) + hp, data = mt)
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(list(m1, m2), output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  borders <- wb$styles_mgr$styles$borders
+  # Each border element should declare only the explicitly-set sides.
+  # No border should ever set ALL FOUR of left/right/top/bottom to a
+  # non-empty style ("thin" / "hair") -- that's the wb_add_border()
+  # default-args bug we fixed.
+  full_borders <- grepl(
+    'left style="[^"]+".*right style="[^"]+".*top style="[^"]+".*bottom style="[^"]+"',
+    borders
+  )
+  expect_false(any(full_borders))
+})
+

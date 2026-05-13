@@ -126,6 +126,22 @@ output_long <- function(aligned) {
   body
 }
 
+# Detect factor-level rows in the rendered body. render_regression_table()
+# prefixes each level row's Variable cell with two leading spaces under
+# `factor_layout = "grouped"`; this helper returns those row indices and
+# (optionally) the trimmed Variable column for engines that prefer to
+# carry indentation as styling rather than as inline whitespace (HTML
+# collapses runs of spaces; Word body cells lose them).
+.detect_level_rows <- function(body) {
+  var <- body[[1L]]
+  which(grepl("^\\s+", var))
+}
+.trim_level_indent <- function(body, level_rows) {
+  if (length(level_rows) == 0L) return(body)
+  body[[1L]][level_rows] <- sub("^\\s+", "", body[[1L]][level_rows])
+  body
+}
+
 
 # ---- tinytable -----------------------------------------------------------
 
@@ -146,6 +162,8 @@ output_tinytable <- function(rendered) {
   group_sep <- attr(rendered, "group_sep_rows")
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
+  level_rows <- .detect_level_rows(body)
+  body <- .trim_level_indent(body, level_rows)
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
   if (has_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
@@ -183,6 +201,34 @@ output_tinytable <- function(rendered) {
     tt <- tinytable::style_tt(tt, i = nrow(body), j = seq_len(n_cols),
                                line = "b", line_width = 0.06)
   }
+
+  # Header centring + per-column alignment. The spanner row (i = -1)
+  # and the column-label row (i = 0) are both centred. The Variable
+  # column is left-aligned; numeric body columns get a monospaced
+  # font + centre alignment so the pre-padded decimal-aligned cells
+  # display correctly in HTML / LaTeX / Typst.
+  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols),
+                             align = "c")
+  if (has_spanner) {
+    tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
+                               align = "c")
+  }
+  tt <- tinytable::style_tt(tt, j = 1L, align = "l")
+  if (n_cols >= 2L) {
+    tt <- tinytable::style_tt(
+      tt, j = 2:n_cols, align = "c",
+      monospace = TRUE
+    )
+  }
+  # Factor-level rows: indent the Variable cell. We tag both HTML
+  # (CSS padding) and LaTeX (\hspace) so the indentation reaches all
+  # tinytable backends.
+  if (length(level_rows) > 0L) {
+    tt <- tinytable::style_tt(
+      tt, i = level_rows, j = 1L,
+      indent = 1, html_css = "padding-left: 1.4em;"
+    )
+  }
   tt
 }
 
@@ -205,12 +251,15 @@ output_gt <- function(rendered) {
   group_sep <- attr(rendered, "group_sep_rows")
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
+  level_rows <- .detect_level_rows(body)
+  body <- .trim_level_indent(body, level_rows)
   # gt addresses columns by name internally, so we keep the unique
   # "Step 1: B" / "Step 2: B" names on the data.frame and use
   # `cols_label()` to relabel the displayed headers to the bare
   # tokens ("B" / "SE" / ...). The spanner row is then added via
   # `tab_spanner()`.
   orig_names <- names(body)
+  n_cols <- ncol(body)
   tbl <- gt::gt(body)
   if (!is.null(spanners) && length(spanners)) {
     for (lbl in names(spanners)) {
@@ -273,6 +322,42 @@ output_gt <- function(rendered) {
     )
   }
 
+  # Column-label centring + numeric body cells: monospace + centre, so
+  # the decimal-aligned padding inserted by render_regression_table()
+  # is preserved visually (HTML proportional fonts otherwise compress
+  # the leading spaces). Variable column stays left-aligned.
+  tbl <- gt::tab_style(
+    tbl,
+    style = gt::cell_text(align = "center", weight = "normal"),
+    locations = gt::cells_column_labels(columns = gt::everything())
+  )
+  if (!is.null(spanners) && length(spanners)) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(align = "center", weight = "normal"),
+      locations = gt::cells_column_spanners(spanners = gt::everything())
+    )
+  }
+  tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
+  if (n_cols >= 2L) {
+    numeric_cols <- orig_names[-1L]
+    tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(font = gt::google_font("Fira Mono")),
+      locations = gt::cells_body(columns = numeric_cols)
+    )
+  }
+  # Factor-level rows: indent the Variable cell (whitespace was
+  # trimmed above, so this is the only indent signal in HTML).
+  if (length(level_rows) > 0L) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(indent = gt::px(20)),
+      locations = gt::cells_body(columns = orig_names[1L], rows = level_rows)
+    )
+  }
+
   if (!is.null(title) && nzchar(title)) {
     tbl <- gt::tab_header(tbl, title = title)
   }
@@ -299,6 +384,8 @@ output_flextable <- function(rendered) {
                          check.names = FALSE)
   spanners <- attr(rendered, "spanners")
   group_sep <- attr(rendered, "group_sep_rows")
+  level_rows <- .detect_level_rows(body)
+  body <- .trim_level_indent(body, level_rows)
   orig_names <- names(body)
   n_cols <- ncol(body)
   ft <- flextable::flextable(body)
@@ -369,6 +456,34 @@ output_flextable <- function(rendered) {
   if (nrow(body) > 0L) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
   }
+
+  # Header centring + per-column alignment. Headers (spanner + sub)
+  # are centered; numeric body cells get a monospaced font and are
+  # right-aligned so the pre-padded decimal-aligned cells line up
+  # vertically across rows (same approach as table_continuous).
+  ft <- flextable::align(ft, part = "header", align = "center")
+  ft <- flextable::align(ft, j = 1L, part = "body", align = "left")
+  if (n_cols >= 2L) {
+    numeric_j <- 2:n_cols
+    ft <- flextable::align(ft, j = numeric_j, part = "body",
+                            align = "right")
+    ft <- flextable::font(ft, j = numeric_j, part = "body",
+                           fontname = "Consolas")
+  }
+  # Factor-level row indentation: padding-left so HTML / Word
+  # rendering displays the indent (the whitespace prefix was trimmed
+  # above; styling carries the indent signal now).
+  if (length(level_rows) > 0L) {
+    ft <- flextable::padding(ft, i = level_rows, j = 1L,
+                              part = "body", padding.left = 20)
+  }
+  # Auto-fit column widths so CI cells (the widest sub-column) do
+  # not wrap onto two lines under the default 50% page-width that
+  # flextable assigns. set_table_properties keeps the auto-fit
+  # behaviour in Word; autofit() handles the HTML render width.
+  ft <- flextable::set_table_properties(ft, layout = "autofit",
+                                          width = 1)
+  ft <- flextable::autofit(ft)
 
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
@@ -490,43 +605,82 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   #      first fit-stat row; -2L shifts into the corresponding
   #      Excel row).
   #   5. Bottom rule below the final body row.
+  #
+  # IMPORTANT: openxlsx2::wb_add_border() has formal defaults
+  # `left_border = right_border = top_border = bottom_border = "thin"`,
+  # so an explicit `top_border = "thin"` call paints all four sides
+  # unless the others are set to NULL. We pass NULL on every
+  # unused side to draw only the intended rule.
+  draw_rule <- function(wb, rows, cols,
+                         top = NULL, bottom = NULL, weight = "thin") {
+    openxlsx2::wb_add_border(
+      wb, sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(rows = rows, cols = cols),
+      top_border    = if (isTRUE(top))    weight else NULL,
+      bottom_border = if (isTRUE(bottom)) weight else NULL,
+      left_border   = NULL,
+      right_border  = NULL
+    )
+  }
   top_rule_row <- if (has_spanner) spanner_row_excel else header_row_excel
-  wb <- openxlsx2::wb_add_border(
-    wb, sheet = excel_sheet,
-    dims = openxlsx2::wb_dims(rows = top_rule_row, cols = seq_len(n_cols)),
-    top_border = "thin"
-  )
+  wb <- draw_rule(wb, rows = top_rule_row, cols = seq_len(n_cols),
+                   top = TRUE)
   if (has_spanner) {
     for (lbl in names(spanners)) {
-      idx <- spanners[[lbl]]
-      wb <- openxlsx2::wb_add_border(
-        wb, sheet = excel_sheet,
-        dims = openxlsx2::wb_dims(rows = spanner_row_excel, cols = idx),
-        bottom_border = "thin"
-      )
+      wb <- draw_rule(wb, rows = spanner_row_excel,
+                       cols = spanners[[lbl]], bottom = TRUE)
     }
   }
-  wb <- openxlsx2::wb_add_border(
-    wb, sheet = excel_sheet,
-    dims = openxlsx2::wb_dims(rows = header_row_excel, cols = seq_len(n_cols)),
-    bottom_border = "thin"
-  )
+  wb <- draw_rule(wb, rows = header_row_excel, cols = seq_len(n_cols),
+                   bottom = TRUE)
   if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
         group_sep[1L] <= nrow(body)) {
     last_coef_excel <- body_first_row + group_sep[1L] - 2L
-    wb <- openxlsx2::wb_add_border(
-      wb, sheet = excel_sheet,
-      dims = openxlsx2::wb_dims(rows = last_coef_excel,
-                                 cols = seq_len(n_cols)),
-      bottom_border = "hair"
-    )
+    wb <- draw_rule(wb, rows = last_coef_excel, cols = seq_len(n_cols),
+                     bottom = TRUE, weight = "hair")
   }
   if (nrow(body) > 0L) {
-    wb <- openxlsx2::wb_add_border(
+    wb <- draw_rule(wb, rows = body_end_row, cols = seq_len(n_cols),
+                     bottom = TRUE)
+  }
+
+  # ---- Alignment + monospace font for decimal-aligned cells --------------
+  # Variable column: left. All header rows (spanner + sub-header):
+  # centred. Body numeric columns: pre-padded by render_regression_table()
+  # via decimal_align_strings() / align_ci_strings() -- to preserve that
+  # alignment in Excel we apply a monospaced font and center the cells.
+  if (n_cols >= 1L) {
+    header_rows <- if (has_spanner) {
+      c(spanner_row_excel, header_row_excel)
+    } else {
+      header_row_excel
+    }
+    wb <- openxlsx2::wb_add_cell_style(
       wb, sheet = excel_sheet,
-      dims = openxlsx2::wb_dims(rows = body_end_row, cols = seq_len(n_cols)),
-      bottom_border = "thin"
+      dims = openxlsx2::wb_dims(rows = header_rows, cols = seq_len(n_cols)),
+      horizontal = "center", vertical = "center"
     )
+    if (nrow(body) > 0L) {
+      body_rows <- seq.int(body_first_row, body_end_row)
+      wb <- openxlsx2::wb_add_cell_style(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = body_rows, cols = 1L),
+        horizontal = "left"
+      )
+      if (n_cols >= 2L) {
+        numeric_cols <- 2:n_cols
+        wb <- openxlsx2::wb_add_cell_style(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
+          horizontal = "center"
+        )
+        wb <- openxlsx2::wb_add_font(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
+          name = "Consolas"
+        )
+      }
+    }
   }
 
   if (!is.null(note) && nzchar(note)) {
