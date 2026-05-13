@@ -355,3 +355,87 @@ test_that("isTRUE_vec - handles NA / FALSE / TRUE elements", {
                 c(TRUE, FALSE, FALSE, TRUE))
   expect_equal(spicy:::isTRUE_vec(logical(0)), logical(0))
 })
+
+
+# ============================================================================
+# Polynomial-contrasts footer + once-per-session pedagogy
+# ============================================================================
+
+test_that("polynomial footer — suffix legend reflects only degrees present", {
+  # 3-level ordered factor -> .L + .Q only (no .C in this table)
+  set.seed(1)
+  df3 <- data.frame(
+    y = rnorm(150),
+    f3 = ordered(sample(1:3, 150, replace = TRUE))
+  )
+  fit3 <- lm(y ~ f3, df3)
+  ext3 <- spicy:::extract_lm_phase1(fit3, model_id = "M1")
+  out3 <- spicy:::build_polynomial_contrasts_footer_block(list(ext3))
+  expect_match(out3, ".L = linear", fixed = TRUE)
+  expect_match(out3, ".Q = quadratic", fixed = TRUE)
+  expect_no_match(out3, ".C = cubic", fixed = TRUE)
+
+  # 5-level ordered factor -> .L, .Q, .C, ^4
+  set.seed(2)
+  df5 <- data.frame(
+    y = rnorm(250),
+    f5 = ordered(sample(1:5, 250, replace = TRUE))
+  )
+  fit5 <- lm(y ~ f5, df5)
+  ext5 <- spicy:::extract_lm_phase1(fit5, model_id = "M1")
+  out5 <- spicy:::build_polynomial_contrasts_footer_block(list(ext5))
+  expect_match(out5, ".L = linear", fixed = TRUE)
+  expect_match(out5, ".Q = quadratic", fixed = TRUE)
+  expect_match(out5, ".C = cubic", fixed = TRUE)
+  expect_match(out5, "^4 = quartic", fixed = TRUE)
+})
+
+test_that("polynomial footer — multiple ordered factors listed plural", {
+  set.seed(3)
+  df <- data.frame(
+    y  = rnorm(200),
+    f1 = ordered(sample(1:3, 200, replace = TRUE)),
+    f2 = ordered(sample(1:3, 200, replace = TRUE))
+  )
+  fit <- lm(y ~ f1 + f2, df)
+  ext <- spicy:::extract_lm_phase1(fit, model_id = "M1")
+  out <- spicy:::build_polynomial_contrasts_footer_block(list(ext))
+  expect_match(out, "^Ordered factors `f1`, `f2`: polynomial trends")
+})
+
+test_that("polynomial footer — no ordered factor returns NULL", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  ext <- spicy:::extract_lm_phase1(fit, model_id = "M1")
+  expect_null(spicy:::build_polynomial_contrasts_footer_block(list(ext)))
+})
+
+test_that("polynomial pedagogy — second call is silent (once-per-session contract)", {
+  # `rlang::inform(.frequency = "once")` may have already fired by
+  # a prior test in this session, so we don't assume the FIRST call
+  # emits. The contract is: after ANY emission, subsequent calls in
+  # the same session are silent. We exercise the function twice
+  # back-to-back and verify the second call produces no message.
+  set.seed(4)
+  df <- data.frame(
+    y = rnorm(80),
+    f = ordered(sample(1:3, 80, replace = TRUE))
+  )
+  fit <- lm(y ~ f, df)
+  ext <- spicy:::extract_lm_phase1(fit, model_id = "M1")
+  # Prime: ensure the message has fired at least once.
+  invisible(testthat::capture_messages(
+    spicy:::build_polynomial_contrasts_footer_block(list(ext))
+  ))
+  # Second call: must be silent.
+  msgs2 <- testthat::capture_messages(
+    spicy:::build_polynomial_contrasts_footer_block(list(ext))
+  )
+  expect_false(any(grepl("Polynomial contrasts", msgs2)))
+})
+
+test_that("ordinal_label — special-cases .L/.Q/.C then quartic/quintic/sextic, else degree-k", {
+  expect_equal(spicy:::ordinal_label(4), "quartic")
+  expect_equal(spicy:::ordinal_label(5), "quintic")
+  expect_equal(spicy:::ordinal_label(6), "sextic")
+  expect_equal(spicy:::ordinal_label(7), "degree-7")
+})

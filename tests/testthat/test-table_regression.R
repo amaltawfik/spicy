@@ -996,10 +996,13 @@ test_that("ordered factor — grouped under header, poly-order, auto footer note
   expect_true(q_pos < c_pos)
   # No reference row (poly contrasts have none).
   expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
-  # Auto footer mentions the poly contrasts.
+  # Auto footer carries the compact publication-grade note +
+  # suffix legend (no "R contr.poly" leak, no "linear trend" prose
+  # -- that explanation lives in the once-per-session inform).
   note <- attr(out, "note")
-  expect_match(note, "Ordered factor `edu` uses orthogonal polynomial")
-  expect_match(note, "linear trend", fixed = TRUE)
+  expect_match(note, "Ordered factor `edu`: polynomial trends")
+  expect_match(note, ".L = linear", fixed = TRUE)
+  expect_match(note, ".Q = quadratic", fixed = TRUE)
 })
 
 test_that("ordered factor — fitting with factor(ordered = FALSE) restores treatment layout", {
@@ -1017,7 +1020,7 @@ test_that("ordered factor — fitting with factor(ordered = FALSE) restores trea
   expect_true(any(grepl("Low (ref.)", vars, fixed = TRUE)))
   # No poly footer for this fit.
   note <- attr(out, "note")
-  expect_false(grepl("orthogonal polynomial", note))
+  expect_false(grepl("polynomial trends", note))
 })
 
 

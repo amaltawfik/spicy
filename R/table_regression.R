@@ -553,8 +553,11 @@
 #' [broom::tidy()], [broom::glance()].
 #'
 #' @examples
-#' \dontrun{
-#' library(spicy)
+#' # ------------------------------------------------------------
+#' # Default output (`output = "default"`): the printable
+#' # spicy_regression_table -- examples below run under
+#' # `R CMD check --examples` and on the help page.
+#' # ------------------------------------------------------------
 #'
 #' # Single model, default APA layout
 #' fit <- lm(wellbeing_score ~ age + sex + education,
@@ -572,39 +575,49 @@
 #'   nested = TRUE
 #' )
 #'
-#' # Cluster-robust SEs with Satterthwaite df
-#' fit_cl <- lm(wellbeing_score ~ age + sex,
-#'              data = sochealth, weights = weight)
-#' table_regression(
-#'   fit_cl,
-#'   vcov = "CR2",
-#'   cluster = clinic_id
-#' )
-#'
 #' # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 #' table_regression(fit, standardized = "refit")
 #'
-#' # Custom column set with AME displayed alongside its own p-value.
+#' # Custom column set with AME alongside its own p-value.
 #' # `"p"` always refers to the B coefficient; for the AME-specific
-#' # p-value use `"AME_p"`. Placing AME after the B p-value makes
+#' # p-value use `"ame_p"`. Placing AME after the B p-value makes
 #' # the "which p belongs to what" reading unambiguous.
 #' table_regression(
 #'   fit,
-#'   show_columns = c("B", "p", "partial_f2", "AME", "AME_p")
+#'   show_columns = c("b", "p", "partial_f2", "ame", "ame_p")
 #' )
 #'
-#' # Pedagogical side-by-side SE comparison (same fit, three vcovs)
+#' # Pedagogical side-by-side SE comparison (same fit, three vcovs).
+#' # Cluster-robust uses `region` -- a real column of `sochealth`.
 #' table_regression(
 #'   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
 #'   vcov = list("classical", "HC3", "CR2"),
-#'   cluster = list(NULL, NULL, sochealth$clinic_id)
+#'   cluster = list(NULL, NULL, sochealth$region)
 #' )
-#'
-#' # Output to gt
-#' table_regression(fit, output = "gt")
 #'
 #' # Tidy long format for downstream pipelines
 #' broom::tidy(table_regression(fit))
+#'
+#' # ------------------------------------------------------------
+#' # Non-default outputs (rich engines / file writes / clipboard):
+#' # wrapped in \dontrun{} so `R CMD check` doesn't depend on the
+#' # optional Suggests packages or write side-effects in the
+#' # check sandbox.
+#' # ------------------------------------------------------------
+#' \dontrun{
+#' # gt / flextable / tinytable -- Suggests packages
+#' table_regression(fit, output = "gt")
+#' table_regression(fit, output = "flextable")
+#' table_regression(fit, output = "tinytable")
+#'
+#' # Excel / Word -- write a file at the supplied path
+#' table_regression(fit, output = "excel",
+#'                  excel_path = tempfile(fileext = ".xlsx"))
+#' table_regression(fit, output = "word",
+#'                  word_path = tempfile(fileext = ".docx"))
+#'
+#' # Clipboard -- requires a system clipboard (interactive use)
+#' table_regression(fit, output = "clipboard")
 #' }
 #'
 #' @references

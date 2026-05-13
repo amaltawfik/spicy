@@ -1632,7 +1632,7 @@ test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header"
   expect_true(l_pos < q_pos)
   # Auto footer mentions the poly contrasts.
   expect_match(attr(out, "note"),
-                "Ordered factor `education` uses orthogonal polynomial")
+                "Ordered factor `education`: polynomial trends")
   # sex (treatment factor) still groups correctly with ref row
   expect_true(any(grepl("^sex:", vars)))
   expect_true(any(grepl("Female.*ref", vars)))

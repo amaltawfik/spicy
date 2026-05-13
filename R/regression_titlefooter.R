@@ -404,17 +404,20 @@ build_p_adjust_footer_block <- function(extracts, p_adjust) {
 
 # ---- Theme: polynomial contrasts (ordered factors) -----------------------
 
-# Emits a one-line note when one or more factors in the model are
-# fitted under `contr.poly` (R's default for `ordered()`). Most users
-# don't know that ordered factors don't get treatment contrasts in R
-# and produce trend coefficients (.L = linear, .Q = quadratic, ...)
-# instead of per-level deviations -- the note tells them what they're
-# looking at and how to switch parameterisations. Stata / SPSS / SAS
-# all default to per-level for ordered categorical, so a user crossing
-# software has every reason to be confused.
+# Publication-grade note: ONE sentence, statistics vocabulary only
+# (no software / function-name leak), and the suffix legend lists
+# only the polynomial degrees actually present in the table. The
+# longer pedagogical explanation -- "what does this mean for
+# interpretation, how to switch parameterisations" -- is delegated
+# to `inform_polynomial_pedagogy()` (once per R session).
+#
+# Example output (3-level ordered factor):
+#   Ordered factor `education`: polynomial trends (.L = linear,
+#   .Q = quadratic).
 build_polynomial_contrasts_footer_block <- function(extracts) {
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
   poly_vars <- character(0)
+  poly_suffixes <- character(0)
   for (e in extracts) {
     coefs <- e$coefs
     if (is.null(coefs) || nrow(coefs) == 0L) next
@@ -424,21 +427,89 @@ build_polynomial_contrasts_footer_block <- function(extracts) {
     if (any(is_poly)) {
       poly_vars <- union(poly_vars,
                           unique(coefs$factor_term[is_poly]))
+      poly_suffixes <- union(poly_suffixes,
+                              unique(coefs$factor_level[is_poly]))
     }
   }
   if (length(poly_vars) == 0L) return(NULL)
+  # Fire the one-shot pedagogical message via the rlang inform
+  # frequency mechanism. NULL-return path keeps the footer pure.
+  inform_polynomial_pedagogy()
+
   vars_str <- paste0("`", poly_vars, "`", collapse = ", ")
   plural <- length(poly_vars) > 1L
+
+  # Suffix legend: only the degrees actually shown in the table.
+  # Sorted by polynomial rank (.L < .Q < .C < ^4 < ...).
+  suffix_rank <- function(s) {
+    if (s == ".L") return(1)
+    if (s == ".Q") return(2)
+    if (s == ".C") return(3)
+    if (startsWith(s, "^")) {
+      n <- suppressWarnings(as.integer(substring(s, 2L)))
+      if (!is.na(n)) return(as.numeric(n))
+    }
+    NA_real_
+  }
+  suffix_label <- function(s) {
+    switch(s,
+      ".L" = "linear",
+      ".Q" = "quadratic",
+      ".C" = "cubic",
+      if (startsWith(s, "^")) {
+        n <- suppressWarnings(as.integer(substring(s, 2L)))
+        if (!is.na(n)) ordinal_label(n) else s
+      } else s
+    )
+  }
+  suff_ord <- order(vapply(poly_suffixes, suffix_rank, numeric(1)))
+  poly_suffixes <- poly_suffixes[suff_ord]
+  legend <- paste(
+    vapply(poly_suffixes,
+            function(s) sprintf("%s = %s", s, suffix_label(s)),
+            character(1)),
+    collapse = ", "
+  )
+
   paste0(
     if (plural) "Ordered factors " else "Ordered factor ",
-    vars_str, if (plural) " use " else " uses ",
-    "orthogonal polynomial contrasts (R default `contr.poly`): ",
-    "`.L` = linear trend, `.Q` = quadratic, `.C` = cubic, ",
-    "`^k` = degree k. Coefficients are trends across the ordered ",
-    "levels, not per-level effects against a reference. ",
-    "Refit with `factor(x, ordered = FALSE)` or set ",
-    "`options(contrasts = c(\"contr.treatment\", \"contr.treatment\"))` ",
-    "for a per-level layout."
+    vars_str, ": polynomial trends (", legend, ")."
+  )
+}
+
+# English ordinal labels for polynomial degrees >= 4 (.L .Q .C are
+# special-cased in suffix_label). "^4" -> "quartic", "^5" -> "quintic",
+# "^k" for k > 6 falls back to "degree-k".
+ordinal_label <- function(k) {
+  switch(as.character(k),
+    "4" = "quartic",
+    "5" = "quintic",
+    "6" = "sextic",
+    sprintf("degree-%d", k)
+  )
+}
+
+# Pedagogical inform fired ONCE per R session the first time any
+# ordered (contr.poly) factor is rendered by table_regression().
+# Uses rlang::inform's built-in frequency mechanism: subsequent
+# calls in the same session with the same `.frequency_id` are
+# muffled. Resets at the start of a new R session, which is the
+# correct cadence for a "did you know" hint.
+inform_polynomial_pedagogy <- function() {
+  rlang::inform(
+    c(paste0("Ordered factor(s) detected. Polynomial contrasts ",
+             "(the R default for `ordered()`) decompose the factor ",
+             "into orthogonal trend components: `.L` = linear, ",
+             "`.Q` = quadratic, `.C` = cubic, `^k` = degree k. ",
+             "Coefficients are trends across the ordered levels, ",
+             "NOT per-level effects against a reference."),
+      "i" = paste0("To display per-level (treatment) effects, refit ",
+                    "with `factor(x, ordered = FALSE)` or set ",
+                    "`options(contrasts = c(\"contr.treatment\", ",
+                    "\"contr.treatment\"))`.")),
+    class = "spicy_polynomial_contrasts_info",
+    .frequency = "once",
+    .frequency_id = "spicy_polynomial_contrasts_info"
   )
 }
 

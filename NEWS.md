@@ -202,6 +202,23 @@
   so the caveat is suppressed. The message is also shorter:
   one main line + one hint (was three lines).
 
+* **Polynomial-contrast note made publication-ready** and split
+  into two channels:
+
+  * **Table footer** -- one sentence, statistics vocabulary only,
+    no software / function-name leak. The suffix legend lists
+    *only* the polynomial degrees actually shown in the table:
+    `Ordered factor \`education\`: polynomial trends (.L = linear,
+    .Q = quadratic).` (3-level factor); `Ordered factor \`f5\`:
+    polynomial trends (.L = linear, .Q = quadratic, .C = cubic,
+    ^4 = quartic).` (5-level factor).
+  * **Once-per-session pedagogy** via `rlang::inform(.frequency = "once")`
+    with class `spicy_polynomial_contrasts_info`. The first time
+    any `ordered()` factor is rendered in a session, an info-level
+    message explains what polynomial contrasts are and how to
+    switch to per-level (treatment) display. Subsequent calls in
+    the same session stay silent.
+
 * **Ordered-factor (`contr.poly`) grouping + auto note**. Ordered
   factors are no longer rendered as a flat list of `<var>.L`,
   `<var>.Q`, ... rows mixed in with the numeric predictors.
