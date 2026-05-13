@@ -269,18 +269,16 @@ intercept just above the fit-stats footer). Ignored when
 
 
 <dt id="arg-factor-layout">factor_layout<a class="anchor" aria-label="anchor" href="#arg-factor-layout"></a></dt>
-<dd><p>Layout of factor predictors in the table.
-Applies to <strong>any categorical predictor</strong> – <code>factor</code>, <code>ordered</code>,
-<code>character</code>, or <code>logical</code>. R's <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">stats::model.frame()</a></code> coerces
-character and logical columns to factors at fit time, so they
-share the same layout logic. Two options:</p><ul><li><p><code>"grouped"</code> (default): the variable name appears on
-its own header row ending with <code>:</code> (e.g., <code>education:</code>);
-each level follows as an indented sub-row with the bare
-level name. APA / <code>gtsummary</code> convention.</p></li>
-<li><p><code>"flat"</code>: each non-reference dummy is one row with the
-<code>&lt;variable&gt;&lt;level&gt;</code> form (e.g., <code>educationUpper</code>); no
-header, no indent. Econometrics / <code>parameters</code> /
-<code>modelsummary</code> convention.</p></li>
+<dd><p>Layout of factor predictors. Applies to
+<strong>any categorical predictor</strong> – <code>factor</code>, <code>ordered</code>,
+<code>character</code>, or <code>logical</code> (R coerces the latter two to
+factors at fit time). Two options:</p><ul><li><p><code>"grouped"</code> (default): the variable name on its own
+header row ending with <code>:</code> (e.g., <code>education:</code>); each
+level follows as an indented sub-row with the bare level
+name. APA convention.</p></li>
+<li><p><code>"flat"</code>: each non-reference dummy is one row with
+the <code>&lt;variable&gt;&lt;level&gt;</code> form (e.g., <code>educationUpper</code>); no
+header, no indent. Econometrics convention.</p></li>
 </ul></dd>
 
 
@@ -288,9 +286,8 @@ header, no indent. Econometrics / <code>parameters</code> /
 <dd><p>Rendering of factor reference levels.
 Four modes, distinguishing WHERE the reference information is
 exposed (in a row, inline, in the footer, or nowhere):</p><ul><li><p><code>"row"</code> (default): explicit row <code>Female (ref.)</code> with
-em-dashes in all stat columns (gtsummary / NEJM / BMJ
-clinical convention). <code>reference_label</code> controls the
-suffix.</p></li>
+em-dashes in all stat columns (NEJM / BMJ clinical
+convention). <code>reference_label</code> controls the suffix.</p></li>
 <li><p><code>"annotation"</code>: the row is dropped and the reference
 is shown inline. Under <code>factor_layout = "grouped"</code> the
 factor header reads <code>education: [ref: Lower]</code>; under
@@ -321,11 +318,16 @@ wording – "ref:", "vs", "Reference categories:").</p></dd>
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>
 <dd><p>Character vector of tokens for the
 model-level rows below the coefficients; row order follows
-token order. <code>NULL</code> (default) applies a class-aware default;
-under <code>nested = TRUE</code> the default is extended with the
-change-stat tokens. See <em>Vocabulary tokens</em> (<code>show_fit_stats</code>
-subsection) and <em>Hierarchical (nested) model comparison</em> in
-the details.</p></dd>
+token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>: <code>c("nobs", "r2", "adj_r2")</code>.</p></li>
+<li><p><code>glm</code>: <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>.</p></li>
+<li><p>mixed <code>lm</code> + <code>glm</code>: the union of the two (the
+renderer em-dashes per cell the stat not defined for a
+given model class).</p></li>
+</ul><p>Under <code>nested = TRUE</code> the default is extended with the
+class-appropriate change-stat tokens (e.g. <code>"r2_change"</code>,
+<code>"f_change"</code> for <code>lm</code>). See <em>Vocabulary tokens</em>
+(<code>show_fit_stats</code> subsection) and <em>Hierarchical (nested)
+model comparison</em> in the details for the full vocabulary.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>

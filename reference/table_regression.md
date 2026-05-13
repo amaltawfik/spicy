@@ -186,20 +186,17 @@ table_regression(
 
 - factor_layout:
 
-  Layout of factor predictors in the table. Applies to **any categorical
-  predictor** – `factor`, `ordered`, `character`, or `logical`. R's
-  [`stats::model.frame()`](https://rdrr.io/r/stats/model.frame.html)
-  coerces character and logical columns to factors at fit time, so they
-  share the same layout logic. Two options:
+  Layout of factor predictors. Applies to **any categorical predictor**
+  – `factor`, `ordered`, `character`, or `logical` (R coerces the latter
+  two to factors at fit time). Two options:
 
-  - `"grouped"` (default): the variable name appears on its own header
-    row ending with `:` (e.g., `education:`); each level follows as an
-    indented sub-row with the bare level name. APA / `gtsummary`
-    convention.
+  - `"grouped"` (default): the variable name on its own header row
+    ending with `:` (e.g., `education:`); each level follows as an
+    indented sub-row with the bare level name. APA convention.
 
   - `"flat"`: each non-reference dummy is one row with the
     `<variable><level>` form (e.g., `educationUpper`); no header, no
-    indent. Econometrics / `parameters` / `modelsummary` convention.
+    indent. Econometrics convention.
 
 - reference_style:
 
@@ -208,8 +205,8 @@ table_regression(
   or nowhere):
 
   - `"row"` (default): explicit row `Female (ref.)` with em-dashes in
-    all stat columns (gtsummary / NEJM / BMJ clinical convention).
-    `reference_label` controls the suffix.
+    all stat columns (NEJM / BMJ clinical convention). `reference_label`
+    controls the suffix.
 
   - `"annotation"`: the row is dropped and the reference is shown
     inline. Under `factor_layout = "grouped"` the factor header reads
@@ -238,11 +235,22 @@ table_regression(
 - show_fit_stats:
 
   Character vector of tokens for the model-level rows below the
-  coefficients; row order follows token order. `NULL` (default) applies
-  a class-aware default; under `nested = TRUE` the default is extended
-  with the change-stat tokens. See *Vocabulary tokens* (`show_fit_stats`
-  subsection) and *Hierarchical (nested) model comparison* in the
-  details.
+  coefficients; row order follows token order. `NULL` (default) resolves
+  class-aware:
+
+  - `lm`: `c("nobs", "r2", "adj_r2")`.
+
+  - `glm`:
+    `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
+
+  - mixed `lm` + `glm`: the union of the two (the renderer em-dashes per
+    cell the stat not defined for a given model class).
+
+  Under `nested = TRUE` the default is extended with the
+  class-appropriate change-stat tokens (e.g. `"r2_change"`, `"f_change"`
+  for `lm`). See *Vocabulary tokens* (`show_fit_stats` subsection) and
+  *Hierarchical (nested) model comparison* in the details for the full
+  vocabulary.
 
 - model_labels:
 
