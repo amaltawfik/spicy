@@ -181,6 +181,21 @@
 <li><p><code>marginaleffects</code>, <code>parameters</code>, and <code>performance</code> added to <code>Suggests</code> (oracle packages for AME and pseudo-R² cross- validation); no runtime dependency change.</p></li>
 </ul></div>
 <div class="section level4">
+<h4 id="table_regression--banner-overrides-and-apa-borders-across-all-engines-0-12-0">
+<code>table_regression()</code> — banner overrides and APA borders across all engines<a class="anchor" aria-label="anchor" href="#table_regression--banner-overrides-and-apa-borders-across-all-engines-0-12-0"></a></h4>
+<ul><li><p>New <code>title</code> and <code>note</code> arguments (unified API): <code>NULL</code> (default, auto-build), <code>FALSE</code> (suppress the banner row), or a character string (override verbatim). The validator rejects <code>TRUE</code> and non- scalar / non-character inputs with a remediation hint, so user typos like <code>title = TURE</code> are surfaced rather than silently mapped. Use <code>title = FALSE</code> when the manuscript supplies its own caption and the in-table banner would duplicate it.</p></li>
+<li>
+<p>APA horizontal rules now reach <strong>every</strong> rich-output engine (<code>gt</code>, <code>flextable</code>, <code>tinytable</code>, <code>excel</code>), matching the layout already used by <code><a href="../reference/table_continuous.html">table_continuous()</a></code> / <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>. Five rules in the standard layout:</p>
+<ol style="list-style-type: decimal"><li>top rule above the spanner / header,</li>
+<li>mid-rule under each multi-model spanner range,</li>
+<li>sub-rule under the column header,</li>
+<li>
+<strong>new</strong> hair rule between the last coefficient row and the first fit-stat row (uses the existing <code>group_sep_rows</code> cue),</li>
+<li>bottom rule below the final body row.</li>
+</ol></li>
+<li><p><code>output = "clipboard"</code> now mirrors the Excel layout: title row, spanner row, header row, body, footer note. Pasting into Excel or Word reproduces the full table structure (previously only the body data.frame was copied, dropping title, multi-model spanner, and note).</p></li>
+</ul></div>
+<div class="section level4">
 <h4 id="covariate-adjustment-in-table_continuous_lm-0-12-0">Covariate adjustment in <code>table_continuous_lm()</code>
 <a class="anchor" aria-label="anchor" href="#covariate-adjustment-in-table_continuous_lm-0-12-0"></a></h4>
 <ul><li>New <code>covariates</code> argument adds additive covariates to each per-outcome model. Estimate, SE, <em>p</em>-value and CI on <code>by</code> become covariate-adjusted; effect sizes adapt accordingly. Accepts a tidyselect expression or a literal character vector; covariates overlapping <code>select</code> are auto-excluded from the outcome list. Formula syntax (interactions, transforms) is reserved for a future release.</li>

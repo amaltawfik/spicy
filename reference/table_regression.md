@@ -44,6 +44,8 @@ table_regression(
   align = c("decimal", "center", "right", "auto"),
   padding = 0L,
   labels = NULL,
+  title = NULL,
+  note = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -345,6 +347,29 @@ table_regression(
   the displayed labels. E.g.
   `c("age" = "Age (years)", "sexM" = "Male (vs Female)")`. Default
   `NULL` (use raw term names).
+
+- title, note:
+
+  Override or suppress the auto-built caption / methodological footer.
+  Three modes per argument:
+
+  - `NULL` (default): the package builds the standard caption ("Linear
+    regression on `<DV>`" / "Hierarchical linear regression on `<DV>`" /
+    ...) and a methodological note (VCV type, p-adjust method, reference
+    categories, ...).
+
+  - `FALSE`: the corresponding banner row is omitted from every output
+    engine. Use when the surrounding manuscript provides its own caption
+    / note.
+
+  - character string (length 1): replaces the auto-built text verbatim.
+    The renderer applies no APA formatting on top – supply the exact
+    string you want displayed (multi- line notes accepted via embedded
+    `"\n"`).
+
+  Validation messages, the spanner row, and the in-body change- stat
+  rows are *not* affected – they belong to the table structure, not to
+  the banner.
 
 - output:
 

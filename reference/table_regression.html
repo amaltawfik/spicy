@@ -123,6 +123,8 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span>, <span class="st">"auto"</span><span class="op">)</span>,</span>
 <span>  padding <span class="op">=</span> <span class="fl">0L</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"tinytable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  excel_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -431,6 +433,24 @@ row labels. Names are coefficient term names (from
 <code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">stats::terms()</a></code>); values are the displayed labels. E.g.
 <code>c("age" = "Age (years)", "sexM" = "Male (vs Female)")</code>.
 Default <code>NULL</code> (use raw term names).</p></dd>
+
+
+<dt id="arg-title-note">title, note<a class="anchor" aria-label="anchor" href="#arg-title-note"></a></dt>
+<dd><p>Override or suppress the auto-built caption /
+methodological footer. Three modes per argument:</p><ul><li><p><code>NULL</code> (default): the package builds the standard caption
+("Linear regression on <code>&lt;DV&gt;</code>" / "Hierarchical linear
+regression on <code>&lt;DV&gt;</code>" / ...) and a methodological note
+(VCV type, p-adjust method, reference categories, ...).</p></li>
+<li><p><code>FALSE</code>: the corresponding banner row is omitted from
+every output engine. Use when the surrounding manuscript
+provides its own caption / note.</p></li>
+<li><p>character string (length 1): replaces the auto-built
+text verbatim. The renderer applies no APA formatting on
+top – supply the exact string you want displayed (multi-
+line notes accepted via embedded <code>"\n"</code>).</p></li>
+</ul><p>Validation messages, the spanner row, and the in-body change-
+stat rows are <em>not</em> affected – they belong to the table
+structure, not to the banner.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
