@@ -1075,15 +1075,171 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
   )
   fit <- lm(y ~ age + sex, df)
 
-  out_t <- table_regression(fit, group_factor_levels = TRUE)
+  out_t <- table_regression(fit, factor_layout = "grouped")
   vars_t <- as.data.frame(out_t, stringsAsFactors = FALSE)$Variable
   ref_t  <- which(grepl("Female (ref.)", vars_t, fixed = TRUE))
   male_t <- which(vars_t == "  Male")
   expect_true(ref_t < male_t)
 
-  out_f <- table_regression(fit, group_factor_levels = FALSE)
+  out_f <- table_regression(fit, factor_layout = "flat")
   vars_f <- as.data.frame(out_f, stringsAsFactors = FALSE)$Variable
   ref_f  <- which(grepl("sexFemale (ref.)", vars_f, fixed = TRUE))
   male_f <- which(vars_f == "sexMale")
   expect_true(ref_f < male_f)
+})
+
+
+# ============================================================================
+# reference_style = "annotation" / "footer" / "none" + factor_layout enum
+# ============================================================================
+
+test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [vs <ref>] on 1st dummy only", {
+  df <- data.frame(
+    y   = rnorm(200),
+    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
+                 levels = c("Female", "Male")),
+    edu = factor(sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
+                 levels = c("Lower", "Upper", "Tertiary"))
+  )
+  fit <- lm(y ~ sex + edu, df)
+  out <- table_regression(fit, reference_style = "annotation",
+                          factor_layout = "flat")
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  # 2-level factor: the single non-ref dummy carries [vs Female]
+  expect_true(any(grepl("sexMale [vs Female]", vars, fixed = TRUE)))
+  # 3-level factor: FIRST non-ref dummy carries [vs Lower]; second does not
+  edu_rows <- grep("^edu", vars, value = TRUE)
+  with_marker <- grep("[vs Lower]", edu_rows, fixed = TRUE, value = TRUE)
+  expect_length(with_marker, 1L)              # exactly one
+  # Reference rows themselves are NOT in the body in annotation mode
+  expect_false(any(grepl("Lower (ref.)", vars, fixed = TRUE)))
+})
+
+test_that("reference_style = \"footer\" adds a single 'Reference categories: ...' line", {
+  df <- data.frame(
+    y   = rnorm(200),
+    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
+                 levels = c("Female", "Male")),
+    edu = factor(sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
+                 levels = c("Lower", "Upper", "Tertiary"))
+  )
+  fit <- lm(y ~ sex + edu, df)
+  out <- table_regression(fit, reference_style = "footer")
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  # Ref rows dropped from body; no inline annotation
+  expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
+  expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
+  # Footer line lists both factor references
+  note <- attr(out, "note")
+  expect_match(note, "Reference categories:")
+  expect_match(note, "sex = Female")
+  expect_match(note, "edu = Lower")
+})
+
+test_that("reference_style = \"none\" shows no reference info anywhere", {
+  df <- data.frame(
+    y   = rnorm(200),
+    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
+                 levels = c("Female", "Male"))
+  )
+  fit <- lm(y ~ sex, df)
+  # Suppress the spicy_inform emitted on flat+none; we test that
+  # separately below.
+  withCallingHandlers(
+    out <- table_regression(fit, reference_style = "none",
+                            factor_layout = "flat"),
+    spicy_info = function(c) invokeRestart("muffleMessage")
+  )
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
+  expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
+  # Footer carries the regression-type / vcov declaration but
+  # nothing about references.
+  expect_no_match(attr(out, "note"), "Reference categories")
+})
+
+test_that("reference_style = \"none\" + factor_layout = \"flat\" emits spicy_inform once", {
+  df <- data.frame(
+    y   = rnorm(100),
+    sex = factor(sample(c("Female", "Male"), 100, replace = TRUE))
+  )
+  fit <- lm(y ~ sex, df)
+  cnd <- NULL
+  withCallingHandlers(
+    table_regression(fit, reference_style = "none",
+                     factor_layout = "flat"),
+    spicy_info = function(c) {
+      cnd <<- c
+      invokeRestart("muffleMessage")
+    }
+  )
+  expect_s3_class(cnd, "spicy_silent_reference")
+  expect_s3_class(cnd, "spicy_info")
+  expect_match(conditionMessage(cnd), "reference convention")
+})
+
+test_that("reference_style = \"none\" + factor_layout = \"grouped\" does NOT emit the info", {
+  # Grouped still shows the `education:` header, so the silent-loss
+  # warning is unnecessary -- only the FLAT case loses all visual
+  # trace of the factor's existence beyond per-level dummies.
+  df <- data.frame(
+    y   = rnorm(100),
+    sex = factor(sample(c("Female", "Male"), 100, replace = TRUE))
+  )
+  fit <- lm(y ~ sex, df)
+  cnd <- NULL
+  withCallingHandlers(
+    table_regression(fit, reference_style = "none",
+                     factor_layout = "grouped"),
+    spicy_info = function(c) {
+      cnd <<- c
+      invokeRestart("muffleMessage")
+    }
+  )
+  expect_null(cnd)
+})
+
+test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing to lose)", {
+  fit <- lm(mpg ~ wt, data = mt)
+  cnd <- NULL
+  withCallingHandlers(
+    table_regression(fit, reference_style = "none",
+                     factor_layout = "flat"),
+    spicy_info = function(c) {
+      cnd <<- c
+      invokeRestart("muffleMessage")
+    }
+  )
+  expect_null(cnd)
+})
+
+test_that("migration: passing group_factor_levels = TRUE/FALSE raises spicy_invalid_input", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  err <- tryCatch(
+    table_regression(fit, group_factor_levels = TRUE),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "group_factor_levels", fixed = TRUE)
+  expect_match(conditionMessage(err), "factor_layout", fixed = TRUE)
+})
+
+test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, factor_layout = "flat")
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  # No "cyl:" factor header in flat mode
+  expect_false("cyl:" %in% vars)
+  # Each level row uses the concatenated `<var><level>` form
+  expect_true(any(grepl("^cyl6$", vars)))
+  expect_true(any(grepl("^cyl8$", vars)))
+})
+
+test_that("factor_layout = \"grouped\" (default) inserts factor header + indents", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)   # default grouped
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_true("cyl:" %in% vars)
+  expect_true(any(grepl("^  6$", vars)))
+  expect_true(any(grepl("^  8$", vars)))
 })

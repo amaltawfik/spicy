@@ -41,8 +41,8 @@ render_regression_table <- function(
     show_fit_stats = c("nobs", "r2", "adj_r2"),
     model_labels = NULL,
     reference_label = "(ref.)",
-    reference_style = c("row", "annotation"),
-    group_factor_levels = TRUE,
+    reference_style = c("row", "annotation", "footer", "none"),
+    factor_layout = c("grouped", "flat"),
     stars = FALSE,
     ci_level = 0.95,
     digits = 2L,
@@ -58,6 +58,11 @@ render_regression_table <- function(
     note = NULL) {
   align <- match.arg(align)
   reference_style <- match.arg(reference_style)
+  factor_layout <- match.arg(factor_layout)
+  # Internal boolean used by the long-existing build_*_row code paths;
+  # the public API switched to an enum but the renderer's logic still
+  # branches on a TRUE/FALSE "is this grouped?" check.
+  group_factor_levels <- identical(factor_layout, "grouped")
 
   coefs <- aligned$coefs_aligned
   if (is.null(coefs) || nrow(coefs) == 0L) {
@@ -160,9 +165,11 @@ render_regression_table <- function(
       )
       current_factor <- rt$factor_term
     }
+    new_factor_row <- !is.na(rt$factor_term) &&
+                        !identical(rt$factor_term, current_factor)
     if (is.na(rt$factor_term)) current_factor <- NA_character_
 
-    rows[[length(rows) + 1L]] <- build_body_row(
+    new_row <- build_body_row(
       rt, coefs, col_spec, model_ids, label_map, show_columns,
       reference_label = reference_label,
       reference_style = reference_style,
@@ -173,6 +180,24 @@ render_regression_table <- function(
       decimal_mark = decimal_mark,
       labels = labels
     )
+    # `reference_style = "annotation"` in flat layout: attach
+    # ` [vs <ref_level>]` to the FIRST non-reference dummy of each
+    # factor. Subsequent dummies of the same factor inherit the
+    # same reference -- repeating the annotation would just be
+    # noise. The grouped layout already gets `[ref: <level>]` in
+    # the factor header above (via build_factor_header_row).
+    if (identical(reference_style, "annotation") &&
+          !isTRUE(group_factor_levels) &&
+          isTRUE(new_factor_row) &&
+          rt$factor_term %in% names(ref_level_map)) {
+      ref_lvl_flat <- ref_level_map[[rt$factor_term]]
+      if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
+        new_row$Variable <- paste0(new_row$Variable,
+                                    " [vs ", ref_lvl_flat, "]")
+        current_factor <- rt$factor_term   # mark factor seen
+      }
+    }
+    rows[[length(rows) + 1L]] <- new_row
   }
 
   body <- do.call(rbind, rows)
@@ -293,10 +318,14 @@ render_regression_table <- function(
 # point into `body` (so they include the leading "Variable" column at
 # position 1, which is excluded from every spanner).
 build_model_spanners <- function(body, col_spec, label_map) {
+  # nocov start - defensive: empty col_spec is rejected upstream by
+  # validate_show_columns(); empty / single-element label_map yields
+  # the early-return on lines 322-324 anyway.
   if (length(col_spec) == 0L) return(NULL)
+  # nocov end
   labels <- unique(unname(label_map))
   if (length(labels) <= 1L) return(NULL)
-  if (!any(nzchar(labels))) return(NULL)
+  if (!any(nzchar(labels))) return(NULL)   # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
 
   body_names <- names(body)
   spec_names <- vapply(col_spec, `[[`, character(1), "col_name")
@@ -305,11 +334,11 @@ build_model_spanners <- function(body, col_spec, label_map) {
   out <- list()
   for (m_id in unique(spec_model)) {
     m_lbl <- label_map[[m_id]]
-    if (!nzchar(m_lbl)) next
+    if (!nzchar(m_lbl)) next  # nocov - same as line 324 guard
     cols_in_model <- spec_names[spec_model == m_id]
     idx <- match(cols_in_model, body_names)
     idx <- idx[!is.na(idx)]
-    if (!length(idx)) next
+    if (!length(idx)) next    # nocov - cols_in_model always survive in body_names by construction
     idx <- sort(idx)
     # Spanners must be contiguous; build_column_spec emits columns in
     # model order so this holds by construction. Defensive check kept

@@ -339,17 +339,51 @@
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
 #'   `show_intercept = FALSE` (with `spicy_ignored_arg` warning).
-#' @param group_factor_levels Whether to render factor predictors
-#'   as a header row + indented contrast levels. `TRUE` (default,
-#'   APA / gtsummary style) or `FALSE` (flat `factor: level` rows).
+#' @param factor_layout Layout of factor predictors in the table.
+#'   Applies to **any categorical predictor** -- `factor`, `ordered`,
+#'   `character`, or `logical`. R's [stats::model.frame()] coerces
+#'   character and logical columns to factors at fit time, so they
+#'   share the same layout logic. Two options:
+#'   \itemize{
+#'     \item `"grouped"` (default): the variable name appears on
+#'       its own header row ending with `:` (e.g., `education:`);
+#'       each level follows as an indented sub-row with the bare
+#'       level name. APA / `gtsummary` convention.
+#'     \item `"flat"`: each non-reference dummy is one row with the
+#'       `<variable><level>` form (e.g., `educationUpper`); no
+#'       header, no indent. Econometrics / `parameters` /
+#'       `modelsummary` convention.
+#'   }
 #' @param reference_style Rendering of factor reference levels.
-#'   `"row"` (default) shows an explicit row `Lower (ref.)` with
-#'   em-dashes in all stat columns (gtsummary / clinical style).
-#'   `"annotation"` puts `[ref: Lower]` in the factor header
-#'   (compact mode).
-#' @param reference_label String used to mark the reference level
-#'   in `reference_style = "row"` mode. Default `"(ref.)"`.
-#'   Customise to `"(reference)"` or `"(réf.)"` etc.
+#'   Four modes, distinguishing WHERE the reference information is
+#'   exposed (in a row, inline, in the footer, or nowhere):
+#'   \itemize{
+#'     \item `"row"` (default): explicit row `Female (ref.)` with
+#'       em-dashes in all stat columns (gtsummary / NEJM / BMJ
+#'       clinical convention). `reference_label` controls the
+#'       suffix.
+#'     \item `"annotation"`: the row is dropped and the reference
+#'       is shown inline. Under `factor_layout = "grouped"` the
+#'       factor header reads `education: [ref: Lower]`; under
+#'       `factor_layout = "flat"` the marker `[vs Lower]` is
+#'       attached to the **first non-reference dummy** of each
+#'       factor (subsequent dummies inherit the same reference).
+#'     \item `"footer"`: the row is dropped and a single line
+#'       `Reference categories: education = Lower; sex = Female.`
+#'       is added to the footer note. SAS `PROC LOGISTIC` / SPSS
+#'       "Categorical Variables Codings" convention. Best for
+#'       publication-grade dense multi-factor tables.
+#'     \item `"none"`: the row is dropped and no reference
+#'       information is displayed anywhere. The user is
+#'       responsible for stating the reference convention
+#'       elsewhere (article text, table caption). Under
+#'       `factor_layout = "flat"`, an informational message is
+#'       emitted to flag the silent omission.
+#'   }
+#' @param reference_label Suffix shown after the reference level in
+#'   `reference_style = "row"` mode. Default `"(ref.)"`. Ignored
+#'   by the other three modes (which use structural English
+#'   wording -- "ref:", "vs", "Reference categories:").
 #' @param show_fit_stats Character vector of tokens for the
 #'   model-level fit-stats footer, or `NULL` (default) to apply
 #'   the class-aware default. Available tokens:
@@ -609,8 +643,9 @@ table_regression <- function(
   drop = NULL,
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
-  group_factor_levels = TRUE,
-  reference_style = c("row", "annotation"),
+  factor_layout = c("grouped", "flat"),
+  group_factor_levels,         # migration sentinel; see body below
+  reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   model_labels = NULL,
@@ -645,8 +680,26 @@ table_regression <- function(
   ci_method <- match.arg(ci_method)
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
+  factor_layout <- match.arg(factor_layout)
   align <- match.arg(align)
   output <- match.arg(output)
+
+  # Migration error: `group_factor_levels` was renamed to
+  # `factor_layout = c("grouped", "flat")` in 0.12. The arg is kept
+  # in the signature WITHOUT a default so callers passing
+  # `group_factor_levels = ...` reach this body code (instead of
+  # R's "unused argument" error). `missing()` detects whether the
+  # user supplied it; either supplied value (TRUE/FALSE/anything)
+  # is rejected with the migration hint.
+  if (!missing(group_factor_levels)) {
+    spicy_abort(
+      c(paste0("`group_factor_levels` was renamed to `factor_layout` ",
+               "in spicy 0.12."),
+        "i" = "Replace `group_factor_levels = TRUE`  with `factor_layout = \"grouped\"`.",
+        "i" = "Replace `group_factor_levels = FALSE` with `factor_layout = \"flat\"`."),
+      class = "spicy_invalid_input"
+    )
+  }
 
   # ====================================================================
   # Validation cascade (Q21 — 6 phases, ~29 steps, fail-fast).
@@ -854,7 +907,6 @@ table_regression <- function(
   validate_ci_level(ci_level)
   validate_boot_n(boot_n)
   validate_logical_scalar(show_intercept, "show_intercept")
-  validate_logical_scalar(group_factor_levels, "group_factor_levels")
   validate_logical_scalar(nested, "nested")
   validate_digit_arg(digits, "digits")
   validate_digit_arg(p_digits, "p_digits")
@@ -1010,7 +1062,6 @@ table_regression <- function(
     extracts,
     show_intercept = show_intercept,
     intercept_position = intercept_position,
-    group_factor_levels = group_factor_levels,
     reference_style = reference_style
   )
 
@@ -1028,8 +1079,30 @@ table_regression <- function(
     p_adjust = p_adjust,
     stars = stars,
     nested = nested,
-    show_columns = show_columns
+    show_columns = show_columns,
+    reference_style = reference_style
   )
+
+  # "none" + flat: silent information loss flag. Inform-level
+  # message (not a warning), once per call. Reference convention
+  # must be carried by the surrounding article / caption. Only
+  # emitted when at least one factor was detected (otherwise
+  # there's nothing to be silent about).
+  if (identical(reference_style, "none") &&
+        identical(factor_layout, "flat") &&
+        any(vapply(extracts, function(e) {
+          coefs <- e$coefs
+          !is.null(coefs) && nrow(coefs) > 0L &&
+            any(!is.na(coefs$factor_term))
+        }, logical(1)))) {
+    spicy_inform(
+      c(paste0("`reference_style = \"none\"` with `factor_layout = ",
+               "\"flat\"`: reference levels are not displayed anywhere."),
+        "i" = paste0("State the reference convention in the surrounding ",
+                     "text or table caption.")),
+      class = "spicy_silent_reference"
+    )
+  }
 
   # ---- Nested comparison (Step 9) ----------------------------------------
   nested_footer <- NULL
@@ -1074,7 +1147,7 @@ table_regression <- function(
     model_labels = effective_model_labels,
     reference_label = reference_label,
     reference_style = reference_style,
-    group_factor_levels = group_factor_levels,
+    factor_layout = factor_layout,
     stars = stars,
     ci_level = ci_level,
     digits = digits,

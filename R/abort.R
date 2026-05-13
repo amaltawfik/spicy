@@ -75,6 +75,22 @@ spicy_warn <- function(message, class = NULL, ...) {
 }
 
 
+# Inform-level message (less intrusive than a warning): printed to
+# stderr by default but doesn't trigger R's warning machinery (no
+# stack-trace prompt, no late "Warning messages:" reprint at the
+# end of an interactive session). Use for "you should know this,
+# but it's not a problem" hints. Always carries `spicy_info` so
+# callers can muffle with `withCallingHandlers(spicy_info = ...)`
+# in tests.
+spicy_inform <- function(message, class = NULL, ...) {
+  rlang::inform(
+    message = message,
+    class = c(class, "spicy_info"),
+    ...
+  )
+}
+
+
 # Internal indirection for `requireNamespace()`. Exists so the
 # missing-Suggests guards across the regression files can be
 # exercised in tests via `local_mocked_bindings(.package = "spicy")`

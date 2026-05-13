@@ -19,8 +19,9 @@ table_regression(
   drop = NULL,
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
-  group_factor_levels = TRUE,
-  reference_style = c("row", "annotation"),
+  factor_layout = c("grouped", "flat"),
+  group_factor_levels,
+  reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   model_labels = NULL,
@@ -191,19 +192,53 @@ shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,
 intercept just above the fit-stats footer). Ignored when
 \code{show_intercept = FALSE} (with \code{spicy_ignored_arg} warning).}
 
-\item{group_factor_levels}{Whether to render factor predictors
-as a header row + indented contrast levels. \code{TRUE} (default,
-APA / gtsummary style) or \code{FALSE} (flat \code{factor: level} rows).}
+\item{factor_layout}{Layout of factor predictors in the table.
+Applies to \strong{any categorical predictor} -- \code{factor}, \code{ordered},
+\code{character}, or \code{logical}. R's \code{\link[stats:model.frame]{stats::model.frame()}} coerces
+character and logical columns to factors at fit time, so they
+share the same layout logic. Two options:
+\itemize{
+\item \code{"grouped"} (default): the variable name appears on
+its own header row ending with \code{:} (e.g., \verb{education:});
+each level follows as an indented sub-row with the bare
+level name. APA / \code{gtsummary} convention.
+\item \code{"flat"}: each non-reference dummy is one row with the
+\verb{<variable><level>} form (e.g., \code{educationUpper}); no
+header, no indent. Econometrics / \code{parameters} /
+\code{modelsummary} convention.
+}}
 
 \item{reference_style}{Rendering of factor reference levels.
-\code{"row"} (default) shows an explicit row \code{Lower (ref.)} with
-em-dashes in all stat columns (gtsummary / clinical style).
-\code{"annotation"} puts \verb{[ref: Lower]} in the factor header
-(compact mode).}
+Four modes, distinguishing WHERE the reference information is
+exposed (in a row, inline, in the footer, or nowhere):
+\itemize{
+\item \code{"row"} (default): explicit row \code{Female (ref.)} with
+em-dashes in all stat columns (gtsummary / NEJM / BMJ
+clinical convention). \code{reference_label} controls the
+suffix.
+\item \code{"annotation"}: the row is dropped and the reference
+is shown inline. Under \code{factor_layout = "grouped"} the
+factor header reads \verb{education: [ref: Lower]}; under
+\code{factor_layout = "flat"} the marker \verb{[vs Lower]} is
+attached to the \strong{first non-reference dummy} of each
+factor (subsequent dummies inherit the same reference).
+\item \code{"footer"}: the row is dropped and a single line
+\verb{Reference categories: education = Lower; sex = Female.}
+is added to the footer note. SAS \verb{PROC LOGISTIC} / SPSS
+"Categorical Variables Codings" convention. Best for
+publication-grade dense multi-factor tables.
+\item \code{"none"}: the row is dropped and no reference
+information is displayed anywhere. The user is
+responsible for stating the reference convention
+elsewhere (article text, table caption). Under
+\code{factor_layout = "flat"}, an informational message is
+emitted to flag the silent omission.
+}}
 
-\item{reference_label}{String used to mark the reference level
-in \code{reference_style = "row"} mode. Default \code{"(ref.)"}.
-Customise to \code{"(reference)"} or \code{"(réf.)"} etc.}
+\item{reference_label}{Suffix shown after the reference level in
+\code{reference_style = "row"} mode. Default \code{"(ref.)"}. Ignored
+by the other three modes (which use structural English
+wording -- "ref:", "vs", "Reference categories:").}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level fit-stats footer, or \code{NULL} (default) to apply

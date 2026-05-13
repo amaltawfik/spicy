@@ -293,3 +293,65 @@ test_that("full footer — always carries the regression-type declaration", {
   expect_match(out, "regression\\.")
   expect_match(out, "Std\\. errors:")
 })
+
+
+# ============================================================================
+# Footer — reference categories (reference_style = "footer")
+# ============================================================================
+
+test_that("build_reference_categories_footer_block - NULL for non-footer styles", {
+  expect_null(spicy:::build_reference_categories_footer_block(list(), "row"))
+  expect_null(spicy:::build_reference_categories_footer_block(list(),
+                                                                "annotation"))
+  expect_null(spicy:::build_reference_categories_footer_block(list(), "none"))
+})
+
+test_that("build_reference_categories_footer_block - NULL for empty extracts", {
+  expect_null(spicy:::build_reference_categories_footer_block(list(),
+                                                                "footer"))
+})
+
+test_that("build_reference_categories_footer_block - skips models with no coefs / no ref rows", {
+  empty <- list(coefs = NULL)
+  expect_null(spicy:::build_reference_categories_footer_block(list(empty),
+                                                                "footer"))
+  zero_rows <- list(coefs = data.frame(
+    is_reference = logical(0),
+    factor_term = character(0),
+    factor_level = character(0)
+  ))
+  expect_null(spicy:::build_reference_categories_footer_block(list(zero_rows),
+                                                                "footer"))
+})
+
+test_that("build_reference_categories_footer_block - dedups identical (var, level) pairs across models", {
+  set.seed(1)
+  df <- data.frame(
+    y = rnorm(60),
+    sex = factor(c(rep("F", 30), rep("M", 30)))
+  )
+  m1 <- lm(y ~ sex, df)
+  m2 <- lm(y ~ sex, df[sample(60, 50), ])
+  ex1 <- spicy:::extract_lm_phase1(m1, model_id = "M1")
+  ex2 <- spicy:::extract_lm_phase1(m2, model_id = "M2")
+  out <- spicy:::build_reference_categories_footer_block(list(ex1, ex2),
+                                                          "footer")
+  # Only ONE "sex = F" entry (not two)
+  expect_equal(length(gregexpr("sex = ", out)[[1]]), 1L)
+})
+
+test_that("build_reference_categories_footer_block - skips rows with NA or empty factor_term/level", {
+  bad <- list(coefs = data.frame(
+    is_reference = c(TRUE, TRUE, TRUE),
+    factor_term  = c(NA_character_, "", "foo"),
+    factor_level = c("a", "b", NA_character_)
+  ))
+  expect_null(spicy:::build_reference_categories_footer_block(list(bad),
+                                                                "footer"))
+})
+
+test_that("isTRUE_vec - handles NA / FALSE / TRUE elements", {
+  expect_equal(spicy:::isTRUE_vec(c(TRUE, FALSE, NA, TRUE)),
+                c(TRUE, FALSE, FALSE, TRUE))
+  expect_equal(spicy:::isTRUE_vec(logical(0)), logical(0))
+})

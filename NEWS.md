@@ -156,6 +156,46 @@
   the type for `lm` ("Linear regression: mpg" instead of
   "Regression: mpg").
 
+* **`group_factor_levels` renamed to `factor_layout`** (enum,
+  not boolean). The new argument takes `"grouped"` (default,
+  factor variable on its own header row + indented levels — APA /
+  `gtsummary`) or `"flat"` (concatenated `<var><level>` rows, no
+  header — `parameters` / `modelsummary` / Stata convention).
+  Auto-documenting: no more TRUE/FALSE to memorise. The doc also
+  clarifies that the layout applies to **any categorical
+  predictor** (factor, ordered, character, logical) because
+  [stats::model.frame()] coerces character / logical columns to
+  factors at fit time. Passing the legacy boolean raises an
+  actionable migration error.
+
+* **`reference_style` extended to 4 modes** (was 2). Distinguishes
+  WHERE the reference category is exposed:
+
+  * `"row"` (default): explicit row `Female (ref.)` with em-dash
+    (gtsummary / NEJM / BMJ convention).
+  * `"annotation"`: row dropped; reference shown inline. Grouped
+    layout puts `[ref: Lower]` in the factor header; flat layout
+    attaches `[vs Lower]` to the **first non-reference dummy**
+    of each factor (later dummies inherit).
+  * `"footer"` *(new)*: row dropped; a single line
+    `Reference categories: education = Lower; sex = Female.` is
+    added to the footer note. SAS `PROC LOGISTIC` / SPSS
+    "Categorical Variables Codings" convention. Recommended for
+    publication-grade dense multi-factor tables.
+  * `"none"` *(new)*: row dropped; no reference information
+    anywhere. User responsibility to state the convention in the
+    surrounding text. When combined with `factor_layout = "flat"`
+    (the only combo with NO visual trace of the factor's
+    reference), an informational `spicy_silent_reference` message
+    is emitted once so the silent omission is at least
+    acknowledged.
+
+* **`reference_label` scoped to `reference_style = "row"`**. The
+  suffix string ("(ref.)") only applies to the row mode. The
+  other three modes use structural English wording ("ref:",
+  "vs", "Reference categories:") that is intentionally
+  hard-coded.
+
 * **AME / B-p caveat narrowed and trimmed**. The warning that
   fired when `ame` and `p` are shown without `ame_p` is now only
   raised when divergence between the two p-values is actually

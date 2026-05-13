@@ -87,21 +87,24 @@ test_that("align_extracts — show_intercept = FALSE drops intercept rows", {
 # align_extracts() — group_factor_levels
 # ============================================================================
 
-test_that("align_extracts — group_factor_levels keeps factor coefs contiguous", {
+test_that("align_extracts keeps factor coefs contiguous (always grouped)", {
   ex <- list(mk_extract_lm(mpg ~ wt + cyl + am, "M1"))
-  aligned <- spicy:::align_extracts(ex, group_factor_levels = TRUE)
+  # `align_extracts()` no longer takes a layout arg in 0.12: the
+  # term reorder is always applied (contiguous + ref first). Layout
+  # is purely a render-time concern.
+  aligned <- spicy:::align_extracts(ex)
   # cyl4 (ref), cyl6, cyl8 should all be adjacent in the term_order
   cyl_terms <- c("cyl4", "cyl6", "cyl8")
   cyl_positions <- match(cyl_terms, aligned$term_order)
   expect_false(anyNA(cyl_positions))
-  # Adjacent: max position − min position == k − 1
+  # Adjacent: max position - min position == k - 1
   expect_equal(max(cyl_positions) - min(cyl_positions),
                length(cyl_terms) - 1L)
 })
 
 test_that("align_extracts — factor reference row precedes non-ref levels in group", {
   ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex, group_factor_levels = TRUE)
+  aligned <- spicy:::align_extracts(ex)
   cyl_pos <- match(c("cyl4", "cyl6", "cyl8"), aligned$term_order)
   # cyl4 is the reference level; should appear first
   expect_equal(cyl_pos[1], min(cyl_pos))
@@ -210,4 +213,62 @@ test_that("pivot_aligned_wide — empty aligned returns empty wide frame", {
   out <- spicy:::pivot_aligned_wide(empty,
                                     model_labels = c("M1"))
   expect_equal(nrow(out), 0L)
+})
+
+
+# ============================================================================
+# factor_level_sort_key — defensive paths + high-degree poly
+# ============================================================================
+
+test_that("factor_level_sort_key — empty input returns empty character", {
+  expect_identical(spicy:::factor_level_sort_key(character(0)),
+                    character(0))
+})
+
+test_that("factor_level_sort_key — all-treatment levels sort alphabetically", {
+  expect_identical(spicy:::factor_level_sort_key(c("Female", "Male")),
+                    c("Female", "Male"))
+})
+
+test_that("factor_level_sort_key — NA element returns a non-numeric key (formatC NA)", {
+  out <- spicy:::factor_level_sort_key(c(".L", NA, ".Q"))
+  # Defensive branch: NA in the input becomes the formatC NA string;
+  # the test just verifies the function returns a same-length result.
+  expect_length(out, 3L)
+  # The two poly entries keep their correct relative degree order.
+  expect_true(out[1] < out[3])
+})
+
+test_that("factor_level_sort_key — high-degree poly suffix '^4' / '^5' parsed correctly", {
+  # Reachable via an ordered factor with 5+ levels under contr.poly:
+  # R generates ".L", ".Q", ".C", "^4", "^5", ...
+  out <- spicy:::factor_level_sort_key(c(".L", ".Q", ".C", "^4", "^5"))
+  # Each yields a string ranked by polynomial degree; we test that the
+  # ordering induced by the keys matches the input order.
+  expect_equal(order(out), 1:5)
+})
+
+test_that("factor_level_sort_key — bogus '^xx' falls through to a non-crashing key", {
+  out <- spicy:::factor_level_sort_key(c(".L", "^bogus"))
+  expect_length(out, 2L)
+  # Specifically: the .L entry gets its zero-padded numeric rank;
+  # the bogus entry returns NA-rank -> formatC NA placeholder.
+  expect_match(out[1], "^0+1$")
+})
+
+test_that("end-to-end: 5-level ordered factor renders in polynomial degree order", {
+  set.seed(1)
+  df <- data.frame(
+    y  = rnorm(300),
+    f5 = ordered(sample(1:5, 300, replace = TRUE), levels = 1:5)
+  )
+  fit <- lm(y ~ f5, df)
+  out <- table_regression(fit)
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  # Polynomial degree order: .L < .Q < .C < ^4
+  l <- which(vars == ".L")
+  q <- which(vars == ".Q")
+  c4 <- which(vars == ".C")
+  qu <- which(vars == "^4")
+  expect_true(l < q && q < c4 && c4 < qu)
 })

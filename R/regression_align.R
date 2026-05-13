@@ -28,8 +28,7 @@ align_extracts <- function(
     extracts,
     show_intercept = TRUE,
     intercept_position = c("first", "last"),
-    group_factor_levels = TRUE,
-    reference_style = c("row", "annotation")) {
+    reference_style = c("row", "annotation", "footer", "none")) {
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
 
@@ -72,14 +71,19 @@ align_extracts <- function(
 
   # Always reorder so each factor's coefs stay contiguous and the
   # reference row sits FIRST within its group. The position must be
-  # deterministic regardless of `group_factor_levels`: only the
+  # deterministic regardless of `factor_layout`: only the
   # factor-HEADER row and the term-label formatting (indent + bare
-  # level vs `<var><level>`) depend on the flag. Otherwise the user
-  # would see a different ref-row position when toggling the
-  # grouping -- the inconsistency surfaced in real-world testing.
+  # level vs `<var><level>`) depend on the layout. Otherwise the
+  # user would see a different ref-row position when toggling the
+  # layout -- the inconsistency surfaced in real-world testing.
   term_order <- group_factor_terms(term_order, coefs_long)
 
-  if (identical(reference_style, "annotation")) {
+  # Only `reference_style = "row"` keeps the reference dummy in the
+  # body. "annotation" / "footer" / "none" drop it -- each surfaces
+  # the reference information through its own channel (inline in
+  # the factor header / first dummy, in the footer note, or not at
+  # all, respectively).
+  if (!identical(reference_style, "row")) {
     coefs_long <- coefs_long[!coefs_long$is_reference, , drop = FALSE]
     term_order <- intersect(term_order, unique(coefs_long$term))
   }

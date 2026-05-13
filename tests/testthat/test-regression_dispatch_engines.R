@@ -147,3 +147,60 @@ test_that("dispatch_regression_output — unknown output rejected by match.arg",
     spicy:::dispatch_regression_output(rendered, aligned, output = "bogus")
   )
 })
+
+
+# ============================================================================
+# output = "excel" with multi-model spanner branch
+# ============================================================================
+
+test_that("output = 'excel' with multi-model writes spanner row + merged cells + footer-reference line", {
+  skip_if_not_installed("openxlsx2")
+  df <- data.frame(
+    y   = rnorm(80),
+    age = rnorm(80),
+    sex = factor(sample(c("Female", "Male"), 80, replace = TRUE),
+                 levels = c("Female", "Male"))
+  )
+  m1 <- lm(y ~ age + sex, df)
+  m2 <- lm(y ~ age + sex, df[sample(nrow(df), 60), ])
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(list("Crude" = m1, "Adjusted" = m2),
+                   output = "excel", excel_path = path,
+                   reference_style = "footer")
+  expect_true(file.exists(path))
+  wb <- openxlsx2::wb_load(path)
+  cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
+  # Find the spanner row by scanning for "Crude" + "Adjusted"
+  has_spanner <- apply(cells, 1, function(r) {
+    cs <- as.character(r)
+    any(cs == "Crude") && any(cs == "Adjusted")
+  })
+  expect_true(any(has_spanner))
+  # Reference categories line should appear somewhere in column A
+  expect_true(any(grepl("Reference categories",
+                         as.character(cells[, 1L]),
+                         fixed = TRUE)))
+})
+
+
+# ============================================================================
+# regression-type footer line on mixed lm + glm
+# ============================================================================
+
+test_that("output = 'excel' with mixed lm + glm carries the per-model regression-type line", {
+  skip_if_not_installed("openxlsx2")
+  mt2 <- mtcars
+  mt2$cyl <- factor(mt2$cyl)
+  m_lm  <- lm(mpg ~ wt, data = mt2)
+  m_glm <- glm(am ~ mpg, data = mt2, family = binomial)
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(list("OLS" = m_lm, "Logit" = m_glm),
+                   output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
+  col_a <- as.character(cells[, 1L])
+  expect_true(any(grepl("Model 1: linear regression", col_a, fixed = TRUE)))
+  expect_true(any(grepl("Model 2: logistic regression", col_a, fixed = TRUE)))
+})

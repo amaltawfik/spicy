@@ -86,7 +86,8 @@ build_regression_footer <- function(
     p_adjust = "none",
     stars = FALSE,
     nested = FALSE,
-    show_columns = character(0)) {
+    show_columns = character(0),
+    reference_style = "row") {
   themes <- list(
     build_regression_type_footer_block(extracts),
     build_vcov_footer_block(extracts),
@@ -97,6 +98,7 @@ build_regression_footer <- function(
     build_stars_footer_block(stars),
     build_singular_footer_block(extracts),
     build_polynomial_contrasts_footer_block(extracts),
+    build_reference_categories_footer_block(extracts, reference_style),
     build_nested_footer_block(nested)
   )
   themes <- Filter(function(x) !is.null(x) && nzchar(x), themes)
@@ -438,6 +440,57 @@ build_polynomial_contrasts_footer_block <- function(extracts) {
     "`options(contrasts = c(\"contr.treatment\", \"contr.treatment\"))` ",
     "for a per-level layout."
   )
+}
+
+
+# ---- Theme: reference categories (reference_style = "footer") -----------
+
+# Emits a single "Reference categories: <var1> = <lvl1>; <var2> = <lvl2>."
+# line when `reference_style = "footer"`. Convention from SAS
+# `PROC LOGISTIC` and SPSS "Categorical Variables Codings". Collects
+# the reference level of every treatment-coded factor from every
+# model (deduped on the (var, level) pair; if two models share a
+# factor with the same ref, listed once).
+#
+# Returns NULL for other reference_style modes, or when no factor
+# in any model has a dropped reference (e.g. all factors use
+# `contr.poly`, or no-intercept fits).
+build_reference_categories_footer_block <- function(extracts,
+                                                     reference_style) {
+  if (!identical(reference_style, "footer")) return(NULL)
+  if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
+  pairs <- character(0)
+  seen <- character(0)
+  # Each model's `coefs` data.frame carries one row with
+  # `is_reference = TRUE` per dropped factor reference (added by
+  # `build_reference_rows()`). `factor_term` holds the variable
+  # name, `factor_level` holds the reference level. Poly factors
+  # have no reference and emit no such row -- correctly skipped.
+  for (e in extracts) {
+    coefs <- e$coefs
+    if (is.null(coefs) || nrow(coefs) == 0L) next
+    ref_rows <- coefs[isTRUE_vec(coefs$is_reference), , drop = FALSE]
+    if (nrow(ref_rows) == 0L) next
+    for (i in seq_len(nrow(ref_rows))) {
+      ft <- ref_rows$factor_term[i]
+      lvl <- ref_rows$factor_level[i]
+      if (is.na(ft) || !nzchar(ft) || is.na(lvl) || !nzchar(lvl)) next
+      key <- paste0(ft, "=", lvl)
+      if (key %in% seen) next
+      seen <- c(seen, key)
+      pairs <- c(pairs, sprintf("%s = %s", ft, lvl))
+    }
+  }
+  if (!length(pairs)) return(NULL)
+  paste0("Reference categories: ", paste(pairs, collapse = "; "), ".")
+}
+
+# Vectorised isTRUE: maps each element to TRUE iff it is TRUE
+# (length-1, non-NA, non-FALSE). Used in the footer collector
+# above where `coefs$is_reference` may carry NAs for non-factor
+# rows in some bind paths.
+isTRUE_vec <- function(x) {
+  !is.na(x) & as.logical(x)
 }
 
 

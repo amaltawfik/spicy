@@ -70,7 +70,7 @@ test_that("render — custom model_labels honoured in headers", {
 # Factor headers + reference rows
 # ============================================================================
 
-test_that("render — group_factor_levels = TRUE inserts factor header + indents levels", {
+test_that("render — factor_layout = 'grouped' inserts factor header + indents levels", {
   aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"))
   rt <- spicy:::render_regression_table(aligned)
   # Factor header row appears
@@ -220,10 +220,9 @@ test_that("render — labels also rename the intercept", {
 })
 
 test_that("render — flat layout: factor reference uses <var><level> form", {
-  aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"),
-                        group_factor_levels = FALSE)
+  aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"))
   rt <- spicy:::render_regression_table(aligned,
-                                        group_factor_levels = FALSE)
+                                        factor_layout = "flat")
   # Reference row should be "cyl4 (ref.)" — matching the coef-name
   # convention used for the dummy rows ("cyl6", "cyl8").
   expect_true(any(grepl("^cyl4 \\(ref\\.\\)$", rt$Variable)))
