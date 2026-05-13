@@ -751,10 +751,34 @@ table_regression <- function(
   word_path = NULL
 ) {
   # Capture the cluster expression BEFORE evaluation so we can
-  # derive a friendly name for the footer ("clusters by clinic_id"
-  # rather than "cluster vector supplied"). Done first thing, since
-  # downstream uses of `cluster` evaluate the symbol away.
+  # (a) derive a friendly name for the footer ("clusters by
+  # clinic_id" rather than "cluster vector supplied"), and
+  # (b) intercept the bare-name NSE form (`cluster = region`)
+  # before R's lazy-evaluation step fails with an unhelpful
+  # "object 'region' not found" -- emit our migration error
+  # pointing at `~region` / `"region"` instead.
   cluster_expr <- substitute(cluster)
+  if (is.symbol(cluster_expr) &&
+        !identical(as.character(cluster_expr), "cluster")) {
+    sym <- as.character(cluster_expr)
+    # Only complain if R would FAIL to evaluate the symbol --
+    # `cluster = region` where `region` is a local variable IS
+    # valid (vector form). We check existence in the caller frame.
+    exists_local <- exists(sym, envir = parent.frame(), inherits = TRUE)
+    if (!exists_local) {
+      spicy_abort(
+        c(sprintf(paste0("`cluster = %s`: unquoted bare names are not ",
+                          "supported."), sym),
+          "i" = sprintf("Use `cluster = ~%s` (formula) or `cluster = \"%s\"` (string).",
+                         sym, sym),
+          "i" = paste0("Bare-name NSE breaks under programmatic use ",
+                        "(function wrapping, dynamic column choice, ",
+                        "loops). The formula form is composable for ",
+                        "multi-way clustering: `~region:year`.")),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
 
   # Resolve enum args
   standardized <- match.arg(standardized)

@@ -2328,3 +2328,35 @@ test_that("cluster - list of mixed forms (formula / string / vector) for multi-m
   )
   expect_s3_class(out, "spicy_regression_table")
 })
+
+
+test_that("cluster - bare unquoted name raises friendly spicy_invalid_input", {
+  # `cluster = region` where `region` doesn't exist in the caller
+  # env: we want a migration error pointing at `~region` /
+  # `"region"`, NOT R's "object 'region' not found".
+  fit <- lm(mpg ~ wt, data = mtcars)
+  err <- tryCatch(
+    table_regression(fit, vcov = "CR2", cluster = region),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- conditionMessage(err)
+  expect_match(msg, "unquoted bare names are not supported", fixed = TRUE)
+  expect_match(msg, "~region", fixed = TRUE)
+  expect_match(msg, "\"region\"", fixed = TRUE)
+})
+
+test_that("cluster - local variable with the same name as a column still works (vector form)", {
+  # `cluster = my_cluster` where `my_cluster` IS a local vector
+  # in the caller env: must use the vector silently, no error.
+  skip_if_not_installed("clubSandwich")
+  set.seed(6)
+  d <- data.frame(y = rnorm(100), x = rnorm(100),
+                  region = rep(letters[1:10], each = 10))
+  fit <- lm(y ~ x, data = d)
+  my_cluster <- d$region
+  out <- table_regression(fit, vcov = "CR2", cluster = my_cluster)
+  expect_s3_class(out, "spicy_regression_table")
+  # Footer reflects the local var name
+  expect_match(attr(out, "note"), "clusters by my_cluster", fixed = TRUE)
+})
