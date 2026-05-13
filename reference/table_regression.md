@@ -391,7 +391,13 @@ table_regression(
 - clipboard_delim:
 
   Field delimiter for `output = "clipboard"`. Default `"\t"`
-  (tab-separated, pastes cleanly into Excel / Google Sheets).
+  (tab-separated, pastes cleanly into Excel / Google Sheets). The
+  clipboard payload mirrors the Excel layout (title row, spanner row,
+  header, body, footer note) but is plain text – horizontal rules, cell
+  merging, decimal alignment, monospace font, and factor- level
+  indentation cannot be encoded in TSV and are therefore absent from the
+  paste. For a fully-formatted result, use `output = "excel"` or
+  `output = "word"` and open / paste from the produced file.
 
 - word_path:
 

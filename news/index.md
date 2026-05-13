@@ -314,6 +314,40 @@
   (oracle packages for AME and pseudo-R² cross- validation); no runtime
   dependency change.
 
+#### `table_regression()` — visual polish for rich-output engines
+
+- **Decimal alignment** now reaches `gt`, `flextable`, `tinytable` and
+  `excel`. Numeric body cells receive a monospaced font (Fira Mono /
+  Consolas / `font-family: monospace`) plus centre / right alignment so
+  the pre-padded values produced by `render_regression_table()` line up
+  vertically across rows. Previously decimal alignment was preserved
+  only by the default ASCII print (which already runs in a fixed-width
+  terminal).
+
+- **Column headers are centred** across all rich-output engines (the
+  spanner row and the sub-column row in `gt`, `flextable`, `tinytable`,
+  `excel`).
+
+- **Factor-level rows are indented** in `gt` (via
+  `cell_text(indent = ...)`), `flextable` (via `padding.left`) and
+  `tinytable` (via `style_tt(indent = ..., html_css = ...)`). The
+  whitespace prefix produced by the render layer is now trimmed from the
+  displayed cell and the indent is carried by styling, so HTML / Word do
+  not collapse it.
+
+- **`flextable` width**: rich-output `flextable` now uses
+  `layout = "autofit"` + `autofit()` so default CI columns no longer
+  wrap onto two lines.
+
+- **Excel borders**:
+  [`openxlsx2::wb_add_border()`](https://janmarvin.github.io/openxlsx2/reference/wb_add_border.html)
+  defaults every side to `"thin"`; an explicit `top_border = "thin"`
+  therefore painted *all four* sides as “thin”, producing unwanted
+  vertical lines on every cell of a row that had received a top / bottom
+  rule, and an extra horizontal rule above the final body row. Each
+  border call now passes `NULL` for the unused sides; only the intended
+  rule is drawn.
+
 #### `table_regression()` — banner overrides and APA borders across all engines
 
 - New `title` and `note` arguments (unified API): `NULL` (default,
