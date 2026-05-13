@@ -440,22 +440,35 @@
 #'   without comparison statistics. `TRUE` — adds the comparison
 #'   footer; requires identical `nobs` and identical response
 #'   variable across all models.
-#' @param nested_stats Tokens controlling which comparison
-#'   statistics to display when `nested = TRUE`. Available tokens:
-#'   \itemize{
-#'     \item Variance explained -- `lm` only: `"r2_change"`,
-#'       `"adj_r2_change"`, `"F"`, `"f2_change"`.
-#'     \item Likelihood-based: `"LRT"`, `"deviance_change"`.
-#'     \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`.
-#'     \item `"p"` -- p-value of the chosen test (`F` for `lm`
-#'       hierarchies, `LRT` for `glm` hierarchies).
-#'   }
-#'   `NULL` (default) selects the class-aware default:
-#'   `c("r2_change", "F", "p")` for `lm` (APA hierarchical-regression
-#'   standard), `c("LRT", "p")` for `glm` (APA hierarchical-logistic
-#'   standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
-#'   Variance-explained tokens on an all-`glm` hierarchy raise
-#'   `spicy_invalid_input`.
+#' @section Hierarchical / nested comparison stats:
+#' Setting `nested = TRUE` auto-injects change-comparison tokens
+#' into `show_fit_stats` so the table reads as an APA Table 7.13
+#' hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
+#' ...) contributes one column of change stats; the FIRST model
+#' column gets em-dashes (no previous model to compare to).
+#' Available change tokens (use them like any other
+#' `show_fit_stats` token):
+#' \itemize{
+#'   \item Variance explained -- `lm` only: `"r2_change"`,
+#'     `"adj_r2_change"`, `"f_change"`, `"f2_change"`.
+#'   \item Likelihood-based: `"lrt_change"`, `"deviance_change"`.
+#'   \item Information criteria: `"aic_change"`, `"aicc_change"`,
+#'     `"bic_change"`.
+#'   \item `"p_change"` -- p-value of the change test (`f_change`
+#'     for `lm` hierarchies, `lrt_change` for `glm` hierarchies).
+#' }
+#' Class-aware default auto-injection (when `show_fit_stats` is
+#' `NULL` and `nested = TRUE`):
+#' \itemize{
+#'   \item All-`lm`: `c("r2_change", "f_change", "p_change")` --
+#'     APA hierarchical-regression standard.
+#'   \item All-`glm`: `c("lrt_change", "p_change")` -- Hosmer &
+#'     Lemeshow §3.5; Long & Freese 2014 §3.6.
+#' }
+#' To customise, pass `show_fit_stats = c(...)` explicitly with
+#' the change tokens of your choice. Variance-explained change
+#' tokens on glm rows render as em-dashes (not defined outside
+#' the least-squares framework).
 #' @param digits Number of decimal places for general numeric
 #'   tokens (`B`, `beta`, `SE`, `CI`, `t`, `F`, `LRT`, `deviance`,
 #'   `deviance_change`, `AME`, `AME_SE`, `weighted_nobs`).
@@ -664,7 +677,6 @@ table_regression <- function(
   outcome_labels = NULL,
   stars = FALSE,
   nested = FALSE,
-  nested_stats = NULL,
   digits = 2L,
   p_digits = 3L,
   effect_size_digits = 2L,
@@ -734,24 +746,6 @@ table_regression <- function(
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
   validate_show_fit_stats(show_fit_stats)
-  if (!is.null(nested_stats)) {
-    validate_nested_stats(nested_stats)
-    # Warn if `nested_stats` is supplied but `nested = FALSE` — the
-    # token vector would otherwise be silently ignored. Cross-arg
-    # semantic check (Phase E equivalent).
-    if (!isTRUE(nested)) {
-      spicy_warn(
-        c(
-          paste0(
-            "`nested_stats` is supplied but `nested = FALSE`; the ",
-            "tokens are ignored."
-          ),
-          "i" = "Set `nested = TRUE` to display the model-comparison footer."
-        ),
-        class = "spicy_ignored_arg"
-      )
-    }
-  }
   # Q3 — auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the
   # reject-beta-without-method branch fires before the orchestrator
@@ -769,7 +763,12 @@ table_regression <- function(
   # appropriate token set per model class. Mixed lm + glm sets
   # union both groups; the renderer's "skip token absent from
   # fit_stats schema" branch handles the per-row NA gracefully.
-  if (is.null(show_fit_stats)) {
+  # When `nested = TRUE`, change-stat tokens (`r2_change` / `f_change`
+  # / `p_change` for lm; `lrt_change` / `p_change` for glm) are
+  # injected RIGHT AFTER `r2` / `adj_r2` / `AIC` so the table reads
+  # "n / R² / Adj.R² / ΔR² / F-change / p" as in APA Table 7.13.
+  user_set_fit_stats <- !is.null(show_fit_stats)
+  if (!user_set_fit_stats) {
     any_glm <- any(vapply(models, inherits, logical(1), "glm"))
     any_lm_only <- any(vapply(models, function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
@@ -786,6 +785,9 @@ table_regression <- function(
                             "AIC")
     }
     show_fit_stats <- unique(show_fit_stats)
+    if (isTRUE(nested) && length(models) >= 2L) {
+      show_fit_stats <- c(show_fit_stats, default_nested_tokens(models))
+    }
   }
 
   # Class-aware token compatibility — variance-explained tokens are
@@ -793,7 +795,6 @@ table_regression <- function(
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
-  validate_class_appropriate_nested_stats(models, nested_stats, nested)
 
   # `ci_method = "profile"` is glm only. Profile-likelihood CIs are
   # standard for glm (MASS::confint.glm); for lm, Wald CIs are exact
@@ -1052,6 +1053,15 @@ table_regression <- function(
   # Standardized-on-non-additive caveat (Q15, Phase E)
   emit_standardized_caveat_if_needed(models, standardized)
 
+  # Nested-comparison change stats (APA Table 7.13 in-table rows).
+  # Augments each `extracts[[i]]$fit_stats` row with `r2_change`,
+  # `f_change`, `p_change`, etc. (NA for Model 1). MUST run BEFORE
+  # align_extracts() because align_extracts() rbinds the per-model
+  # fit_stats and the column schemas have to be uniform.
+  if (isTRUE(nested)) {
+    extracts <- attach_nested_stats_to_extracts(extracts, models)
+  }
+
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
   aligned <- align_extracts(
     extracts,
@@ -1099,25 +1109,7 @@ table_regression <- function(
     )
   }
 
-  # ---- Nested comparison (Step 9) ----------------------------------------
-  nested_footer <- NULL
-  if (isTRUE(nested)) {
-    nested_comp <- compute_nested_comparisons_lm(models, nested_stats)
-    nested_footer <- format_nested_comparison_footer(
-      nested_comp,
-      digits = digits, p_digits = p_digits,
-      fit_digits = fit_digits, ic_digits = ic_digits
-    )
-  }
-
-  full_footer <- c(footer_main, nested_footer)
-  full_footer <- full_footer[!is.null(full_footer) &
-                              vapply(full_footer, nzchar, logical(1))]
-  full_footer_str <- if (length(full_footer)) {
-    paste(full_footer, collapse = "\n\n")
-  } else {
-    NULL
-  }
+  full_footer_str <- if (length(footer_main)) footer_main else NULL
 
   # ---- Render (Layer 3) --------------------------------------------------
   # Q1: model_labels precedence is explicit > names(list) > default.

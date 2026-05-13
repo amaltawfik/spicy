@@ -770,59 +770,47 @@ test_that("glm AME: HC* vcov uses z-asymptotic (no Satterthwaite)", {
 # Step 6: nested LRT for glm + ci_method = "profile" option
 # ============================================================================
 
-test_that("glm hierarchical: LRT chi-square matches anova(test='LRT')", {
+test_that("glm hierarchical: lrt_change cell matches anova(test='LRT')", {
   m1 <- glm(am ~ mpg, data = mt, family = binomial)
   m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(list(m1, m2), nested = TRUE)
-  note <- attr(out, "note")
-  # Footer should contain the LRT line
-  expect_match(note, "Model comparison", fixed = TRUE)
-  expect_match(note, "χ²", fixed = TRUE)
+  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  lrt_row <- body[trimws(body$Variable) == "Δχ²", , drop = FALSE]
+  # M2's first sub-column carries the lrt_change cell
+  m2_col <- names(body)[5L]
+  cell <- trimws(lrt_row[[m2_col]])
   # Cross-check the value
   av <- anova(m1, m2, test = "LRT")
   expected_lrt <- av$Deviance[2]
-  # Format: "+12.49" with 2 digits
   expected_str <- sprintf("+%.2f", expected_lrt)
-  expect_match(note, expected_str, fixed = TRUE)
+  expect_equal(cell, expected_str)
 })
 
-test_that("glm hierarchical: default nested_stats is c('LRT', 'p')", {
+test_that("glm hierarchical: variance-explained NA, lrt_change + p_change finite", {
   m1 <- glm(am ~ mpg, data = mt, family = binomial)
   m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  comps <- spicy:::compute_nested_comparisons_lm(list(m1, m2),
-                                                  nested_stats = NULL)
-  expect_setequal(names(comps), c("comparison", "LRT", "p"))
-})
-
-test_that("glm hierarchical: r2_change/F return NA (not defined for glm)", {
-  m1 <- glm(am ~ mpg, data = mt, family = binomial)
-  m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  comps <- spicy:::compute_nested_comparisons_lm(
-    list(m1, m2), nested_stats = c("r2_change", "F", "LRT", "p")
-  )
+  comps <- spicy:::compute_nested_comparisons(list(m1, m2))
   expect_true(is.na(comps$r2_change[1]))
-  expect_true(is.na(comps$F[1]))
-  expect_true(is.finite(comps$LRT[1]))
-  expect_true(is.finite(comps$p[1]))
+  expect_true(is.na(comps$f_change[1]))
+  expect_true(is.finite(comps$lrt_change[1]))
+  expect_true(is.finite(comps$p_change[1]))
 })
 
-test_that("glm hierarchical: AIC/BIC delta computed correctly", {
+test_that("glm hierarchical: aic_change / bic_change deltas correct", {
   m1 <- glm(am ~ mpg, data = mt, family = binomial)
   m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
-  comps <- spicy:::compute_nested_comparisons_lm(
-    list(m1, m2), nested_stats = c("AIC", "BIC")
-  )
-  expect_equal(comps$AIC[1], AIC(m2) - AIC(m1), tolerance = 1e-12)
-  expect_equal(comps$BIC[1], BIC(m2) - BIC(m1), tolerance = 1e-12)
+  comps <- spicy:::compute_nested_comparisons(list(m1, m2))
+  expect_equal(comps$aic_change[1], AIC(m2) - AIC(m1), tolerance = 1e-12)
+  expect_equal(comps$bic_change[1], BIC(m2) - BIC(m1), tolerance = 1e-12)
 })
 
-test_that("lm hierarchical: still uses partial F + r2_change (unchanged)", {
+test_that("lm hierarchical: r2_change / f_change / p_change finite", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
-  comps <- spicy:::compute_nested_comparisons_lm(list(m1, m2),
-                                                  nested_stats = NULL)
-  expect_setequal(names(comps), c("comparison", "r2_change", "F", "p"))
-  expect_true(is.finite(comps$F[1]))
+  comps <- spicy:::compute_nested_comparisons(list(m1, m2))
+  expect_true(is.finite(comps$r2_change[1]))
+  expect_true(is.finite(comps$f_change[1]))
+  expect_true(is.finite(comps$p_change[1]))
 })
 
 test_that("ci_method = 'profile' on glm: matches confint() to machine precision", {
@@ -933,8 +921,9 @@ test_that("E2E: poisson IRR + nested LRT hierarchy", {
   expect_match(attr(out, "title"), "^Hierarchical poisson regression: ")
   note <- attr(out, "note")
   expect_match(note, "IRR", fixed = TRUE)
-  expect_match(note, "Model comparison", fixed = TRUE)
-  expect_match(note, "χ²", fixed = TRUE)
+  # Change rows in the body (not in the footer)
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("Δχ²" %in% vars)
 })
 
 test_that("E2E: mixed lm + glm side-by-side renders without error", {
@@ -966,7 +955,9 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   note <- attr(out, "note")
   expect_match(note, "cluster-robust [(]CR2[)]", perl = TRUE)
   expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
-  expect_match(note, "Model comparison", fixed = TRUE)
+  # Change rows live in the body now
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("Δχ²" %in% vars)
   # AME df_Satt is finite (not Inf) under CR2
   td <- broom::tidy(out)
   ame_rows <- td[td$estimate_type == "AME", ]
@@ -1081,32 +1072,20 @@ test_that("AUDIT H1: partial_chi2 returns NULL for quasi families", {
   expect_null(spicy:::compute_partial_chi2_for_term(fit2, "mpg"))
 })
 
-test_that("AUDIT M4: nested_stats with lm-only tokens on all-glm rejected", {
+test_that("AUDIT M4: lm-only change tokens on all-glm rejected via show_fit_stats", {
+  # Since 0.12: change tokens flow through `show_fit_stats`, not via
+  # the dropped `nested_stats` argument. Class-aware validation
+  # rejects variance-explained change tokens on an all-glm hierarchy.
   m1 <- glm(am ~ mpg,      data = mtcars, family = binomial)
   m2 <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   err <- tryCatch(
     table_regression(list(m1, m2), nested = TRUE,
-                      nested_stats = c("r2_change", "F", "p")),
+                      show_fit_stats = c("nobs", "r2_change", "p_change")),
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "not defined for `glm`", fixed = TRUE)
-  expect_match(conditionMessage(err), "LRT", fixed = TRUE)
-})
-
-test_that("AUDIT M4: nested_stats validator accepts mixed lm + glm hierarchies", {
-  m1 <- lm(mpg ~ wt, data = mtcars)
-  m2 <- glm(am ~ mpg, data = mtcars, family = binomial)
-  # Mixed hierarchy with r2_change should NOT error (nested = TRUE
-  # would actually fail at validate_nested_alignment because DVs
-  # differ; just confirm the class-aware nested_stats validator
-  # doesn't fire on the mixed-class branch).
-  expect_no_error(
-    spicy:::validate_class_appropriate_nested_stats(
-      list(m1, m2), nested_stats = c("r2_change", "F", "p"),
-      nested = TRUE
-    )
-  )
+  expect_match(conditionMessage(err), "lrt_change", fixed = TRUE)
 })
 
 test_that("AUDIT M5: standardize_algebraic_glm preserves no-intercept predictors", {
@@ -1727,13 +1706,6 @@ test_that("AUDIT B9: nested = TRUE on single fit warns (was silent no-op)", {
   expect_s3_class(out, "spicy_regression_table")
 })
 
-test_that("AUDIT B10: nested_stats without nested = TRUE warns", {
-  fit <- glm(am ~ mpg, data = mtcars, family = binomial)
-  expect_warning(
-    table_regression(fit, nested_stats = c("LRT", "p")),
-    class = "spicy_ignored_arg"
-  )
-})
 
 test_that("AUDIT B12: cluster supplied without CR* vcov warns explicitly", {
   fit <- glm(am ~ mpg, data = mtcars, family = binomial)
@@ -1975,30 +1947,6 @@ test_that("AME cell renders em-dash when estimate is NA (estimate-only token)", 
   expect_equal(out, "—")
 })
 
-test_that("validate_class_appropriate_nested_stats: silent when nested = FALSE", {
-  # Exercises the early-return path (line ~640).
-  m1 <- glm(am ~ mpg, data = mtcars, family = binomial)
-  m2 <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
-  # nested = FALSE -> validator should silently return (no error).
-  expect_silent(
-    spicy:::validate_class_appropriate_nested_stats(
-      list(m1, m2), nested_stats = c("LRT", "p"), nested = FALSE
-    )
-  )
-})
-
-test_that("validate_class_appropriate_nested_stats: silent for class-appropriate glm tokens", {
-  # Exercises the trailing invisible(NULL) return path.
-  m1 <- glm(am ~ mpg, data = mtcars, family = binomial)
-  m2 <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
-  expect_silent(
-    spicy:::validate_class_appropriate_nested_stats(
-      list(m1, m2),
-      nested_stats = c("LRT", "AIC", "BIC", "deviance_change", "p"),
-      nested = TRUE
-    )
-  )
-})
 
 test_that("table_regression: padding arg controls column spacing", {
   fit <- lm(mpg ~ wt + cyl, data = mtcars)

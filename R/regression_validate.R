@@ -57,13 +57,15 @@
     "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
     "sigma", "rmse",
     "f2",
-    "AIC", "AICc", "BIC", "deviance"
-  ),
-  nested_stats_lm = c(
+    "AIC", "AICc", "BIC", "deviance",
+    # Nested-comparison change stats (APA Table 7.13 in-table rows).
+    # `nested = TRUE` auto-injects a class-aware subset; the user
+    # can request any of these explicitly in `show_fit_stats`.
     "r2_change", "adj_r2_change",
-    "F", "f2_change",
-    "LRT", "AIC", "AICc", "BIC",
-    "deviance_change", "p"
+    "f_change", "f2_change",
+    "lrt_change",
+    "aic_change", "aicc_change", "bic_change",
+    "deviance_change", "p_change"
   )
 )
 
@@ -574,7 +576,10 @@ validate_class_appropriate_tokens <- function(models,
       )
     }
     bad_fit <- intersect(show_fit_stats,
-                          c("r2", "adj_r2", "omega2", "f2"))
+                          c("r2", "adj_r2", "omega2", "f2",
+                            # Nested change variants of the above
+                            "r2_change", "adj_r2_change",
+                            "f_change", "f2_change"))
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -585,7 +590,9 @@ validate_class_appropriate_tokens <- function(models,
           "i" = paste0(
             "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
             "(McFadden 1974), `\"pseudo_r2_nagelkerke\"` (Nagelkerke ",
-            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only)."
+            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only). ",
+            "For nested glm comparison, use `\"lrt_change\"` + ",
+            "`\"p_change\"` (likelihood-ratio chi-square)."
           )
         ),
         class = "spicy_invalid_input"
@@ -635,48 +642,8 @@ validate_class_appropriate_tokens <- function(models,
 # right behaviour. NULL or empty `nested_stats` is a no-op (the
 # class-aware default in compute_nested_comparisons_lm() picks the
 # right tokens automatically).
-validate_class_appropriate_nested_stats <- function(models,
-                                                      nested_stats,
-                                                      nested) {
-  if (!isTRUE(nested) || is.null(nested_stats) ||
-        length(nested_stats) == 0L) {
-    return(invisible(NULL))
-  }
-  any_lm_only <- any(vapply(models, function(f) {
-    inherits(f, "lm") && !inherits(f, "glm")
-  }, logical(1)))
-  if (any_lm_only) return(invisible(NULL))
-  # all-glm path
-  bad <- intersect(nested_stats,
-                   c("r2_change", "adj_r2_change", "F", "f2_change"))
-  if (length(bad) > 0L) {
-    spicy_abort(
-      c(
-        sprintf(
-          paste0("Token(s) %s in `nested_stats` are not defined for ",
-                 "`glm` hierarchies."),
-          paste(shQuote(bad), collapse = ", ")
-        ),
-        "i" = paste0(
-          "Variance-explained model comparison (\u0394R\u00b2 / partial F / ",
-          "\u0394f\u00b2) does not apply outside the least-squares framework."
-        ),
-        "i" = paste0(
-          "For `glm` hierarchies, use `\"LRT\"` (likelihood-ratio ",
-          "\u03c7\u00b2; APA hierarchical-logistic standard), or one of ",
-          "`\"AIC\"` / `\"AICc\"` / `\"BIC\"` / `\"deviance_change\"`. ",
-          "Default: c(\"LRT\", \"p\")."
-        )
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  invisible(NULL)
-}
-
-
 # Step 10: show_fit_stats. Empty character or NULL means "drop the
-# fit-stats footer block" \u2014 a legitimate rendering choice (some
+# fit-stats footer block" -- a legitimate rendering choice (some
 # users prefer the body alone). show_columns has no analogous
 # escape hatch because a table with zero data columns is
 # nonsensical.
@@ -688,21 +655,6 @@ validate_show_fit_stats <- function(show_fit_stats) {
     show_fit_stats,
     .regression_tokens$show_fit_stats,
     arg = "show_fit_stats"
-  )
-}
-
-# Step 11: nested_stats vocabulary check (NULL = class-aware default
-# applied later in compute_nested_comparisons_lm()). Class-appropriateness
-# of supplied tokens is enforced separately by
-# `validate_class_appropriate_nested_stats()`.
-validate_nested_stats <- function(nested_stats) {
-  if (is.null(nested_stats)) {
-    return(invisible(NULL))
-  }
-  validate_token_vector(
-    nested_stats,
-    .regression_tokens$nested_stats_lm,
-    arg = "nested_stats"
   )
 }
 

@@ -108,13 +108,17 @@ test_that("table_regression — names(list) used as model labels", {
   expect_true(any(grepl("^Adjusted: B$", names(out))))
 })
 
-test_that("table_regression — nested = TRUE adds comparison block to footer", {
+test_that("table_regression — nested = TRUE injects change-stat rows + Hierarchical title", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
   expect_match(attr(out, "title"), "^Hierarchical linear regression")
-  expect_match(attr(out, "note"), "── Model comparison ──")
-  expect_match(attr(out, "note"), "Model 2 vs Model 1")
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("ΔR²" %in% vars)
+  expect_true("F-change" %in% vars)
+  expect_true("p (change)" %in% vars)
+  # Old footer block is gone.
+  expect_no_match(attr(out, "note"), "Model comparison")
 })
 
 
@@ -387,12 +391,16 @@ test_that("show_fit_stats — unknown token errors spicy_invalid_input", {
   )
 })
 
-test_that("nested_stats — unknown token errors spicy_invalid_input", {
+test_that("show_fit_stats — change tokens accepted under nested = TRUE", {
+  # Since 0.12 the `nested_stats` argument was removed: change tokens
+  # (`r2_change`, `f_change`, `p_change`, ...) are regular
+  # `show_fit_stats` entries. An unknown token raises the same
+  # spicy_invalid_input as any other show_fit_stats typo.
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
     table_regression(list(m1, m2), nested = TRUE,
-                     nested_stats = c("F", "BOGUS")),
+                     show_fit_stats = c("f_change", "BOGUS")),
     class = "spicy_invalid_input"
   )
 })

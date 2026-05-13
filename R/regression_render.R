@@ -260,7 +260,8 @@ render_regression_table <- function(
       fit_stats, show_fit_stats, model_ids, label_map,
       col_spec = col_spec,
       digits = digits, fit_digits = fit_digits,
-      ic_digits = ic_digits, decimal_mark = decimal_mark
+      ic_digits = ic_digits, p_digits = p_digits,
+      decimal_mark = decimal_mark
     )
     if (length(fit_rows) > 0L) {
       group_sep <- nrow(body) + 1L
@@ -697,7 +698,7 @@ build_outcome_row <- function(model_outcomes,
 build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
                                   label_map, col_spec,
                                   digits, fit_digits, ic_digits,
-                                  decimal_mark) {
+                                  decimal_mark, p_digits = 3L) {
   if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
     return(list())
   }
@@ -726,7 +727,7 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
       cells[[target_col]] <- format_fit_stat_value(
         tk, val,
         digits = digits, fit_digits = fit_digits,
-        ic_digits = ic_digits,
+        ic_digits = ic_digits, p_digits = p_digits,
         decimal_mark = decimal_mark
       )
     }
@@ -756,6 +757,17 @@ fit_stat_label <- function(token) {
     AICc                  = "AICc",
     BIC                   = "BIC",
     deviance              = "Deviance",
+    # Nested-comparison change tokens (APA Table 7.13)
+    r2_change             = "\u0394R\u00B2",
+    adj_r2_change         = "\u0394Adj.R\u00B2",
+    f_change              = "F-change",
+    f2_change             = "\u0394f\u00B2",
+    lrt_change            = "\u0394\u03C7\u00B2",
+    aic_change            = "\u0394AIC",
+    aicc_change           = "\u0394AICc",
+    bic_change            = "\u0394BIC",
+    deviance_change       = "\u0394Deviance",
+    p_change              = "p (change)",
     token
   )
 }
@@ -768,8 +780,24 @@ fit_stat_label <- function(token) {
 #   deviance                   → digits
 format_fit_stat_value <- function(token, val,
                                     digits, fit_digits, ic_digits,
-                                    decimal_mark) {
-  if (is.null(val) || is.na(val)) return("")
+                                    p_digits = 3L,
+                                    decimal_mark = ".") {
+  # Change tokens render an em-dash on NA -- typically the first
+  # model's column (no previous to compare to). Absolute fit stats
+  # render an empty string (e.g. R² is NA for a glm row in a mixed
+  # table, which the user reads as "not applicable").
+  is_change <- token %in% c("r2_change", "adj_r2_change",
+                             "f_change", "f2_change", "lrt_change",
+                             "aic_change", "aicc_change", "bic_change",
+                             "deviance_change", "p_change")
+  if (is.null(val) || is.na(val)) {
+    return(if (is_change) "—" else "")
+  }
+  # p-value of the change-test: APA-style p formatting.
+  if (identical(token, "p_change")) {
+    return(format_p_value(val, decimal_mark = decimal_mark,
+                          digits = p_digits))
+  }
   prec <- switch(token,
     nobs                  = 0L,
     weighted_nobs         = 0L,
@@ -786,8 +814,24 @@ format_fit_stat_value <- function(token, val,
     AICc                  = ic_digits,
     BIC                   = ic_digits,
     deviance              = digits,
+    # Change tokens: precision matches the absolute version
+    r2_change             = fit_digits,
+    adj_r2_change         = fit_digits,
+    f2_change             = fit_digits,
+    f_change              = digits,
+    lrt_change            = digits,
+    aic_change            = ic_digits,
+    aicc_change           = ic_digits,
+    bic_change            = ic_digits,
+    deviance_change       = digits,
     digits
   )
+  if (is_change) {
+    # Explicit "+" prefix on positive change values (signals
+    # improvement on R² / Δχ² / Δf², worsening on Δdeviance / ΔAIC
+    # depending on direction). Same convention as APA / modelsummary.
+    return(format_signed(val, prec))
+  }
   format_number(val, prec, decimal_mark)
 }
 

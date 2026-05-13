@@ -208,17 +208,16 @@ test_that("match_coef_to_factor — interaction term returns NULL", {
 # regression_nested.R — anova failure + unknown token label
 # ============================================================================
 
-test_that("compute_one_pair_lm — anova failure returns NA fields", {
-  # Construct a degenerate pair — same fit twice would give 0-df anova
+test_that("compute_one_pair_lm — degenerate pair returns NA fields with new column names", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- spicy:::compute_one_pair_lm(fit, fit)
-  # All 10 fields present and numeric
-  expect_true(all(c("r2_change", "F", "p", "AIC", "BIC", "LRT")
+  expect_true(all(c("r2_change", "f_change", "p_change",
+                    "aic_change", "bic_change", "lrt_change")
                   %in% names(out)))
 })
 
-test_that("token_label — unknown token falls back to the token string", {
-  expect_equal(spicy:::token_label("custom_unknown"), "custom_unknown")
+test_that("fit_stat_label — unknown token falls back to the token string", {
+  expect_equal(spicy:::fit_stat_label("custom_unknown"), "custom_unknown")
 })
 
 
@@ -562,8 +561,7 @@ test_that("partial: build_b_rows singular coef emits NA-shaped row", {
 test_that("nested: degenerate self-pair returns NA fields gracefully", {
   fit <- lm(mpg ~ wt, data = mt)
   pair <- spicy:::compute_one_pair_lm(fit, fit)
-  # All NA when anova is degenerate (no nested difference)
-  expect_true(is.na(pair$F))
+  expect_true(is.na(pair$f_change))
 })
 
 test_that("render: factor reference row with NA factor_level falls back to term", {

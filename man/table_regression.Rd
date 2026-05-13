@@ -27,7 +27,6 @@ table_regression(
   outcome_labels = NULL,
   stars = FALSE,
   nested = FALSE,
-  nested_stats = NULL,
   digits = 2L,
   p_digits = 3L,
   effect_size_digits = 2L,
@@ -299,23 +298,6 @@ equivalent). \code{FALSE} (default) — pure side-by-side display
 without comparison statistics. \code{TRUE} — adds the comparison
 footer; requires identical \code{nobs} and identical response
 variable across all models.}
-
-\item{nested_stats}{Tokens controlling which comparison
-statistics to display when \code{nested = TRUE}. Available tokens:
-\itemize{
-\item Variance explained -- \code{lm} only: \code{"r2_change"},
-\code{"adj_r2_change"}, \code{"F"}, \code{"f2_change"}.
-\item Likelihood-based: \code{"LRT"}, \code{"deviance_change"}.
-\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"}.
-\item \code{"p"} -- p-value of the chosen test (\code{F} for \code{lm}
-hierarchies, \code{LRT} for \code{glm} hierarchies).
-}
-\code{NULL} (default) selects the class-aware default:
-\code{c("r2_change", "F", "p")} for \code{lm} (APA hierarchical-regression
-standard), \code{c("LRT", "p")} for \code{glm} (APA hierarchical-logistic
-standard; Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.6).
-Variance-explained tokens on an all-\code{glm} hierarchy raise
-\code{spicy_invalid_input}.}
 
 \item{digits}{Number of decimal places for general numeric
 tokens (\code{B}, \code{beta}, \code{SE}, \code{CI}, \code{t}, \code{F}, \code{LRT}, \code{deviance},
@@ -614,6 +596,38 @@ table_regression(fit)
 }
 All downstream computations (vcov, AME, standardisation,
 \code{weighted_nobs}) extract the weights automatically.
+}
+
+\section{Hierarchical / nested comparison stats}{
+
+Setting \code{nested = TRUE} auto-injects change-comparison tokens
+into \code{show_fit_stats} so the table reads as an APA Table 7.13
+hierarchical regression. Each adjacent pair (M2 vs M1, M3 vs M2,
+...) contributes one column of change stats; the FIRST model
+column gets em-dashes (no previous model to compare to).
+Available change tokens (use them like any other
+\code{show_fit_stats} token):
+\itemize{
+\item Variance explained -- \code{lm} only: \code{"r2_change"},
+\code{"adj_r2_change"}, \code{"f_change"}, \code{"f2_change"}.
+\item Likelihood-based: \code{"lrt_change"}, \code{"deviance_change"}.
+\item Information criteria: \code{"aic_change"}, \code{"aicc_change"},
+\code{"bic_change"}.
+\item \code{"p_change"} -- p-value of the change test (\code{f_change}
+for \code{lm} hierarchies, \code{lrt_change} for \code{glm} hierarchies).
+}
+Class-aware default auto-injection (when \code{show_fit_stats} is
+\code{NULL} and \code{nested = TRUE}):
+\itemize{
+\item All-\code{lm}: \code{c("r2_change", "f_change", "p_change")} --
+APA hierarchical-regression standard.
+\item All-\code{glm}: \code{c("lrt_change", "p_change")} -- Hosmer &
+Lemeshow §3.5; Long & Freese 2014 §3.6.
+}
+To customise, pass \code{show_fit_stats = c(...)} explicitly with
+the change tokens of your choice. Variance-explained change
+tokens on glm rows render as em-dashes (not defined outside
+the least-squares framework).
 }
 
 \section{Classed conditions}{
