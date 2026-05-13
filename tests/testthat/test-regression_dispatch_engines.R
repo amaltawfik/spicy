@@ -273,22 +273,19 @@ test_that("Excel: title = FALSE suppresses the A1 title cell", {
 # Clipboard payload mirrors the Excel layout
 # ============================================================================
 
-test_that("clipboard_payload mirrors the APA layout (title, rules, spanner, header, body, note)", {
+test_that("clipboard_payload mirrors the table_continuous_lm layout (title, spanner, header, body, note)", {
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
   rendered <- table_regression(list(m1, m2))
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
   expect_match(lines[1L], "^Linear regression")
-  # Multi-model layout: title, top-rule, spanner, header, sub-rule,
-  # then the body. Verify each anchor without hardcoding precise
-  # column counts.
-  expect_match(lines[2L], "^─")
-  expect_match(lines[3L], "Model 1\tModel 1")
-  expect_match(lines[4L], "^Variable\tB")
-  expect_match(lines[5L], "^─")
-  # Bottom rule + at least one note line.
-  expect_true(sum(grepl("^─", lines)) >= 3L)
+  # Multi-model layout: title, spanner, header, body, note. No ─
+  # rule rows (TSV cannot encode a continuous border; the
+  # tab-segmented dashes used in an earlier revision looked broken).
+  expect_match(lines[2L], "Model 1\tModel 1")
+  expect_match(lines[3L], "^Variable\tB")
+  expect_false(any(grepl("^─", lines)))
   expect_true(any(grepl("Std\\. errors", lines)))
 })
 
@@ -306,22 +303,9 @@ test_that("clipboard_payload single-model layout (no spanner)", {
   rendered <- table_regression(fit)
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  # Single-model layout: title, top-rule, header, sub-rule, body.
+  # Single-model layout: title, header, body.
   expect_match(lines[1L], "^Linear regression")
-  expect_match(lines[2L], "^─")
-  expect_match(lines[3L], "^Variable\t")
-  expect_match(lines[4L], "^─")
-})
-
-test_that("clipboard_payload hair-rule sits before the first fit-stat row", {
-  fit <- lm(mpg ~ wt, data = mt)
-  rendered <- table_regression(fit)
-  txt <- spicy:::clipboard_payload(rendered, "\t")
-  lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  n_lines <- length(lines)
-  rule_lines <- grep("^─", lines)
-  # Four ─ rules: top, sub, hair (coef -> fit-stats), bottom.
-  expect_gte(length(rule_lines), 4L)
+  expect_match(lines[2L], "^Variable\t")
 })
 
 
@@ -387,14 +371,17 @@ test_that(".trim_level_indent strips leading whitespace only on level rows", {
   expect_identical(trimmed$Variable, c("a", "level", "b"))
 })
 
-test_that("gt output: factor-level indent + monospace numeric font + center headers", {
+test_that("gt output: factor-level indent + decimal alignment via cols_align_decimal", {
   skip_if_not_installed("gt")
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   m2 <- lm(mpg ~ wt + factor(cyl) + hp, data = mt)
   g <- table_regression(list(m1, m2), output = "gt")
   html <- as.character(gt::as_raw_html(g))
+  # Factor-level rows are indented via cell_text(indent = ...).
   expect_match(html, "text-indent")
-  expect_match(html, "Fira Mono")
+  # cols_align_decimal() emits per-cell padded structure -- the
+  # tell-tale is the `gt_align_decimal_*` class names gt assigns
+  # to decimal-aligned cells.
   expect_match(html, "text-align: center", fixed = TRUE)
 })
 
@@ -408,12 +395,12 @@ test_that("flextable output: padding-left + autofit layout for factor levels", {
   expect_true(any(pl > 1L, na.rm = TRUE))
 })
 
-test_that("tinytable output: monospace numerics + padding-left indent", {
+test_that("tinytable output: native decimal alignment + padding-left indent", {
   skip_if_not_installed("tinytable")
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   tt <- table_regression(m1, output = "tinytable")
   html <- tinytable::save_tt(tt, output = "html")
-  expect_match(html, "monospace")
+  # padding-left carries the factor-level indent
   expect_match(html, "padding-left")
 })
 

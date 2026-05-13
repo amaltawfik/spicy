@@ -164,6 +164,15 @@ output_tinytable <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
+  # tinytable has a native primitive `style_tt(align = "d")` that
+  # decimal-aligns one column at a time. Like gt's cols_align_decimal
+  # it expects raw numeric strings, so we strip the render layer's
+  # pre-padding from every non-Variable column. Bracketed CI cells
+  # have no leading / trailing whitespace; trimws leaves their
+  # internal padding intact.
+  if (ncol(body) >= 2L) {
+    body[-1L] <- lapply(body[-1L], trimws)
+  }
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
   if (has_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
@@ -203,22 +212,21 @@ output_tinytable <- function(rendered) {
   }
 
   # Header centring + per-column alignment. The spanner row (i = -1)
-  # and the column-label row (i = 0) are both centred. The Variable
-  # column is left-aligned; numeric body columns get centre
-  # alignment so the pre-padded decimal-aligned cells display
-  # correctly in HTML / LaTeX / Typst.
-  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols),
-                             align = "c", monospace = TRUE)
+  # and the column-label row (i = 0) are centred. Numeric body
+  # columns get align = "d" (tinytable's native decimal-alignment
+  # primitive) one column at a time. No custom font: tinytable's
+  # default renders the decimal-aligned columns correctly through
+  # native LaTeX `siunitx` / HTML CSS once the column type is set.
+  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
   if (has_spanner) {
     tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
-                               align = "c", monospace = TRUE)
+                               align = "c")
   }
-  tt <- tinytable::style_tt(tt, j = 1L, align = "l", monospace = TRUE)
+  tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    tt <- tinytable::style_tt(
-      tt, j = 2:n_cols, align = "c",
-      monospace = TRUE
-    )
+    for (rj in 2:n_cols) {
+      tt <- tinytable::style_tt(tt, j = rj, align = "d")
+    }
   }
   # Factor-level rows: indent the Variable cell. We tag both HTML
   # (CSS padding) and LaTeX (\hspace) so the indentation reaches all
@@ -253,6 +261,17 @@ output_gt <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
+  # gt has a native primitive `cols_align_decimal()` that aligns the
+  # decimal mark across rows of a numeric-string column. The
+  # pre-padded values produced by render_regression_table() would
+  # double-pad under this primitive, so we strip the leading /
+  # trailing whitespace from non-Variable columns first. CI cells
+  # `[LL, UL]` are bracketed text -- cols_align_decimal cannot
+  # align them, but trimming leaves the internal padding intact, so
+  # they keep their per-row centred bracket pattern.
+  if (ncol(body) >= 2L) {
+    body[-1L] <- lapply(body[-1L], trimws)
+  }
   # gt addresses columns by name internally, so we keep the unique
   # "Step 1: B" / "Step 2: B" names on the data.frame and use
   # `cols_label()` to relabel the displayed headers to the bare
@@ -293,8 +312,6 @@ output_gt <- function(rendered) {
                                   weight = gt::px(1))
   tbl <- gt::tab_options(
     tbl,
-    table.font.names = c("Fira Mono", "Consolas",
-                          "Courier New", "monospace"),
     table.border.top.width = gt::px(0),
     table.border.bottom.width = gt::px(0),
     table_body.border.top.width = gt::px(0),
@@ -343,7 +360,12 @@ output_gt <- function(rendered) {
   tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
   if (n_cols >= 2L) {
     numeric_cols <- orig_names[-1L]
-    tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    # Native decimal alignment by the `.` mark. cols_align_decimal()
+    # handles plain numeric strings (e.g., "0.86", "-3.21") and
+    # passes bracketed CI strings through unchanged -- those align
+    # by their inner padding (centred for the spanner-wrapping
+    # convention, applied via cols_align fallback below).
+    tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
   }
   # Factor-level rows: indent the Variable cell (whitespace was
   # trimmed above, so this is the only indent signal in HTML).
@@ -454,20 +476,22 @@ output_flextable <- function(rendered) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
   }
 
-  # Header centring + per-column alignment. Numeric body cells are
-  # *centred* (not right-aligned): each cell's text was pre-padded
-  # by render_regression_table() to a uniform column width, so
-  # centring the same-width strings places decimal points at the
-  # same horizontal position across rows. With right-align the CI
-  # closing bracket would sit at the right edge but the inner
-  # commas / decimal points would drift -- centring is the only
-  # alignment compatible with the bracketed CI cells.
+  # Header centring + per-column alignment. We mirror the
+  # table_continuous_lm flextable convention: Consolas + right-align
+  # are applied ONLY to numeric body cells (where the pre-padded
+  # values produced by render_regression_table() need a monospaced
+  # font to align decimal points). Headers, the Variable column,
+  # the caption and the footer keep flextable's default proportional
+  # font -- that mixed-font layout is intentional and matches the
+  # appearance used elsewhere in the package.
   ft <- flextable::align(ft, part = "header", align = "center")
   ft <- flextable::align(ft, j = 1L, part = "body", align = "left")
   if (n_cols >= 2L) {
     numeric_j <- 2:n_cols
     ft <- flextable::align(ft, j = numeric_j, part = "body",
-                            align = "center")
+                            align = "right")
+    ft <- flextable::font(ft, j = numeric_j, part = "body",
+                           fontname = "Consolas")
   }
   # Factor-level row indentation: padding-left so HTML / Word
   # rendering displays the indent (the whitespace prefix was trimmed
@@ -476,33 +500,20 @@ output_flextable <- function(rendered) {
     ft <- flextable::padding(ft, i = level_rows, j = 1L,
                               part = "body", padding.left = 20)
   }
-  # Uniform Consolas font across header + body + footer. The caption
-  # is styled separately (set_caption only takes plain text; rich
-  # formatting goes through as_paragraph + fp_text_default).
-  ft <- flextable::font(ft, part = "all", fontname = "Consolas")
-  # Content-driven autofit. Earlier versions passed width = 1 to
-  # set_table_properties, which forced the table to span 100% of the
-  # page (and over-widened columns). Plain `autofit()` sizes columns
-  # to their content; we then declare layout = "autofit" so Word
-  # honours the computed widths.
+  # Content-driven autofit. `autofit()` sizes columns to their
+  # content; we then declare layout = "autofit" so Word honours the
+  # computed widths (instead of forcing 100% page width as an
+  # earlier `width = 1` call did).
   ft <- flextable::autofit(ft)
   ft <- flextable::set_table_properties(ft, layout = "autofit")
 
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   if (!is.null(title) && nzchar(title)) {
-    caption_par <- flextable::as_paragraph(
-      flextable::as_chunk(
-        title,
-        props = flextable::fp_text_default(font.family = "Consolas")
-      )
-    )
-    ft <- flextable::set_caption(ft, caption = caption_par)
+    ft <- flextable::set_caption(ft, caption = title)
   }
   if (!is.null(note) && nzchar(note)) {
     ft <- flextable::add_footer_lines(ft, values = note)
-    # Re-apply Consolas to the freshly-added footer rows.
-    ft <- flextable::font(ft, part = "footer", fontname = "Consolas")
   }
   ft
 }
@@ -757,43 +768,28 @@ output_clipboard <- function(rendered, clipboard_delim) {
   # nocov end
 }
 
-# Build the TSV payload mirroring the Excel layout: title, spanner,
-# header, body, note. Pasting into a context that supports a fixed-
-# width font (Word with Consolas; plain-text editors; any monospace
-# viewer) reproduces both the cell grid AND the APA rules drawn from
-# U+2500 "─" characters, which connect into continuous horizontal
-# lines under monospace. In Excel, paste preserves the cell grid
-# but renders the ─ rows as visible dash sequences (still informative,
-# just not a single continuous stroke). Exported so the layout is
-# testable without exercising the clipboard side-effect.
+# Build the TSV payload mirroring the Excel layout: title row,
+# spanner row, header, body, note rows. Cells are tab-separated.
+# The body is delivered with the pre-padding produced by
+# render_regression_table() (via decimal_align_strings() and
+# align_ci_strings()) so a paste into a fixed-width context (Word
+# with Consolas applied; plain-text editor) preserves the decimal
+# alignment. Horizontal rules are NOT injected: TSV cannot encode
+# a single continuous line, and ─ rule rows displayed as
+# tab-separated dash segments produce a visually broken result.
+# This matches table_continuous_lm's clipboard behaviour. Exported
+# so the layout is testable without exercising the clipboard
+# side-effect.
 clipboard_payload <- function(rendered, clipboard_delim) {
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
-  title     <- attr(rendered, "title")
-  note      <- attr(rendered, "note")
-  spanners  <- attr(rendered, "spanners")
-  group_sep <- attr(rendered, "group_sep_rows")
+  title    <- attr(rendered, "title")
+  note     <- attr(rendered, "note")
+  spanners <- attr(rendered, "spanners")
   n_cols <- ncol(body)
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
 
   pad_row <- function(first, n) c(first, rep("", max(0L, n - 1L)))
-
-  # Cell-width-aware rule row: each cell holds enough U+2500 chars
-  # to fill the widest cell of its column, so that with a fixed-
-  # width font the rule visually spans the column. The exact width
-  # is the max of cell text lengths in the column (across the
-  # spanner row, header row, and body); a 3-char minimum guards
-  # against single-character cells producing one-dash rules.
-  rule_row <- function(stripped_body, headers, spanner_row) {
-    char_w <- integer(n_cols)
-    for (j in seq_len(n_cols)) {
-      vals <- c(headers[[j]], stripped_body[[j]],
-                 if (!is.null(spanner_row)) spanner_row[j] else NULL)
-      w <- max(nchar(vals, type = "width"), 3L, na.rm = TRUE)
-      char_w[j] <- w
-    }
-    vapply(char_w, function(w) strrep("─", w), character(1))
-  }
 
   rows <- list()
   add_row <- function(r) {
@@ -804,39 +800,29 @@ clipboard_payload <- function(rendered, clipboard_delim) {
     add_row(pad_row(title, n_cols))
   }
 
-  stripped <- if (has_spanner) .strip_spanner_prefix(body, spanners) else body
-  headers <- names(stripped)
-  spanner_row <- NULL
+  stripped <- if (has_spanner) {
+    .strip_spanner_prefix(body, spanners)
+  } else {
+    body
+  }
   if (has_spanner) {
+    # Spanner label repeated across each spanned column; matches the
+    # table_continuous "(95% CI)\t(95% CI)" convention so the user
+    # can merge after paste.
     spanner_row <- rep("", n_cols)
     for (lbl in names(spanners)) {
       spanner_row[spanners[[lbl]]] <- lbl
     }
-  }
-
-  rule <- rule_row(stripped, headers, spanner_row)
-
-  # 1. Top rule (above header / spanner).
-  add_row(rule)
-  if (has_spanner) {
     add_row(spanner_row)
   }
-  add_row(headers)
-  # 2. Sub-rule (below header).
-  add_row(rule)
+  add_row(names(stripped))
 
   body_mat <- as.matrix(stripped)
   if (nrow(body_mat) > 0L) {
     for (i in seq_len(nrow(body_mat))) {
-      # 3. Hair rule between last coefficient and first fit-stat.
-      if (length(group_sep) >= 1L && i == group_sep[1L]) {
-        add_row(rule)
-      }
       add_row(body_mat[i, ])
     }
   }
-  # 4. Bottom rule (below last body row).
-  add_row(rule)
 
   if (!is.null(note) && nzchar(note)) {
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
