@@ -743,13 +743,39 @@ for the low-level renderer. Inferential infrastructure (internal):
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-library(spicy)
+# ------------------------------------------------------------
+# Default output (`output = "default"`): the printable
+# spicy_regression_table -- examples below run under
+# `R CMD check --examples` and on the help page.
+# ------------------------------------------------------------
 
 # Single model, default APA layout
 fit <- lm(wellbeing_score ~ age + sex + education,
           data = sochealth)
 table_regression(fit)
+#> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.
+#> ℹ To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.
+#> This message is displayed once per session.
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   64.63  1.46  [61.78, 67.49]  <.001 
+#>  age             │    0.03  0.03  [-0.03,  0.08]   .343 
+#>  sex:            │                                      
+#>    Female (ref.) │    —     —           —         —     
+#>    Male          │    3.65  0.80  [ 2.09,  5.22]  <.001 
+#>  education:      │                                      
+#>    .L            │   13.80  0.78  [12.28, 15.32]  <.001 
+#>    .Q            │   -1.71  0.66  [-3.00, -0.41]   .010 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1200                                 
+#>  R²              │    0.22                              
+#>  Adj.R²          │    0.22                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
 # Hierarchical regression: nested = TRUE adds the comparison
 # footer (\eqn{\Delta}{Delta}\eqn{R^2}{R^2}, partial F, p)
@@ -761,39 +787,186 @@ table_regression(
   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
   nested = TRUE
 )
-
-# Cluster-robust SEs with Satterthwaite df
-fit_cl <- lm(wellbeing_score ~ age + sex,
-             data = sochealth, weights = weight)
-table_regression(
-  fit_cl,
-  vcov = "CR2",
-  cluster = clinic_id
-)
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                           Step 1                Step 2            Step 3     
+#>                    ────────────────────  ────────────────────  ───────────── 
+#>  Variable        │    B      SE     p       B      SE     p       B      SE  
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  (Intercept)     │   67.00  1.58  <.001    65.07  1.63  <.001    64.63  1.46 
+#>  age             │    0.04  0.03   .177     0.04  0.03   .163     0.03  0.03 
+#>  sex:            │                                                           
+#>    Female (ref.) │    —     —     —         —     —     —         —     —    
+#>    Male          │                          3.90  0.90  <.001     3.65  0.80 
+#>  education:      │                                                           
+#>    .L            │                                               13.80  0.78 
+#>    .Q            │                                               -1.71  0.66 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1200                  1200                  1200          
+#>  R²              │    0.00                  0.02                  0.22       
+#>  Adj.R²          │    0.00                  0.02                  0.22       
+#> 
+#>                    Step  
+#>                    ───── 
+#>  Variable        │   p   
+#> ─────────────────┼───────
+#>  (Intercept)     │ <.001 
+#>  age             │  .343 
+#>  sex:            │       
+#>    Female (ref.) │ —     
+#>    Male          │ <.001 
+#>  education:      │       
+#>    .L            │ <.001 
+#>    .Q            │  .010 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n               │       
+#>  R²              │       
+#>  Adj.R²          │       
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+#> 
+#> ── Model comparison ──
+#> Model 2 vs Model 1: ΔR² = +0.02, F = +18.94, p = <.001
+#> Model 3 vs Model 2: ΔR² = +0.21, F = +157.75, p = <.001
 
 # Standardised coefficients (\eqn{\beta}{beta}) alongside B
 table_regression(fit, standardized = "refit")
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B       β     SE       95% CI        p   
+#> ─────────────────┼─────────────────────────────────────────────
+#>  (Intercept)     │   64.63  -0.20  1.46  [61.78, 67.49]  <.001 
+#>  age             │    0.03   0.02  0.03  [-0.03,  0.08]   .343 
+#>  sex:            │                                             
+#>    Female (ref.) │    —      —     —           —         —     
+#>    Male          │    3.65   0.23  0.80  [ 2.09,  5.22]  <.001 
+#>  education:      │                                             
+#>    .L            │   13.80   0.88  0.78  [12.28, 15.32]  <.001 
+#>    .Q            │   -1.71  -0.11  0.66  [-3.00, -0.41]   .010 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1200                                        
+#>  R²              │    0.22                                     
+#>  Adj.R²          │    0.22                                     
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Custom column set with AME displayed alongside its own p-value.
+# Custom column set with AME alongside its own p-value.
 # `"p"` always refers to the B coefficient; for the AME-specific
-# p-value use `"AME_p"`. Placing AME after the B p-value makes
+# p-value use `"ame_p"`. Placing AME after the B p-value makes
 # the "which p belongs to what" reading unambiguous.
 table_regression(
   fit,
-  show_columns = c("B", "p", "partial_f2", "AME", "AME_p")
+  show_columns = c("b", "p", "partial_f2", "ame", "ame_p")
 )
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable                 │    B       p     f²    AME   AME p 
+#> ──────────────────────────┼────────────────────────────────────
+#>  (Intercept)              │   64.63  <.001                     
+#>  age                      │    0.03   .343  0.00   0.03   .343 
+#>  sex:                     │                                    
+#>    Female (ref.)          │    —     —      —      —     —     
+#>    Male                   │    3.65  <.001  0.02   3.65  <.001 
+#>  education:               │                                    
+#>    .L                     │   13.80  <.001  0.26               
+#>    .Q                     │   -1.71   .010  0.26               
+#>  educationTertiary        │                       19.52  <.001 
+#>  educationUpper secondary │                       11.85  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1200                               
+#>  R²                       │    0.22                            
+#>  Adj.R²                   │    0.22                            
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Pedagogical side-by-side SE comparison (same fit, three vcovs)
+# Pedagogical side-by-side SE comparison (same fit, three vcovs).
+# Cluster-robust uses `region` -- a real column of `sochealth`.
 table_regression(
   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
   vcov = list("classical", "HC3", "CR2"),
-  cluster = list(NULL, NULL, sochealth$clinic_id)
+  cluster = list(NULL, NULL, sochealth$region)
 )
-
-# Output to gt
-table_regression(fit, output = "gt")
+#> Linear regression comparison: wellbeing_score
+#> 
+#>                         Classical                HC3                CR2      
+#>                    ────────────────────  ────────────────────  ───────────── 
+#>  Variable        │    B      SE     p       B      SE     p       B      SE  
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.63  1.46  <.001    64.63  1.44  <.001    64.63  1.12 
+#>  age             │    0.03  0.03   .343     0.03  0.03   .343     0.03  0.03 
+#>  sex:            │                                                           
+#>    Female (ref.) │    —     —     —         —     —     —         —     —    
+#>    Male          │    3.65  0.80  <.001     3.65  0.80  <.001     3.65  0.97 
+#>  education:      │                                                           
+#>    .L            │   13.80  0.78  <.001    13.80  0.82  <.001    13.80  0.73 
+#>    .Q            │   -1.71  0.66   .010    -1.71  0.67   .011    -1.71  0.71 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1200                  1200                  1200          
+#>  R²              │    0.22                  0.22                  0.22       
+#>  Adj.R²          │    0.22                  0.22                  0.22       
+#> 
+#>                     CR2  
+#>                    ───── 
+#>  Variable        │   p   
+#> ─────────────────┼───────
+#>  (Intercept)     │ <.001 
+#>  age             │  .368 
+#>  sex:            │       
+#>    Female (ref.) │ —     
+#>    Male          │  .014 
+#>  education:      │       
+#>    .L            │ <.001 
+#>    .Q            │  .062 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n               │       
+#>  R²              │       
+#>  Adj.R²          │       
+#> 
+#> Note. Linear regression models.
+#> Std. errors:
+#>   Model 1: classical (OLS)
+#>   Model 2: heteroskedasticity-robust (HC3)
+#>   Model 3: cluster-robust (CR2), clusters by region
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
 # Tidy long format for downstream pipelines
 broom::tidy(table_regression(fit))
+#> # A tibble: 5 × 15
+#>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high
+#>   <chr>    <chr>       <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 M1       wellbeing_… (Int… B              64.6       1.46    61.8      67.5   
+#> 2 M1       wellbeing_… age   B               0.0258    0.0271  -0.0275    0.0790
+#> 3 M1       wellbeing_… sexM… B               3.65      0.798    2.09      5.22  
+#> 4 M1       wellbeing_… educ… B              13.8       0.777   12.3      15.3   
+#> 5 M1       wellbeing_… educ… B              -1.71      0.661   -3.00     -0.409 
+#> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
+#> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+
+# ------------------------------------------------------------
+# Non-default outputs (rich engines / file writes / clipboard):
+# wrapped in \dontrun{} so `R CMD check` doesn't depend on the
+# optional Suggests packages or write side-effects in the
+# check sandbox.
+# ------------------------------------------------------------
+if (FALSE) { # \dontrun{
+# gt / flextable / tinytable -- Suggests packages
+table_regression(fit, output = "gt")
+table_regression(fit, output = "flextable")
+table_regression(fit, output = "tinytable")
+
+# Excel / Word -- write a file at the supplied path
+table_regression(fit, output = "excel",
+                 excel_path = tempfile(fileext = ".xlsx"))
+table_regression(fit, output = "word",
+                 word_path = tempfile(fileext = ".docx"))
+
+# Clipboard -- requires a system clipboard (interactive use)
+table_regression(fit, output = "clipboard")
 } # }
 ```

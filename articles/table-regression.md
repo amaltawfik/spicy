@@ -326,6 +326,9 @@ table_regression(
   fit,
   show_columns = c("b", "p", "all_eta2", "all_omega2")
 )
+#> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.
+#> ℹ To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.
+#> This message is displayed once per session.
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B       p     η²    η² 95% CI     ω²    ω² 95% CI   
@@ -348,7 +351,7 @@ table_regression(
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 The η² point estimate matches `effectsize::eta_squared(partial = TRUE)`
@@ -403,7 +406,7 @@ table_regression(fit, p_adjust = "bonferroni")
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
 #> P-values adjusted via stats::p.adjust(method = 'bonferroni'); m = 5 coefficient(s) per model.
-#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 The footer documents the chosen method and the family size; the SE
@@ -458,7 +461,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 ``` r
@@ -484,7 +487,7 @@ table_regression(fit, drop = "^education")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 Together with `p_adjust`, this is the article-ready workflow: adjust on
@@ -865,7 +868,7 @@ table_regression(
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education` uses orthogonal polynomial contrasts (R default `contr.poly`): `.L` = linear trend, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, not per-level effects against a reference. Refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))` for a per-level layout.
+#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 ## Output formats
