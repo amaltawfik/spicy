@@ -34,8 +34,9 @@ table_regression(
   drop = NULL,
   show_intercept = TRUE,
   intercept_position = c("first", "last"),
-  group_factor_levels = TRUE,
-  reference_style = c("row", "annotation"),
+  factor_layout = c("grouped", "flat"),
+  group_factor_levels,
+  reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   model_labels = NULL,
@@ -230,24 +231,56 @@ table_regression(
   Ignored when `show_intercept = FALSE` (with `spicy_ignored_arg`
   warning).
 
-- group_factor_levels:
+- factor_layout:
 
-  Whether to render factor predictors as a header row + indented
-  contrast levels. `TRUE` (default, APA / gtsummary style) or `FALSE`
-  (flat `factor: level` rows).
+  Layout of factor predictors in the table. Applies to **any categorical
+  predictor** – `factor`, `ordered`, `character`, or `logical`. R's
+  [`stats::model.frame()`](https://rdrr.io/r/stats/model.frame.html)
+  coerces character and logical columns to factors at fit time, so they
+  share the same layout logic. Two options:
+
+  - `"grouped"` (default): the variable name appears on its own header
+    row ending with `:` (e.g., `education:`); each level follows as an
+    indented sub-row with the bare level name. APA / `gtsummary`
+    convention.
+
+  - `"flat"`: each non-reference dummy is one row with the
+    `<variable><level>` form (e.g., `educationUpper`); no header, no
+    indent. Econometrics / `parameters` / `modelsummary` convention.
 
 - reference_style:
 
-  Rendering of factor reference levels. `"row"` (default) shows an
-  explicit row `Lower (ref.)` with em-dashes in all stat columns
-  (gtsummary / clinical style). `"annotation"` puts `[ref: Lower]` in
-  the factor header (compact mode).
+  Rendering of factor reference levels. Four modes, distinguishing WHERE
+  the reference information is exposed (in a row, inline, in the footer,
+  or nowhere):
+
+  - `"row"` (default): explicit row `Female (ref.)` with em-dashes in
+    all stat columns (gtsummary / NEJM / BMJ clinical convention).
+    `reference_label` controls the suffix.
+
+  - `"annotation"`: the row is dropped and the reference is shown
+    inline. Under `factor_layout = "grouped"` the factor header reads
+    `education: [ref: Lower]`; under `factor_layout = "flat"` the marker
+    `[vs Lower]` is attached to the **first non-reference dummy** of
+    each factor (subsequent dummies inherit the same reference).
+
+  - `"footer"`: the row is dropped and a single line
+    `Reference categories: education = Lower; sex = Female.` is added to
+    the footer note. SAS `PROC LOGISTIC` / SPSS "Categorical Variables
+    Codings" convention. Best for publication-grade dense multi-factor
+    tables.
+
+  - `"none"`: the row is dropped and no reference information is
+    displayed anywhere. The user is responsible for stating the
+    reference convention elsewhere (article text, table caption). Under
+    `factor_layout = "flat"`, an informational message is emitted to
+    flag the silent omission.
 
 - reference_label:
 
-  String used to mark the reference level in `reference_style = "row"`
-  mode. Default `"(ref.)"`. Customise to `"(reference)"` or `"(réf.)"`
-  etc.
+  Suffix shown after the reference level in `reference_style = "row"`
+  mode. Default `"(ref.)"`. Ignored by the other three modes (which use
+  structural English wording – "ref:", "vs", "Reference categories:").
 
 - show_fit_stats:
 
