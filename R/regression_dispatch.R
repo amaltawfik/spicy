@@ -143,16 +143,45 @@ output_tinytable <- function(rendered) {
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   spanners <- attr(rendered, "spanners")
+  group_sep <- attr(rendered, "group_sep_rows")
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
-  if (!is.null(spanners) && length(spanners)) {
+  has_spanner <- !is.null(spanners) && length(spanners) > 0L
+  if (has_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
   }
+  n_cols <- ncol(body)
   tt <- tinytable::tt(body,
                        caption = title %||% "",
                        notes = if (!is.null(note)) note else NULL)
-  if (!is.null(spanners) && length(spanners)) {
+  if (has_spanner) {
     tt <- tinytable::group_tt(tt, j = spanners)
+  }
+
+  # APA borders, matching the gt / flextable layout. tinytable
+  # addresses header rows with i = 0 (column labels) and i = -1
+  # (the spanner row added by group_tt above the labels).
+  top_i <- if (has_spanner) -1L else 0L
+  tt <- tinytable::style_tt(tt, i = top_i, j = seq_len(n_cols),
+                             line = "t", line_width = 0.06)
+  if (has_spanner) {
+    for (lbl in names(spanners)) {
+      tt <- tinytable::style_tt(tt, i = -1L, j = spanners[[lbl]],
+                                 line = "b", line_width = 0.06)
+    }
+  }
+  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols),
+                             line = "b", line_width = 0.06)
+  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
+        group_sep[1L] <= nrow(body)) {
+    tt <- tinytable::style_tt(tt, i = group_sep[1L] - 1L,
+                               j = seq_len(n_cols),
+                               line = "b", line_width = 0.03,
+                               line_color = "#cccccc")
+  }
+  if (nrow(body) > 0L) {
+    tt <- tinytable::style_tt(tt, i = nrow(body), j = seq_len(n_cols),
+                               line = "b", line_width = 0.06)
   }
   tt
 }
@@ -173,6 +202,7 @@ output_gt <- function(rendered) {
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   spanners <- attr(rendered, "spanners")
+  group_sep <- attr(rendered, "group_sep_rows")
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
   # gt addresses columns by name internally, so we keep the unique
@@ -200,6 +230,49 @@ output_gt <- function(rendered) {
       tbl <- do.call(gt::cols_label, c(list(tbl), relabel))
     }
   }
+
+  # APA borders. gt's default styling already paints a column-label
+  # bottom rule (sub-rule); we add the missing pieces: top rule above
+  # the column-label area, a hair rule between coef and fit-stats,
+  # and a bottom rule below the table body. tab_options() suppresses
+  # gt's default outer / body hlines so only our APA rules remain.
+  rule <- gt::cell_borders(sides = "bottom", color = "currentColor",
+                            weight = gt::px(1))
+  rule_top <- gt::cell_borders(sides = "top", color = "currentColor",
+                                weight = gt::px(1))
+  rule_light <- gt::cell_borders(sides = "bottom", color = "#cccccc",
+                                  weight = gt::px(1))
+  tbl <- gt::tab_options(
+    tbl,
+    table.border.top.width = gt::px(0),
+    table.border.bottom.width = gt::px(0),
+    table_body.border.top.width = gt::px(0),
+    table_body.border.bottom.width = gt::px(0),
+    table_body.hlines.color = "transparent",
+    column_labels.border.top.width = gt::px(0),
+    column_labels.border.lr.color = "transparent"
+  )
+  tbl <- gt::tab_style(
+    tbl,
+    style = rule_top,
+    locations = gt::cells_column_labels(columns = gt::everything())
+  )
+  if (nrow(body) > 0L) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule,
+      locations = gt::cells_body(rows = nrow(body))
+    )
+  }
+  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
+        group_sep[1L] <= nrow(body)) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule_light,
+      locations = gt::cells_body(rows = group_sep[1L] - 1L)
+    )
+  }
+
   if (!is.null(title) && nzchar(title)) {
     tbl <- gt::tab_header(tbl, title = title)
   }
@@ -225,15 +298,17 @@ output_flextable <- function(rendered) {
   body <- as.data.frame(rendered, stringsAsFactors = FALSE,
                          check.names = FALSE)
   spanners <- attr(rendered, "spanners")
+  group_sep <- attr(rendered, "group_sep_rows")
   orig_names <- names(body)
+  n_cols <- ncol(body)
   ft <- flextable::flextable(body)
-  if (!is.null(spanners) && length(spanners)) {
+  has_spanner <- !is.null(spanners) && length(spanners) > 0L
+  if (has_spanner) {
     # Build a `values` + `colwidths` spec for one prepended header
     # row covering all columns: for each leftmost-to-rightmost column
     # run, emit either a spanner label (for cols inside a span) or an
     # empty string (for cols outside any span — typically the
     # leading "Variable" column).
-    n_cols <- ncol(body)
     span_by_col <- character(n_cols)
     for (lbl in names(spanners)) {
       span_by_col[spanners[[lbl]]] <- lbl
@@ -271,6 +346,30 @@ output_flextable <- function(rendered) {
     ft <- flextable::align(ft, i = 1L, align = "center",
                             part = "header")
   }
+
+  # APA borders, mirroring table_continuous: top + mid-rule under
+  # spanner spans (when present) + sub-rule under sub-header +
+  # hair rule between coef and fit-stats + bottom rule.
+  bd <- spicy_fp_border(color = "black", width = 1)
+  bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
+  ft <- flextable::hline_top(ft, part = "header", border = bd)
+  if (has_spanner) {
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      ft <- flextable::hline(ft, i = 1L, j = idx,
+                              part = "header", border = bd)
+    }
+  }
+  ft <- flextable::hline_bottom(ft, part = "header", border = bd)
+  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
+        group_sep[1L] <= nrow(body)) {
+    ft <- flextable::hline(ft, i = group_sep[1L] - 1L,
+                            part = "body", border = bd_light)
+  }
+  if (nrow(body) > 0L) {
+    ft <- flextable::hline_bottom(ft, part = "body", border = bd)
+  }
+
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   if (!is.null(title) && nzchar(title)) {
@@ -311,6 +410,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   spanners <- attr(rendered, "spanners")
+  group_sep <- attr(rendered, "group_sep_rows")
+  n_cols <- ncol(body)
 
   wb <- openxlsx2::wb_workbook()
   wb <- openxlsx2::wb_add_worksheet(wb, sheet = excel_sheet)
@@ -321,11 +422,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
                                  x = title, start_row = start_row)
     start_row <- start_row + 2L
   }
-  if (!is.null(spanners) && length(spanners)) {
-    # Write a spanner row above the column headers, merge each
-    # label's span, then write the stripped sub-column header row,
-    # then the data body (no col_names — we already wrote them).
-    n_cols <- ncol(body)
+
+  has_spanner <- !is.null(spanners) && length(spanners) > 0L
+  if (has_spanner) {
+    # Spanner row above the sub-column header row. Label is written
+    # into every spanned cell, then those cells are merged for the
+    # visual span.
     spanner_row <- rep("", n_cols)
     for (lbl in names(spanners)) {
       spanner_row[spanners[[lbl]]] <- lbl
@@ -363,13 +465,70 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
                                  x = body, start_row = start_row + 2L,
                                  col_names = FALSE)
-    body_end_row <- start_row + 1L + nrow(body)
+    spanner_row_excel <- start_row
+    header_row_excel  <- start_row + 1L
+    body_first_row    <- start_row + 2L
+    body_end_row      <- start_row + 1L + nrow(body)
   } else {
     wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
                                  x = body, start_row = start_row,
                                  col_names = TRUE)
-    body_end_row <- start_row + nrow(body)
+    spanner_row_excel <- NA_integer_
+    header_row_excel  <- start_row
+    body_first_row    <- start_row + 1L
+    body_end_row      <- start_row + nrow(body)
   }
+
+  # ---- APA borders -------------------------------------------------------
+  # Five rules, mirroring table_continuous / table_continuous_lm:
+  #   1. Top rule above the first header row (spanner or sub-header).
+  #   2. Spanner mid-rule beneath each spanned range (when spanners
+  #      exist) -- structural twin of the CI mid-rule in continuous.
+  #   3. Sub-rule below the sub-header row.
+  #   4. Hair rule between the last coefficient row and the first
+  #      fit-stat row (uses group_sep_rows, the body-index of the
+  #      first fit-stat row; -2L shifts into the corresponding
+  #      Excel row).
+  #   5. Bottom rule below the final body row.
+  top_rule_row <- if (has_spanner) spanner_row_excel else header_row_excel
+  wb <- openxlsx2::wb_add_border(
+    wb, sheet = excel_sheet,
+    dims = openxlsx2::wb_dims(rows = top_rule_row, cols = seq_len(n_cols)),
+    top_border = "thin"
+  )
+  if (has_spanner) {
+    for (lbl in names(spanners)) {
+      idx <- spanners[[lbl]]
+      wb <- openxlsx2::wb_add_border(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = spanner_row_excel, cols = idx),
+        bottom_border = "thin"
+      )
+    }
+  }
+  wb <- openxlsx2::wb_add_border(
+    wb, sheet = excel_sheet,
+    dims = openxlsx2::wb_dims(rows = header_row_excel, cols = seq_len(n_cols)),
+    bottom_border = "thin"
+  )
+  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
+        group_sep[1L] <= nrow(body)) {
+    last_coef_excel <- body_first_row + group_sep[1L] - 2L
+    wb <- openxlsx2::wb_add_border(
+      wb, sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(rows = last_coef_excel,
+                                 cols = seq_len(n_cols)),
+      bottom_border = "hair"
+    )
+  }
+  if (nrow(body) > 0L) {
+    wb <- openxlsx2::wb_add_border(
+      wb, sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(rows = body_end_row, cols = seq_len(n_cols)),
+      bottom_border = "thin"
+    )
+  }
+
   if (!is.null(note) && nzchar(note)) {
     foot_row <- body_end_row + 2L
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
@@ -410,10 +569,67 @@ output_clipboard <- function(rendered, clipboard_delim) {
     # nocov end
   }
   # nocov start — write_clip side effect cannot run on headless CI.
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE)
-  clipr::write_clip(body, sep = clipboard_delim, col.names = TRUE)
+  txt <- clipboard_payload(rendered, clipboard_delim)
+  clipr::write_clip(txt)
   invisible(rendered)
   # nocov end
+}
+
+# Build the TSV payload mirroring the Excel layout: title, spanner,
+# header, body, note. Pasting into Excel/Word reproduces the same
+# row sequence; the user can then merge the spanner cells manually
+# (TSV has no native cell-merge convention). Exported here so the
+# behaviour is testable without exercising the clipboard side-effect.
+clipboard_payload <- function(rendered, clipboard_delim) {
+  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
+                         check.names = FALSE)
+  title    <- attr(rendered, "title")
+  note     <- attr(rendered, "note")
+  spanners <- attr(rendered, "spanners")
+  n_cols <- ncol(body)
+
+  pad_row <- function(first, n) c(first, rep("", max(0L, n - 1L)))
+
+  rows <- list()
+  add_row <- function(r) {
+    rows[[length(rows) + 1L]] <<- as.character(r)
+  }
+
+  if (!is.null(title) && nzchar(title)) {
+    add_row(pad_row(title, n_cols))
+  }
+
+  if (!is.null(spanners) && length(spanners)) {
+    # Spanner label repeated across each spanned column -- matches
+    # the table_continuous "(95% CI)\t(95% CI)" convention. Easier
+    # for the user to merge in Excel/Word after paste than the
+    # "label in first cell, empty after" alternative (which loses
+    # the visual centring).
+    spanner_row <- rep("", n_cols)
+    for (lbl in names(spanners)) {
+      spanner_row[spanners[[lbl]]] <- lbl
+    }
+    add_row(spanner_row)
+    stripped <- .strip_spanner_prefix(body, spanners)
+    add_row(names(stripped))
+  } else {
+    add_row(names(body))
+  }
+
+  body_mat <- as.matrix(body)
+  if (nrow(body_mat) > 0L) {
+    for (i in seq_len(nrow(body_mat))) {
+      add_row(body_mat[i, ])
+    }
+  }
+
+  if (!is.null(note) && nzchar(note)) {
+    note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
+    for (ln in note_lines) add_row(pad_row(ln, n_cols))
+  }
+
+  lines <- vapply(rows, paste, character(1), collapse = clipboard_delim)
+  paste(lines, collapse = "\n")
 }
 # nocov end — closes the `output_clipboard` function block
 

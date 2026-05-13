@@ -105,6 +105,7 @@ Tidyselect
 Tipton
 Tjur
 UNIANOVA
+VCV
 Vasconcellos
 Venables
 WLS
@@ -129,6 +130,7 @@ codebook
 codebooks
 coef
 colour
+composable
 coloured
 colours
 coverages
@@ -136,6 +138,8 @@ crosstable
 customisable
 customise
 da
+dataset's
+deduplicated
 deduplicates
 df
 disambiguates
@@ -147,6 +151,7 @@ estimands
 et
 exponentiate
 fallbacks
+fixest
 flextable
 generalisation
 generalisations
@@ -185,6 +190,7 @@ quartic
 rebrand
 rebranded
 rebrands
+regexes
 relabelled
 renderer
 renderers
@@ -205,6 +211,7 @@ tidyselect
 tidyverse
 tinytable
 unstarred
+validator
 varlist
 vcov
 vcovCR

@@ -36,6 +36,8 @@ table_regression(
   align = c("decimal", "center", "right", "auto"),
   padding = 0L,
   labels = NULL,
+  title = NULL,
+  note = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -289,6 +291,25 @@ row labels. Names are coefficient term names (from
 \code{\link[stats:terms]{stats::terms()}}); values are the displayed labels. E.g.
 \code{c("age" = "Age (years)", "sexM" = "Male (vs Female)")}.
 Default \code{NULL} (use raw term names).}
+
+\item{title, note}{Override or suppress the auto-built caption /
+methodological footer. Three modes per argument:
+\itemize{
+\item \code{NULL} (default): the package builds the standard caption
+("Linear regression on \verb{<DV>}" / "Hierarchical linear
+regression on \verb{<DV>}" / ...) and a methodological note
+(VCV type, p-adjust method, reference categories, ...).
+\item \code{FALSE}: the corresponding banner row is omitted from
+every output engine. Use when the surrounding manuscript
+provides its own caption / note.
+\item character string (length 1): replaces the auto-built
+text verbatim. The renderer applies no APA formatting on
+top -- supply the exact string you want displayed (multi-
+line notes accepted via embedded \code{"\\n"}).
+}
+Validation messages, the spanner row, and the in-body change-
+stat rows are \emph{not} affected -- they belong to the table
+structure, not to the banner.}
 
 \item{output}{Output type. \code{"default"} (a printable
 \code{spicy_regression_table}); \code{"data.frame"} / \code{"long"} (raw

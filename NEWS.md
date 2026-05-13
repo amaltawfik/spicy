@@ -302,6 +302,33 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
+### `table_regression()` — banner overrides and APA borders across all engines
+
+* New `title` and `note` arguments (unified API): `NULL` (default,
+  auto-build), `FALSE` (suppress the banner row), or a character
+  string (override verbatim). The validator rejects `TRUE` and non-
+  scalar / non-character inputs with a remediation hint, so user
+  typos like `title = TURE` are surfaced rather than silently
+  mapped. Use `title = FALSE` when the manuscript supplies its own
+  caption and the in-table banner would duplicate it.
+
+* APA horizontal rules now reach **every** rich-output engine
+  (`gt`, `flextable`, `tinytable`, `excel`), matching the layout
+  already used by `table_continuous()` / `table_continuous_lm()`.
+  Five rules in the standard layout:
+  (1) top rule above the spanner / header,
+  (2) mid-rule under each multi-model spanner range,
+  (3) sub-rule under the column header,
+  (4) **new** hair rule between the last coefficient row and the
+      first fit-stat row (uses the existing `group_sep_rows` cue),
+  (5) bottom rule below the final body row.
+
+* `output = "clipboard"` now mirrors the Excel layout: title row,
+  spanner row, header row, body, footer note. Pasting into Excel
+  or Word reproduces the full table structure (previously only the
+  body data.frame was copied, dropping title, multi-model spanner,
+  and note).
+
 ### Covariate adjustment in `table_continuous_lm()`
 
 * New `covariates` argument adds additive covariates to each

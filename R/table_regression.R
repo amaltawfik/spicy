@@ -523,6 +523,24 @@
 #'   [stats::terms()]); values are the displayed labels. E.g.
 #'   `c("age" = "Age (years)", "sexM" = "Male (vs Female)")`.
 #'   Default `NULL` (use raw term names).
+#' @param title,note Override or suppress the auto-built caption /
+#'   methodological footer. Three modes per argument:
+#'   \itemize{
+#'     \item `NULL` (default): the package builds the standard caption
+#'       ("Linear regression on `<DV>`" / "Hierarchical linear
+#'       regression on `<DV>`" / ...) and a methodological note
+#'       (VCV type, p-adjust method, reference categories, ...).
+#'     \item `FALSE`: the corresponding banner row is omitted from
+#'       every output engine. Use when the surrounding manuscript
+#'       provides its own caption / note.
+#'     \item character string (length 1): replaces the auto-built
+#'       text verbatim. The renderer applies no APA formatting on
+#'       top -- supply the exact string you want displayed (multi-
+#'       line notes accepted via embedded `"\n"`).
+#'   }
+#'   Validation messages, the spanner row, and the in-body change-
+#'   stat rows are *not* affected -- they belong to the table
+#'   structure, not to the banner.
 #' @param output Output type. `"default"` (a printable
 #'   `spicy_regression_table`); `"data.frame"` / `"long"` (raw
 #'   data); `"gt"` / `"flextable"` / `"tinytable"` (rich-format
@@ -695,6 +713,8 @@ table_regression <- function(
   align = c("decimal", "center", "right", "auto"),
   padding = 0L,
   labels = NULL,
+  title = NULL,
+  note = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable",
              "tinytable", "excel", "clipboard", "word"),
   excel_path = NULL,
@@ -946,6 +966,8 @@ table_regression <- function(
   validate_boot_n(boot_n)
   validate_logical_scalar(show_intercept, "show_intercept")
   validate_logical_scalar(nested, "nested")
+  validate_caption_arg(title, "title")
+  validate_caption_arg(note,  "note")
   validate_digit_arg(digits, "digits")
   validate_digit_arg(p_digits, "p_digits")
   validate_digit_arg(effect_size_digits, "effect_size_digits")
@@ -1119,7 +1141,19 @@ table_regression <- function(
   aligned <- apply_keep_drop_filter(aligned, keep = keep, drop = drop)
 
   # ---- Title + footer (Step 7) -------------------------------------------
-  title <- build_regression_title(extracts, nested = nested)
+  # `title` / `note` resolution: NULL -> auto, FALSE -> suppress,
+  # character -> override. The auto-build is gated by `is.null(title)`
+  # only; the footer side of the resolution lives below (`footer_main`
+  # is always built so its diagnostic side-effects still fire, e.g. the
+  # "none" + flat informational message tied to reference_style; the
+  # override / suppression happens last).
+  title <- if (is.null(title)) {
+    build_regression_title(extracts, nested = nested)
+  } else if (isFALSE(title)) {
+    NULL
+  } else {
+    as.character(title)
+  }
   footer_main <- build_regression_footer(
     extracts,
     standardized = standardized,
@@ -1151,7 +1185,13 @@ table_regression <- function(
     )
   }
 
-  full_footer_str <- if (length(footer_main)) footer_main else NULL
+  full_footer_str <- if (is.null(note)) {
+    if (length(footer_main)) footer_main else NULL
+  } else if (isFALSE(note)) {
+    NULL
+  } else {
+    as.character(note)
+  }
 
   # ---- Render (Layer 3) --------------------------------------------------
   # Q1: model_labels precedence is explicit > names(list) > default.

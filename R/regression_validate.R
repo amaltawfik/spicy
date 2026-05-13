@@ -815,6 +815,29 @@ validate_logical_scalar <- function(x, name) {
   invisible(NULL)
 }
 
+# Caption-style args (`title`, `note`). Three accepted forms:
+#   NULL              -> auto-build (default)
+#   FALSE             -> suppress
+#   single character  -> override verbatim
+# TRUE is rejected explicitly: it is grammatically suggestive of "yes
+# show it" but carries no string payload, and silently mapping it to
+# NULL would mask user typos (e.g. `title = TURE`).
+validate_caption_arg <- function(x, name) {
+  if (is.null(x)) return(invisible(NULL))
+  if (isFALSE(x)) return(invisible(NULL))
+  ok <- length(x) == 1L && is.character(x) && !is.na(x)
+  if (!ok) {
+    spicy_abort(
+      c(
+        sprintf("`%s` must be NULL, FALSE, or a single string.", name),
+        "i" = "NULL = auto-build; FALSE = suppress; \"...\" = override."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
 # `p_adjust` validation. Must be one of stats::p.adjust.methods.
 # We accept "fdr" as an alias for "BH" (matching stats::p.adjust
 # itself) but normalise back to the canonical name in the orchestrator

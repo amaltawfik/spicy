@@ -204,3 +204,140 @@ test_that("output = 'excel' with mixed lm + glm carries the per-model regression
   expect_true(any(grepl("Model 1: linear regression", col_a, fixed = TRUE)))
   expect_true(any(grepl("Model 2: logistic regression", col_a, fixed = TRUE)))
 })
+
+
+# ============================================================================
+# title / note arguments (NULL = auto, FALSE = suppress, string = override)
+# ============================================================================
+
+test_that("`title` and `note` validator rejects TRUE and non-character", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(table_regression(fit, title = TRUE),
+                class = "spicy_invalid_input")
+  expect_error(table_regression(fit, note = 1L),
+                class = "spicy_invalid_input")
+  expect_error(table_regression(fit, title = c("a", "b")),
+                class = "spicy_invalid_input")
+})
+
+test_that("`title = FALSE` and `note = FALSE` suppress both banners", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit, title = FALSE, note = FALSE)
+  expect_null(attr(out, "title"))
+  expect_null(attr(out, "note"))
+})
+
+test_that("`title = \"...\"` and `note = \"...\"` override the auto banners", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit, title = "Custom title",
+                           note = "Custom note.")
+  expect_identical(attr(out, "title"), "Custom title")
+  expect_identical(attr(out, "note"),  "Custom note.")
+})
+
+
+# ============================================================================
+# Excel APA borders
+# ============================================================================
+
+test_that("output = 'excel' draws the five APA border rules", {
+  skip_if_not_installed("openxlsx2")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(list(m1, m2), output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  # Borders live in styles.xml; check the workbook serialised
+  # at least one "thin" + one "hair" border in the style table.
+  styles_xml <- paste(wb$styles_mgr$styles$borders, collapse = " ")
+  expect_match(styles_xml, "thin", fixed = TRUE)
+  expect_match(styles_xml, "hair", fixed = TRUE)
+})
+
+test_that("Excel: title = FALSE suppresses the A1 title cell", {
+  skip_if_not_installed("openxlsx2")
+  fit <- lm(mpg ~ wt, data = mt)
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(fit, title = FALSE, note = FALSE,
+                   output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
+  expect_false(grepl("Linear regression", as.character(cells[[1L]][1L]),
+                      fixed = TRUE))
+})
+
+
+# ============================================================================
+# Clipboard payload mirrors the Excel layout
+# ============================================================================
+
+test_that("clipboard_payload includes title, spanner, header, body, note", {
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  rendered <- table_regression(list(m1, m2))
+  txt <- spicy:::clipboard_payload(rendered, "\t")
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
+  expect_match(lines[1L], "^Linear regression")
+  expect_match(lines[2L], "Model 1\tModel 1")
+  expect_match(lines[3L], "^Variable\tB")
+  expect_true(any(grepl("Std\\. errors", lines)))
+})
+
+test_that("clipboard_payload honours title = FALSE / note = FALSE", {
+  fit <- lm(mpg ~ wt, data = mt)
+  rendered <- table_regression(fit, title = FALSE, note = FALSE)
+  txt <- spicy:::clipboard_payload(rendered, "\t")
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
+  expect_no_match(lines[1L], "Linear regression")
+  expect_false(any(grepl("Std\\. errors", lines)))
+})
+
+test_that("clipboard_payload single-model layout (no spanner)", {
+  fit <- lm(mpg ~ wt, data = mt)
+  rendered <- table_regression(fit)
+  txt <- spicy:::clipboard_payload(rendered, "\t")
+  lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
+  # No spanner row -> header is the second line (after title)
+  expect_match(lines[2L], "^Variable\t")
+})
+
+
+# ============================================================================
+# gt / flextable / tinytable engines still build (smoke) with new code paths
+# ============================================================================
+
+test_that("output = 'gt' renders with APA borders", {
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  g <- table_regression(list(m1, m2), output = "gt")
+  expect_s3_class(g, "gt_tbl")
+  # title = FALSE path
+  g2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
+                          output = "gt")
+  expect_s3_class(g2, "gt_tbl")
+})
+
+test_that("output = 'flextable' renders with APA borders", {
+  skip_if_not_installed("flextable")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  ft <- table_regression(list(m1, m2), output = "flextable")
+  expect_s3_class(ft, "flextable")
+  ft2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
+                           output = "flextable")
+  expect_s3_class(ft2, "flextable")
+})
+
+test_that("output = 'tinytable' renders with APA borders", {
+  skip_if_not_installed("tinytable")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  tt <- table_regression(list(m1, m2), output = "tinytable")
+  expect_true(inherits(tt, "tinytable"))
+  tt2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
+                           output = "tinytable")
+  expect_true(inherits(tt2, "tinytable"))
+})
