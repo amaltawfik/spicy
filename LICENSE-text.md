@@ -1,4 +1,4 @@
 # License
 
     YEAR: 2025-2026
-    COPYRIGHT HOLDER: spicy authors
+    COPYRIGHT HOLDER: Amal Tawfik
