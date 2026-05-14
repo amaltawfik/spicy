@@ -302,7 +302,36 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
-### `table_regression()` — rich-output engines aligned with `table_continuous_lm` conventions
+### `table_regression()` — Excel font scoped + HTML decimal alignment fixed
+
+* **Excel**: the previous revision applied Consolas across every
+  cell (title, header, body, notes); the present revision scopes
+  Consolas to the **numeric body cells only**. Title, the Variable
+  column, headers, and footer notes now render in Excel's default
+  Calibri. The pre-padded numeric cells still align decimal points
+  thanks to the monospaced font, so swapping to Calibri for the
+  surrounding cells does not break the decimal alignment.
+
+* **gt** and **tinytable**: `cols_align_decimal()` /
+  `style_tt(align = "d")` were left-aligning every cell whose
+  content was not a clean numeric string (em-dashes for reference
+  rows, `<.001` p-values, empty fit-stat cells in the second
+  model). The dispatchers now keep the render layer's pre-padding
+  and apply a monospaced font + `white-space: pre` to numeric
+  body cells via `tab_style` / `style_tt(monospace = TRUE,
+  html_css = "white-space: pre;")`. HTML otherwise collapses the
+  leading-space padding (default `white-space: normal`); preserving
+  it together with a monospaced font is what produces the aligned
+  decimal points across rows.
+
+* **Non-ASCII regression**: `R/regression_dispatch.R` contained
+  em-dash and `─` characters (Unicode horizontal box drawing)
+  in comments that triggered the R CMD check
+  `code files for non-ASCII characters` WARNING under a CI
+  `error-on = "warning"` configuration. All such characters have
+  been replaced with ASCII equivalents (`--`, `-`, `x`).
+
+### `table_regression()` -- rich-output engines aligned with `table_continuous_lm` conventions
 
 * **gt** now uses `gt::cols_align_decimal()` (the native decimal-
   alignment primitive) on every non-`Variable` column. The

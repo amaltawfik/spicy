@@ -1,4 +1,4 @@
-# Output dispatch for table_regression() — Step 11.
+# Output dispatch for table_regression() -- Step 11.
 #
 # Coverage convention:
 #   The `# nocov start` / `# nocov end` pragmas in this file mark
@@ -13,19 +13,19 @@
 # Per dev/table_regression_design.md `output` arg: routes the rendered
 # character data.frame to one of nine destinations:
 #
-#   default     — printable spicy_regression_table (data.frame subclass);
+#   default     -- printable spicy_regression_table (data.frame subclass);
 #                 print() delegates to spicy_print_table().
-#   data.frame  — plain wide data.frame (stripped of spicy classes)
-#   long        — broom-style long tibble (one row per
-#                 model_id × term × estimate_type)
-#   tinytable   — tinytable::tt() wrapper
-#   gt          — gt::gt() wrapper
-#   flextable   — flextable::flextable() wrapper
-#   excel       — openxlsx2::write_xlsx() side-effect; returns
+#   data.frame  -- plain wide data.frame (stripped of spicy classes)
+#   long        -- broom-style long tibble (one row per
+#                 model_id x term x estimate_type)
+#   tinytable   -- tinytable::tt() wrapper
+#   gt          -- gt::gt() wrapper
+#   flextable   -- flextable::flextable() wrapper
+#   excel       -- openxlsx2::write_xlsx() side-effect; returns
 #                 invisible(rendered)
-#   clipboard   — clipr::write_clip() side-effect; returns
+#   clipboard   -- clipr::write_clip() side-effect; returns
 #                 invisible(rendered)
-#   word        — flextable + officer save_as_docx; returns
+#   word        -- flextable + officer save_as_docx; returns
 #                 invisible(rendered)
 #
 # All optional-engine outputs guard with requireNamespace() and
@@ -55,7 +55,7 @@ dispatch_regression_output <- function(
     excel       = output_excel(rendered, excel_path, excel_sheet),
     clipboard   = output_clipboard(rendered, clipboard_delim),
     word        = output_word(rendered, word_path),
-    # nocov start — defensive: match.arg() above forbids any other
+    # nocov start -- defensive: match.arg() above forbids any other
     # value, so this branch is unreachable in practice.
     spicy_abort(sprintf("Unknown output \"%s\".", output),
                 class = "spicy_invalid_input")
@@ -147,7 +147,7 @@ output_long <- function(aligned) {
 
 output_tinytable <- function(rendered) {
   if (!spicy_pkg_available("tinytable")) {
-    # nocov start — only reachable when 'tinytable' is not installed;
+    # nocov start -- only reachable when 'tinytable' is not installed;
     # CI / dev runs always have it via Suggests.
     spicy_abort(
       c("Output `\"tinytable\"` requires the 'tinytable' package.",
@@ -164,15 +164,14 @@ output_tinytable <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
-  # tinytable has a native primitive `style_tt(align = "d")` that
-  # decimal-aligns one column at a time. Like gt's cols_align_decimal
-  # it expects raw numeric strings, so we strip the render layer's
-  # pre-padding from every non-Variable column. Bracketed CI cells
-  # have no leading / trailing whitespace; trimws leaves their
-  # internal padding intact.
-  if (ncol(body) >= 2L) {
-    body[-1L] <- lapply(body[-1L], trimws)
-  }
+  # `style_tt(align = "d")` aligns clean numeric strings but cannot
+  # handle the mixed content of these tables (em-dashes for
+  # reference rows, "<.001" p-values, empty cells under the
+  # second model, ...) -- non-matching cells fall back to
+  # left-align and break the column. We instead rely on the render
+  # layer's pre-padding and apply a monospaced font +
+  # white-space: pre to numeric body cells so the padded spaces
+  # align in HTML / LaTeX.
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
   if (has_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
@@ -212,11 +211,10 @@ output_tinytable <- function(rendered) {
   }
 
   # Header centring + per-column alignment. The spanner row (i = -1)
-  # and the column-label row (i = 0) are centred. Numeric body
-  # columns get align = "d" (tinytable's native decimal-alignment
-  # primitive) one column at a time. No custom font: tinytable's
-  # default renders the decimal-aligned columns correctly through
-  # native LaTeX `siunitx` / HTML CSS once the column type is set.
+  # and the column-label row (i = 0) are centred. The Variable
+  # column is left-aligned; numeric body cells receive a monospaced
+  # font + white-space: pre so the render layer's pre-padding
+  # produces aligned decimal points across rows.
   tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
   if (has_spanner) {
     tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
@@ -224,9 +222,11 @@ output_tinytable <- function(rendered) {
   }
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    for (rj in 2:n_cols) {
-      tt <- tinytable::style_tt(tt, j = rj, align = "d")
-    }
+    tt <- tinytable::style_tt(
+      tt, j = 2:n_cols, align = "c",
+      monospace = TRUE,
+      html_css = "white-space: pre;"
+    )
   }
   # Factor-level rows: indent the Variable cell. We tag both HTML
   # (CSS padding) and LaTeX (\hspace) so the indentation reaches all
@@ -261,17 +261,15 @@ output_gt <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
-  # gt has a native primitive `cols_align_decimal()` that aligns the
-  # decimal mark across rows of a numeric-string column. The
-  # pre-padded values produced by render_regression_table() would
-  # double-pad under this primitive, so we strip the leading /
-  # trailing whitespace from non-Variable columns first. CI cells
-  # `[LL, UL]` are bracketed text -- cols_align_decimal cannot
-  # align them, but trimming leaves the internal padding intact, so
-  # they keep their per-row centred bracket pattern.
-  if (ncol(body) >= 2L) {
-    body[-1L] <- lapply(body[-1L], trimws)
-  }
+  # `cols_align_decimal()` would be the natural choice but it leaves
+  # mixed-content cells (em-dashes for reference rows, "<.001"
+  # p-values, empty fit-stat cells under the second model, etc.)
+  # left-aligned because gt falls back to text-align: left for
+  # non-numeric strings. The pre-padded values produced by
+  # render_regression_table() already encode column-wide decimal
+  # alignment; pairing them with a monospaced font and
+  # `white-space: pre` on the numeric body cells preserves the
+  # alignment in HTML / Word renders.
   # gt addresses columns by name internally, so we keep the unique
   # "Step 1: B" / "Step 2: B" names on the data.frame and use
   # `cols_label()` to relabel the displayed headers to the bare
@@ -360,12 +358,19 @@ output_gt <- function(rendered) {
   tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
   if (n_cols >= 2L) {
     numeric_cols <- orig_names[-1L]
-    # Native decimal alignment by the `.` mark. cols_align_decimal()
-    # handles plain numeric strings (e.g., "0.86", "-3.21") and
-    # passes bracketed CI strings through unchanged -- those align
-    # by their inner padding (centred for the spanner-wrapping
-    # convention, applied via cols_align fallback below).
-    tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+    tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
+    # white-space: pre preserves the render layer's leading-/inner-
+    # whitespace pre-padding (HTML default `white-space: normal`
+    # collapses it). A monospaced font keeps the padded spaces at
+    # digit width so the decimal points align across rows.
+    tbl <- gt::tab_style(
+      tbl,
+      style = list(
+        gt::cell_text(font = c("Consolas", "Courier New", "monospace")),
+        "white-space: pre;"
+      ),
+      locations = gt::cells_body(columns = numeric_cols)
+    )
   }
   # Factor-level rows: indent the Variable cell (whitespace was
   # trimmed above, so this is the only indent signal in HTML).
@@ -413,7 +418,7 @@ output_flextable <- function(rendered) {
     # Build a `values` + `colwidths` spec for one prepended header
     # row covering all columns: for each leftmost-to-rightmost column
     # run, emit either a spanner label (for cols inside a span) or an
-    # empty string (for cols outside any span — typically the
+    # empty string (for cols outside any span -- typically the
     # leading "Variable" column).
     span_by_col <- character(n_cols)
     for (lbl in names(spanners)) {
@@ -532,7 +537,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     # nocov end
   }
   if (is.null(excel_path) || !nzchar(excel_path)) {
-    # nocov start — defensive: validate_output_resources() (Phase F)
+    # nocov start -- defensive: validate_output_resources() (Phase F)
     # rejects this upstream, so the dispatch path here is unreachable
     # through table_regression(). Kept for direct callers of
     # dispatch_regression_output() (e.g., bespoke pipelines).
@@ -666,15 +671,14 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
                      bottom = TRUE)
   }
 
-  # ---- Alignment + uniform monospace font --------------------------------
-  # Variable column: left. Header rows (spanner + sub-header) + numeric
-  # body cells: centred. Pre-padded values produced by
-  # render_regression_table() (via decimal_align_strings() and
-  # align_ci_strings()) only align under a monospaced font, so we apply
-  # one font (Consolas) to EVERY used cell -- title row, headers, body,
-  # and the footer note rows below. Consistent typography also avoids
-  # the mixed-font look that arises if only numeric cells switch
-  # families.
+  # ---- Alignment + font (matches table_continuous Excel) -----------------
+  # Variable column: left. Header rows (spanner + sub-header) and
+  # numeric body cells: centred. Numeric cells are monospaced
+  # (Consolas) so the pre-padded values produced by
+  # render_regression_table() align decimal points. Title, headers,
+  # Variable column and footer notes keep Excel's default Calibri --
+  # this mirrors the table_continuous_lm flextable convention and
+  # avoids overriding the workbook's typography for plain text.
   if (n_cols >= 1L) {
     header_rows <- if (has_spanner) {
       c(spanner_row_excel, header_row_excel)
@@ -700,6 +704,16 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
           horizontal = "center"
         )
+        # Consolas font only on the numeric body cells. Pre-padded
+        # text + monospaced font = decimal-aligned columns in the
+        # rendered cell; Calibri (the default font) would render
+        # the leading-space padding at proportional width and break
+        # the alignment.
+        wb <- openxlsx2::wb_add_font(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
+          name = "Consolas"
+        )
       }
     }
   }
@@ -709,24 +723,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
     wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
                                  x = note_lines, start_row = foot_row)
-    note_end_row <- foot_row + length(note_lines) - 1L
-  } else {
-    note_end_row <- body_end_row
   }
-
-  # Uniform Consolas font across the whole used range. Includes the
-  # title row (when present), header rows, body, and any note rows.
-  # If only the body's numeric columns received the monospaced font
-  # the rest of the table would render in Excel's default proportional
-  # Calibri, producing a mixed-typography look the user flagged.
-  first_used_row <- 1L
-  font_dims <- openxlsx2::wb_dims(
-    rows = first_used_row:note_end_row,
-    cols = seq_len(n_cols)
-  )
-  wb <- openxlsx2::wb_add_font(
-    wb, sheet = excel_sheet, dims = font_dims, name = "Consolas"
-  )
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)
   invisible(rendered)
@@ -735,7 +732,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
 
 # ---- clipboard -----------------------------------------------------------
 
-# nocov start — clipboard side effect requires a system clipboard
+# nocov start -- clipboard side effect requires a system clipboard
 # AND the optional `clipr` package. Exercised on user machines but
 # unreachable on headless CI runners; the validator (Phase F) and
 # the orchestrator's clipr / clipr_available checks short-circuit
@@ -751,7 +748,7 @@ output_clipboard <- function(rendered, clipboard_delim) {
     # nocov end
   }
   if (!clipr::clipr_available()) {
-    # nocov start — system clipboard is environment-dependent and
+    # nocov start -- system clipboard is environment-dependent and
     # typically unavailable on headless CI runners; we test the
     # branch behaviourally elsewhere via mocking.
     spicy_abort(
@@ -761,7 +758,7 @@ output_clipboard <- function(rendered, clipboard_delim) {
     )
     # nocov end
   }
-  # nocov start — write_clip side effect cannot run on headless CI.
+  # nocov start -- write_clip side effect cannot run on headless CI.
   txt <- clipboard_payload(rendered, clipboard_delim)
   clipr::write_clip(txt)
   invisible(rendered)
@@ -775,7 +772,7 @@ output_clipboard <- function(rendered, clipboard_delim) {
 # align_ci_strings()) so a paste into a fixed-width context (Word
 # with Consolas applied; plain-text editor) preserves the decimal
 # alignment. Horizontal rules are NOT injected: TSV cannot encode
-# a single continuous line, and ─ rule rows displayed as
+# a single continuous line, and - rule rows displayed as
 # tab-separated dash segments produce a visually broken result.
 # This matches table_continuous_lm's clipboard behaviour. Exported
 # so the layout is testable without exercising the clipboard
@@ -832,7 +829,7 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   lines <- vapply(rows, paste, character(1), collapse = clipboard_delim)
   paste(lines, collapse = "\n")
 }
-# nocov end — closes the `output_clipboard` function block
+# nocov end -- closes the `output_clipboard` function block
 
 
 # ---- word ----------------------------------------------------------------
@@ -849,7 +846,7 @@ output_word <- function(rendered, word_path) {
     # nocov end
   }
   if (is.null(word_path) || !nzchar(word_path)) {
-    # nocov start — defensive duplicate of the Phase F
+    # nocov start -- defensive duplicate of the Phase F
     # validate_output_resources() check (see excel_path comment).
     spicy_abort(
       "`word_path` must be supplied for output = \"word\".",
@@ -868,7 +865,7 @@ output_word <- function(rendered, word_path) {
 #' @export
 print.spicy_regression_table <- function(x, ...) {
   group_sep <- attr(x, "group_sep_rows")
-  # nocov start — defensive: render_regression_table() always sets
+  # nocov start -- defensive: render_regression_table() always sets
   # the attribute (to integer(0) when no fit-stats footer is present).
   # Reached only if a caller manually constructed an object that
   # bypasses the renderer.
