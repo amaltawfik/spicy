@@ -302,7 +302,42 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
-### `table_regression()` — Excel font scoped + HTML decimal alignment fixed
+### `table_regression()` — CI columns split into LL / UL across all structured outputs
+
+* **Rich engines (gt, flextable, tinytable, excel, word) and
+  clipboard** now split the bracketed CI cell `[LL, UL]` into two
+  separate numeric columns under a `(95% CI)` spanner row -- same
+  layout that `table_continuous` / `table_continuous_lm` already
+  use. With clean numeric strings in every CI cell, the native
+  decimal-alignment primitives of each engine work without any
+  custom-font / NBSP / `white-space: pre` hack:
+
+  * `gt::cols_align_decimal()` aligns every numeric column
+    natively; default proportional font (no Fira Mono override).
+  * `tinytable::style_tt(align = "d")` aligns natively via
+    `siunitx` (LaTeX) and padded text (HTML); default font (no
+    monospace override, no NBSP pre-padding).
+  * `flextable` right-aligns the numeric cells against Calibri's
+    tabular figures (no Consolas override).
+  * `excel` right-aligns numerics in Calibri's tabular figures
+    (no Consolas override).
+  * `clipboard` writes the two-level header (model spanner row,
+    `(95% CI)` spanner row, column labels) and each bound is its
+    own numeric cell -- usable directly after paste, no parsing
+    required.
+
+* **Console (`output = "default"`)** and **`output = "data.frame"`
+  / `"long"`** are unchanged: the `[LL, UL]` bracketed cell stays
+  as the terminal-friendly representation and the long format
+  already exposes `ci_low` / `ci_high` separately.
+
+* New shared helpers `.split_ci_columns()` and
+  `.parse_ci_bracketed()` factor the split logic out of the five
+  dispatchers. The bracketed-CI parser handles plain `,`
+  separation, `;` separation (European decimal mark), em-dashes
+  on reference rows, and empty / whitespace-only cells.
+
+### `table_regression()` -- Excel font scoped + HTML decimal alignment fixed
 
 * **Excel**: the previous revision applied Consolas across every
   cell (title, header, body, notes); the present revision scopes

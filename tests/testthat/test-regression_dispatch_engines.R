@@ -298,14 +298,19 @@ test_that("clipboard_payload honours title = FALSE / note = FALSE", {
   expect_false(any(grepl("Std\\. errors", lines)))
 })
 
-test_that("clipboard_payload single-model layout (no spanner)", {
+test_that("clipboard_payload single-model layout (no model spanner, CI spanner present)", {
   fit <- lm(mpg ~ wt, data = mt)
   rendered <- table_regression(fit)
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  # Single-model layout: title, header, body.
+  # Layout: title, (95% CI) spanner row, column labels, body.
+  # CI is now split into LL / UL with a (95% CI) spanner row above
+  # them, so the column-labels row sits at line 3, not line 2.
   expect_match(lines[1L], "^Linear regression")
-  expect_match(lines[2L], "^Variable\t")
+  expect_match(lines[2L], "\\(95% CI\\)")
+  expect_match(lines[3L], "^Variable\t")
+  expect_true(any(grepl("\\bLL\\b", lines)))
+  expect_true(any(grepl("\\bUL\\b", lines)))
 })
 
 
@@ -351,6 +356,62 @@ test_that("output = 'tinytable' renders with APA borders", {
 # ============================================================================
 # Visual styling: factor-level indent + numeric monospace + center headers
 # ============================================================================
+
+test_that(".parse_ci_bracketed handles bracketed, em-dash, empty and malformed cells", {
+  parsed <- spicy:::.parse_ci_bracketed(c(
+    "[0.10, 0.30]",        # plain
+    "[ 0.10,  0.30]",      # padded
+    "[-3.19, -0.14]",      # negatives
+    "[0,18; 0,30]",        # European decimal mark + ; separator
+    "—",              # em-dash
+    "",                     # empty
+    "       "              # whitespace only
+  ))
+  expect_identical(parsed$ll, c("0.10", "0.10", "-3.19", "0,18",
+                                  "—", "", ""))
+  expect_identical(parsed$ul, c("0.30", "0.30", "-0.14", "0,30",
+                                  "—", "", ""))
+})
+
+test_that(".split_ci_columns: single-model splits CI + adds ci_spanner", {
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  r <- table_regression(m1, show_columns = c("b", "ci", "p"))
+  s <- spicy:::.split_ci_columns(
+    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
+  )
+  expect_true("LL" %in% names(s$body))
+  expect_true("UL" %in% names(s$body))
+  expect_false("95% CI" %in% names(s$body))
+  expect_length(s$ci_spanners, 1L)
+  expect_identical(s$ci_spanners[[1L]]$label, "95% CI")
+  # LL / UL are consecutive in the new body
+  expect_identical(diff(s$ci_spanners[[1L]]$cols), 1L)
+})
+
+test_that(".split_ci_columns: multi-model widens model spanners + emits one ci_spanner per model", {
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  r <- table_regression(list(m1, m2), show_columns = c("b", "ci", "p"))
+  s <- spicy:::.split_ci_columns(
+    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
+  )
+  # Each model gains one column (LL/UL replacing CI bundle).
+  expect_identical(unname(lengths(s$spanners)),
+                    unname(lengths(attr(r, "spanners"))) + 1L)
+  # Two CI spanners (one per model).
+  expect_length(s$ci_spanners, 2L)
+})
+
+test_that(".split_ci_columns is a no-op when no CI column is present", {
+  m <- lm(mpg ~ wt, data = mt)
+  r <- table_regression(m, show_columns = c("b", "se", "p"))
+  s <- spicy:::.split_ci_columns(
+    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
+  )
+  expect_identical(names(s$body), names(as.data.frame(r)))
+  expect_length(s$ci_spanners, 0L)
+})
+
 
 test_that(".detect_level_rows finds rows whose Variable starts with whitespace", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
