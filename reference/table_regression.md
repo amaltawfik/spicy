@@ -98,13 +98,13 @@ table_regression(
 
 - ci_method:
 
-  CI construction. `"wald"` (default) uses `estimate ± z × SE` (`t × SE`
-  for `lm`). `"profile"` (*glm only*) uses the profile-likelihood CI
-  from
+  CI construction. `"wald"` (default) uses `estimate +/- z x SE`
+  (`t x SE` for `lm`). `"profile"` (*glm only*) uses the
+  profile-likelihood CI from
   [`MASS::confint.glm()`](https://rdrr.io/pkg/MASS/man/confint.html) –
   asymmetric, exact for likelihood-based inference (Venables & Ripley
-  *MASS* §7.2). Only the CI bounds change; estimate, SE, statistic and
-  p-value remain Wald. `"profile"` with `lm` raises
+  *MASS* Section 7.2). Only the CI bounds change; estimate, SE,
+  statistic and p-value remain Wald. `"profile"` with `lm` raises
   `spicy_invalid_input`.
 
 - boot_n:
@@ -125,7 +125,7 @@ table_regression(
   Logical. When `TRUE` and the model is a `glm` with a non-identity
   link, `B`, the CI bounds, and the SE are transformed via
   [`exp()`](https://rdrr.io/r/base/Log.html) (delta method:
-  `SE_OR = OR × SE_log-odds`). The column header is rebranded per family
+  `SE_OR = OR x SE_log-odds`). The column header is rebranded per family
   / link: `OR` (binomial logit), `IRR` (poisson log), `HR` (binomial
   cloglog), `RR` (binomial log), `MR` (Gamma log), else `exp(B)`. The
   statistic and p-value stay on the link scale (invariant under monotone
@@ -257,7 +257,7 @@ table_regression(
 
 - fit_stats_layout:
 
-  Layout of the fit-stat values (`n`, `R²`, `AIC`, ...) within each
+  Layout of the fit-stat values (`n`, `R^2`, `AIC`, ...) within each
   model's column group. Two options:
 
   - `"first_col"` (default): the value is placed in the FIRST numeric
@@ -311,10 +311,11 @@ table_regression(
 
 - stars:
 
-  Significance asterisks. `FALSE` (default, APA 7 §6.46) – no stars.
-  `TRUE` – APA cutoffs `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A
-  named numeric vector specifies custom thresholds, e.g.
-  `c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
+  Significance asterisks. `FALSE` (default, APA 7 Section 6.46) – no
+  stars. `TRUE` – APA cutoffs
+  `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric vector
+  specifies custom thresholds, e.g.
+  `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
 
 - nested:
 
@@ -361,7 +362,7 @@ table_regression(
 
 - align:
 
-  Numeric column alignment. `"decimal"` (default) — pre-pad cells so
+  Numeric column alignment. `"decimal"` (default) – pre-pad cells so
   decimal marks line up vertically (publication-style). For CI cells
   (`[LL, UL]`) the left bracket, the LL decimal point, the comma
   separator, the UL decimal point, and the right bracket are
@@ -478,8 +479,8 @@ Each token = one displayed column.
 
 - Partial effect size – `glm` only: `"partial_chi2"` (likelihood-ratio
   chi-square via `drop1(test = "LRT")`; SAS PROC LOGISTIC `TYPE3`; Long
-  & Freese 2014 §3.5). Rendered as `value (df)` to disambiguate factor
-  terms (k-1 df) from numeric terms (1 df).
+  & Freese 2014 Section 3.5). Rendered as `value (df)` to disambiguate
+  factor terms (k-1 df) from numeric terms (1 df).
 
 **Group tokens** (presets) expand to a fixed atomic vector before
 validation:
@@ -507,9 +508,9 @@ already requested, it is auto-injected after `"b"`. Asking for `"beta"`
 while `standardized = "none"` raises `spicy_invalid_input`.
 
 **Default** (`show_columns = NULL`) is context-aware: `"all_b"` for a
-single model (APA-7 §6.46 publication layout), `"all_b_compact"` for two
-or more models (CI dropped to fit the side-by-side layout; restore it
-explicitly when needed).
+single model (APA-7 Section 6.46 publication layout), `"all_b_compact"`
+for two or more models (CI dropped to fit the side-by-side layout;
+restore it explicitly when needed).
 
 ### `show_fit_stats` – model-level rows below the coefficients
 
@@ -650,8 +651,8 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 - All-lm: `c("r2_change", "f_change", "p_change")` – APA hierarchical
   regression standard.
 
-- All-glm: `c("lrt_change", "p_change")` – Hosmer & Lemeshow §3.5; Long
-  & Freese 2014 §3.6.
+- All-glm: `c("lrt_change", "p_change")` – Hosmer & Lemeshow Section
+  3.5; Long & Freese 2014 Section 3.6.
 
 To customise, pass the change tokens directly to `show_fit_stats`.
 Variance-explained change tokens on an all-glm hierarchy raise
@@ -665,7 +666,7 @@ at `lrt_change`).
 
 - `"refit"` – refit on z-scored data. For `lm` both X and Y are z-scored
   (Cohen et al. 2003 gold standard); for `glm` only numeric X (Long &
-  Freese 2014 §4.3.4 "x-standardization").
+  Freese 2014 Section 4.3.4 "x-standardization").
 
 - `"posthoc"` – post-hoc scaling. lm: \\\beta = B \times SD(X) /
   SD(Y)\\; glm: X-only \\\beta = B \times SD(X)\\ (Y is undefined on the
@@ -691,8 +692,8 @@ Under interactions or transformed predictors
 [`log()`](https://rdrr.io/r/base/Log.html),
 [`splines::ns()`](https://rdrr.io/r/splines/ns.html)), a `spicy_caveat`
 warns that standardised coefficients on such terms are subtle to
-interpret (Cohen et al. 2003 §7.7; Aiken & West 1991). The caveat is
-auto-documented in the footer.
+interpret (Cohen et al. 2003 Section 7.7; Aiken & West 1991). The caveat
+is auto-documented in the footer.
 
 ## Multiple-comparison adjustment
 
@@ -700,8 +701,8 @@ Adjusting the p-values of all coefficients of a single regression model
 is **not** the standard convention. Each coefficient tests a distinct
 hypothesis on a distinct predictor – not the situation multiple-testing
 procedures were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-§6.46; Harrell *Regression Modeling Strategies* §5.4; Gelman, Hill &
-Yajima 2012). Hence the default `p_adjust = "none"`.
+Section 6.46; Harrell *Regression Modeling Strategies* Section 5.4;
+Gelman, Hill & Yajima 2012). Hence the default `p_adjust = "none"`.
 
 Adjustment is appropriate for: mass screening with no prior hypothesis
 (typically `"BH"` / FDR), pre-registered multi-endpoint confirmatory
@@ -775,7 +776,7 @@ for the full taxonomy.
 ## References
 
 APA Manual 7 (American Psychological Association, 2020), Tables
-7.13–7.15.
+7.13-7.15.
 
 Aiken, L.S. & West, S.G. (1991). *Multiple regression: Testing and
 interpreting interactions*.
@@ -787,10 +788,10 @@ multiple regression / correlation analysis for the behavioral sciences*
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed
 effects models. *Journal of Business & Economic Statistics*, 36(4),
-672–683.
+672-683.
 
 Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving to a world
-beyond "p \< 0.05". *The American Statistician*, 73(sup1), 1–19.
+beyond "p \< 0.05". *The American Statistician*, 73(sup1), 1-19.
 
 ## See also
 

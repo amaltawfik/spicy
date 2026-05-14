@@ -26,7 +26,7 @@ as_tibble(x, ...)
 
   Standard
   [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
-  arguments (currently ignored — the table's row layout is preserved).
+  arguments (currently ignored – the table's row layout is preserved).
 
 - ...:
 

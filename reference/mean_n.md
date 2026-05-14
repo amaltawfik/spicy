@@ -48,9 +48,9 @@ mean_n(
 
   Minimum number of valid (non-`NA`) values required per row. Accepts:
 
-  - `NULL` (the default) — every selected column must be valid.
+  - `NULL` (the default) – every selected column must be valid.
 
-  - a proportion in `(0, 1)` — `round(ncol(x) * min_valid)` valid
+  - a proportion in `(0, 1)` – `round(ncol(x) * min_valid)` valid
     columns required (e.g. `min_valid = 0.5` requires at least half of
     the selected columns to be non-`NA`).
 

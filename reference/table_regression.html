@@ -177,10 +177,10 @@ AME, partial effect sizes). Default <code>0.95</code>.</p></dd>
 
 <dt id="arg-ci-method">ci_method<a class="anchor" aria-label="anchor" href="#arg-ci-method"></a></dt>
 <dd><p>CI construction. <code>"wald"</code> (default) uses
-<code>estimate ± z × SE</code> (<code>t × SE</code> for <code>lm</code>). <code>"profile"</code>
+<code>estimate +/- z x SE</code> (<code>t x SE</code> for <code>lm</code>). <code>"profile"</code>
 (<em>glm only</em>) uses the profile-likelihood CI from
 <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> – asymmetric, exact for
-likelihood-based inference (Venables &amp; Ripley <em>MASS</em> §7.2).
+likelihood-based inference (Venables &amp; Ripley <em>MASS</em> Section 7.2).
 Only the CI bounds change; estimate, SE, statistic and
 p-value remain Wald. <code>"profile"</code> with <code>lm</code> raises
 <code>spicy_invalid_input</code>.</p></dd>
@@ -205,7 +205,7 @@ section.</p></dd>
 <dd><p>Logical. When <code>TRUE</code> and the model is a
 <code>glm</code> with a non-identity link, <code>B</code>, the CI bounds, and the
 SE are transformed via <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> (delta method:
-<code>SE_OR = OR × SE_log-odds</code>). The column header is rebranded
+<code>SE_OR = OR x SE_log-odds</code>). The column header is rebranded
 per family / link: <code>OR</code> (binomial logit), <code>IRR</code> (poisson
 log), <code>HR</code> (binomial cloglog), <code>RR</code> (binomial log), <code>MR</code>
 (Gamma log), else <code>exp(B)</code>. The statistic and p-value stay
@@ -334,7 +334,7 @@ model comparison</em> in the details for the full vocabulary.</p></dd>
 
 
 <dt id="arg-fit-stats-layout">fit_stats_layout<a class="anchor" aria-label="anchor" href="#arg-fit-stats-layout"></a></dt>
-<dd><p>Layout of the fit-stat values (<code>n</code>, <code>R²</code>,
+<dd><p>Layout of the fit-stat values (<code>n</code>, <code>R^2</code>,
 <code>AIC</code>, ...) within each model's column group. Two options:</p><ul><li><p><code>"first_col"</code> (default): the value is placed in the
 FIRST numeric sub-column of each model (typically <code>B</code>);
 the model's remaining sub-columns (<code>SE</code>, <code>LL</code>, <code>UL</code>, <code>p</code>,
@@ -385,10 +385,10 @@ explicit Outcome row with those values (the spanner stays as
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
 <dd><p>Significance asterisks. <code>FALSE</code> (default, APA 7
-§6.46) – no stars. <code>TRUE</code> – APA cutoffs
+Section 6.46) – no stars. <code>TRUE</code> – APA cutoffs
 <code>c("*" = 0.05, "**" = 0.01, "***" = 0.001)</code>. A named numeric
 vector specifies custom thresholds, e.g.
-<code>c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)</code>.</p></dd>
+<code>c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)</code>.</p></dd>
 
 
 <dt id="arg-nested">nested<a class="anchor" aria-label="anchor" href="#arg-nested"></a></dt>
@@ -440,7 +440,7 @@ automatically to avoid <code>"0,18 [0,07, 0,30]"</code> ambiguity.</p></dd>
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
 <dd><p>Numeric column alignment.
-<code>"decimal"</code> (default) — pre-pad cells so decimal marks line
+<code>"decimal"</code> (default) – pre-pad cells so decimal marks line
 up vertically (publication-style). For CI cells (<code>[LL, UL]</code>)
 the left bracket, the LL decimal point, the comma separator,
 the UL decimal point, and the right bracket are independently
@@ -556,7 +556,7 @@ p-value; for the AME-specific p-value use <code>"ame_p"</code>.</p></li>
 <code>_ci</code> companion (<code>"partial_f2_ci"</code>, ...).</p></li>
 <li><p>Partial effect size – <code>glm</code> only: <code>"partial_chi2"</code>
 (likelihood-ratio chi-square via <code>drop1(test = "LRT")</code>;
-SAS PROC LOGISTIC <code>TYPE3</code>; Long &amp; Freese 2014 §3.5).
+SAS PROC LOGISTIC <code>TYPE3</code>; Long &amp; Freese 2014 Section 3.5).
 Rendered as <code>value (df)</code> to disambiguate factor terms
 (k-1 df) from numeric terms (1 df).</p></li>
 </ul><p><strong>Group tokens</strong> (presets) expand to a fixed atomic vector
@@ -577,7 +577,7 @@ order of the displayed columns. If <code>standardized != "none"</code> and
 <code>"b"</code>. Asking for <code>"beta"</code> while <code>standardized = "none"</code> raises
 <code>spicy_invalid_input</code>.</p>
 <p><strong>Default</strong> (<code>show_columns = NULL</code>) is context-aware:
-<code>"all_b"</code> for a single model (APA-7 §6.46 publication layout),
+<code>"all_b"</code> for a single model (APA-7 Section 6.46 publication layout),
 <code>"all_b_compact"</code> for two or more models (CI dropped to fit the
 side-by-side layout; restore it explicitly when needed).</p>
 </div>
@@ -701,7 +701,7 @@ across all models.</p>
 <code>NULL</code>:</p><ul><li><p>All-lm: <code>c("r2_change", "f_change", "p_change")</code> –
 APA hierarchical regression standard.</p></li>
 <li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
-Lemeshow §3.5; Long &amp; Freese 2014 §3.6.</p></li>
+Lemeshow Section 3.5; Long &amp; Freese 2014 Section 3.6.</p></li>
 </ul><p>To customise, pass the change tokens directly to
 <code>show_fit_stats</code>. Variance-explained change tokens on an
 all-glm hierarchy raise <code>spicy_invalid_input</code> (the
@@ -714,7 +714,7 @@ least-squares framework – the renderer points the user at
     <p><code>standardized</code> controls the method when <code>"beta"</code> is in
 <code>show_columns</code>:</p><ul><li><p><code>"refit"</code> – refit on z-scored data. For <code>lm</code> both X
 and Y are z-scored (Cohen et al. 2003 gold standard); for
-<code>glm</code> only numeric X (Long &amp; Freese 2014 §4.3.4
+<code>glm</code> only numeric X (Long &amp; Freese 2014 Section 4.3.4
 "x-standardization").</p></li>
 <li><p><code>"posthoc"</code> – post-hoc scaling. lm:
 \(\beta = B \times SD(X) / SD(Y)\);
@@ -735,7 +735,7 @@ non-binomial returns NA with a <code>spicy_caveat</code>.</p></li>
 </ul><p>Under interactions or transformed predictors (<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>,
 <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>), a <code>spicy_caveat</code> warns that
 standardised coefficients on such terms are subtle to interpret
-(Cohen et al. 2003 §7.7; Aiken &amp; West 1991). The caveat is
+(Cohen et al. 2003 Section 7.7; Aiken &amp; West 1991). The caveat is
 auto-documented in the footer.</p>
     </div>
     <div class="section level2">
@@ -745,7 +745,7 @@ regression model is <strong>not</strong> the standard convention. Each
 coefficient tests a distinct hypothesis on a distinct
 predictor – not the situation multiple-testing procedures
 were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-§6.46; Harrell <em>Regression Modeling Strategies</em> §5.4; Gelman,
+Section 6.46; Harrell <em>Regression Modeling Strategies</em> Section 5.4; Gelman,
 Hill &amp; Yajima 2012). Hence the default <code>p_adjust = "none"</code>.</p>
 <p>Adjustment is appropriate for: mass screening with no prior
 hypothesis (typically <code>"BH"</code> / FDR), pre-registered
@@ -811,7 +811,7 @@ this function include <code>spicy_invalid_input</code>,
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>APA Manual 7 (American Psychological Association, 2020),
-Tables 7.13–7.15.</p>
+Tables 7.13-7.15.</p>
 <p>Aiken, L.S. &amp; West, S.G. (1991). <em>Multiple regression: Testing
 and interpreting interactions</em>.</p>
 <p>Cohen, J., Cohen, P., West, S.G., &amp; Aiken, L.S. (2003).
@@ -820,10 +820,10 @@ behavioral sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
 <p>Pustejovsky, J.E. &amp; Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. <em>Journal of Business &amp; Economic
-Statistics</em>, 36(4), 672–683.</p>
+Statistics</em>, 36(4), 672-683.</p>
 <p>Wasserstein, R.L., Schirm, A.L., &amp; Lazar, N.A. (2019). Moving
 to a world beyond "p &lt; 0.05". <em>The American Statistician</em>,
-73(sup1), 1–19.</p>
+73(sup1), 1-19.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

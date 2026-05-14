@@ -98,7 +98,7 @@ if (clipr::clipr_available()) {
   tbl <- table(sochealth$education)
   copy_clipboard(tbl)
 
-  # Array (3D) — flattened to character
+  # Array (3D) -- flattened to character
   arr <- array(1:8, dim = c(2, 2, 2))
   copy_clipboard(arr)
 

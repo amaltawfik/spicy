@@ -314,7 +314,37 @@
   (oracle packages for AME and pseudo-R² cross- validation); no runtime
   dependency change.
 
-#### `table_regression()` — `fit_stats_layout` argument for cell-merged fit-stat rows
+#### Quality and portability
+
+- **R CMD check WARNING cleared across every `R/*.R` file.** Every
+  non-ASCII byte in `R/` source has been replaced – inside string
+  literals with `\uXXXX` escape sequences (runtime behaviour is
+  identical) and inside comments with ASCII transliterations (`--` for
+  em-dash, `->` for arrow, `beta`/`eta`/`omega`/… for Greek letters,
+  `Section X.Y` for `§X.Y`, etc.). 22 files in `R/` are now byte-pure
+  ASCII;
+  [`tools::showNonASCIIfile()`](https://rdrr.io/r/tools/showNonASCII.html)
+  reports zero hits package-wide. Documentation that needs rendered
+  Greek (, , …) already uses the canonical `\eqn{}{}` markup, so the
+  visible output of
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and the PDF manual are unaffected.
+
+- **[`openxlsx2::wb_add_border()`](https://janmarvin.github.io/openxlsx2/reference/wb_add_border.html)
+  default-args bug fixed across every caller.** The function defaults
+  `top_border = bottom_border = left_border = right_border = "thin"`, so
+  an explicit `top_border = "thin"` call (or any single-side call)
+  paints all four sides with a “thin” rule and produces unwanted
+  vertical lines on every styled cell.
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  now pass `NULL` on every unused side to draw only the intended rule –
+  matching the fix already in place in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
+#### `table_regression()` – `fit_stats_layout` argument for cell-merged fit-stat rows
 
 - **New argument** `fit_stats_layout = c("first_col", "merged")`
   controlling the placement of fit-stat values (`n`, `R²`, `AIC`, …)

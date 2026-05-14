@@ -155,16 +155,16 @@ table_categorical(
   Which association measure to report alongside the chi-squared
   *p*-value. Accepts four input shapes:
 
-  - `"none"` — drop the column entirely.
+  - `"none"` – drop the column entirely.
 
-  - `"auto"` (the default) — pick a measure per row variable based on
+  - `"auto"` (the default) – pick a measure per row variable based on
     the variable type: a 2x2 table (binary row variable vs. binary `by`)
     uses **`phi`**, a pair of ordered factors uses **`tau_b`**, every
     other case uses **`cramer_v`**.
 
   - a single string from
     `c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")`
-    — applied uniformly to every row variable.
+    – applied uniformly to every row variable.
 
   - a character vector with one entry per row variable. Both **named**
     (`c(smoking = "phi", health = "tau_b")`, recommended; unnamed

@@ -49,7 +49,7 @@ coefficients (NA estimates) are dropped. Columns:
 `glance()` returns one row per `(model_id, outcome)` with model-level
 statistics. Columns:
 `model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual`
-(numeric — Satterthwaite-safe).
+(numeric – Satterthwaite-safe).
 
 ## See also
 

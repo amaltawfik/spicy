@@ -124,12 +124,12 @@ table_continuous_lm(
   `lm(y ~ by + cov1 + cov2 + ...)` and the reported estimate / SE /
   p-value / CI on `by` are covariate-adjusted via the focal coefficient.
   For categorical `by`, the displayed `emmean` is the covariate-adjusted
-  estimated marginal mean — see `adjustment` for the choice of estimand
+  estimated marginal mean – see `adjustment` for the choice of estimand
   (G-computation by default vs. equal-weight averaging). The omnibus
   test of `by` is the Wald *F* restricted to the focal coefficients
   (computed via `sandwich` / `clubSandwich` for HC\* / CR\* mode), so
   adding covariates does not contaminate the omnibus statistic with
-  covariate contributions. Effect sizes adapt automatically — see
+  covariate contributions. Effect sizes adapt automatically – see
   `effect_size`.
 
   v1 supports additive covariates only. Formula syntax with interactions
@@ -160,7 +160,7 @@ table_continuous_lm(
   - `"balanced"` (matches
     [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
     default and the SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions):
-    synthetic grid of factor-covariate level combinations × numeric
+    synthetic grid of factor-covariate level combinations x numeric
     covariates fixed at their sample mean, with each grid cell weighted
     equally. Treats the design as if covariates were balanced – the
     "marginal mean assuming a balanced design" estimand. Best when the
@@ -383,15 +383,16 @@ table_continuous_lm(
 
   - `"f2"` and `"omega2"` become the **partial** *\\f^2\\* / partial
     *\\\omega^2\\*, derived from the partial *F* of `by` via
-    [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) — the
+    [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) – the
     correctly-defined effect size when the model is adjusted. For
     numeric `by`, partial *\\f^2\\* equals the squared partial
-    correlation of `by` with the outcome, divided by `(1 - r²_partial)`.
+    correlation of `by` with the outcome, divided by
+    `(1 - r^2_partial)`.
 
   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d* and
     Hedges' *g* have no canonical extension to adjusted models (the
     pooled SD is undefined under adjustment). Use `"f2"` or `"omega2"`
-    instead — both generalise via partial *F*.
+    instead – both generalise via partial *F*.
 
 - effect_size_ci:
 
@@ -677,7 +678,7 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 
 - `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Bounds
   are converted from the noncentrality parameter using
-  `omega² = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N`
+  `omega^2 = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N`
   respectively, with `N = df1 + df2 + 1` (total sample size).
 
 For the weighted case, the CI uses raw (unweighted) group counts and
@@ -756,7 +757,7 @@ When `weights` is supplied, `table_continuous_lm()` fits weighted linear
 models via `lm(..., weights = ...)`. Means become weighted least-squares
 estimates and contrasts and slopes are weighted. The fit statistics
 `\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}`, as well as Hays'
-`omega²` and Cohen's `\eqn{f^2}{f^2}`, use the corresponding **weighted
+`omega^2` and Cohen's `\eqn{f^2}{f^2}`, use the corresponding **weighted
 sums of squares** from the WLS fit. Cohen's `d` and Hedges' `g` use the
 **WLS coefficient and the model's weighted residual standard deviation**
 (`summary(fit)$sigma`), which is the standard convention for
@@ -823,8 +824,8 @@ Sciences* (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
 Cousineau, D., & Goulet-Pelletier, J.-C. (2021). Expected and empirical
 coverages of different methods for generating noncentral *t* confidence
 intervals for a standardized mean difference. *Behavior Research
-Methods*, **53**, 2376–2394.
-[doi:10.3758/s13428-021-01550-4](https://doi.org/10.3758/s13428-021-01550-4)
+Methods*, **53**, 2376–2394. [doi:10.3758/Section
+13428-021-01550-4](https://doi.org/10.3758/Section%2013428-021-01550-4)
 
 Cribari-Neto, F. (2004). Asymptotic inference under heteroskedasticity
 of unknown form. *Computational Statistics & Data Analysis*, **45**(2),
@@ -839,8 +840,8 @@ in Statistics – Theory and Methods*, **36**(10), 1877–1888.
 Cribari-Neto, F., & da Silva, W. B. (2011). A new
 heteroskedasticity-consistent covariance matrix estimator for the linear
 regression model. *AStA Advances in Statistical Analysis*, **95**(2),
-129–146.
-[doi:10.1007/s10182-010-0141-2](https://doi.org/10.1007/s10182-010-0141-2)
+129–146. [doi:10.1007/Section
+10182-010-0141-2](https://doi.org/10.1007/Section%2010182-010-0141-2)
 
 Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap Methods and Their
 Application*. Cambridge: Cambridge University Press.
@@ -1196,21 +1197,21 @@ table_continuous_lm(
   by = sex,
   labels = c(
     wellbeing_score = "WHO-5 wellbeing (0-100)",
-    bmi = "Body-mass index (kg/m²)"
+    bmi = "Body-mass index (kg/m^2)"
   ),
   r2 = "adj_r2"
 )
 #> Continuous outcomes by Sex
 #> 
-#>  Variable                │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
-#> ─────────────────────────┼────────────────────────────────────────────────────
-#>  WHO-5 wellbeing (0-100) │   67.16      71.05          3.89           2.13    
-#>  Body-mass index (kg/m²) │   25.69      26.20          0.51           0.09    
+#>  Variable                 │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ──────────────────────────┼────────────────────────────────────────────────────
+#>  WHO-5 wellbeing (0-100)  │   67.16      71.05          3.89           2.13    
+#>  Body-mass index (kg/m^2) │   25.69      26.20          0.51           0.09    
 #> 
-#>  Variable                │ 95% CI UL    p    Adj. R²   n   
-#> ─────────────────────────┼─────────────────────────────────
-#>  WHO-5 wellbeing (0-100) │   5.64     <.001   0.01    1200 
-#>  Body-mass index (kg/m²) │   0.93      .018   0.00    1188 
+#>  Variable                 │ 95% CI UL    p    Adj. R²   n   
+#> ──────────────────────────┼─────────────────────────────────
+#>  WHO-5 wellbeing (0-100)  │   5.64     <.001   0.01    1200 
+#>  Body-mass index (kg/m^2) │   0.93      .018   0.00    1188 
 
 # European decimal comma.
 table_continuous_lm(

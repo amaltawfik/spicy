@@ -212,12 +212,12 @@ predictor and adjustment).</p>
 and the reported estimate / SE / p-value / CI on <code>by</code> are
 covariate-adjusted via the focal coefficient. For categorical <code>by</code>,
 the displayed <code>emmean</code> is the covariate-adjusted estimated marginal
-mean — see <code>adjustment</code> for the choice of estimand
+mean – see <code>adjustment</code> for the choice of estimand
 (G-computation by default vs. equal-weight averaging). The omnibus
 test of <code>by</code> is the Wald <em>F</em> restricted to the focal coefficients
 (computed via <code>sandwich</code> / <code>clubSandwich</code> for HC* / CR* mode), so
 adding covariates does not contaminate the omnibus statistic with
-covariate contributions. Effect sizes adapt automatically — see
+covariate contributions. Effect sizes adapt automatically – see
 <code>effect_size</code>.</p>
 <p>v1 supports additive covariates only. Formula syntax with
 interactions or transforms (<code>covariates = ~ age * sex</code>,
@@ -242,7 +242,7 @@ reference. Best when the goal is "what is the predicted
 mean in <em>this</em> population if everyone had <code>by = lvl</code>".</p></li>
 <li><p><code>"balanced"</code> (matches <code><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans::emmeans()</a></code> default and the
 SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
-grid of factor-covariate level combinations × numeric
+grid of factor-covariate level combinations x numeric
 covariates fixed at their sample mean, with each grid cell
 weighted equally. Treats the design as if covariates were
 balanced – the "marginal mean assuming a balanced design"
@@ -412,14 +412,14 @@ with the weighted contrast and its CI shown in the table. All effect
 sizes are point estimates derived from the OLS/WLS fit and are <strong>not</strong>
 affected by <code>vcov</code>.</p>
 <p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty):</p><ul><li><p><code>"f2"</code> and <code>"omega2"</code> become the <strong>partial</strong> <em>\(f^2\)</em> / partial <em>\(\omega^2\)</em>,
-derived from the partial <em>F</em> of <code>by</code> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> —
+derived from the partial <em>F</em> of <code>by</code> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> –
 the correctly-defined effect size when the model is adjusted.
 For numeric <code>by</code>, partial <em>\(f^2\)</em> equals the squared partial
-correlation of <code>by</code> with the outcome, divided by <code>(1 - r²_partial)</code>.</p></li>
+correlation of <code>by</code> with the outcome, divided by <code>(1 - r^2_partial)</code>.</p></li>
 <li><p><code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: Cohen's <em>d</em>
 and Hedges' <em>g</em> have no canonical extension to adjusted models
 (the pooled SD is undefined under adjustment). Use <code>"f2"</code> or
-<code>"omega2"</code> instead — both generalise via partial <em>F</em>.</p></li>
+<code>"omega2"</code> instead – both generalise via partial <em>F</em>.</p></li>
 </ul></dd>
 
 
@@ -664,7 +664,7 @@ samples. For Hedges' <em>g</em> the bounds inherit the <em>J</em> small-sample
 correction.</p></li>
 <li><p><code>"omega2"</code>, <code>"f2"</code>: noncentral <em>F</em> inversion (Steiger 2004).
 Bounds are converted from the noncentrality parameter using
-<code>omega² = ncp / (ncp + N)</code> and <code>\eqn{f^2}{f^2} = ncp / N</code> respectively, with
+<code>omega^2 = ncp / (ncp + N)</code> and <code>\eqn{f^2}{f^2} = ncp / N</code> respectively, with
 <code>N = df1 + df2 + 1</code> (total sample size).</p></li>
 </ul><p>For the weighted case, the CI uses raw (unweighted) group counts and
 <code>df.residual(fit) = n - p</code>, consistent with the WLS reporting convention
@@ -731,7 +731,7 @@ least-squares (or weighted least-squares) statistics regardless of
     <p>When <code>weights</code> is supplied, <code>table_continuous_lm()</code> fits weighted
 linear models via <code>lm(..., weights = ...)</code>. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
-fit statistics <code>\eqn{R^2}{R^2}</code> and adjusted <code>\eqn{R^2}{R^2}</code>, as well as Hays' <code>omega²</code>
+fit statistics <code>\eqn{R^2}{R^2}</code> and adjusted <code>\eqn{R^2}{R^2}</code>, as well as Hays' <code>omega^2</code>
 and Cohen's <code>\eqn{f^2}{f^2}</code>, use the corresponding <strong>weighted sums of squares</strong>
 from the WLS fit. Cohen's <code>d</code> and Hedges' <code>g</code> use the <strong>WLS
 coefficient and the model's weighted residual standard deviation</strong>
@@ -790,7 +790,7 @@ Bootstrap-based improvements for inference with clustered errors.
 Expected and empirical coverages of different methods for generating
 noncentral <em>t</em> confidence intervals for a standardized mean
 difference. <em>Behavior Research Methods</em>, <strong>53</strong>, 2376–2394.
-<a href="https://doi.org/10.3758/s13428-021-01550-4" class="external-link">doi:10.3758/s13428-021-01550-4</a></p>
+<a href="https://doi.org/10.3758/Section%2013428-021-01550-4" class="external-link">doi:10.3758/Section 13428-021-01550-4</a></p>
 <p>Cribari-Neto, F. (2004).
 Asymptotic inference under heteroskedasticity of unknown form.
 <em>Computational Statistics &amp; Data Analysis</em>, <strong>45</strong>(2), 215–233.
@@ -804,7 +804,7 @@ Inference under heteroskedasticity and leveraged data.
 A new heteroskedasticity-consistent covariance matrix estimator
 for the linear regression model.
 <em>AStA Advances in Statistical Analysis</em>, <strong>95</strong>(2), 129–146.
-<a href="https://doi.org/10.1007/s10182-010-0141-2" class="external-link">doi:10.1007/s10182-010-0141-2</a></p>
+<a href="https://doi.org/10.1007/Section%2010182-010-0141-2" class="external-link">doi:10.1007/Section 10182-010-0141-2</a></p>
 <p>Davison, A. C., &amp; Hinkley, D. V. (1997).
 <em>Bootstrap Methods and Their Application</em>.
 Cambridge: Cambridge University Press.
@@ -1146,21 +1146,21 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    wellbeing_score <span class="op">=</span> <span class="st">"WHO-5 wellbeing (0-100)"</span>,</span></span>
-<span class="r-in"><span>    bmi <span class="op">=</span> <span class="st">"Body-mass index (kg/m²)"</span></span></span>
+<span class="r-in"><span>    bmi <span class="op">=</span> <span class="st">"Body-mass index (kg/m^2)"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  r2 <span class="op">=</span> <span class="st">"adj_r2"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> 95% CI UL    p    Adj. R²   n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001   0.01    1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0.93      .018   0.00    1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> 95% CI UL    p    Adj. R²   n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001   0.01    1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   0.93      .018   0.00    1188 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># European decimal comma.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
