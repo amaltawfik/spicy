@@ -314,35 +314,33 @@
   (oracle packages for AME and pseudo-R² cross- validation); no runtime
   dependency change.
 
-#### `table_regression()` — uniform monospace typography + clipboard rules
+#### `table_regression()` — rich-output engines aligned with `table_continuous_lm` conventions
 
-- **One font across the whole table** in every rich-output engine, not
-  just the numeric body cells. Title, spanner row, sub-header, body, and
-  footer notes all render in Consolas (`excel`, `flextable`) or a
-  generic monospace stack (`gt`:
-  `'Fira Mono', 'Consolas', 'Courier New', monospace`; `tinytable`:
-  `monospace`). The earlier per-cell monospace produced a
-  mixed-typography look where the title and column labels still rendered
-  in the engine’s default proportional font.
+- **gt** now uses
+  [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+  (the native decimal- alignment primitive) on every non-`Variable`
+  column. The whitespace pre-padding produced by
+  `render_regression_table()` is stripped before handing the data frame
+  to gt so the primitive receives raw numeric strings. Default font; no
+  monospace override.
 
-- **`flextable` width**: an earlier `set_table_properties(width = 1)`
-  forced the table to span 100% of the page; `flextable` output now uses
-  plain `autofit()` so columns size to their content and the result does
-  not over-stretch on wide pages.
+- **tinytable** now uses `tinytable::style_tt(j = ..., align = "d")` per
+  numeric column (native LaTeX `siunitx` / HTML CSS decimal alignment).
+  Default font; no monospace override.
 
-- **`flextable` numeric alignment** changed from `"right"` to
-  `"center"`. The body’s numeric cells are pre-padded to a uniform
-  column width, so centring lines up decimal points and CI brackets
-  across rows; right-align placed the closing `"]"` of CI cells at the
-  column edge but let the inner commas / decimal points drift.
+- **flextable** reverts to the `table_continuous_lm` pattern: the
+  Consolas monospaced font and right-aligned numerics are applied ONLY
+  to the body’s numeric cells, not to the title, header, Variable
+  column, or footer notes. `autofit()` (no fixed `width = 1`) sizes
+  columns to their content.
 
-- **Clipboard rules**: the TSV payload now inserts U+2500 `─` separator
-  rows at the four APA-rule positions (top of header, bottom of header,
-  between coefficients and fit-stats, bottom of body). Each rule cell
-  holds enough `─` characters to fill its column, so pasting into a
-  context with a fixed-width font (Word with Consolas applied;
-  plain-text editor) renders the rules as continuous horizontal lines.
-  In Excel the rules paste as visible dash rows.
+- **Clipboard** no longer injects U+2500 `─` rule rows. TSV cannot
+  encode a continuous horizontal stroke – the tab-segmented dash rows
+  used in an earlier revision pasted as visually broken bits of lines.
+  The payload now matches `table_continuous_lm`’s clipboard shape
+  (title, spanner, header, body, note) with the pre-padded body values
+  preserved so a paste into a fixed-width context (Word with Consolas
+  applied, plain-text editor) reproduces decimal alignment.
 
 #### `table_regression()` — visual polish for rich-output engines
 
