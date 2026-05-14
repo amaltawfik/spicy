@@ -920,6 +920,15 @@ output_flextable <- function(rendered) {
     numeric_j <- 2:n_cols
     ft <- flextable::align(ft, j = numeric_j, part = "body",
                             align = "right")
+    # Consolas on numeric body cells matches the
+    # table_continuous_lm flextable convention (in decimal mode).
+    # Right-align + monospace gives decimal alignment when the
+    # column has consistent precision (the bracketed CI is
+    # already split into LL/UL columns of uniform precision).
+    # Calibri's proportional digits would otherwise misalign
+    # right-aligned values whose integer parts differ in width.
+    ft <- flextable::font(ft, j = numeric_j, part = "body",
+                           fontname = "Consolas")
   }
   # Factor-level row indentation.
   if (length(level_rows) > 0L) {
