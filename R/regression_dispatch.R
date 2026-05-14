@@ -375,18 +375,15 @@ output_long <- function(aligned) {
   for (k in seq_along(new_data)) {
     new_body[[new_names[k]]] <- new_data[[k]]
   }
-  # Pre-pad every numeric column for monospace decimal alignment.
-  # Each rich-output engine pairs this pre-padding with a
-  # monospaced font on numeric body cells so decimal points line
-  # up across rows -- the only universal way to get decimal
-  # alignment in Excel / HTML where native primitives
-  # (cols_align_decimal, align = "d") cannot handle the mixed-
-  # precision cells (e.g., the integer `n` row sharing a column
-  # with two-decimal coefficients).
+  # Trim leading / trailing whitespace from data columns. Native
+  # decimal-alignment primitives (gt::cols_align_decimal,
+  # tinytable::style_tt align = "d", Excel right-align + Calibri
+  # tabular figures) all expect clean numeric strings; the
+  # `decimal_align_strings()` pre-padding used by the console /
+  # bracketed-CI path is dropped here. Matches the
+  # table_continuous_lm convention exactly.
   if (ncol(new_body) >= 2L) {
-    new_body[-1L] <- lapply(new_body[-1L], function(col) {
-      decimal_align_strings(trimws(col), decimal_mark = ".")
-    })
+    new_body[-1L] <- lapply(new_body[-1L], trimws)
   }
 
   # Update model spanners: each old body col idx -> new body col idx
@@ -451,39 +448,65 @@ output_tinytable <- function(rendered) {
   if (has_model_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
   }
-  # tinytable strips leading ASCII spaces from cell content under
-  # HTML output, so the pre-padded numerics produced by
-  # .split_ci_columns() would lose their decimal alignment.
-  # Replace ASCII spaces with non-breaking spaces (U+00A0) in
-  # numeric body cells -- NBSP is preserved by tinytable AND
-  # never collapsed by HTML's `white-space: normal`. Paired with
-  # a monospaced font (`style_tt(monospace = TRUE)` below), the
-  # decimal points line up across rows.
-  if (ncol(body) >= 2L) {
-    nbsp <- "\u00A0"
-    for (j in 2:ncol(body)) {
-      body[[j]] <- gsub(" ", nbsp, body[[j]], fixed = TRUE)
-    }
-  }
-  n_cols <- ncol(body)
-  tt <- tinytable::tt(body,
-                       caption = title %||% "",
-                       notes = if (!is.null(note)) note else NULL)
+  ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
+  body_names_orig <- names(body)
 
-  # Nested column spanners. tinytable's group_tt stacks rows: a
-  # subsequent call adds a header row ABOVE the previous one. We
-  # apply CI spanners first (inner) then model spanners (outer), so
-  # the layout reads top-to-bottom: model row | CI row | column
-  # labels.
-  if (has_ci_spanner) {
-    ci_gspec <- list()
-    for (cs in ci_spanners) {
-      ci_gspec[[cs$label]] <- cs$cols
-    }
-    tt <- tinytable::group_tt(tt, j = ci_gspec)
-  }
   if (has_model_spanner) {
+    # Multi-model: tinytable's group_tt(j = list) drops duplicate
+    # list names (the second "B" overwrites the first), which
+    # prevents the per-column-spanner pattern used in single-model.
+    # Fall back to the prior "CI spanner row + column labels row"
+    # structure: keep visible column labels (B, LL, UL, p) on the
+    # column-labels row, add a `95% CI` spanner row above LL/UL
+    # via group_tt, then add the Model spanner row above that.
+    n_cols <- ncol(body)
+    tt <- tinytable::tt(body,
+                         caption = title %||% "",
+                         notes = if (!is.null(note)) note else NULL)
+    if (has_ci_spanner) {
+      ci_gspec <- list()
+      for (cs in ci_spanners) {
+        ci_gspec[[cs$label]] <- cs$cols
+      }
+      tt <- tinytable::group_tt(tt, j = ci_gspec)
+    }
     tt <- tinytable::group_tt(tt, j = spanners)
+  } else {
+    # Single-model: rename CI columns to "LL"/"UL" so the actual
+    # column labels show those sub-labels; non-CI columns get
+    # their visible label via a 1-wide spanner. This is the
+    # table_continuous_lm convention.
+    if (length(ci_cols_set) > 0L) {
+      for (cs in ci_spanners) {
+        if (length(cs$cols) >= 2L) {
+          names(body)[cs$cols[1L]] <- "LL"
+          names(body)[cs$cols[2L]] <- "UL"
+        }
+      }
+    }
+    for (j in seq_along(body_names_orig)) {
+      if (j == 1L) next
+      if (j %in% ci_cols_set) next
+      names(body)[j] <- ""
+    }
+    n_cols <- ncol(body)
+    tt <- tinytable::tt(body,
+                         caption = title %||% "",
+                         notes = if (!is.null(note)) note else NULL)
+    gspec <- list()
+    for (j in seq_along(body_names_orig)) {
+      if (j == 1L) next
+      if (j %in% ci_cols_set) next
+      gspec[[length(gspec) + 1L]] <- j
+      names(gspec)[length(gspec)] <- body_names_orig[j]
+    }
+    for (cs in ci_spanners) {
+      gspec[[length(gspec) + 1L]] <- cs$cols
+      names(gspec)[length(gspec)] <- cs$label
+    }
+    if (length(gspec) > 0L) {
+      tt <- tinytable::group_tt(tt, j = gspec)
+    }
   }
 
   # Mirror the table_continuous_lm pipeline exactly:
@@ -495,17 +518,11 @@ output_tinytable <- function(rendered) {
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    # Monospace + right-align on numeric body cells. The NBSP-
-    # padded values from above produce decimal alignment under
-    # the monospaced font (analogous to the Consolas + pre-padded
-    # treatment used in Excel + flextable). `white-space: nowrap`
-    # prevents browsers from collapsing the bracketed/CI cell
-    # contents onto multiple lines under narrow renderings.
-    tt <- tinytable::style_tt(
-      tt, j = 2:n_cols, align = "r",
-      monospace = TRUE,
-      html_css = "white-space: nowrap;"
-    )
+    # Native decimal alignment per column via `style_tt(align =
+    # "d")` -- matches table_continuous_lm. Default font.
+    for (rj in 2:n_cols) {
+      tt <- tinytable::style_tt(tt, j = rj, align = "d")
+    }
   }
   # Header rows: Variable column left, the rest centred.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
@@ -617,9 +634,48 @@ output_gt <- function(rendered) {
   n_cols <- ncol(body)
   tbl <- gt::gt(body)
 
-  # Add CI spanners FIRST so the model spanners nest above them. gt's
-  # tab_spanner stacks nested spanners by call order: earlier calls
-  # land closer to the column-label row.
+  # Match table_continuous_lm header structure: actual column
+  # labels are blank for non-CI columns ("LL" / "UL" for CI
+  # columns); the displayed per-column labels (B, SE, p, ...) live
+  # in a `tab_spanner` row above the column labels. The "95% CI"
+  # 2-wide spanner sits next to those per-column spanners. This
+  # collapses the visual header to two rows (single-model: spanner
+  # row + LL/UL row) instead of three.
+  ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
+  label_list <- stats::setNames(as.list(rep("", n_cols)), orig_names)
+  for (cs in ci_spanners) {
+    if (length(cs$cols) >= 2L) {
+      label_list[[orig_names[cs$cols[1L]]]] <- "LL"
+      label_list[[orig_names[cs$cols[2L]]]] <- "UL"
+    }
+  }
+  tbl <- gt::cols_label(tbl, .list = label_list)
+
+  # Build per-column "spanner-as-label" entries for every non-CI
+  # numeric column. Each spanner is 1-wide and uses the column's
+  # bare label (stripped of any "Model X: " prefix when present).
+  strip_prefix <- function(nm) {
+    if (has_model_spanner) {
+      for (lbl in names(spanners)) {
+        prefix <- paste0(lbl, ": ")
+        if (startsWith(nm, prefix)) {
+          return(substring(nm, nchar(prefix) + 1L))
+        }
+      }
+    }
+    nm
+  }
+  for (j in seq_along(orig_names)) {
+    if (j == 1L) next  # Variable column has no per-col spanner
+    if (j %in% ci_cols_set) next  # CI cols get their own spanner
+    bare <- strip_prefix(orig_names[j])
+    tbl <- gt::tab_spanner(
+      tbl, label = bare,
+      columns = orig_names[j],
+      id = paste0("col_span_", j, "_", make.names(bare))
+    )
+  }
+  # CI 2-wide spanner ("95% CI") over each LL/UL pair.
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       tbl <- gt::tab_spanner(
@@ -629,27 +685,13 @@ output_gt <- function(rendered) {
       )
     }
   }
+  # Outer Model spanner level (multi-model only).
   if (has_model_spanner) {
     for (lbl in names(spanners)) {
       cols_in_span <- orig_names[spanners[[lbl]]]
       tbl <- gt::tab_spanner(tbl, label = lbl, columns = cols_in_span,
                               id = paste0("model_span_",
                                           make.names(lbl)))
-    }
-    # Strip the "Model X: " prefix from displayed column labels --
-    # the prefix lives only on the unique data.frame column names
-    # for gt's lookup; the visible header is the bare token.
-    relabel <- list()
-    for (lbl in names(spanners)) {
-      idx <- spanners[[lbl]]
-      prefix <- paste0(lbl, ": ")
-      pat <- paste0("^", regex_escape(prefix))
-      for (j in idx) {
-        relabel[[orig_names[j]]] <- sub(pat, "", orig_names[j])
-      }
-    }
-    if (length(relabel)) {
-      tbl <- do.call(gt::cols_label, c(list(tbl), relabel))
     }
   }
 
@@ -717,21 +759,9 @@ output_gt <- function(rendered) {
   }
   tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
   if (n_cols >= 2L) {
-    tbl <- gt::cols_align(tbl, align = "right", columns = orig_names[-1L])
-    # Monospace font + white-space: pre on numeric body cells so
-    # the pre-padded values from .split_ci_columns() decimal-align
-    # via fixed character width. HTML otherwise collapses leading
-    # whitespace under `white-space: normal` and proportional
-    # fonts misalign mixed-precision cells. Matches the convention
-    # used by Excel + flextable.
-    tbl <- gt::tab_style(
-      tbl,
-      style = list(
-        gt::cell_text(font = c("Consolas", "Courier New", "monospace")),
-        "white-space: pre;"
-      ),
-      locations = gt::cells_body(columns = orig_names[-1L])
-    )
+    # Native decimal alignment via gt's `cols_align_decimal()` --
+    # same as table_continuous_lm. Default proportional font.
+    tbl <- gt::cols_align_decimal(tbl, columns = orig_names[-1L])
   }
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
@@ -890,13 +920,6 @@ output_flextable <- function(rendered) {
     numeric_j <- 2:n_cols
     ft <- flextable::align(ft, j = numeric_j, part = "body",
                             align = "right")
-    # Consolas font on numeric body cells: the pre-padded values
-    # from .split_ci_columns() decimal-align under a monospaced
-    # font; Calibri's proportional digits would misalign mixed-
-    # precision cells (e.g., integer `n` next to two-decimal
-    # coefficients in the same column).
-    ft <- flextable::font(ft, j = numeric_j, part = "body",
-                           fontname = "Consolas")
   }
   # Factor-level row indentation.
   if (length(level_rows) > 0L) {
@@ -1124,11 +1147,18 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   }
   # Mid-rule under each "95% CI" merged cell on the top header
   # row (over LL/UL pairs only; matches the table_continuous /
-  # table_continuous_lm CI mid-rule convention).
+  # table_continuous_lm CI mid-rule convention). Drawn on the
+  # BOTTOM of header_top AND the TOP of header_bottom for the
+  # CI cols -- belt + braces so the visual rule survives the
+  # merge under any Excel renderer.
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       wb <- draw_rule(wb, rows = header_top_excel,
                        cols = cs$cols, bottom = TRUE)
+      if (!is.na(header_bottom_excel)) {
+        wb <- draw_rule(wb, rows = header_bottom_excel,
+                         cols = cs$cols, top = TRUE)
+      }
     }
   }
   # Sub-rule under the last header row (column-labels row, or the
@@ -1183,13 +1213,16 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       )
       # Factor-level rows in the Variable column: add Excel
       # `indent` so the rendered cell carries the visual indent
-      # consistent with the other rich-output engines.
+      # consistent with the other rich-output engines. `indent =
+      # "1"` matches the visual density used by gt / flextable /
+      # tinytable indentation (which is roughly ~14-20 px in
+      # those engines).
       if (length(level_rows) > 0L) {
         level_excel_rows <- body_first_row + level_rows - 1L
         wb <- openxlsx2::wb_add_cell_style(
           wb, sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = level_excel_rows, cols = 1L),
-          horizontal = "left", indent = "2"
+          horizontal = "left", indent = "1"
         )
       }
       if (n_cols >= 2L) {
@@ -1198,17 +1231,6 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           wb, sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
           horizontal = "right"
-        )
-        # Consolas font on numeric body cells: combined with the
-        # pre-padded values from .split_ci_columns(), produces
-        # column-wide decimal alignment in Excel (Calibri's
-        # proportional spaces would otherwise misalign cells with
-        # different integer-part widths). Title, headers, Variable
-        # column and footer keep Excel's default Calibri.
-        wb <- openxlsx2::wb_add_font(
-          wb, sheet = excel_sheet,
-          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
-          name = "Consolas"
         )
       }
     }
