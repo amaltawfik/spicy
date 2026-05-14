@@ -717,7 +717,7 @@ export_continuous_lm_table <- function(
           "`word_path` must be provided for `output = \"word\"`.", class = "spicy_invalid_input")
       }
       flextable::save_as_docx(ft, path = word_path)
-      return(word_path)
+      return(invisible(word_path))
     }
 
     return(ft)
@@ -844,7 +844,7 @@ export_continuous_lm_table <- function(
       )
     }
     openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
-    return(excel_path)
+    return(invisible(excel_path))
   }
 
   if (identical(output, "clipboard")) {

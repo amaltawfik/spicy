@@ -1143,8 +1143,18 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   } else {
     header_top_excel
   }
+  # Belt + braces: draw the top rule BOTH as top-border on the
+  # header row AND as bottom-border on the row above. Excel
+  # rendering of borders on merged cells (the Model spanner or
+  # the "95% CI" merge) can drop the top border on cells inside
+  # the merge; the duplicate draw on the unmerged row above
+  # guarantees the rule appears continuous across the full row.
   wb <- draw_rule(wb, rows = top_rule_row, cols = seq_len(n_cols),
                    top = TRUE)
+  if (top_rule_row > 1L) {
+    wb <- draw_rule(wb, rows = top_rule_row - 1L,
+                     cols = seq_len(n_cols), bottom = TRUE)
+  }
   # Mid-rule under each model spanner span. Drawn ONLY over the
   # spanner cells (cols 2..n of the model); the Variable column
   # stays without a bottom rule on the model spanner row.
@@ -1235,12 +1245,38 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
         )
       }
       if (n_cols >= 2L) {
-        numeric_cols <- 2:n_cols
-        wb <- openxlsx2::wb_add_cell_style(
-          wb, sheet = excel_sheet,
-          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
-          horizontal = "right"
-        )
+        # table_continuous convention: right-align "p" columns,
+        # centre every other numeric column. Variable column stays
+        # left-aligned (handled above). The body column names
+        # carry a "Model X: " prefix in multi-model output; we
+        # match on the trailing token "p" only.
+        body_col_tokens <- vapply(names(body)[-1L], function(nm) {
+          if (has_model_spanner) {
+            for (lbl in names(spanners)) {
+              prefix <- paste0(lbl, ": ")
+              if (startsWith(nm, prefix)) {
+                return(substring(nm, nchar(prefix) + 1L))
+              }
+            }
+          }
+          nm
+        }, character(1))
+        p_cols <- which(body_col_tokens == "p") + 1L
+        other_cols <- setdiff(2:n_cols, p_cols)
+        if (length(other_cols) > 0L) {
+          wb <- openxlsx2::wb_add_cell_style(
+            wb, sheet = excel_sheet,
+            dims = openxlsx2::wb_dims(rows = body_rows, cols = other_cols),
+            horizontal = "center", vertical = "center"
+          )
+        }
+        if (length(p_cols) > 0L) {
+          wb <- openxlsx2::wb_add_cell_style(
+            wb, sheet = excel_sheet,
+            dims = openxlsx2::wb_dims(rows = body_rows, cols = p_cols),
+            horizontal = "right"
+          )
+        }
       }
     }
   }
