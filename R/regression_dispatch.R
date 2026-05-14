@@ -152,6 +152,40 @@ output_long <- function(aligned) {
 #     across the new LL / UL columns;
 #   * pre-padding inserted by align_ci_strings() (leading / inner /
 #     trailing whitespace) -- trimmed in the returned components.
+# Build the two-row column-header structure used by `excel`,
+# `clipboard`, and `flextable`. Mirrors the table_continuous_lm
+# convention: the "top" header row carries the per-column labels
+# (B, SE, p, ...) plus a `ci_label` (e.g., "95% CI") repeated over
+# each LL / UL pair so it can be merged in rich engines; the
+# "bottom" header row carries the LL / UL sub-labels only over the
+# CI pairs, empty elsewhere.
+#
+# When `spanners` is non-null, the per-column labels are stripped
+# of their multi-model "Label: " prefix (the Model spanner sits in
+# its own row above the column-labels row in rich outputs).
+.build_label_rows <- function(body, ci_spanners, spanners = NULL) {
+  n <- ncol(body)
+  top <- names(body)
+  if (!is.null(spanners) && length(spanners) > 0L) {
+    stripped <- .strip_spanner_prefix(body, spanners)
+    top <- names(stripped)
+  }
+  for (cs in ci_spanners) {
+    if (length(cs$cols) >= 1L) {
+      top[cs$cols] <- cs$label
+    }
+  }
+  bot <- rep("", n)
+  for (cs in ci_spanners) {
+    if (length(cs$cols) >= 2L) {
+      bot[cs$cols[1L]] <- "LL"
+      bot[cs$cols[2L]] <- "UL"
+    }
+  }
+  list(top = top, bottom = bot)
+}
+
+
 .parse_ci_bracketed <- function(cells) {
   n <- length(cells)
   ll <- character(n)
@@ -426,7 +460,7 @@ output_tinytable <- function(rendered) {
   if (has_ci_spanner) {
     ci_gspec <- list()
     for (cs in ci_spanners) {
-      ci_gspec[[paste0("(", cs$label, ")")]] <- cs$cols
+      ci_gspec[[cs$label]] <- cs$cols
     }
     tt <- tinytable::group_tt(tt, j = ci_gspec)
   }
@@ -563,7 +597,7 @@ output_gt <- function(rendered) {
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       tbl <- gt::tab_spanner(
-        tbl, label = paste0("(", cs$label, ")"),
+        tbl, label = cs$label,
         columns = orig_names[cs$cols],
         id = paste0("ci_span_", paste(cs$cols, collapse = "_"))
       )
@@ -737,7 +771,7 @@ output_flextable <- function(rendered) {
   if (has_ci_spanner) {
     ci_labels_at_col <- rep("", n_cols)
     for (cs in ci_spanners) {
-      ci_labels_at_col[cs$cols] <- paste0("(", cs$label, ")")
+      ci_labels_at_col[cs$cols] <- cs$label
     }
     rs <- build_run_spec(ci_labels_at_col)
     ft <- flextable::add_header_row(ft, top = TRUE,
@@ -885,12 +919,18 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   col_spec <- attr(rendered, "col_spec")
   group_sep <- attr(rendered, "group_sep_rows")
 
+  # Factor-level rows: detect from the inline whitespace prefix and
+  # carry it as styling (Excel `indent` cell-style) instead of as
+  # leading spaces in the Variable cell.
+  level_rows <- .detect_level_rows(body)
+  body <- .trim_level_indent(body, level_rows)
+
   # Split bracketed CI cells into LL / UL numeric columns and capture
-  # the (95% CI) spanners. The Excel sheet ends up with a two-level
-  # column header (model spanner > CI spanner > column labels) and
-  # each bound becomes its own numeric cell -- Excel formats and
-  # right-aligns them natively with the default Calibri font (no
-  # custom font + pre-padding hack required).
+  # the "95% CI" spanners. The Excel sheet ends up with a two-row
+  # column header (column labels with "95% CI" merged across LL/UL,
+  # plus an LL/UL sub-row) -- matches the table_continuous_lm
+  # convention. Each bound becomes its own numeric cell so Excel
+  # right-aligns them in the default Calibri font.
   split <- .split_ci_columns(body, col_spec, spanners)
   body         <- split$body
   spanners     <- split$spanners
@@ -946,36 +986,42 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     current_row <- current_row + 1L
   }
 
+  # Header rows (table_continuous_lm convention): two rows --
+  # "top" carries the per-column labels with "95% CI" replacing
+  # the LL/UL slots (merged); "bottom" carries the LL/UL
+  # sub-labels only over CI pairs. Single-model: header_top +
+  # (optional) header_bottom. Multi-model: model spanner row
+  # (already written) + header_top + header_bottom.
+  header_top_excel <- current_row
+  hdr <- .build_label_rows(body, ci_spanners, spanners)
+  wb <- write_spanner_row(wb, hdr$top, header_top_excel)
+  # Merge "95% CI" across each LL+UL pair on the top header row.
   if (has_ci_spanner) {
-    ci_row_excel <- current_row
-    ci_labels_at_col <- rep("", n_cols)
     for (cs in ci_spanners) {
-      ci_labels_at_col[cs$cols] <- paste0("(", cs$label, ")")
+      if (length(cs$cols) >= 2L) {
+        wb <- openxlsx2::wb_merge_cells(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = header_top_excel, cols = cs$cols)
+        )
+      }
     }
-    wb <- write_spanner_row(wb, ci_labels_at_col, ci_row_excel)
-    for (cs in ci_spanners) {
-      wb <- openxlsx2::wb_merge_cells(
-        wb, sheet = excel_sheet,
-        dims = openxlsx2::wb_dims(rows = ci_row_excel, cols = cs$cols)
-      )
-    }
+  }
+  current_row <- current_row + 1L
+
+  header_bottom_excel <- NA_integer_
+  if (has_ci_spanner) {
+    header_bottom_excel <- current_row
+    wb <- write_spanner_row(wb, hdr$bottom, header_bottom_excel)
     current_row <- current_row + 1L
   }
 
-  header_row_excel <- current_row
-  stripped <- if (has_model_spanner) {
-    .strip_spanner_prefix(body, spanners)
+  # `header_row_excel` aliases the LAST header row -- borders apply
+  # the column-labels sub-rule there.
+  header_row_excel <- if (!is.na(header_bottom_excel)) {
+    header_bottom_excel
   } else {
-    body
+    header_top_excel
   }
-  header_df <- as.data.frame(as.list(names(stripped)),
-                              stringsAsFactors = FALSE,
-                              col.names = paste0("V", seq_len(n_cols)))
-  names(header_df) <- names(body)
-  wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                               x = header_df, start_row = header_row_excel,
-                               col_names = FALSE)
-  current_row <- current_row + 1L
 
   body_first_row <- current_row
   wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
@@ -1011,33 +1057,35 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       right_border  = NULL
     )
   }
-  # Choose the top-of-header row: model spanner if present, otherwise
-  # CI spanner, otherwise the column-label row.
+  # Choose the top-of-header row: model spanner if present,
+  # otherwise the column-labels (top) row.
   top_rule_row <- if (has_model_spanner) {
     model_row_excel
-  } else if (has_ci_spanner) {
-    ci_row_excel
   } else {
-    header_row_excel
+    header_top_excel
   }
   wb <- draw_rule(wb, rows = top_rule_row, cols = seq_len(n_cols),
                    top = TRUE)
-  # Mid-rule under model spanner spans.
+  # Mid-rule under each model spanner span. Drawn ONLY over the
+  # spanner cells (cols 2..n of the model); the Variable column
+  # stays without a bottom rule on the model spanner row.
   if (has_model_spanner) {
     for (lbl in names(spanners)) {
       wb <- draw_rule(wb, rows = model_row_excel,
                        cols = spanners[[lbl]], bottom = TRUE)
     }
   }
-  # Mid-rule under each (95% CI) spanner pair (matches the
-  # table_continuous CI mid-rule convention).
+  # Mid-rule under each "95% CI" merged cell on the top header
+  # row (over LL/UL pairs only; matches the table_continuous /
+  # table_continuous_lm CI mid-rule convention).
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
-      wb <- draw_rule(wb, rows = ci_row_excel,
+      wb <- draw_rule(wb, rows = header_top_excel,
                        cols = cs$cols, bottom = TRUE)
     }
   }
-  # Sub-rule under the column-label row.
+  # Sub-rule under the last header row (column-labels row, or the
+  # LL/UL sub-row when present).
   wb <- draw_rule(wb, rows = header_row_excel, cols = seq_len(n_cols),
                    bottom = TRUE)
   # Hair rule between last coefficient and first fit-stat row.
@@ -1061,7 +1109,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # Variable column: left-aligned. Headers (model spanner, CI spanner,
   # column labels): centred.
   if (n_cols >= 1L) {
-    header_rows <- c(model_row_excel, ci_row_excel, header_row_excel)
+    header_rows <- c(model_row_excel, header_top_excel, header_bottom_excel)
     header_rows <- header_rows[!is.na(header_rows)]
     # Numeric headers (cols 2..n) centred over their decimal-aligned
     # body columns. "Variable" header (col 1) stays LEFT to match
@@ -1086,6 +1134,17 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
         dims = openxlsx2::wb_dims(rows = body_rows, cols = 1L),
         horizontal = "left"
       )
+      # Factor-level rows in the Variable column: add Excel
+      # `indent` so the rendered cell carries the visual indent
+      # consistent with the other rich-output engines.
+      if (length(level_rows) > 0L) {
+        level_excel_rows <- body_first_row + level_rows - 1L
+        wb <- openxlsx2::wb_add_cell_style(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = level_excel_rows, cols = 1L),
+          horizontal = "left", indent = "2"
+        )
+      }
       if (n_cols >= 2L) {
         numeric_cols <- 2:n_cols
         wb <- openxlsx2::wb_add_cell_style(
@@ -1218,8 +1277,9 @@ clipboard_payload <- function(rendered, clipboard_delim) {
 
   if (has_model_spanner) {
     # Top header row: model spanner labels repeated across each
-    # spanned column. Two-level header layout (top = model, middle =
-    # CI) matches table_continuous_lm clipboard output.
+    # spanned column. The label appears in every column of the
+    # span (rather than once + empty siblings) so the user can
+    # merge after paste in Excel / Word with a single selection.
     spanner_row <- rep("", n_cols)
     for (lbl in names(spanners)) {
       spanner_row[spanners[[lbl]]] <- lbl
@@ -1227,18 +1287,16 @@ clipboard_payload <- function(rendered, clipboard_delim) {
     add_row(spanner_row)
   }
 
+  # Column-labels row with "95% CI" replacing the LL / UL slots
+  # (repeated across the pair so the user can merge after paste).
+  # Bottom row with the LL / UL sub-labels appears below if any
+  # CI column exists. Matches the table_continuous_lm clipboard
+  # convention exactly.
+  hdr <- .build_label_rows(body, ci_spanners, spanners)
+  add_row(hdr$top)
   if (has_ci_spanner) {
-    # Middle header row: "(95% CI)" repeated above each LL / UL
-    # pair, empty elsewhere. The user can merge the duplicates in
-    # Excel / Word after paste.
-    ci_row <- rep("", n_cols)
-    for (cs in ci_spanners) {
-      ci_row[cs$cols] <- paste0("(", cs$label, ")")
-    }
-    add_row(ci_row)
+    add_row(hdr$bottom)
   }
-
-  add_row(names(stripped))
 
   body_mat <- as.matrix(stripped)
   if (nrow(body_mat) > 0L) {

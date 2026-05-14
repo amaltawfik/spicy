@@ -298,17 +298,16 @@ test_that("clipboard_payload honours title = FALSE / note = FALSE", {
   expect_false(any(grepl("Std\\. errors", lines)))
 })
 
-test_that("clipboard_payload single-model layout (no model spanner, CI spanner present)", {
+test_that("clipboard_payload single-model layout (table_continuous_lm convention)", {
   fit <- lm(mpg ~ wt, data = mt)
   rendered <- table_regression(fit)
   txt <- spicy:::clipboard_payload(rendered, "\t")
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  # Layout: title, (95% CI) spanner row, column labels, body.
-  # CI is now split into LL / UL with a (95% CI) spanner row above
-  # them, so the column-labels row sits at line 3, not line 2.
+  # Layout (table_continuous_lm convention): title, column labels
+  # with "95% CI" merged across LL/UL, LL/UL sub-row, body.
   expect_match(lines[1L], "^Linear regression")
-  expect_match(lines[2L], "\\(95% CI\\)")
-  expect_match(lines[3L], "^Variable\t")
+  expect_match(lines[2L], "^Variable\t")
+  expect_match(lines[2L], "95% CI")
   expect_true(any(grepl("\\bLL\\b", lines)))
   expect_true(any(grepl("\\bUL\\b", lines)))
 })
