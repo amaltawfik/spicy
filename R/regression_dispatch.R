@@ -375,14 +375,18 @@ output_long <- function(aligned) {
   for (k in seq_along(new_data)) {
     new_body[[new_names[k]]] <- new_data[[k]]
   }
-  # Strip leading / trailing whitespace from all data columns. Native
-  # decimal-alignment primitives (gt::cols_align_decimal,
-  # tinytable::style_tt align = "d") and Excel's tabular-figures
-  # right-align all expect clean numeric strings -- the render layer's
-  # pre-padding was only useful for the console / bracketed-CI path
-  # which keeps the original body.
+  # Pre-pad every numeric column for monospace decimal alignment.
+  # Each rich-output engine pairs this pre-padding with a
+  # monospaced font on numeric body cells so decimal points line
+  # up across rows -- the only universal way to get decimal
+  # alignment in Excel / HTML where native primitives
+  # (cols_align_decimal, align = "d") cannot handle the mixed-
+  # precision cells (e.g., the integer `n` row sharing a column
+  # with two-decimal coefficients).
   if (ncol(new_body) >= 2L) {
-    new_body[-1L] <- lapply(new_body[-1L], trimws)
+    new_body[-1L] <- lapply(new_body[-1L], function(col) {
+      decimal_align_strings(trimws(col), decimal_mark = ".")
+    })
   }
 
   # Update model spanners: each old body col idx -> new body col idx
@@ -447,6 +451,20 @@ output_tinytable <- function(rendered) {
   if (has_model_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
   }
+  # tinytable strips leading ASCII spaces from cell content under
+  # HTML output, so the pre-padded numerics produced by
+  # .split_ci_columns() would lose their decimal alignment.
+  # Replace ASCII spaces with non-breaking spaces (U+00A0) in
+  # numeric body cells -- NBSP is preserved by tinytable AND
+  # never collapsed by HTML's `white-space: normal`. Paired with
+  # a monospaced font (`style_tt(monospace = TRUE)` below), the
+  # decimal points line up across rows.
+  if (ncol(body) >= 2L) {
+    nbsp <- "\u00A0"
+    for (j in 2:ncol(body)) {
+      body[[j]] <- gsub(" ", nbsp, body[[j]], fixed = TRUE)
+    }
+  }
   n_cols <- ncol(body)
   tt <- tinytable::tt(body,
                        caption = title %||% "",
@@ -477,9 +495,17 @@ output_tinytable <- function(rendered) {
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    for (rj in 2:n_cols) {
-      tt <- tinytable::style_tt(tt, j = rj, align = "d")
-    }
+    # Monospace + right-align on numeric body cells. The NBSP-
+    # padded values from above produce decimal alignment under
+    # the monospaced font (analogous to the Consolas + pre-padded
+    # treatment used in Excel + flextable). `white-space: nowrap`
+    # prevents browsers from collapsing the bracketed/CI cell
+    # contents onto multiple lines under narrow renderings.
+    tt <- tinytable::style_tt(
+      tt, j = 2:n_cols, align = "r",
+      monospace = TRUE,
+      html_css = "white-space: nowrap;"
+    )
   }
   # Header rows: Variable column left, the rest centred.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
@@ -691,7 +717,21 @@ output_gt <- function(rendered) {
   }
   tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
   if (n_cols >= 2L) {
-    tbl <- gt::cols_align_decimal(tbl, columns = orig_names[-1L])
+    tbl <- gt::cols_align(tbl, align = "right", columns = orig_names[-1L])
+    # Monospace font + white-space: pre on numeric body cells so
+    # the pre-padded values from .split_ci_columns() decimal-align
+    # via fixed character width. HTML otherwise collapses leading
+    # whitespace under `white-space: normal` and proportional
+    # fonts misalign mixed-precision cells. Matches the convention
+    # used by Excel + flextable.
+    tbl <- gt::tab_style(
+      tbl,
+      style = list(
+        gt::cell_text(font = c("Consolas", "Courier New", "monospace")),
+        "white-space: pre;"
+      ),
+      locations = gt::cells_body(columns = orig_names[-1L])
+    )
   }
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
@@ -850,6 +890,13 @@ output_flextable <- function(rendered) {
     numeric_j <- 2:n_cols
     ft <- flextable::align(ft, j = numeric_j, part = "body",
                             align = "right")
+    # Consolas font on numeric body cells: the pre-padded values
+    # from .split_ci_columns() decimal-align under a monospaced
+    # font; Calibri's proportional digits would misalign mixed-
+    # precision cells (e.g., integer `n` next to two-decimal
+    # coefficients in the same column).
+    ft <- flextable::font(ft, j = numeric_j, part = "body",
+                           fontname = "Consolas")
   }
   # Factor-level row indentation.
   if (length(level_rows) > 0L) {
@@ -1151,6 +1198,17 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           wb, sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
           horizontal = "right"
+        )
+        # Consolas font on numeric body cells: combined with the
+        # pre-padded values from .split_ci_columns(), produces
+        # column-wide decimal alignment in Excel (Calibri's
+        # proportional spaces would otherwise misalign cells with
+        # different integer-part widths). Title, headers, Variable
+        # column and footer keep Excel's default Calibri.
+        wb <- openxlsx2::wb_add_font(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows, cols = numeric_cols),
+          name = "Consolas"
         )
       }
     }
