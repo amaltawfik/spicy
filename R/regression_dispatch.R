@@ -164,14 +164,16 @@ output_tinytable <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
-  # `style_tt(align = "d")` aligns clean numeric strings but cannot
-  # handle the mixed content of these tables (em-dashes for
-  # reference rows, "<.001" p-values, empty cells under the
-  # second model, ...) -- non-matching cells fall back to
-  # left-align and break the column. We instead rely on the render
-  # layer's pre-padding and apply a monospaced font +
-  # white-space: pre to numeric body cells so the padded spaces
-  # align in HTML / LaTeX.
+  # Match the table_continuous_lm tinytable convention exactly:
+  # native `style_tt(align = "d")` per numeric column, no custom
+  # font. align = "d" expects raw numeric strings, so we strip the
+  # render layer's leading-/trailing-whitespace pre-padding from
+  # every non-Variable column first. Bracketed CI cells have no
+  # outer whitespace; trimws leaves their interior intact and the
+  # cell falls back to default text alignment within the column.
+  if (ncol(body) >= 2L) {
+    body[-1L] <- lapply(body[-1L], trimws)
+  }
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
   if (has_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
@@ -211,10 +213,11 @@ output_tinytable <- function(rendered) {
   }
 
   # Header centring + per-column alignment. The spanner row (i = -1)
-  # and the column-label row (i = 0) are centred. The Variable
-  # column is left-aligned; numeric body cells receive a monospaced
-  # font + white-space: pre so the render layer's pre-padding
-  # produces aligned decimal points across rows.
+  # and the column-label row (i = 0) are centred. Variable column
+  # is left-aligned; numeric body columns get align = "d" applied
+  # one column at a time -- tinytable's native decimal-alignment
+  # primitive (siunitx in LaTeX, padded-text CSS in HTML). This is
+  # the same pattern table_continuous_lm uses for tinytable.
   tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
   if (has_spanner) {
     tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
@@ -222,11 +225,9 @@ output_tinytable <- function(rendered) {
   }
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    tt <- tinytable::style_tt(
-      tt, j = 2:n_cols, align = "c",
-      monospace = TRUE,
-      html_css = "white-space: pre;"
-    )
+    for (rj in 2:n_cols) {
+      tt <- tinytable::style_tt(tt, j = rj, align = "d")
+    }
   }
   # Factor-level rows: indent the Variable cell. We tag both HTML
   # (CSS padding) and LaTeX (\hspace) so the indentation reaches all
