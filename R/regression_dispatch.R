@@ -581,14 +581,23 @@ output_gt <- function(rendered) {
     )
   }
 
-  # Column-label centring + per-column alignment. With CI split,
-  # `cols_align_decimal` aligns every numeric column natively
-  # against its decimal mark; the Variable column stays left.
+  # Column-label alignment + per-column body alignment. The
+  # "Variable" header is LEFT-aligned to match its left-aligned
+  # body (modern data-viz convention: header alignment follows
+  # body alignment for left-text columns); numeric column labels
+  # stay centred above their decimal-aligned columns.
   tbl <- gt::tab_style(
     tbl,
-    style = gt::cell_text(align = "center", weight = "normal"),
-    locations = gt::cells_column_labels(columns = gt::everything())
+    style = gt::cell_text(align = "left", weight = "normal"),
+    locations = gt::cells_column_labels(columns = orig_names[1L])
   )
+  if (n_cols >= 2L) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(align = "center", weight = "normal"),
+      locations = gt::cells_column_labels(columns = orig_names[-1L])
+    )
+  }
   if (has_model_spanner || has_ci_spanner) {
     tbl <- gt::tab_style(
       tbl,
@@ -989,10 +998,21 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   if (n_cols >= 1L) {
     header_rows <- c(model_row_excel, ci_row_excel, header_row_excel)
     header_rows <- header_rows[!is.na(header_rows)]
+    # Numeric headers (cols 2..n) centred over their decimal-aligned
+    # body columns. "Variable" header (col 1) stays LEFT to match
+    # its left-aligned body -- modern data-viz convention: header
+    # alignment follows body alignment for left-text columns.
+    if (n_cols >= 2L) {
+      wb <- openxlsx2::wb_add_cell_style(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = header_rows, cols = 2:n_cols),
+        horizontal = "center", vertical = "center"
+      )
+    }
     wb <- openxlsx2::wb_add_cell_style(
       wb, sheet = excel_sheet,
-      dims = openxlsx2::wb_dims(rows = header_rows, cols = seq_len(n_cols)),
-      horizontal = "center", vertical = "center"
+      dims = openxlsx2::wb_dims(rows = header_rows, cols = 1L),
+      horizontal = "left", vertical = "center"
     )
     if (nrow(body) > 0L) {
       body_rows <- seq.int(body_first_row, body_end_row)
