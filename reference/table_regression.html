@@ -110,6 +110,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  reference_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"row"</span>, <span class="st">"annotation"</span>, <span class="st">"footer"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  reference_label <span class="op">=</span> <span class="st">"(ref.)"</span>,</span>
 <span>  show_fit_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fit_stats_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first_col"</span>, <span class="st">"merged"</span><span class="op">)</span>,</span>
 <span>  model_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  outcome_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -330,6 +331,37 @@ class-appropriate change-stat tokens (e.g. <code>"r2_change"</code>,
 <code>"f_change"</code> for <code>lm</code>). See <em>Vocabulary tokens</em>
 (<code>show_fit_stats</code> subsection) and <em>Hierarchical (nested)
 model comparison</em> in the details for the full vocabulary.</p></dd>
+
+
+<dt id="arg-fit-stats-layout">fit_stats_layout<a class="anchor" aria-label="anchor" href="#arg-fit-stats-layout"></a></dt>
+<dd><p>Layout of the fit-stat values (<code>n</code>, <code>R²</code>,
+<code>AIC</code>, ...) within each model's column group. Two options:</p><ul><li><p><code>"first_col"</code> (default): the value is placed in the
+FIRST numeric sub-column of each model (typically <code>B</code>);
+the model's remaining sub-columns (<code>SE</code>, <code>LL</code>, <code>UL</code>, <code>p</code>,
+...) are left empty for that row. APA convention (Table
+7.13) and the layout used by <code>gtsummary</code>, <code>modelsummary</code>,
+<code>sjPlot::tab_model</code>, <code>jtools</code>, <code>parameters</code>.</p></li>
+<li><p><code>"merged"</code>: the model's numeric sub-columns are
+merged into a single wide cell containing the fit-stat
+value, centred under the model spanner. Stata <code>esttab</code> /
+Econometrica / AER convention. Resolves the mixed-
+precision look of <code>"first_col"</code> (an integer <code>n</code> row
+sharing the B column with two-decimal coefficients).</p></li>
+</ul><p>Cell merging is supported by <code>excel</code>, <code>flextable</code>, and
+<code>word</code> (via flextable). <code>gt</code>, <code>tinytable</code>, <code>clipboard</code>, and
+<code>default</code> (console) always render in <code>"first_col"</code> mode
+regardless of this setting:</p><ul><li><p><code>gt</code> lacks a native row-spanning cell-merge API
+(<code>tab_spanner</code> covers columns, not row-cell ranges).</p></li>
+<li><p><code>tinytable</code>'s <code>style_tt(colspan = N)</code> emits HTML
+<code>colspan</code> only on header rows, not on body cells.</p></li>
+<li><p><code>clipboard</code> ships TSV plaintext.</p></li>
+<li><p><code>default</code> ships fixed-width ASCII.</p></li>
+</ul><p>Decimal alignment of every numeric column is preserved in
+both modes: the <code>B</code> column decimal-aligns its coefficient
+values plus any fit-stat value(s) in <code>"first_col"</code> mode
+(native primitives handle the mixed-precision case), and
+trivially decimal-aligns in <code>"merged"</code> mode (the fit-stat
+values move out of the B column into the merged cell).</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>

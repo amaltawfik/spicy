@@ -948,6 +948,7 @@ str(out)
 #>  - attr(*, "group_sep_rows")= int 9
 #>  - attr(*, "align")= chr "decimal"
 #>  - attr(*, "padding")= int 0
+#>  - attr(*, "fit_stats_layout")= chr "first_col"
 ```
 
 ``` r

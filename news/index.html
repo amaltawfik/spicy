@@ -181,8 +181,15 @@
 <li><p><code>marginaleffects</code>, <code>parameters</code>, and <code>performance</code> added to <code>Suggests</code> (oracle packages for AME and pseudo-R² cross- validation); no runtime dependency change.</p></li>
 </ul></div>
 <div class="section level4">
+<h4 id="table_regression--fit_stats_layout-argument-for-cell-merged-fit-stat-rows-0-12-0">
+<code>table_regression()</code> — <code>fit_stats_layout</code> argument for cell-merged fit-stat rows<a class="anchor" aria-label="anchor" href="#table_regression--fit_stats_layout-argument-for-cell-merged-fit-stat-rows-0-12-0"></a></h4>
+<ul><li><p><strong>New argument</strong> <code>fit_stats_layout = c("first_col", "merged")</code> controlling the placement of fit-stat values (<code>n</code>, <code>R²</code>, <code>AIC</code>, …) within each model’s column group: </p></li>
+<li><p><strong>Engine support for <code>"merged"</code></strong>:  <code>gt</code> lacks a native row-spanning cell-merge API; <code>tinytable</code>’s <code>style_tt(colspan = N)</code> emits HTML <code>colspan</code> only on header rows, not body cells; <code>clipboard</code> ships TSV plaintext; <code>default</code> ships fixed-width ASCII. Those four outputs always render in <code>"first_col"</code> mode regardless of this setting.</p></li>
+<li><p><strong>Decimal alignment preserved in both modes</strong>: every numeric column decimal-aligns its values. Under <code>"first_col"</code>, the B column decimal-aligns coefficient values plus the integer / decimal fit-stat values that share it (native primitives handle mixed precision via decimal padding). Under <code>"merged"</code>, the B column contains coefficients only and trivially decimal- aligns; fit-stat values move into the merged cell.</p></li>
+</ul></div>
+<div class="section level4">
 <h4 id="table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0">
-<code>table_regression()</code> — CI columns split into LL / UL across all structured outputs<a class="anchor" aria-label="anchor" href="#table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0"></a></h4>
+<code>table_regression()</code> – CI columns split into LL / UL across all structured outputs<a class="anchor" aria-label="anchor" href="#table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0"></a></h4>
 <ul><li>
 <p><strong>Rich engines (gt, flextable, tinytable, excel, word) and clipboard</strong> now split the bracketed CI cell <code>[LL, UL]</code> into two separate numeric columns under a <code>(95% CI)</code> spanner row – same layout that <code>table_continuous</code> / <code>table_continuous_lm</code> already use. With clean numeric strings in every CI cell, the native decimal-alignment primitives of each engine work without any custom-font / NBSP / <code>white-space: pre</code> hack:</p>
 <ul><li>
