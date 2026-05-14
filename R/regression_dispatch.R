@@ -207,21 +207,38 @@ output_tinytable <- function(rendered) {
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    # Numeric body cells: centred, monospaced, no wrapping. The
-    # NBSP-padding from above + monospace gives decimal alignment
-    # in HTML; LaTeX renders the same monospaced output (the
-    # alignment then comes from the column's uniform character
-    # width inside the verbatim-like font rather than from siunitx).
-    tt <- tinytable::style_tt(
-      tt, j = 2:n_cols, align = "c",
-      monospace = TRUE,
-      html_css = "white-space: nowrap;"
-    )
+    tt <- tinytable::style_tt(tt, j = 2:n_cols, align = "c")
   }
-  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
+  # Column-label row (i = 0): Variable left-aligned to match the
+  # body's first column; the remaining headers stay centred.
+  tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
+  if (n_cols >= 2L) {
+    tt <- tinytable::style_tt(tt, i = 0L, j = 2:n_cols, align = "c")
+  }
   if (has_spanner) {
     tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
                                align = "c")
+  }
+
+  # Uniform typography + compact spacing. A single monospaced font
+  # across the whole table (title, headers, body, footer) keeps the
+  # font consistent and lets the NBSP-padded numeric cells align
+  # decimal points. `padding: 1px 4px;` tightens cell spacing so
+  # columns sit at table_continuous_lm density (tinytable's default
+  # cell padding is wider).
+  tt <- tinytable::style_tt(
+    tt, monospace = TRUE,
+    html_css = "white-space: nowrap; padding: 1px 4px;"
+  )
+  tt <- tinytable::style_tt(
+    tt, i = 0L, monospace = TRUE,
+    html_css = "white-space: nowrap; padding: 1px 4px;"
+  )
+  if (has_spanner) {
+    tt <- tinytable::style_tt(
+      tt, i = -1L, monospace = TRUE,
+      html_css = "white-space: nowrap; padding: 1px 4px;"
+    )
   }
 
   # APA borders applied last, in the same order as
