@@ -402,6 +402,81 @@ test_that(".split_ci_columns: multi-model widens model spanners + emits one ci_s
   expect_length(s$ci_spanners, 2L)
 })
 
+test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  r <- table_regression(list(m1, m2), show_columns = c("b", "ci", "p"))
+  split <- spicy:::.split_ci_columns(
+    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
+  )
+  specs <- spicy:::.fit_stat_merge_ranges(
+    split$body, split$spanners, attr(r, "group_sep_rows")
+  )
+  # 3 fit-stat rows (n, R^2, Adj.R^2) x 2 models = 6 merge specs.
+  expect_length(specs, 6L)
+  expect_identical(unique(vapply(specs, `[[`, integer(1L), "row")),
+                    attr(r, "group_sep_rows"):nrow(as.data.frame(r)))
+})
+
+test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  r <- table_regression(m1, show_columns = c("b", "ci", "p"),
+                          show_fit_stats = character(0))
+  specs <- spicy:::.fit_stat_merge_ranges(
+    as.data.frame(r), attr(r, "spanners"), attr(r, "group_sep_rows")
+  )
+  expect_length(specs, 0L)
+})
+
+test_that("fit_stats_layout enum validates + propagates to attr", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, fit_stats_layout = "bogus"),
+    "should be one of"
+  )
+  r1 <- table_regression(fit)
+  expect_identical(attr(r1, "fit_stats_layout"), "first_col")
+  r2 <- table_regression(fit, fit_stats_layout = "merged")
+  expect_identical(attr(r2, "fit_stats_layout"), "merged")
+})
+
+test_that("Excel fit_stats_layout = 'merged' inserts merged cells", {
+  skip_if_not_installed("openxlsx2")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  p_first <- tempfile(fileext = ".xlsx")
+  p_merge <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(c(p_first, p_merge)), add = TRUE)
+  table_regression(list(m1, m2), output = "excel", excel_path = p_first,
+                   show_columns = c("b", "ci", "p"))
+  table_regression(list(m1, m2), output = "excel", excel_path = p_merge,
+                   show_columns = c("b", "ci", "p"),
+                   fit_stats_layout = "merged")
+  # The merged-mode workbook embeds extra mergeCells XML entries
+  # for each fit-stat row x model pair, so its file size is
+  # strictly greater than the first_col baseline.
+  expect_gt(file.info(p_merge)$size, file.info(p_first)$size)
+})
+
+test_that("flextable fit_stats_layout = 'merged' emits colspan in fit-stat rows", {
+  skip_if_not_installed("flextable")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
+  ft <- table_regression(list(m1, m2), output = "flextable",
+                          show_columns = c("b", "ci", "p"),
+                          fit_stats_layout = "merged")
+  # Save and inspect HTML for body-cell colspan attributes.
+  tmp <- tempfile(fileext = ".html")
+  on.exit(unlink(tmp), add = TRUE)
+  flextable::save_as_html(ft, path = tmp)
+  html <- paste(readLines(tmp, warn = FALSE), collapse = "\n")
+  body_colspans <- regmatches(html,
+                                gregexpr('<td[^>]*colspan="[2-9]', html))[[1]]
+  # 3 fit-stat rows x 2 models = 6 merged body cells.
+  expect_gte(length(body_colspans), 6L)
+})
+
+
 test_that(".split_ci_columns is a no-op when no CI column is present", {
   m <- lm(mpg ~ wt, data = mt)
   r <- table_regression(m, show_columns = c("b", "se", "p"))

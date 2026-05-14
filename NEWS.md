@@ -302,7 +302,46 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
-### `table_regression()` — CI columns split into LL / UL across all structured outputs
+### `table_regression()` — `fit_stats_layout` argument for cell-merged fit-stat rows
+
+* **New argument** `fit_stats_layout = c("first_col", "merged")`
+  controlling the placement of fit-stat values (`n`, `R²`, `AIC`,
+  ...) within each model's column group:
+  \itemize{
+    \item `"first_col"` (default): the value sits in the first
+      numeric sub-column of each model; the model's other sub-
+      columns are left empty for that row. APA Table 7.13
+      convention, also used by `gtsummary`, `modelsummary`,
+      `sjPlot::tab_model`, `jtools`, `parameters`.
+    \item `"merged"`: the model's numeric sub-columns are merged
+      into a single wide cell containing the fit-stat value,
+      centred under the model spanner. Stata `esttab` /
+      Econometrica / AER convention. Resolves the visual mismatch
+      between an integer `n` row and two-decimal coefficient
+      values sharing the B column under `"first_col"`.
+  }
+
+* **Engine support for `"merged"`**:
+  \itemize{
+    \item `excel`: merges via `openxlsx2::wb_merge_cells`.
+    \item `flextable`: merges via `flextable::merge_at`.
+    \item `word`: merges (via flextable).
+  }
+  `gt` lacks a native row-spanning cell-merge API; `tinytable`'s
+  `style_tt(colspan = N)` emits HTML `colspan` only on header
+  rows, not body cells; `clipboard` ships TSV plaintext; `default`
+  ships fixed-width ASCII. Those four outputs always render in
+  `"first_col"` mode regardless of this setting.
+
+* **Decimal alignment preserved in both modes**: every numeric
+  column decimal-aligns its values. Under `"first_col"`, the B
+  column decimal-aligns coefficient values plus the integer /
+  decimal fit-stat values that share it (native primitives
+  handle mixed precision via decimal padding). Under `"merged"`,
+  the B column contains coefficients only and trivially decimal-
+  aligns; fit-stat values move into the merged cell.
+
+### `table_regression()` -- CI columns split into LL / UL across all structured outputs
 
 * **Rich engines (gt, flextable, tinytable, excel, word) and
   clipboard** now split the bracketed CI cell `[LL, UL]` into two

@@ -23,6 +23,7 @@ table_regression(
   reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
+  fit_stats_layout = c("first_col", "merged"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -214,6 +215,41 @@ class-appropriate change-stat tokens (e.g. \code{"r2_change"},
 \code{"f_change"} for \code{lm}). See \emph{Vocabulary tokens}
 (\code{show_fit_stats} subsection) and \emph{Hierarchical (nested)
 model comparison} in the details for the full vocabulary.}
+
+\item{fit_stats_layout}{Layout of the fit-stat values (\code{n}, \verb{R²},
+\code{AIC}, ...) within each model's column group. Two options:
+\itemize{
+\item \code{"first_col"} (default): the value is placed in the
+FIRST numeric sub-column of each model (typically \code{B});
+the model's remaining sub-columns (\code{SE}, \code{LL}, \code{UL}, \code{p},
+...) are left empty for that row. APA convention (Table
+7.13) and the layout used by \code{gtsummary}, \code{modelsummary},
+\code{sjPlot::tab_model}, \code{jtools}, \code{parameters}.
+\item \code{"merged"}: the model's numeric sub-columns are
+merged into a single wide cell containing the fit-stat
+value, centred under the model spanner. Stata \code{esttab} /
+Econometrica / AER convention. Resolves the mixed-
+precision look of \code{"first_col"} (an integer \code{n} row
+sharing the B column with two-decimal coefficients).
+}
+Cell merging is supported by \code{excel}, \code{flextable}, and
+\code{word} (via flextable). \code{gt}, \code{tinytable}, \code{clipboard}, and
+\code{default} (console) always render in \code{"first_col"} mode
+regardless of this setting:
+\itemize{
+\item \code{gt} lacks a native row-spanning cell-merge API
+(\code{tab_spanner} covers columns, not row-cell ranges).
+\item \code{tinytable}'s \code{style_tt(colspan = N)} emits HTML
+\code{colspan} only on header rows, not on body cells.
+\item \code{clipboard} ships TSV plaintext.
+\item \code{default} ships fixed-width ASCII.
+}
+Decimal alignment of every numeric column is preserved in
+both modes: the \code{B} column decimal-aligns its coefficient
+values plus any fit-stat value(s) in \code{"first_col"} mode
+(native primitives handle the mixed-precision case), and
+trivially decimal-aligns in \code{"merged"} mode (the fit-stat
+values move out of the B column into the merged cell).}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /

@@ -459,6 +459,40 @@
 #'   `"f_change"` for `lm`). See *Vocabulary tokens*
 #'   (`show_fit_stats` subsection) and *Hierarchical (nested)
 #'   model comparison* in the details for the full vocabulary.
+#' @param fit_stats_layout Layout of the fit-stat values (`n`, `R²`,
+#'   `AIC`, ...) within each model's column group. Two options:
+#'   \itemize{
+#'     \item `"first_col"` (default): the value is placed in the
+#'       FIRST numeric sub-column of each model (typically `B`);
+#'       the model's remaining sub-columns (`SE`, `LL`, `UL`, `p`,
+#'       ...) are left empty for that row. APA convention (Table
+#'       7.13) and the layout used by `gtsummary`, `modelsummary`,
+#'       `sjPlot::tab_model`, `jtools`, `parameters`.
+#'     \item `"merged"`: the model's numeric sub-columns are
+#'       merged into a single wide cell containing the fit-stat
+#'       value, centred under the model spanner. Stata `esttab` /
+#'       Econometrica / AER convention. Resolves the mixed-
+#'       precision look of `"first_col"` (an integer `n` row
+#'       sharing the B column with two-decimal coefficients).
+#'   }
+#'   Cell merging is supported by `excel`, `flextable`, and
+#'   `word` (via flextable). `gt`, `tinytable`, `clipboard`, and
+#'   `default` (console) always render in `"first_col"` mode
+#'   regardless of this setting:
+#'   \itemize{
+#'     \item `gt` lacks a native row-spanning cell-merge API
+#'       (`tab_spanner` covers columns, not row-cell ranges).
+#'     \item `tinytable`'s `style_tt(colspan = N)` emits HTML
+#'       `colspan` only on header rows, not on body cells.
+#'     \item `clipboard` ships TSV plaintext.
+#'     \item `default` ships fixed-width ASCII.
+#'   }
+#'   Decimal alignment of every numeric column is preserved in
+#'   both modes: the `B` column decimal-aligns its coefficient
+#'   values plus any fit-stat value(s) in `"first_col"` mode
+#'   (native primitives handle the mixed-precision case), and
+#'   trivially decimal-aligns in `"merged"` mode (the fit-stat
+#'   values move out of the B column into the merged cell).
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
@@ -707,6 +741,7 @@ table_regression <- function(
   reference_style = c("row", "annotation", "footer", "none"),
   reference_label = "(ref.)",
   show_fit_stats = NULL,
+  fit_stats_layout = c("first_col", "merged"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -765,6 +800,7 @@ table_regression <- function(
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
   factor_layout <- match.arg(factor_layout)
+  fit_stats_layout <- match.arg(fit_stats_layout)
   align <- match.arg(align)
   output <- match.arg(output)
 
@@ -1243,6 +1279,7 @@ table_regression <- function(
   # `as.data.frame()` / broom continues to see the raw rendered
   # cells unchanged).
   attr(rendered, "padding") <- as.integer(padding)
+  attr(rendered, "fit_stats_layout") <- fit_stats_layout
 
   # ---- Output dispatch (Step 11) -----------------------------------------
   dispatch_regression_output(

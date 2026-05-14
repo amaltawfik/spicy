@@ -196,6 +196,50 @@ output_long <- function(aligned) {
   list(ll = ll, ul = ul)
 }
 
+# Compute the cell ranges to merge for each fit-stat row when
+# `fit_stats_layout = "merged"`. For each fit-stat row (i.e., body
+# rows from `group_sep` to `nrow(body)`), each model's range of
+# numeric sub-columns is merged into a single wide cell containing
+# the fit-stat value. The value is written into the first sub-
+# column of the model (the rendered body's layout); the merge
+# extends that cell visually across the model's remaining sub-
+# columns.
+#
+# Returns:
+#   list of merge specs. Each spec is list(row, cols) where:
+#     - row is the body row index (1-based) of the fit-stat row;
+#     - cols is the integer vector of body column indices (with
+#       Variable at 1) covered by the model's sub-columns.
+#   For single-model output (no `spanners`), every fit-stat row is
+#   merged across all data columns. For multi-model output, each
+#   fit-stat row produces ONE merge spec per model.
+.fit_stat_merge_ranges <- function(body, spanners, group_sep) {
+  n_rows <- nrow(body)
+  n_cols <- ncol(body)
+  if (length(group_sep) == 0L || group_sep[1L] < 2L ||
+        group_sep[1L] > n_rows || n_cols < 2L) {
+    return(list())
+  }
+  fit_rows <- seq.int(group_sep[1L], n_rows)
+  # Each model's column range. Without spanners, the single "model"
+  # covers cols 2..n_cols.
+  model_ranges <- if (is.null(spanners) || length(spanners) == 0L) {
+    list(2:n_cols)
+  } else {
+    unname(spanners)
+  }
+  specs <- list()
+  for (row in fit_rows) {
+    for (cols in model_ranges) {
+      if (length(cols) >= 2L) {
+        specs[[length(specs) + 1L]] <- list(row = row, cols = cols)
+      }
+    }
+  }
+  specs
+}
+
+
 # Split every CI-bundle column ("[lo, hi]") in the rendered body into
 # two separate numeric columns (LL, UL) and record a (95% CI) -- or
 # AME 95% CI / f^2 95% CI / etc. -- spanner above each pair. Used by
@@ -466,6 +510,12 @@ output_tinytable <- function(rendered) {
       indent = 1, html_css = "padding-left: 1.4em;"
     )
   }
+
+  # `fit_stats_layout = "merged"` is NOT honoured for tinytable:
+  # tinytable's `style_tt(colspan = N)` emits HTML `colspan` only
+  # on header rows (spanner row added via `group_tt`), not on body
+  # cells. The body fit-stat row therefore renders as `first_col`
+  # regardless of this argument. Documented in @param.
   tt
 }
 
@@ -772,6 +822,21 @@ output_flextable <- function(rendered) {
     ft <- flextable::padding(ft, i = level_rows, j = 1L,
                               part = "body", padding.left = 20)
   }
+
+  # fit_stats_layout = "merged": merge each model's numeric sub-
+  # columns into one wide centred cell per fit-stat row (Stata
+  # esttab / Econometrica convention).
+  fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
+  if (identical(fit_stats_layout, "merged")) {
+    specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
+    for (sp in specs) {
+      ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols,
+                                  part = "body")
+      ft <- flextable::align(ft, i = sp$row, j = sp$cols,
+                              part = "body", align = "center")
+    }
+  }
+
   # Content-driven autofit. plain `autofit()` sizes columns to
   # content; `layout = "autofit"` tells Word to honour the widths.
   ft <- flextable::autofit(ft)
@@ -1029,6 +1094,29 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           horizontal = "right"
         )
       }
+    }
+  }
+
+  # fit_stats_layout = "merged": for each fit-stat row, merge the
+  # numeric sub-columns of every model into a single wide cell
+  # containing the fit-stat value. The value lives in the first
+  # sub-column (rendered body layout); the merge extends it across
+  # the remaining sub-columns of the model. The merged cell is
+  # centred so the value sits visually under the model spanner.
+  fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
+  if (identical(fit_stats_layout, "merged")) {
+    specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
+    for (sp in specs) {
+      excel_row <- body_first_row + sp$row - 1L
+      wb <- openxlsx2::wb_merge_cells(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols)
+      )
+      wb <- openxlsx2::wb_add_cell_style(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols),
+        horizontal = "center"
+      )
     }
   }
 
