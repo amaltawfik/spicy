@@ -302,6 +302,40 @@
   `Suggests` (oracle packages for AME and pseudo-R² cross-
   validation); no runtime dependency change.
 
+### Console-print em-dash alignment
+
+* `decimal_align_strings()` now positions non-numeric placeholder
+  glyphs (em-dash, "NA", "N/A", ...) **at the decimal-mark column
+  position** of the column. Previously the em-dash sat at the
+  integer-part position, leaving a visual gap with the decimal
+  points of the other rows. The new placement is the APA Manual 7
+  Section 7.13 convention ("a dash in the cell position where a
+  number would otherwise appear"), also used by Stata `esttab`,
+  `modelsummary`, and the Hochuli typography guidelines.
+  Reference rows now look like:
+
+  ```text
+   33.99  [30.12, 37.86]  <.001
+   -3.21  [-4.75, -1.66]  <.001
+      -          -          -      <- em-dashes anchored to the
+   -4.26  [-7.09, -1.42]   .005       decimal mark of each column
+   -6.07  [-9.46, -2.69]  <.001
+  ```
+
+* Integer cells in a column that contains decimals elsewhere
+  (e.g., `n` row alongside `R^2`, `Adj.R^2`) keep their previous
+  right-aligned placement against the integer-part column -- the
+  new logic distinguishes integer-like values (`grepl("^-?[0-9]+$",
+  v)`) from non-numeric placeholders.
+
+* New `safe_glyph_width()` helper around `nchar(x, type = "width")`
+  falls back to byte length when the locale cannot resolve display
+  width (raw POSIX, Windows non-UTF-8). Prevents `strrep()` from
+  receiving a non-finite repeat count and producing a corrupted
+  table.
+
+* `print()` snapshots updated to reflect the new em-dash positions.
+
 ### Quality and portability
 
 * **R CMD check WARNING cleared across every `R/*.R` file.** Every
