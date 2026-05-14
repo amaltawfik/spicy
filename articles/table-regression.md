@@ -977,21 +977,7 @@ pkgdown_dark_gt(
 )
 ```
 
-| Linear regression: wellbeing_score |  |  |  |  |
-|----|----|----|----|----|
-| Variable | B | SE | 95% CI | p |
-| (Intercept) | 65.20 | 1.66 | \[61.95, 68.45\] | \<.001 |
-| age | 0.05 | 0.03 | \[-0.01, 0.11\] | .130 |
-| sex: |  |  |  |  |
-| Female (ref.) | — | — | — | — |
-| Male | 3.86 | 0.91 | \[ 2.08, 5.63\] | \<.001 |
-| smoking: |  |  |  |  |
-| No (ref.) | — | — | — | — |
-| Yes | -1.72 | 1.11 | \[-3.89, 0.45\] | .121 |
-| n | 1175 |  |  |  |
-| R² | 0.02 |  |  |  |
-| Adj.R² | 0.02 |  |  |  |
-| Note. Linear regression. Std. errors: classical (OLS). |  |  |  |  |
+[TABLE]
 
 ## broom integration
 

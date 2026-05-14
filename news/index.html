@@ -181,8 +181,27 @@
 <li><p><code>marginaleffects</code>, <code>parameters</code>, and <code>performance</code> added to <code>Suggests</code> (oracle packages for AME and pseudo-R² cross- validation); no runtime dependency change.</p></li>
 </ul></div>
 <div class="section level4">
+<h4 id="table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0">
+<code>table_regression()</code> — CI columns split into LL / UL across all structured outputs<a class="anchor" aria-label="anchor" href="#table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0"></a></h4>
+<ul><li>
+<p><strong>Rich engines (gt, flextable, tinytable, excel, word) and clipboard</strong> now split the bracketed CI cell <code>[LL, UL]</code> into two separate numeric columns under a <code>(95% CI)</code> spanner row – same layout that <code>table_continuous</code> / <code>table_continuous_lm</code> already use. With clean numeric strings in every CI cell, the native decimal-alignment primitives of each engine work without any custom-font / NBSP / <code>white-space: pre</code> hack:</p>
+<ul><li>
+<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> aligns every numeric column natively; default proportional font (no Fira Mono override).</li>
+<li>
+<code>tinytable::style_tt(align = "d")</code> aligns natively via <code>siunitx</code> (LaTeX) and padded text (HTML); default font (no monospace override, no NBSP pre-padding).</li>
+<li>
+<code>flextable</code> right-aligns the numeric cells against Calibri’s tabular figures (no Consolas override).</li>
+<li>
+<code>excel</code> right-aligns numerics in Calibri’s tabular figures (no Consolas override).</li>
+<li>
+<code>clipboard</code> writes the two-level header (model spanner row, <code>(95% CI)</code> spanner row, column labels) and each bound is its own numeric cell – usable directly after paste, no parsing required.</li>
+</ul></li>
+<li><p><strong>Console (<code>output = "default"</code>)</strong> and <strong><code>output = "data.frame"</code> / <code>"long"</code></strong> are unchanged: the <code>[LL, UL]</code> bracketed cell stays as the terminal-friendly representation and the long format already exposes <code>ci_low</code> / <code>ci_high</code> separately.</p></li>
+<li><p>New shared helpers <code>.split_ci_columns()</code> and <code>.parse_ci_bracketed()</code> factor the split logic out of the five dispatchers. The bracketed-CI parser handles plain <code>,</code> separation, <code>;</code> separation (European decimal mark), em-dashes on reference rows, and empty / whitespace-only cells.</p></li>
+</ul></div>
+<div class="section level4">
 <h4 id="table_regression--excel-font-scoped--html-decimal-alignment-fixed-0-12-0">
-<code>table_regression()</code> — Excel font scoped + HTML decimal alignment fixed<a class="anchor" aria-label="anchor" href="#table_regression--excel-font-scoped--html-decimal-alignment-fixed-0-12-0"></a></h4>
+<code>table_regression()</code> – Excel font scoped + HTML decimal alignment fixed<a class="anchor" aria-label="anchor" href="#table_regression--excel-font-scoped--html-decimal-alignment-fixed-0-12-0"></a></h4>
 <ul><li><p><strong>Excel</strong>: the previous revision applied Consolas across every cell (title, header, body, notes); the present revision scopes Consolas to the <strong>numeric body cells only</strong>. Title, the Variable column, headers, and footer notes now render in Excel’s default Calibri. The pre-padded numeric cells still align decimal points thanks to the monospaced font, so swapping to Calibri for the surrounding cells does not break the decimal alignment.</p></li>
 <li><p><strong>gt</strong> and <strong>tinytable</strong>: <code>cols_align_decimal()</code> / <code>style_tt(align = "d")</code> were left-aligning every cell whose content was not a clean numeric string (em-dashes for reference rows, <code>&lt;.001</code> p-values, empty fit-stat cells in the second model). The dispatchers now keep the render layer’s pre-padding and apply a monospaced font + <code>white-space: pre</code> to numeric body cells via <code>tab_style</code> / <code>style_tt(monospace = TRUE, html_css = "white-space: pre;")</code>. HTML otherwise collapses the leading-space padding (default <code>white-space: normal</code>); preserving it together with a monospaced font is what produces the aligned decimal points across rows.</p></li>
 <li><p><strong>Non-ASCII regression</strong>: <code>R/regression_dispatch.R</code> contained em-dash and <code>─</code> characters (Unicode horizontal box drawing) in comments that triggered the R CMD check <code>code files for non-ASCII characters</code> WARNING under a CI <code>error-on = "warning"</code> configuration. All such characters have been replaced with ASCII equivalents (<code>--</code>, <code>-</code>, <code>x</code>).</p></li>
