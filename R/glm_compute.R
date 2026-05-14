@@ -3,7 +3,7 @@
 #   * Family / link helpers (title prefix, exponentiate header)
 #   * Per-coef inference: z-asymptotic Wald, with CR* Satterthwaite
 #     branch via clubSandwich
-#   * Pseudo-R² family: McFadden, Nagelkerke, Tjur
+#   * Pseudo-R^2 family: McFadden, Nagelkerke, Tjur
 #   * Term-level partial chi-square via drop1(test = "LRT")
 #   * apply_exponentiate_to_coefs(): exp() transform on coefs +
 #     CIs + delta-method SE
@@ -78,7 +78,7 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 
 # ---- Per-coefficient inference (z-asymptotic) ----------------------------
 
-# glm coef inference — mirrors compute_lm_coef_inference() in
+# glm coef inference -- mirrors compute_lm_coef_inference() in
 # lm_compute.R but with z-asymptotic CIs and df = Inf, matching
 # `summary.glm()` and the conventional output of Stata `logit`,
 # SPSS `LOGISTIC REGRESSION`, and SAS `PROC LOGISTIC`.
@@ -101,7 +101,7 @@ compute_glm_coef_inference <- function(
   # via coef_test. For glm the coef_test family computes asymptotic
   # z-style inference but with Satterthwaite-corrected df, which is
   # more conservative under few clusters than naive z (Pustejovsky
-  # & Tipton 2018, §4).
+  # & Tipton 2018, Section 4).
   if (startsWith(vcov_type, "CR") && !is.null(cluster)) {
     ct <- tryCatch(
       clubSandwich::coef_test(
@@ -159,10 +159,10 @@ compute_glm_coef_inference <- function(
 }
 
 
-# ---- Pseudo-R² family ----------------------------------------------------
+# ---- Pseudo-R^2 family ----------------------------------------------------
 
-# Pseudo-R² for glm. Three variants (the most reported in the
-# applied literature) implemented from scratch — no new package
+# Pseudo-R^2 for glm. Three variants (the most reported in the
+# applied literature) implemented from scratch -- no new package
 # dependency, full control over formulas + edge cases.
 #
 #   * McFadden (1974)   : 1 - LL_full / LL_null
@@ -231,12 +231,12 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
 # contains function calls because update reuses the LHS expression
 # and tries to re-evaluate the bare symbols against the model frame
 # (whose columns are named after the wrapped expression, not the
-# inner symbol). It also drops the offset by default — and an
+# inner symbol). It also drops the offset by default -- and an
 # intercept-only fit without the offset over-attributes outcome
-# variation to the intercept, producing pseudo-R² < 0 when the
-# full model includes a real-rate offset (Long & Freese 2014 §3.6
+# variation to the intercept, producing pseudo-R^2 < 0 when the
+# full model includes a real-rate offset (Long & Freese 2014 Section 3.6
 # explicitly: the null model must carry the same offset as the full
-# model, otherwise pseudo-R² is not a valid 0–1 statistic).
+# model, otherwise pseudo-R^2 is not a valid 0-1 statistic).
 #
 # Workaround: extract the *evaluated* response, weights, and
 # offset from the model frame and refit on a fresh data.frame.
@@ -289,9 +289,9 @@ compute_pseudo_r2_tjur <- function(fit) {
 #
 # Reference rows (em-dash) and singular coefs (NA) pass through
 # untouched. The "(Intercept)" row IS exponentiated because exp()
-# of the intercept is the baseline odds / rate / ... — meaningful
+# of the intercept is the baseline odds / rate / ... -- meaningful
 # in its own right (Stata reports it; SPSS reports it; APA Manual 7
-# §6.46 example).
+# Section 6.46 example).
 apply_exponentiate_to_coefs <- function(coefs) {
   if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
   is_b_or_beta <- coefs$estimate_type %in% c("B", "beta")
@@ -309,33 +309,33 @@ apply_exponentiate_to_coefs <- function(coefs) {
   coefs$estimate[rows] <- exp_est
   coefs$ci_low[rows]   <- exp(coefs$ci_low[rows])
   coefs$ci_high[rows]  <- exp(coefs$ci_high[rows])
-  # Delta-method: Var(g(X)) ≈ (g'(X))² × Var(X) ; for g = exp,
-  # g'(X) = exp(X), so SE_exp = exp(B) × SE_logit.
+  # Delta-method: Var(g(X)) ~ (g'(X))^2 x Var(X) ; for g = exp,
+  # g'(X) = exp(X), so SE_exp = exp(B) x SE_logit.
   coefs$se[rows]       <- exp_est * se_orig
-  # Statistic (z) and p_value: invariant under exp() — the test of
-  # H0: B = 0 ↔ H0: exp(B) = 1 has the same z and p. Leave as-is.
+  # Statistic (z) and p_value: invariant under exp() -- the test of
+  # H0: B = 0 <-> H0: exp(B) = 1 has the same z and p. Leave as-is.
   coefs
 }
 
 
 # ---- Partial likelihood-ratio chi-square ---------------------------------
 
-# Term-level partial χ² via drop1(test = "LRT") — the glm analog
+# Term-level partial chi^2 via drop1(test = "LRT") -- the glm analog
 # of the partial F-test in lm. For each model term, refit without that
 # term and compare via likelihood ratio:
 #
-#   LR = 2 * (LL_full - LL_reduced)  ~  χ²(df = #params dropped)
+#   LR = 2 * (LL_full - LL_reduced)  ~  chi^2(df = #params dropped)
 #
 # Convention follows SAS PROC LOGISTIC `TYPE3`, Stata `test, accumulate`,
-# Allison "TYPE3", Long & Freese 2014 §3.5. For factor terms with k
-# levels, the test is joint over all k−1 dummies and df = k−1
+# Allison "TYPE3", Long & Freese 2014 Section 3.5. For factor terms with k
+# levels, the test is joint over all k-1 dummies and df = k-1
 # (matching how `car::Anova(type = 3)` reports it for glm).
 #
 # Returns NULL on any failure (drop1 error, non-finite chi-square, etc.)
 # so the caller can skip the term and the renderer em-dashes the cells.
 # Quasi families (quasibinomial / quasipoisson / quasi) have no proper
-# log-likelihood, so the LRT is undefined; we return NULL — consistent
-# with how the pseudo-R² family handles them.
+# log-likelihood, so the LRT is undefined; we return NULL -- consistent
+# with how the pseudo-R^2 family handles them.
 compute_partial_chi2_for_term <- function(fit, term_label) {
   if (!inherits(fit, "glm")) return(NULL)
   if (grepl("^quasi", stats::family(fit)$family)) return(NULL)

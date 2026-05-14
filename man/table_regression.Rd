@@ -80,10 +80,10 @@ For multi-model use, pass a list of one form per model
 AME, partial effect sizes). Default \code{0.95}.}
 
 \item{ci_method}{CI construction. \code{"wald"} (default) uses
-\verb{estimate ± z × SE} (\verb{t × SE} for \code{lm}). \code{"profile"}
+\verb{estimate +/- z x SE} (\verb{t x SE} for \code{lm}). \code{"profile"}
 (\emph{glm only}) uses the profile-likelihood CI from
 \code{\link[MASS:confint.glm]{MASS::confint.glm()}} -- asymmetric, exact for
-likelihood-based inference (Venables & Ripley \emph{MASS} §7.2).
+likelihood-based inference (Venables & Ripley \emph{MASS} Section 7.2).
 Only the CI bounds change; estimate, SE, statistic and
 p-value remain Wald. \code{"profile"} with \code{lm} raises
 \code{spicy_invalid_input}.}
@@ -102,7 +102,7 @@ section.}
 \item{exponentiate}{Logical. When \code{TRUE} and the model is a
 \code{glm} with a non-identity link, \code{B}, the CI bounds, and the
 SE are transformed via \code{exp()} (delta method:
-\verb{SE_OR = OR × SE_log-odds}). The column header is rebranded
+\verb{SE_OR = OR x SE_log-odds}). The column header is rebranded
 per family / link: \code{OR} (binomial logit), \code{IRR} (poisson
 log), \code{HR} (binomial cloglog), \code{RR} (binomial log), \code{MR}
 (Gamma log), else \code{exp(B)}. The statistic and p-value stay
@@ -216,7 +216,7 @@ class-appropriate change-stat tokens (e.g. \code{"r2_change"},
 (\code{show_fit_stats} subsection) and \emph{Hierarchical (nested)
 model comparison} in the details for the full vocabulary.}
 
-\item{fit_stats_layout}{Layout of the fit-stat values (\code{n}, \verb{R²},
+\item{fit_stats_layout}{Layout of the fit-stat values (\code{n}, \code{R^2},
 \code{AIC}, ...) within each model's column group. Two options:
 \itemize{
 \item \code{"first_col"} (default): the value is placed in the
@@ -267,10 +267,10 @@ explicit Outcome row with those values (the spanner stays as
 \code{FALSE} also suppresses the row.}
 
 \item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
-§6.46) -- no stars. \code{TRUE} -- APA cutoffs
+Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
 \code{c("*" = 0.05, "**" = 0.01, "***" = 0.001)}. A named numeric
 vector specifies custom thresholds, e.g.
-\code{c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.}
+\code{c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.}
 
 \item{nested}{Whether to inject pairwise change-statistic rows
 for adjacent models (M2 vs M1, M3 vs M2, ...). \code{FALSE}
@@ -306,7 +306,7 @@ effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},
 automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.}
 
 \item{align}{Numeric column alignment.
-\code{"decimal"} (default) — pre-pad cells so decimal marks line
+\code{"decimal"} (default) -- pre-pad cells so decimal marks line
 up vertically (publication-style). For CI cells (\verb{[LL, UL]})
 the left bracket, the LL decimal point, the comma separator,
 the UL decimal point, and the right bracket are independently
@@ -419,7 +419,7 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 \verb{_ci} companion (\code{"partial_f2_ci"}, ...).
 \item Partial effect size -- \code{glm} only: \code{"partial_chi2"}
 (likelihood-ratio chi-square via \code{drop1(test = "LRT")};
-SAS PROC LOGISTIC \code{TYPE3}; Long & Freese 2014 §3.5).
+SAS PROC LOGISTIC \code{TYPE3}; Long & Freese 2014 Section 3.5).
 Rendered as \code{value (df)} to disambiguate factor terms
 (k-1 df) from numeric terms (1 df).
 }
@@ -447,7 +447,7 @@ order of the displayed columns. If \code{standardized != "none"} and
 \code{spicy_invalid_input}.
 
 \strong{Default} (\code{show_columns = NULL}) is context-aware:
-\code{"all_b"} for a single model (APA-7 §6.46 publication layout),
+\code{"all_b"} for a single model (APA-7 Section 6.46 publication layout),
 \code{"all_b_compact"} for two or more models (CI dropped to fit the
 side-by-side layout; restore it explicitly when needed).
 }
@@ -588,7 +588,7 @@ Default change tokens auto-injected when \code{show_fit_stats} is
 \item All-lm: \code{c("r2_change", "f_change", "p_change")} --
 APA hierarchical regression standard.
 \item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
-Lemeshow §3.5; Long & Freese 2014 §3.6.
+Lemeshow Section 3.5; Long & Freese 2014 Section 3.6.
 }
 To customise, pass the change tokens directly to
 \code{show_fit_stats}. Variance-explained change tokens on an
@@ -604,7 +604,7 @@ least-squares framework -- the renderer points the user at
 \itemize{
 \item \code{"refit"} -- refit on z-scored data. For \code{lm} both X
 and Y are z-scored (Cohen et al. 2003 gold standard); for
-\code{glm} only numeric X (Long & Freese 2014 §4.3.4
+\code{glm} only numeric X (Long & Freese 2014 Section 4.3.4
 "x-standardization").
 \item \code{"posthoc"} -- post-hoc scaling. lm:
 \eqn{\beta = B \times SD(X) / SD(Y)}{beta = B * SD(X) / SD(Y)};
@@ -627,7 +627,7 @@ non-binomial returns NA with a \code{spicy_caveat}.
 Under interactions or transformed predictors (\code{I()}, \code{poly()},
 \code{log()}, \code{splines::ns()}), a \code{spicy_caveat} warns that
 standardised coefficients on such terms are subtle to interpret
-(Cohen et al. 2003 §7.7; Aiken & West 1991). The caveat is
+(Cohen et al. 2003 Section 7.7; Aiken & West 1991). The caveat is
 auto-documented in the footer.
 }
 
@@ -637,7 +637,7 @@ regression model is \strong{not} the standard convention. Each
 coefficient tests a distinct hypothesis on a distinct
 predictor -- not the situation multiple-testing procedures
 were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-§6.46; Harrell \emph{Regression Modeling Strategies} §5.4; Gelman,
+Section 6.46; Harrell \emph{Regression Modeling Strategies} Section 5.4; Gelman,
 Hill & Yajima 2012). Hence the default \code{p_adjust = "none"}.
 
 Adjustment is appropriate for: mass screening with no prior
@@ -774,7 +774,7 @@ table_regression(fit, output = "clipboard")
 }
 \references{
 APA Manual 7 (American Psychological Association, 2020),
-Tables 7.13–7.15.
+Tables 7.13-7.15.
 
 Aiken, L.S. & West, S.G. (1991). \emph{Multiple regression: Testing
 and interpreting interactions}.
@@ -786,11 +786,11 @@ behavioral sciences} (3rd ed.). Lawrence Erlbaum.
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. \emph{Journal of Business & Economic
-Statistics}, 36(4), 672–683.
+Statistics}, 36(4), 672-683.
 
 Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
 to a world beyond "p < 0.05". \emph{The American Statistician},
-73(sup1), 1–19.
+73(sup1), 1-19.
 }
 \seealso{
 Other regression-table functions:

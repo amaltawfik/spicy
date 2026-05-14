@@ -1,8 +1,8 @@
-# Multi-model alignment + wide pivot for table_regression() — Layer 2.
+# Multi-model alignment + wide pivot for table_regression() -- Layer 2.
 #
 # Per dev/table_regression_design.md Layer 2:
 #   "bind_rows() of the long tables, with `model_id`. Terms appearing
-#    in only one model → NA cells in the others. Trivial with the
+#    in only one model -> NA cells in the others. Trivial with the
 #    long format."
 #
 # Two stages:
@@ -18,7 +18,7 @@
 #   pivot_aligned_wide(aligned, value_fields, model_labels)
 #     Pivot to one row per (term, estimate_type) with per-model
 #     value columns named `<model_label>__<field>`. The double
-#     underscore is intentional — unambiguous to split on for the
+#     underscore is intentional -- unambiguous to split on for the
 #     rendering layer.
 
 
@@ -47,7 +47,7 @@ align_extracts <- function(
 
   # Capture the reference level for each factor BEFORE the annotation
   # branch potentially drops the ref rows. The map is keyed by the
-  # factor variable name (e.g., "cyl" → "4"). Used by the renderer
+  # factor variable name (e.g., "cyl" -> "4"). Used by the renderer
   # to annotate the factor header when reference_style = "annotation".
   ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
   factor_ref_levels <- if (nrow(ref_rows_all) == 0L) {
@@ -106,7 +106,7 @@ align_extracts <- function(
   # Per-model exponentiate headers ("OR" / "IRR" / "HR" / ...) when
   # the user asked for `exponentiate = TRUE` AND the model is a
   # non-identity-link glm. NA for models where exp() was not
-  # applied — the renderer keeps the default "B" header for those.
+  # applied -- the renderer keeps the default "B" header for those.
   model_ids <- vapply(extracts, function(e) e$model_id, character(1))
   exp_headers_auto <- vapply(extracts, function(e) {
     if (isTRUE(e$exp_applied)) e$exp_header else NA_character_
@@ -121,7 +121,7 @@ align_extracts <- function(
     outcome_labels_auto = outcome_labels_auto,
     exp_headers_auto = exp_headers_auto,
     # Canonical model_id order (input order from `extracts`). The
-    # renderer must use this — `unique(coefs$model_id)` returns the
+    # renderer must use this -- `unique(coefs$model_id)` returns the
     # post-sort alphabetical order, which de-aligns labels and
     # exp-headers (B5 audit fix).
     model_ids = model_ids,
@@ -130,7 +130,7 @@ align_extracts <- function(
 }
 
 
-# Canonical term ordering — walk each model's term sequence and
+# Canonical term ordering -- walk each model's term sequence and
 # append unseen terms at the end. Preserves model 1's order as the
 # anchor; later models contribute their additions.
 compute_canonical_term_order <- function(extracts) {
@@ -146,7 +146,7 @@ compute_canonical_term_order <- function(extracts) {
 # Reorder a term sequence so that coefs sharing the same `factor_term`
 # stay contiguous (in factor-level order). Non-factor terms keep their
 # relative order. Reference rows of the group land first within their
-# group (factor_level == reference level → emitted by build_reference_rows
+# group (factor_level == reference level -> emitted by build_reference_rows
 # with is_reference = TRUE; the level string is the reference label).
 group_factor_terms <- function(term_order, coefs_long) {
   meta <- unique(coefs_long[, c("term", "factor_term", "factor_level",

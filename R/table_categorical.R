@@ -1,9 +1,9 @@
-# ── Internal helpers for per-row association measure ─────────────────────────
+# -- Internal helpers for per-row association measure -------------------------
 
 # Pretty label for an association measure. Always ASCII so the
 # resulting string is safe to use as a data.frame column name (the
 # `out[["Kendall's Tau-b"]]` contract works on every platform) and as
-# a `glance()` value. A locale-aware Unicode upgrade (`τ`, `γ`)
+# a `glance()` value. A locale-aware Unicode upgrade (`tau`, `gamma`)
 # could be added later as a display-only print option without
 # affecting these data-side names.
 .assoc_label <- function(measure) {
@@ -266,14 +266,14 @@
 #' @param assoc_measure Which association measure to report alongside the
 #'   chi-squared *p*-value. Accepts four input shapes:
 #'
-#'   * `"none"` — drop the column entirely.
-#'   * `"auto"` (the default) — pick a measure per row variable based
+#'   * `"none"` -- drop the column entirely.
+#'   * `"auto"` (the default) -- pick a measure per row variable based
 #'     on the variable type: a 2x2 table (binary row variable
 #'     vs. binary `by`) uses **`phi`**, a pair of ordered factors uses
 #'     **`tau_b`**, every other case uses **`cramer_v`**.
 #'   * a single string from
 #'     `c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")`
-#'     — applied uniformly to every row variable.
+#'     -- applied uniformly to every row variable.
 #'   * a character vector with one entry per row variable. Both
 #'     **named** (`c(smoking = "phi", health = "tau_b")`, recommended;
 #'     unnamed variables fall back to `"auto"`) and **unnamed**
@@ -1424,12 +1424,16 @@ table_categorical <- function(
       last_row <- nrow(body_xl) + 1
       pct_fmt <- paste0("0.", paste(rep("0", percent_digits), collapse = ""))
 
-      # Header borders (top + bottom on row 1)
+      # Header borders (top + bottom on row 1). IMPORTANT:
+      # openxlsx2::wb_add_border() defaults every side to "thin", so
+      # left/right must be explicitly NULL to avoid painting vertical
+      # rules on every header cell.
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
         top_border = "thin",
-        bottom_border = "thin"
+        bottom_border = "thin",
+        left_border = NULL, right_border = NULL
       )
       if (nrow(body_xl) > 0) {
         # Body alignment. The Variable column is always left-aligned;
@@ -1465,7 +1469,8 @@ table_categorical <- function(
         wb <- openxlsx2::wb_add_border(
           wb,
           dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
-          bottom_border = "thin"
+          bottom_border = "thin",
+          top_border = NULL, left_border = NULL, right_border = NULL
         )
       }
 
@@ -2519,7 +2524,7 @@ table_categorical <- function(
         dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 2:nc),
         horizontal = num_horiz
       )
-      # Text columns (p, assoc, CI) — force text format
+      # Text columns (p, assoc, CI) -- force text format
       text_cols <- if (show_assoc && assoc_ci) {
         (nc - 3):nc
       } else if (show_assoc) {
@@ -2534,27 +2539,34 @@ table_categorical <- function(
       )
     }
 
-    # APA borders
+    # APA borders. IMPORTANT: openxlsx2::wb_add_border() defaults
+    # every side to "thin"; explicit NULLs on the unused sides
+    # prevent vertical / spurious rules from being painted on
+    # every styled cell.
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
-      top_border = "thin"
+      top_border = "thin",
+      bottom_border = NULL, left_border = NULL, right_border = NULL
     )
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = grp_j),
-      bottom_border = "thin"
+      bottom_border = "thin",
+      top_border = NULL, left_border = NULL, right_border = NULL
     )
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
-      bottom_border = "thin"
+      bottom_border = "thin",
+      top_border = NULL, left_border = NULL, right_border = NULL
     )
     if (nrow(body_xl) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
-        bottom_border = "thin"
+        bottom_border = "thin",
+        top_border = NULL, left_border = NULL, right_border = NULL
       )
     }
 

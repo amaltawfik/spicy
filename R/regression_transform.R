@@ -16,7 +16,7 @@
 #
 # Adjustment is applied independently per estimate_type ("B", "beta",
 # "AME", "partial_*"), so the AME family is sized separately from
-# the B family — both are legitimately their own multiple-testing
+# the B family -- both are legitimately their own multiple-testing
 # families.
 #
 # Returns the input data.frame with the `p_value` column updated

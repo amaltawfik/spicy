@@ -86,12 +86,12 @@ When non-empty, each model is fitted as \code{lm(y ~ by + cov1 + cov2 + ...)}
 and the reported estimate / SE / p-value / CI on \code{by} are
 covariate-adjusted via the focal coefficient. For categorical \code{by},
 the displayed \code{emmean} is the covariate-adjusted estimated marginal
-mean — see \code{adjustment} for the choice of estimand
+mean -- see \code{adjustment} for the choice of estimand
 (G-computation by default vs. equal-weight averaging). The omnibus
 test of \code{by} is the Wald \emph{F} restricted to the focal coefficients
 (computed via \code{sandwich} / \code{clubSandwich} for HC* / CR* mode), so
 adding covariates does not contaminate the omnibus statistic with
-covariate contributions. Effect sizes adapt automatically — see
+covariate contributions. Effect sizes adapt automatically -- see
 \code{effect_size}.
 
 v1 supports additive covariates only. Formula syntax with
@@ -118,7 +118,7 @@ reference. Best when the goal is "what is the predicted
 mean in \emph{this} population if everyone had \code{by = lvl}".
 \item \code{"balanced"} (matches \code{\link[emmeans:emmeans]{emmeans::emmeans()}} default and the
 SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
-grid of factor-covariate level combinations × numeric
+grid of factor-covariate level combinations x numeric
 covariates fixed at their sample mean, with each grid cell
 weighted equally. Treats the design as if covariates were
 balanced -- the "marginal mean assuming a balanced design"
@@ -287,14 +287,14 @@ affected by \code{vcov}.
 \strong{Under covariate adjustment} (\code{covariates} non-empty):
 \itemize{
 \item \code{"f2"} and \code{"omega2"} become the \strong{partial} \emph{\eqn{f^2}{f^2}} / partial \emph{\eqn{\omega^2}{omega^2}},
-derived from the partial \emph{F} of \code{by} via \code{\link[stats:drop1]{stats::drop1()}} —
+derived from the partial \emph{F} of \code{by} via \code{\link[stats:drop1]{stats::drop1()}} --
 the correctly-defined effect size when the model is adjusted.
 For numeric \code{by}, partial \emph{\eqn{f^2}{f^2}} equals the squared partial
-correlation of \code{by} with the outcome, divided by \verb{(1 - r²_partial)}.
+correlation of \code{by} with the outcome, divided by \verb{(1 - r^2_partial)}.
 \item \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: Cohen's \emph{d}
 and Hedges' \emph{g} have no canonical extension to adjusted models
 (the pooled SD is undefined under adjustment). Use \code{"f2"} or
-\code{"omega2"} instead — both generalise via partial \emph{F}.
+\code{"omega2"} instead -- both generalise via partial \emph{F}.
 }}
 
 \item{effect_size_ci}{Logical. If \code{TRUE} and \code{effect_size != "none"}, adds
@@ -551,7 +551,7 @@ samples. For Hedges' \emph{g} the bounds inherit the \emph{J} small-sample
 correction.
 \item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
 Bounds are converted from the noncentrality parameter using
-\verb{omega² = ncp / (ncp + N)} and \verb{\eqn{f^2}{f^2} = ncp / N} respectively, with
+\code{omega^2 = ncp / (ncp + N)} and \verb{\eqn{f^2}{f^2} = ncp / N} respectively, with
 \code{N = df1 + df2 + 1} (total sample size).
 }
 For the weighted case, the CI uses raw (unweighted) group counts and
@@ -625,7 +625,7 @@ least-squares (or weighted least-squares) statistics regardless of
 When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted
 linear models via \code{lm(..., weights = ...)}. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
-fit statistics \verb{\eqn{R^2}{R^2}} and adjusted \verb{\eqn{R^2}{R^2}}, as well as Hays' \verb{omega²}
+fit statistics \verb{\eqn{R^2}{R^2}} and adjusted \verb{\eqn{R^2}{R^2}}, as well as Hays' \code{omega^2}
 and Cohen's \verb{\eqn{f^2}{f^2}}, use the corresponding \strong{weighted sums of squares}
 from the WLS fit. Cohen's \code{d} and Hedges' \code{g} use the \strong{WLS
 coefficient and the model's weighted residual standard deviation}
@@ -791,7 +791,7 @@ table_continuous_lm(
   by = sex,
   labels = c(
     wellbeing_score = "WHO-5 wellbeing (0-100)",
-    bmi = "Body-mass index (kg/m²)"
+    bmi = "Body-mass index (kg/m^2)"
   ),
   r2 = "adj_r2"
 )
@@ -916,7 +916,7 @@ Cousineau, D., & Goulet-Pelletier, J.-C. (2021).
 Expected and empirical coverages of different methods for generating
 noncentral \emph{t} confidence intervals for a standardized mean
 difference. \emph{Behavior Research Methods}, \strong{53}, 2376--2394.
-\doi{10.3758/s13428-021-01550-4}
+\doi{10.3758/Section 13428-021-01550-4}
 
 Cribari-Neto, F. (2004).
 Asymptotic inference under heteroskedasticity of unknown form.
@@ -933,7 +933,7 @@ Cribari-Neto, F., & da Silva, W. B. (2011).
 A new heteroskedasticity-consistent covariance matrix estimator
 for the linear regression model.
 \emph{AStA Advances in Statistical Analysis}, \strong{95}(2), 129--146.
-\doi{10.1007/s10182-010-0141-2}
+\doi{10.1007/Section 10182-010-0141-2}
 
 Davison, A. C., & Hinkley, D. V. (1997).
 \emph{Bootstrap Methods and Their Application}.

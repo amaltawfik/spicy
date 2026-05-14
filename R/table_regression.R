@@ -37,7 +37,7 @@
 #'     `_ci` companion (`"partial_f2_ci"`, ...).
 #'   \item Partial effect size -- `glm` only: `"partial_chi2"`
 #'     (likelihood-ratio chi-square via `drop1(test = "LRT")`;
-#'     SAS PROC LOGISTIC `TYPE3`; Long & Freese 2014 §3.5).
+#'     SAS PROC LOGISTIC `TYPE3`; Long & Freese 2014 Section 3.5).
 #'     Rendered as `value (df)` to disambiguate factor terms
 #'     (k-1 df) from numeric terms (1 df).
 #' }
@@ -65,7 +65,7 @@
 #' `spicy_invalid_input`.
 #'
 #' **Default** (`show_columns = NULL`) is context-aware:
-#' `"all_b"` for a single model (APA-7 §6.46 publication layout),
+#' `"all_b"` for a single model (APA-7 Section 6.46 publication layout),
 #' `"all_b_compact"` for two or more models (CI dropped to fit the
 #' side-by-side layout; restore it explicitly when needed).
 #'
@@ -204,7 +204,7 @@
 #'   \item All-lm: `c("r2_change", "f_change", "p_change")` --
 #'     APA hierarchical regression standard.
 #'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
-#'     Lemeshow §3.5; Long & Freese 2014 §3.6.
+#'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.6.
 #' }
 #' To customise, pass the change tokens directly to
 #' `show_fit_stats`. Variance-explained change tokens on an
@@ -220,7 +220,7 @@
 #' \itemize{
 #'   \item `"refit"` -- refit on z-scored data. For `lm` both X
 #'     and Y are z-scored (Cohen et al. 2003 gold standard); for
-#'     `glm` only numeric X (Long & Freese 2014 §4.3.4
+#'     `glm` only numeric X (Long & Freese 2014 Section 4.3.4
 #'     "x-standardization").
 #'   \item `"posthoc"` -- post-hoc scaling. lm:
 #'     \eqn{\beta = B \times SD(X) / SD(Y)}{beta = B * SD(X) / SD(Y)};
@@ -243,7 +243,7 @@
 #' Under interactions or transformed predictors (`I()`, `poly()`,
 #' `log()`, `splines::ns()`), a `spicy_caveat` warns that
 #' standardised coefficients on such terms are subtle to interpret
-#' (Cohen et al. 2003 §7.7; Aiken & West 1991). The caveat is
+#' (Cohen et al. 2003 Section 7.7; Aiken & West 1991). The caveat is
 #' auto-documented in the footer.
 #'
 #' # Multiple-comparison adjustment
@@ -253,7 +253,7 @@
 #' coefficient tests a distinct hypothesis on a distinct
 #' predictor -- not the situation multiple-testing procedures
 #' were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-#' §6.46; Harrell *Regression Modeling Strategies* §5.4; Gelman,
+#' Section 6.46; Harrell *Regression Modeling Strategies* Section 5.4; Gelman,
 #' Hill & Yajima 2012). Hence the default `p_adjust = "none"`.
 #'
 #' Adjustment is appropriate for: mass screening with no prior
@@ -339,10 +339,10 @@
 #'   `vcov = "bootstrap"`. Single positive integer. Default
 #'   `1000L`.
 #' @param ci_method CI construction. `"wald"` (default) uses
-#'   `estimate ± z × SE` (`t × SE` for `lm`). `"profile"`
+#'   `estimate +/- z x SE` (`t x SE` for `lm`). `"profile"`
 #'   (*glm only*) uses the profile-likelihood CI from
 #'   [MASS::confint.glm()] -- asymmetric, exact for
-#'   likelihood-based inference (Venables & Ripley *MASS* §7.2).
+#'   likelihood-based inference (Venables & Ripley *MASS* Section 7.2).
 #'   Only the CI bounds change; estimate, SE, statistic and
 #'   p-value remain Wald. `"profile"` with `lm` raises
 #'   `spicy_invalid_input`.
@@ -355,7 +355,7 @@
 #' @param exponentiate Logical. When `TRUE` and the model is a
 #'   `glm` with a non-identity link, `B`, the CI bounds, and the
 #'   SE are transformed via `exp()` (delta method:
-#'   `SE_OR = OR × SE_log-odds`). The column header is rebranded
+#'   `SE_OR = OR x SE_log-odds`). The column header is rebranded
 #'   per family / link: `OR` (binomial logit), `IRR` (poisson
 #'   log), `HR` (binomial cloglog), `RR` (binomial log), `MR`
 #'   (Gamma log), else `exp(B)`. The statistic and p-value stay
@@ -459,7 +459,7 @@
 #'   `"f_change"` for `lm`). See *Vocabulary tokens*
 #'   (`show_fit_stats` subsection) and *Hierarchical (nested)
 #'   model comparison* in the details for the full vocabulary.
-#' @param fit_stats_layout Layout of the fit-stat values (`n`, `R²`,
+#' @param fit_stats_layout Layout of the fit-stat values (`n`, `R^2`,
 #'   `AIC`, ...) within each model's column group. Two options:
 #'   \itemize{
 #'     \item `"first_col"` (default): the value is placed in the
@@ -507,10 +507,10 @@
 #'   `"Model 1, ..."` unless `model_labels` is also supplied).
 #'   `FALSE` also suppresses the row.
 #' @param stars Significance asterisks. `FALSE` (default, APA 7
-#'   §6.46) -- no stars. `TRUE` -- APA cutoffs
+#'   Section 6.46) -- no stars. `TRUE` -- APA cutoffs
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
 #'   vector specifies custom thresholds, e.g.
-#'   `c("†" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
+#'   `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
 #' @param nested Whether to inject pairwise change-statistic rows
 #'   for adjacent models (M2 vs M1, M3 vs M2, ...). `FALSE`
 #'   (default) -- pure side-by-side display. `TRUE` -- requires
@@ -538,7 +538,7 @@
 #'   `","` is used, the CI bracket separator switches to `"; "`
 #'   automatically to avoid `"0,18 [0,07, 0,30]"` ambiguity.
 #' @param align Numeric column alignment.
-#'   `"decimal"` (default) — pre-pad cells so decimal marks line
+#'   `"decimal"` (default) -- pre-pad cells so decimal marks line
 #'   up vertically (publication-style). For CI cells (`[LL, UL]`)
 #'   the left bracket, the LL decimal point, the comma separator,
 #'   the UL decimal point, and the right bracket are independently
@@ -703,7 +703,7 @@
 #'
 #' @references
 #' APA Manual 7 (American Psychological Association, 2020),
-#' Tables 7.13–7.15.
+#' Tables 7.13-7.15.
 #'
 #' Aiken, L.S. & West, S.G. (1991). *Multiple regression: Testing
 #' and interpreting interactions*.
@@ -715,11 +715,11 @@
 #' Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 #' cluster-robust variance estimation and hypothesis testing in
 #' fixed effects models. *Journal of Business & Economic
-#' Statistics*, 36(4), 672–683.
+#' Statistics*, 36(4), 672-683.
 #'
 #' Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
 #' to a world beyond "p < 0.05". *The American Statistician*,
-#' 73(sup1), 1–19.
+#' 73(sup1), 1-19.
 #'
 #' @export
 table_regression <- function(
@@ -805,14 +805,14 @@ table_regression <- function(
   output <- match.arg(output)
 
   # ====================================================================
-  # Validation cascade (Q21 — 6 phases, ~29 steps, fail-fast).
+  # Validation cascade (Q21 -- 6 phases, ~29 steps, fail-fast).
   # Each helper lives in R/regression_validate.R and is called in the
   # documented order. Errors carry classed conditions
   # (spicy_invalid_input / spicy_unsupported); cross-arg semantic
   # warnings (Phase E) carry spicy_caveat or spicy_ignored_arg.
   # ====================================================================
 
-  # Phase A — input class (steps 1–3)
+  # Phase A -- input class (steps 1-3)
   models <- validate_models_input(models)
   n_models <- length(models)
 
@@ -825,11 +825,11 @@ table_regression <- function(
   # cluster for the full spec.
   cluster <- resolve_cluster_arg(cluster, models)
 
-  # Phase B — multi-model alignment (steps 4–8)
+  # Phase B -- multi-model alignment (steps 4-8)
   validate_nested_alignment(models, nested)
   validate_vcov_cluster_lists(vcov, cluster, models)
 
-  # Context-aware `show_columns` default. APA-7 §6.46 recommends
+  # Context-aware `show_columns` default. APA-7 Section 6.46 recommends
   # CIs for inference, so a single-model table (the publication
   # workflow) keeps CI in the default ("all_b"). Multi-model tables
   # drop CI to fit the side-by-side layout in a typical console /
@@ -847,11 +847,11 @@ table_regression <- function(
   # through from < 0.12 code.
   show_columns <- expand_show_columns(show_columns)
 
-  # Phase C — vocabulary tokens (steps 9–12). validate_show_columns
+  # Phase C -- vocabulary tokens (steps 9-12). validate_show_columns
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
   validate_show_fit_stats(show_fit_stats)
-  # Q3 — auto-inject "beta" right after "B" when standardized != "none"
+  # Q3 -- auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the
   # reject-beta-without-method branch fires before the orchestrator
   # mutates the user's show_columns.
@@ -871,7 +871,7 @@ table_regression <- function(
   # When `nested = TRUE`, change-stat tokens (`r2_change` / `f_change`
   # / `p_change` for lm; `lrt_change` / `p_change` for glm) are
   # injected RIGHT AFTER `r2` / `adj_r2` / `AIC` so the table reads
-  # "n / R² / Adj.R² / ΔR² / F-change / p" as in APA Table 7.13.
+  # "n / R^2 / Adj.R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
   user_set_fit_stats <- !is.null(show_fit_stats)
   if (!user_set_fit_stats) {
     any_glm <- any(vapply(models, inherits, logical(1), "glm"))
@@ -895,7 +895,7 @@ table_regression <- function(
     }
   }
 
-  # Class-aware token compatibility — variance-explained tokens are
+  # Class-aware token compatibility -- variance-explained tokens are
   # rejected on glm with a hint to the partial_chi2 / pseudo_r2_*
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
@@ -925,7 +925,7 @@ table_regression <- function(
   }
 
   # `standardized = "pseudo"` (Menard 2011 fully-standardised) is glm
-  # only — it derives SD(Y*) from the link-scale latent variance,
+  # only -- it derives SD(Y*) from the link-scale latent variance,
   # which is undefined for lm.
   if (identical(standardized, "pseudo")) {
     any_lm_only <- any(vapply(models, function(f) {
@@ -951,7 +951,7 @@ table_regression <- function(
   }
 
   # exponentiate: warn if requested but no glm-with-non-identity-link
-  # is present — the transform would be a no-op everywhere.
+  # is present -- the transform would be a no-op everywhere.
   if (isTRUE(exponentiate)) {
     has_non_identity_glm <- any(vapply(models, function(f) {
       if (!inherits(f, "glm")) return(FALSE)
@@ -1004,7 +1004,7 @@ table_regression <- function(
     }
   }
 
-  # Phase D — argument values (steps 13–24)
+  # Phase D -- argument values (steps 13-24)
   validate_ci_level(ci_level)
   validate_boot_n(boot_n)
   validate_logical_scalar(show_intercept, "show_intercept")
@@ -1027,8 +1027,8 @@ table_regression <- function(
   validate_outcome_labels(outcome_labels, models)
   validate_predictor_labels(labels, models)
 
-  # Phase E — cross-arg semantic warnings (no errors). The
-  # standardized × non-additive caveat is emitted later (after
+  # Phase E -- cross-arg semantic warnings (no errors). The
+  # standardized x non-additive caveat is emitted later (after
   # extracts) since it inspects each fit. Q1 / Q2 conflict warnings
   # are runtime / orchestrator-only and emitted here.
   if (!is.null(model_labels) &&
@@ -1080,7 +1080,7 @@ table_regression <- function(
     }
   }
 
-  # Phase F — output-dependent resource validation (file paths,
+  # Phase F -- output-dependent resource validation (file paths,
   # optional packages). Fires only for the selected output.
   validate_output_resources(output, excel_path, word_path)
 
@@ -1098,7 +1098,7 @@ table_regression <- function(
   # Friendly cluster-column names per model for the footer. When the
   # user passed `cluster = df$col`, we extract "col"; when a list of
   # clusters was passed, we walk the captured expression element by
-  # element. Falls back to NA → footer renders "cluster vector
+  # element. Falls back to NA -> footer renders "cluster vector
   # supplied" the way it did before.
   cluster_name_list <- if (is.call(cluster_expr) &&
                             identical(as.character(cluster_expr[[1]]), "list")) {
@@ -1177,7 +1177,7 @@ table_regression <- function(
     reference_style = reference_style
   )
 
-  # `keep` / `drop` filter — runs AFTER alignment (so canonical term
+  # `keep` / `drop` filter -- runs AFTER alignment (so canonical term
   # ordering is preserved for the surviving terms) and AFTER
   # p_adjust (so adjusted p-values reflect the model's full
   # coefficient family, not just the displayed subset).

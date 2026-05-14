@@ -2071,28 +2071,38 @@ export_desc_table <- function(
 
     # APA borders. The intermediate header line under the CI spanner
     # is only drawn when the CI columns are present.
+    #
+    # IMPORTANT: openxlsx2::wb_add_border() has formal defaults
+    # `left_border = right_border = top_border = bottom_border = "thin"`,
+    # so an explicit `top_border = "thin"` call paints all four sides
+    # unless the others are set to NULL. Pass NULL on every unused
+    # side to draw only the intended rule.
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
-      top_border = "thin"
+      top_border = "thin",
+      bottom_border = NULL, left_border = NULL, right_border = NULL
     )
     if (length(ci_j) > 0L) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
-        bottom_border = "thin"
+        bottom_border = "thin",
+        top_border = NULL, left_border = NULL, right_border = NULL
       )
     }
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
-      bottom_border = "thin"
+      bottom_border = "thin",
+      top_border = NULL, left_border = NULL, right_border = NULL
     )
     if (nrow(display_df) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
-        bottom_border = "thin"
+        bottom_border = "thin",
+        top_border = NULL, left_border = NULL, right_border = NULL
       )
     }
 
@@ -2101,7 +2111,8 @@ export_desc_table <- function(
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = sr - 1L + 2L, cols = 1:nc),
-        bottom_border = "hair"
+        bottom_border = "hair",
+        top_border = NULL, left_border = NULL, right_border = NULL
       )
     }
 

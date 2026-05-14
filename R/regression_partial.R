@@ -1,11 +1,11 @@
 # Partial effect-size extraction for table_regression().
 #
-# Per dev/table_regression_design.md Q19 — three term-level estimands
+# Per dev/table_regression_design.md Q19 -- three term-level estimands
 # rendered as `value [CI]` cells:
 #
-#   * partial_f2     — Cohen's f² for the term         (Cohen 1988)
-#   * partial_eta2   — partial η² for the term         (Pearson)
-#   * partial_omega2 — Hays bias-corrected partial ω²  (Olejnik & Algina 2003)
+#   * partial_f2     -- Cohen's f^2 for the term         (Cohen 1988)
+#   * partial_eta2   -- partial eta^2 for the term         (Pearson)
+#   * partial_omega2 -- Hays bias-corrected partial omega^2  (Olejnik & Algina 2003)
 #
 # All three are *term-level* (not coef-level): for a factor with k
 # levels the partial F is a joint k-1 df Wald test, so all k-1
@@ -17,10 +17,10 @@
 # Cross-validation against `effectsize::eta_squared(partial = TRUE)` /
 # `cohens_f_squared(partial = TRUE)` on a Type II reference (`car::Anova`)
 # matches to machine epsilon for the point estimates of all three
-# metrics, η² CI bounds, and f² CI bounds. The point estimate of
-# partial ω² uses the Olejnik & Algina (2003) formula, which also
-# matches effectsize numerically. The CI for ω² uses the same
-# noncentral-F bounds as η² (Steiger 2004 / MBESS convention) — this
+# metrics, eta^2 CI bounds, and f^2 CI bounds. The point estimate of
+# partial omega^2 uses the Olejnik & Algina (2003) formula, which also
+# matches effectsize numerically. The CI for omega^2 uses the same
+# noncentral-F bounds as eta^2 (Steiger 2004 / MBESS convention) -- this
 # diverges from effectsize's internal "implied-F" heuristic but is
 # the conventional Steiger inversion and always brackets the
 # Olejnik & Algina point estimate in non-degenerate cases.
@@ -88,10 +88,10 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
   rows <- list()
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
-    if (term_idx == 0L) next       # intercept — no partial effect
-    if (is.na(cf[i])) next         # singular coef — em-dashed by renderer
+    if (term_idx == 0L) next       # intercept -- no partial effect
+    if (is.na(cf[i])) next         # singular coef -- em-dashed by renderer
     eff <- cache[[as.character(term_idx)]]
-    if (is.null(eff)) next         # drop1 failed — renderer em-dashes
+    if (is.null(eff)) next         # drop1 failed -- renderer em-dashes
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
@@ -129,7 +129,7 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
 
 # Compute the partial F + the three effect-size estimands and their
 # CIs for one model term. Returns NULL on any failure (drop1 failure,
-# non-finite F, etc.) — the caller skips the term and the renderer
+# non-finite F, etc.) -- the caller skips the term and the renderer
 # em-dashes the corresponding cells.
 compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
   fs <- extract_lm_focal_f_stat(fit, term_label)
@@ -146,22 +146,22 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
     stats::pf(f_obs, df1 = df1, df2 = df2, lower.tail = FALSE)
   }
 
-  # Partial η² closed-form: (F·df1) / (F·df1 + df2)
+  # Partial eta^2 closed-form: (F.df1) / (F.df1 + df2)
   eta2 <- if (!is.finite(df2) || df2 <= 0) {
     NA_real_
   } else {
     (f_obs * df1) / (f_obs * df1 + df2)
   }
-  # Partial f² = η² / (1 - η²) = F·df1 / df2
+  # Partial f^2 = eta^2 / (1 - eta^2) = F.df1 / df2
   f2 <- if (!is.finite(eta2) || eta2 >= 1) {
     NA_real_
   } else {
     eta2 / (1 - eta2)
   }
-  # Partial ω² — Hays / Olejnik & Algina, via shared helper.
+  # Partial omega^2 -- Hays / Olejnik & Algina, via shared helper.
   omega2 <- compute_lm_partial_omega2(fit, fs)
 
-  # CIs — Steiger 2004 noncentral-F inversion. ω² CI uses η² scale
+  # CIs -- Steiger 2004 noncentral-F inversion. omega^2 CI uses eta^2 scale
   # bounds (matches effectsize / MBESS convention).
   ci_eta2 <- compute_omega2_ci_lm(fit, ci_level, focal_term = term_label)
   ci_omega2 <- ci_eta2
@@ -191,11 +191,11 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
 }
 
 
-# ---- glm path: term-level partial χ² via drop1 LRT -----------------------
+# ---- glm path: term-level partial chi^2 via drop1 LRT -----------------------
 
 # Build the partial_chi2 rows for one glm fit. One row per non-intercept
 # coef; factor terms emit one row per non-reference dummy, all sharing
-# the same term-level χ² (the renderer collapses to a single display
+# the same term-level chi^2 (the renderer collapses to a single display
 # per term via the same factor-term grouping used for partial_f2).
 extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   cf <- stats::coef(fit)

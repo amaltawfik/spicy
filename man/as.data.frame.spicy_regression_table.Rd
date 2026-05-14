@@ -14,7 +14,7 @@
 \code{\link[=table_regression]{table_regression()}}.}
 
 \item{row.names, optional}{Standard \code{as.data.frame()} arguments
-(currently ignored — the table's row layout is preserved).}
+(currently ignored -- the table's row layout is preserved).}
 
 \item{...}{Currently ignored.}
 }

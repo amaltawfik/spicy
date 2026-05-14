@@ -1,10 +1,10 @@
 # Per-model long-format extractor for table_regression().
 #
-# Architecture per dev/table_regression_design.md §2 layer 1.
+# Architecture per dev/table_regression_design.md Section 2 layer 1.
 # Dispatch is on `class(fit)` (S3 in spirit; implemented as a single
 # internal function `extract_lm_phase1()` with class-aware branches
 # rather than a true S3 generic, since the lm and glm paths share
-# most of the scaffolding — only the per-coef inference, fit-stats
+# most of the scaffolding -- only the per-coef inference, fit-stats
 # family, and a few transforms differ).
 #
 # The function name retains the historical `_phase1` suffix for
@@ -14,9 +14,9 @@
 # Phase 4 (merMod) is deferred and will introduce a true S3 generic.
 #
 # Returns a list with two main components:
-#   * `coefs`     — long-format data.frame, one row per
+#   * `coefs`     -- long-format data.frame, one row per
 #                   (term, estimate_type) combination
-#   * `fit_stats` — single-row data.frame with model-level statistics
+#   * `fit_stats` -- single-row data.frame with model-level statistics
 #                   selected via `show_fit_stats`
 # Plus metadata fields consumed by the multi-model alignment,
 # rendering, and footer-generation layers.
@@ -87,7 +87,7 @@ extract_lm_phase1 <- function(
   )
   coefs_long <- rbind(coefs_B, ref_rows)
 
-  # ---- Standardised β rows (Step 4) ---------------------------------------
+  # ---- Standardised beta rows (Step 4) ---------------------------------------
   if (!identical(standardized, "none")) {
     beta_rows <- extract_beta_rows(
       fit = fit,
@@ -106,7 +106,7 @@ extract_lm_phase1 <- function(
   # ---- Exponentiate B / beta rows for response-scale display --------------
   # Only meaningful for glm with non-identity link. The transform is
   # applied here so AME / partial rows (which follow) are unaffected
-  # — AME is already on response scale by construction.
+  # -- AME is already on response scale by construction.
   is_glm <- inherits(fit, "glm")
   family_info <- if (is_glm) spicy_glm_family_info(fit) else NULL
   exp_applied <- isTRUE(exponentiate) && is_glm &&
@@ -208,7 +208,7 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 
   # Profile-likelihood CI for glm (Phase 3 Step 6). One profile run
   # at the model level returns CI bounds for ALL coefs as a matrix
-  # (k × 2); we then override per-coef inf$ci_lower / inf$ci_upper.
+  # (k x 2); we then override per-coef inf$ci_lower / inf$ci_upper.
   # The estimate / SE / statistic / p-value all stay Wald (profile is
   # a CI-only refinement; matches the convention of MASS::confint.glm,
   # Stata `nlcom, profile`, parameters::ci(method = "profile")).
@@ -298,7 +298,7 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 
 # Helper to build a single coefs row with all the standard columns.
 # Centralised so all row builders (B, beta, AME, partial_*) use the
-# same column structure — required by `rbind()` upstream.
+# same column structure -- required by `rbind()` upstream.
 build_one_b_row <- function(nm, model_id, outcome,
                              estimate, se, ci_low, ci_high,
                              statistic, df, p_value, test_type,
@@ -337,7 +337,7 @@ build_one_b_row <- function(nm, model_id, outcome,
 # `reference_style = "row"`.
 #
 # In a no-intercept formula like `y ~ 0 + cyl`, R fits ALL k levels
-# of the first factor as real coefficients — `detect_factor_terms()`
+# of the first factor as real coefficients -- `detect_factor_terms()`
 # flags `reference_dropped = FALSE` for these and we skip them here.
 build_reference_rows <- function(fit, model_id, outcome) {
   factor_terms <- detect_factor_terms(fit)
@@ -373,17 +373,17 @@ build_reference_rows <- function(fit, model_id, outcome) {
 # ---- Factor introspection -------------------------------------------------
 
 # For each factor predictor in the model, return:
-#   factor_term         — the variable name (e.g., "sex")
-#   reference_level     — under default contr.treatment, this is the
+#   factor_term         -- the variable name (e.g., "sex")
+#   reference_level     -- under default contr.treatment, this is the
 #                         first level. NA when no level was dropped
 #                         (no-intercept formulas of the form
 #                         `y ~ 0 + f` fit ALL k levels and the
 #                         "reference" concept does not apply).
-#   reference_dropped   — TRUE when the first level was actually
+#   reference_dropped   -- TRUE when the first level was actually
 #                         dropped (its dummy is absent from
 #                         `coef(fit)`); FALSE when it was fitted
 #                         (no-intercept case).
-#   levels              — full level vector (in factor order)
+#   levels              -- full level vector (in factor order)
 detect_factor_terms <- function(fit) {
   trms <- attr(stats::terms(fit), "term.labels")
   xlevels <- fit$xlevels   # named list: factor_var -> levels
@@ -437,7 +437,7 @@ detect_factor_terms <- function(fit) {
       next
     }
     # Any other coding (Helmert, sum-to-zero, custom) is left
-    # ungrouped — we don't know how to name the contrasts in a
+    # ungrouped -- we don't know how to name the contrasts in a
     # way that's universally meaningful.
   }
   out
@@ -446,7 +446,7 @@ detect_factor_terms <- function(fit) {
 # The orthogonal-polynomial suffix names R appends to a factor of
 # length k when `contr.poly` is in effect: `.L` (k=2), `.L .Q`
 # (k=3), `.L .Q .C` (k=4), then `^4 ^5 ...` for k >= 5. Returns
-# the first k-1 suffixes (one fewer than the number of levels —
+# the first k-1 suffixes (one fewer than the number of levels --
 # the same df budget as treatment contrasts).
 poly_suffix_names <- function(k) {
   if (k < 2L) return(character(0))
@@ -480,12 +480,12 @@ detect_factor_term_meta <- function(fit) {
 # which level / contrast suffix. Naming under `contr.treatment` is
 # `<var><level>` (no separator); under `contr.poly` (R's default for
 # `ordered()`) it's `<var>.L`, `<var>.Q`, `<var>.C`, `<var>^4`, ...
-# For poly contrasts `factor_level` holds the suffix (e.g. ".L") —
+# For poly contrasts `factor_level` holds the suffix (e.g. ".L") --
 # the renderer treats it as the sub-row label under the factor group
 # header.
 match_coef_to_factor <- function(coef_name, xlevels) {
   if (coef_name == "(Intercept)") return(NULL)
-  # Skip interaction terms — they involve multiple factors / numerics
+  # Skip interaction terms -- they involve multiple factors / numerics
   if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
 
   for (var in names(xlevels)) {
@@ -520,8 +520,8 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
   sm <- summary(fit)
   is_glm <- inherits(fit, "glm")
 
-  # Variance-explained stats (lm only). For glm, R² / Adj.R² /
-  # ω² / f² are not defined and stay NA — pseudo_r2_* tokens
+  # Variance-explained stats (lm only). For glm, R^2 / Adj.R^2 /
+  # omega^2 / f^2 are not defined and stay NA -- pseudo_r2_* tokens
   # cover the equivalent reporting need.
   if (is_glm) {
     r2 <- NA_real_
@@ -537,7 +537,7 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
     f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
   }
 
-  # Pseudo-R² family (glm only; NA for lm).
+  # Pseudo-R^2 family (glm only; NA for lm).
   pseudo_r2_mcfadden <- if (is_glm) compute_pseudo_r2_mcfadden(fit) else NA_real_
   pseudo_r2_nagelkerke <- if (is_glm) compute_pseudo_r2_nagelkerke(fit) else NA_real_
   pseudo_r2_tjur <- if (is_glm) compute_pseudo_r2_tjur(fit) else NA_real_
@@ -552,7 +552,7 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
     unname(sm$sigma)
   }
 
-  # RMSE — sqrt mean squared residual. Defined for all glm
+  # RMSE -- sqrt mean squared residual. Defined for all glm
   # families on the response scale via residuals(fit, type =
   # "response"). For lm, residuals(fit) is already on the
   # response scale, so the formulae coincide.
@@ -563,10 +563,10 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
   }
   rmse <- sqrt(sum(resid_response^2) / stats::nobs(fit))
 
-  # Information criteria — defined for both lm and glm.
+  # Information criteria -- defined for both lm and glm.
   AIC_v <- stats::AIC(fit)
   BIC_v <- stats::BIC(fit)
-  # AICc — Hurvich & Tsai (1989). k = length(coef) + 1 (lm: sigma;
+  # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (lm: sigma;
   # glm: dispersion if estimated, else just k = length(coef) for
   # binomial/poisson with fixed dispersion). The `+ 1` is a
   # conservative default that matches the convention used by
@@ -612,7 +612,7 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
 # ---- Helpers --------------------------------------------------------------
 
 # Empty long-format frame with the canonical column structure. Used
-# when a model has no factor predictors → no reference rows to add.
+# when a model has no factor predictors -> no reference rows to add.
 empty_coefs_long <- function() {
   data.frame(
     model_id = character(0),

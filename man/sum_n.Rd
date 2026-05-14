@@ -27,8 +27,8 @@ If \code{regex = TRUE}, provide a regular expression pattern (character string).
 \item{min_valid}{Minimum number of valid (non-\code{NA}) values required
 per row. Accepts:
 \itemize{
-\item \code{NULL} (the default) — every selected column must be valid.
-\item a proportion in \verb{(0, 1)} — \code{round(ncol(x) * min_valid)} valid
+\item \code{NULL} (the default) -- every selected column must be valid.
+\item a proportion in \verb{(0, 1)} -- \code{round(ncol(x) * min_valid)} valid
 columns required (e.g. \code{min_valid = 0.5} requires at least
 half of the selected columns to be non-\code{NA}).
 \item a non-negative integer count up to the number of selected

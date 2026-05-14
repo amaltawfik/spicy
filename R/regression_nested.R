@@ -1,8 +1,8 @@
 # Hierarchical / nested model comparison (Q6) for table_regression().
 #
-# Since 0.12: nested comparison stats (ΔR², F-change, p-change, ΔLRT,
-# ΔAIC/AICc/BIC, Δdeviance, Δf²) are exposed as IN-TABLE fit-stat
-# rows -- not as a "── Model comparison ──" footer block. Each
+# Since 0.12: nested comparison stats (DeltaR^2, F-change, p-change, DeltaLRT,
+# DeltaAIC/AICc/BIC, Deltadeviance, Deltaf^2) are exposed as IN-TABLE fit-stat
+# rows -- not as a "-- Model comparison --" footer block. Each
 # adjacent pair (M2 vs M1, M3 vs M2, ...) contributes one column
 # of change stats; the FIRST model column gets em-dashes (no
 # previous model to compare to). APA Table 7.13 / Stata `esttab` /
@@ -10,23 +10,23 @@
 #
 # Tokens (all *_change suffix for consistency):
 #
-#   r2_change       (lm)        — ΔR² (signed)
-#   adj_r2_change   (lm)        — ΔAdj.R² (signed)
-#   f_change        (lm)        — partial F (anova(m_i, m_{i+1}))
-#   f2_change       (lm)        — Cohen's f² for added predictors
-#   lrt_change      (lm/glm/me) — likelihood-ratio χ²
-#   p_change        (all)       — p-value of the chosen test
-#   aic_change      (all)       — ΔAIC (signed)
-#   aicc_change     (all)       — ΔAICc (signed)
-#   bic_change      (all)       — ΔBIC (signed)
-#   deviance_change (all)       — drop in residual deviance
+#   r2_change       (lm)        -- DeltaR^2 (signed)
+#   adj_r2_change   (lm)        -- DeltaAdj.R^2 (signed)
+#   f_change        (lm)        -- partial F (anova(m_i, m_{i+1}))
+#   f2_change       (lm)        -- Cohen's f^2 for added predictors
+#   lrt_change      (lm/glm/me) -- likelihood-ratio chi^2
+#   p_change        (all)       -- p-value of the chosen test
+#   aic_change      (all)       -- DeltaAIC (signed)
+#   aicc_change     (all)       -- DeltaAICc (signed)
+#   bic_change      (all)       -- DeltaBIC (signed)
+#   deviance_change (all)       -- drop in residual deviance
 #
 # Class-aware default token sets (injected by table_regression() when
 # `nested = TRUE` and the user did not supply `show_fit_stats`):
-#   * lm  : c("r2_change", "f_change", "p_change") — APA Table 7.13
-#   * glm : c("lrt_change", "p_change")            — Hosmer & Lemeshow
-#                                                    §3.5 / Long &
-#                                                    Freese 2014 §3.6
+#   * lm  : c("r2_change", "f_change", "p_change") -- APA Table 7.13
+#   * glm : c("lrt_change", "p_change")            -- Hosmer & Lemeshow
+#                                                    Section 3.5 / Long &
+#                                                    Freese 2014 Section 3.6
 # Mixed-class hierarchies route through the lm path; the glm side
 # em-dashes the variance-explained tokens.
 
@@ -109,8 +109,8 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     NA_real_                                                       # nocov
   }
 
-  # LRT — asymptotic χ² via -2 (ℓ_prev - ℓ_curr). For lm with
-  # constant σ² assumption this matches anova(... test = "LRT") output.
+  # LRT -- asymptotic chi^2 via -2 (l_prev - l_curr). For lm with
+  # constant sigma^2 assumption this matches anova(... test = "LRT") output.
   ll_prev <- tryCatch(as.numeric(stats::logLik(fit_prev)),
                        error = function(e) NA_real_)
   ll_curr <- tryCatch(as.numeric(stats::logLik(fit_curr)),
@@ -120,7 +120,7 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   aic_p <- stats::AIC(fit_prev); aic_c <- stats::AIC(fit_curr)
   bic_p <- stats::BIC(fit_prev); bic_c <- stats::BIC(fit_curr)
 
-  # AICc — Hurvich & Tsai (1989). k = length(coef) + 1 (sigma).
+  # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma).
   aicc <- function(fit, aic_v) {
     k <- length(stats::coef(fit)) + 1L
     n <- stats::nobs(fit)
@@ -150,12 +150,12 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 # ---- Per-pair glm computation (Phase 3 Step 6) ---------------------------
 
 # Per-pair statistics for nested glm models. Uses the LRT chi-square
-# from anova(test = "LRT") (Hosmer & Lemeshow §3.5; Long & Freese
-# 2014 §3.6) — the canonical hierarchical-logistic test, mirroring
+# from anova(test = "LRT") (Hosmer & Lemeshow Section 3.5; Long & Freese
+# 2014 Section 3.6) -- the canonical hierarchical-logistic test, mirroring
 # the role of partial F in lm. Variance-explained tokens (r2_change,
 # adj_r2_change, f_change, f2_change) are NA for glm: the residual-
 # sum-of-squares partition does not apply outside the least-squares
-# framework. AIC / AICc / BIC / Δdeviance / Δχ² / p_change are all
+# framework. AIC / AICc / BIC / Deltadeviance / Deltachi^2 / p_change are all
 # meaningful and computed.
 compute_one_pair_glm <- function(fit_prev, fit_curr) {
   na <- list(

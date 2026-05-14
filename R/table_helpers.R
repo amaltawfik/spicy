@@ -2,7 +2,7 @@
 # helpers (`table_continuous()`, `table_continuous_lm()`,
 # `table_categorical()`) and their print methods. Kept purely
 # string-based so they round-trip arbitrary formatted values
-# (`"<.001"`, `"f² = 0.18 [0.07, 0.30]"`, integers vs. decimals
+# (`"<.001"`, `"f^2 = 0.18 [0.07, 0.30]"`, integers vs. decimals
 # mixed in the same column, etc.) without ever converting to numeric.
 #
 # Naming convention:
@@ -51,7 +51,7 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   # fixed-decimal would produce unreadable 10+ digit integers. For
   # small values, the requested `digits` is the user's precision
   # contract: if a value rounds to "0.00" at digits = 2, it should
-  # display as "0.00" (not "1.63e-03") — this matches Stata's
+  # display as "0.00" (not "1.63e-03") -- this matches Stata's
   # behaviour and is the only way to keep decimal-alignment stable
   # in standard cases. Users who want sub-precision values visible
   # can request more `digits`.
@@ -112,7 +112,7 @@ format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
 #     same total width, so the column stays clean when rendered.
 #
 # The function is purely string-based and never converts to numeric,
-# so it is robust to formats like "<.001", "f² = 0.18 [0.07, 0.30]",
+# so it is robust to formats like "<.001", "f^2 = 0.18 [0.07, 0.30]",
 # and any decimal_mark.
 decimal_align_strings <- function(values, decimal_mark = ".") {
   if (length(values) == 0L) {
@@ -229,7 +229,7 @@ align_ci_strings <- function(values, decimal_mark = ".") {
       if (!nzchar(raw)) {
         out[i] <- strrep(" ", ci_width)
       } else {
-        # Center single-glyph fallback (e.g., em-dash "—") within
+        # Center single-glyph fallback (e.g., em-dash "--") within
         # the CI column width so reference / blank rows stay
         # rectangular and visually anchored.
         glyph_w <- nchar(raw, type = "width")

@@ -254,7 +254,7 @@ freq <- function(
   } else {
     spicy_warn(
       "Both `data` and `x` are vectors; `data` is ignored.", class = "spicy_ignored_arg")
-    # `x` is what gets analyzed here — mirror the `!is_df && missing(x)`
+    # `x` is what gets analyzed here -- mirror the `!is_df && missing(x)`
     # branch above so the printed footer (`Data: ...`) does not surface
     # the name of the vector that was just declared "ignored".
     var_name <- deparse(substitute(x))
@@ -272,7 +272,7 @@ freq <- function(
     # "no weighting": literal `weights = NULL`, parameterized patterns
     # like `weights = if (use_w) w else NULL`, or a variable holding
     # NULL. Only an expression that *fails to resolve* (e.g., the
-    # typo `weights = nonexistent_var`) is rejected — caught via
+    # typo `weights = nonexistent_var`) is rejected -- caught via
     # the sentinel below to distinguish it from a legitimate NULL.
     if (!is.null(weight_expr)) {
       weight_name <- deparse(weight_expr, backtick = FALSE)
@@ -305,7 +305,7 @@ freq <- function(
         )
       }
 
-      # Resolved to NULL — drop the name so the printed footer does
+      # Resolved to NULL -- drop the name so the printed footer does
       # not claim a weighting that was never applied.
       if (is.null(weights)) {
         weight_name <- NULL
@@ -318,7 +318,7 @@ freq <- function(
     # passes the comparisons via lexicographic coercion and only
     # crashes later at the `is.finite` check, with a misleading
     # "finite numeric" message. Logical is accepted because
-    # TRUE/FALSE coerce naturally to 1/0 — a common shorthand for
+    # TRUE/FALSE coerce naturally to 1/0 -- a common shorthand for
     # "include / exclude" weighting.
     if (!is.numeric(weights) && !is.logical(weights)) {
       spicy_abort(

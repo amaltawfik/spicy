@@ -4,7 +4,7 @@
 # DescTools (Signorell et al.), which in turn implement the formulas from
 # Agresti (2002) and Liebetrau (1983).
 
-# ── Internal helpers ──────────────────────────────────────────────────────────
+# -- Internal helpers ----------------------------------------------------------
 
 .validate_table <- function(x, min_dim = c(2L, 2L)) {
   if (!inherits(x, "table")) {
@@ -226,7 +226,7 @@ print.spicy_assoc_detail <- function(
 }
 
 
-# ── Nominal measures ─────────────────────────────────────────────────────────
+# -- Nominal measures ---------------------------------------------------------
 
 #' Cramer's V
 #'
@@ -1041,7 +1041,7 @@ uncertainty_coef <- function(
 }
 
 
-# ── Ordinal measures ─────────────────────────────────────────────────────────
+# -- Ordinal measures ---------------------------------------------------------
 
 #' Goodman-Kruskal Gamma
 #'
@@ -1425,7 +1425,7 @@ somers_d <- function(
 }
 
 
-# ── Summary table ────────────────────────────────────────────────────────────
+# -- Summary table ------------------------------------------------------------
 
 #' Association measures summary table
 #'

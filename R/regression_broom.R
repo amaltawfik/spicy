@@ -1,22 +1,22 @@
-# broom integration for table_regression() — Step 12.
+# broom integration for table_regression() -- Step 12.
 #
 # Per dev/table_regression_design.md Q8 / Q17 / Q18 / Q20:
 #
-#   tidy()   — long format, broom-canonical column names; one row per
+#   tidy()   -- long format, broom-canonical column names; one row per
 #              (model_id, term, estimate_type) triplet across all models.
 #              Drops reference-row placeholders (NA estimates).
 #
-#   glance() — one row per (model_id, outcome) with model-level
+#   glance() -- one row per (model_id, outcome) with model-level
 #              statistics. Numeric `df.residual` (Satterthwaite-safe).
 #
-#   as.data.frame() / as_tibble() — wide raw output (= the same content
+#   as.data.frame() / as_tibble() -- wide raw output (= the same content
 #              as `output = "data.frame"`). Drops spicy classes and
 #              rendering attrs; keeps title / note as plain attributes
 #              for users who want them.
 #
 # Conventions:
 #   * snake_case spicy tokens (`r2`, `adj_r2`, `p_value`, `ci_low`,
-#     `ci_high`, `se`, `df_residual`) → broom canonical
+#     `ci_high`, `se`, `df_residual`) -> broom canonical
 #     (`r.squared`, `adj.r.squared`, `p.value`, `conf.low`,
 #     `conf.high`, `std.error`, `df.residual`).
 #   * `df.residual` is kept numeric, not integer, to preserve
@@ -44,7 +44,7 @@
 #' `glance()` returns one row per `(model_id, outcome)` with
 #' model-level statistics. Columns: `model_id, outcome, nobs,
 #' weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse,
-#' f2, AIC, AICc, BIC, deviance, df.residual` (numeric —
+#' f2, AIC, AICc, BIC, deviance, df.residual` (numeric --
 #' Satterthwaite-safe).
 #'
 #' @param x A `spicy_regression_table` returned by
@@ -69,7 +69,7 @@ tidy.spicy_regression_table <- function(x, ...) {
   if (is.null(long) || nrow(long) == 0L) {
     return(maybe_as_tibble(empty_tidy_long()))
   }
-  # Drop reference-row placeholders — they have no estimable values.
+  # Drop reference-row placeholders -- they have no estimable values.
   long <- long[!long$is_reference, , drop = FALSE]
   # Drop rows whose primary estimate is NA (singular coefs / partial
   # rows for intercept-only or singular models).
@@ -119,7 +119,7 @@ glance.spicy_regression_table <- function(x, ...) {
     AICc           = fs$AICc,
     BIC            = fs$BIC,
     deviance       = fs$deviance,
-    # df.residual kept numeric — see file header.
+    # df.residual kept numeric -- see file header.
     df.residual    = as.numeric(fs$df_residual),
     stringsAsFactors = FALSE
   )
@@ -143,7 +143,7 @@ glance.spicy_regression_table <- function(x, ...) {
 #' @param x A `spicy_regression_table` returned by
 #'   [table_regression()].
 #' @param row.names,optional Standard `as.data.frame()` arguments
-#'   (currently ignored — the table's row layout is preserved).
+#'   (currently ignored -- the table's row layout is preserved).
 #' @param ... Currently ignored.
 #'
 #' @return A plain `data.frame` (for `as.data.frame()`) or a
@@ -171,7 +171,7 @@ as.data.frame.spicy_regression_table <- function(
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_regression_table <- function(x, ...) {
   # tibble is a hard dependency (Imports), so no availability guard
-  # is needed here — `tibble::as_tibble()` resolves at install time.
+  # is needed here -- `tibble::as_tibble()` resolves at install time.
   tibble::as_tibble(unclass_spicy_regression_table(x), ...)
 }
 
@@ -191,7 +191,7 @@ unclass_spicy_regression_table <- function(x) {
 
 maybe_as_tibble <- function(df) {
   # tibble is a hard dependency (Imports); the `maybe_` prefix is
-  # historical and kept for call-site readability — the function
+  # historical and kept for call-site readability -- the function
   # always returns a tbl_df.
   tibble::as_tibble(df)
 }

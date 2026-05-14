@@ -2,8 +2,8 @@
 #
 # Two computation paths per dev/table_regression_design.md Q14:
 #
-#   Path A (Q14b — differentiation pro)  : `vcov ∈ CR*` + linear formula
-#                                          → AME inference via
+#   Path A (Q14b -- differentiation pro)  : `vcov in CR*` + linear formula
+#                                          -> AME inference via
 #                                          `clubSandwich::linear_contrast()`
 #                                          with Satterthwaite-corrected df.
 #                                          spicy is the **first R package**
@@ -11,7 +11,7 @@
 #
 #   Path B (general)                     : non-CR* vcov OR CR* with
 #                                          non-linear formula
-#                                          → AME via
+#                                          -> AME via
 #                                          `marginaleffects::avg_slopes()`
 #                                          with our vcov matrix passed +
 #                                          df-aware (`df = "residual"` for
@@ -29,14 +29,14 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
                               use_ame_satterthwaite, model_id, outcome) {
   # Class-aware dispatch (Phase 3 Step 5).
   #
-  # For `glm`, AME is on the response scale (E[Y|X] = link^-1(η)) and
-  # therefore non-linear in β — the closed-form `clubSandwich::linear_-
+  # For `glm`, AME is on the response scale (E[Y|X] = link^-1(eta)) and
+  # therefore non-linear in beta -- the closed-form `clubSandwich::linear_-
   # contrast()` (Path A) does NOT apply, since its contrast would
-  # represent the link-scale AME (= β for numeric, no link-derivative
+  # represent the link-scale AME (= beta for numeric, no link-derivative
   # weighting), not the response-scale AME users expect.
   #
   # We always use marginaleffects for glm, with optional Satterthwaite-
-  # df augmentation under CR*: the Pustejovsky & Tipton (2018, §4)
+  # df augmentation under CR*: the Pustejovsky & Tipton (2018, Section 4)
   # approximation is to use the Satterthwaite df of the **dominant**
   # underlying coefficient (the same coef whose name matches the AME
   # term_id) as the df of the AME t-statistic.
@@ -57,7 +57,7 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       return(rows)
     }
     # Fallback: explain why Satterthwaite failed. The wording is
-    # tailored to the cause via the classed condition system —
+    # tailored to the cause via the classed condition system --
     # `spicy_ame_satt_unsupported_formula` is the documented
     # contract for "this formula isn't compatible with the
     # closed-form contrast"; anything else is treated as an
@@ -103,7 +103,7 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 }
 
 
-# ---- Path A — AME-Satterthwaite via clubSandwich (Q14b) -------------------
+# ---- Path A -- AME-Satterthwaite via clubSandwich (Q14b) -------------------
 
 # For each user-facing predictor (formula term, excluding pure
 # interactions), build the closed-form linear contrast that
@@ -126,7 +126,7 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
   # Identify predictors: term.labels minus pure-interaction terms
   trms <- attr(stats::terms(fit), "term.labels")
   preds <- trms[!grepl(":", trms, fixed = TRUE)]
-  # Exclude function-call predictors — closed-form contrast won't work.
+  # Exclude function-call predictors -- closed-form contrast won't work.
   # Carries the dedicated `spicy_ame_satt_unsupported_formula` leaf
   # class so `extract_ame_rows()` can distinguish this expected
   # condition from genuine internal failures and tailor its
@@ -173,7 +173,7 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
   # `clubSandwich::linear_contrast()` returns one row of inference
   # per contrast row. Output columns: Coef, Est, SE, df, CI_L, CI_U
   # (Satterthwaite df). t-stat and p-value are not exported
-  # directly — we compute them from (Est, SE, df) since the
+  # directly -- we compute them from (Est, SE, df) since the
   # transformation is closed-form: t = Est/SE, p = 2 * P(|t| > t_obs)
   # under the t distribution with df_Satt.
   test_result <- clubSandwich::linear_contrast(
@@ -256,9 +256,9 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
   list()
 }
 
-# Numeric predictor: AME = ∂E[Y|X]/∂v averaged over observations.
-# For lm linear, ∂(x_i'β)/∂v = sum over interaction terms involving
-# v of their coefficients × the corresponding moderator at obs i.
+# Numeric predictor: AME = dE[Y|X]/dv averaged over observations.
+# For lm linear, d(x_i'beta)/dv = sum over interaction terms involving
+# v of their coefficients x the corresponding moderator at obs i.
 # Closed form: c = colMeans(model.matrix(formula, data_h) -
 #                            model.matrix(formula, data_at)) where
 # data_h has v incremented by one unit. For linear formulas this
@@ -289,7 +289,7 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 }
 
 
-# ---- Path B — AME via marginaleffects (general) ---------------------------
+# ---- Path B -- AME via marginaleffects (general) ---------------------------
 
 extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
                                          model_id, outcome) {
@@ -305,7 +305,7 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
     # nocov end
   }
 
-  # df argument — keeps B/AME inference regimes coherent (Q14b)
+  # df argument -- keeps B/AME inference regimes coherent (Q14b)
   df_arg <- if (vcov_type %in% c("bootstrap", "jackknife")) {
     Inf
   } else {
@@ -369,7 +369,7 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
 
     # Reconstruct coef-style term_id ONLY for true factor variables.
     # marginaleffects' `contrast` is "lvl - ref" for factors AND
-    # for binary numerics like am ∈ {0, 1} (it returns "1 - 0"),
+    # for binary numerics like am in {0, 1} (it returns "1 - 0"),
     # which would produce `am1` and de-align with the B coef row
     # named `am`. Anchor on the model-frame class to disambiguate.
     is_factor_var <- col_name %in% mf_names &&
@@ -410,19 +410,19 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
 # ---- glm path: marginaleffects + optional Satterthwaite-df under CR* -----
 
 # AME extraction for glm. Always uses marginaleffects::avg_slopes()
-# (response-scale AME = E[link^-1(η)] is non-linear in β). Inference
+# (response-scale AME = E[link^-1(eta)] is non-linear in beta). Inference
 # regime by vcov:
 #
 #   * classical / HC* / bootstrap / jackknife
-#       → z-asymptotic (df = Inf), matching summary.glm convention.
+#       -> z-asymptotic (df = Inf), matching summary.glm convention.
 #
-#   * CR0–CR3 with cluster
-#       → CR2 SE from our `vc`; df from clubSandwich::coef_test
+#   * CR0-CR3 with cluster
+#       -> CR2 SE from our `vc`; df from clubSandwich::coef_test
 #         (Satterthwaite) on the **dominant** underlying coefficient
 #         (the coef whose name matches the AME row's `term_id`).
 #         t-statistic, p-value, and CI rebuilt from
 #         (AME, SE_CR, df_Satt).
-#         This is the Pustejovsky & Tipton (2018, §4) approximation
+#         This is the Pustejovsky & Tipton (2018, Section 4) approximation
 #         for nonlinear contrasts under cluster correlation.
 extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
                               model_id, outcome) {
@@ -483,7 +483,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     contrast_str <- ame_table$contrast[i] %||% NA_character_
 
     # Resolve `var_name` (as returned by marginaleffects) to the
-    # actual model.frame column. Same logic as the lm helper —
+    # actual model.frame column. Same logic as the lm helper --
     # marginaleffects strips inline transforms like `factor(cyl)`
     # and reports the bare variable.
     col_name <- if (var_name %in% mf_names) {
@@ -554,7 +554,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 }
 
 
-# Map coef name → Satterthwaite df via clubSandwich::coef_test on the
+# Map coef name -> Satterthwaite df via clubSandwich::coef_test on the
 # original glm. Returns NULL on failure (e.g., clubSandwich missing,
 # coef_test errored). Caller falls back to z-asymptotic.
 compute_satt_df_per_coef_glm <- function(fit, vc, cluster) {

@@ -63,12 +63,12 @@
 #'   and the reported estimate / SE / p-value / CI on `by` are
 #'   covariate-adjusted via the focal coefficient. For categorical `by`,
 #'   the displayed `emmean` is the covariate-adjusted estimated marginal
-#'   mean — see `adjustment` for the choice of estimand
+#'   mean -- see `adjustment` for the choice of estimand
 #'   (G-computation by default vs. equal-weight averaging). The omnibus
 #'   test of `by` is the Wald *F* restricted to the focal coefficients
 #'   (computed via `sandwich` / `clubSandwich` for HC* / CR* mode), so
 #'   adding covariates does not contaminate the omnibus statistic with
-#'   covariate contributions. Effect sizes adapt automatically — see
+#'   covariate contributions. Effect sizes adapt automatically -- see
 #'   `effect_size`.
 #'
 #'   v1 supports additive covariates only. Formula syntax with
@@ -93,7 +93,7 @@
 #'     mean in *this* population if everyone had `by = lvl`".
 #'   - `"balanced"` (matches [emmeans::emmeans()] default and the
 #'     SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
-#'     grid of factor-covariate level combinations × numeric
+#'     grid of factor-covariate level combinations x numeric
 #'     covariates fixed at their sample mean, with each grid cell
 #'     weighted equally. Treats the design as if covariates were
 #'     balanced -- the "marginal mean assuming a balanced design"
@@ -238,14 +238,14 @@
 #'
 #'   **Under covariate adjustment** (`covariates` non-empty):
 #'   - `"f2"` and `"omega2"` become the **partial** *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}*,
-#'     derived from the partial *F* of `by` via [stats::drop1()] —
+#'     derived from the partial *F* of `by` via [stats::drop1()] --
 #'     the correctly-defined effect size when the model is adjusted.
 #'     For numeric `by`, partial *\eqn{f^2}{f^2}* equals the squared partial
-#'     correlation of `by` with the outcome, divided by `(1 - r²_partial)`.
+#'     correlation of `by` with the outcome, divided by `(1 - r^2_partial)`.
 #'   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d*
 #'     and Hedges' *g* have no canonical extension to adjusted models
 #'     (the pooled SD is undefined under adjustment). Use `"f2"` or
-#'     `"omega2"` instead — both generalise via partial *F*.
+#'     `"omega2"` instead -- both generalise via partial *F*.
 #' @param effect_size_ci Logical. If `TRUE` and `effect_size != "none"`, adds
 #'   a confidence interval for the effect size derived from inversion of the
 #'   appropriate noncentral distribution (noncentral t for `"d"` / `"g"`;
@@ -454,7 +454,7 @@
 #'     correction.
 #'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004).
 #'     Bounds are converted from the noncentrality parameter using
-#'     `omega² = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N` respectively, with
+#'     `omega^2 = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N` respectively, with
 #'     `N = df1 + df2 + 1` (total sample size).
 #' }
 #' For the weighted case, the CI uses raw (unweighted) group counts and
@@ -528,7 +528,7 @@
 #' When `weights` is supplied, `table_continuous_lm()` fits weighted
 #' linear models via `lm(..., weights = ...)`. Means become weighted
 #' least-squares estimates and contrasts and slopes are weighted. The
-#' fit statistics `\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}`, as well as Hays' `omega²`
+#' fit statistics `\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}`, as well as Hays' `omega^2`
 #' and Cohen's `\eqn{f^2}{f^2}`, use the corresponding **weighted sums of squares**
 #' from the WLS fit. Cohen's `d` and Hedges' `g` use the **WLS
 #' coefficient and the model's weighted residual standard deviation**
@@ -596,7 +596,7 @@
 #'   Expected and empirical coverages of different methods for generating
 #'   noncentral *t* confidence intervals for a standardized mean
 #'   difference. *Behavior Research Methods*, **53**, 2376--2394.
-#'   \doi{10.3758/s13428-021-01550-4}
+#'   \doi{10.3758/Section 13428-021-01550-4}
 #'
 #' Cribari-Neto, F. (2004).
 #'   Asymptotic inference under heteroskedasticity of unknown form.
@@ -613,7 +613,7 @@
 #'   A new heteroskedasticity-consistent covariance matrix estimator
 #'   for the linear regression model.
 #'   *AStA Advances in Statistical Analysis*, **95**(2), 129--146.
-#'   \doi{10.1007/s10182-010-0141-2}
+#'   \doi{10.1007/Section 10182-010-0141-2}
 #'
 #' Davison, A. C., & Hinkley, D. V. (1997).
 #'   *Bootstrap Methods and Their Application*.
@@ -830,7 +830,7 @@
 #'   by = sex,
 #'   labels = c(
 #'     wellbeing_score = "WHO-5 wellbeing (0-100)",
-#'     bmi = "Body-mass index (kg/m²)"
+#'     bmi = "Body-mass index (kg/m^2)"
 #'   ),
 #'   r2 = "adj_r2"
 #' )
@@ -1502,8 +1502,8 @@ fit_numeric_predictor_lm_rows <- function(
   )
 
   # `focal_term = "x"` activates the partial-F path in
-  # compute_lm_model_stats / compute_es_ci_lm so f² and ω² are
-  # restricted to x and ignore covariate contributions to R². When
+  # compute_lm_model_stats / compute_es_ci_lm so f^2 and omega^2 are
+  # restricted to x and ignore covariate contributions to R^2. When
   # there are no covariates the model is bivariate and focal_term
   # is NULL; the model-level F coincides with the focal F.
   focal_term <- if (has_covs) "x" else NULL
@@ -1630,7 +1630,7 @@ fit_categorical_predictor_lm_rows <- function(
   #     level. Matches Stata `margins` and
   #     `marginaleffects::avg_predictions()`.
   #   * `"balanced"` averages a synthetic grid of factor-covariate
-  #     levels × numeric covariates at the sample mean. Matches
+  #     levels x numeric covariates at the sample mean. Matches
   #     `emmeans::emmeans()` default and SPSS UNIANOVA EMMEANS.
   # Both reduce to the same linear-contrast formula
   # (`avg_row %*% cf`); only `avg_row` differs.
@@ -1662,7 +1662,7 @@ fit_categorical_predictor_lm_rows <- function(
   # Global Wald F restricted to the focal term `x`. With covariates,
   # `seq_along(cf)[-1]` would also pick up covariate coefficients,
   # producing an omnibus F that mixes the focal effect with covariate
-  # nuisance — wrong. Restrict to coefficients whose term assignment
+  # nuisance -- wrong. Restrict to coefficients whose term assignment
   # equals the position of `x` in the model's term list.
   x_coef_idx <- which(stats::model.matrix(fit) |>
     attr("assign") == which(attr(stats::terms(fit), "term.labels") == "x"))

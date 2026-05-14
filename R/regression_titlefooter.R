@@ -1,4 +1,4 @@
-# Title + footer auto-generation for table_regression() — Q13.
+# Title + footer auto-generation for table_regression() -- Q13.
 #
 # Per dev/table_regression_design.md Q13:
 #   Title  = "Regression: <DV>"                          (single model)
@@ -6,15 +6,15 @@
 #          | "Regression comparison: <DV>"               (multi-model, identical DVs)
 #          | "Regression comparison"                     (multi-model, mixed DVs)
 #   Footer = "Note. " + themes joined by \n, where each theme is one of:
-#            * Std. errors block          (Q7 / Q13 — uniform single-line OR
+#            * Std. errors block          (Q7 / Q13 -- uniform single-line OR
 #              per-model indented enumeration)
-#            * AME-Satterthwaite block    (Q14b — affirmative declaration when
+#            * AME-Satterthwaite block    (Q14b -- affirmative declaration when
 #              CR* + AME requested; positive signal, not a disclaimer)
-#            * Standardized caveat        (Q15 — method-specific text when
+#            * Standardized caveat        (Q15 -- method-specific text when
 #              non-additive terms detected)
-#            * Stars mapping              (Q12 — when stars != FALSE)
-#            * Singular / rank-deficient  (Q22 — when any model has dropped coefs)
-#            * Hierarchical block         (Q6 — when nested = TRUE)
+#            * Stars mapping              (Q12 -- when stars != FALSE)
+#            * Singular / rank-deficient  (Q22 -- when any model has dropped coefs)
+#            * Hierarchical block         (Q6 -- when nested = TRUE)
 #
 # All builders take pre-computed metadata (typically the list of
 # `extract_lm_phase1()` outputs) and return a character scalar (or
@@ -78,7 +78,7 @@ build_regression_title <- function(extracts, nested = FALSE) {
 # `extracts`  : list of extract_lm_phase1() outputs (one per model)
 # `standardized`: scalar token ("none", "refit", "posthoc", "basic", "smart")
 # `stars`     : FALSE, TRUE, or named numeric vector (Q12)
-# `nested`    : logical — nested = TRUE flips on the hierarchical theme
+# `nested`    : logical -- nested = TRUE flips on the hierarchical theme
 # `show_columns`: full vocabulary, used to detect AME path
 build_regression_footer <- function(
     extracts,
@@ -149,9 +149,9 @@ capitalize_first <- function(s) {
 
 # ---- Theme: vcov block (Q7 / Q13) ----------------------------------------
 
-# Uniform vcov across models  → single line:
+# Uniform vcov across models  -> single line:
 #   "Std. errors: cluster-robust (CR2), clusters by clinic_id."
-# Heterogeneous vcov           → indented enumeration:
+# Heterogeneous vcov           -> indented enumeration:
 #   "Std. errors:
 #      Model 1: classical
 #      Model 2: cluster-robust (CR2), clusters by clinic_id"
@@ -211,7 +211,7 @@ build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
   # contrast (`clubSandwich::linear_contrast`); glm uses the dominant-
   # coefficient approximation via `clubSandwich::coef_test` because the
   # response-scale AME is non-linear in beta (Pustejovsky & Tipton
-  # 2018, §4).
+  # 2018, Section 4).
   mechanism <- if (any_lm && any_glm) {
     paste0(
       "via `clubSandwich` (closed-form `linear_contrast()` for `lm`; ",
@@ -244,7 +244,7 @@ build_standardized_caveat_footer_block <- function(extracts, standardized) {
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
   any_problem <- FALSE
   for (e in extracts) {
-    # `[[` (not `$`) — extract_lm_phase1's output has a `fit_stats`
+    # `[[` (not `$`) -- extract_lm_phase1's output has a `fit_stats`
     # field that partial-matches "fit" under `$`, which would
     # silently feed a data.frame to detect_non_additive_terms() and
     # crash on missing $terms.
@@ -279,10 +279,10 @@ build_standardized_caveat_footer_block <- function(extracts, standardized) {
 
 # ---- Theme: stars mapping (Q12) ------------------------------------------
 
-# stars = FALSE                  → NULL (no footer note)
-# stars = TRUE                   → APA preset:
+# stars = FALSE                  -> NULL (no footer note)
+# stars = TRUE                   -> APA preset:
 #   "*** p < .001, ** p < .01, * p < .05."
-# stars = c("†"=.10, "*"=.05)    → "* p < .05, † p < .10."
+# stars = c("+"=.10, "*"=.05)    -> "* p < .05, + p < .10."
 # Mapping rendered in increasing-strictness order (smallest p first
 # at the lead) mirroring stargazer / modelsummary convention.
 build_stars_footer_block <- function(stars) {
@@ -291,7 +291,7 @@ build_stars_footer_block <- function(stars) {
     stars <- c("*" = 0.05, "**" = 0.01, "***" = 0.001)
   }
   if (!is.numeric(stars) || is.null(names(stars))) return(NULL)
-  ord <- order(stars)               # smallest p first ⇒ strictest symbol first
+  ord <- order(stars)               # smallest p first => strictest symbol first
   sym <- names(stars)[ord]
   thr <- stars[ord]
   parts <- vapply(seq_along(sym), function(i) {
@@ -302,7 +302,7 @@ build_stars_footer_block <- function(stars) {
 
 # APA-style threshold formatting: leading dot, minimum 2 decimal
 # digits, trailing zeros trimmed beyond that. Examples:
-#   0.001 → ".001",  0.01 → ".01",  0.05 → ".05",  0.10 → ".10".
+#   0.001 -> ".001",  0.01 -> ".01",  0.05 -> ".05",  0.10 -> ".10".
 format_p_threshold <- function(p) {
   if (!is.finite(p) || p <= 0 || p > 1) return(format(p))
   s <- formatC(p, format = "f", digits = 3)   # always 3 decimals first
@@ -339,9 +339,9 @@ build_singular_footer_block <- function(extracts) {
 # exponentiated. Names the family-specific label (OR / IRR / HR / RR
 # / MR / exp(B)) per Stata `logit, or` convention. The per-family
 # qualifier appears only when MULTIPLE distinct headers are in
-# play (e.g., logit + poisson side by side ⇒ "OR / IRR (per
-# family)"); a single family — even with a non-exponentiated lm
-# alongside — uses the unqualified header.
+# play (e.g., logit + poisson side by side => "OR / IRR (per
+# family)"); a single family -- even with a non-exponentiated lm
+# alongside -- uses the unqualified header.
 build_exponentiate_footer_block <- function(extracts) {
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
   applied <- vapply(extracts, function(e) isTRUE(e$exp_applied),
@@ -569,7 +569,7 @@ isTRUE_vec <- function(x) {
 
 # Returns NULL by design: the nested comparison block emitted by
 # format_nested_comparison_footer() (Step 9) is self-explanatory under
-# its "── Model comparison ──" header. Adding a paragraph that
+# its "-- Model comparison --" header. Adding a paragraph that
 # announces it would just be redundant noise above the block. The
 # function is kept as a hook so Phase 2/3 can reintroduce
 # class-specific declarations (LRT for glm, REML for merMod, etc.)

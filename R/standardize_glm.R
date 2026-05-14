@@ -2,35 +2,35 @@
 #
 # Five methods, mirroring the lm dispatch + adding `"pseudo"`:
 #
-#   * "refit"   — refit the glm on z-scored numeric predictors. Y stays
+#   * "refit"   -- refit the glm on z-scored numeric predictors. Y stays
 #                 on its observed scale (the link is fixed by the
 #                 family); inference comes from the refitted glm via
 #                 the user's vcov. Long & Freese (2014, \u00A74.3.4)
 #                 "x-standardization".
-#   * "posthoc" — algebraic X-only scaling: \u03B2 = b × SD(X). Factor
+#   * "posthoc" -- algebraic X-only scaling: \u03B2 = b x SD(X). Factor
 #                 dummies keep 0/1 (no SD division). Matches
 #                 `effectsize::standardize_parameters(method = "posthoc")`.
-#   * "basic"   — like posthoc but factor-derived design columns are
+#   * "basic"   -- like posthoc but factor-derived design columns are
 #                 scaled by SD(column) (treated as numeric).
-#   * "smart"   — Gelman (2008): binary numeric inputs scaled by
-#                 2 × SD(X); other numerics by SD(X); factor dummies
+#   * "smart"   -- Gelman (2008): binary numeric inputs scaled by
+#                 2 x SD(X); other numerics by SD(X); factor dummies
 #                 unchanged. X-only.
-#   * "pseudo"  — Menard (2004, 2011) **fully** standardised:
-#                 \u03B2 = b × SD(X) / SD(Y*)
+#   * "pseudo"  -- Menard (2004, 2011) **fully** standardised:
+#                 \u03B2 = b x SD(X) / SD(Y*)
 #                 where Y* is the latent variable on the link scale and
-#                   SD(Y*) = sqrt(var(η̂) + var_link)
-#                   η̂        : linear predictor (predict, type = "link")
-#                   var_link  : logit  → π²/3   (≈ 3.290)
-#                               probit → 1
-#                               cloglog→ π²/6   (Gumbel)
-#                               other  → NA (returns all-NA \u03B2)
+#                   SD(Y*) = sqrt(var(eta^) + var_link)
+#                   eta^        : linear predictor (predict, type = "link")
+#                   var_link  : logit  -> pi^2/3   (~ 3.290)
+#                               probit -> 1
+#                               cloglog-> pi^2/6   (Gumbel)
+#                               other  -> NA (returns all-NA \u03B2)
 #                 Defined for binomial families; non-binomial returns
 #                 NA-vector with a `spicy_caveat` warning.
 #
 # Inference under all algebraic methods is exact: the t (z) statistic
 # and p-value are invariant under linear rescaling. CIs are recomputed
 # from the scaled SE using the same critical value as the unscaled
-# inference (z for glm — df = Inf — matching `compute_glm_coef_inference`).
+# inference (z for glm -- df = Inf -- matching `compute_glm_coef_inference`).
 
 
 # ---- Public-internal dispatch --------------------------------------------
@@ -139,12 +139,12 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
 # ---- Algebraic methods (posthoc / basic / smart / pseudo) ----------------
 
 # Engine for the four algebraic methods. Three switches:
-#   * factor_treatment ∈ {"scale", "unscaled"}
+#   * factor_treatment in {"scale", "unscaled"}
 #       "scale"   : factor dummies scaled by sd(col)         (basic)
 #       "unscaled": factor dummies left unscaled (1)         (posthoc, smart, pseudo)
-#   * binary_factor ∈ {1, 2}
+#   * binary_factor in {1, 2}
 #       1 : binary NUMERIC columns use sd(X)                 (posthoc, basic, pseudo)
-#       2 : binary NUMERIC columns use 2 × sd(X)             (smart, Gelman 2008)
+#       2 : binary NUMERIC columns use 2 x sd(X)             (smart, Gelman 2008)
 #   * sd_y_div : positive scalar divisor applied to every \u03B2
 #       1                       : X-only methods
 #       sd(Y*) (Menard latent)  : pseudo
@@ -183,7 +183,7 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   beta <- b * scale_factor
   se_beta <- se_b * scale_factor
 
-  # Intercept set to NA — its standardised value is mechanical under
+  # Intercept set to NA -- its standardised value is mechanical under
   # algebraic scaling and not meaningful for interpretation. Guard
   # against no-intercept models (`glm(y ~ -1 + x, ...)`): only NA the
   # first row when it actually IS the intercept.
@@ -194,11 +194,11 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
 
   # Inference reconstruction.
   #
-  # Default: z-asymptotic (df = Inf) — matches glm convention.
+  # Default: z-asymptotic (df = Inf) -- matches glm convention.
   #
   # CR* + cluster: Satterthwaite-corrected df via clubSandwich,
   # parallelling `compute_glm_coef_inference()` for the B row. Without
-  # this, the β row would silently revert to z while the B row uses
+  # this, the beta row would silently revert to z while the B row uses
   # Satterthwaite, producing inconsistent CIs / p-values for what is
   # mathematically the same test (linear rescaling preserves the
   # statistic, so df / p / CI must follow the same regime).
@@ -294,11 +294,11 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
 
 # Latent-variable SD on the link scale (Menard 2011 eq. 6 / Long &
 # Freese 2014 \u00A73.6). Defined for binomial families:
-#   SD(Y*) = sqrt(var(η̂) + var_link)
-# where η̂ is the linear predictor and var_link is the assumed variance
-# of the latent residual under each link function (logit → logistic
-# distribution, π²/3; probit → standard normal, 1; cloglog → Gumbel,
-# π²/6). Returns NA for non-binomial families (caller emits caveat).
+#   SD(Y*) = sqrt(var(eta^) + var_link)
+# where eta^ is the linear predictor and var_link is the assumed variance
+# of the latent residual under each link function (logit -> logistic
+# distribution, pi^2/3; probit -> standard normal, 1; cloglog -> Gumbel,
+# pi^2/6). Returns NA for non-binomial families (caller emits caveat).
 compute_menard_sd_y_star <- function(fit) {
   fam <- stats::family(fit)
   if (!identical(fam$family, "binomial")) return(NA_real_)

@@ -94,7 +94,7 @@ spicy_inform <- function(message, class = NULL, ...) {
 # Internal indirection for `requireNamespace()`. Exists so the
 # missing-Suggests guards across the regression files can be
 # exercised in tests via `local_mocked_bindings(.package = "spicy")`
-# — `requireNamespace` itself is in `base::`, and mocking it there
+# -- `requireNamespace` itself is in `base::`, and mocking it there
 # does not propagate cleanly to instrumented code under
 # `covr::package_coverage()`. Going through this wrapper makes the
 # guards both more readable and properly testable.
@@ -110,11 +110,11 @@ spicy_pkg_available <- function(pkg) {
 # of the generic "cluster vector supplied".
 #
 # Recognised forms:
-#   * symbol            `df$col`              → "col"  (extracted from `$`)
-#   * symbol            `df[["col"]]`         → "col"  (extracted from `[[`)
-#   * bare symbol       `mycluster`           → "mycluster"
-#   * literal vector    `c(1, 2, 3)`          → NA   (no meaningful name)
-#   * NULL / missing    `cluster_expr` is NULL → NA
+#   * symbol            `df$col`              -> "col"  (extracted from `$`)
+#   * symbol            `df[["col"]]`         -> "col"  (extracted from `[[`)
+#   * bare symbol       `mycluster`           -> "mycluster"
+#   * literal vector    `c(1, 2, 3)`          -> NA   (no meaningful name)
+#   * NULL / missing    `cluster_expr` is NULL -> NA
 #
 # Returns a character scalar (NA_character_ when no name applies).
 # Lives next to `spicy_pkg_available()` because it is a small,

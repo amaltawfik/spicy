@@ -110,14 +110,14 @@ to \code{2}.}
 \item{assoc_measure}{Which association measure to report alongside the
 chi-squared \emph{p}-value. Accepts four input shapes:
 \itemize{
-\item \code{"none"} — drop the column entirely.
-\item \code{"auto"} (the default) — pick a measure per row variable based
+\item \code{"none"} -- drop the column entirely.
+\item \code{"auto"} (the default) -- pick a measure per row variable based
 on the variable type: a 2x2 table (binary row variable
 vs. binary \code{by}) uses \strong{\code{phi}}, a pair of ordered factors uses
 \strong{\code{tau_b}}, every other case uses \strong{\code{cramer_v}}.
 \item a single string from
 \code{c("cramer_v", "phi", "gamma", "tau_b", "tau_c", "somers_d", "lambda")}
-— applied uniformly to every row variable.
+-- applied uniformly to every row variable.
 \item a character vector with one entry per row variable. Both
 \strong{named} (\code{c(smoking = "phi", health = "tau_b")}, recommended;
 unnamed variables fall back to \code{"auto"}) and \strong{unnamed}

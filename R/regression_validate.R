@@ -13,12 +13,12 @@
 # Q9). Each step is a separate `validate_*()` helper, called in
 # deterministic order by table_regression() itself.
 #
-# Phase A \u2014 input class            (steps 1–3)
-# Phase B \u2014 multi-model alignment  (steps 4–8)
-# Phase C \u2014 vocabulary tokens      (steps 9–12)
-# Phase D \u2014 argument values        (steps 13–24)
-# Phase E \u2014 cross-arg semantic     (steps 25–26, warnings only)
-# Phase F \u2014 output-dependent       (steps 27–29)
+# Phase A \u2014 input class            (steps 1-3)
+# Phase B \u2014 multi-model alignment  (steps 4-8)
+# Phase C \u2014 vocabulary tokens      (steps 9-12)
+# Phase D \u2014 argument values        (steps 13-24)
+# Phase E \u2014 cross-arg semantic     (steps 25-26, warnings only)
+# Phase F \u2014 output-dependent       (steps 27-29)
 
 
 # ---- Token vocabularies (canonical) ---------------------------------------
@@ -103,7 +103,7 @@
 
 # ---- Phase A \u2014 input class ------------------------------------------------
 
-# Steps 1–3: validate `models` is lm OR list of lm; aggregate-fail on
+# Steps 1-3: validate `models` is lm OR list of lm; aggregate-fail on
 # any non-lm position.
 #
 # Detection of "single fit vs list of fits" is non-trivial because R's
@@ -178,7 +178,7 @@ validate_models_input <- function(models) {
     }
   }
 
-  # Steps 2–3: per-element class check, aggregate-fail
+  # Steps 2-3: per-element class check, aggregate-fail
   problems <- vapply(seq_along(models), function(i) {
     msg <- classify_unsupported_lm_class(models[[i]], position = i)
     if (is.null(msg)) "" else msg
@@ -248,13 +248,13 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
 
 # ---- Phase B \u2014 multi-model alignment --------------------------------------
 
-# Steps 4–5: nested = TRUE requires identical nobs and identical DV
+# Steps 4-5: nested = TRUE requires identical nobs and identical DV
 validate_nested_alignment <- function(models, nested) {
   if (!isTRUE(nested)) {
     return(invisible(NULL))
   }
   # Nested = TRUE with a single fit is a no-op (nothing to compare).
-  # Warn rather than silently render a regular table — the user almost
+  # Warn rather than silently render a regular table -- the user almost
   # certainly meant to pass a list of nested fits and the silent no-op
   # would mask the mistake.
   if (length(models) <= 1L) {
@@ -326,7 +326,7 @@ validate_nested_alignment <- function(models, nested) {
   invisible(NULL)
 }
 
-# Steps 6–8: vcov + cluster list/scalar coordination
+# Steps 6-8: vcov + cluster list/scalar coordination
 validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   n_models <- length(models)
 
@@ -465,7 +465,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       }
     }
 
-    # Cluster supplied but vcov is not CR* — silent ignore would be a
+    # Cluster supplied but vcov is not CR* -- silent ignore would be a
     # forgotten-vcov mistake. Warn explicitly so the user notices.
     if (!is.null(c_i) && !is_cr) {
       spicy_warn(
@@ -532,11 +532,11 @@ validate_show_columns <- function(show_columns, standardized) {
 # error second when the typo is absent.
 #
 # Substitution policy (closest analog per discipline convention):
-#   * lm  ⟶ no  partial_chi2          (use partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
-#   * lm  ⟶ no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
-#   * glm ⟶ no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Long & Freese
+#   * lm  -> no  partial_chi2          (use partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
+#   * lm  -> no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
+#   * glm -> no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Long & Freese
 #                                      2014 \u00A73.5; Allison "TYPE3")
-#   * glm ⟶ no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
+#   * glm -> no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
 validate_class_appropriate_tokens <- function(models,
                                                 show_columns,
@@ -753,7 +753,7 @@ validate_token_vector <- function(x, valid, arg) {
 
 # ---- Phase D \u2014 argument value validation ----------------------------------
 
-# Steps 13–14: enum args. table_regression() invokes match.arg() directly
+# Steps 13-14: enum args. table_regression() invokes match.arg() directly
 # on `standardized`, `intercept_position`, `align`, `output`,
 # `reference_style` \u2014 match.arg() raises a clear base-R error on
 # invalid values. No spicy-specific helper needed.
@@ -1061,9 +1061,9 @@ validate_predictor_labels <- function(labels, models) {
 
   # Accept BOTH:
   #   * formula term labels  (`attr(terms(fit), "term.labels")`)
-  #     → e.g. "wt", "cyl", "wt:cyl", "I(x^2)"
+  #     -> e.g. "wt", "cyl", "wt:cyl", "I(x^2)"
   #   * coefficient names    (`names(coef(fit))`)
-  #     → e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
+  #     -> e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
   # The renderer tries the per-row label first (coef name), then
   # falls back to the per-term label (factor variable). So both
   # flavours of key are useful: term keys rename factor headers,
@@ -1101,7 +1101,7 @@ validate_predictor_labels <- function(labels, models) {
 
 # ---- Phase E \u2014 cross-arg semantic warnings (no errors) --------------------
 
-# Step 25: standardized != "none" × non-additive terms → spicy_caveat warning
+# Step 25: standardized != "none" x non-additive terms -> spicy_caveat warning
 emit_standardized_caveat_if_needed <- function(models, standardized) {
   if (identical(standardized, "none")) {
     return(invisible(NULL))
@@ -1194,7 +1194,7 @@ detect_ame_satterthwaite_path <- function(vcov, show_columns) {
 
 # ---- Phase F \u2014 output-dependent resource validation -----------------------
 
-# Steps 27–29: file paths and package availability for the selected
+# Steps 27-29: file paths and package availability for the selected
 # output format. Fires only when the user picked the corresponding
 # output, so users with `output = "default"` pay nothing for
 # excel/word/clipboard validation.

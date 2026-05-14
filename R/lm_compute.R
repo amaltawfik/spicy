@@ -500,15 +500,15 @@ compute_lm_wald_test <- function(
 
 compute_lm_model_stats <- function(fit, focal_term = NULL) {
   sm <- summary(fit)
-  r2 <- unname(sm$r.squared)         # always overall R² (model-level)
-  adj_r2 <- unname(sm$adj.r.squared) # always overall adj. R²
+  r2 <- unname(sm$r.squared)         # always overall R^2 (model-level)
+  adj_r2 <- unname(sm$adj.r.squared) # always overall adj. R^2
   sigma_hat <- unname(sm$sigma)
   df_resid <- stats::df.residual(fit)
   cf <- stats::coef(fit)
 
   if (is.null(focal_term)) {
     # Bivariate path: every non-intercept coef belongs to the focal
-    # predictor, so the model-level f² / ω² coincide with the
+    # predictor, so the model-level f^2 / omega^2 coincide with the
     # focal-term effect size.
     df_effect <- length(cf) - 1L
     f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
@@ -529,7 +529,7 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
     }
     omega2 <- compute_lm_omega2(fit, df_effect, df_resid)
   } else {
-    # Covariate-adjusted path: f² and ω² are restricted to the focal
+    # Covariate-adjusted path: f^2 and omega^2 are restricted to the focal
     # term via partial F (see `extract_lm_focal_f_stat`). Cohen's d
     # and Hedges' g are undefined under adjustment and the public
     # API rejects them upstream; we still set them to NA defensively
@@ -539,7 +539,7 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
       f2 <- NA_real_
       omega2 <- NA_real_
     } else {
-      # Partial f² = F * df1 / df_resid. Equivalent to
+      # Partial f^2 = F * df1 / df_resid. Equivalent to
       # SS_focal / SS_residual where SS_focal = F * df1 * MSE_full.
       f2 <- fs$f_obs * fs$df1 / fs$df2
       omega2 <- compute_lm_partial_omega2(fit, fs)
@@ -551,12 +551,12 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
   list(r2 = r2, adj_r2 = adj_r2, f2 = f2, d = d, g = g, omega2 = omega2)
 }
 
-# Internal: partial ω² for a focal term using the Olejnik & Algina
+# Internal: partial omega^2 for a focal term using the Olejnik & Algina
 # (2003) formula (also used by `effectsize::omega_squared(partial =
 # TRUE)` and SPSS UNIANOVA):
-#   ω²_partial = (SS_effect − df_effect · MSE) / (SS_effect + (N − df_effect) · MSE)
-# where SS_effect = F · df_effect · MSE_full and MSE_full = SS_resid / df_resid.
-# Note this differs from the *model-level* Hays ω² in `compute_lm_omega2()`
+#   omega^2_partial = (SS_effect - df_effect . MSE) / (SS_effect + (N - df_effect) . MSE)
+# where SS_effect = F . df_effect . MSE_full and MSE_full = SS_resid / df_resid.
+# Note this differs from the *model-level* Hays omega^2 in `compute_lm_omega2()`
 # (denominator uses SS_total): the partial form normalises by the
 # effect-only sum of squares plus residual sum of squares, which is
 # the correct partial-effect quantity in a covariate-adjusted model.
@@ -794,8 +794,8 @@ extract_lm_f_stat <- function(fit) {
 # `drop1`). When `focal_term = NULL`, returns the model-level F via
 # `extract_lm_f_stat()`, which for a bivariate `y ~ x` model coincides
 # with the focal-term F. With covariates (`y ~ x + cov1 + cov2`),
-# `focal_term = "x"` returns the partial F restricted to x — the
-# correct quantity for partial f² / partial ω² CI inversion under
+# `focal_term = "x"` returns the partial F restricted to x -- the
+# correct quantity for partial f^2 / partial omega^2 CI inversion under
 # adjustment.
 extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
   if (is.null(focal_term)) {
@@ -827,16 +827,16 @@ extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
   )
 }
 
-# CI for η² / ω² via noncentral-F inversion (Steiger 2004). Two
+# CI for eta^2 / omega^2 via noncentral-F inversion (Steiger 2004). Two
 # regimes, switched by `focal_term`:
-#   * `focal_term = NULL` (model-level R²): bounds = ncp / (ncp + N)
+#   * `focal_term = NULL` (model-level R^2): bounds = ncp / (ncp + N)
 #     where N = df1 + df2 + 1; this matches the global-F partition
 #     SS_total = SS_model + SS_resid, with df_total = N - 1.
-#   * `focal_term != NULL` (partial η²): bounds = ncp / (ncp + df2);
-#     this matches the partial-η² definition
-#     η²_p = SS_effect / (SS_effect + SS_error) (Smithson 2003;
+#   * `focal_term != NULL` (partial eta^2): bounds = ncp / (ncp + df2);
+#     this matches the partial-eta^2 definition
+#     eta^2_p = SS_effect / (SS_effect + SS_error) (Smithson 2003;
 #     used by `effectsize::eta_squared(partial = TRUE)`).
-# In a covariate-adjusted model the two formulas diverge — the
+# In a covariate-adjusted model the two formulas diverge -- the
 # partial form is the correct one for individual-term inference.
 compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   fs <- extract_lm_focal_f_stat(fit, focal_term)
@@ -854,11 +854,11 @@ compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   pmax(0, bounds)
 }
 
-# CI for Cohen's f² via noncentral-F inversion. Same partial vs
+# CI for Cohen's f^2 via noncentral-F inversion. Same partial vs
 # model-level dispatch as `compute_omega2_ci_lm()`:
-#   * model-level: f² = ncp / N         (N = df1 + df2 + 1)
-#   * partial    : f² = ncp / df_error  (= η² / (1 - η²) under the
-#                  partial η² mapping above)
+#   * model-level: f^2 = ncp / N         (N = df1 + df2 + 1)
+#   * partial    : f^2 = ncp / df_error  (= eta^2 / (1 - eta^2) under the
+#                  partial eta^2 mapping above)
 compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
@@ -890,7 +890,7 @@ compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
 #
 #   * `"balanced"` (matches `emmeans::emmeans()` default, SPSS
 #     UNIANOVA EMMEANS, SAS LSMEANS): newdata = synthetic grid of
-#     factor-covariate level combinations × numeric covariates fixed
+#     factor-covariate level combinations x numeric covariates fixed
 #     at their sample mean. Each grid cell weighted equally (1 / k).
 #     Treats the design as if covariates were balanced -- the
 #     "marginal mean assuming a balanced design" estimand.

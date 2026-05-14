@@ -3,18 +3,18 @@
 # Four methods supported, matching the dispatch of
 # `effectsize::standardize_parameters()`:
 #
-#   * "refit"   — refit the lm on z-scored data (gold standard,
+#   * "refit"   -- refit the lm on z-scored data (gold standard,
 #                 Cohen et al. 2003)
-#   * "posthoc" — algebraic scaling β = b × sd(X) / sd(Y) on the
+#   * "posthoc" -- algebraic scaling beta = b x sd(X) / sd(Y) on the
 #                 columns of model.matrix(fit)
-#   * "basic"   — like posthoc but factor-derived design columns
-#                 keep their 0/1 coding (β = NA for those)
-#   * "smart"   — Gelman (2008): divide binary predictors by
-#                 2 × sd(X) instead of sd(X), continuous by sd(X)
+#   * "basic"   -- like posthoc but factor-derived design columns
+#                 keep their 0/1 coding (beta = NA for those)
+#   * "smart"   -- Gelman (2008): divide binary predictors by
+#                 2 x sd(X) instead of sd(X), continuous by sd(X)
 #
 # Implementation rationale (Q3 + Q14b coherence): native rather than
 # delegated to effectsize because the user's `vcov` (HC*, CR*,
-# bootstrap, jackknife) must propagate to β's SE/CI/p — which
+# bootstrap, jackknife) must propagate to beta's SE/CI/p -- which
 # effectsize doesn't expose. Cross-validated against
 # effectsize::standardize_parameters() in tests as the oracle.
 
@@ -51,15 +51,15 @@ standardize_lm <- function(
 
 # z-score the model.frame's numeric columns (response + numeric
 # predictors), refit the lm on the standardised frame, then apply
-# the user's vcov to the refitted fit and compute (β, SE, CI, t, p).
+# the user's vcov to the refitted fit and compute (beta, SE, CI, t, p).
 # Inference under refit is **identical** to inference on the
-# original fit (linear transformation preserves t and p) — the only
-# differences are the magnitudes (β) and SEs.
+# original fit (linear transformation preserves t and p) -- the only
+# differences are the magnitudes (beta) and SEs.
 standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
                                   weights, boot_n) {
   mf <- stats::model.frame(fit)
   # Drop the auxiliary "(weights)" column that lm() injects when
-  # weights are supplied — passing it back as data confuses lm().
+  # weights are supplied -- passing it back as data confuses lm().
   mf[["(weights)"]] <- NULL
 
   # z-score numeric columns (response + numeric predictors). Factor
@@ -74,7 +74,7 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
   # Refit on standardised frame, preserving weights. Wrapped in
   # tryCatch because model.frame columns named after function calls
   # (`factor(cyl)`, `I(x^2)`, `poly(x, 2)`, `log(x)`, etc.) can fail
-  # to refit cleanly — the column exists with the wrapped name but
+  # to refit cleanly -- the column exists with the wrapped name but
   # lm() tries to re-evaluate the function on the inner symbol.
   # On failure, fall back to algebraic posthoc with a transparent
   # spicy_fallback warning so the user knows they got a different
@@ -134,10 +134,10 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
 # ---- Method 2: posthoc -----------------------------------------------------
 
 # Numerics scaled by sd(X)/sd(Y); factor-derived design columns
-# scaled by 1/sd(Y) only (no X-scaling — treat 0/1 dummies as
+# scaled by 1/sd(Y) only (no X-scaling -- treat 0/1 dummies as
 # already on a "standardised" scale). Matches the semantics of
 # `effectsize::standardize_parameters(method = "posthoc")`.
-# Inference: SE_β scales by the same per-column factor; t and p
+# Inference: SE_beta scales by the same per-column factor; t and p
 # are unchanged under linear transformation; CI rebuilt from
 # scaled SE.
 standardize_posthoc_lm <- function(fit, vcov_type, cluster, ci_level,
@@ -154,7 +154,7 @@ standardize_posthoc_lm <- function(fit, vcov_type, cluster, ci_level,
 
 # All design-matrix columns scaled by sd(col)/sd(Y), including
 # factor dummies. Matches `effectsize::standardize_parameters(
-# method = "basic")` — the "naive" / "raw" approach where every
+# method = "basic")` -- the "naive" / "raw" approach where every
 # column gets the same algebraic treatment.
 standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
                                   weights, boot_n) {
@@ -171,10 +171,10 @@ standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
 # Implements **Gelman (2008) "Scaling regression inputs by dividing
 # by two standard deviations"** strictly:
 #   * binary numeric inputs (0/1 with exactly 2 unique values) are
-#     scaled by 2 × sd(X) / sd(Y)
+#     scaled by 2 x sd(X) / sd(Y)
 #   * other numeric inputs are scaled by sd(X) / sd(Y) (matches posthoc)
 #   * factor-derived dummies are NOT scaled by their column SD
-#     (treated as already standardised — same convention as posthoc)
+#     (treated as already standardised -- same convention as posthoc)
 #
 # **Note**: this differs slightly from
 # `effectsize::standardize_parameters(method = "smart")` for factor
@@ -188,7 +188,7 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
   scale_and_rebuild(
     fit, vcov_type, cluster, ci_level, weights, boot_n,
     factor_treatment = "unscaled",   # factors: scale by 1/sd_y only
-    binary_factor    = 2             # binary numerics: 2 × sd(X)
+    binary_factor    = 2             # binary numerics: 2 x sd(X)
   )
 }
 
@@ -197,10 +197,10 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
 
 # Engine for posthoc, basic, smart. Two parameters control method
 # semantics:
-#   * factor_treatment ∈ {"scale", "unscaled"}
+#   * factor_treatment in {"scale", "unscaled"}
 #       "scale"   : factor dummies scaled by sd(col)/sd_y (basic)
 #       "unscaled": factor dummies scaled by 1/sd_y only (posthoc, smart)
-#   * binary_factor ∈ {1, 2}
+#   * binary_factor in {1, 2}
 #       1 : binary NUMERIC columns use sd(X)/sd_y (posthoc, basic)
 #       2 : binary NUMERIC columns use 2*sd(X)/sd_y (smart, Gelman 2008)
 #
@@ -252,16 +252,16 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
       sd_x[is_binary_numeric] / sd_y
   }
 
-  # β and SE_β. Singular coefs (NA in b) propagate naturally.
+  # beta and SE_beta. Singular coefs (NA in b) propagate naturally.
   beta <- b * scale_factor
   se_beta <- se_b * scale_factor
 
-  # Intercept set to NA — its standardised value is mechanical
+  # Intercept set to NA -- its standardised value is mechanical
   # under algebraic scaling and not meaningful for interpretation.
   beta[1] <- NA_real_
   se_beta[1] <- NA_real_
 
-  # Inference reconstruction. Under a linear scale, t = β/SE_β =
+  # Inference reconstruction. Under a linear scale, t = beta/SE_beta =
   # b/SE_b is unchanged from the original; we recompute from
   # scaled values for code symmetry.
   df_resid <- stats::df.residual(fit)
@@ -298,7 +298,7 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
 
 # ---- Internal: refit-method coefs table ----------------------------------
 
-# Used by standardize_refit_lm() to compute (β, SE, CI, t, p) from
+# Used by standardize_refit_lm() to compute (beta, SE, CI, t, p) from
 # the refitted lm + its recomputed vcov.
 coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
                                    ci_level, intercept_to_na = TRUE) {
@@ -338,7 +338,7 @@ coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
 
 # Returns the column indices in model.matrix(fit) that come from
 # factor terms (main effects only, not interactions). Used by
-# `standardize_basic_lm()` to NA the corresponding β rows.
+# `standardize_basic_lm()` to NA the corresponding beta rows.
 detect_factor_design_cols <- function(fit) {
   xlevels <- fit$xlevels
   if (is.null(xlevels) || length(xlevels) == 0L) return(integer(0))
@@ -373,7 +373,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
                                model_id, outcome) {
   # Dispatch on class: glm has its own 5-method standardise machinery
   # (5th = "pseudo", Menard 2011 fully-standardised), with X-only
-  # algebraic semantics for the other four (Long & Freese 2014 §4.3.4).
+  # algebraic semantics for the other four (Long & Freese 2014 Section 4.3.4).
   std_table <- if (inherits(fit, "glm")) {
     standardize_glm(
       fit, method = standardized,
