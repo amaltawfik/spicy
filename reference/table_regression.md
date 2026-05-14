@@ -831,7 +831,7 @@ table_regression(fit)
 #>  (Intercept)     │   64.63  1.46  [61.78, 67.49]  <.001 
 #>  age             │    0.03  0.03  [-0.03,  0.08]   .343 
 #>  sex:            │                                      
-#>    Female (ref.) │    —     —           —         —     
+#>    Female (ref.) │     —     —          —          —    
 #>    Male          │    3.65  0.80  [ 2.09,  5.22]  <.001 
 #>  education:      │                                      
 #>    .L            │   13.80  0.78  [12.28, 15.32]  <.001 
@@ -854,7 +854,7 @@ table_regression(fit, standardized = "refit")
 #>  (Intercept)     │   64.63  -0.20  1.46  [61.78, 67.49]  <.001 
 #>  age             │    0.03   0.02  0.03  [-0.03,  0.08]   .343 
 #>  sex:            │                                             
-#>    Female (ref.) │    —      —     —           —         —     
+#>    Female (ref.) │     —      —     —          —          —    
 #>    Male          │    3.65   0.23  0.80  [ 2.09,  5.22]  <.001 
 #>  education:      │                                             
 #>    .L            │   13.80   0.88  0.78  [12.28, 15.32]  <.001 
@@ -880,7 +880,7 @@ table_regression(
 #>  (Intercept)              │   64.63  <.001                               
 #>  age                      │    0.03   .343   0.03  [-0.03,  0.08]   .343 
 #>  sex:                     │                                              
-#>    Female (ref.)          │    —     —       —           —         —     
+#>    Female (ref.)          │     —     —       —          —          —    
 #>    Male                   │    3.65  <.001   3.65  [ 2.09,  5.22]  <.001 
 #>  education:               │                                              
 #>    .L                     │   13.80  <.001                               
@@ -906,7 +906,7 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  (Intercept)              │   64.63  1.46  [61.78, 67.49]  <.001                
 #>  age                      │    0.03  0.03  [-0.03,  0.08]   .343   0.03    0.03 
 #>  sex:                     │                                                     
-#>    Female (ref.)          │    —     —           —         —       —       —    
+#>    Female (ref.)          │     —     —          —          —       —       —   
 #>    Male                   │    3.65  0.80  [ 2.09,  5.22]  <.001   3.65    0.80 
 #>  education:               │                                                     
 #>    .L                     │   13.80  0.78  [12.28, 15.32]  <.001                
@@ -923,7 +923,7 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  (Intercept)              │                       
 #>  age                      │ [-0.03,  0.08]   .343 
 #>  sex:                     │                       
-#>    Female (ref.)          │       —         —     
+#>    Female (ref.)          │       —          —    
 #>    Male                   │ [ 2.09,  5.22]  <.001 
 #>  education:               │                       
 #>    .L                     │                       
@@ -949,7 +949,7 @@ table_regression(fit, vcov = "CR2", cluster = ~region)
 #>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
 #>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
 #>  sex:            │                                      
-#>    Female (ref.) │    —     —           —         —     
+#>    Female (ref.) │     —     —          —          —    
 #>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
 #>  education:      │                                      
 #>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
@@ -970,7 +970,7 @@ table_regression(fit, vcov = "CR2", cluster = "region")
 #>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
 #>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
 #>  sex:            │                                      
-#>    Female (ref.) │    —     —           —         —     
+#>    Female (ref.) │     —     —          —          —    
 #>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
 #>  education:      │                                      
 #>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
@@ -991,7 +991,7 @@ table_regression(fit, vcov = "CR2", cluster = sochealth$region)
 #>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
 #>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
 #>  sex:            │                                      
-#>    Female (ref.) │    —     —           —         —     
+#>    Female (ref.) │     —     —          —          —    
 #>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
 #>  education:      │                                      
 #>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
@@ -1014,7 +1014,7 @@ table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 #>  (Intercept)     │   64.63  1.41  [61.62, 67.65]  <.001 
 #>  age             │    0.03  0.02  [-0.03,  0.08]   .301 
 #>  sex:            │                                      
-#>    Female (ref.) │    —     —           —         —     
+#>    Female (ref.) │     —     —          —          —    
 #>    Male          │    3.65  0.79  [ 2.02,  5.29]  <.001 
 #>  education:      │                                      
 #>    .L            │   13.80  0.86  [12.02, 15.58]  <.001 
@@ -1046,7 +1046,7 @@ table_regression(
 #>  (Intercept)     │   67.00  1.58  <.001    65.07   1.63  <.001    64.63   1.46 
 #>  age             │    0.04  0.03   .177     0.04   0.03   .163     0.03   0.03 
 #>  sex:            │                                                             
-#>    Female (ref.) │    —     —     —         —      —     —         —      —    
+#>    Female (ref.) │     —     —     —         —      —     —         —      —   
 #>    Male          │                          3.90   0.90  <.001     3.65   0.80 
 #>  education:      │                                                             
 #>    .L            │                                                13.80   0.78 
@@ -1055,9 +1055,9 @@ table_regression(
 #>  n               │ 1200                  1200                   1200           
 #>  R²              │    0.00                  0.02                   0.22        
 #>  Adj.R²          │    0.00                  0.02                   0.22        
-#>  ΔR²             │    —                    +0.02                  +0.21        
-#>  F-change        │    —                   +18.94                +157.75        
-#>  p (change)      │    —                     <.001                  <.001       
+#>  ΔR²             │     —                   +0.02                  +0.21        
+#>  F-change        │     —                  +18.94                +157.75        
+#>  p (change)      │     —                    <.001                  <.001       
 #> 
 #>                    Step  
 #>                    ───── 
@@ -1066,7 +1066,7 @@ table_regression(
 #>  (Intercept)     │ <.001 
 #>  age             │  .343 
 #>  sex:            │       
-#>    Female (ref.) │ —     
+#>    Female (ref.) │  —    
 #>    Male          │ <.001 
 #>  education:      │       
 #>    .L            │ <.001 
@@ -1098,7 +1098,7 @@ table_regression(
 #>  (Intercept)     │   64.63  1.46  <.001    64.63  1.44  <.001    64.63  1.12 
 #>  age             │    0.03  0.03   .343     0.03  0.03   .343     0.03  0.03 
 #>  sex:            │                                                           
-#>    Female (ref.) │    —     —     —         —     —     —         —     —    
+#>    Female (ref.) │     —     —     —         —     —     —         —     —   
 #>    Male          │    3.65  0.80  <.001     3.65  0.80  <.001     3.65  0.97 
 #>  education:      │                                                           
 #>    .L            │   13.80  0.78  <.001    13.80  0.82  <.001    13.80  0.73 
@@ -1115,7 +1115,7 @@ table_regression(
 #>  (Intercept)     │ <.001 
 #>  age             │  .368 
 #>  sex:            │       
-#>    Female (ref.) │ —     
+#>    Female (ref.) │  —    
 #>    Male          │  .014 
 #>  education:      │       
 #>    .L            │ <.001 
