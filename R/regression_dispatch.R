@@ -164,15 +164,27 @@ output_tinytable <- function(rendered) {
                          check.names = FALSE)
   level_rows <- .detect_level_rows(body)
   body <- .trim_level_indent(body, level_rows)
-  # Match the table_continuous_lm tinytable convention exactly:
-  # native `style_tt(align = "d")` per numeric column, no custom
-  # font. align = "d" expects raw numeric strings, so we strip the
-  # render layer's leading-/trailing-whitespace pre-padding from
-  # every non-Variable column first. Bracketed CI cells have no
-  # outer whitespace; trimws leaves their interior intact and the
-  # cell falls back to default text alignment within the column.
+  # tinytable's `align = "d"` is a no-op in HTML (it produces only
+  # `text-align: center` -- decimal alignment is LaTeX-only via
+  # siunitx). And tinytable strips leading / trailing ASCII spaces
+  # from cell content, so the render layer's pre-padding evaporates
+  # in the HTML output. To get decimal alignment in BOTH HTML and
+  # LaTeX we:
+  #   * replace every ASCII space in numeric body cells with a
+  #     non-breaking space (U+00A0). NBSP is preserved by tinytable
+  #     and never collapsed by HTML's `white-space: normal`.
+  #   * apply a monospaced font on the numeric body cells so the
+  #     NBSP-padded values align column-wise.
+  # This deliberately deviates from the table_continuous_lm
+  # tinytable convention (which uses default font + align = "d");
+  # that convention only decimal-aligns in LaTeX, and users
+  # rendering the table_regression() output in the RStudio viewer
+  # see HTML, where alignment is the user-facing concern.
   if (ncol(body) >= 2L) {
-    body[-1L] <- lapply(body[-1L], trimws)
+    nbsp <- "\u00A0"
+    for (j in 2:ncol(body)) {
+      body[[j]] <- gsub(" ", nbsp, body[[j]], fixed = TRUE)
+    }
   }
   has_spanner <- !is.null(spanners) && length(spanners) > 0L
   if (has_spanner) {
@@ -185,10 +197,36 @@ output_tinytable <- function(rendered) {
   if (has_spanner) {
     tt <- tinytable::group_tt(tt, j = spanners)
   }
+  # Mirror the table_continuous_lm pipeline exactly:
+  #   1. theme_empty() to clear default cell padding / line styling.
+  #   2. align ("l" on Variable, "d" on every numeric column).
+  #   3. spanner-row centring.
+  #   4. APA borders LAST so they are not overwritten by the
+  #      preceding style_tt calls.
+  tt <- tinytable::theme_empty(tt)
 
-  # APA borders, matching the gt / flextable layout. tinytable
-  # addresses header rows with i = 0 (column labels) and i = -1
-  # (the spanner row added by group_tt above the labels).
+  tt <- tinytable::style_tt(tt, j = 1L, align = "l")
+  if (n_cols >= 2L) {
+    # Numeric body cells: centred, monospaced, no wrapping. The
+    # NBSP-padding from above + monospace gives decimal alignment
+    # in HTML; LaTeX renders the same monospaced output (the
+    # alignment then comes from the column's uniform character
+    # width inside the verbatim-like font rather than from siunitx).
+    tt <- tinytable::style_tt(
+      tt, j = 2:n_cols, align = "c",
+      monospace = TRUE,
+      html_css = "white-space: nowrap;"
+    )
+  }
+  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
+  if (has_spanner) {
+    tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
+                               align = "c")
+  }
+
+  # APA borders applied last, in the same order as
+  # table_continuous_lm (top rule, spanner mid-rule, sub-header
+  # rule, hair rule between coef and fit-stats, bottom rule).
   top_i <- if (has_spanner) -1L else 0L
   tt <- tinytable::style_tt(tt, i = top_i, j = seq_len(n_cols),
                              line = "t", line_width = 0.06)
@@ -212,23 +250,6 @@ output_tinytable <- function(rendered) {
                                line = "b", line_width = 0.06)
   }
 
-  # Header centring + per-column alignment. The spanner row (i = -1)
-  # and the column-label row (i = 0) are centred. Variable column
-  # is left-aligned; numeric body columns get align = "d" applied
-  # one column at a time -- tinytable's native decimal-alignment
-  # primitive (siunitx in LaTeX, padded-text CSS in HTML). This is
-  # the same pattern table_continuous_lm uses for tinytable.
-  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols), align = "c")
-  if (has_spanner) {
-    tt <- tinytable::style_tt(tt, i = -1L, j = seq_len(n_cols),
-                               align = "c")
-  }
-  tt <- tinytable::style_tt(tt, j = 1L, align = "l")
-  if (n_cols >= 2L) {
-    for (rj in 2:n_cols) {
-      tt <- tinytable::style_tt(tt, j = rj, align = "d")
-    }
-  }
   # Factor-level rows: indent the Variable cell. We tag both HTML
   # (CSS padding) and LaTeX (\hspace) so the indentation reaches all
   # tinytable backends.
