@@ -20,6 +20,7 @@ spicy_print_table(
   spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
+  display_labels = NULL,
   ...
 )
 }
@@ -78,6 +79,12 @@ light dashed separator line is drawn. Defaults to \code{integer(0)}.}
 \item{total_row_idx}{Optional integer vector of 1-based row indices
 identifying the totals rows; defaults to the \code{"total_row_idx"}
 attribute of \code{x} (set by \code{cross_tab()}). See \code{\link[=build_ascii_table]{build_ascii_table()}}.}
+
+\item{display_labels}{Optional character vector of length \code{ncol(x)}
+used to override \code{colnames(x)} for the printed header text only.
+Sliced per panel when the table is split across stacked panels.
+Forwarded to \code{\link[=build_ascii_table]{build_ascii_table()}}; see that function for full
+semantics. Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

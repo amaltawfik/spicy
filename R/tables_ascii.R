@@ -151,6 +151,13 @@
 #'   or "Sub-Total". Cross-tabs and frequency tables built by
 #'   `cross_tab()` and `freq()` set this attribute on their result so
 #'   the print methods are immune to that false positive.
+#' @param display_labels Optional character vector of length `ncol(x)`
+#'   used to override `colnames(x)` for the rendered header row only.
+#'   The data.frame's actual names are kept for indexing; only the
+#'   visual header is swapped. Used by `print.spicy_regression_table()`
+#'   so a `B + AME` table shows the bare label (`95% CI`, `p`) in both
+#'   blocks rather than R's deduplicated `95% CI.2` / `p.2`. Defaults
+#'   to `NULL` (use `colnames(x)` verbatim).
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return
@@ -611,6 +618,11 @@ ascii_table_panels <- function(
 #' @param total_row_idx Optional integer vector of 1-based row indices
 #'   identifying the totals rows; defaults to the `"total_row_idx"`
 #'   attribute of `x` (set by `cross_tab()`). See [build_ascii_table()].
+#' @param display_labels Optional character vector of length `ncol(x)`
+#'   used to override `colnames(x)` for the printed header text only.
+#'   Sliced per panel when the table is split across stacked panels.
+#'   Forwarded to [build_ascii_table()]; see that function for full
+#'   semantics. Defaults to `NULL`.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return

@@ -18,6 +18,7 @@ build_ascii_table(
   spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
+  display_labels = NULL,
   ...
 )
 }
@@ -91,6 +92,14 @@ which can mis-fire if a user category is literally named "Total"
 or "Sub-Total". Cross-tabs and frequency tables built by
 \code{cross_tab()} and \code{freq()} set this attribute on their result so
 the print methods are immune to that false positive.}
+
+\item{display_labels}{Optional character vector of length \code{ncol(x)}
+used to override \code{colnames(x)} for the rendered header row only.
+The data.frame's actual names are kept for indexing; only the
+visual header is swapped. Used by \code{print.spicy_regression_table()}
+so a \code{B + AME} table shows the bare label (\verb{95\% CI}, \code{p}) in both
+blocks rather than R's deduplicated \verb{95\% CI.2} / \code{p.2}. Defaults
+to \code{NULL} (use \code{colnames(x)} verbatim).}
 
 \item{...}{Additional arguments (currently ignored).}
 }
