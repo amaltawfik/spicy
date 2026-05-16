@@ -6,8 +6,8 @@ Standard
 interfaces for an object returned by
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 They re-shape the underlying long-format data into the two canonical
-broom views so the table can be consumed by `gtsummary`, `modelsummary`,
-`parameters`, and any other tidyverse-stats pipeline.
+broom views so the table can be consumed by any downstream
+tidyverse-stats pipeline.
 
 ## Usage
 

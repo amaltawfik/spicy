@@ -25,6 +25,7 @@ spicy_print_table(
   spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
+  display_labels = NULL,
   ...
 )
 ```
@@ -114,6 +115,14 @@ spicy_print_table(
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)).
   See
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
+
+- display_labels:
+
+  Optional character vector of length `ncol(x)` used to override
+  `colnames(x)` for the printed header text only. Sliced per panel when
+  the table is split across stacked panels. Forwarded to
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md);
+  see that function for full semantics. Defaults to `NULL`.
 
 - ...:
 

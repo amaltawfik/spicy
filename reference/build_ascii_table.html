@@ -90,6 +90,7 @@ per-column alignment.</p>
 <span>  spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  total_row_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -156,17 +157,17 @@ right-aligned.</p></dd>
 <dd><p>Logical. When <code>TRUE</code>, column headers are
 centered above their column content even when the data itself
 is right-aligned (the publication convention for
-coefficient / summary tables; matches Stata regress /
-parameters::model_parameters / modelsummary). Left-aligned
-columns (per <code>align_left_cols</code>) keep their header on the
-left. Defaults to <code>FALSE</code> for backward compatibility; the
+coefficient / summary tables; matches Stata <code>regress</code> and
+SPSS <code>REGRESSION</code> output). Left-aligned columns (per
+<code>align_left_cols</code>) keep their header on the left. Defaults to
+<code>FALSE</code> for backward compatibility; the
 <code>print.spicy_regression_table</code> method enables it.</p></dd>
 
 
 <dt id="arg-spanners">spanners<a class="anchor" aria-label="anchor" href="#arg-spanners"></a></dt>
 <dd><p>Optional named list defining a <em>column group row</em>
 drawn above the column headers (the "spanner" / "supra-header"
-convention used by gt, flextable, kableExtra, modelsummary).
+convention; APA Manual 7 §7.13).
 Names are spanner labels; values are integer vectors of 1-based
 column indices the label spans (must be contiguous). A thin
 underline rule is drawn below each spanner across its span.
@@ -189,6 +190,16 @@ which can mis-fire if a user category is literally named "Total"
 or "Sub-Total". Cross-tabs and frequency tables built by
 <code><a href="cross_tab.html">cross_tab()</a></code> and <code><a href="freq.html">freq()</a></code> set this attribute on their result so
 the print methods are immune to that false positive.</p></dd>
+
+
+<dt id="arg-display-labels">display_labels<a class="anchor" aria-label="anchor" href="#arg-display-labels"></a></dt>
+<dd><p>Optional character vector of length <code>ncol(x)</code>
+used to override <code>colnames(x)</code> for the rendered header row only.
+The data.frame's actual names are kept for indexing; only the
+visual header is swapped. Used by <code>print.spicy_regression_table()</code>
+so a <code>B + AME</code> table shows the bare label (<code>95% CI</code>, <code>p</code>) in both
+blocks rather than R's deduplicated <code>95% CI.2</code> / <code>p.2</code>. Defaults
+to <code>NULL</code> (use <code>colnames(x)</code> verbatim).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

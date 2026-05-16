@@ -61,237 +61,47 @@
 <h2 class="pkg-version" data-toc-text="0.12.0" id="spicy-0120">spicy 0.12.0<a class="anchor" aria-label="anchor" href="#spicy-0120"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-12-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-0"></a></h3>
-<div class="section level4">
-<h4 id="table_regression--regression-coefficient-tables-0-12-0">
-<code>table_regression()</code> — regression coefficient tables<a class="anchor" aria-label="anchor" href="#table_regression--regression-coefficient-tables-0-12-0"></a></h4>
-<ul><li><p>New top-level function building a publication-ready coefficient summary from one or more fitted regression models. Designed for <strong>APA-strict</strong> reporting in psychology, public health, sociology, and biostatistics, with optional opt-in conventions for econometrics and clinical trials.</p></li>
-<li><p>Supports <code>lm</code> and <code>glm</code> (binomial / poisson / Gamma / inverse.gaussian / quasi families with any link). Single fit or a named / unnamed list of fits side by side; <code>lm</code> and <code>glm</code> may be mixed in the same call.</p></li>
-<li><p><code>show_columns</code> selects per-coefficient columns from a vocabulary of tokens. Estimate-related: <code>B</code>, <code>beta</code>, <code>SE</code>, <code>CI</code>, <code>t</code>, <code>p</code>. Marginal effects: <code>AME</code>, <code>AME_p</code>, <code>AME_SE</code>. Effect sizes: <code>partial_f2</code>, <code>partial_eta2</code>, <code>partial_omega2</code> (<code>lm</code>; with noncentral-<em>F</em> CIs); <code>partial_chi2</code> (<code>glm</code>; partial likelihood- ratio χ² via <code>drop1(test = "LRT")</code> — SAS PROC LOGISTIC <code>TYPE3</code>, Long &amp; Freese 2014).</p></li>
-<li><p><code>vcov</code> selects the variance estimator: <code>"classical"</code>, <code>"HC0"</code> to <code>"HC5"</code> (via <code>sandwich</code>), <code>"CR0"</code> to <code>"CR3"</code> with Satterthwaite- corrected df (via <code>clubSandwich</code>), <code>"bootstrap"</code> (nonparametric or cluster), or <code>"jackknife"</code> (leave-one-out / leave-one-cluster- out). Single value recycled to all models, or a per-model list for SE-comparison side by side.</p></li>
-<li><p><code>standardized</code> selects the β method: <code>"refit"</code> (Cohen et al. 2003 for <code>lm</code>; Long &amp; Freese 2014 §4.3.4 x-standardization for <code>glm</code>), <code>"posthoc"</code>, <code>"basic"</code>, <code>"smart"</code> (Gelman 2008), or <code>"pseudo"</code> (Menard 2011 fully-standardised; <code>glm</code> only). The user’s <code>vcov</code> flows through to the β SE / CI / <em>p</em>.</p></li>
-<li><p><code>exponentiate = TRUE</code> switches <code>glm</code> coefficients to the response scale and rebrands the column header per family / link: <code>OR</code> (binomial logit), <code>IRR</code> (poisson log), <code>HR</code> (binomial cloglog), <code>RR</code> (binomial log), <code>MR</code> (Gamma log), generic <code>exp(B)</code> otherwise. Mixed-family multi-model output gets per-model headers (<code>OR / IRR (per family)</code>).</p></li>
-<li><p><code>ci_method = "profile"</code> (<code>glm</code> only) switches confidence intervals to the profile-likelihood form via <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code>; estimate / SE / <em>t</em> / <em>p</em> remain Wald.</p></li>
-<li><p><code>p_adjust</code> applies a multiple-comparison correction (<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>: <code>"holm"</code>, <code>"hochberg"</code>, <code>"hommel"</code>, <code>"bonferroni"</code>, <code>"BH"</code>, <code>"BY"</code>, <code>"fdr"</code>) over the per-model coefficient family. Default <code>"none"</code> matches APA Manual 7 §6.46 guidance against routine adjustment of regression coefficients.</p></li>
-<li><p><code>keep</code> and <code>drop</code> are regex filters for focal-predictor display (mutually exclusive). <code>nested = TRUE</code> adds an APA-style hierarchical-comparison footer (default tokens <code>c("r2_change", "F", "p")</code> for <code>lm</code>, <code>c("LRT", "p")</code> for <code>glm</code>).</p></li>
-<li><p>AME under cluster-robust variance gets Satterthwaite-corrected df via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code> for <code>lm</code> and <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> (dominant-coefficient approximation, Pustejovsky &amp; Tipton 2018) for <code>glm</code>. spicy is the <strong>first R package</strong> to offer this for <code>lm</code>.</p></li>
-<li><p>Outputs: console (default <code>spicy_regression_table</code> print method), <code>data.frame</code>, long tibble, <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel, Word, clipboard. Full <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> integration for downstream <code>modelsummary</code> / custom workflows.</p></li>
-<li><p><strong>Multi-model column spanners</strong>: when two or more fits share the table, each model’s sub-columns (<code>B</code> / <code>SE</code> / <code>95% CI</code> / <code>p</code> / …) are grouped under a centered spanner label drawn above the header — by default in the console (ASCII), and via the native spanner API in <code><a href="https://gt.rstudio.com/reference/tab_spanner.html" class="external-link">gt::tab_spanner()</a></code>, <code><a href="https://davidgohel.github.io/flextable/reference/add_header_row.html" class="external-link">flextable::add_header_row()</a></code>, <code><a href="https://vincentarelbundock.github.io/tinytable/man/group_tt.html" class="external-link">tinytable::group_tt()</a></code>, and <code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_merge_cells.html" class="external-link">openxlsx2::wb_merge_cells()</a></code> (Word follows <code>flextable</code>). The redundant <code>"Step 1: B"</code>-style prefix is stripped from displayed sub-column headers when a spanner is shown. Plain <code>data.frame</code> / <code>long</code> / <code>clipboard</code> outputs keep the unambiguous prefixed names.</p></li>
-<li><p><strong>DV-in-spanner smart default</strong>: when models have all-distinct response variables and no explicit <code>model_labels</code> / <code>names(list)</code> is supplied, the bare DV name (from <code>formula(fit)[[2]]</code>, <em>not</em> <code>attr("label")</code>, which can be long and would distort column widths) is lifted into the spanner labels instead of the generic <code>"Model 1, 2, ..."</code>. User-supplied <code>model_labels</code> / list names always win.</p></li>
-<li><p><strong><code>outcome_labels</code> row hidden by default</strong>. With the multi-model spanner now carrying the DV / model name, the body Outcome row is redundant. <code>outcome_labels = NULL</code> (the default) hides it; pass <code>outcome_labels = c(...)</code> to opt back in.</p></li>
-<li><p><strong>Context-aware <code>show_columns</code> default</strong>. A single-model table keeps the APA-7 §6.46 publication layout <code>c("B", "SE", "CI", "p")</code>; a multi-model table drops <code>"CI"</code> to fit the side-by-side layout (<code>c("B", "SE", "p")</code>). Override explicitly via <code>show_columns</code> when needed. Matches the modelsummary default.</p></li>
-<li><p><strong>Compact <code>padding = 0L</code> default</strong>. The console renderer now uses zero extra column padding by default for <code><a href="../reference/table_regression.html">table_regression()</a></code> (was <code>2L</code>), matching modelsummary’s tight layout. Pass <code>padding = 2L</code> or <code>4L</code> to restore the previous look. Other spicy tables (<code><a href="../reference/freq.html">freq()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> / <code><a href="../reference/table_categorical.html">table_categorical()</a></code> / <code><a href="../reference/table_continuous.html">table_continuous()</a></code>) keep their original <code>padding = 2L</code> default.</p></li>
-<li><p><strong>Partial naming of the models list is accepted</strong>. <code>list("Step 1" = m1, m2)</code> now works: the named slot keeps its label, the unnamed slot auto-fills as <code>"Model &lt;position&gt;"</code> (here <code>"Model 2"</code>). Previously this was a hard error. Duplicate explicit names are still rejected (they would silently collide in the long-format model_id key).</p></li>
-<li>
-<p><strong><code>show_columns</code> vocabulary — lowercase atomic tokens + group presets</strong>. The token vocabulary is now all-lowercase and one-token-per-displayed-column (no more bundled <code>value [CI]</code> cells outside <code>partial_chi2</code>):</p>
-<table class="table"><colgroup><col width="46%"><col width="53%"></colgroup><thead><tr><th>&lt;= 0.11 (mixed case + bundled)</th>
-<th>0.12 atomic (lowercase)</th>
-</tr></thead><tbody><tr><td>
-<code>"B"</code>, <code>"SE"</code>, <code>"CI"</code>, <code>"t"</code>, <code>"p"</code>, <code>"beta"</code>
-</td>
-<td>
-<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>, <code>"beta"</code>
-</td>
-</tr><tr><td>
-<code>"AME"</code> (bundled <code>value [CI]</code>)</td>
-<td>
-<code>"ame"</code> + <code>"ame_ci"</code> (split)</td>
-</tr><tr><td>
-<code>"AME_SE"</code>, <code>"AME_p"</code>
-</td>
-<td>
-<code>"ame_se"</code>, <code>"ame_p"</code>
-</td>
-</tr><tr><td>
-<code>"partial_f2"</code> (bundled), <code>"partial_eta2"</code>, <code>"partial_omega2"</code>
-</td>
-<td>
-<code>"partial_f2"</code> + <code>"partial_f2_ci"</code> (split); same for eta² / omega²</td>
-</tr><tr><td>
-<code>"partial_chi2"</code> (bundled <code>value (df)</code>)</td>
-<td>
-<code>"partial_chi2"</code> (kept bundled — universal <code>χ²(df)</code> convention)</td>
-</tr></tbody></table><p>Passing a legacy uppercase token raises an actionable migration error pointing at the replacement (no silent aliasing).</p>
-</li>
-<li>
-<p><strong><code>show_columns</code> group tokens</strong> (Stata / SPSS / SAS-style presets). Each group expands to a fixed vector of atomic tokens before validation:</p>
 <ul><li>
-<code>"all_b"</code> -&gt; <code>c("b", "se", "ci", "p")</code> (single-model default)</li>
-<li>
-<code>"all_b_compact"</code> -&gt; <code>c("b", "se", "p")</code> (multi-model default)</li>
-<li>
-<code>"all_b_full"</code> -&gt; <code>c("b", "se", "ci", "t", "p")</code>
+<p>New <code><a href="../reference/table_regression.html">table_regression()</a></code>: publication-ready coefficient summary for one or more fitted <code>lm</code> or <code>glm</code> models, side by side. APA Manual 7 formatting is the default. Highlights:</p>
+<ul><li>Robust variance: classical, HC, cluster-robust (CR) with Satterthwaite df, bootstrap, jackknife. Per-model <code>vcov</code> accepted for SE-comparison tables.</li>
+<li>Standardisation: <code>refit</code>, <code>posthoc</code>, <code>basic</code>, <code>smart</code>, <code>pseudo</code> (the last <code>glm</code> only).</li>
+<li>Average marginal effects (AME) as separate columns; AME inference shares the coefficient’s variance estimator so B and AME are reported on the same inferential footing.</li>
+<li>Partial effect sizes: f², η², ω² for <code>lm</code> (noncentral-F CIs); partial χ² for <code>glm</code>.</li>
+<li>GLM response-scale reporting via <code>exponentiate = TRUE</code>, with family-appropriate labels (OR, IRR, HR, RR, MR, exp(B)) and optional profile-likelihood CIs (<code>ci_method = "profile"</code>).</li>
+<li>Multiplicity correction via <code>p_adjust</code> (any <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code> method).</li>
+<li>Hierarchical comparison via <code>nested = TRUE</code> (ΔR² / F-change for <code>lm</code>; LRT for <code>glm</code>).</li>
+<li>Display controls: variable filtering, intercept and factor placement, reference-row styles, multi-model labels, stars, decimal mark, per-column digits.</li>
+<li>Outputs: console, <code>data.frame</code>, long tibble, <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel, Word, clipboard. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods supported.</li>
+</ul><p>See <code><a href="../reference/table_regression.html">?table_regression</a></code> and <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
 </li>
-<li>
-<code>"all_beta"</code> -&gt; <code>c("b", "beta", "se", "ci", "p")</code>
-</li>
-<li>
-<code>"all_ame"</code> -&gt; <code>c("ame", "ame_se", "ame_ci", "ame_p")</code>
-</li>
-<li>
-<code>"all_ame_compact"</code> -&gt; <code>c("ame", "ame_p")</code>
-</li>
-<li>
-<code>"all_f2"</code> / <code>"all_eta2"</code> / <code>"all_omega2"</code> -&gt; <code>partial_*</code> + its <code>_ci</code> companion</li>
-</ul><p>Mix groups and atomic tokens freely: <code>show_columns = c("all_b", "ame", "ame_p")</code>.</p>
-</li>
-<li><p><strong>Regression-type declared in the footer note</strong>. Every footer now starts with the model’s regression type (“Linear regression.”, “Logistic regression.”, “Poisson regression.”, …). Multi-model same-type tables use the plural form (“Linear regression models.”); mixed-class multi-model tables enumerate per position (“Model 1: linear regression; Model 2: logistic regression.”). The title now also carries the type for <code>lm</code> (“Linear regression: mpg” instead of “Regression: mpg”).</p></li>
-<li><p><strong><code>factor_layout = c("grouped", "flat")</code></strong> controls how factor predictors are rendered. <code>"grouped"</code> (default) puts the factor name on its own header row + indents each level (APA / <code>gtsummary</code> convention). <code>"flat"</code> concatenates <code>&lt;var&gt;&lt;level&gt;</code> on each row, no header (Stata / <code>parameters</code> / <code>modelsummary</code> convention). Applies to <strong>any categorical predictor</strong> (factor, ordered, character, logical) – R’s [stats::model.frame()] coerces character / logical to factors at fit time.</p></li>
-<li>
-<p><strong><code>reference_style</code> extended to 4 modes</strong> (was 2). Distinguishes WHERE the reference category is exposed:</p>
-<ul><li>
-<code>"row"</code> (default): explicit row <code>Female (ref.)</code> with em-dash (gtsummary / NEJM / BMJ convention).</li>
-<li>
-<code>"annotation"</code>: row dropped; reference shown inline. Grouped layout puts <code>[ref: Lower]</code> in the factor header; flat layout attaches <code>[vs Lower]</code> to the <strong>first non-reference dummy</strong> of each factor (later dummies inherit).</li>
-<li>
-<code>"footer"</code> <em>(new)</em>: row dropped; a single line <code>Reference categories: education = Lower; sex = Female.</code> is added to the footer note. SAS <code>PROC LOGISTIC</code> / SPSS “Categorical Variables Codings” convention. Recommended for publication-grade dense multi-factor tables.</li>
-<li>
-<code>"none"</code> <em>(new)</em>: row dropped; no reference information anywhere. User responsibility to state the convention in the surrounding text. When combined with <code>factor_layout = "flat"</code> (the only combo with NO visual trace of the factor’s reference), an informational <code>spicy_silent_reference</code> message is emitted once so the silent omission is at least acknowledged.</li>
-</ul></li>
-<li><p><strong><code>reference_label</code> scoped to <code>reference_style = "row"</code></strong>. The suffix string (“(ref.)”) only applies to the row mode. The other three modes use structural English wording (“ref:”, “vs”, “Reference categories:”) that is intentionally hard-coded.</p></li>
-<li><p><strong>AME / B-p caveat narrowed and trimmed</strong>. The warning that fired when <code>ame</code> and <code>p</code> are shown without <code>ame_p</code> is now only raised when divergence between the two p-values is actually plausible — i.e., any model is a <code>glm</code> (non-identity link) or has an interaction / non-linear transform. For a pure additive <code>lm</code>, the two p-values are mathematically identical, so the caveat is suppressed. The message is also shorter: one main line + one hint (was three lines).</p></li>
-<li>
-<p><strong><code>cluster</code> accepts formula / string / vector</strong> (in order of preference). Aligns the public API with the rest of the stats R ecosystem (sandwich, clubSandwich, fixest, marginaleffects, parameters):</p>
-<ul><li>
-<code>cluster = ~region</code> (formula): variables looked up in <code>model.frame(fit)</code> first, then in the original <code>data</code> argument. Composable for multi-way clustering (<code>cluster = ~region:year</code>). <strong>Recommended.</strong>
-</li>
-<li>
-<code>cluster = "region"</code> (string): single column name, same resolution.</li>
-<li>
-<code>cluster = df$region</code> (vector): atomic vector of length <code>nobs(fit)</code>. Use for derived keys (<code>cluster = interaction(df$a, df$b)</code>, etc.) or external data.</li>
-</ul><p>Bare unquoted names (<code>cluster = region</code>) are explicitly rejected – they require non-standard evaluation magic that breaks under programmatic use (function wrapping, dynamic column choice, loops). The error message points to the formula form.</p>
-</li>
-<li>
-<p><strong>Nested model comparison moved from footer to in-table rows</strong> (APA Table 7.13 / Stata <code>esttab</code> / SPSS “Model Summary” convention). When <code>nested = TRUE</code>, each adjacent pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats; the FIRST model column gets em-dashes (no previous model to compare to). The <code>── Model comparison ──</code> footer block was removed.</p>
-<p>Change tokens (use them like any other <code>show_fit_stats</code> entry): <code>r2_change</code>, <code>adj_r2_change</code>, <code>f_change</code>, <code>f2_change</code>, <code>lrt_change</code>, <code>aic_change</code>, <code>aicc_change</code>, <code>bic_change</code>, <code>deviance_change</code>, <code>p_change</code>.</p>
-<p>Class-aware auto-injection under <code>nested = TRUE</code> (when <code>show_fit_stats</code> is <code>NULL</code>): lm hierarchies get <code>c("r2_change", "f_change", "p_change")</code>; glm hierarchies get <code>c("lrt_change", "p_change")</code>. Variance-explained change tokens on all-glm fits are rejected with a hint to <code>lrt_change</code>.</p>
-<p>Display: explicit <code>+</code> / <code>-</code> sign on delta values, APA-style p-value formatting (<code>&lt;.001</code> etc.), suffix label “(change)” on the p-value row to disambiguate from the per-coefficient <code>p</code>.</p>
-<p>The <code>nested_stats</code> argument was removed – it duplicated <code>show_fit_stats</code> for the same job. Customise change-stat display by passing change tokens directly to <code>show_fit_stats</code>. The order of tokens in <code>show_fit_stats</code> controls the order of the resulting rows.</p>
-</li>
-<li>
-<p><strong>Polynomial-contrast note made publication-ready</strong> and split into two channels:</p>
-<ul><li>
-<strong>Table footer</strong> – one sentence, statistics vocabulary only, no software / function-name leak. The suffix legend lists <em>only</em> the polynomial degrees actually shown in the table: <code>Ordered factor \</code>education`: polynomial trends (.L = linear, .Q = quadratic).<code>(3-level factor);</code>Ordered factor `f5`: polynomial trends (.L = linear, .Q = quadratic, .C = cubic, ^4 = quartic).` (5-level factor).</li>
-<li>
-<strong>Once-per-session pedagogy</strong> via <code>rlang::inform(.frequency = "once")</code> with class <code>spicy_polynomial_contrasts_info</code>. The first time any <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> factor is rendered in a session, an info-level message explains what polynomial contrasts are and how to switch to per-level (treatment) display. Subsequent calls in the same session stay silent.</li>
-</ul></li>
-<li><p><strong>Ordered-factor (<code>contr.poly</code>) grouping + auto note</strong>. Ordered factors are no longer rendered as a flat list of <code>&lt;var&gt;.L</code>, <code>&lt;var&gt;.Q</code>, … rows mixed in with the numeric predictors. They are now grouped under the factor name (like a treatment factor) with sublabels <code>.L</code>, <code>.Q</code>, <code>.C</code>, <code>^k</code> in polynomial- degree order. No reference row is emitted (none exists for <code>contr.poly</code>). An auto English footer note explains the parameterisation and points the user to the per-level alternative (<code>factor(x, ordered = FALSE)</code> or <code>options(contrasts = ...)</code>). Other R packages (modelsummary, gtsummary, parameters, jtools, sjPlot) display the bare suffixes without grouping or context — this is the first R package to surface the issue.</p></li>
-<li><p>Auto-generated APA footer documents the SE family, the AME- Satterthwaite path (when active), the exponentiate transform, the standardisation method, the multiple-comparison adjustment, the significance-stars threshold, and any rank-deficient or hierarchical metadata — no manual annotation needed.</p></li>
-<li><p>Cross-validated to machine precision against <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code> (B / SE / <em>z</em> / <em>p</em> / Wald CI), <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> (profile CI), <code>performance::r2_*</code> (McFadden / Nagelkerke / Tjur pseudo-R²), and <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code> (AME).</p></li>
-<li><p>See <code><a href="../reference/table_regression.html">?table_regression</a></code> and <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> for the full argument reference, runnable examples spanning every feature, and the cross-software equivalence map (Stata / SPSS / SAS conventions).</p></li>
-<li><p><code>marginaleffects</code>, <code>parameters</code>, and <code>performance</code> added to <code>Suggests</code> (oracle packages for AME and pseudo-R² cross- validation); no runtime dependency change.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="console-print-em-dash-alignment-0-12-0">Console-print em-dash alignment<a class="anchor" aria-label="anchor" href="#console-print-em-dash-alignment-0-12-0"></a></h4>
-<ul><li>
-<p><code>decimal_align_strings()</code> now positions non-numeric placeholder glyphs (em-dash, “NA”, “N/A”, …) <strong>at the decimal-mark column position</strong> of the column. Previously the em-dash sat at the integer-part position, leaving a visual gap with the decimal points of the other rows. The new placement is the APA Manual 7 Section 7.13 convention (“a dash in the cell position where a number would otherwise appear”), also used by Stata <code>esttab</code>, <code>modelsummary</code>, and the Hochuli typography guidelines. Reference rows now look like:</p>
-<pre class="text"><code> 33.99  [30.12, 37.86]  &lt;.001
- -3.21  [-4.75, -1.66]  &lt;.001
-    -          -          -      &lt;- em-dashes anchored to the
- -4.26  [-7.09, -1.42]   .005       decimal mark of each column
- -6.07  [-9.46, -2.69]  &lt;.001</code></pre>
-</li>
-<li><p>Integer cells in a column that contains decimals elsewhere (e.g., <code>n</code> row alongside <code>R^2</code>, <code>Adj.R^2</code>) keep their previous right-aligned placement against the integer-part column – the new logic distinguishes integer-like values (<code>grepl("^-?[0-9]+$", v)</code>) from non-numeric placeholders.</p></li>
-<li><p>New <code>safe_glyph_width()</code> helper around <code>nchar(x, type = "width")</code> falls back to byte length when the locale cannot resolve display width (raw POSIX, Windows non-UTF-8). Prevents <code><a href="https://rdrr.io/r/base/strrep.html" class="external-link">strrep()</a></code> from receiving a non-finite repeat count and producing a corrupted table.</p></li>
-<li><p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> snapshots updated to reflect the new em-dash positions.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="quality-and-portability-0-12-0">Quality and portability<a class="anchor" aria-label="anchor" href="#quality-and-portability-0-12-0"></a></h4>
-<ul><li><p><strong>R CMD check WARNING cleared across every <code>R/*.R</code> file.</strong> Every non-ASCII byte in <code>R/</code> source has been replaced – inside string literals with <code>\uXXXX</code> escape sequences (runtime behaviour is identical) and inside comments with ASCII transliterations (<code>--</code> for em-dash, <code>-&gt;</code> for arrow, <code>beta</code>/<code>eta</code>/<code>omega</code>/… for Greek letters, <code>Section X.Y</code> for <code>§X.Y</code>, etc.). 22 files in <code>R/</code> are now byte-pure ASCII; <code><a href="https://rdrr.io/r/tools/showNonASCII.html" class="external-link">tools::showNonASCIIfile()</a></code> reports zero hits package-wide. Documentation that needs rendered Greek (, , …) already uses the canonical <code>\eqn{}{}</code> markup, so the visible output of <code><a href="../reference/table_regression.html">?table_regression</a></code> and the PDF manual are unaffected.</p></li>
-<li><p><strong><code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_add_border.html" class="external-link">openxlsx2::wb_add_border()</a></code> default-args bug fixed across every caller.</strong> The function defaults <code>top_border = bottom_border = left_border = right_border = "thin"</code>, so an explicit <code>top_border = "thin"</code> call (or any single-side call) paints all four sides with a “thin” rule and produces unwanted vertical lines on every styled cell. <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and <code><a href="../reference/table_categorical.html">table_categorical()</a></code> now pass <code>NULL</code> on every unused side to draw only the intended rule – matching the fix already in place in <code><a href="../reference/table_regression.html">table_regression()</a></code>.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--fit_stats_layout-argument-for-cell-merged-fit-stat-rows-0-12-0">
-<code>table_regression()</code> – <code>fit_stats_layout</code> argument for cell-merged fit-stat rows<a class="anchor" aria-label="anchor" href="#table_regression--fit_stats_layout-argument-for-cell-merged-fit-stat-rows-0-12-0"></a></h4>
-<ul><li><p><strong>New argument</strong> <code>fit_stats_layout = c("first_col", "merged")</code> controlling the placement of fit-stat values (<code>n</code>, <code>R²</code>, <code>AIC</code>, …) within each model’s column group: </p></li>
-<li><p><strong>Engine support for <code>"merged"</code></strong>:  <code>gt</code> lacks a native row-spanning cell-merge API; <code>tinytable</code>’s <code>style_tt(colspan = N)</code> emits HTML <code>colspan</code> only on header rows, not body cells; <code>clipboard</code> ships TSV plaintext; <code>default</code> ships fixed-width ASCII. Those four outputs always render in <code>"first_col"</code> mode regardless of this setting.</p></li>
-<li><p><strong>Decimal alignment preserved in both modes</strong>: every numeric column decimal-aligns its values. Under <code>"first_col"</code>, the B column decimal-aligns coefficient values plus the integer / decimal fit-stat values that share it (native primitives handle mixed precision via decimal padding). Under <code>"merged"</code>, the B column contains coefficients only and trivially decimal- aligns; fit-stat values move into the merged cell.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0">
-<code>table_regression()</code> – CI columns split into LL / UL across all structured outputs<a class="anchor" aria-label="anchor" href="#table_regression--ci-columns-split-into-ll--ul-across-all-structured-outputs-0-12-0"></a></h4>
-<ul><li>
-<p><strong>Rich engines (gt, flextable, tinytable, excel, word) and clipboard</strong> now split the bracketed CI cell <code>[LL, UL]</code> into two separate numeric columns under a <code>(95% CI)</code> spanner row – same layout that <code>table_continuous</code> / <code>table_continuous_lm</code> already use. With clean numeric strings in every CI cell, the native decimal-alignment primitives of each engine work without any custom-font / NBSP / <code>white-space: pre</code> hack:</p>
-<ul><li>
-<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> aligns every numeric column natively; default proportional font (no Fira Mono override).</li>
-<li>
-<code>tinytable::style_tt(align = "d")</code> aligns natively via <code>siunitx</code> (LaTeX) and padded text (HTML); default font (no monospace override, no NBSP pre-padding).</li>
-<li>
-<code>flextable</code> right-aligns the numeric cells against Calibri’s tabular figures (no Consolas override).</li>
-<li>
-<code>excel</code> right-aligns numerics in Calibri’s tabular figures (no Consolas override).</li>
-<li>
-<code>clipboard</code> writes the two-level header (model spanner row, <code>(95% CI)</code> spanner row, column labels) and each bound is its own numeric cell – usable directly after paste, no parsing required.</li>
-</ul></li>
-<li><p><strong>Console (<code>output = "default"</code>)</strong> and <strong><code>output = "data.frame"</code> / <code>"long"</code></strong> are unchanged: the <code>[LL, UL]</code> bracketed cell stays as the terminal-friendly representation and the long format already exposes <code>ci_low</code> / <code>ci_high</code> separately.</p></li>
-<li><p>New shared helpers <code>.split_ci_columns()</code> and <code>.parse_ci_bracketed()</code> factor the split logic out of the five dispatchers. The bracketed-CI parser handles plain <code>,</code> separation, <code>;</code> separation (European decimal mark), em-dashes on reference rows, and empty / whitespace-only cells.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--excel-font-scoped--html-decimal-alignment-fixed-0-12-0">
-<code>table_regression()</code> – Excel font scoped + HTML decimal alignment fixed<a class="anchor" aria-label="anchor" href="#table_regression--excel-font-scoped--html-decimal-alignment-fixed-0-12-0"></a></h4>
-<ul><li><p><strong>Excel</strong>: the previous revision applied Consolas across every cell (title, header, body, notes); the present revision scopes Consolas to the <strong>numeric body cells only</strong>. Title, the Variable column, headers, and footer notes now render in Excel’s default Calibri. The pre-padded numeric cells still align decimal points thanks to the monospaced font, so swapping to Calibri for the surrounding cells does not break the decimal alignment.</p></li>
-<li><p><strong>gt</strong> and <strong>tinytable</strong>: <code>cols_align_decimal()</code> / <code>style_tt(align = "d")</code> were left-aligning every cell whose content was not a clean numeric string (em-dashes for reference rows, <code>&lt;.001</code> p-values, empty fit-stat cells in the second model). The dispatchers now keep the render layer’s pre-padding and apply a monospaced font + <code>white-space: pre</code> to numeric body cells via <code>tab_style</code> / <code>style_tt(monospace = TRUE, html_css = "white-space: pre;")</code>. HTML otherwise collapses the leading-space padding (default <code>white-space: normal</code>); preserving it together with a monospaced font is what produces the aligned decimal points across rows.</p></li>
-<li><p><strong>Non-ASCII regression</strong>: <code>R/regression_dispatch.R</code> contained em-dash and <code>─</code> characters (Unicode horizontal box drawing) in comments that triggered the R CMD check <code>code files for non-ASCII characters</code> WARNING under a CI <code>error-on = "warning"</code> configuration. All such characters have been replaced with ASCII equivalents (<code>--</code>, <code>-</code>, <code>x</code>).</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--rich-output-engines-aligned-with-table_continuous_lm-conventions-0-12-0">
-<code>table_regression()</code> – rich-output engines aligned with <code>table_continuous_lm</code> conventions<a class="anchor" aria-label="anchor" href="#table_regression--rich-output-engines-aligned-with-table_continuous_lm-conventions-0-12-0"></a></h4>
-<ul><li><p><strong>gt</strong> now uses <code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> (the native decimal- alignment primitive) on every non-<code>Variable</code> column. The whitespace pre-padding produced by <code>render_regression_table()</code> is stripped before handing the data frame to gt so the primitive receives raw numeric strings. Default font; no monospace override.</p></li>
-<li><p><strong>tinytable</strong> now uses <code>tinytable::style_tt(j = ..., align = "d")</code> per numeric column (native LaTeX <code>siunitx</code> / HTML CSS decimal alignment). Default font; no monospace override.</p></li>
-<li><p><strong>flextable</strong> reverts to the <code>table_continuous_lm</code> pattern: the Consolas monospaced font and right-aligned numerics are applied ONLY to the body’s numeric cells, not to the title, header, Variable column, or footer notes. <code>autofit()</code> (no fixed <code>width = 1</code>) sizes columns to their content.</p></li>
-<li><p><strong>Clipboard</strong> no longer injects U+2500 <code>─</code> rule rows. TSV cannot encode a continuous horizontal stroke – the tab-segmented dash rows used in an earlier revision pasted as visually broken bits of lines. The payload now matches <code>table_continuous_lm</code>’s clipboard shape (title, spanner, header, body, note) with the pre-padded body values preserved so a paste into a fixed-width context (Word with Consolas applied, plain-text editor) reproduces decimal alignment.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--visual-polish-for-rich-output-engines-0-12-0">
-<code>table_regression()</code> — visual polish for rich-output engines<a class="anchor" aria-label="anchor" href="#table_regression--visual-polish-for-rich-output-engines-0-12-0"></a></h4>
-<ul><li><p><strong>Decimal alignment</strong> now reaches <code>gt</code>, <code>flextable</code>, <code>tinytable</code> and <code>excel</code>. Numeric body cells receive a monospaced font (Fira Mono / Consolas / <code>font-family: monospace</code>) plus centre / right alignment so the pre-padded values produced by <code>render_regression_table()</code> line up vertically across rows. Previously decimal alignment was preserved only by the default ASCII print (which already runs in a fixed-width terminal).</p></li>
-<li><p><strong>Column headers are centred</strong> across all rich-output engines (the spanner row and the sub-column row in <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, <code>excel</code>).</p></li>
-<li><p><strong>Factor-level rows are indented</strong> in <code>gt</code> (via <code>cell_text(indent = ...)</code>), <code>flextable</code> (via <code>padding.left</code>) and <code>tinytable</code> (via <code>style_tt(indent = ..., html_css = ...)</code>). The whitespace prefix produced by the render layer is now trimmed from the displayed cell and the indent is carried by styling, so HTML / Word do not collapse it.</p></li>
-<li><p><strong><code>flextable</code> width</strong>: rich-output <code>flextable</code> now uses <code>layout = "autofit"</code> + <code>autofit()</code> so default CI columns no longer wrap onto two lines.</p></li>
-<li><p><strong>Excel borders</strong>: <code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_add_border.html" class="external-link">openxlsx2::wb_add_border()</a></code> defaults every side to <code>"thin"</code>; an explicit <code>top_border = "thin"</code> therefore painted <em>all four</em> sides as “thin”, producing unwanted vertical lines on every cell of a row that had received a top / bottom rule, and an extra horizontal rule above the final body row. Each border call now passes <code>NULL</code> for the unused sides; only the intended rule is drawn.</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="table_regression--banner-overrides-and-apa-borders-across-all-engines-0-12-0">
-<code>table_regression()</code> — banner overrides and APA borders across all engines<a class="anchor" aria-label="anchor" href="#table_regression--banner-overrides-and-apa-borders-across-all-engines-0-12-0"></a></h4>
-<ul><li><p>New <code>title</code> and <code>note</code> arguments (unified API): <code>NULL</code> (default, auto-build), <code>FALSE</code> (suppress the banner row), or a character string (override verbatim). The validator rejects <code>TRUE</code> and non- scalar / non-character inputs with a remediation hint, so user typos like <code>title = TURE</code> are surfaced rather than silently mapped. Use <code>title = FALSE</code> when the manuscript supplies its own caption and the in-table banner would duplicate it.</p></li>
-<li>
-<p>APA horizontal rules now reach <strong>every</strong> rich-output engine (<code>gt</code>, <code>flextable</code>, <code>tinytable</code>, <code>excel</code>), matching the layout already used by <code><a href="../reference/table_continuous.html">table_continuous()</a></code> / <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>. Five rules in the standard layout:</p>
-<ol style="list-style-type: decimal"><li>top rule above the spanner / header,</li>
-<li>mid-rule under each multi-model spanner range,</li>
-<li>sub-rule under the column header,</li>
-<li>
-<strong>new</strong> hair rule between the last coefficient row and the first fit-stat row (uses the existing <code>group_sep_rows</code> cue),</li>
-<li>bottom rule below the final body row.</li>
-</ol></li>
-<li><p><code>output = "clipboard"</code> now mirrors the Excel layout: title row, spanner row, header row, body, footer note. Pasting into Excel or Word reproduces the full table structure (previously only the body data.frame was copied, dropping title, multi-model spanner, and note).</p></li>
-</ul></div>
-<div class="section level4">
-<h4 id="covariate-adjustment-in-table_continuous_lm-0-12-0">Covariate adjustment in <code>table_continuous_lm()</code>
-<a class="anchor" aria-label="anchor" href="#covariate-adjustment-in-table_continuous_lm-0-12-0"></a></h4>
-<ul><li>New <code>covariates</code> argument adds additive covariates to each per-outcome model. Estimate, SE, <em>p</em>-value and CI on <code>by</code> become covariate-adjusted; effect sizes adapt accordingly. Accepts a tidyselect expression or a literal character vector; covariates overlapping <code>select</code> are auto-excluded from the outcome list. Formula syntax (interactions, transforms) is reserved for a future release.</li>
-<li>New <code>adjustment</code> argument selects the estimand for the per-group adjusted means displayed in the table: <code>"proportional"</code> (default, G-computation; matches Stata <code>margins</code> and <code>marginaleffects::avg_predictions(variables)</code>) or <code>"balanced"</code> (synthetic-grid equal-weight; matches <code><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans::emmeans()</a></code> default, SPSS UNIANOVA, SAS LSMEANS).</li>
-<li>Under adjustment, <code>"f2"</code> and <code>"omega2"</code> become <strong>partial</strong> <em>f²</em> / <em>ω²</em> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted to the focal term; <code>"d"</code> and <code>"g"</code> are undefined under adjustment and rejected.</li>
-<li>The default print emits an APA footer <code>Note. Adjusted for &lt;covs&gt; (&lt;method&gt;).</code>
-</li>
-<li>See <code><a href="../reference/table_continuous_lm.html">?table_continuous_lm</a></code> and <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code> for full semantics and runnable examples.</li>
-</ul></div>
-</div>
-<div class="section level3">
-<h3 id="bug-fixes-0-12-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-12-0"></a></h3>
-<ul><li>
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code> no longer over-truncates a <em>p</em>-value in <code>(10^-p_digits, 0.001)</code> when <code>p_digits &gt;= 4</code>. Example: <code>p = 0.000108</code> now correctly prints as <code>".0001"</code> at <code>p_digits = 4</code> (was <code>"&lt;.0001"</code>).</li>
-<li>
-<code>count_n(special = ...)</code> returns a length-<code>nrow(data)</code> zero vector when no usable column survives the list-column filter, matching the documented contract and the <code>count = ...</code> branch (was <code>numeric(0)</code>, which broke <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> pipelines).</li>
-<li>
-<code><a href="../reference/lambda_gk.html">lambda_gk()</a></code> and <code><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau()</a></code> emit <code>spicy_undefined_stat</code> and return the fully-<code>NA</code> result on rank-1 contingency tables (constant predicted variable), matching the existing pattern in <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="../reference/somers_d.html">somers_d()</a></code> and <code><a href="../reference/yule_q.html">yule_q()</a></code>.</li>
-<li>
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code> no longer silently overwrites a user’s y-variable level named <code>"N"</code>, <code>"Total"</code> or <code>"Values"</code>. The conflicting spicy-internal column is auto-renamed with a numbered suffix and a single <code>spicy_renamed_column</code> warning is emitted. Companion to the 0.11.0 row-level fix.</li>
-<li>
-<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> on a <code>spicy_continuous_lm_table</code> keeps <code>df.residual</code> numeric, so Satterthwaite degrees of freedom from <code>vcov = "CR2"</code> / <code>"CR3"</code> are preserved verbatim instead of truncated through <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer()</a></code>.</li>
+<li><p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> gains additive covariate adjustment via the new <code>covariates</code> argument. Two estimands for the per-group adjusted means: <code>"proportional"</code> (G-computation, default) and <code>"balanced"</code> (equal-weight synthetic grid). Under adjustment, <code>f²</code> and <code>ω²</code> become partial effect sizes; <code>d</code> and <code>g</code> raise an explanatory error. The auto-built footer documents the covariates and the estimand. See <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code>.</p></li>
+<li><p>New exported <code><a href="../reference/as_structured.html">as_structured()</a></code> accessor returns a typed view of a <code><a href="../reference/table_regression.html">table_regression()</a></code> result for programmatic use: raw numerics, CI split into <code>LL</code> / <code>UL</code> columns, and a column-level format specification.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-0-12-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-12-0"></a></h3>
 <ul><li>
-<code><a href="../reference/code_book.html">code_book()</a></code> no longer silently truncates the export filename to 120 characters: very long titles surface a noisy OS-level error rather than a silently shortened file. <strong>Migration</strong>: shorten the title or pass an explicit <code>filename =</code>.</li>
+<code><a href="../reference/code_book.html">code_book()</a></code> no longer silently truncates the export filename to 120 characters. Very long titles now surface a clear OS-level error. <strong>Migration</strong>: shorten the title or pass an explicit <code>filename =</code> argument.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-12-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-12-0"></a></h3>
+<ul><li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> no longer over-truncates a <em>p</em>-value in the interval <code>(10^-p_digits, 0.001)</code> when <code>p_digits &gt;= 4</code>. Example: <code>p = 0.000108</code> now correctly prints as <code>".0001"</code> at <code>p_digits = 4</code> (was <code>"&lt;.0001"</code>).</li>
+<li>
+<code>count_n(special = ...)</code> returns a length-<code>nrow(data)</code> zero vector when no usable column survives the list-column filter, matching the documented contract and the <code>count = ...</code> branch (was <code>numeric(0)</code>, which broke <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> pipelines).</li>
+<li>
+<code><a href="../reference/lambda_gk.html">lambda_gk()</a></code> and <code><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau()</a></code> emit <code>spicy_undefined_stat</code> and return a fully-<code>NA</code> result on rank-1 contingency tables (constant predicted variable), matching the existing pattern in <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="../reference/somers_d.html">somers_d()</a></code>, and <code><a href="../reference/yule_q.html">yule_q()</a></code>.</li>
+<li>
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> no longer silently overwrites a user’s y-variable level named <code>"N"</code>, <code>"Total"</code> or <code>"Values"</code>. The conflicting reserved column is auto-renamed with a numbered suffix and a single <code>spicy_renamed_column</code> warning is emitted.</li>
+<li>
+<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> on a <code>spicy_continuous_lm_table</code> keeps <code>df.residual</code> numeric, so Satterthwaite degrees of freedom from <code>vcov = "CR2"</code> / <code>"CR3"</code> are preserved verbatim instead of being truncated through <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-improvements-0-12-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-12-0"></a></h3>
+<ul><li>Console em-dash alignment: non-numeric placeholders (em-dash, “NA”) sit at the decimal-mark column instead of the integer- part column (APA Manual 7 §7.13). Integer cells in mixed- precision columns (<code>n</code> row alongside <code>R²</code>) keep their right- aligned placement.</li>
+<li>
+<code>R/</code> source is byte-pure ASCII (<code><a href="https://rdrr.io/r/tools/showNonASCII.html" class="external-link">tools::showNonASCIIfile()</a></code> reports zero hits package-wide).</li>
+<li>
+<code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_add_border.html" class="external-link">openxlsx2::wb_add_border()</a></code> calls now pass <code>NULL</code> on unused sides, preventing the default <code>"thin"</code> from being applied to all four sides of a cell when only one rule is intended.</li>
 </ul></div>
 </div>
     <div class="section level2">

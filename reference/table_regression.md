@@ -52,7 +52,8 @@ table_regression(
   excel_path = NULL,
   excel_sheet = "Regression",
   clipboard_delim = "\t",
-  word_path = NULL
+  word_path = NULL,
+  word_template = NULL
 )
 ```
 
@@ -263,14 +264,13 @@ table_regression(
   - `"first_col"` (default): the value is placed in the FIRST numeric
     sub-column of each model (typically `B`); the model's remaining
     sub-columns (`SE`, `LL`, `UL`, `p`, ...) are left empty for that
-    row. APA convention (Table 7.13) and the layout used by `gtsummary`,
-    `modelsummary`, `sjPlot::tab_model`, `jtools`, `parameters`.
+    row. The APA Manual 7 Table 7.13 layout.
 
   - `"merged"`: the model's numeric sub-columns are merged into a single
     wide cell containing the fit-stat value, centred under the model
-    spanner. Stata `esttab` / Econometrica / AER convention. Resolves
-    the mixed- precision look of `"first_col"` (an integer `n` row
-    sharing the B column with two-decimal coefficients).
+    spanner. Stata `esttab` layout / *Econometrica* and *AER* journal
+    convention. Resolves the mixed-precision look of `"first_col"` (an
+    integer `n` row sharing the B column with two-decimal coefficients).
 
   Cell merging is supported by `excel`, `flextable`, and `word` (via
   flextable). `gt`, `tinytable`, `clipboard`, and `default` (console)
@@ -430,18 +430,64 @@ table_regression(
 - clipboard_delim:
 
   Field delimiter for `output = "clipboard"`. Default `"\t"`
-  (tab-separated, pastes cleanly into Excel / Google Sheets). The
+  (tab-separated, pastes cleanly into Excel / Google Sheets / Word). The
   clipboard payload mirrors the Excel layout (title row, spanner row,
   header, body, footer note) but is plain text – horizontal rules, cell
-  merging, decimal alignment, monospace font, and factor- level
+  merging, decimal alignment, monospace font, and factor-level
   indentation cannot be encoded in TSV and are therefore absent from the
-  paste. For a fully-formatted result, use `output = "excel"` or
-  `output = "word"` and open / paste from the produced file.
+  paste.
+
+  Paste behaviour by target:
+
+  - **Excel / Google Sheets:** numerics are auto-detected and
+    right-aligned; text cells stay left-aligned. (P-values such as
+    `.005` get re-parsed as `0.005` by Excel's auto-format – to preserve
+    the APA leading-zero-dropped display, prefer `output = "excel"`.)
+
+  - **Word:** the paste is converted to a Word table; all cells start
+    left-aligned. Apply a Table Style (Insert \> Table \> Design) for
+    APA-style borders, and set right-alignment on numeric columns
+    (Layout \> Align Right). For a self-contained Word file with borders
+    and alignment pre-applied, use `output = "word"` instead.
 
 - word_path:
 
   File path for `output = "word"`. Default `NULL` (required when
-  `output = "word"`).
+  `output = "word"`). The Word table inherits the flextable styling
+  (Calibri font, APA borders, decimal-aligned numerics) and adds
+  Word-specific features: an auto-numbered caption ("Table 1: ...",
+  "Table 2: ...") via Word's `SEQ` field so multiple
+  `table_regression()` calls in one document number consecutively; a
+  re-printed header row on each page break; row split prevention so a
+  single coefficient row never wraps across two pages; and an APA-styled
+  note line (`*Note.*` italic prefix per APA Manual 7 §7.14).
+
+  **R Markdown / Quarto:** for embedded use, prefer
+  `output = "flextable"` (returns the flextable object that knits to
+  docx/HTML/PDF natively). `output = "word"` writes a standalone .docx
+  file, suited to scripted exports rather than chunk-level rendering.
+
+- word_template:
+
+  Optional path to a custom .docx file used as the template for
+  `output = "word"`. The template's header, footer, page size, margins,
+  and named styles ("Table Caption" in particular) are honoured; the
+  table is appended to the template body. Useful for institutional
+  templates with pre-set headers ("APA Style", "Manuscript Submission
+  Template", etc.). Default `NULL` (uses flextable's stock template).
+
+  **Customising the caption appearance:** the table caption is tagged
+  with the Word named style `"Table Caption"`. The visual rendering
+  (italic / bold / colour / font) follows whatever that style is set to
+  in the docx template. The stock Word template renders
+  `"Table Caption"` in italic — the APA Manual 7 §7.10 condensed
+  convention. For a different appearance (Nature-style bold non-italic,
+  APA-strict 2-line bold-number / italic-title, etc.), edit the
+  `"Table Caption"` style in a docx template and pass it via
+  `word_template = "your_template.docx"`. Style-based delegation keeps
+  the rendered caption consistent with the surrounding document and lets
+  editorial conventions (Nature, APA-strict, journal-specific) be
+  applied without modifying the call site.
 
 ## Value
 
@@ -816,223 +862,204 @@ for the low-level renderer. Inferential infrastructure (internal):
 ## Examples
 
 ``` r
-fit <- lm(wellbeing_score ~ age + sex + education,
-          data = sochealth)
+# ---- Single-model usage ------------------------------------------
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 
-# Default APA layout (single model)
+# Default APA layout: B / SE / 95% CI / p plus the n / R^2 /
+# Adj.R^2 fit-stats footer. Factor reference level is annotated
+# with `(ref.)` and shows an em-dash in the statistic columns.
 table_regression(fit)
-#> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.
-#> ℹ To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.
-#> This message is displayed once per session.
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   64.63  1.46  [61.78, 67.49]  <.001 
-#>  age             │    0.03  0.03  [-0.03,  0.08]   .343 
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                      
 #>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.65  0.80  [ 2.09,  5.22]  <.001 
-#>  education:      │                                      
-#>    .L            │   13.80  0.78  [12.28, 15.32]  <.001 
-#>    .Q            │   -1.71  0.66  [-3.00, -0.41]   .010 
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                 
-#>  R²              │    0.22                              
-#>  Adj.R²          │    0.22                              
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Standardised coefficients (beta) alongside B
+# Standardised coefficients (beta) injected next to B. Four
+# methods available; "refit" is the SPSS / Stata regress, beta
+# gold standard.
 table_regression(fit, standardized = "refit")
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B       β     SE       95% CI        p   
 #> ─────────────────┼─────────────────────────────────────────────
-#>  (Intercept)     │   64.63  -0.20  1.46  [61.78, 67.49]  <.001 
-#>  age             │    0.03   0.02  0.03  [-0.03,  0.08]   .343 
+#>  (Intercept)     │   65.20  -0.10  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05   0.04  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                             
 #>    Female (ref.) │     —      —     —          —          —    
-#>    Male          │    3.65   0.23  0.80  [ 2.09,  5.22]  <.001 
-#>  education:      │                                             
-#>    .L            │   13.80   0.88  0.78  [12.28, 15.32]  <.001 
-#>    .Q            │   -1.71  -0.11  0.66  [-3.00, -0.41]   .010 
+#>    Male          │    3.86   0.25  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                             
+#>    No (ref.)     │     —      —     —          —          —    
+#>    Yes           │   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                        
-#>  R²              │    0.22                                     
-#>  Adj.R²          │    0.22                                     
+#>  n               │ 1175                                        
+#>  R²              │    0.02                                     
+#>  Adj.R²          │    0.02                                     
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+#> β = standardised coefficient.
 
-# Custom column set: AME alongside its own p-value
+# Custom column set: B + AME + AME-specific p-value. Note that
+# the `p` token always belongs to B, never to AME -- use the
+# explicit `ame_p` token for AME inference.
 table_regression(
   fit,
   show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
 )
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable                 │    B       p     AME     AME 95% CI    AME p 
-#> ──────────────────────────┼──────────────────────────────────────────────
-#>  (Intercept)              │   64.63  <.001                               
-#>  age                      │    0.03   .343   0.03  [-0.03,  0.08]   .343 
-#>  sex:                     │                                              
-#>    Female (ref.)          │     —     —       —          —          —    
-#>    Male                   │    3.65  <.001   3.65  [ 2.09,  5.22]  <.001 
-#>  education:               │                                              
-#>    .L                     │   13.80  <.001                               
-#>    .Q                     │   -1.71   .010                               
-#>  educationTertiary        │                 19.52  [17.36, 21.67]  <.001 
-#>  educationUpper secondary │                 11.85  [ 9.81, 13.89]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1200                                         
-#>  R²                       │    0.22                                      
-#>  Adj.R²                   │    0.22                                      
+#>  Variable        │    B       p     AME      95% CI        p   
+#> ─────────────────┼─────────────────────────────────────────────
+#>  (Intercept)     │   65.20  <.001                              
+#>  age             │    0.05   .130   0.05  [-0.01, 0.11]   .130 
+#>  sex:            │                                             
+#>    Female (ref.) │     —     —       —          —         —    
+#>    Male          │    3.86  <.001   3.86  [ 2.08, 5.63]  <.001 
+#>  smoking:        │                                             
+#>    No (ref.)     │     —     —       —          —         —    
+#>    Yes           │   -1.72   .121  -1.72  [-3.89, 0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                        
+#>  R²              │    0.02                                     
+#>  Adj.R²          │    0.02                                     
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+#> AME = average marginal effect.
 
-# Group-token shortcuts: "all_b" + "all_ame" expand to the
-# full B / AME column families.
+# Group-token shortcut: "all_b" + "all_ame" expands to the full
+# B / AME column families side by side.
 table_regression(fit, show_columns = c("all_b", "all_ame"))
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable                 │    B      SE       95% CI        p     AME   AME SE 
-#> ──────────────────────────┼─────────────────────────────────────────────────────
-#>  (Intercept)              │   64.63  1.46  [61.78, 67.49]  <.001                
-#>  age                      │    0.03  0.03  [-0.03,  0.08]   .343   0.03    0.03 
-#>  sex:                     │                                                     
-#>    Female (ref.)          │     —     —          —          —       —       —   
-#>    Male                   │    3.65  0.80  [ 2.09,  5.22]  <.001   3.65    0.80 
-#>  education:               │                                                     
-#>    .L                     │   13.80  0.78  [12.28, 15.32]  <.001                
-#>    .Q                     │   -1.71  0.66  [-3.00, -0.41]   .010                
-#>  educationTertiary        │                                       19.52    1.10 
-#>  educationUpper secondary │                                       11.85    1.04 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1200                                                
-#>  R²                       │    0.22                                             
-#>  Adj.R²                   │    0.22                                             
+#>  Variable        │    B      SE       95% CI        p     AME    SE  
+#> ─────────────────┼───────────────────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001              
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130   0.05  0.03 
+#>  sex:            │                                                   
+#>    Female (ref.) │     —     —          —          —       —     —   
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001   3.86  0.91 
+#>  smoking:        │                                                   
+#>    No (ref.)     │     —     —          —          —       —     —   
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121  -1.72  1.11 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                              
+#>  R²              │    0.02                                           
+#>  Adj.R²          │    0.02                                           
 #> 
-#>  Variable                 │   AME 95% CI    AME p 
-#> ──────────────────────────┼───────────────────────
-#>  (Intercept)              │                       
-#>  age                      │ [-0.03,  0.08]   .343 
-#>  sex:                     │                       
-#>    Female (ref.)          │       —          —    
-#>    Male                   │ [ 2.09,  5.22]  <.001 
-#>  education:               │                       
-#>    .L                     │                       
-#>    .Q                     │                       
-#>  educationTertiary        │ [17.36, 21.67]  <.001 
-#>  educationUpper secondary │ [ 9.81, 13.89]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │                       
-#>  R²                       │                       
-#>  Adj.R²                   │                       
+#>  Variable        │    95% CI        p   
+#> ─────────────────┼──────────────────────
+#>  (Intercept)     │                      
+#>  age             │ [-0.01, 0.11]   .130 
+#>  sex:            │                      
+#>    Female (ref.) │       —         —    
+#>    Male          │ [ 2.08, 5.63]  <.001 
+#>  smoking:        │                      
+#>    No (ref.)     │       —         —    
+#>    Yes           │ [-3.89, 0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │                      
+#>  R²              │                      
+#>  Adj.R²          │                      
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+#> AME = average marginal effect.
 
-# Cluster-robust SE (CR2 with Satterthwaite df). Three accepted
-# forms for `cluster`; the formula is preferred.
+# ---- Cluster-robust variance -------------------------------------
+# CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the
+# recommended default under few clusters. Three forms are accepted
+# for `cluster`; the formula is preferred for composability with
+# multi-way clustering and for programmatic robustness.
 table_regression(fit, vcov = "CR2", cluster = ~region)
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
-#>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
+#>  (Intercept)     │   65.20  1.76  [60.63, 69.78]  <.001 
+#>  age             │    0.05  0.04  [-0.05,  0.15]   .285 
 #>  sex:            │                                      
 #>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
-#>  education:      │                                      
-#>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
-#>    .Q            │   -1.71  0.71  [-3.54,  0.13]   .062 
+#>    Male          │    3.86  0.85  [ 1.66,  6.05]   .007 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.52  [-5.70,  2.27]   .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                 
-#>  R²              │    0.22                              
-#>  Adj.R²          │    0.22                              
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 table_regression(fit, vcov = "CR2", cluster = "region")
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
-#>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
+#>  (Intercept)     │   65.20  1.76  [60.63, 69.78]  <.001 
+#>  age             │    0.05  0.04  [-0.05,  0.15]   .285 
 #>  sex:            │                                      
 #>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
-#>  education:      │                                      
-#>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
-#>    .Q            │   -1.71  0.71  [-3.54,  0.13]   .062 
+#>    Male          │    3.86  0.85  [ 1.66,  6.05]   .007 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.52  [-5.70,  2.27]   .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                 
-#>  R²              │    0.22                              
-#>  Adj.R²          │    0.22                              
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
-table_regression(fit, vcov = "CR2", cluster = sochealth$region)
-#> Linear regression: wellbeing_score
-#> 
-#>  Variable        │    B      SE       95% CI        p   
-#> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   64.63  1.12  [61.72, 67.55]  <.001 
-#>  age             │    0.03  0.03  [-0.04,  0.09]   .368 
-#>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.65  0.97  [ 1.13,  6.18]   .014 
-#>  education:      │                                      
-#>    .L            │   13.80  0.73  [11.91, 15.69]  <.001 
-#>    .Q            │   -1.71  0.71  [-3.54,  0.13]   .062 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                 
-#>  R²              │    0.22                              
-#>  Adj.R²          │    0.22                              
-#> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
-
-# Multi-way clustering via formula interaction
 table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   64.63  1.41  [61.62, 67.65]  <.001 
-#>  age             │    0.03  0.02  [-0.03,  0.08]   .301 
+#>  (Intercept)     │   65.20  1.54  [61.91, 68.49]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.10]   .107 
 #>  sex:            │                                      
 #>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.65  0.79  [ 2.02,  5.29]  <.001 
-#>  education:      │                                      
-#>    .L            │   13.80  0.86  [12.02, 15.58]  <.001 
-#>    .Q            │   -1.71  0.87  [-3.50,  0.09]   .062 
+#>    Male          │    3.86  0.87  [ 2.05,  5.67]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.25  [-4.31,  0.88]   .183 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                                 
-#>  R²              │    0.22                              
-#>  Adj.R²          │    0.22                              
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region:age_group.
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Hierarchical (nested) regression: change-stat rows appear
-# below R-squared / Adj.R-squared.
-m1 <- lm(wellbeing_score ~ age,                       data = sochealth)
-m2 <- lm(wellbeing_score ~ age + sex,                 data = sochealth)
-m3 <- lm(wellbeing_score ~ age + sex + education,     data = sochealth)
+# ---- Hierarchical (nested) regression ----------------------------
+# Adds in-table change-statistic rows (Delta R^2 / F-change /
+# p-change for lm; LRT / p-change for glm) below the fit-stats.
+# Note: hierarchical comparison requires identical observations
+# across all models -- prepare a complete-case subset first so
+# R's listwise deletion does not produce different `nobs` per
+# model (which the function rejects).
+sochealth_cc <- na.omit(
+  sochealth[, c("wellbeing_score", "age", "sex", "smoking")]
+)
+m1 <- lm(wellbeing_score ~ age,                  data = sochealth_cc)
+m2 <- lm(wellbeing_score ~ age + sex,            data = sochealth_cc)
+m3 <- lm(wellbeing_score ~ age + sex + smoking,  data = sochealth_cc)
 table_regression(
   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
   nested = TRUE
@@ -1043,34 +1070,34 @@ table_regression(
 #>                    ────────────────────  ─────────────────────  ────────────── 
 #>  Variable        │    B      SE     p       B       SE     p       B       SE  
 #> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)     │   67.00  1.58  <.001    65.07   1.63  <.001    64.63   1.46 
-#>  age             │    0.04  0.03   .177     0.04   0.03   .163     0.03   0.03 
+#>  (Intercept)     │   66.85  1.59  <.001    64.90   1.65  <.001    65.20   1.66 
+#>  age             │    0.04  0.03   .160     0.05   0.03   .143     0.05   0.03 
 #>  sex:            │                                                             
 #>    Female (ref.) │     —     —     —         —      —     —         —      —   
-#>    Male          │                          3.90   0.90  <.001     3.65   0.80 
-#>  education:      │                                                             
-#>    .L            │                                                13.80   0.78 
-#>    .Q            │                                                -1.71   0.66 
+#>    Male          │                          3.87   0.91  <.001     3.86   0.91 
+#>  smoking:        │                                                             
+#>    No (ref.)     │     —     —     —         —      —     —         —      —   
+#>    Yes           │                                                -1.72   1.11 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                  1200                   1200           
-#>  R²              │    0.00                  0.02                   0.22        
-#>  Adj.R²          │    0.00                  0.02                   0.22        
-#>  ΔR²             │     —                   +0.02                  +0.21        
-#>  F-change        │     —                  +18.94                +157.75        
-#>  p (change)      │     —                    <.001                  <.001       
+#>  n               │ 1175                  1175                   1175           
+#>  R²              │    0.00                  0.02                   0.02        
+#>  Adj.R²          │    0.00                  0.02                   0.02        
+#>  ΔR²             │     —                   +0.02                  +0.00        
+#>  F-change        │     —                  +18.26                  +2.41        
+#>  p (change)      │     —                    <.001                   .121       
 #> 
 #>                    Step  
 #>                    ───── 
 #>  Variable        │   p   
 #> ─────────────────┼───────
 #>  (Intercept)     │ <.001 
-#>  age             │  .343 
+#>  age             │  .130 
 #>  sex:            │       
 #>    Female (ref.) │  —    
 #>    Male          │ <.001 
-#>  education:      │       
-#>    .L            │ <.001 
-#>    .Q            │  .010 
+#>  smoking:        │       
+#>    No (ref.)     │  —    
+#>    Yes           │  .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
 #>  n               │       
 #>  R²              │       
@@ -1081,9 +1108,10 @@ table_regression(
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Side-by-side SE comparison (same fit, three vcovs)
+# ---- Side-by-side variance comparison ----------------------------
+# Same fit, three vcovs in one wide table. Useful for showing the
+# sensitivity of inference to the variance assumption.
 table_regression(
   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
   vcov    = list("classical", "HC3", "CR2"),
@@ -1095,31 +1123,31 @@ table_regression(
 #>                    ────────────────────  ────────────────────  ───────────── 
 #>  Variable        │    B      SE     p       B      SE     p       B      SE  
 #> ─────────────────┼───────────────────────────────────────────────────────────
-#>  (Intercept)     │   64.63  1.46  <.001    64.63  1.44  <.001    64.63  1.12 
-#>  age             │    0.03  0.03   .343     0.03  0.03   .343     0.03  0.03 
+#>  (Intercept)     │   65.20  1.66  <.001    65.20  1.61  <.001    65.20  1.76 
+#>  age             │    0.05  0.03   .130     0.05  0.03   .127     0.05  0.04 
 #>  sex:            │                                                           
 #>    Female (ref.) │     —     —     —         —     —     —         —     —   
-#>    Male          │    3.65  0.80  <.001     3.65  0.80  <.001     3.65  0.97 
-#>  education:      │                                                           
-#>    .L            │   13.80  0.78  <.001    13.80  0.82  <.001    13.80  0.73 
-#>    .Q            │   -1.71  0.66   .010    -1.71  0.67   .011    -1.71  0.71 
+#>    Male          │    3.86  0.91  <.001     3.86  0.91  <.001     3.86  0.85 
+#>  smoking:        │                                                           
+#>    No (ref.)     │     —     —     —         —     —     —         —     —   
+#>    Yes           │   -1.72  1.11   .121    -1.72  1.11   .123    -1.72  1.52 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1200                  1200                  1200          
-#>  R²              │    0.22                  0.22                  0.22       
-#>  Adj.R²          │    0.22                  0.22                  0.22       
+#>  n               │ 1175                  1175                  1175          
+#>  R²              │    0.02                  0.02                  0.02       
+#>  Adj.R²          │    0.02                  0.02                  0.02       
 #> 
 #>                     CR2  
 #>                    ───── 
 #>  Variable        │   p   
 #> ─────────────────┼───────
 #>  (Intercept)     │ <.001 
-#>  age             │  .368 
+#>  age             │  .285 
 #>  sex:            │       
 #>    Female (ref.) │  —    
-#>    Male          │  .014 
-#>  education:      │       
-#>    .L            │ <.001 
-#>    .Q            │  .062 
+#>    Male          │  .007 
+#>  smoking:        │       
+#>    No (ref.)     │  —    
+#>    Yes           │  .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
 #>  n               │       
 #>  R²              │       
@@ -1130,34 +1158,32 @@ table_regression(
 #>   Model 1: classical (OLS)
 #>   Model 2: heteroskedasticity-robust (HC3)
 #>   Model 3: cluster-robust (CR2), clusters by region
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 
-# Tidy long format for downstream pipelines
+# ---- Tidy long format for downstream pipelines -------------------
 broom::tidy(table_regression(fit))
-#> # A tibble: 5 × 15
+#> # A tibble: 4 × 15
 #>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high
 #>   <chr>    <chr>       <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 M1       wellbeing_… (Int… B              64.6       1.46    61.8      67.5   
-#> 2 M1       wellbeing_… age   B               0.0258    0.0271  -0.0275    0.0790
-#> 3 M1       wellbeing_… sexM… B               3.65      0.798    2.09      5.22  
-#> 4 M1       wellbeing_… educ… B              13.8       0.777   12.3      15.3   
-#> 5 M1       wellbeing_… educ… B              -1.71      0.661   -3.00     -0.409 
+#> 1 M1       wellbeing_… (Int… B              65.2       1.66    62.0       68.5  
+#> 2 M1       wellbeing_… age   B               0.0465    0.0307  -0.0137     0.107
+#> 3 M1       wellbeing_… sexM… B               3.86      0.905    2.08       5.63 
+#> 4 M1       wellbeing_… smok… B              -1.72      1.11    -3.89       0.454
 #> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
 #> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
 
 if (FALSE) { # \dontrun{
-# Rich-format outputs (require optional Suggests packages)
+# ---- Rich-format outputs (require optional Suggests packages) ----
 table_regression(fit, output = "gt")
 table_regression(fit, output = "flextable")
 table_regression(fit, output = "tinytable")
 
-# File outputs
+# ---- File outputs ------------------------------------------------
 table_regression(fit, output = "excel",
                  excel_path = tempfile(fileext = ".xlsx"))
 table_regression(fit, output = "word",
                  word_path  = tempfile(fileext = ".docx"))
 
-# System clipboard (interactive use)
+# ---- System clipboard (interactive use) --------------------------
 table_regression(fit, output = "clipboard")
 } # }
 ```

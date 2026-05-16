@@ -7,8 +7,7 @@ interfaces for an object returned by
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 They re-shape the underlying long-format data (stored on the object as
 the `"long_data"` attribute) into the two canonical broom views so the
-table can be consumed by `gtsummary`, `modelsummary`, `parameters`, and
-any other tidyverse-stats pipeline.
+table can be consumed by any downstream tidyverse-stats pipeline.
 
 ## Usage
 

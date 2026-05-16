@@ -1557,9 +1557,8 @@ code.</li>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> returns an object that can be coerced
 to a plain <code>data.frame</code> / <code>tbl_df</code> (stripping the
 spicy formatting attributes) or piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> /
-<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for use with <code>gtsummary</code>,
-<code>modelsummary</code>, <code>parameters</code>, or any other
-tidyverse stats workflow:</p>
+<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for any downstream tidyverse stats
+workflow:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>

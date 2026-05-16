@@ -318,9 +318,10 @@ interactions or transforms (`covariates = ~ age * sex`,
 hint. Interactions and polynomials are reserved for a future spicy
 release. To fit a fully-specified model right now, do so with
 [`lm()`](https://rdrr.io/r/stats/lm.html) directly and inspect via
-[`summary()`](https://rdrr.io/r/base/summary.html),
-[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html), or
-`gtsummary`.
+[`summary()`](https://rdrr.io/r/base/summary.html) or
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+(which accepts interaction / polynomial /
+[`I()`](https://rdrr.io/r/base/AsIs.html) terms natively).
 
 ## Effect sizes
 
@@ -587,8 +588,7 @@ returns an object that can be coerced to a plain `data.frame` / `tbl_df`
 (stripping the spicy formatting attributes) or piped into
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-for use with `gtsummary`, `modelsummary`, `parameters`, or any other
-tidyverse-stats workflow:
+for any downstream tidyverse-stats workflow:
 
 ``` r
 

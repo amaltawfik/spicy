@@ -824,8 +824,8 @@ Sciences* (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
 Cousineau, D., & Goulet-Pelletier, J.-C. (2021). Expected and empirical
 coverages of different methods for generating noncentral *t* confidence
 intervals for a standardized mean difference. *Behavior Research
-Methods*, **53**, 2376–2394. [doi:10.3758/Section
-13428-021-01550-4](https://doi.org/10.3758/Section%2013428-021-01550-4)
+Methods*, **53**, 2376–2394.
+[doi:10.3758/s13428-021-01550-4](https://doi.org/10.3758/s13428-021-01550-4)
 
 Cribari-Neto, F. (2004). Asymptotic inference under heteroskedasticity
 of unknown form. *Computational Statistics & Data Analysis*, **45**(2),
@@ -840,8 +840,8 @@ in Statistics – Theory and Methods*, **36**(10), 1877–1888.
 Cribari-Neto, F., & da Silva, W. B. (2011). A new
 heteroskedasticity-consistent covariance matrix estimator for the linear
 regression model. *AStA Advances in Statistical Analysis*, **95**(2),
-129–146. [doi:10.1007/Section
-10182-010-0141-2](https://doi.org/10.1007/Section%2010182-010-0141-2)
+129–146.
+[doi:10.1007/s10182-010-0141-2](https://doi.org/10.1007/s10182-010-0141-2)
 
 Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap Methods and Their
 Application*. Cambridge: Cambridge University Press.

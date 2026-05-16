@@ -131,7 +131,8 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  excel_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  excel_sheet <span class="op">=</span> <span class="st">"Regression"</span>,</span>
 <span>  clipboard_delim <span class="op">=</span> <span class="st">"\t"</span>,</span>
-<span>  word_path <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  word_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  word_template <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -338,15 +339,15 @@ model comparison</em> in the details for the full vocabulary.</p></dd>
 <code>AIC</code>, ...) within each model's column group. Two options:</p><ul><li><p><code>"first_col"</code> (default): the value is placed in the
 FIRST numeric sub-column of each model (typically <code>B</code>);
 the model's remaining sub-columns (<code>SE</code>, <code>LL</code>, <code>UL</code>, <code>p</code>,
-...) are left empty for that row. APA convention (Table
-7.13) and the layout used by <code>gtsummary</code>, <code>modelsummary</code>,
-<code>sjPlot::tab_model</code>, <code>jtools</code>, <code>parameters</code>.</p></li>
+...) are left empty for that row. The APA Manual 7
+Table 7.13 layout.</p></li>
 <li><p><code>"merged"</code>: the model's numeric sub-columns are
 merged into a single wide cell containing the fit-stat
-value, centred under the model spanner. Stata <code>esttab</code> /
-Econometrica / AER convention. Resolves the mixed-
-precision look of <code>"first_col"</code> (an integer <code>n</code> row
-sharing the B column with two-decimal coefficients).</p></li>
+value, centred under the model spanner. Stata <code>esttab</code>
+layout / <em>Econometrica</em> and <em>AER</em> journal convention.
+Resolves the mixed-precision look of <code>"first_col"</code> (an
+integer <code>n</code> row sharing the B column with two-decimal
+coefficients).</p></li>
 </ul><p>Cell merging is supported by <code>excel</code>, <code>flextable</code>, and
 <code>word</code> (via flextable). <code>gt</code>, <code>tinytable</code>, <code>clipboard</code>, and
 <code>default</code> (console) always render in <code>"first_col"</code> mode
@@ -507,19 +508,65 @@ tables); <code>"excel"</code> (writes to <code>excel_path</code>); <code>"clipbo
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
 <dd><p>Field delimiter for
 <code>output = "clipboard"</code>. Default <code>"\t"</code> (tab-separated, pastes
-cleanly into Excel / Google Sheets). The clipboard payload
-mirrors the Excel layout (title row, spanner row, header,
-body, footer note) but is plain text – horizontal rules,
-cell merging, decimal alignment, monospace font, and factor-
-level indentation cannot be encoded in TSV and are therefore
-absent from the paste. For a fully-formatted result, use
-<code>output = "excel"</code> or <code>output = "word"</code> and open / paste from
-the produced file.</p></dd>
+cleanly into Excel / Google Sheets / Word). The clipboard
+payload mirrors the Excel layout (title row, spanner row,
+header, body, footer note) but is plain text – horizontal
+rules, cell merging, decimal alignment, monospace font, and
+factor-level indentation cannot be encoded in TSV and are
+therefore absent from the paste.</p>
+<p>Paste behaviour by target:</p><ul><li><p><strong>Excel / Google Sheets:</strong> numerics are auto-detected and
+right-aligned; text cells stay left-aligned. (P-values such
+as <code>.005</code> get re-parsed as <code>0.005</code> by Excel's auto-format
+– to preserve the APA leading-zero-dropped display, prefer
+<code>output = "excel"</code>.)</p></li>
+<li><p><strong>Word:</strong> the paste is converted to a Word table; all
+cells start left-aligned. Apply a Table Style
+(Insert &gt; Table &gt; Design) for APA-style borders, and
+set right-alignment on numeric columns
+(Layout &gt; Align Right). For a self-contained Word file
+with borders and alignment pre-applied, use
+<code>output = "word"</code> instead.</p></li>
+</ul></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
 <dd><p>File path for <code>output = "word"</code>. Default
-<code>NULL</code> (required when <code>output = "word"</code>).</p></dd>
+<code>NULL</code> (required when <code>output = "word"</code>). The Word table inherits
+the flextable styling (Calibri font, APA borders, decimal-aligned
+numerics) and adds Word-specific features: an auto-numbered
+caption ("Table 1: ...", "Table 2: ...") via Word's <code>SEQ</code>
+field so multiple <code>table_regression()</code> calls in one document
+number consecutively; a re-printed header row on each page break;
+row split prevention so a single coefficient row never wraps
+across two pages; and an APA-styled note line (<code>*Note.*</code> italic
+prefix per APA Manual 7 §7.14).</p>
+<p><strong>R Markdown / Quarto:</strong> for embedded use, prefer <code>output = "flextable"</code>
+(returns the flextable object that knits to docx/HTML/PDF natively).
+<code>output = "word"</code> writes a standalone .docx file, suited to scripted
+exports rather than chunk-level rendering.</p></dd>
+
+
+<dt id="arg-word-template">word_template<a class="anchor" aria-label="anchor" href="#arg-word-template"></a></dt>
+<dd><p>Optional path to a custom .docx file used as the
+template for <code>output = "word"</code>. The template's header, footer,
+page size, margins, and named styles ("Table Caption" in
+particular) are honoured; the table is appended to the template
+body. Useful for institutional templates with pre-set headers
+("APA Style", "Manuscript Submission Template", etc.). Default
+<code>NULL</code> (uses flextable's stock template).</p>
+<p><strong>Customising the caption appearance:</strong> the table caption is
+tagged with the Word named style <code>"Table Caption"</code>. The visual
+rendering (italic / bold / colour / font) follows whatever that
+style is set to in the docx template. The stock Word template
+renders <code>"Table Caption"</code> in italic — the APA Manual 7 §7.10
+condensed convention. For a different appearance (Nature-style
+bold non-italic, APA-strict 2-line bold-number / italic-title,
+etc.), edit the <code>"Table Caption"</code> style in a docx template and
+pass it via <code>word_template = "your_template.docx"</code>. Style-based
+delegation keeps the rendered caption consistent with the
+surrounding document and lets editorial conventions (Nature,
+APA-strict, journal-specific) be applied without modifying the
+call site.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -845,223 +892,204 @@ broom integration:
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># ---- Single-model usage ------------------------------------------</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Default APA layout (single model)</span></span></span>
+<span class="r-in"><span><span class="co"># Default APA layout: B / SE / 95% CI / p plus the n / R^2 /</span></span></span>
+<span class="r-in"><span><span class="co"># Adj.R^2 fit-stats footer. Factor reference level is annotated</span></span></span>
+<span class="r-in"><span><span class="co"># with `(ref.)` and shows an em-dash in the statistic columns.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">ℹ</span> To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This message is displayed once per session.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.46  [61.78, 67.49]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.03,  0.08]   .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.80  [ 2.09,  5.22]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.78  [12.28, 15.32]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.66  [-3.00, -0.41]   .010 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Standardised coefficients (beta) alongside B</span></span></span>
+<span class="r-in"><span><span class="co"># Standardised coefficients (beta) injected next to B. Four</span></span></span>
+<span class="r-in"><span><span class="co"># methods available; "refit" is the SPSS / Stata regress, beta</span></span></span>
+<span class="r-in"><span><span class="co"># gold standard.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B       β     SE       95% CI        p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  -0.20  1.46  [61.78, 67.49]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03   0.02  0.03  [-0.03,  0.08]   .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  -0.10  1.66  [61.95, 68.45]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05   0.04  0.03  [-0.01,  0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —      —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65   0.23  0.80  [ 2.09,  5.22]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80   0.88  0.78  [12.28, 15.32]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  -0.11  0.66  [-3.00, -0.41]   .010 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86   0.25  0.91  [ 2.08,  5.63]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —      —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardised coefficient.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Custom column set: AME alongside its own p-value</span></span></span>
+<span class="r-in"><span><span class="co"># Custom column set: B + AME + AME-specific p-value. Note that</span></span></span>
+<span class="r-in"><span><span class="co"># the `p` token always belongs to B, never to AME -- use the</span></span></span>
+<span class="r-in"><span><span class="co"># explicit `ame_p` token for AME inference.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">fit</span>,</span></span>
 <span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>    B       p     AME     AME 95% CI    AME p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>   64.63  &lt;.001                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span>    0.03   .343   0.03  [-0.03,  0.08]   .343 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>     —     —       —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span>    3.65  &lt;.001   3.65  [ 2.09,  5.22]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>   13.80  &lt;.001                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>   -1.71   .010                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span>                 19.52  [17.36, 21.67]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span>                 11.85  [ 9.81, 13.89]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span> 1200                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B       p     AME      95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  &lt;.001                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05   .130   0.05  [-0.01, 0.11]   .130 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —       —          —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  &lt;.001   3.86  [ 2.08, 5.63]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —       —          —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72   .121  -1.72  [-3.89, 0.45]   .121 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Group-token shortcuts: "all_b" + "all_ame" expand to the</span></span></span>
-<span class="r-in"><span><span class="co"># full B / AME column families.</span></span></span>
+<span class="r-in"><span><span class="co"># Group-token shortcut: "all_b" + "all_ame" expands to the full</span></span></span>
+<span class="r-in"><span><span class="co"># B / AME column families side by side.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all_b"</span>, <span class="st">"all_ame"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME   AME SE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>   64.63  1.46  [61.78, 67.49]  &lt;.001                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.03,  0.08]   .343   0.03    0.03 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>     —     —          —          —       —       —   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span>    3.65  0.80  [ 2.09,  5.22]  &lt;.001   3.65    0.80 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>   13.80  0.78  [12.28, 15.32]  &lt;.001                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>   -1.71  0.66  [-3.00, -0.41]   .010                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span>                                       19.52    1.10 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span>                                       11.85    1.04 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span> 1200                                                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME    SE  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130   0.05  0.03 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —       —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001   3.86  0.91 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —       —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121  -1.72  1.11 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span>   AME 95% CI    AME p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)              <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age                      <span style="color: #9E9E9E;">│</span> [-0.03,  0.08]   .343 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:                     <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.)          <span style="color: #9E9E9E;">│</span>       —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male                   <span style="color: #9E9E9E;">│</span> [ 2.09,  5.22]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:               <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L                     <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q                     <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationTertiary        <span style="color: #9E9E9E;">│</span> [17.36, 21.67]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  educationUpper secondary <span style="color: #9E9E9E;">│</span> [ 9.81, 13.89]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n                        <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²                       <span style="color: #9E9E9E;">│</span>                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²                   <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    95% CI        p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> [-0.01, 0.11]   .130 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> [ 2.08, 5.63]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span> [-3.89, 0.45]   .121 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Cluster-robust SE (CR2 with Satterthwaite df). Three accepted</span></span></span>
-<span class="r-in"><span><span class="co"># forms for `cluster`; the formula is preferred.</span></span></span>
+<span class="r-in"><span><span class="co"># ---- Cluster-robust variance -------------------------------------</span></span></span>
+<span class="r-in"><span><span class="co"># CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the</span></span></span>
+<span class="r-in"><span><span class="co"># recommended default under few clusters. Three forms are accepted</span></span></span>
+<span class="r-in"><span><span class="co"># for `cluster`; the formula is preferred for composability with</span></span></span>
+<span class="r-in"><span><span class="co"># multi-way clustering and for programmatic robustness.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.76  [60.63, 69.78]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.04  [-0.05,  0.15]   .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.85  [ 1.66,  6.05]   .007 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.52  [-5.70,  2.27]   .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="st">"region"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.76  [60.63, 69.78]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.04  [-0.05,  0.15]   .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.85  [ 1.66,  6.05]   .007 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.52  [-5.70,  2.27]   .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
-<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">region</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.12  [61.72, 67.55]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.04,  0.09]   .368 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.97  [ 1.13,  6.18]   .014 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.73  [11.91, 15.69]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.71  [-3.54,  0.13]   .062 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Multi-way clustering via formula interaction</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">:</span><span class="va">age_group</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.41  [61.62, 67.65]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.02  [-0.03,  0.08]   .301 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.54  [61.91, 68.49]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.10]   .107 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.79  [ 2.02,  5.29]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.86  [12.02, 15.58]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.87  [-3.50,  0.09]   .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.87  [ 2.05,  5.67]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.25  [-4.31,  0.88]   .183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region:age_group.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Hierarchical (nested) regression: change-stat rows appear</span></span></span>
-<span class="r-in"><span><span class="co"># below R-squared / Adj.R-squared.</span></span></span>
-<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>,                       data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>,                 data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,     data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># ---- Hierarchical (nested) regression ----------------------------</span></span></span>
+<span class="r-in"><span><span class="co"># Adds in-table change-statistic rows (Delta R^2 / F-change /</span></span></span>
+<span class="r-in"><span><span class="co"># p-change for lm; LRT / p-change for glm) below the fit-stats.</span></span></span>
+<span class="r-in"><span><span class="co"># Note: hierarchical comparison requires identical observations</span></span></span>
+<span class="r-in"><span><span class="co"># across all models -- prepare a complete-case subset first so</span></span></span>
+<span class="r-in"><span><span class="co"># R's listwise deletion does not produce different `nobs` per</span></span></span>
+<span class="r-in"><span><span class="co"># model (which the function rejects).</span></span></span>
+<span class="r-in"><span><span class="va">sochealth_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"smoking"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>,                  data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>,            data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>,  data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Step 1"</span> <span class="op">=</span> <span class="va">m1</span>, <span class="st">"Step 2"</span> <span class="op">=</span> <span class="va">m2</span>, <span class="st">"Step 3"</span> <span class="op">=</span> <span class="va">m3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  nested <span class="op">=</span> <span class="cn">TRUE</span></span></span>
@@ -1072,34 +1100,34 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────────────────────  ─────────────────────  ────────────── </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   67.00  1.58  &lt;.001    65.07   1.63  &lt;.001    64.63   1.46 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.04  0.03   .177     0.04   0.03   .163     0.03   0.03 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   66.85  1.59  &lt;.001    64.90   1.65  &lt;.001    65.20   1.66 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.04  0.03   .160     0.05   0.03   .143     0.05   0.03 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —     —         —      —     —         —      —   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>                          3.90   0.90  &lt;.001     3.65   0.80 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>                                                13.80   0.78 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>                                                -1.71   0.66 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>                          3.87   0.91  &lt;.001     3.86   0.91 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —     —         —      —     —         —      —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>                                                -1.72   1.11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                  1200                   1200           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.22        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.22        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>     —                   +0.02                  +0.21        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>     —                  +18.94                +157.75        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     —                    &lt;.001                  &lt;.001       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                  1175                   1175           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.02        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.02        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>     —                   +0.02                  +0.00        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>     —                  +18.26                  +2.41        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     —                    &lt;.001                   .121       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    Step  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  —    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>  .010 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>       </span>
@@ -1110,9 +1138,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Side-by-side SE comparison (same fit, three vcovs)</span></span></span>
+<span class="r-in"><span><span class="co"># ---- Side-by-side variance comparison ----------------------------</span></span></span>
+<span class="r-in"><span><span class="co"># Same fit, three vcovs in one wide table. Useful for showing the</span></span></span>
+<span class="r-in"><span><span class="co"># sensitivity of inference to the variance assumption.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Classical"</span> <span class="op">=</span> <span class="va">fit</span>, <span class="st">"HC3"</span> <span class="op">=</span> <span class="va">fit</span>, <span class="st">"CR2"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  vcov    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"classical"</span>, <span class="st">"HC3"</span>, <span class="st">"CR2"</span><span class="op">)</span>,</span></span>
@@ -1124,31 +1153,31 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────────────────────  ────────────────────  ───────────── </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B      SE     p       B      SE  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.63  1.46  &lt;.001    64.63  1.44  &lt;.001    64.63  1.12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03   .343     0.03  0.03   .343     0.03  0.03 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  &lt;.001    65.20  1.61  &lt;.001    65.20  1.76 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .130     0.05  0.03   .127     0.05  0.04 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —     —         —     —     —         —     —   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.65  0.80  &lt;.001     3.65  0.80  &lt;.001     3.65  0.97 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>   13.80  0.78  &lt;.001    13.80  0.82  &lt;.001    13.80  0.73 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   -1.71  0.66   .010    -1.71  0.67   .011    -1.71  0.71 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  &lt;.001     3.86  0.91  &lt;.001     3.86  0.85 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —     —         —     —     —         —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11   .121    -1.72  1.11   .123    -1.72  1.52 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1200                  1200                  1200          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.22                  0.22                  0.22       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                  0.22                  0.22       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                  1175                  1175          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                  0.02       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                  0.02                  0.02       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     CR2  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  —    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>  .014 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>  .062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>  .007 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>       </span>
@@ -1159,34 +1188,32 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  Model 1: classical (OLS)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  Model 2: heteroskedasticity-robust (HC3)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  Model 3: cluster-robust (CR2), clusters by region</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Tidy long format for downstream pipelines</span></span></span>
+<span class="r-in"><span><span class="co"># ---- Tidy long format for downstream pipelines -------------------</span></span></span>
 <span class="r-in"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 15</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 15</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> M1       wellbeing_… (Int… B              64.6       1.46    61.8      67.5   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> M1       wellbeing_… age   B               0.025<span style="text-decoration: underline;">8</span>    0.027<span style="text-decoration: underline;">1</span>  -<span style="color: #BB0000;">0.027</span><span style="color: #BB0000; text-decoration: underline;">5</span>    0.079<span style="text-decoration: underline;">0</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> M1       wellbeing_… sexM… B               3.65      0.798    2.09      5.22  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> M1       wellbeing_… educ… B              13.8       0.777   12.3      15.3   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> M1       wellbeing_… educ… B              -<span style="color: #BB0000;">1.71</span>      0.661   -<span style="color: #BB0000;">3.00</span>     -<span style="color: #BB0000;">0.409</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> M1       wellbeing_… (Int… B              65.2       1.66    62.0       68.5  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> M1       wellbeing_… age   B               0.046<span style="text-decoration: underline;">5</span>    0.030<span style="text-decoration: underline;">7</span>  -<span style="color: #BB0000;">0.013</span><span style="color: #BB0000; text-decoration: underline;">7</span>     0.107</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> M1       wellbeing_… sexM… B               3.86      0.905    2.08       5.63 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> M1       wellbeing_… smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>       0.454</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Rich-format outputs (require optional Suggests packages)</span></span></span>
+<span class="r-in"><span><span class="co"># ---- Rich-format outputs (require optional Suggests packages) ----</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># File outputs</span></span></span>
+<span class="r-in"><span><span class="co"># ---- File outputs ------------------------------------------------</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"excel"</span>,</span></span>
 <span class="r-in"><span>                 excel_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"word"</span>,</span></span>
 <span class="r-in"><span>                 word_path  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># System clipboard (interactive use)</span></span></span>
+<span class="r-in"><span><span class="co"># ---- System clipboard (interactive use) --------------------------</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"clipboard"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

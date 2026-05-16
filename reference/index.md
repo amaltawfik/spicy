@@ -61,12 +61,20 @@
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   : Categorical summary table
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   : Continuous summary table
+
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   : Continuous-outcome linear-model table
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
+
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  :
+
+  Extract the typed (structured) view of a `spicy_regression_table`
 
 ## Export
 

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Regression coefficient tables in R • spicy</title>
+<title>Publication-ready regression tables • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -24,10 +24,10 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Regression coefficient tables in R">
-<meta name="description" content="Build publication-ready regression coefficient tables in R with table_regression(): classical / HC / cluster-robust / bootstrap / jackknife variance, AME with Satterthwaite-corrected df under CR* (a first in R), four standardisation methods, per-coefficient effect sizes (partial f² / η² / ω² with noncentral CIs), multiple-comparison adjustment via stats::p.adjust() with full- family scope, regex-based keep / drop filters for focal-predictor display, side-by-side and hierarchical regression layouts, APA- aligned formatting, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:title" content="Publication-ready regression tables">
+<meta name="description" content="Coefficient tables for `lm` and `glm` fits with APA-aligned formatting, classical / heteroskedasticity-consistent / cluster-robust / bootstrap / jackknife variance, Average Marginal Effects with Satterthwaite-corrected degrees of freedom under cluster-robust variance, four standardisation methods, per-coefficient effect sizes with noncentral CIs, multiple-comparison adjustment, focal-predictor filtering, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
-<meta property="og:description" content="Build publication-ready regression coefficient tables in R with table_regression(): classical / HC / cluster-robust / bootstrap / jackknife variance, AME with Satterthwaite-corrected df under CR* (a first in R), four standardisation methods, per-coefficient effect sizes (partial f² / η² / ω² with noncentral CIs), multiple-comparison adjustment via stats::p.adjust() with full- family scope, regex-based keep / drop filters for focal-predictor display, side-by-side and hierarchical regression layouts, APA- aligned formatting, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:description" content="Coefficient tables for `lm` and `glm` fits with APA-aligned formatting, classical / heteroskedasticity-consistent / cluster-robust / bootstrap / jackknife variance, Average Marginal Effects with Satterthwaite-corrected degrees of freedom under cluster-robust variance, four standardisation methods, per-coefficient effect sizes with noncentral CIs, multiple-comparison adjustment, focal-predictor filtering, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -92,7 +92,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Regression coefficient tables in R</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Publication-ready regression tables</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression.Rmd" class="external-link"><code>vignettes/table-regression.Rmd</code></a></small>
@@ -111,60 +111,57 @@
 <span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"bmi"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span>,</span>
 <span>                <span class="st">"smoking"</span>, <span class="st">"education"</span>, <span class="st">"region"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/table_regression.html">table_regression()</a></code> produces a publication-ready
-coefficient summary for one or several <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> fits,
-side-by-side, with the inferential machinery and the formatting
-conventions normally found in Stata’s <code>regress</code> /
-<code>eststo</code> workflow or SPSS’s <code>REGRESSION</code> output.
-The function is fit-first (you pass already-fitted models, not raw data
-+ formula), the long-format internal representation is built around the
-<code>(model_id, term, estimate_type)</code> triplet for clean
-[<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>][broom::tidy] /
-[<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>][broom::glance] exports, and the rendered
-table accepts heteroskedasticity-consistent, cluster-robust, bootstrap,
-or jackknife variance, four standardisation methods, per-coefficient
-effect sizes with noncentral CIs, and a hierarchical-comparison
-footer.</p>
-<p>Two design choices position <code><a href="../reference/table_regression.html">table_regression()</a></code> against
-the existing R landscape (<code>modelsummary</code>,
-<code>gtsummary</code>, <code>parameters</code>,
-<code>marginaleffects</code>):</p>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> produces a coefficient summary table
+from one or several fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> or <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
+models. The output is publication-ready by default and follows APA
+Manual 7 (American Psychological Association 2020, Tables 7.13–7.15)
+formatting conventions: paired estimate-and-CI columns, APA p-values
+without leading zero, factor levels grouped under their parent variable,
+fit statistics at the foot of the table, and a self-documenting note
+line stating the variance estimator and any methodological choice that
+affected the rendered values.</p>
+<p>The function is <strong>fit-first</strong>: you pass already-fitted
+models, not raw data and a formula. Internally each row of the table is
+represented by an <code>(model_id, term, estimate_type)</code> triplet,
+so the same object exports cleanly to long format for downstream work
+(<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>) and to a one-row-per-model glance summary
+(<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>).</p>
+<p>Two methodological choices deserve highlighting up front:</p>
 <ul>
 <li>
-<strong>AME with Satterthwaite-corrected degrees of freedom under
-CR* variance.</strong> When the user requests both Average Marginal
-Effects and a cluster-robust variance estimator,
-<code><a href="../reference/table_regression.html">table_regression()</a></code> builds the closed-form linear contrast
-representing each AME and passes it to
+<strong>Average Marginal Effects under cluster-robust variance with
+Satterthwaite-corrected df.</strong> When <code>vcov</code> is set to
+<code>"CR0"</code> / <code>"CR1"</code> / <code>"CR2"</code> /
+<code>"CR3"</code> and the user requests AME columns, the function
+constructs the closed-form linear contrast representing each AME and
+inverts it through
 [<code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>][clubSandwich::linear_contrast]
-with <code>test = "Satterthwaite"</code>. Existing R tools default to a
-z-asymptotic AME under CR*, which is anti-conservative for few clusters
-(Pustejovsky and Tipton 2018). The B coefficient and the AME therefore
-share the same inferential regime in the same table.</li>
+with <code>test = "Satterthwaite"</code>. The B coefficient and the AME
+therefore share the same inferential regime — t-distribution with the
+same df — in the same table. The z-asymptotic alternative is
+anti-conservative for few clusters (Pustejovsky and Tipton 2018).</li>
 <li>
-<strong>Transparent caveat on standardised coefficients with
-non-additive terms.</strong> When <code>standardized != "none"</code>
-and the model contains an interaction or a transformed term
-(<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>,
-<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>), the function emits a classed
-<code>spicy_caveat</code> warning at runtime AND auto-documents the
-caveat in the table footer, with method-specific wording. Existing tools
-either compute silently or document only in <code>?</code> —
-<code><a href="../reference/table_regression.html">table_regression()</a></code> is “more pro via transparency, not
-rejection” (Cohen, Cohen, West, and Aiken 2003 §7.7).</li>
+<strong>Transparency on standardised coefficients with non-additive
+terms.</strong> When <code>standardized != "none"</code> and the model
+contains an interaction or a transformed term (<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>,
+<code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>),
+the function emits a classed <code>spicy_caveat</code> warning at
+runtime AND prints a method-specific caveat in the table footer (Aiken
+and West 1991; Cohen, Cohen, West, and Aiken 2003 §7.7). The table is
+rendered; the limitation is exposed at the point of use.</li>
 </ul>
-<p>Supports <code>lm</code> and <code>glm</code> (binomial / poisson /
-Gamma / inverse.gaussian / quasi families with any link). Mixed-effects
-models (<code>merMod</code>, <code>lmerModLmerTest</code>) are on the
-roadmap for spicy 0.16+. See the <em>Generalised linear models</em>
-section below for the glm-specific argument semantics.</p>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports <code>lm</code> and
+<code>glm</code> (binomial / Poisson / Gamma / inverse.gaussian / quasi
+families with any link). The <em>Generalised linear models</em> section
+below covers the glm-specific argument semantics. Mixed-effects models
+are on the roadmap.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
 <p>Pass a fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> object. The default rendering returns
 a single-model table with <code>B</code>, <code>SE</code>,
-<code>95% CI</code>, and <code>p</code>, plus a fit-stats footer
-(<code>n</code>, <code>R²</code>, <code>Adj.R²</code>):</p>
+<code>95% CI</code>, and <code>p</code> columns plus a fit-statistics
+footer (<code>n</code>, <code>R²</code>, <code>Adj.R²</code>):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -187,9 +184,21 @@ a single-model table with <code>B</code>, <code>SE</code>,
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
-<p>Reference levels of factor predictors carry the <code>(ref.)</code>
-annotation and an em-dash in the statistic columns. The vcov footer line
-names the variance estimator in plain English.</p>
+<p>Reading the table:</p>
+<ul>
+<li>Each predictor occupies one row; factor predictors are grouped under
+their parent variable name with one row per level. The reference level
+carries the <code>(ref.)</code> annotation and an em-dash across the
+statistic columns, so the substantive comparison is visible in a single
+glance (NEJM / BMJ clinical convention).</li>
+<li>The <code>95% CI</code> column reports a symmetric Wald interval at
+the level set by <code>ci_level</code> (default 0.95). The CI header
+tracks the chosen level — switching to <code>ci_level = 0.99</code>
+re-labels the column accordingly.</li>
+<li>The footer line names the variance estimator in plain English so the
+reader can find the inferential regime without leaving the table. The
+estimator switches with <code>vcov</code> (next section).</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="heteroskedasticity-consistent-variance">Heteroskedasticity-consistent variance<a class="anchor" aria-label="anchor" href="#heteroskedasticity-consistent-variance"></a>
@@ -315,7 +324,7 @@ df:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME    AME 95% CI   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME      95% CI     </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.00  1.74  [60.49, 69.51]  &lt;.001                       </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.04  [-0.05,  0.15]   .247   0.05  [-0.05, 0.15] </span></span>
@@ -330,7 +339,7 @@ df:</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                                    </span></span>
 <span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> AME p </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>       </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>  .247 </span></span>
@@ -347,6 +356,7 @@ df:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CR2), clusters by region.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky &amp; Tipton 2018) via `clubSandwich::linear_contrast()`.</span></span></span></code></pre></div>
 <p>Note that <code>"p"</code> always refers to the B (or β) coefficient,
 never to the AME. To display the AME-specific p-value, include
@@ -369,24 +379,33 @@ are available; the choice is consequential and the differences are
 documented in the literature (Cohen et al. 2003 §3.4; Gelman 2008):</p>
 <ul>
 <li>
-<code>"refit"</code> — refit on z-scored outcome and predictors. The
-gold standard; produces β identical to <code>lm.beta</code> and to SPSS
-/ Stata <code>Beta</code>.</li>
+<code>"refit"</code> — refit the model on z-scored outcome and
+predictors. This is the gold-standard convention used by SPSS
+<code>REGRESSION</code> and Stata <code>regress, beta</code>. Both
+numeric and dummy-coded predictors enter the refit on the same
+scale.</li>
 <li>
-<code>"posthoc"</code> — post-hoc rescaling
-<code>β = B × SD(X) / SD(Y)</code>. Matches
-<code>effectsize::standardize_parameters(method = "basic")</code> and
-<code>parameters::model_parameters(standardize = "basic")</code>.</li>
+<code>"posthoc"</code> — algebraic rescaling
+<code>β = B × SD(X) / SD(Y)</code>, applied to the original fit.
+Numerically identical to <code>"refit"</code> for purely linear-additive
+Gaussian models; preferred when refitting is expensive (large
+<code>n</code> × <code>p</code>) or when <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> was wrapped
+in a pipeline that resists re-execution.</li>
 <li>
-<code>"basic"</code> — like posthoc but factor dummies stay on the
-0/1 scale rather than being z-scored.</li>
+<code>"basic"</code> — algebraic, but factor dummies keep their 0/1
+scale rather than being z-scored. Useful when factor levels carry
+meaningful base rates that scale-free standardisation would
+obscure.</li>
 <li>
 <code>"smart"</code> — Gelman’s (2008) recommendation: numeric
 predictors divided by <code>2 × SD(X)</code>; binary predictors centred
-only.</li>
+only. The resulting β is the predicted change in <code>Y</code> for one
+within-sample standard deviation of <code>X</code>, on the original
+<code>Y</code> scale, which keeps factor and numeric coefficients on
+roughly comparable footing.</li>
 </ul>
-<p>When non-<code>"none"</code>, the <code>"beta"</code> token is
-auto-injected into <code>show_columns</code> immediately after
+<p>When <code>standardized != "none"</code>, the <code>"beta"</code>
+token is auto-injected into <code>show_columns</code> immediately after
 <code>"b"</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
@@ -409,26 +428,32 @@ auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
+<p>The standardised column is labelled <code>β</code> in the rendered
+table; the unstandardised <code>B</code> stays alongside so both can be
+reported (the convention recommended by APA Manual 7 §7.13 for
+transparency).</p>
 <p>For models with interactions or transformed predictors, the function
 emits a <code>spicy_caveat</code> warning AND prints a method-specific
-caveat in the footer (Aiken and West 1991; Cohen et al. 2003 §7.7). This
-is the “transparency over rejection” choice — the table is computed and
-displayed, with the limitation made explicit at the point of use.</p>
+caveat line in the footer (Aiken and West 1991; Cohen et al. 2003 §7.7).
+The standardised coefficient of a product term has no closed-form
+interpretation as a “one-SD change in X” effect, and the footer makes
+that limitation explicit at the point of use.</p>
 </div>
 <div class="section level2">
 <h2 id="per-coefficient-effect-sizes">Per-coefficient effect sizes<a class="anchor" aria-label="anchor" href="#per-coefficient-effect-sizes"></a>
 </h2>
-<p>Three partial effect-size tokens are available — Cohen’s f²
-(<code>partial_f2</code>), Pearson’s partial η²
-(<code>partial_eta2</code>), and the Olejnik-Algina bias-corrected
-partial ω² (<code>partial_omega2</code>). Each estimate has a CI derived
-from noncentral-F inversion (Steiger 2004; Smithson 2003), exposed as a
-separate <code>&lt;token&gt;_ci</code> column
-(<code>partial_f2_ci</code>, <code>partial_eta2_ci</code>,
-<code>partial_omega2_ci</code>). The group shortcuts
-<code>"all_f2"</code>, <code>"all_eta2"</code>,
-<code>"all_omega2"</code> expand to the pair in one go:</p>
+<p>Three partial effect-size tokens are available — Cohen’s
+<code>f²</code> (<code>partial_f2</code>), Pearson’s partial
+<code>η²</code> (<code>partial_eta2</code>), and the Olejnik–Algina
+bias-corrected partial <code>ω²</code> (<code>partial_omega2</code>).
+Each estimate has a confidence interval derived from
+noncentral-<code>F</code> inversion (Smithson 2003; Steiger 2004),
+exposed as a separate <code>&lt;token&gt;_ci</code> column. The group
+shortcuts <code>"all_f2"</code>, <code>"all_eta2"</code>,
+<code>"all_omega2"</code> expand to the point estimate and its CI pair
+in one go:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
@@ -461,18 +486,27 @@ separate <code>&lt;token&gt;_ci</code> column
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span></span></code></pre></div>
-<p>The η² point estimate matches
-<code>effectsize::eta_squared(partial = TRUE)</code> on a Type-II
-reference (<code>car::Anova</code>) to machine epsilon. The ω² point
-estimate matches <code>effectsize::omega_squared(partial = TRUE)</code>
-to machine epsilon, using the Olejnik and Algina (2003) formula
-<code>((F-1) × df1) / (F × df1 + N - df1)</code>. CIs use the Steiger
-(2004) inversion bounds, which always bracket the corresponding
-bias-corrected point estimate.</p>
-<p>For factor predictors with k levels, the partial F-test is the joint
-(k-1) df Wald test, so the same effect-size value is broadcast across
-all non-reference dummies (and reference rows show an em-dash).</p>
+<p>Methodology of the per-coefficient effect sizes:</p>
+<ul>
+<li>The partial F-test is computed on a Type-II ANOVA reference
+(<code>car::Anova</code>), which respects the principle of marginality
+and is the SAS / SPSS default for unbalanced designs.</li>
+<li>The <code>ω²</code> point estimate is bias-corrected via the Olejnik
+and Algina (2003) formula
+<code>((F − 1) × df1) / (F × df1 + N − df1)</code>, yielding a
+less-biased small-sample estimator than partial <code>η²</code>.</li>
+<li>The CI bounds are obtained by inverting the noncentrality parameter
+of the F-distribution at the lower and upper confidence level (Steiger
+2004 §4). The Steiger inversion bounds always bracket the corresponding
+bias-corrected point estimate even when the lower bound clips at zero (a
+common occurrence for near-null terms).</li>
+<li>For factor predictors with <code>k</code> levels, the partial F-test
+is the joint <code>(k − 1)</code> df Wald test, so the same effect-size
+value is broadcast across all non-reference dummy rows; the reference
+row shows an em-dash.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a>
@@ -518,28 +552,38 @@ within the same call. Available methods are the same as in
 <p>The footer documents the chosen method and the family size; the SE
 column is unchanged. <code>p_adjust</code> is orthogonal to
 <code>vcov</code>: combining a robust SE with a family-wise correction
-is fully supported, e.g. <code>vcov = "HC3", p_adjust = "holm"</code>.
+is fully supported, e.g. <code>vcov = "HC3", p_adjust = "holm"</code>.
 The adjustment is applied <strong>before</strong> <code>keep</code> /
 <code>drop</code> filtering, so the family stays the model’s full
 coefficient set and the displayed adjusted p-values reflect the right
-denominator regardless of which subset is shown (matching the
-<code>modelsummary</code> and <code>parameters</code> convention).</p>
+denominator regardless of which subset is shown.</p>
 <p>A methodological note. Adjusting the p-values of every coefficient of
 a single regression model is <em>not</em> the standard convention in
-social-science or clinical reporting (Rothman 1990; Greenland 2017;
-Harrell <em>Regression Modeling Strategies</em> §5.4; Gelman, Hill &amp;
-Yajima 2012; APA Manual 7 §6.46). Each coefficient tests a
-scientifically distinct hypothesis on a distinct predictor, which is not
-the situation that family-wise procedures were designed for. The default
-<code>"none"</code> reflects this consensus. Adjustment is nonetheless
-legitimate in three contexts: (i) mass screening with many candidate
-predictors and no prior hypothesis (typically <code>"BH"</code> / FDR),
-(ii) pre-registered multi-endpoint confirmatory designs (typically
-<code>"holm"</code>), or (iii) when a reviewer or SAP explicitly
-requests it. spicy exposes the argument under the same “transparency
-over rejection” rule used for <code>standardized</code>: the tool is
-here, the methodological choice is yours, and the footer makes the
-choice visible to the reader.</p>
+social-science or clinical reporting (Rothman 1990; Gelman, Hill, and
+Yajima 2012; Greenland 2017; Harrell 2015 §5.4; APA Manual 7 §6.46).
+Each coefficient tests a scientifically distinct hypothesis on a
+distinct predictor, which is not the situation that family-wise
+procedures were designed for. The default <code>"none"</code> reflects
+this consensus.</p>
+<p>Adjustment is nonetheless legitimate in three contexts:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Mass screening</strong> with many candidate predictors and
+no prior hypothesis — typically <code>"BH"</code> (Benjamini–Hochberg,
+false discovery rate).</li>
+<li>
+<strong>Pre-registered multi-endpoint confirmatory designs</strong>
+— typically <code>"holm"</code> (Holm’s step-down, strong family-wise
+error rate control).</li>
+<li>
+<strong>When a reviewer, an editor, or a statistical analysis plan
+explicitly requests it</strong> — apply the requested method and
+document it in the footer.</li>
+</ol>
+<p>The argument is exposed under the same <em>transparency</em> rule
+used for <code>standardized</code>: the tool is here, the methodological
+choice is yours, and the footer makes the choice visible to the
+reader.</p>
 </div>
 <div class="section level2">
 <h2 id="filtering-displayed-coefficients">Filtering displayed coefficients<a class="anchor" aria-label="anchor" href="#filtering-displayed-coefficients"></a>
@@ -719,14 +763,14 @@ being prepared at the top of the vignette).</p>
 <h2 id="generalised-linear-models-glm">Generalised linear models (<code>glm</code>)<a class="anchor" aria-label="anchor" href="#generalised-linear-models-glm"></a>
 </h2>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> accepts any <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fit.
-Inference defaults to the z-asymptotic Wald regime that matches
-<code>summary.glm</code>, <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters</a></code>,
-Stata’s <code>logit, or</code> and SPSS
-<code>LOGISTIC REGRESSION</code>. The title becomes family-aware
-(“Logistic regression”, “Poisson regression”, “Probit regression”, …)
-and the default footer block for
-<code>nobs / pseudo_r2_mcfadden / pseudo_r2_nagelkerke / AIC</code>
-swaps in instead of <code>R² / Adj.R²</code>:</p>
+Inference defaults to the <code>z</code>-asymptotic Wald regime — the
+convention used by <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code>, Stata’s
+<code>logit, or</code>, and SPSS <code>LOGISTIC REGRESSION</code>. The
+table title becomes family-aware (“Logistic regression”, “Poisson
+regression”, “Probit regression”, …) and the default fit-statistics
+block swaps in <code>nobs</code>, <code>pseudo_r2_mcfadden</code>,
+<code>pseudo_r2_nagelkerke</code>, and <code>AIC</code> instead of
+<code>R²</code> and <code>Adj.R²</code>:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">am</span> <span class="op">~</span> <span class="va">mpg</span> <span class="op">+</span> <span class="va">wt</span>, data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -749,16 +793,17 @@ swaps in instead of <code>R² / Adj.R²</code>:</p>
 <h3 id="response-scale-display-exponentiate-true">Response-scale display: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#response-scale-display-exponentiate-true"></a>
 </h3>
 <p>Set <code>exponentiate = TRUE</code> to switch the <code>B</code>
-column to the response scale and rebrand its header per family / link:
+column to the response scale and rebrand its header per family and link:
 <code>OR</code> for <code>binomial(logit)</code>, <code>IRR</code> for
 <code>poisson(log)</code>, <code>HR</code> for
 <code>binomial(cloglog)</code>, <code>RR</code> for
 <code>binomial(log)</code>, <code>MR</code> for <code>Gamma(log)</code>,
 and the generic <code>exp(B)</code> otherwise. The standard error
 follows the delta-method approximation
-<code>SE_OR = OR × SE_log-odds</code> (Stata <code>logit, or</code>;
-<code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code>); the test statistic and the
-p-value are invariant under monotone transformation:</p>
+<code>SE_OR = OR × SE_log-odds</code> (the Stata <code>logit, or</code>
+convention). The test statistic and the p-value are invariant under any
+monotone transformation, so they remain on the link scale and match the
+unexponentiated table verbatim:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
@@ -776,6 +821,7 @@ p-value are invariant under monotone transformation:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated; SE delta-method approximation: SE_OR = OR × SE_link.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -808,19 +854,20 @@ and numeric terms (1 df) read at a glance:</p>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 37.4                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; χ² = partial likelihood-ratio chi-squared.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="standardised-coefficients-refit-and-the-new-pseudo">Standardised coefficients: <code>refit</code> and the new
 <code>pseudo</code><a class="anchor" aria-label="anchor" href="#standardised-coefficients-refit-and-the-new-pseudo"></a>
 </h3>
 <p>For <code>glm</code>, <code>standardized = "refit"</code> z-scores
-numeric <em>predictors</em> only and refits the model (the response
-stays on its observed scale since the link is fixed). This is Long &amp;
-Freese 2014 §4.3.4 “x-standardization”. The other algebraic methods
-(<code>"posthoc"</code>, <code>"basic"</code>, <code>"smart"</code>)
-apply X-only scaling per the <code>parameters</code> /
-<code>effectsize</code> convention.</p>
+numeric <em>predictors</em> only and refits the model — the response
+stays on its observed scale because the link function is fixed. This is
+the “x-standardization” convention (Long and Freese 2014 §4.3.4). The
+other algebraic methods (<code>"posthoc"</code>, <code>"basic"</code>,
+<code>"smart"</code>) apply X-only scaling using the same algebra as in
+the <code>lm</code> case.</p>
 <p><code>standardized = "pseudo"</code> (<code>glm</code> only) is the
 Menard (2004, 2011) <em>fully</em> standardised coefficient, scaling by
 <code>SD(X) / SD(Y*)</code> where <code>Y*</code> is the latent variable
@@ -830,7 +877,23 @@ on the link scale and
 Defined for binomial families; non-binomial returns NA with a
 <code>spicy_caveat</code>:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"pseudo"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"pseudo"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   B      β     SE        95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> 25.89    —    12.19  [  1.99, 49.79]  .034 </span></span>
+<span><span class="co">#&gt;  mpg             <span style="color: #9E9E9E;">│</span> -0.32  -0.39   0.24  [ -0.79,  0.15]  .176 </span></span>
+<span><span class="co">#&gt;  wt              <span style="color: #9E9E9E;">│</span> -6.42  -1.25   2.55  [-11.41, -1.42]  .012 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 32                                         </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>  0.60                                      </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>  0.75                                      </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 23.2                                       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="average-marginal-effects-ame">Average Marginal Effects (AME)<a class="anchor" aria-label="anchor" href="#average-marginal-effects-ame"></a>
@@ -845,7 +908,23 @@ from <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.ht
 coefficient — Pustejovsky &amp; Tipton (2018) §4 approximation for
 nonlinear contrasts:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   B     p     AME       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> 25.89  .034                               </span></span>
+<span><span class="co">#&gt;  mpg             <span style="color: #9E9E9E;">│</span> -0.32  .176  -0.03  [-0.06,  0.01]   .137 </span></span>
+<span><span class="co">#&gt;  wt              <span style="color: #9E9E9E;">│</span> -6.42  .012  -0.51  [-0.75, -0.28]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 32                                        </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>  0.60                                     </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>  0.75                                     </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 23.2                                      </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="profile-likelihood-cis-ci_method-profile">Profile-likelihood CIs: <code>ci_method = "profile"</code><a class="anchor" aria-label="anchor" href="#profile-likelihood-cis-ci_method-profile"></a>
@@ -860,7 +939,22 @@ under sparse data or near-boundary estimates (Venables &amp; Ripley
 <em>MASS</em> §7.2). The estimate, SE, statistic, and p-value all remain
 Wald; <code>"profile"</code> only refines the CI bounds:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: am</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   B     SE        95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> 25.89  12.19  [  5.60, 55.83]  .034 </span></span>
+<span><span class="co">#&gt;  mpg             <span style="color: #9E9E9E;">│</span> -0.32   0.24  [ -0.87,  0.12]  .176 </span></span>
+<span><span class="co">#&gt;  wt              <span style="color: #9E9E9E;">│</span> -6.42   2.55  [-12.82, -2.37]  .012 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 32                                  </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>  0.60                               </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>  0.75                               </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 23.2                                </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="hierarchical-glm-lrt">Hierarchical glm (LRT)<a class="anchor" aria-label="anchor" href="#hierarchical-glm-lrt"></a>
@@ -876,7 +970,49 @@ return em-dashes if explicitly requested:</p>
 <code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">am</span> <span class="op">~</span> <span class="va">mpg</span>,                 data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">am</span> <span class="op">~</span> <span class="va">mpg</span> <span class="op">+</span> <span class="va">wt</span>,            data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">am</span> <span class="op">~</span> <span class="va">mpg</span> <span class="op">+</span> <span class="va">wt</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical logistic regression: am</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                         Model 1               Model 2            Model 3    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ──────────────────  ─────────────────────  ───────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   B     SE     p       B      SE      p      B      SE   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> -6.60  2.35   .005   25.89   12.19   .034  23.93   14.18 </span></span>
+<span><span class="co">#&gt;  mpg             <span style="color: #9E9E9E;">│</span>  0.31  0.11   .008   -0.32    0.24   .176  -0.10    0.35 </span></span>
+<span><span class="co">#&gt;  wt              <span style="color: #9E9E9E;">│</span>                      -6.42    2.55   .012  -8.18    3.35 </span></span>
+<span><span class="co">#&gt;  factor(cyl):    <span style="color: #9E9E9E;">│</span>                                                          </span></span>
+<span><span class="co">#&gt;    4 (ref.)      <span style="color: #9E9E9E;">│</span>   —     —     —        —       —     —       —       —   </span></span>
+<span><span class="co">#&gt;    6             <span style="color: #9E9E9E;">│</span>                                             3.01    2.51 </span></span>
+<span><span class="co">#&gt;    8             <span style="color: #9E9E9E;">│</span>                                             4.98    3.51 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 32                   32                    32            </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>  0.31                 0.60                  0.66         </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>  0.47                 0.75                  0.80         </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 33.7                 23.2                  24.6          </span></span>
+<span><span class="co">#&gt;  Δχ²             <span style="color: #9E9E9E;">│</span>   —                 +12.49                 +2.60         </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>   —                   &lt;.001                  .273        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                    Model </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>  .091 </span></span>
+<span><span class="co">#&gt;  mpg             <span style="color: #9E9E9E;">│</span>  .779 </span></span>
+<span><span class="co">#&gt;  wt              <span style="color: #9E9E9E;">│</span>  .015 </span></span>
+<span><span class="co">#&gt;  factor(cyl):    <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;    4 (ref.)      <span style="color: #9E9E9E;">│</span>  —    </span></span>
+<span><span class="co">#&gt;    6             <span style="color: #9E9E9E;">│</span>  .231 </span></span>
+<span><span class="co">#&gt;    8             <span style="color: #9E9E9E;">│</span>  .156 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  Δχ²             <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (MLE inverse Hessian).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="gaussian-glm-caveat">Gaussian glm caveat<a class="anchor" aria-label="anchor" href="#gaussian-glm-caveat"></a>
@@ -893,10 +1029,10 @@ with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()<
 <div class="section level2">
 <h2 id="significance-stars">Significance stars<a class="anchor" aria-label="anchor" href="#significance-stars"></a>
 </h2>
-<p>Stars are off by default. APA 7 §6.46 explicitly discourages them,
-and the modern R consensus (<code>modelsummary</code>,
-<code>gtsummary</code>, <code>parameters</code>, <code>fixest</code>)
-defaults likewise OFF. Set <code>stars = TRUE</code> for the APA preset
+<p>Stars are off by default. APA 7 §6.46 explicitly discourages
+asterisks-only reporting in favour of exact p-values, and ASA’s
+post-2019 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the
+same point. Set <code>stars = TRUE</code> for the APA preset
 (<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
 named numeric vector for custom thresholds:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
@@ -997,32 +1133,145 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt;  - attr(*, "title")= chr "Linear regression: wellbeing_score"</span></span>
 <span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."</span></span>
 <span><span class="co">#&gt;  - attr(*, "col_spec")=List of 4</span></span>
-<span><span class="co">#&gt;   ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ :List of 6</span></span>
 <span><span class="co">#&gt;   .. ..$ col_name     : chr "B"</span></span>
+<span><span class="co">#&gt;   .. ..$ display_label: chr "B"</span></span>
 <span><span class="co">#&gt;   .. ..$ token        : chr "b"</span></span>
 <span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
 <span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
 <span><span class="co">#&gt;   .. ..$ fields       : chr "estimate"</span></span>
-<span><span class="co">#&gt;   ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ :List of 6</span></span>
 <span><span class="co">#&gt;   .. ..$ col_name     : chr "SE"</span></span>
+<span><span class="co">#&gt;   .. ..$ display_label: chr "SE"</span></span>
 <span><span class="co">#&gt;   .. ..$ token        : chr "se"</span></span>
 <span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
 <span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
 <span><span class="co">#&gt;   .. ..$ fields       : chr "se"</span></span>
-<span><span class="co">#&gt;   ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ :List of 6</span></span>
 <span><span class="co">#&gt;   .. ..$ col_name     : chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. ..$ display_label: chr "95% CI"</span></span>
 <span><span class="co">#&gt;   .. ..$ token        : chr "ci"</span></span>
 <span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
 <span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
 <span><span class="co">#&gt;   .. ..$ fields       : chr [1:2] "ci_low" "ci_high"</span></span>
-<span><span class="co">#&gt;   ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ :List of 6</span></span>
 <span><span class="co">#&gt;   .. ..$ col_name     : chr "p"</span></span>
+<span><span class="co">#&gt;   .. ..$ display_label: chr "p"</span></span>
 <span><span class="co">#&gt;   .. ..$ token        : chr "p"</span></span>
 <span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
 <span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
 <span><span class="co">#&gt;   .. ..$ fields       : chr "p_value"</span></span>
 <span><span class="co">#&gt;  - attr(*, "group_sep_rows")= int 9</span></span>
 <span><span class="co">#&gt;  - attr(*, "align")= chr "decimal"</span></span>
+<span><span class="co">#&gt;  - attr(*, "decimal_mark")= chr "."</span></span>
+<span><span class="co">#&gt;  - attr(*, "structured")=List of 10</span></span>
+<span><span class="co">#&gt;   ..$ body              :'data.frame':   11 obs. of  6 variables:</span></span>
+<span><span class="co">#&gt;   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...</span></span>
+<span><span class="co">#&gt;   .. ..$ SE        : num [1:11] 1.6567 0.0307 NA NA 0.9053 ...</span></span>
+<span><span class="co">#&gt;   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...</span></span>
+<span><span class="co">#&gt;   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...</span></span>
+<span><span class="co">#&gt;   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
+<span><span class="co">#&gt;   ..$ reference_rows    : int [1:2] 4 7</span></span>
+<span><span class="co">#&gt;   ..$ factor_header_rows: int [1:2] 3 6</span></span>
+<span><span class="co">#&gt;   ..$ fit_stat_rows     : int [1:3] 9 10 11</span></span>
+<span><span class="co">#&gt;   ..$ level_rows        : int [1:4] 4 5 7 8</span></span>
+<span><span class="co">#&gt;   ..$ outcome_row       : int(0) </span></span>
+<span><span class="co">#&gt;   ..$ col_meta          :List of 5</span></span>
+<span><span class="co">#&gt;   .. ..$ B         :List of 12</span></span>
+<span><span class="co">#&gt;   .. .. ..$ token             : chr "b"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ model_id          : chr "M1"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ source_field      : chr "estimate"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ precision         : int 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ p_style           : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ threshold         : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_role           : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_pair           : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_label          : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ is_df             : logi FALSE</span></span>
+<span><span class="co">#&gt;   .. .. ..$ display_label     : chr "B"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ fit_stat_overrides:List of 3</span></span>
+<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "nobs"</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 0</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 9</span></span>
+<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "r2"</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 2</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 10</span></span>
+<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "adj_r2"</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 2</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 11</span></span>
+<span><span class="co">#&gt;   .. ..$ SE        :List of 11</span></span>
+<span><span class="co">#&gt;   .. .. ..$ token        : chr "se"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ source_field : chr "se"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_role      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_pair      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_label     : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
+<span><span class="co">#&gt;   .. .. ..$ display_label: chr "SE"</span></span>
+<span><span class="co">#&gt;   .. ..$ 95% CI: LL:List of 11</span></span>
+<span><span class="co">#&gt;   .. .. ..$ token        : chr "ci"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ source_field : chr "ci_low"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_role      : chr "LL"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_pair      : chr "95% CI: UL"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_label     : chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
+<span><span class="co">#&gt;   .. .. ..$ display_label: chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. ..$ 95% CI: UL:List of 11</span></span>
+<span><span class="co">#&gt;   .. .. ..$ token        : chr "ci"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ source_field : chr "ci_high"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_role      : chr "UL"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_pair      : chr "95% CI: LL"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_label     : chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
+<span><span class="co">#&gt;   .. .. ..$ display_label: chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. ..$ p         :List of 11</span></span>
+<span><span class="co">#&gt;   .. .. ..$ token        : chr "p"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ source_field : chr "p_value"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ precision    : int 3</span></span>
+<span><span class="co">#&gt;   .. .. ..$ p_style      : chr "apa"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ threshold    : num 0.001</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_role      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_pair      : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ ci_label     : NULL</span></span>
+<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
+<span><span class="co">#&gt;   .. .. ..$ display_label: chr "p"</span></span>
+<span><span class="co">#&gt;   ..$ spanners          : NULL</span></span>
+<span><span class="co">#&gt;   ..$ ci_pairs          :List of 1</span></span>
+<span><span class="co">#&gt;   .. ..$ :List of 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ label: chr "95% CI"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ cols : int [1:2] 4 5</span></span>
+<span><span class="co">#&gt;   ..$ format_spec       :List of 9</span></span>
+<span><span class="co">#&gt;   .. ..$ decimal_mark      : chr "."</span></span>
+<span><span class="co">#&gt;   .. ..$ digits            : int 2</span></span>
+<span><span class="co">#&gt;   .. ..$ p_digits          : int 3</span></span>
+<span><span class="co">#&gt;   .. ..$ effect_size_digits: int 2</span></span>
+<span><span class="co">#&gt;   .. ..$ fit_digits        : int 2</span></span>
+<span><span class="co">#&gt;   .. ..$ ic_digits         : int 1</span></span>
+<span><span class="co">#&gt;   .. ..$ p_style           : chr "apa"</span></span>
+<span><span class="co">#&gt;   .. ..$ p_threshold       : num 0.001</span></span>
+<span><span class="co">#&gt;   .. ..$ ci_level          : num 0.95</span></span>
 <span><span class="co">#&gt;  - attr(*, "padding")= int 0</span></span>
 <span><span class="co">#&gt;  - attr(*, "fit_stats_layout")= chr "first_col"</span></span></code></pre></div>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
@@ -1047,584 +1296,424 @@ same content is available as a plain <code>data.frame</code>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mwlefoodfi table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi tr, #mwlefoodfi td, #mwlefoodfi th {
-  border-style: none;
-}
-
-#mwlefoodfi p {
-  margin: 0;
-  padding: 0;
-}
-
-#mwlefoodfi .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#mwlefoodfi .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mwlefoodfi .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mwlefoodfi .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#mwlefoodfi .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mwlefoodfi .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mwlefoodfi .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#mwlefoodfi .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#mwlefoodfi .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mwlefoodfi .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mwlefoodfi .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mwlefoodfi .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#mwlefoodfi .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mwlefoodfi .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_left {
-  text-align: left;
-}
-
-#mwlefoodfi .gt_center {
-  text-align: center;
-}
-
-#mwlefoodfi .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mwlefoodfi .gt_font_normal {
-  font-weight: normal;
-}
-
-#mwlefoodfi .gt_font_bold {
-  font-weight: bold;
-}
-
-#mwlefoodfi .gt_font_italic {
-  font-style: italic;
-}
-
-#mwlefoodfi .gt_super {
-  font-size: 65%;
-}
-
-#mwlefoodfi .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#mwlefoodfi .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#mwlefoodfi .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#mwlefoodfi .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#mwlefoodfi .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#mwlefoodfi .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#mwlefoodfi .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#mwlefoodfi .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#mwlefoodfi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
+<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
+Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
+Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
+antialiased; -moz-osx-font-smoothing: grayscale; }</p>
+<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
+tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
+<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
+<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
+line-height: normal; margin-left: auto; margin-right: auto; color:
+#333333; font-size: 16px; font-weight: normal; font-style: normal;
+background-color: #FFFFFF; width: auto; border-top-style: solid;
+border-top-width: 0px; border-top-color: #A8A8A8; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3;
+border-bottom-style: solid; border-bottom-width: 0px;
+border-bottom-color: #A8A8A8; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
+}</p>
+<p>#mwlefoodfi .gt_title { color: #333333; font-size: 100%; font-weight:
+normal; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
+padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
+0; }</p>
+<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
+font-weight: initial; padding-top: 3px; padding-bottom: 5px;
+padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
+border-top-width: 0; }</p>
+<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
+center; border-bottom-color: #FFFFFF; border-left-style: none;
+border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 1px; border-bottom-color: #333333;
+border-left-style: none; border-left-width: 1px; border-left-color:
+rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
+1px; border-right-color: rgba(255, 255, 255, 0); }</p>
+<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
+padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
+hidden; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: normal;
+text-transform: inherit; padding-top: 0; padding-bottom: 0;
+padding-left: 4px; padding-right: 4px; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
+border-bottom-width: 1px; border-bottom-color: #333333; vertical-align:
+bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
+display: inline-block; width: 100%; }</p>
+<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+text-transform: inherit; border-top-style: solid; border-top-width: 2px;
+border-top-color: #D3D3D3; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
+}</p>
+<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+border-top-style: solid; border-top-width: 2px; border-top-color:
+#D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
+solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
+}</p>
+<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
+font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
+}</p>
+<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
+border-top-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
+}</p>
+<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-top-style: double; border-top-width: 6px; border-top-color:
+#D3D3D3; }</p>
+<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-bottom-style: double; border-bottom-width: 6px;
+border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
+0.05); }</p>
+<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
+padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_left { text-align: left; }</p>
+<p>#mwlefoodfi .gt_center { text-align: center; }</p>
+<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
+tabular-nums; }</p>
+<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
+<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
+<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
+<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
+<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
+0.4em; position: initial; }</p>
+<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
+<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
+<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
+<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
+<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
+<p>#mwlefoodfi .katex-display { display: inline-flex !important;
+margin-bottom: 0.75em !important; }</p>
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
+!important; }</p>
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
-.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
-.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
-  background-color: transparent !important;
-  color: currentColor !important;
-}
-</style>
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
+<div class="spicy-gt-outer" style="text-align: center;">
+<div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
+<style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="6" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Linear regression: wellbeing_score</td>
-    </tr>
+<td colspan="6" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
+Linear regression: wellbeing_score
+</td>
+</tr>
 <tr class="gt_col_headings gt_spanner_row">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: left; font-weight: normal;" scope="col" id="Variable"></th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: center; font-weight: normal;" scope="col" id="col_span_2_B">
-        <div class="gt_column_spanner">B</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: center; font-weight: normal;" scope="col" id="col_span_3_SE">
-        <div class="gt_column_spanner">SE</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="text-align: center; font-weight: normal;" scope="colgroup" id="ci_span_4_5">
-        <div class="gt_column_spanner">95% CI</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: center; font-weight: normal;" scope="col" id="col_span_6_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-    </tr>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: left; font-weight: normal;" scope="col" id="col_span_1_Variable">
+<div class="gt_column_spanner">
+Variable
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal;" scope="col" id="col_span_2_B">
+<div class="gt_column_spanner">
+B
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal;" scope="col" id="col_span_3_SE">
+<div class="gt_column_spanner">
+SE
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;" scope="colgroup" id="ci_span_4_5">
+<div class="gt_column_spanner">
+95% CI
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal;" scope="col" id="col_span_6_p">
+<div class="gt_column_spanner">
+p
+</div>
+</th>
+</tr>
 <tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: center; font-weight: normal;" scope="col" id="B"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: center; font-weight: normal;" scope="col" id="SE"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: center; font-weight: normal;" scope="col" id="LL">LL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: center; font-weight: normal;" scope="col" id="UL">UL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: center; font-weight: normal;" scope="col" id="p"></th>
-    </tr>
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: left; font-weight: normal;" scope="col" id="Variable">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="B">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="SE">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CI:-LL">
+LL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CI:-UL">
+UL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="p">
+</th>
+</tr>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">(Intercept)</td>
-<td headers="B" class="gt_row gt_left">65.20</td>
-<td headers="SE" class="gt_row gt_left">1.66</td>
-<td headers="LL" class="gt_row gt_left">61.95</td>
-<td headers="UL" class="gt_row gt_left">68.45</td>
-<td headers="p" class="gt_row gt_left">&lt;.001</td>
+<td headers="Variable" class="gt_row gt_left">
+(Intercept)
+</td>
+<td headers="B" class="gt_row gt_center">
+  65.20
+</td>
+<td headers="SE" class="gt_row gt_center">
+1.66
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+61.95
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+68.45
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">age</td>
-<td headers="B" class="gt_row gt_left">0.05</td>
-<td headers="SE" class="gt_row gt_left">0.03</td>
-<td headers="LL" class="gt_row gt_left">-0.01</td>
-<td headers="UL" class="gt_row gt_left">0.11</td>
-<td headers="p" class="gt_row gt_left">.130</td>
+<td headers="Variable" class="gt_row gt_left">
+age
+</td>
+<td headers="B" class="gt_row gt_center">
+   0.05
+</td>
+<td headers="SE" class="gt_row gt_center">
+0.03
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+-0.01
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+ 0.11
+</td>
+<td headers="p" class="gt_row gt_center">
+ .130
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">sex:</td>
-<td headers="B" class="gt_row gt_left"></td>
-<td headers="SE" class="gt_row gt_left"></td>
-<td headers="LL" class="gt_row gt_left"></td>
-<td headers="UL" class="gt_row gt_left"></td>
-<td headers="p" class="gt_row gt_left"></td>
+<td headers="Variable" class="gt_row gt_left">
+sex:
+</td>
+<td headers="B" class="gt_row gt_center">
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+</td>
+<td headers="p" class="gt_row gt_center">
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">Female (ref.)</td>
-<td headers="B" class="gt_row gt_left">—</td>
-<td headers="SE" class="gt_row gt_left">—</td>
-<td headers="LL" class="gt_row gt_left">—</td>
-<td headers="UL" class="gt_row gt_left">—</td>
-<td headers="p" class="gt_row gt_left">—</td>
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
+Female (ref.)
+</td>
+<td headers="B" class="gt_row gt_center">
+—
+</td>
+<td headers="SE" class="gt_row gt_center">
+—
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+—
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+—
+</td>
+<td headers="p" class="gt_row gt_center">
+—
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">Male</td>
-<td headers="B" class="gt_row gt_left">3.86</td>
-<td headers="SE" class="gt_row gt_left">0.91</td>
-<td headers="LL" class="gt_row gt_left">2.08</td>
-<td headers="UL" class="gt_row gt_left">5.63</td>
-<td headers="p" class="gt_row gt_left">&lt;.001</td>
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
+Male
+</td>
+<td headers="B" class="gt_row gt_center">
+   3.86
+</td>
+<td headers="SE" class="gt_row gt_center">
+0.91
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+ 2.08
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+ 5.63
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking:</td>
-<td headers="B" class="gt_row gt_left"></td>
-<td headers="SE" class="gt_row gt_left"></td>
-<td headers="LL" class="gt_row gt_left"></td>
-<td headers="UL" class="gt_row gt_left"></td>
-<td headers="p" class="gt_row gt_left"></td>
+<td headers="Variable" class="gt_row gt_left">
+smoking:
+</td>
+<td headers="B" class="gt_row gt_center">
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+</td>
+<td headers="p" class="gt_row gt_center">
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">No (ref.)</td>
-<td headers="B" class="gt_row gt_left">—</td>
-<td headers="SE" class="gt_row gt_left">—</td>
-<td headers="LL" class="gt_row gt_left">—</td>
-<td headers="UL" class="gt_row gt_left">—</td>
-<td headers="p" class="gt_row gt_left">—</td>
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
+No (ref.)
+</td>
+<td headers="B" class="gt_row gt_center">
+—
+</td>
+<td headers="SE" class="gt_row gt_center">
+—
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+—
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+—
+</td>
+<td headers="p" class="gt_row gt_center">
+—
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc; text-indent: 20px;">Yes</td>
-<td headers="B" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">-1.72</td>
-<td headers="SE" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">1.11</td>
-<td headers="LL" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">-3.89</td>
-<td headers="UL" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">0.45</td>
-<td headers="p" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">.121</td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc; text-indent: 20px;">
+Yes
+</td>
+<td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+  -1.72
+</td>
+<td headers="SE" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+1.11
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+-3.89
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 0.45
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ .121
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">n</td>
-<td headers="B" class="gt_row gt_left">1175</td>
-<td headers="SE" class="gt_row gt_left"></td>
-<td headers="LL" class="gt_row gt_left"></td>
-<td headers="UL" class="gt_row gt_left"></td>
-<td headers="p" class="gt_row gt_left"></td>
+<td headers="Variable" class="gt_row gt_left">
+n
+</td>
+<td headers="B" class="gt_row gt_center">
+1175   
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+</td>
+<td headers="p" class="gt_row gt_center">
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">R²</td>
-<td headers="B" class="gt_row gt_left">0.02</td>
-<td headers="SE" class="gt_row gt_left"></td>
-<td headers="LL" class="gt_row gt_left"></td>
-<td headers="UL" class="gt_row gt_left"></td>
-<td headers="p" class="gt_row gt_left"></td>
+<td headers="Variable" class="gt_row gt_left">
+R²
+</td>
+<td headers="B" class="gt_row gt_center">
+   0.02
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+</td>
+<td headers="p" class="gt_row gt_center">
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">Adj.R²</td>
-<td headers="B" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.02</td>
-<td headers="SE" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="LL" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="UL" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="p" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+Adj.R²
+</td>
+<td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+   0.02
+</td>
+<td headers="SE" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+</td>
 </tr>
 </tbody>
-<tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="6">Note. Linear regression.
-Std. errors: classical (OLS).</td>
-    </tr></tfoot>
 </table>
+<div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
+<em>Note.</em> Linear regression. Std. errors: classical (OLS).
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="section level2">
@@ -1635,9 +1724,9 @@ Std. errors: classical (OLS).</td>
 names (<code>estimate</code>, <code>std.error</code>,
 <code>conf.low</code>, <code>conf.high</code>, <code>statistic</code>,
 <code>p.value</code>). <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> returns one row per
-<code>(model_id, outcome)</code> with model-level statistics, with
-<code>df.residual</code> kept numeric so cluster-robust Satterthwaite df
-is preserved verbatim:</p>
+<code>(model_id, outcome)</code> with model-level statistics;
+<code>df.residual</code> is preserved as a numeric so cluster-robust
+Satterthwaite df flows through verbatim:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
@@ -1663,10 +1752,13 @@ is preserved verbatim:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       wellbeing_s…  <span style="text-decoration: underline;">1</span>175            <span style="color: #BB0000;">NA</span>    0.019<span style="text-decoration: underline;">0</span>        0.016<span style="text-decoration: underline;">5</span> 0.016<span style="text-decoration: underline;">5</span>  15.5</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: rmse &lt;dbl&gt;, f2 &lt;dbl&gt;, AIC &lt;dbl&gt;, AICc &lt;dbl&gt;, BIC &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   deviance &lt;dbl&gt;, df.residual &lt;dbl&gt;</span></span></span></code></pre></div>
-<p>This makes <code><a href="../reference/table_regression.html">table_regression()</a></code> outputs ready for
-downstream pipelines — <code>gtsummary</code>,
-<code>modelsummary</code>, <code>parameters</code> — without bespoke
-glue.</p>
+<p>The long format is the right entry point when the table is one step
+in a larger pipeline — saving to disk for the manuscript appendix,
+faceting by subgroup, or feeding a downstream post-estimation analysis.
+The <code>tidy()</code> output keeps the bilateral
+<code>estimate_type</code> column so the same data frame can hold rows
+for B, β, AME, and per-coefficient effect-size estimates without
+ambiguity.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

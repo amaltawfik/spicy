@@ -407,8 +407,9 @@ with interactions or transforms (<code>covariates = ~ age * sex</code>,
 <code>spicy_unsupported</code> with a migration hint. Interactions and
 polynomials are reserved for a future spicy release. To fit a
 fully-specified model right now, do so with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> directly
-and inspect via <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, or
-<code>gtsummary</code>.</p>
+and inspect via <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> or
+<code><a href="../reference/table_regression.html">table_regression()</a></code> (which accepts interaction / polynomial
+/ <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> terms natively).</p>
 </div>
 </div>
 <div class="section level2">
@@ -1227,9 +1228,8 @@ summary-table helpers, including <code>tinytable</code>,
 <p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> returns an object that can be
 coerced to a plain <code>data.frame</code> / <code>tbl_df</code>
 (stripping the spicy formatting attributes) or piped into
-<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for use with
-<code>gtsummary</code>, <code>modelsummary</code>,
-<code>parameters</code>, or any other tidyverse-stats workflow:</p>
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for any
+downstream tidyverse-stats workflow:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>

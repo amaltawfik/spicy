@@ -470,8 +470,7 @@ returns an object that can be coerced to a plain `data.frame` / `tbl_df`
 (stripping the spicy formatting attributes) or piped into
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-for use with `gtsummary`, `modelsummary`, `parameters`, or any other
-tidyverse-stats workflow:
+for any downstream tidyverse-stats workflow:
 
 ``` r
 
