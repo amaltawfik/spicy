@@ -196,6 +196,26 @@ output_long <- function(aligned) {
   nm
 }
 
+# Warn when `fit_stats_layout = "merged"` is silently ignored by
+# the chosen rich output engine (gt, tinytable). Both lack a
+# body-cell row-spanning merge primitive: `gt::tab_spanner()`
+# covers columns only, and `tinytable::style_tt(colspan = N)`
+# emits HTML `colspan` only on header rows. The user passed a
+# non-default value, so a classed warning closes the loop rather
+# than letting the table render in `"first_col"` mode without
+# explanation. Only the engines with native body-cell merge
+# (flextable, excel, word via flextable) honour the layout.
+.warn_merged_layout_ignored <- function(rendered, engine) {
+  fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
+  if (!identical(fit_stats_layout, "merged")) return(invisible(NULL))
+  spicy_warn(
+    c(sprintf("`fit_stats_layout = \"merged\"` is not supported by `output = \"%s\"`.", engine),
+      "i" = "Falling back to `\"first_col\"` layout for the fit-stat rows.",
+      "i" = "For merged fit-stat cells, use `output = \"flextable\"`, `\"excel\"`, or `\"word\"`."),
+    class = "spicy_ignored_arg"
+  )
+}
+
 # Compute the cell ranges to merge for each fit-stat row when
 # `fit_stats_layout = "merged"`. For each fit-stat row (i.e., body
 # rows from `group_sep` to `nrow(body)`), each model's range of
@@ -480,11 +500,9 @@ output_tinytable <- function(rendered) {
     )
   }
 
-  # `fit_stats_layout = "merged"` is NOT honoured for tinytable:
-  # tinytable's `style_tt(colspan = N)` emits HTML `colspan` only
-  # on header rows (spanner row added via `group_tt`), not on body
-  # cells. The body fit-stat row therefore renders as `first_col`
-  # regardless of this argument. Documented in @param.
+  # `fit_stats_layout = "merged"` is NOT honoured for tinytable
+  # (HTML colspan on body cells; see .warn_merged_layout_ignored).
+  .warn_merged_layout_ignored(rendered, "tinytable")
 
   # ---- Note rendering: strip the rendered `<tfoot>` and wrap the ------
   # table together with the note in an `inline-block` flex sibling
@@ -609,6 +627,11 @@ output_gt <- function(rendered) {
     )
     # nocov end
   }
+  # `fit_stats_layout = "merged"` is NOT honoured for gt
+  # (`tab_spanner()` covers columns, not body rows; see
+  # .warn_merged_layout_ignored).
+  .warn_merged_layout_ignored(rendered, "gt")
+
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   group_sep <- attr(rendered, "group_sep_rows")

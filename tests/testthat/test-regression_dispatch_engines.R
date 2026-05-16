@@ -102,6 +102,34 @@ test_that("output = 'tinytable' attaches caption + notes from title / footer", {
   expect_true(inherits(out, "tinytable"))
 })
 
+test_that("fit_stats_layout = 'merged' warns for engines without body-cell merge (tinytable, gt)", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  # tinytable: HTML colspan is header-only.
+  expect_warning(
+    table_regression(list(m1, m2),
+                     fit_stats_layout = "merged",
+                     output = "tinytable"),
+    class = "spicy_ignored_arg"
+  )
+  # gt: tab_spanner() covers columns, not body rows.
+  expect_warning(
+    table_regression(list(m1, m2),
+                     fit_stats_layout = "merged",
+                     output = "gt"),
+    class = "spicy_ignored_arg"
+  )
+  # Default `fit_stats_layout = "first_col"` should NOT warn.
+  expect_no_warning(
+    table_regression(list(m1, m2), output = "tinytable")
+  )
+  expect_no_warning(
+    table_regression(list(m1, m2), output = "gt")
+  )
+})
+
 
 # ============================================================================
 # output = "gt" — verify caption + source_note attached
