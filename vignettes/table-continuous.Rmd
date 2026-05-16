@@ -284,9 +284,8 @@ table_continuous(
 
 `table_continuous()` returns an object that can be coerced to a plain
 `data.frame` / `tbl_df` (stripping the spicy formatting attributes)
-or piped into `broom::tidy()` / `broom::glance()` for use with
-`gtsummary`, `modelsummary`, `parameters`, or any other tidyverse
-stats workflow:
+or piped into `broom::tidy()` / `broom::glance()` for any downstream
+tidyverse stats workflow:
 
 ```{r tidy-glance}
 out <- table_continuous(

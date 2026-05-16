@@ -332,8 +332,7 @@ table_categorical(
 `table_categorical()` returns an object that can be coerced to a
 plain `data.frame` / `tbl_df` (stripping the spicy formatting
 attributes) or piped into `broom::tidy()` / `broom::glance()` for
-use with `gtsummary`, `modelsummary`, `parameters`, or any other
-tidyverse-stats workflow:
+any downstream tidyverse-stats workflow:
 
 ```{r tidy-glance}
 out <- table_categorical(

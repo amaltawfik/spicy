@@ -262,8 +262,9 @@ interactions or transforms (`covariates = ~ age * sex`,
 `covariates = ~ I(age^2)`) raises `spicy_unsupported` with a
 migration hint. Interactions and polynomials are reserved for a
 future spicy release. To fit a fully-specified model right now,
-do so with `lm()` directly and inspect via `summary()`,
-`broom::tidy()`, or `gtsummary`.
+do so with `lm()` directly and inspect via `summary()` or
+`table_regression()` (which accepts interaction / polynomial / `I()`
+terms natively).
 
 ## Effect sizes
 
@@ -436,8 +437,7 @@ pkgdown_dark_gt(
 `table_continuous_lm()` returns an object that can be coerced to a
 plain `data.frame` / `tbl_df` (stripping the spicy formatting
 attributes) or piped into `broom::tidy()` / `broom::glance()` for
-use with `gtsummary`, `modelsummary`, `parameters`, or any other
-tidyverse-stats workflow:
+any downstream tidyverse-stats workflow:
 
 ```{r tidy-glance}
 out <- table_continuous_lm(
