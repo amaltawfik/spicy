@@ -117,6 +117,7 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_regression
+      - as_structured
   - title: Export
     contents:
       - copy_clipboard
