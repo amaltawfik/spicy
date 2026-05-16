@@ -275,9 +275,10 @@ test_that("full footer — combines themes with leading 'Note. ' and \\n separat
     show_columns = c("b", "se", "ame", "p")
   )
   expect_match(out, "^Note\\. ")
-  # type + vcov + AME-Satt + stars => 4 themes, 3 newlines
-  expect_equal(length(strsplit(out, "\n", fixed = TRUE)[[1]]), 4L)
+  # type + vcov + AME abbrev + AME-Satt + stars => 5 themes, 4 newlines
+  expect_equal(length(strsplit(out, "\n", fixed = TRUE)[[1]]), 5L)
   expect_match(out, "Std\\. errors: cluster-robust \\(CR2\\)")
+  expect_match(out, "AME = average marginal effect")
   expect_match(out, "Satterthwaite")
   expect_match(out, "\\*\\*\\* p < \\.001")
 })

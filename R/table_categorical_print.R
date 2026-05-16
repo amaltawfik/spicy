@@ -190,8 +190,7 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' object returned by [table_categorical()]. They re-shape the
 #' underlying long-format data (stored on the object as the
 #' `"long_data"` attribute) into the two canonical broom views so the
-#' table can be consumed by `gtsummary`, `modelsummary`, `parameters`,
-#' and any other tidyverse-stats pipeline.
+#' table can be consumed by any downstream tidyverse-stats pipeline.
 #'
 #' `tidy()` returns one row per `(variable x level)` -- or per
 #' `(variable x level x group)` when `by` is used -- with

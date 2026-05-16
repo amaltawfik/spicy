@@ -304,7 +304,41 @@ render_regression_table <- function(
   attr(body, "col_spec") <- col_spec
   attr(body, "group_sep_rows") <- group_sep
   attr(body, "align") <- align
+  attr(body, "decimal_mark") <- decimal_mark
   attr(body, "spanners") <- build_model_spanners(body, col_spec, label_map)
+
+  # ---- Structured (typed) view -------------------------------------------
+  # Engines (Excel, gt, tinytable, flextable, clipboard) consume this
+  # directly instead of re-parsing the character body. The character
+  # body above is the primary return value (display representation:
+  # stars suffixes, em-dash for reference rows, "[L, U]" bracketed CI,
+  # APA-padded p-values). Programmatic access to raw numerics + per-cell
+  # markers is via `attr(body, "structured")` (or the user-facing
+  # accessor `as_structured()`, exported separately).
+  attr(body, "structured") <- build_structured_body(
+    aligned = aligned,
+    show_columns = show_columns,
+    show_fit_stats = show_fit_stats,
+    reference_style = reference_style,
+    factor_layout = factor_layout,
+    ci_level = ci_level,
+    digits = digits,
+    p_digits = p_digits,
+    effect_size_digits = effect_size_digits,
+    fit_digits = fit_digits,
+    ic_digits = ic_digits,
+    decimal_mark = decimal_mark,
+    reference_label = reference_label,
+    outcome_labels = outcome_labels,
+    labels_from_outcomes = labels_from_outcomes,
+    model_ids = model_ids,
+    label_map = label_map,
+    col_spec = col_spec,
+    labels = labels,
+    model_outcomes = model_outcomes,
+    model_outcome_labels = model_outcome_labels
+  )
+
   body
 }
 
@@ -389,18 +423,30 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                   fields = "estimate",
                   header_short = "\u03B2"),
     # AME family \u2014 split (was bundled "value [CI]" in <= 0.11).
+    # Convention: only the estimate column itself ("AME") carries the
+    # estimate-type label; SE / CI / p sub-columns are LEFT NAKED
+    # ("SE", "95% CI", "p"). Adjacency to the "AME" anchor disambiguates
+    # them from the corresponding columns in a parallel B-block. This
+    # matches Stata's `margins`, gtsummary, modelsummary, APA tables,
+    # and standard regression-table reporting convention. The trade-off
+    # is that user-specified `show_columns` orderings that interleave
+    # the two blocks (e.g. requesting `c("B", "p_ame", "SE_b")`) become
+    # the user's responsibility -- the structured body schema
+    # guarantees canonical intra-block order
+    # (estimate -> SE -> 95% CI -> p) for the standard column groups
+    # (`all_b`, `all_ame`).
     ame    = list(estimate_type = "AME",
                   fields = "estimate",
                   header_short = "AME"),
     ame_se = list(estimate_type = "AME",
                   fields = "se",
-                  header_short = "AME SE"),
+                  header_short = "SE"),
     ame_ci = list(estimate_type = "AME",
                   fields = c("ci_low", "ci_high"),
-                  header_short = paste0("AME ", ci_hdr)),
+                  header_short = ci_hdr),
     ame_p  = list(estimate_type = "AME",
                   fields = "p_value",
-                  header_short = "AME p"),
+                  header_short = "p"),
     # Partial-variance-explained \u2014 split (was bundled too).
     partial_f2        = list(estimate_type = "partial_f2",
                               fields = "estimate",
@@ -449,6 +495,14 @@ build_column_spec <- function(show_columns, model_ids, label_map,
       }
       out[[length(out) + 1L]] <- list(
         col_name = make_unique_col_name(out, header),
+        # `display_label` is the bare header text BEFORE dedup
+        # suffix (`.2`, `.3` ...). It's what engines should show in
+        # spanner labels; `col_name` is the internal data-frame key
+        # and may end in `.N` when the same `header_short` (e.g.
+        # "SE", "p") is requested across two blocks (B + AME). The
+        # multi-model `Model X: ` prefix is also dropped -- the
+        # prefix is reattached separately by the model-spanner row.
+        display_label = header_short,
         token = tk,
         model_id = m_id,
         estimate_type = desc$estimate_type,

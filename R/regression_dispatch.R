@@ -32,7 +32,6 @@
 # spicy_missing_pkg if absent. File-path outputs validate the path
 # upstream (regression_validate.R Phase F).
 
-
 dispatch_regression_output <- function(
     rendered,
     aligned,
@@ -40,7 +39,8 @@ dispatch_regression_output <- function(
     excel_path = NULL,
     excel_sheet = "Regression",
     clipboard_delim = "\t",
-    word_path = NULL) {
+    word_path = NULL,
+    word_template = NULL) {
   output <- match.arg(output, c("default", "data.frame", "long",
                                  "tinytable", "gt", "flextable",
                                  "excel", "clipboard", "word"))
@@ -54,7 +54,7 @@ dispatch_regression_output <- function(
     flextable   = output_flextable(rendered),
     excel       = output_excel(rendered, excel_path, excel_sheet),
     clipboard   = output_clipboard(rendered, clipboard_delim),
-    word        = output_word(rendered, word_path),
+    word        = output_word(rendered, word_path, word_template),
     # nocov start -- defensive: match.arg() above forbids any other
     # value, so this branch is unreachable in practice.
     spicy_abort(sprintf("Unknown output \"%s\".", output),
@@ -62,7 +62,6 @@ dispatch_regression_output <- function(
     # nocov end
   )
 }
-
 
 # ---- default: printable spicy_regression_table ---------------------------
 
@@ -76,7 +75,6 @@ output_default <- function(rendered, aligned) {
   rendered
 }
 
-
 # ---- data.frame: plain wide ----------------------------------------------
 
 output_data_frame <- function(rendered) {
@@ -85,7 +83,6 @@ output_data_frame <- function(rendered) {
   attr(out, "note") <- attr(rendered, "note")
   out
 }
-
 
 # ---- long: broom-style long format ---------------------------------------
 
@@ -109,7 +106,6 @@ output_long <- function(aligned) {
   long
 }
 
-
 # ---- spanner helpers (shared by rich-output dispatchers) -----------------
 
 # Strip the "Label: " prefix from spanner-covered column names. Rich
@@ -126,21 +122,10 @@ output_long <- function(aligned) {
   body
 }
 
-# Detect factor-level rows in the rendered body. render_regression_table()
-# prefixes each level row's Variable cell with two leading spaces under
-# `factor_layout = "grouped"`; this helper returns those row indices and
-# (optionally) the trimmed Variable column for engines that prefer to
-# carry indentation as styling rather than as inline whitespace (HTML
-# collapses runs of spaces; Word body cells lose them).
-.detect_level_rows <- function(body) {
-  var <- body[[1L]]
-  which(grepl("^\\s+", var))
-}
-.trim_level_indent <- function(body, level_rows) {
-  if (length(level_rows) == 0L) return(body)
-  body[[1L]][level_rows] <- sub("^\\s+", "", body[[1L]][level_rows])
-  body
-}
+# (Removed in v0.13: `.detect_level_rows` / `.trim_level_indent`.
+# Their job is now performed at the renderer level: build_structured_body()
+# returns `level_rows` directly as an integer index, so engines no longer
+# need to re-parse the Variable column's whitespace prefix.)
 
 # Parse a bracketed CI cell ("[lo, hi]" or "[lo; hi]" -- the separator
 # adapts to `decimal_mark`) into its lo / hi components.
@@ -163,12 +148,24 @@ output_long <- function(aligned) {
 # When `spanners` is non-null, the per-column labels are stripped
 # of their multi-model "Label: " prefix (the Model spanner sits in
 # its own row above the column-labels row in rich outputs).
-.build_label_rows <- function(body, ci_spanners, spanners = NULL) {
+.build_label_rows <- function(body, ci_spanners, spanners = NULL,
+                                col_meta = NULL) {
   n <- ncol(body)
-  top <- names(body)
-  if (!is.null(spanners) && length(spanners) > 0L) {
+  # Prefer `col_meta$display_label` per column when available: it
+  # already strips both the "Model X: " prefix and the dedup `.N`
+  # suffix that R's data.frame contract appends when two blocks of
+  # `show_columns` share a label (e.g. "95% CI" / "95% CI.2").
+  # Falls back to the legacy strip-prefix-only path when col_meta
+  # isn't supplied (older callers / non-table_regression body).
+  top <- if (!is.null(col_meta)) {
+    vapply(names(body), function(nm) {
+      .lookup_display_label(nm, col_meta)
+    }, character(1))
+  } else if (!is.null(spanners) && length(spanners) > 0L) {
     stripped <- .strip_spanner_prefix(body, spanners)
-    top <- names(stripped)
+    names(stripped)
+  } else {
+    names(body)
   }
   for (cs in ci_spanners) {
     if (length(cs$cols) >= 1L) {
@@ -185,49 +182,18 @@ output_long <- function(aligned) {
   list(top = top, bottom = bot)
 }
 
-
-.parse_ci_bracketed <- function(cells) {
-  n <- length(cells)
-  ll <- character(n)
-  ul <- character(n)
-  for (i in seq_len(n)) {
-    s <- cells[i]
-    if (!is.character(s) || !nzchar(trimws(s))) {
-      ll[i] <- ""
-      ul[i] <- ""
-      next
-    }
-    s_t <- trimws(s)
-    if (!startsWith(s_t, "[")) {
-      # em-dash, single scalar -- duplicate so LL and UL each carry
-      # the same marker (mirrors how table_continuous_lm displays
-      # reference levels in LL / UL columns).
-      ll[i] <- s_t
-      ul[i] <- s_t
-      next
-    }
-    inner <- sub("^\\s*\\[\\s*", "", s_t)
-    inner <- sub("\\s*\\]\\s*$", "", inner)
-    # In European mode (`decimal_mark = ","`), the separator is
-    # `;` to disambiguate from intra-value commas; otherwise it is
-    # `,`. Prefer splitting on `;` when one is present, falling
-    # back to `,` only when no semicolon exists -- this keeps the
-    # comma inside "0,18" intact under European formatting.
-    sep_pattern <- if (grepl(";", inner, fixed = TRUE)) {
-      "\\s*;\\s*"
-    } else {
-      "\\s*,\\s*"
-    }
-    parts <- strsplit(inner, sep_pattern, perl = TRUE)[[1L]]
-    if (length(parts) >= 2L) {
-      ll[i] <- trimws(parts[1L])
-      ul[i] <- trimws(parts[2L])
-    } else {
-      ll[i] <- ""
-      ul[i] <- ""
-    }
-  }
-  list(ll = ll, ul = ul)
+# Resolve the display label for a body (char-format) column name.
+# Direct match on `col_meta[[nm]]` handles single-field tokens (B,
+# SE, p, AME, t, β, partial_chi2, ...). CI tokens are split LL/UL in
+# `col_meta` but merged into one `"95% CI"` / `"95% CI.2"` cell in
+# the char body — the direct lookup misses, so we fall back to the
+# `: LL` variant which carries the same `display_label` ("95% CI").
+.lookup_display_label <- function(nm, col_meta) {
+  m <- col_meta[[nm]]
+  if (!is.null(m)) return(m$display_label %||% nm)
+  m_ll <- col_meta[[paste0(nm, ": LL")]]
+  if (!is.null(m_ll)) return(m_ll$display_label %||% nm)
+  nm
 }
 
 # Compute the cell ranges to merge for each fit-stat row when
@@ -273,144 +239,6 @@ output_long <- function(aligned) {
   specs
 }
 
-
-# Split every CI-bundle column ("[lo, hi]") in the rendered body into
-# two separate numeric columns (LL, UL) and record a (95% CI) -- or
-# AME 95% CI / f^2 95% CI / etc. -- spanner above each pair. Used by
-# the clipboard + rich-output dispatchers (gt, tinytable, flextable,
-# excel) so they can hand native decimal-alignment primitives clean
-# numeric strings and emit an APA-style two-level header (model
-# spanner > CI spanner > column labels). The console / data.frame /
-# long outputs keep the bracketed CI representation -- terminal-friendly,
-# downstream-compatible.
-#
-# Returns:
-#   $body         - new wide body with LL/UL replacing each CI column;
-#                   all numeric data columns are `trimws()`-ed so the
-#                   engines see padding-free values.
-#   $col_spec     - new col_spec; each CI entry replaced by two
-#                   entries (ci_low / ci_high).
-#   $spanners     - model spanners with indices widened to cover the
-#                   inserted LL/UL pair when applicable.
-#   $ci_spanners  - list of list(label, cols) entries describing each
-#                   new CI spanner. `cols` are body-column indices in
-#                   the NEW body (Variable at position 1).
-.split_ci_columns <- function(body, col_spec, spanners) {
-  if (is.null(col_spec) || length(col_spec) == 0L) {
-    return(list(body = body, col_spec = col_spec,
-                 spanners = spanners, ci_spanners = list()))
-  }
-  is_ci <- vapply(col_spec, function(cs) {
-    !is.null(cs$fields) && identical(cs$fields, c("ci_low", "ci_high"))
-  }, logical(1))
-  if (!any(is_ci)) {
-    return(list(body = body, col_spec = col_spec,
-                 spanners = spanners, ci_spanners = list()))
-  }
-
-  var_col <- body[[1L]]
-  new_data <- list()
-  new_names <- character(0)
-  new_spec <- list()
-  old_to_new_first <- integer(length(col_spec))
-  old_to_new_last  <- integer(length(col_spec))
-  ci_spanners <- list()
-
-  cursor <- 0L
-  for (i in seq_along(col_spec)) {
-    cs <- col_spec[[i]]
-    old_col <- body[[i + 1L]]
-    old_name <- names(body)[i + 1L]
-    if (is_ci[i]) {
-      parsed <- .parse_ci_bracketed(old_col)
-      # Preserve any "Label: " prefix from multi-model spanner so the
-      # downstream relabel step (rich engines) can strip it uniformly.
-      pref <- if (grepl(":\\s+", old_name)) {
-        sub("(:\\s+).+$", "\\1", old_name)
-      } else {
-        ""
-      }
-      ll_name <- paste0(pref, "LL")
-      ul_name <- paste0(pref, "UL")
-
-      cursor <- cursor + 1L
-      new_data[[cursor]] <- parsed$ll
-      new_names[cursor]  <- ll_name
-      new_spec[[cursor]] <- list(
-        estimate_type = cs$estimate_type,
-        fields        = "ci_low",
-        header_short  = "LL"
-      )
-      old_to_new_first[i] <- cursor
-
-      cursor <- cursor + 1L
-      new_data[[cursor]] <- parsed$ul
-      new_names[cursor]  <- ul_name
-      new_spec[[cursor]] <- list(
-        estimate_type = cs$estimate_type,
-        fields        = "ci_high",
-        header_short  = "UL"
-      )
-      old_to_new_last[i] <- cursor
-
-      ci_label <- cs$header_short %||% "95% CI"
-      # Body col indices = +1 to skip the Variable column.
-      ci_spanners[[length(ci_spanners) + 1L]] <- list(
-        label = ci_label,
-        cols  = c(cursor - 1L, cursor) + 1L
-      )
-    } else {
-      cursor <- cursor + 1L
-      new_data[[cursor]] <- old_col
-      new_names[cursor]  <- old_name
-      new_spec[[cursor]] <- cs
-      old_to_new_first[i] <- cursor
-      old_to_new_last[i]  <- cursor
-    }
-  }
-
-  new_body <- data.frame(Variable = var_col,
-                          stringsAsFactors = FALSE,
-                          check.names = FALSE)
-  for (k in seq_along(new_data)) {
-    new_body[[new_names[k]]] <- new_data[[k]]
-  }
-  # Trim leading / trailing whitespace from data columns. Native
-  # decimal-alignment primitives (gt::cols_align_decimal,
-  # tinytable::style_tt align = "d", Excel right-align + Calibri
-  # tabular figures) all expect clean numeric strings; the
-  # `decimal_align_strings()` pre-padding used by the console /
-  # bracketed-CI path is dropped here. Matches the
-  # table_continuous_lm convention exactly.
-  if (ncol(new_body) >= 2L) {
-    new_body[-1L] <- lapply(new_body[-1L], trimws)
-  }
-
-  # Update model spanners: each old body col idx -> new body col idx
-  # (or first-of-pair for CI), with the last spanned col extended by
-  # +1 when it was a CI col (the UL companion belongs to the same
-  # model span).
-  new_spanners <- NULL
-  if (!is.null(spanners) && length(spanners)) {
-    new_spanners <- lapply(spanners, function(idxs) {
-      # idxs are body col indices (Variable at 1). Map to col_spec
-      # indices, look up new positions, build a contiguous range.
-      cs_idxs <- idxs - 1L
-      first_new <- old_to_new_first[cs_idxs[1L]] + 1L
-      last_new  <- old_to_new_last[cs_idxs[length(cs_idxs)]] + 1L
-      seq.int(first_new, last_new)
-    })
-  }
-
-  list(
-    body         = new_body,
-    col_spec     = new_spec,
-    spanners     = new_spanners,
-    ci_spanners  = ci_spanners
-  )
-}
-
-
 # ---- tinytable -----------------------------------------------------------
 
 output_tinytable <- function(rendered) {
@@ -426,103 +254,160 @@ output_tinytable <- function(rendered) {
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
-  spanners <- attr(rendered, "spanners")
   group_sep <- attr(rendered, "group_sep_rows")
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
-                         check.names = FALSE)
-  level_rows <- .detect_level_rows(body)
-  body <- .trim_level_indent(body, level_rows)
 
-  # Split bracketed CI cells into LL / UL numeric columns and capture
-  # the (95% CI) spanners. With clean numeric strings in every CI
-  # cell, tinytable's native `style_tt(align = "d")` aligns decimals
-  # across rows -- no NBSP / monospace hack required.
-  col_spec <- attr(rendered, "col_spec")
-  split <- .split_ci_columns(body, col_spec, spanners)
-  body         <- split$body
-  spanners     <- split$spanners
-  ci_spanners  <- split$ci_spanners
+  # ---- Read structured (typed) body, derive padded display strings ----
+  # tinytable's native HTML `align = "d"` does NOT decimal-align: it
+  # falls back to `text-align: center` with a uniform per-column
+  # precision. To get true decimal alignment we mirror the flextable /
+  # table_continuous_lm convention: pre-format each cell to its final
+  # display string (em-dash for reference rows, "<.001" for
+  # below-threshold p-cells, decimal-formatted numerics elsewhere) via
+  # `.format_structured_to_string_body()`, then pad with figure-spaces
+  # (U+2007, digit-width) via `.pad_for_decimal_align()` so every cell
+  # in a column has the same character width on each side of the
+  # decimal mark. Center-aligning the now-uniform-width cells produces
+  # visually exact decimal alignment in any font whose figure-space
+  # matches digit width (true for all common serif / sans / monospace
+  # web fonts).
+  struct <- attr(rendered, "structured")
+  body <- .format_structured_to_string_body(struct)
+  body <- .pad_for_decimal_align(body, struct)
+  spanners <- struct$spanners
+  ci_spanners <- struct$ci_pairs
+  reference_rows <- struct$reference_rows
+  level_rows <- struct$level_rows
+  format_spec <- struct$format_spec
+  decimal_mark <- format_spec$decimal_mark
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner    <- length(ci_spanners) > 0L
 
+  # Strip "Model X: " prefix from structured col names for multi-model
+  # display (the model spanner above carries the prefix), then rename
+  # "95% CI: LL" / "95% CI: UL" sub-cols to their bare role for the
+  # column-labels row. Keep the PRE-strip col names so `col_meta`
+  # lookups (which key on the original prefixed names) still resolve
+  # after `strip_spanner_prefix` rewrites `body`'s colnames.
+  struct_col_names_orig <- names(struct$body)
   if (has_model_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
   }
+  for (cs in ci_spanners) {
+    if (length(cs$cols) >= 2L) {
+      names(body)[cs$cols[1L]] <- "LL"
+      names(body)[cs$cols[2L]] <- "UL"
+    }
+  }
   ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
   body_names_orig <- names(body)
+  n_rows <- nrow(body)
 
-  if (has_model_spanner) {
-    # Multi-model: tinytable's group_tt(j = list) drops duplicate
-    # list names (the second "B" overwrites the first), which
-    # prevents the per-column-spanner pattern used in single-model.
-    # Fall back to the prior "CI spanner row + column labels row"
-    # structure: keep visible column labels (B, LL, UL, p) on the
-    # column-labels row, add a `95% CI` spanner row above LL/UL
-    # via group_tt, then add the Model spanner row above that.
-    n_cols <- ncol(body)
-    tt <- tinytable::tt(body,
-                         caption = title %||% "",
-                         notes = if (!is.null(note)) note else NULL)
-    if (has_ci_spanner) {
-      ci_gspec <- list()
-      for (cs in ci_spanners) {
-        ci_gspec[[cs$label]] <- cs$cols
-      }
-      tt <- tinytable::group_tt(tt, j = ci_gspec)
-    }
-    tt <- tinytable::group_tt(tt, j = spanners)
-  } else {
-    # Single-model: rename CI columns to "LL"/"UL" so the actual
-    # column labels show those sub-labels; non-CI columns get
-    # their visible label via a 1-wide spanner. This is the
-    # table_continuous_lm convention.
-    if (length(ci_cols_set) > 0L) {
-      for (cs in ci_spanners) {
-        if (length(cs$cols) >= 2L) {
-          names(body)[cs$cols[1L]] <- "LL"
-          names(body)[cs$cols[2L]] <- "UL"
-        }
-      }
-    }
-    for (j in seq_along(body_names_orig)) {
-      if (j == 1L) next
-      if (j %in% ci_cols_set) next
-      names(body)[j] <- ""
-    }
-    n_cols <- ncol(body)
-    tt <- tinytable::tt(body,
-                         caption = title %||% "",
-                         notes = if (!is.null(note)) note else NULL)
-    gspec <- list()
-    for (j in seq_along(body_names_orig)) {
-      if (j == 1L) next
-      if (j %in% ci_cols_set) next
-      gspec[[length(gspec) + 1L]] <- j
-      names(gspec)[length(gspec)] <- body_names_orig[j]
-    }
+  # Unified header construction for single- AND multi-model.
+  # Structure (top-to-bottom):
+  #   * (multi-model only) Model spanner row: Step 1 | Step 2 | ...
+  #     covering each model's column range.
+  #   * Per-col + CI spanner row: Variable | B | 95% CI | p | AME |
+  #     95% CI | p | ... -- 1-wide spanners for non-CI cols (label
+  #     from `col_meta$display_label`), 2-wide spanners for each
+  #     CI pair (label "95% CI").
+  #   * Column-labels row: empty | empty | LL | UL | empty | empty
+  #     | LL | UL | empty | ... -- only LL/UL on CI sub-cols.
+  #
+  # Blanking the column-labels row and moving every per-col label
+  # to the spanner row is what gt / flextable also do; previously
+  # the multi-model path used a different structure (visible per-
+  # col labels in the column-labels row) because of tinytable's
+  # duplicate-name bug in `group_tt(j = list)` -- but the ZWSP
+  # disambiguator below now handles arbitrary duplicates safely,
+  # so the same per-col-spanner pattern works for both cases.
+  if (length(ci_cols_set) > 0L) {
     for (cs in ci_spanners) {
-      gspec[[length(gspec) + 1L]] <- cs$cols
-      names(gspec)[length(gspec)] <- cs$label
+      if (length(cs$cols) >= 2L) {
+        names(body)[cs$cols[1L]] <- "LL"
+        names(body)[cs$cols[2L]] <- "UL"
+      }
     }
-    if (length(gspec) > 0L) {
-      tt <- tinytable::group_tt(tt, j = gspec)
+  }
+  for (j in seq_along(body_names_orig)) {
+    if (j %in% ci_cols_set) next
+    names(body)[j] <- ""
+  }
+  n_cols <- ncol(body)
+  tt <- tinytable::tt(body,
+                       caption = title %||% "",
+                       notes = if (!is.null(note)) note else NULL)
+  gspec <- list()
+  for (j in seq_along(body_names_orig)) {
+    if (j %in% ci_cols_set) next
+    # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
+    # "Step 1: p.2") because `col_meta` is keyed on the structured
+    # col names, NOT on the post-strip body colnames. Use the
+    # `display_label` (e.g. "p") for the spanner-row text -- this
+    # is what was set at the bare `header_short` level, stripped of
+    # both the model prefix and any dedup `.N` suffix.
+    nm_orig <- struct_col_names_orig[j]
+    nm <- body_names_orig[j]
+    lbl <- struct$col_meta[[nm_orig]]$display_label %||% nm
+    gspec[[length(gspec) + 1L]] <- j
+    names(gspec)[length(gspec)] <- lbl
+  }
+  for (cs in ci_spanners) {
+    gspec[[length(gspec) + 1L]] <- cs$cols
+    names(gspec)[length(gspec)] <- cs$label
+  }
+  # tinytable's `group_tt(j = list)` accesses entries via
+  # `idx[[name]]` during sanitisation, so when the named list has
+  # duplicate names (e.g. multiple "95% CI" / "B" / "p" / etc. when
+  # `show_columns` requests overlapping blocks OR when multi-model
+  # repeats per-col labels across models), only the FIRST entry per
+  # name reaches the rendered header. Workaround: append zero-width
+  # spaces (U+200B) to every duplicate occurrence to make names
+  # internally unique while keeping the rendered label identical.
+  # Each successive duplicate gets one extra ZWSP. The ZWSPs are
+  # stripped from the rendered `table_string` by the finalize
+  # callback below.
+  if (length(gspec) > 0L) {
+    seen <- character(0)
+    new_names <- names(gspec)
+    for (k in seq_along(new_names)) {
+      nm <- new_names[k]
+      n_prev <- sum(seen == nm)
+      if (n_prev > 0L) {
+        new_names[k] <- paste0(nm, strrep("\u200B", n_prev))
+      }
+      seen <- c(seen, nm)
     }
+    names(gspec) <- new_names
+    tt <- tinytable::group_tt(tt, j = gspec)
+  }
+  # Multi-model: stack the Model spanner row on TOP of the per-col
+  # spanner row added above. tinytable's `group_tt(j = spanners)`
+  # accepts a named list `model_label = col_range` directly when
+  # labels are unique (Model spanner labels are always unique --
+  # they come from `names(spanners)` which deduplicates by
+  # design).
+  if (has_model_spanner) {
+    tt <- tinytable::group_tt(tt, j = spanners)
   }
 
   # Mirror the table_continuous_lm pipeline exactly:
   #   1. theme_empty() to clear default cell padding / line styling.
-  #   2. align ("l" on Variable, "d" on every numeric column).
-  #   3. spanner-row centring.
-  #   4. APA borders LAST.
+  #   2. format_tt(escape = TRUE) to HTML-escape special characters in
+  #      body cells -- in particular, the "<" in below-threshold
+  #      tokens like "<.001" would otherwise be parsed as the start of
+  #      an HTML tag by the browser. Skipped for LaTeX / typst output
+  #      (those backends do their own escaping).
+  #   3. alignment ("l" on Variable, "c" on numeric cols -- pre-padded
+  #      via .pad_for_decimal_align so center-aligning yields true
+  #      decimal alignment in any digit-width-figure-space font).
+  #   4. spanner-row centring.
+  #   5. APA borders LAST.
   tt <- tinytable::theme_empty(tt)
+  tt <- tinytable::format_tt(tt, escape = TRUE)
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
-    # Native decimal alignment per column via `style_tt(align =
-    # "d")` -- matches table_continuous_lm. Default font.
-    for (rj in 2:n_cols) {
-      tt <- tinytable::style_tt(tt, j = rj, align = "d")
-    }
+    tt <- tinytable::style_tt(tt, j = 2:n_cols, align = "c")
   }
   # Header rows: Variable column left, the rest centred.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
@@ -553,9 +438,16 @@ output_tinytable <- function(rendered) {
                              line = "t", line_width = 0.06)
   # Mid-rule under each model spanner (only over spanned columns).
   if (has_model_spanner) {
+    # `line_trim = "lr"` shortens the under-rule by a small amount on
+    # each side (booktabs `\cmidrule(lr){...}` convention), so two
+    # adjacent model spanners don't have their rules touching at the
+    # column boundary -- the small gap is the visual separator
+    # between models. Mirrors the console renderer where the
+    # cross-column join character already breaks the rule visually.
     for (lbl in names(spanners)) {
       tt <- tinytable::style_tt(tt, i = model_i, j = spanners[[lbl]],
-                                 line = "b", line_width = 0.06)
+                                 line = "b", line_width = 0.06,
+                                 line_trim = "lr")
     }
   }
   # Mid-rule under each CI spanner (only over LL/UL pairs).
@@ -593,9 +485,117 @@ output_tinytable <- function(rendered) {
   # on header rows (spanner row added via `group_tt`), not on body
   # cells. The body fit-stat row therefore renders as `first_col`
   # regardless of this argument. Documented in @param.
+
+  # ---- Note rendering: strip the rendered `<tfoot>` and wrap the ------
+  # table together with the note in an `inline-block` flex sibling
+  # (HTML output only). Rationale: in `table-layout: auto`, a
+  # `<tfoot><td colspan="N">` cell contributes its max-content width
+  # to every column it spans, so a multi-line note (longest line
+  # unwrapped) forces the whole table to render wider than the body
+  # would natively demand. Pulling the note out of the table grid
+  # entirely lets the body alone determine column widths.
+  #
+  # APA Manual 7 Section 7.14 expects the note flush-left with the table's
+  # left edge AND wrapped within the table's width. Pure CSS achieves
+  # this with the `width: min-content; min-width: 100%` trick: the
+  # note's *preferred* width is its longest word (negligible), so it
+  # does not push the inline-block wrapper wider than the table; the
+  # `min-width: 100%` then forces the rendered note to fill the
+  # wrapper, which is exactly the table's content width.
+  #
+  # We still pass `notes = note` to `tt()` so LaTeX, typst and
+  # markdown backends keep their native footnote rendering; this
+  # finalize is gated on `x@output == "html"` and only mutates the
+  # HTML output. `finalize` receives the S4 object; we mutate
+  # `x@table_string` and return `x`. tinytable runs each
+  # `lazy_finalize` exactly once after building `table_string`, so
+  # no idempotency check is required.
+  if (!is.null(note)) {
+    .html_escape <- function(s) {
+      s <- gsub("&", "&amp;", s, fixed = TRUE)
+      s <- gsub("<", "&lt;",  s, fixed = TRUE)
+      s <- gsub(">", "&gt;",  s, fixed = TRUE)
+      s
+    }
+    note_html <- .html_escape(note)
+    # APA Manual 7 Section 7.14: the "Note." prefix is italicised. Wrap it
+    # in <em> AFTER escaping (the prefix itself contains no special
+    # chars, so the <em> is safe to insert). The substitution is
+    # anchored to the start of the string; if a note doesn't begin
+    # with "Note." (theoretically possible) the source string is
+    # unchanged.
+    note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+    note_div <- paste0(
+      "<div class=\"spicy-tt-note\" style=\"",
+      "width: min-content; min-width: 100%; box-sizing: border-box; ",
+      "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
+      "font-size: 0.875rem; line-height: 1.25; ",
+      "text-align: left;\">",
+      note_html,
+      "</div>"
+    )
+    open_outer <- paste0(
+      "<div class=\"spicy-tt-outer\" ",
+      "style=\"text-align: center;\">"
+    )
+    open_inner <- paste0(
+      "<div class=\"spicy-tt-wrap\" style=\"",
+      "display: inline-block; max-width: 100%; ",
+      "text-align: left; vertical-align: top;\">"
+    )
+    close_both <- "</div></div>"
+    tt <- tinytable::style_tt(tt, finalize = function(x) {
+      # Strip the U+200B disambiguator we added to duplicate spanner
+      # labels so the rendered output is identical regardless of how
+      # many CIs (or other identically-labelled spanners) the user
+      # requested. See the "tinytable's `group_tt(j = list)`..."
+      # comment above for the rationale.
+      zwsp <- "200B"
+      if (grepl(zwsp, x@table_string, fixed = TRUE)) {
+        x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
+      }
+      if (identical(x@output, "html")) {
+        # 1. Drop the rendered tfoot. tinytable emits
+        #    `<tfoot><tr><td colspan='N'>...</td></tr></tfoot>` as
+        #    one piece (newlines inside survive as plain text); a
+        #    perl multiline regex covers it.
+        x@table_string <- sub(
+          "<tfoot>[\\s\\S]*?</tfoot>", "",
+          x@table_string, perl = TRUE
+        )
+        # 2. Open the centering outer + inline-block inner wrapper
+        #    just before `<table ...>`. We match the literal "<table "
+        #    (with trailing space) so we hit the opening tag and
+        #    not e.g. the </table> closer.
+        x@table_string <- sub(
+          "<table ",
+          paste0(open_outer, open_inner, "<table "),
+          x@table_string, fixed = TRUE
+        )
+        # 3. Append the note div + close both wrappers right after
+        #    `</table>`.
+        x@table_string <- sub(
+          "</table>",
+          paste0("</table>", note_div, close_both),
+          x@table_string, fixed = TRUE
+        )
+      }
+      x
+    })
+  } else {
+    # No note: still register a finalize ONLY to strip the U+200B
+    # spanner-label disambiguator from the rendered output.
+    tt <- tinytable::style_tt(tt, finalize = function(x) {
+      zwsp <- "200B"
+      if (grepl(zwsp, x@table_string, fixed = TRUE)) {
+        x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
+      }
+      x
+    })
+  }
+
   tt
 }
-
 
 # ---- gt ------------------------------------------------------------------
 
@@ -611,27 +611,44 @@ output_gt <- function(rendered) {
   }
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
-  spanners <- attr(rendered, "spanners")
-  col_spec <- attr(rendered, "col_spec")
   group_sep <- attr(rendered, "group_sep_rows")
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
-                         check.names = FALSE)
-  level_rows <- .detect_level_rows(body)
-  body <- .trim_level_indent(body, level_rows)
 
-  # Split bracketed CI cells into LL / UL numeric columns and capture
-  # the (95% CI) spanners. With CI delivered as clean numerics,
-  # `cols_align_decimal()` aligns every body cell natively -- no
-  # monospaced font / white-space: pre hack required for HTML.
-  split <- .split_ci_columns(body, col_spec, spanners)
-  body         <- split$body
-  spanners     <- split$spanners
-  ci_spanners  <- split$ci_spanners
+  # ---- Read structured (typed) body, derive padded display strings ----
+  # gt's native `cols_align_decimal()` does NOT cleanly decimal-align
+  # cells produced by `fmt(fns = drop_leading_zero)` (the APA p-style
+  # formatter): the output is treated as an opaque character string
+  # that gt's aligner mis-parses, producing artefacts like `. 213` (a
+  # space between dot and digits). The same machinery handles
+  # `fmt_number()` output fine, but mixing the two in one column breaks
+  # alignment.
+  #
+  # Solution: mirror the flextable / tinytable path -- pre-format every
+  # body cell to its final display string via
+  # `.format_structured_to_string_body()` (em-dash for reference rows,
+  # "<.001" for below-threshold p-values, decimal-formatted numerics
+  # elsewhere), then pad with figure-spaces via
+  # `.pad_for_decimal_align()` so every cell in a column has the same
+  # width on each side of the decimal mark. gt receives an already-
+  # padded character data.frame; we then skip `fmt_*`, `text_transform`
+  # and `cols_align_decimal` entirely. Figure-space (U+2007) is
+  # digit-width in every common web font, so the visual alignment is
+  # exact when the cells are centre-aligned by their fixed width.
+  struct <- attr(rendered, "structured")
+  body <- .format_structured_to_string_body(struct)
+  body <- .pad_for_decimal_align(body, struct)
+  spanners <- struct$spanners
+  ci_spanners <- struct$ci_pairs
+  reference_rows <- struct$reference_rows
+  level_rows <- struct$level_rows
+  format_spec <- struct$format_spec
+  decimal_mark <- format_spec$decimal_mark
+
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner    <- length(ci_spanners) > 0L
-
   orig_names <- names(body)
   n_cols <- ncol(body)
+  n_rows <- nrow(body)
+
   tbl <- gt::gt(body)
 
   # Match table_continuous_lm header structure: actual column
@@ -654,6 +671,8 @@ output_gt <- function(rendered) {
   # Build per-column "spanner-as-label" entries for every non-CI
   # numeric column. Each spanner is 1-wide and uses the column's
   # bare label (stripped of any "Model X: " prefix when present).
+  # Col 1 ("Variable") also goes here so its label sits in the
+  # spanner row, mirroring the flextable / tinytable convention.
   strip_prefix <- function(nm) {
     if (has_model_spanner) {
       for (lbl in names(spanners)) {
@@ -666,9 +685,19 @@ output_gt <- function(rendered) {
     nm
   }
   for (j in seq_along(orig_names)) {
-    if (j == 1L) next  # Variable column has no per-col spanner
     if (j %in% ci_cols_set) next  # CI cols get their own spanner
-    bare <- strip_prefix(orig_names[j])
+    # Use `col_meta$display_label` for the spanner text (bare,
+    # no Model prefix, no dedup `.N` suffix). Falls back to the
+    # legacy `strip_prefix` path for structured bodies without
+    # `display_label`.
+    lbl <- struct$col_meta[[orig_names[j]]]$display_label
+    bare <- if (j == 1L) {
+      orig_names[1L]
+    } else if (!is.null(lbl) && nzchar(lbl)) {
+      lbl
+    } else {
+      strip_prefix(orig_names[j])
+    }
     tbl <- gt::tab_spanner(
       tbl, label = bare,
       columns = orig_names[j],
@@ -699,9 +728,16 @@ output_gt <- function(rendered) {
   # gt's default outer / body hlines so only the explicit APA rules
   # remain (top above the spanner / column-labels row, bottom under
   # the last body row, hair rule between coefs and fit-stats).
-  rule <- gt::cell_borders(sides = "bottom", color = "currentColor",
+  # Use the same explicit hex (`#333333`, matching gt's body
+  # `.gt_table { color: #333333 }`) on all three horizontal rules
+  # (outer top, mid CI bracket, header-body bottom) so they read
+  # as a matched typographic set. `currentColor` resolves the same
+  # way for cells inside the table but isn't honoured uniformly by
+  # the renderer in some viewer / quarto contexts -- the explicit
+  # hex sidesteps that.
+  rule <- gt::cell_borders(sides = "bottom", color = "#333333",
                             weight = gt::px(1))
-  rule_top <- gt::cell_borders(sides = "top", color = "currentColor",
+  rule_top <- gt::cell_borders(sides = "top", color = "#333333",
                                 weight = gt::px(1))
   rule_light <- gt::cell_borders(sides = "bottom", color = "#cccccc",
                                   weight = gt::px(1))
@@ -712,21 +748,94 @@ output_gt <- function(rendered) {
     table_body.border.top.width = gt::px(0),
     table_body.border.bottom.width = gt::px(0),
     table_body.hlines.color = "transparent",
+    # `column_labels.border.top` applies to BOTH `.gt_col_headings`
+    # rows in gt's HTML (spanner row + column-labels row), so it
+    # would draw a continuous line between them in addition to the
+    # outer top rule. We instead disable it here and add the outer
+    # top rule via an explicit `tab_style(..., cells_column_spanners)`
+    # call below, which targets the spanner row alone.
     column_labels.border.top.width = gt::px(0),
-    column_labels.border.lr.color = "transparent"
+    column_labels.border.lr.color = "transparent",
+    # Header-body bottom rule: match the outer top rule (1px #333333)
+    # so both horizontal rules read as a matched pair. Setting this
+    # via tab_options writes the value into gt's `.gt_col_headings`
+    # CSS rule (applies to BOTH header rows -- the spanner row is
+    # zeroed out by the CSS injection in the post-process so only
+    # the column-labels row keeps the rule). This avoids relying on
+    # cell-level CSS injection that may not win the border-collapse
+    # tiebreaker against the body cells' default transparent
+    # `border-top`.
+    column_labels.border.bottom.width = gt::px(1),
+    column_labels.border.bottom.color = "#333333",
+    # APA title: match the body's font size so caption / title /
+    # note / body all read in the same typographic register
+    # (the gt default `gt_title { font-size: 125% }` makes the
+    # caption visibly larger than the body).
+    heading.title.font.size = "100%",
+    heading.title.font.weight = "normal"
   )
+  # Outer top rule above the top-most header row only. In
+  # multi-model mode, gt builds TWO spanner levels (model_span_*
+  # over the per-model col-ranges, col_span_* over each numeric
+  # column). `cells_column_spanners(spanners = everything())`
+  # would draw `rule_top` on BOTH levels -- the top edge of the
+  # model row (correct outer rule) AND the top edge of the per-col
+  # row (extra line above "Variable"). Restrict to the outermost
+  # level via explicit spanner IDs.
+  if (has_model_spanner) {
+    model_span_ids <- paste0("model_span_", make.names(names(spanners)))
+    # Top rule above the Model row.
+    tbl <- gt::tab_style(
+      tbl, style = rule_top,
+      locations = gt::cells_column_spanners(spanners = model_span_ids)
+    )
+    # NOTE: we DON'T apply `rule` (bottom border) here via
+    # `cells_column_spanners`: gt expands the styling to ALL `<th>`
+    # cells in the same spanner row -- including the empty col 1
+    # above "Variable" -- producing an unwanted hairline. Instead
+    # the line under each Model spanner is drawn via a CSS rule
+    # injected in `.spicy_gt_html_postprocess` that targets only
+    # `th[id^="model_span_"]`.
+  } else {
+    # Single-model: the col_span_*'s ARE the outermost level.
+    tbl <- gt::tab_style(
+      tbl, style = rule_top,
+      locations = gt::cells_column_spanners(spanners = gt::everything())
+    )
+  }
+  # Mid-rule under the per-col + CI spanner row: APA convention is to
+  # draw this rule ONLY beneath the CI bracket (separates "95% CI"
+  # from its "LL" / "UL" sub-labels), not beneath the 1-wide B / SE /
+  # p / Variable spanners. We apply `rule_top` only to the LL / UL
+  # column-labels cells (= bottom side of the spanner row above
+  # them).
+  if (length(ci_cols_set) > 0L) {
+    tbl <- gt::tab_style(
+      tbl, style = rule_top,
+      locations = gt::cells_column_labels(
+        columns = orig_names[ci_cols_set]
+      )
+    )
+  }
+  # Header-body bottom rule: apply at the cell level on ALL
+  # column-labels cells (an *inline* style, the highest-specificity
+  # CSS tier) so it deterministically wins the border-collapse
+  # tiebreaker against the body cells' default
+  # `.gt_row { border-top: 1px solid transparent }`. Belt + braces
+  # with the `column_labels.border.bottom.*` `tab_options` set
+  # above.
   tbl <- gt::tab_style(
-    tbl, style = rule_top,
+    tbl, style = rule,
     locations = gt::cells_column_labels(columns = gt::everything())
   )
-  if (nrow(body) > 0L) {
+  if (n_rows > 0L) {
     tbl <- gt::tab_style(
       tbl, style = rule,
-      locations = gt::cells_body(rows = nrow(body))
+      locations = gt::cells_body(rows = n_rows)
     )
   }
   if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
-        group_sep[1L] <= nrow(body)) {
+        group_sep[1L] <= n_rows) {
     tbl <- gt::tab_style(
       tbl, style = rule_light,
       locations = gt::cells_body(rows = group_sep[1L] - 1L)
@@ -750,18 +859,51 @@ output_gt <- function(rendered) {
       locations = gt::cells_column_labels(columns = orig_names[-1L])
     )
   }
-  if (has_model_spanner || has_ci_spanner) {
-    tbl <- gt::tab_style(
-      tbl,
-      style = gt::cell_text(align = "center", weight = "normal"),
-      locations = gt::cells_column_spanners(spanners = gt::everything())
+  # Centre all spanner-row labels (B / SE / 95% CI / p / Model X),
+  # then override the Variable spanner (col 1) to be flush-left so
+  # the "Variable" caption aligns with the left-aligned body of
+  # the same column.
+  tbl <- gt::tab_style(
+    tbl,
+    style = gt::cell_text(align = "center", weight = "normal"),
+    locations = gt::cells_column_spanners(spanners = gt::everything())
+  )
+  tbl <- gt::tab_style(
+    tbl,
+    style = gt::cell_text(align = "left", weight = "normal"),
+    locations = gt::cells_column_spanners(
+      spanners = paste0("col_span_1_", make.names(orig_names[1L]))
     )
+  )
+  # Belt-and-braces CI bracket: in addition to the inline
+  # `border-top: 1px #333333` applied to the LL / UL column-labels
+  # cells via `rule_top` above, also stamp an inline
+  # `border-bottom: 1px #333333` on the CI spanner cell itself.
+  # Some renderers don't always honour the LL/UL top vs the empty
+  # spanner-cell bottom tie in border-collapse priority -- having
+  # both sides of the shared edge marked guarantees the line.
+  if (has_ci_spanner) {
+    for (cs in ci_spanners) {
+      tbl <- gt::tab_style(
+        tbl, style = rule,
+        locations = gt::cells_column_spanners(
+          spanners = paste0("ci_span_", paste(cs$cols, collapse = "_"))
+        )
+      )
+    }
   }
   tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
   if (n_cols >= 2L) {
-    # Native decimal alignment via gt's `cols_align_decimal()` --
-    # same as table_continuous_lm. Default proportional font.
-    tbl <- gt::cols_align_decimal(tbl, columns = orig_names[-1L])
+    # Numeric body columns are already character-padded (via
+    # `.format_structured_to_string_body()` + `.pad_for_decimal_align()`
+    # above) so every cell in a column has the same character width on
+    # each side of the decimal mark. Centre-aligning them lines up the
+    # decimal points exactly -- no per-cell `fmt_number()` /
+    # `cols_align_decimal()` needed (and avoids gt's alignment bug
+    # with `fmt(fns = ...)` output that displayed APA p-values as
+    # `. 213`).
+    tbl <- gt::cols_align(tbl, align = "center",
+                           columns = orig_names[-1L])
   }
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
@@ -774,13 +916,185 @@ output_gt <- function(rendered) {
 
   if (!is.null(title) && nzchar(title)) {
     tbl <- gt::tab_header(tbl, title = title)
+    # APA Manual 7 Section 7.10-Section 7.11: caption is flush-left. gt's default
+    # centers the title; override via `cell_text(align = "left")` on
+    # `cells_title("title")`. Also drop the title's bottom border --
+    # the spanner row below already carries the outer top rule via
+    # `gt_columns_top_border`, so keeping the title's
+    # `gt_bottom_border` would render a redundant double line.
+    tbl <- gt::tab_style(
+      tbl,
+      style = list(
+        gt::cell_text(align = "left"),
+        gt::cell_borders(sides = "bottom",
+                          color = "transparent",
+                          weight = gt::px(0))
+      ),
+      locations = gt::cells_title(groups = "title")
+    )
   }
+  # Note: the source_note is NOT added to gt's native `tab_source_note`
+  # because gt renders it inside the table's `<tfoot>` with a
+  # `<td colspan="N">` cell -- the cell's max-content widens the
+  # table in narrow viewports (same pathology as
+  # `output_tinytable` / `output_flextable`). Instead we tag the
+  # gt object with the sub-class `spicy_gt` + stash the raw note,
+  # and the custom `print.spicy_gt` / `knit_print.spicy_gt` methods
+  # below post-process the rendered HTML to inject the note as a
+  # `<div>` outside the table.
   if (!is.null(note) && nzchar(note)) {
-    tbl <- gt::tab_source_note(tbl, source_note = note)
+    attr(tbl, "spicy_note") <- note
   }
+  class(tbl) <- c("spicy_gt", class(tbl))
   tbl
 }
 
+# Wrap rendered gt HTML so the title (already inside the `<table>`
+# as a heading row) is preserved but the source note is injected as
+# a `<div>` sibling immediately after `</table>`. The wrapping +
+# note-styling mirror `output_tinytable` so the visual reading of
+# the note matches across engines.
+.spicy_gt_html_postprocess <- function(html_str, note) {
+  if (is.null(note) || !nzchar(note)) {
+    return(html_str)
+  }
+  esc <- function(s) {
+    s <- gsub("&", "&amp;", s, fixed = TRUE)
+    s <- gsub("<", "&lt;",  s, fixed = TRUE)
+    s <- gsub(">", "&gt;",  s, fixed = TRUE)
+    s
+  }
+  note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+  note_html <- esc(note_one_line)
+  note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+  note_div <- paste0(
+    "<div class=\"spicy-gt-note\" style=\"",
+    "width: min-content; min-width: 100%; box-sizing: border-box; ",
+    "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
+    # Match gt's `#<id> table { font-family: ... }` rule by listing
+    # the same fallback stack. gt scopes the rule to `table`
+    # elements only, so a `<div>` sibling otherwise picks up the
+    # page default and reads in a different typeface.
+    "font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, ",
+    "sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', ",
+    "'Segoe UI Symbol', 'Noto Color Emoji'; ",
+    "font-size: 0.9em; line-height: 1.25; ",
+    "color: #333333; text-align: left;\">",
+    note_html, "</div>"
+  )
+  open_outer <- paste0(
+    "<div class=\"spicy-gt-outer\" ",
+    "style=\"text-align: center;\">"
+  )
+  open_inner <- paste0(
+    "<div class=\"spicy-gt-wrap\" style=\"",
+    "display: inline-block; max-width: 100%; ",
+    "text-align: left; vertical-align: top;\">"
+  )
+  # gt's default theme draws two unwanted lines inside the header:
+  #   * `.gt_col_headings { border-bottom: 2px solid #D3D3D3 }` is
+  #     applied to BOTH header rows (the spanner row carries class
+  #     `gt_col_headings gt_spanner_row`, the column-labels row
+  #     carries `gt_col_headings`), so the rule draws a 2px grey
+  #     line under the spanner row in addition to the bottom of the
+  #     header.
+  #   * `.gt_column_spanner { border-bottom: 2px solid #D3D3D3 }` is
+  #     applied inside each spanner cell (B / SE / p / Variable /
+  #     95% CI), adding its own underline.
+  # We neutralise both with `!important` (gt's selectors carry an id
+  # which outranks a class-only selector) and at the same time
+  # match the column-labels-row bottom rule to the outer top rule
+  # (1px solid #333333) so they read as a matched pair. The CSS is
+  # scoped to `.spicy-gt-outer` so unrelated gt tables elsewhere
+  # on the page keep their stock styling.
+  spanner_css <- paste0(
+    "<style>",
+    # Mid rule under each Model spanner in multi-model mode. The
+    # rule is drawn via a `::after` pseudo-element (rather than a
+    # plain `border-bottom`) so each rule is INSET inside the
+    # spanner cell with a small horizontal gap on each side --
+    # adjacent models therefore have visibly separated rules, the
+    # booktabs `\cmidrule(lr){...}` convention. Without the inset
+    # the rules would touch at the column boundaries and the
+    # multi-model header would read as one continuous line.
+    # Scoped via `[id^=\"model_span_\"]` so only Model spanner
+    # cells (which have an id) are styled; col 1 above "Variable"
+    # has no id and stays untouched.
+    ".spicy-gt-outer th[id^=\"model_span_\"] { ",
+    "position: relative; }",
+    ".spicy-gt-outer th[id^=\"model_span_\"]::after { ",
+    "content: \"\"; position: absolute; ",
+    "left: 0.5em; right: 0.5em; bottom: 0; ",
+    "border-bottom: 1px solid #333333; }",
+    # gt emits `.gt_spanner_row { border-bottom-style: hidden }`
+    # which, per CSS 2.1 Section 17.6.2.1, *suppresses any conflicting
+    # border at this edge* -- including the inline `border-top` we
+    # put on the LL/UL cells to draw the CI bracket. Override both
+    # the style and width to `none` / 0 so the spanner row carries
+    # no border-bottom contribution at all, leaving the LL/UL
+    # cell-level top border (and the CI spanner cell's bottom) free
+    # to render.
+    ".spicy-gt-outer .gt_col_headings.gt_spanner_row, ",
+    ".spicy-gt-outer .gt_spanner_row { ",
+    "border-bottom-style: none !important; ",
+    "border-bottom-width: 0 !important; }",
+    # Mid-rule under the column-labels row (= bottom of header,
+    # above body). Applied at the CELL level (`.gt_col_heading`),
+    # AND we simultaneously neutralise the body cells'
+    # `.gt_row { border-top: 1px solid transparent }` -- without
+    # this, both sides are cell-level borders with the same width
+    # and style, and the browser tie-breaker picks the later
+    # element (= body row, transparent), making our colour
+    # invisible. Setting body's `border-top: 0` removes the
+    # competing border entirely so our #333333 always shows.
+    ".spicy-gt-outer .gt_col_heading { ",
+    "border-bottom: 1px solid #333333 !important; }",
+    ".spicy-gt-outer .gt_table tbody .gt_row { ",
+    "border-top-width: 0 !important; }",
+    # Remove the 2px grey underline that gt draws inside every
+    # `<div class=\"gt_column_spanner\">`. The CI bracket line stays
+    # because it lives on the LL/UL cells' inline `border-top`.
+    ".spicy-gt-outer .gt_column_spanner { ",
+    "border-bottom-width: 0 !important; ",
+    "border-bottom-color: transparent !important; }",
+    "</style>"
+  )
+  close_both <- "</div></div>"
+  html_str <- sub(
+    "<table ",
+    paste0(open_outer, open_inner, spanner_css, "<table "),
+    html_str, fixed = TRUE
+  )
+  html_str <- sub(
+    "</table>",
+    paste0("</table>", note_div, close_both),
+    html_str, fixed = TRUE
+  )
+  html_str
+}
+
+#' @exportS3Method print spicy_gt
+print.spicy_gt <- function(x, ...) {
+  note <- attr(x, "spicy_note")
+  class(x) <- setdiff(class(x), "spicy_gt")
+  if (interactive() && !isTRUE(getOption("knitr.in.progress")) &&
+        requireNamespace("htmltools", quietly = TRUE)) {
+    h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
+    h_str <- .spicy_gt_html_postprocess(h_str, note)
+    print(htmltools::browsable(htmltools::HTML(h_str)))
+    return(invisible(NULL))
+  }
+  NextMethod()
+}
+
+#' @exportS3Method knitr::knit_print spicy_gt
+knit_print.spicy_gt <- function(x, ...) {
+  note <- attr(x, "spicy_note")
+  class(x) <- setdiff(class(x), "spicy_gt")
+  h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
+  h_str <- .spicy_gt_html_postprocess(h_str, note)
+  knitr::asis_output(h_str)
+}
 
 # ---- flextable -----------------------------------------------------------
 
@@ -794,35 +1108,98 @@ output_flextable <- function(rendered) {
     )
     # nocov end
   }
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
-                         check.names = FALSE)
-  spanners <- attr(rendered, "spanners")
-  col_spec <- attr(rendered, "col_spec")
+  # ---- Read structured (typed) body, derive display strings ------------
+  # Flextable's native formatters (colformat_double, set_formatter)
+  # don't compose cleanly with per-cell precision + APA p-style +
+  # below-threshold overrides + reference-row em-dash. We pre-format
+  # the structured body to a CHAR body via .format_structured_to_string_body()
+  # then apply figure-space decimal-alignment padding via
+  # `.pad_for_decimal_align()` (flextable has no native decimal-align
+  # primitive, so we emulate gt's `cols_align_decimal()` manually).
+  struct <- attr(rendered, "structured")
+  body <- .format_structured_to_string_body(struct)
+  body <- .pad_for_decimal_align(body, struct)
+  spanners <- struct$spanners
+  ci_spanners <- struct$ci_pairs
+  reference_rows <- struct$reference_rows
+  level_rows <- struct$level_rows
   group_sep <- attr(rendered, "group_sep_rows")
-  level_rows <- .detect_level_rows(body)
-  body <- .trim_level_indent(body, level_rows)
 
-  # Split bracketed CI cells into LL / UL numeric columns. With clean
-  # numeric strings, default proportional font + right-align gives
-  # decimal alignment via Calibri's tabular figures -- no custom
-  # font required.
-  split <- .split_ci_columns(body, col_spec, spanners)
-  body         <- split$body
-  spanners     <- split$spanners
-  ci_spanners  <- split$ci_spanners
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner    <- length(ci_spanners) > 0L
 
   orig_names <- names(body)
   n_cols <- ncol(body)
+  # Pin the flextable default font BEFORE constructing the table so
+  # the caption (set_caption below) picks up Calibri instead of the
+  # docx / HTML stock default (which is Arial in flextable's theme).
+  # `set_flextable_defaults()` mutates global state; we wrap the
+  # entire body of this function in a restore-on-exit so other code
+  # in the user session is unaffected.
+  prev_defaults <- flextable::get_flextable_defaults()
+  on.exit(do.call(flextable::set_flextable_defaults, prev_defaults),
+          add = TRUE)
+  flextable::set_flextable_defaults(font.family = "Calibri")
+
   ft <- flextable::flextable(body)
 
-  # Build the spanner rows. flextable's add_header_row(top = TRUE)
-  # stacks rows above the existing header; calling order
-  # CI-first then model-second produces top-to-bottom:
-  # model row | CI row | column-labels row.
+  # ---- Header structure (matches gt / tinytable convention) -------------
+  # Per-col labels ("B", "SE", "p") live in their OWN spanner row
+  # (1-wide spanners), NOT in the bottom column-labels row -- exactly
+  # the gt::tab_spanner() pattern used for output_gt. The CI spanner
+  # ("95% CI") sits in that same row, 2-wide over its LL/UL pair. The
+  # bottom column-labels row keeps only "Variable" (col 1) and the
+  # bare "LL" / "UL" sub-labels (CI cols); other cols are blank.
+  #
+  # Layout from top to bottom of the header:
+  #   * (multi-model) Model spanner row
+  #   * Per-col + CI spanner row  ("B" / "SE" / "95% CI" / "p" / ...)
+  #   * Column-labels row         ("Variable" / "" / "" / "LL" / "UL" / "")
+  ci_col_set <- if (has_ci_spanner) {
+    unlist(lapply(ci_spanners, function(cs) cs$cols))
+  } else {
+    integer(0)
+  }
+
+  # Helper to strip the "Model X: " prefix from a structured col name.
+  strip_model_prefix <- function(name) {
+    if (!has_model_spanner) return(name)
+    for (lbl in names(spanners)) {
+      prefix <- paste0(lbl, ": ")
+      if (startsWith(name, prefix)) {
+        return(substring(name, nchar(prefix) + 1L))
+      }
+    }
+    name
+  }
+
+  # Column-labels row (bottom-most header row) -- only LL/UL on the
+  # CI cols, blank elsewhere. The "Variable" label moves up to the
+  # spanner row (built below), aligned with the per-col B/SE/p labels.
+  display_labels <- as.list(orig_names)
+  names(display_labels) <- orig_names
+  display_labels[[orig_names[1L]]] <- ""
+  for (j in seq_len(n_cols)) {
+    if (j == 1L) next
+    if (j %in% ci_col_set) {
+      for (cs in ci_spanners) {
+        if (identical(cs$cols[1L], j)) {
+          display_labels[[orig_names[j]]] <- "LL"; break
+        }
+        if (identical(cs$cols[2L], j)) {
+          display_labels[[orig_names[j]]] <- "UL"; break
+        }
+      }
+    } else {
+      display_labels[[orig_names[j]]] <- ""
+    }
+  }
+  ft <- do.call(flextable::set_header_labels,
+                 c(list(x = ft), display_labels))
+
+  # Helper: compress contiguous identical labels into single spans
+  # (input vector of per-col labels -> add_header_row(values, colwidths)).
   build_run_spec <- function(label_at_col) {
-    # Compress contiguous identical labels into a single span.
     n <- length(label_at_col)
     values <- character(0)
     widths <- integer(0)
@@ -838,16 +1215,38 @@ output_flextable <- function(rendered) {
     list(values = values, colwidths = widths)
   }
 
-  if (has_ci_spanner) {
-    ci_labels_at_col <- rep("", n_cols)
-    for (cs in ci_spanners) {
-      ci_labels_at_col[cs$cols] <- cs$label
+  # Per-col + CI spanner row: "Variable" on col 1, the column's bare
+  # token ("B" / "SE" / "p" / ...) on non-CI numeric cols, the CI
+  # label ("95% CI") on each LL/UL pair.
+  sub_label_at_col <- character(n_cols)
+  for (j in seq_len(n_cols)) {
+    if (j == 1L) {
+      sub_label_at_col[j] <- "Variable"
+    } else if (j %in% ci_col_set) {
+      for (cs in ci_spanners) {
+        if (j %in% cs$cols) {
+          sub_label_at_col[j] <- cs$label
+          break
+        }
+      }
+    } else {
+      # Prefer `col_meta$display_label` (bare, no Model prefix, no
+      # dedup `.N` suffix) when available; fall back to the legacy
+      # `strip_model_prefix(orig_names[j])` path so older
+      # structured bodies that pre-date `display_label` still work.
+      lbl <- struct$col_meta[[orig_names[j]]]$display_label
+      sub_label_at_col[j] <- if (!is.null(lbl) && nzchar(lbl)) {
+        lbl
+      } else {
+        strip_model_prefix(orig_names[j])
+      }
     }
-    rs <- build_run_spec(ci_labels_at_col)
-    ft <- flextable::add_header_row(ft, top = TRUE,
-                                     values = rs$values,
-                                     colwidths = rs$colwidths)
   }
+  rs <- build_run_spec(sub_label_at_col)
+  ft <- flextable::add_header_row(ft, top = TRUE,
+                                   values = rs$values,
+                                   colwidths = rs$colwidths)
+
   if (has_model_spanner) {
     model_labels_at_col <- rep("", n_cols)
     for (lbl in names(spanners)) {
@@ -858,22 +1257,6 @@ output_flextable <- function(rendered) {
                                      values = rs$values,
                                      colwidths = rs$colwidths)
   }
-  # Strip the "Model X: " prefix from the column-labels row when a
-  # model spanner is present.
-  if (has_model_spanner) {
-    relabel <- as.list(orig_names)
-    names(relabel) <- orig_names
-    for (lbl in names(spanners)) {
-      idx <- spanners[[lbl]]
-      prefix <- paste0(lbl, ": ")
-      pat <- paste0("^", regex_escape(prefix))
-      for (j in idx) {
-        relabel[[orig_names[j]]] <- sub(pat, "", orig_names[j])
-      }
-    }
-    ft <- do.call(flextable::set_header_labels,
-                   c(list(x = ft), relabel))
-  }
 
   # APA borders. The header now has up to 3 rows (model spanner row
   # = 1, CI spanner row = 2, column-labels row = 3) -- the last
@@ -882,20 +1265,31 @@ output_flextable <- function(rendered) {
   bd <- spicy_fp_border(color = "black", width = 1)
   bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
   ft <- flextable::hline_top(ft, part = "header", border = bd)
+  bd_none <- spicy_fp_border(color = "white", width = 0)
   if (has_model_spanner) {
-    # Mid-rule under each model spanner range, drawn on the model
-    # spanner row (row index 1 when model spanner is present).
+    # First clear flextable's default 1.5pt grey bottom across the
+    # WHOLE model spanner row (col 1 -- the empty cell above
+    # "Variable" -- otherwise inherits that grey hairline and shows
+    # an extra line right above the "Variable" label). Then draw
+    # the black 1pt mid-rule under each model spanner col-range.
+    ft <- flextable::hline(ft, i = 1L, j = seq_len(n_cols),
+                            part = "header", border = bd_none)
     for (lbl in names(spanners)) {
       ft <- flextable::hline(ft, i = 1L, j = spanners[[lbl]],
                               part = "header", border = bd)
     }
   }
+  # Bottom border of the per-col + CI spanner row.
+  # First clear flextable's default grey 1.5pt border across the whole
+  # row, THEN draw the black 1pt rule only under CI spanner pair(s).
+  # Without the clearing pass, the default grey bleeds across the row
+  # and overshoots the CI bracket visually.
+  sub_row_idx <- if (has_model_spanner) 2L else 1L
+  ft <- flextable::hline(ft, i = sub_row_idx, j = seq_len(n_cols),
+                          part = "header", border = bd_none)
   if (has_ci_spanner) {
-    # Mid-rule under each CI spanner pair. The CI spanner row is
-    # row 2 if a model spanner sits above it, otherwise row 1.
-    ci_row_idx <- if (has_model_spanner) 2L else 1L
     for (cs in ci_spanners) {
-      ft <- flextable::hline(ft, i = ci_row_idx, j = cs$cols,
+      ft <- flextable::hline(ft, i = sub_row_idx, j = cs$cols,
                               part = "header", border = bd)
     }
   }
@@ -909,26 +1303,32 @@ output_flextable <- function(rendered) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
   }
 
-  # Alignment + font (default proportional Calibri). Right-aligning
-  # the numeric body cells against Calibri's tabular figures gives
-  # decimal alignment for clean numeric strings -- no custom font
-  # required.
+  # Alignment + font (single font across the table).
+  #
+  # flextable has no native decimal-alignment primitive and the default
+  # body font (Calibri) has PROPORTIONAL digits in Word / DOCX -- "1"
+  # is narrower than "0", so right-aligning a numeric column does NOT
+  # decimal-align across rows. Two paths:
+  #   (a) Monospace font (Consolas) on numeric body cells: gives true
+  #       decimal alignment via uniform character width, but mixes
+  #       TWO fonts in the table (Calibri for Variable + header, Consolas
+  #       for numeric body) -- visually distracting.
+  #   (b) CENTRE numeric cells in the default Calibri: keeps a single
+  #       font everywhere, sacrifices strict decimal alignment. For
+  #       columns with uniform precision (the common case after CI is
+  #       split into LL/UL columns of consistent decimals), centring
+  #       still LOOKS decimal-aligned because every cell has the same
+  #       character width.
+  # We pick (b): single font wins on readability + APA convention. Users
+  # who need true decimal alignment in DOCX should export via Excel
+  # (native numerics + numfmt) or PDF (via tinytable / siunitx).
   ft <- flextable::align(ft, part = "header", align = "center")
   ft <- flextable::align(ft, j = 1L, part = "header", align = "left")
   ft <- flextable::align(ft, j = 1L, part = "body", align = "left")
   if (n_cols >= 2L) {
     numeric_j <- 2:n_cols
     ft <- flextable::align(ft, j = numeric_j, part = "body",
-                            align = "right")
-    # Consolas on numeric body cells matches the
-    # table_continuous_lm flextable convention (in decimal mode).
-    # Right-align + monospace gives decimal alignment when the
-    # column has consistent precision (the bracketed CI is
-    # already split into LL/UL columns of uniform precision).
-    # Calibri's proportional digits would otherwise misalign
-    # right-aligned values whose integer parts differ in width.
-    ft <- flextable::font(ft, j = numeric_j, part = "body",
-                           fontname = "Consolas")
+                            align = "center")
   }
   # Factor-level row indentation.
   if (length(level_rows) > 0L) {
@@ -958,14 +1358,205 @@ output_flextable <- function(rendered) {
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
   if (!is.null(title) && nzchar(title)) {
-    ft <- flextable::set_caption(ft, caption = title)
+    # APA Manual 7 Section 7.10-Section 7.11: table caption is flush-left
+    # (italic-styled by Word's "Table Caption" style at the OOXML
+    # level when rendered into docx). Two non-obvious knobs in
+    # flextable's `set_caption()`:
+    #
+    #   * `align_with_table = FALSE`: flextable's default behaviour
+    #     overrides the caller's `text.align` with the underlying
+    #     table's alignment (via `process_caption_fp_par()`); the
+    #     table is centred for HTML output, so the caption is too.
+    #     Setting this to FALSE keeps our `text.align = "left"`.
+    #   * `padding.bottom`: the rendered HTML caption otherwise has
+    #     `padding-bottom: 0pt` and sits flush against the table's
+    #     top border. 6pt gives a comfortable APA-style gap.
+    # `flextable::font(part = "all", fontname = "Calibri")` further
+    # below covers header / body / footer but NOT the caption text
+    # (the caption is rendered from the paragraph value passed here,
+    # and `font(part = "all")` does not touch it). Wrap the title in
+    # an explicit `as_paragraph(as_chunk(..., props = fp_text(Calibri)))`
+    # so the caption picks up the same font as the body.
+    ft <- flextable::set_caption(
+      ft,
+      caption = flextable::as_paragraph(
+        flextable::as_chunk(
+          title,
+          props = officer::fp_text(font.family = "Calibri",
+                                    font.size = 11)
+        )
+      ),
+      align_with_table = FALSE,
+      fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
+    )
   }
   if (!is.null(note) && nzchar(note)) {
-    ft <- flextable::add_footer_lines(ft, values = note)
+    # APA Manual 7 Section 7.14: general notes form a SINGLE paragraph
+    # ("*Note.* ...") that wraps naturally within the table width.
+    # Collapse embedded newlines (source-side line breaks meant for
+    # ASCII rendering) into spaces, then emit one footer line whose
+    # leading "Note." chunk is italicised and the remainder is in
+    # regular type.
+    note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+    fp_normal <- officer::fp_text(font.family = "Calibri",
+                                            font.size = 10)
+    fp_italic <- officer::fp_text(font.family = "Calibri",
+                                            font.size = 10,
+                                            italic = TRUE)
+    if (startsWith(note_one_line, "Note.")) {
+      para <- flextable::as_paragraph(
+        flextable::as_chunk("Note.", props = fp_italic),
+        flextable::as_chunk(substring(note_one_line, 6L),
+                             props = fp_normal)
+      )
+    } else {
+      para <- flextable::as_paragraph(
+        flextable::as_chunk(note_one_line, props = fp_normal)
+      )
+    }
+    ft <- flextable::add_footer_lines(ft, top = FALSE, values = para)
   }
+  # Force a single font across ALL parts (header, body, footer, caption)
+  # AFTER all rows / lines have been added; flextable::font(part = "all")
+  # only affects parts that exist at the call time, so add_footer_lines
+  # above WOULD leave the freshly-added footer in the default Arial
+  # otherwise.
+  ft <- flextable::font(ft, part = "all", fontname = "Calibri")
+
+  # Tag with a sub-class + stash the raw note. The custom
+  # `print.spicy_flextable` / `knit_print.spicy_flextable` methods
+  # use this attr to post-process the rendered HTML: strip the
+  # rendered `<tfoot>` and re-inject the note as a `<div>` outside
+  # the table (same trick as `output_tinytable` to keep the colspan
+  # footer from widening the table). The Word / docx path
+  # (`output_word`) ignores these methods and uses
+  # `body_add_flextable()` on the underlying flextable, so the
+  # in-table footer is preserved for docx fidelity.
+  if (!is.null(note) && nzchar(note)) {
+    attr(ft, "spicy_note") <- note
+  }
+  class(ft) <- c("spicy_flextable", class(ft))
   ft
 }
 
+# Strip the rendered `<tfoot>...</tfoot>` from a flextable's HTML
+# (single `<tfoot>` always present after `add_footer_lines`) and
+# inject `note` (HTML-escaped, with the leading "Note." italicised)
+# as a `<div>` immediately after `</table>`, wrapped in an
+# inline-block so the note inherits the table's content width
+# without contributing to it. See the analogous comment in
+# `output_tinytable` for the CSS rationale.
+.spicy_ft_html_postprocess <- function(html_str, note) {
+  if (is.null(note) || !nzchar(note)) {
+    return(html_str)
+  }
+  esc <- function(s) {
+    s <- gsub("&", "&amp;", s, fixed = TRUE)
+    s <- gsub("<", "&lt;",  s, fixed = TRUE)
+    s <- gsub(">", "&gt;",  s, fixed = TRUE)
+    s
+  }
+  note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+  note_html <- esc(note_one_line)
+  note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+  note_div <- paste0(
+    "<div class=\"spicy-ft-note\" style=\"",
+    "width: min-content; min-width: 100%; box-sizing: border-box; ",
+    "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
+    # Match the body's Calibri (set on every cell-content span via
+    # flextable's `font(part = \"all\", fontname = \"Calibri\")`).
+    # Without this the note div falls back to page default.
+    "font-family: Calibri, 'Calibri', Arial, sans-serif; ",
+    "font-size: 0.875rem; line-height: 1.25; ",
+    "text-align: left;\">",
+    note_html, "</div>"
+  )
+  open_outer <- paste0(
+    "<div class=\"spicy-ft-outer\" ",
+    "style=\"text-align: center;\">"
+  )
+  open_inner <- paste0(
+    "<div class=\"spicy-ft-wrap\" style=\"",
+    "display: inline-block; max-width: 100%; ",
+    "text-align: left; vertical-align: top;\">"
+  )
+  close_both <- "</div></div>"
+  # flextable's HTML emits inline borders on individual `<td>` /
+  # `<th>` cells (border-bottom on row N, border-top on row N+1) and
+  # the browser's default `border-collapse: separate` renders them
+  # as two stacked 1pt lines instead of merging them. APA / classic
+  # publication style expects a single hairline. Inject
+  # `border-collapse: collapse` scoped to our wrapper -- adjacent
+  # same-style borders collapse into one, and zero-width "empty"
+  # borders are subsumed by their neighbours. Scoped via
+  # `.spicy-ft-outer table` so we don't leak across other tables on
+  # the same page.
+  # Booktabs-style trimmed rules under each Model spanner cell:
+  # short the rule on each side so adjacent Model spanners don't
+  # have their under-rules touching at the column boundary. The
+  # rule is drawn via a `::after` pseudo-element. With
+  # `border-collapse: collapse`, the rule between the Model row
+  # and the per-col row is contributed by BOTH sides -- the Model
+  # row cells' `border-bottom` AND the per-col row cells'
+  # `border-top` (both set to `1pt solid black` by flextable's
+  # default classes). Killing either alone leaves the other in
+  # place, so we neutralise both via `!important`, then add the
+  # trimmed pseudo-rule on the Model spanner cells only.
+  # CI-spanner cells in the per-col row are in the SECOND thead
+  # row but only have `colspan="2"` if there's a CI; their bottom
+  # border (the CI bracket rule) is set elsewhere and is not
+  # touched by this rule. Single-model tables have no first-row
+  # `colspan>1` cell, so the trim rules are no-ops there.
+  border_collapse_css <- paste0(
+    "<style>",
+    ".spicy-ft-outer table { border-collapse: collapse; }",
+    ".spicy-ft-outer thead tr:first-child th { ",
+    "border-bottom: 0 none !important; }",
+    ".spicy-ft-outer thead tr:nth-child(2) th { ",
+    "border-top: 0 none !important; }",
+    ".spicy-ft-outer thead tr:first-child th[colspan]:not([colspan=\"1\"]) { ",
+    "position: relative; }",
+    ".spicy-ft-outer thead tr:first-child th[colspan]:not([colspan=\"1\"])::after { ",
+    "content: \"\"; position: absolute; left: 0.5em; right: 0.5em; ",
+    "bottom: 0; border-bottom: 1pt solid black; }",
+    "</style>"
+  )
+  html_str <- sub("<tfoot>.*?</tfoot>", "", html_str, perl = TRUE)
+  html_str <- sub(
+    "<table ",
+    paste0(open_outer, open_inner, border_collapse_css, "<table "),
+    html_str, fixed = TRUE
+  )
+  html_str <- sub("</table>",
+                   paste0("</table>", note_div, close_both),
+                   html_str, fixed = TRUE)
+  html_str
+}
+
+#' @exportS3Method print spicy_flextable
+print.spicy_flextable <- function(x, ...) {
+  note <- attr(x, "spicy_note")
+  class(x) <- setdiff(class(x), "spicy_flextable")
+  if (interactive() && !isTRUE(getOption("knitr.in.progress")) &&
+        requireNamespace("htmltools", quietly = TRUE)) {
+    h <- flextable::htmltools_value(x = x)
+    h_str <- as.character(h)
+    h_str <- .spicy_ft_html_postprocess(h_str, note)
+    print(htmltools::browsable(htmltools::HTML(h_str)))
+    return(invisible(NULL))
+  }
+  NextMethod()
+}
+
+#' @exportS3Method knitr::knit_print spicy_flextable
+knit_print.spicy_flextable <- function(x, ...) {
+  note <- attr(x, "spicy_note")
+  class(x) <- setdiff(class(x), "spicy_flextable")
+  h <- flextable::htmltools_value(x = x)
+  h_str <- as.character(h)
+  h_str <- .spicy_ft_html_postprocess(h_str, note)
+  knitr::asis_output(h_str)
+}
 
 # ---- excel ---------------------------------------------------------------
 
@@ -990,30 +1581,24 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     )
     # nocov end
   }
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
-                         check.names = FALSE)
+  # ---- Read structured (typed) body via render_regression_table() -------
+  # The renderer builds a parallel structured view (numeric body, CI
+  # pre-split into LL/UL, per-cell precision + p-style + threshold
+  # in col_meta, reference/fit-stat row markers). Engines consume it
+  # directly -- no string parsing.
+  struct <- attr(rendered, "structured")
+  body <- struct$body                                # numeric body
+  spanners <- struct$spanners                        # model-level spanners
+  ci_spanners <- struct$ci_pairs                     # CI pairs (LL/UL)
+  col_meta <- struct$col_meta                        # per-col format spec
+  format_spec <- struct$format_spec
+  reference_rows <- struct$reference_rows
+  fit_stat_rows <- struct$fit_stat_rows
+  level_rows <- struct$level_rows
   title <- attr(rendered, "title")
   note  <- attr(rendered, "note")
-  spanners <- attr(rendered, "spanners")
-  col_spec <- attr(rendered, "col_spec")
   group_sep <- attr(rendered, "group_sep_rows")
 
-  # Factor-level rows: detect from the inline whitespace prefix and
-  # carry it as styling (Excel `indent` cell-style) instead of as
-  # leading spaces in the Variable cell.
-  level_rows <- .detect_level_rows(body)
-  body <- .trim_level_indent(body, level_rows)
-
-  # Split bracketed CI cells into LL / UL numeric columns and capture
-  # the "95% CI" spanners. The Excel sheet ends up with a two-row
-  # column header (column labels with "95% CI" merged across LL/UL,
-  # plus an LL/UL sub-row) -- matches the table_continuous_lm
-  # convention. Each bound becomes its own numeric cell so Excel
-  # right-aligns them in the default Calibri font.
-  split <- .split_ci_columns(body, col_spec, spanners)
-  body         <- split$body
-  spanners     <- split$spanners
-  ci_spanners  <- split$ci_spanners
   n_cols <- ncol(body)
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner    <- length(ci_spanners) > 0L
@@ -1072,7 +1657,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # (optional) header_bottom. Multi-model: model spanner row
   # (already written) + header_top + header_bottom.
   header_top_excel <- current_row
-  hdr <- .build_label_rows(body, ci_spanners, spanners)
+  hdr <- .build_label_rows(body, ci_spanners, spanners,
+                            col_meta = struct$col_meta)
   wb <- write_spanner_row(wb, hdr$top, header_top_excel)
   # Merge "95% CI" across each LL+UL pair on the top header row.
   if (has_ci_spanner) {
@@ -1103,10 +1689,81 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   }
 
   body_first_row <- current_row
+  # `na.strings = ""` so NA numeric cells render as blank (not "#N/A");
+  # below we overwrite reference-row and below-threshold cells with
+  # text overrides ("--" / "<.001").
   wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
                                x = body, start_row = body_first_row,
-                               col_names = FALSE)
+                               col_names = FALSE,
+                               na.strings = "")
   body_end_row <- body_first_row + nrow(body) - 1L
+
+  # ---- Per-cell number format (using col_meta from structured body) ------
+  # `wb_add_data(x = body)` above wrote real numerics directly (NA
+  # cells become empty). This loop:
+  #   * applies the per-column number format (".00" / "#.000" / "0"
+  #     / etc.) so Excel renders each cell at the requested precision,
+  #   * overrides numeric cells with text on reference rows (em-dash)
+  #     and below-threshold p-cells ("<.001").
+  # No string parsing -- precision / p_style / threshold come from
+  # the structured body's col_meta, populated by render_regression_table().
+  if (nrow(body) > 0L && n_cols >= 2L) {
+    body_rows_idx <- seq.int(body_first_row, body_end_row)
+    em_dash <- "\u2014"  # U+2014
+    for (j in 2:n_cols) {
+      col_name <- names(body)[j]
+      meta <- col_meta[[col_name]]
+      if (is.null(meta)) next
+
+      # Default per-column numfmt
+      default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
+      wb <- openxlsx2::wb_add_numfmt(
+        wb, sheet = excel_sheet,
+        dims = openxlsx2::wb_dims(rows = body_rows_idx, cols = j),
+        numfmt = default_fmt
+      )
+      # Per-row precision overrides (fit-stat rows: e.g. "n" integer)
+      if (!is.null(meta$fit_stat_overrides)) {
+        for (ov in meta$fit_stat_overrides) {
+          ov_fmt <- .excel_numfmt(
+            ov$precision %||% meta$precision,
+            ov$p_style %||% meta$p_style
+          )
+          excel_row <- body_first_row + ov$row - 1L
+          wb <- openxlsx2::wb_add_numfmt(
+            wb, sheet = excel_sheet,
+            dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
+            numfmt = ov_fmt
+          )
+        }
+      }
+      # Reference rows: overwrite numeric with em-dash text
+      if (length(reference_rows) > 0L) {
+        for (i in reference_rows) {
+          excel_row <- body_first_row + i - 1L
+          wb <- openxlsx2::wb_add_data(
+            wb, sheet = excel_sheet, x = em_dash,
+            start_row = excel_row, start_col = j
+          )
+        }
+      }
+      # Below-threshold p-values: overwrite numeric with "<.001" text
+      if (!is.null(meta$threshold)) {
+        below_text <- .below_threshold_text(meta$threshold,
+                                             format_spec$decimal_mark)
+        col_vals <- body[[j]]
+        for (i in seq_along(col_vals)) {
+          if (!is.na(col_vals[i]) && col_vals[i] < meta$threshold) {
+            excel_row <- body_first_row + i - 1L
+            wb <- openxlsx2::wb_add_data(
+              wb, sheet = excel_sheet, x = below_text,
+              start_row = excel_row, start_col = j
+            )
+          }
+        }
+      }
+    }
+  }
 
   # ---- APA borders -------------------------------------------------------
   # Five rules, mirroring table_continuous / table_continuous_lm:
@@ -1198,19 +1855,31 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   }
 
   # ---- Alignment (default Calibri font, no custom override) ---------------
-  # The CI split unifies all numeric body cells into clean numeric
-  # strings -- Excel's default Calibri has tabular figures for digits
-  # 0-9, so right-aligning the numeric columns visually aligns the
-  # decimal points without needing a monospaced font or pre-padding.
-  # Variable column: left-aligned. Headers (model spanner, CI spanner,
-  # column labels): centred.
+  # Body numeric columns (B / SE / LL / UL / p) are RIGHT-aligned so
+  # the rightmost digit anchors against the cell edge. Each column
+  # carries uniform decimal precision (2 dp for B/SE/LL/UL, 3 dp for
+  # p), and Calibri renders 0-9 with tabular (fixed) width, so
+  # right-alignment yields visual decimal alignment without a
+  # monospaced font or pre-padded strings.
+  #
+  # Centring numeric cells -- the table_continuous convention --
+  # decimal-aligns only when every value in a column has the same
+  # *character width*. In regression tables negative and positive
+  # values coexist (e.g. B = "-3.19" alongside "0.84"), so centring
+  # places the decimal point at different horizontal positions per
+  # row. Right-align is the standard convention for numerics in
+  # tables (gt's cols_align_decimal(), tinytable's align = "d",
+  # flextable's table_continuous_lm decimal mode all converge on it
+  # via different paths).
+  #
+  # Headers: spanner rows ("95% CI", model spanner) stay centred so
+  # the merged label sits over its column group. Column-label row
+  # (B / SE / LL / UL / p) is centred over the right-aligned body --
+  # the same centred-header / right-aligned-body pattern used in
+  # table_continuous_lm for n / p columns.
   if (n_cols >= 1L) {
     header_rows <- c(model_row_excel, header_top_excel, header_bottom_excel)
     header_rows <- header_rows[!is.na(header_rows)]
-    # Numeric headers (cols 2..n) centred over their decimal-aligned
-    # body columns. "Variable" header (col 1) stays LEFT to match
-    # its left-aligned body -- modern data-viz convention: header
-    # alignment follows body alignment for left-text columns.
     if (n_cols >= 2L) {
       wb <- openxlsx2::wb_add_cell_style(
         wb, sheet = excel_sheet,
@@ -1232,10 +1901,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       )
       # Factor-level rows in the Variable column: add Excel
       # `indent` so the rendered cell carries the visual indent
-      # consistent with the other rich-output engines. `indent =
-      # "1"` matches the visual density used by gt / flextable /
-      # tinytable indentation (which is roughly ~14-20 px in
-      # those engines).
+      # consistent with the other rich-output engines.
       if (length(level_rows) > 0L) {
         level_excel_rows <- body_first_row + level_rows - 1L
         wb <- openxlsx2::wb_add_cell_style(
@@ -1245,38 +1911,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
         )
       }
       if (n_cols >= 2L) {
-        # table_continuous convention: right-align "p" columns,
-        # centre every other numeric column. Variable column stays
-        # left-aligned (handled above). The body column names
-        # carry a "Model X: " prefix in multi-model output; we
-        # match on the trailing token "p" only.
-        body_col_tokens <- vapply(names(body)[-1L], function(nm) {
-          if (has_model_spanner) {
-            for (lbl in names(spanners)) {
-              prefix <- paste0(lbl, ": ")
-              if (startsWith(nm, prefix)) {
-                return(substring(nm, nchar(prefix) + 1L))
-              }
-            }
-          }
-          nm
-        }, character(1))
-        p_cols <- which(body_col_tokens == "p") + 1L
-        other_cols <- setdiff(2:n_cols, p_cols)
-        if (length(other_cols) > 0L) {
-          wb <- openxlsx2::wb_add_cell_style(
-            wb, sheet = excel_sheet,
-            dims = openxlsx2::wb_dims(rows = body_rows, cols = other_cols),
-            horizontal = "center", vertical = "center"
-          )
-        }
-        if (length(p_cols) > 0L) {
-          wb <- openxlsx2::wb_add_cell_style(
-            wb, sheet = excel_sheet,
-            dims = openxlsx2::wb_dims(rows = body_rows, cols = p_cols),
-            horizontal = "right"
-          )
-        }
+        wb <- openxlsx2::wb_add_cell_style(
+          wb, sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows, cols = 2:n_cols),
+          horizontal = "right", vertical = "center"
+        )
       }
     }
   }
@@ -1314,7 +1953,6 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)
   invisible(rendered)
 }
-
 
 # ---- clipboard -----------------------------------------------------------
 
@@ -1364,21 +2002,15 @@ output_clipboard <- function(rendered, clipboard_delim) {
 # so the layout is testable without exercising the clipboard
 # side-effect.
 clipboard_payload <- function(rendered, clipboard_delim) {
-  body <- as.data.frame(rendered, stringsAsFactors = FALSE,
-                         check.names = FALSE)
+  # Source from the structured (typed) body, then derive display strings
+  # via the shared formatter. CI is already split into LL / UL columns
+  # in the structured body -- no string parsing required.
+  struct <- attr(rendered, "structured")
+  body <- .format_structured_to_string_body(struct)
   title    <- attr(rendered, "title")
   note     <- attr(rendered, "note")
-  spanners <- attr(rendered, "spanners")
-  col_spec <- attr(rendered, "col_spec")
-
-  # Split bracketed CI columns into LL / UL (mirrors the rich-output
-  # engines and table_continuous*). After the split, each CI bound is
-  # an independent numeric cell -- Excel / Word paste handles the
-  # values directly, no parsing required downstream.
-  split <- .split_ci_columns(body, col_spec, spanners)
-  body         <- split$body
-  spanners     <- split$spanners
-  ci_spanners  <- split$ci_spanners
+  spanners <- struct$spanners
+  ci_spanners <- struct$ci_pairs
   n_cols <- ncol(body)
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner    <- length(ci_spanners) > 0L
@@ -1417,7 +2049,8 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   # Bottom row with the LL / UL sub-labels appears below if any
   # CI column exists. Matches the table_continuous_lm clipboard
   # convention exactly.
-  hdr <- .build_label_rows(body, ci_spanners, spanners)
+  hdr <- .build_label_rows(body, ci_spanners, spanners,
+                            col_meta = struct$col_meta)
   add_row(hdr$top)
   if (has_ci_spanner) {
     add_row(hdr$bottom)
@@ -1440,10 +2073,9 @@ clipboard_payload <- function(rendered, clipboard_delim) {
 }
 # nocov end -- closes the `output_clipboard` function block
 
-
 # ---- word ----------------------------------------------------------------
 
-output_word <- function(rendered, word_path) {
+output_word <- function(rendered, word_path, word_template = NULL) {
   if (!spicy_pkg_available("flextable") ||
       !spicy_pkg_available("officer")) {
     # nocov start
@@ -1464,8 +2096,136 @@ output_word <- function(rendered, word_path) {
     # nocov end
   }
   ft <- output_flextable(rendered)
-  flextable::save_as_docx(ft, path = word_path)
+
+  # --- APA auto-numbered caption (overrides the plain caption set by
+  # output_flextable). `run_autonum` injects a Word SEQ field that
+  # auto-numbers tables across the document ("Table 1: ...", "Table 2:
+  # ..."), supports cross-references via the bookmark, and uses the
+  # docx "Table Caption" style.
+  title <- attr(rendered, "title")
+  if (!is.null(title) && nzchar(title)) {
+    ft <- flextable::set_caption(
+      ft,
+      caption = flextable::as_paragraph(
+        flextable::as_chunk(
+          title,
+          props = officer::fp_text(font.family = "Calibri",
+                                    font.size = 11)
+        )
+      ),
+      autonum = officer::run_autonum(
+        seq_id = "tab", pre_label = "Table ", post_label = ": "
+      ),
+      align_with_table = FALSE,
+      fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
+    )
+  }
+
+  # --- Repeated header on page break + cant-split rows ----------------
+  # `paginate()` marks the flextable for header re-rendering on each
+  # page break (APA / Stata-table convention). Word-side row-split
+  # prevention is set via the underlying officer XML when the table
+  # is added to the docx body below.
+  ft <- flextable::paginate(ft, hdr_ftr = TRUE)
+
+  # --- Save via officer: gives us `split = FALSE` (row cant-split) +
+  # `keepnext = TRUE` (keep table together with its caption) uniformly,
+  # whether the user supplied a custom template or not.
+  if (!is.null(word_template) && nzchar(word_template)) {
+    if (!file.exists(word_template)) {
+      spicy_abort(
+        sprintf("`word_template` file does not exist: %s", word_template),
+        class = "spicy_invalid_input"
+      )
+    }
+    doc <- officer::read_docx(path = word_template)
+  } else {
+    doc <- officer::read_docx()
+  }
+  doc <- flextable::body_add_flextable(
+    doc, value = ft,
+    align = "center",
+    keepnext = TRUE,
+    split = FALSE
+  )
+  print(doc, target = word_path)
   invisible(rendered)
+}
+
+# ---- as_structured() accessor --------------------------------------------
+
+#' Extract the typed (structured) view of a `spicy_regression_table`
+#'
+#' `table_regression()` returns a *display* representation by default
+#' -- a character `data.frame` with stars suffixes, em-dash for
+#' reference rows, bracketed `"[L, U]"` confidence intervals, and APA
+#' padding on p-values. This accessor returns the *typed* view that
+#' the output engines (Excel, gt, tinytable, flextable, clipboard)
+#' consume internally: a fully numeric body with CI pre-split into
+#' `LL` / `UL` columns, NAs for non-applicable / reference cells, plus
+#' per-cell markers and a format specification.
+#'
+#' This is the right entry point for users who want to:
+#'
+#' * **Filter coefficients programmatically**, e.g.
+#'   `as_structured(tbl)$body[as_structured(tbl)$body$p < 0.05, ]`.
+#' * **Aggregate raw values across rows**, e.g.
+#'   `mean(as_structured(tbl)$body[["B"]], na.rm = TRUE)`.
+#' * **Build a custom downstream renderer** that consumes the same
+#'   structured contract as spicy's built-in engines.
+#'
+#' @param x A `spicy_regression_table` object returned by
+#'   [table_regression()].
+#'
+#' @return A list with the structured view (see Details for the
+#'   schema).
+#'
+#' @section Schema:
+#' * `body` -- `data.frame` with a `Variable` character column and one
+#'   or more numeric columns. Confidence intervals are split into
+#'   `LL` / `UL` columns named like `"95% CI: LL"` / `"95% CI: UL"` (or
+#'   prefixed with the model label in multi-model output). Cells
+#'   that have no value (reference levels, non-applicable rows in
+#'   multi-model output, factor headers) are `NA`.
+#' * `reference_rows`, `factor_header_rows`, `fit_stat_rows`,
+#'   `level_rows`, `outcome_row` -- integer row indices.
+#' * `col_meta` -- per-column metadata keyed by structured column
+#'   name (token, model_id, precision, p-style, below-threshold,
+#'   CI pair / role / label).
+#' * `spanners` -- named list mapping model labels to their column
+#'   indices in `body` (multi-model only).
+#' * `ci_pairs` -- list of `(label, cols)` entries describing each
+#'   CI pair in `body`.
+#' * `format_spec` -- global format defaults (decimal mark, digits,
+#'   p-style, CI level, etc.).
+#'
+#' @seealso [table_regression()] for the user-facing entry point.
+#'
+#' @examples
+#' fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+#' tbl <- table_regression(fit)
+#' s <- as_structured(tbl)
+#' s$body                               # raw numeric body
+#' s$body[s$body$p < 0.05, ]            # filter significant rows
+#' s$col_meta$B                         # column metadata for B
+#'
+#' @export
+as_structured <- function(x) {
+  if (!inherits(x, "spicy_regression_table")) {
+    spicy_abort(
+      "`as_structured()` expects a `spicy_regression_table` object.",
+      class = "spicy_invalid_input"
+    )
+  }
+  s <- attr(x, "structured")
+  if (is.null(s)) {
+    spicy_abort(
+      c("`x` has no structured view attached.",
+        "i" = "Was it built by `table_regression()` (>= 0.12.0)?"),
+      class = "spicy_invalid_input"
+    )
+  }
+  s
 }
 
 
@@ -1484,21 +2244,23 @@ print.spicy_regression_table <- function(x, ...) {
   spanners <- attr(x, "spanners")
 
   body <- as.data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
-  # When a spanner row is present, the model label is shown above the
-  # sub-columns, so the "Step 1: " prefix in each sub-column name would
-  # be redundant. Strip it for the displayed headers (only); the
-  # underlying data.frame and the `output = "data.frame"` / `"long"`
-  # views keep the unambiguous prefixed names. `check.names = FALSE`
-  # above prevents R from suffixing the now-duplicate "B" / "SE" / ...
-  # names with `.1`, `.2`, etc.
-  if (!is.null(spanners) && length(spanners)) {
-    for (lbl in names(spanners)) {
-      idx <- spanners[[lbl]]
-      prefix <- paste0(lbl, ": ")
-      stripped <- sub(paste0("^", regex_escape(prefix)), "",
-                       names(body)[idx])
-      names(body)[idx] <- stripped
-    }
+  # Build a parallel `display_labels` vector that overrides the body's
+  # `colnames()` for the PRINTED header text only. The data.frame
+  # itself keeps its deduplicated, model-prefixed column names so the
+  # caller (`output = "data.frame"` / `"long"`) sees the unambiguous
+  # programmatic names. The display vector lifts the bare label
+  # (`display_label` field stored on each `col_meta` entry by
+  # `build_col_spec()`) — already stripped of both the dedup `.N`
+  # suffix AND the `"Model X: "` prefix — so the console shows
+  # `B | 95% CI | p | AME | 95% CI | p` rather than
+  # `B | 95% CI | p | AME | 95% CI.2 | p.2`.
+  struct <- attr(x, "structured")
+  display_labels <- if (!is.null(struct) && !is.null(struct$col_meta)) {
+    vapply(names(body), function(nm) {
+      .lookup_display_label(nm, struct$col_meta)
+    }, character(1))
+  } else {
+    names(body)
   }
   data_col_idx <- setdiff(seq_along(body), 1L)
   align_center_cols <- if (identical(align, "center")) {
@@ -1531,7 +2293,8 @@ print.spicy_regression_table <- function(x, ...) {
         group_sep_rows = group_sep,
         align_center_cols = align_center_cols,
         center_headers = TRUE,
-        spanners = spanners
+        spanners = spanners,
+        display_labels = display_labels
       ),
       dot_args
     )

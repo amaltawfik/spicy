@@ -42,6 +42,7 @@ Suggests:
     flextable,
     gt,
     haven,
+    htmltools,
     knitr,
     marginaleffects,
     officer,

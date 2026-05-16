@@ -44,7 +44,8 @@ table_regression(
   excel_path = NULL,
   excel_sheet = "Regression",
   clipboard_delim = "\\t",
-  word_path = NULL
+  word_path = NULL,
+  word_template = NULL
 )
 }
 \arguments{
@@ -222,15 +223,15 @@ model comparison} in the details for the full vocabulary.}
 \item \code{"first_col"} (default): the value is placed in the
 FIRST numeric sub-column of each model (typically \code{B});
 the model's remaining sub-columns (\code{SE}, \code{LL}, \code{UL}, \code{p},
-...) are left empty for that row. APA convention (Table
-7.13) and the layout used by \code{gtsummary}, \code{modelsummary},
-\code{sjPlot::tab_model}, \code{jtools}, \code{parameters}.
+...) are left empty for that row. The APA Manual 7
+Table 7.13 layout.
 \item \code{"merged"}: the model's numeric sub-columns are
 merged into a single wide cell containing the fit-stat
-value, centred under the model spanner. Stata \code{esttab} /
-Econometrica / AER convention. Resolves the mixed-
-precision look of \code{"first_col"} (an integer \code{n} row
-sharing the B column with two-decimal coefficients).
+value, centred under the model spanner. Stata \code{esttab}
+layout / \emph{Econometrica} and \emph{AER} journal convention.
+Resolves the mixed-precision look of \code{"first_col"} (an
+integer \code{n} row sharing the B column with two-decimal
+coefficients).
 }
 Cell merging is supported by \code{excel}, \code{flextable}, and
 \code{word} (via flextable). \code{gt}, \code{tinytable}, \code{clipboard}, and
@@ -362,17 +363,66 @@ tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 
 \item{clipboard_delim}{Field delimiter for
 \code{output = "clipboard"}. Default \code{"\\t"} (tab-separated, pastes
-cleanly into Excel / Google Sheets). The clipboard payload
-mirrors the Excel layout (title row, spanner row, header,
-body, footer note) but is plain text -- horizontal rules,
-cell merging, decimal alignment, monospace font, and factor-
-level indentation cannot be encoded in TSV and are therefore
-absent from the paste. For a fully-formatted result, use
-\code{output = "excel"} or \code{output = "word"} and open / paste from
-the produced file.}
+cleanly into Excel / Google Sheets / Word). The clipboard
+payload mirrors the Excel layout (title row, spanner row,
+header, body, footer note) but is plain text -- horizontal
+rules, cell merging, decimal alignment, monospace font, and
+factor-level indentation cannot be encoded in TSV and are
+therefore absent from the paste.
+
+Paste behaviour by target:
+\itemize{
+\item \strong{Excel / Google Sheets:} numerics are auto-detected and
+right-aligned; text cells stay left-aligned. (P-values such
+as \code{.005} get re-parsed as \code{0.005} by Excel's auto-format
+-- to preserve the APA leading-zero-dropped display, prefer
+\code{output = "excel"}.)
+\item \strong{Word:} the paste is converted to a Word table; all
+cells start left-aligned. Apply a Table Style
+(Insert > Table > Design) for APA-style borders, and
+set right-alignment on numeric columns
+(Layout > Align Right). For a self-contained Word file
+with borders and alignment pre-applied, use
+\code{output = "word"} instead.
+}}
 
 \item{word_path}{File path for \code{output = "word"}. Default
-\code{NULL} (required when \code{output = "word"}).}
+\code{NULL} (required when \code{output = "word"}). The Word table inherits
+the flextable styling (Calibri font, APA borders, decimal-aligned
+numerics) and adds Word-specific features: an auto-numbered
+caption ("Table 1: ...", "Table 2: ...") via Word's \code{SEQ}
+field so multiple \code{table_regression()} calls in one document
+number consecutively; a re-printed header row on each page break;
+row split prevention so a single coefficient row never wraps
+across two pages; and an APA-styled note line (\verb{*Note.*} italic
+prefix per APA Manual 7 §7.14).
+
+\strong{R Markdown / Quarto:} for embedded use, prefer \code{output = "flextable"}
+(returns the flextable object that knits to docx/HTML/PDF natively).
+\code{output = "word"} writes a standalone .docx file, suited to scripted
+exports rather than chunk-level rendering.}
+
+\item{word_template}{Optional path to a custom .docx file used as the
+template for \code{output = "word"}. The template's header, footer,
+page size, margins, and named styles ("Table Caption" in
+particular) are honoured; the table is appended to the template
+body. Useful for institutional templates with pre-set headers
+("APA Style", "Manuscript Submission Template", etc.). Default
+\code{NULL} (uses flextable's stock template).
+
+\strong{Customising the caption appearance:} the table caption is
+tagged with the Word named style \code{"Table Caption"}. The visual
+rendering (italic / bold / colour / font) follows whatever that
+style is set to in the docx template. The stock Word template
+renders \code{"Table Caption"} in italic — the APA Manual 7 §7.10
+condensed convention. For a different appearance (Nature-style
+bold non-italic, APA-strict 2-line bold-number / italic-title,
+etc.), edit the \code{"Table Caption"} style in a docx template and
+pass it via \code{word_template = "your_template.docx"}. Style-based
+delegation keeps the rendered caption consistent with the
+surrounding document and lets editorial conventions (Nature,
+APA-strict, journal-specific) be applied without modifying the
+call site.}
 }
 \value{
 A \code{spicy_regression_table} object (a \code{data.frame}
@@ -707,67 +757,83 @@ this function include \code{spicy_invalid_input},
 }
 
 \examples{
-fit <- lm(wellbeing_score ~ age + sex + education,
-          data = sochealth)
+# ---- Single-model usage ------------------------------------------
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 
-# Default APA layout (single model)
+# Default APA layout: B / SE / 95\% CI / p plus the n / R^2 /
+# Adj.R^2 fit-stats footer. Factor reference level is annotated
+# with `(ref.)` and shows an em-dash in the statistic columns.
 table_regression(fit)
 
-# Standardised coefficients (beta) alongside B
+# Standardised coefficients (beta) injected next to B. Four
+# methods available; "refit" is the SPSS / Stata regress, beta
+# gold standard.
 table_regression(fit, standardized = "refit")
 
-# Custom column set: AME alongside its own p-value
+# Custom column set: B + AME + AME-specific p-value. Note that
+# the `p` token always belongs to B, never to AME -- use the
+# explicit `ame_p` token for AME inference.
 table_regression(
   fit,
   show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
 )
 
-# Group-token shortcuts: "all_b" + "all_ame" expand to the
-# full B / AME column families.
+# Group-token shortcut: "all_b" + "all_ame" expands to the full
+# B / AME column families side by side.
 table_regression(fit, show_columns = c("all_b", "all_ame"))
 
-# Cluster-robust SE (CR2 with Satterthwaite df). Three accepted
-# forms for `cluster`; the formula is preferred.
+# ---- Cluster-robust variance -------------------------------------
+# CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the
+# recommended default under few clusters. Three forms are accepted
+# for `cluster`; the formula is preferred for composability with
+# multi-way clustering and for programmatic robustness.
 table_regression(fit, vcov = "CR2", cluster = ~region)
 table_regression(fit, vcov = "CR2", cluster = "region")
-table_regression(fit, vcov = "CR2", cluster = sochealth$region)
-
-# Multi-way clustering via formula interaction
 table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 
-# Hierarchical (nested) regression: change-stat rows appear
-# below R-squared / Adj.R-squared.
-m1 <- lm(wellbeing_score ~ age,                       data = sochealth)
-m2 <- lm(wellbeing_score ~ age + sex,                 data = sochealth)
-m3 <- lm(wellbeing_score ~ age + sex + education,     data = sochealth)
+# ---- Hierarchical (nested) regression ----------------------------
+# Adds in-table change-statistic rows (Delta R^2 / F-change /
+# p-change for lm; LRT / p-change for glm) below the fit-stats.
+# Note: hierarchical comparison requires identical observations
+# across all models -- prepare a complete-case subset first so
+# R's listwise deletion does not produce different `nobs` per
+# model (which the function rejects).
+sochealth_cc <- na.omit(
+  sochealth[, c("wellbeing_score", "age", "sex", "smoking")]
+)
+m1 <- lm(wellbeing_score ~ age,                  data = sochealth_cc)
+m2 <- lm(wellbeing_score ~ age + sex,            data = sochealth_cc)
+m3 <- lm(wellbeing_score ~ age + sex + smoking,  data = sochealth_cc)
 table_regression(
   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
   nested = TRUE
 )
 
-# Side-by-side SE comparison (same fit, three vcovs)
+# ---- Side-by-side variance comparison ----------------------------
+# Same fit, three vcovs in one wide table. Useful for showing the
+# sensitivity of inference to the variance assumption.
 table_regression(
   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
   vcov    = list("classical", "HC3", "CR2"),
   cluster = list(NULL, NULL, ~region)
 )
 
-# Tidy long format for downstream pipelines
+# ---- Tidy long format for downstream pipelines -------------------
 broom::tidy(table_regression(fit))
 
 \dontrun{
-# Rich-format outputs (require optional Suggests packages)
+# ---- Rich-format outputs (require optional Suggests packages) ----
 table_regression(fit, output = "gt")
 table_regression(fit, output = "flextable")
 table_regression(fit, output = "tinytable")
 
-# File outputs
+# ---- File outputs ------------------------------------------------
 table_regression(fit, output = "excel",
                  excel_path = tempfile(fileext = ".xlsx"))
 table_regression(fit, output = "word",
                  word_path  = tempfile(fileext = ".docx"))
 
-# System clipboard (interactive use)
+# ---- System clipboard (interactive use) --------------------------
 table_regression(fit, output = "clipboard")
 }
 

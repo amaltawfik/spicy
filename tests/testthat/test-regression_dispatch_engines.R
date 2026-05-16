@@ -356,65 +356,26 @@ test_that("output = 'tinytable' renders with APA borders", {
 # Visual styling: factor-level indent + numeric monospace + center headers
 # ============================================================================
 
-test_that(".parse_ci_bracketed handles bracketed, em-dash, empty and malformed cells", {
-  parsed <- spicy:::.parse_ci_bracketed(c(
-    "[0.10, 0.30]",        # plain
-    "[ 0.10,  0.30]",      # padded
-    "[-3.19, -0.14]",      # negatives
-    "[0,18; 0,30]",        # European decimal mark + ; separator
-    "—",              # em-dash
-    "",                     # empty
-    "       "              # whitespace only
-  ))
-  expect_identical(parsed$ll, c("0.10", "0.10", "-3.19", "0,18",
-                                  "—", "", ""))
-  expect_identical(parsed$ul, c("0.30", "0.30", "-0.14", "0,30",
-                                  "—", "", ""))
-})
-
-test_that(".split_ci_columns: single-model splits CI + adds ci_spanner", {
-  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
-  r <- table_regression(m1, show_columns = c("b", "ci", "p"))
-  s <- spicy:::.split_ci_columns(
-    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
-  )
-  expect_true("LL" %in% names(s$body))
-  expect_true("UL" %in% names(s$body))
-  expect_false("95% CI" %in% names(s$body))
-  expect_length(s$ci_spanners, 1L)
-  expect_identical(s$ci_spanners[[1L]]$label, "95% CI")
-  # LL / UL are consecutive in the new body
-  expect_identical(diff(s$ci_spanners[[1L]]$cols), 1L)
-})
-
-test_that(".split_ci_columns: multi-model widens model spanners + emits one ci_spanner per model", {
-  m1 <- lm(mpg ~ wt + cyl, data = mt)
-  m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
-  r <- table_regression(list(m1, m2), show_columns = c("b", "ci", "p"))
-  s <- spicy:::.split_ci_columns(
-    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
-  )
-  # Each model gains one column (LL/UL replacing CI bundle).
-  expect_identical(unname(lengths(s$spanners)),
-                    unname(lengths(attr(r, "spanners"))) + 1L)
-  # Two CI spanners (one per model).
-  expect_length(s$ci_spanners, 2L)
-})
+# (Removed in v0.13: tests for .parse_ci_bracketed and .split_ci_columns.
+# Those helpers parsed the renderer's character body back to numerics;
+# they are obsolete now that build_structured_body() produces CI-split
+# numerics natively. The CI-split structure is asserted via the
+# `structured` attr at the renderer level — see tests for
+# render_regression_table()'s `attr(rendered, "structured")$ci_pairs`
+# / `$body` numeric columns.)
 
 test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
   r <- table_regression(list(m1, m2), show_columns = c("b", "ci", "p"))
-  split <- spicy:::.split_ci_columns(
-    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
-  )
+  struct <- attr(r, "structured")
   specs <- spicy:::.fit_stat_merge_ranges(
-    split$body, split$spanners, attr(r, "group_sep_rows")
+    struct$body, struct$spanners, attr(r, "group_sep_rows")
   )
   # 3 fit-stat rows (n, R^2, Adj.R^2) x 2 models = 6 merge specs.
   expect_length(specs, 6L)
   expect_identical(unique(vapply(specs, `[[`, integer(1L), "row")),
-                    attr(r, "group_sep_rows"):nrow(as.data.frame(r)))
+                    attr(r, "group_sep_rows"):nrow(struct$body))
 })
 
 test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present", {
@@ -476,35 +437,10 @@ test_that("flextable fit_stats_layout = 'merged' emits colspan in fit-stat rows"
 })
 
 
-test_that(".split_ci_columns is a no-op when no CI column is present", {
-  m <- lm(mpg ~ wt, data = mt)
-  r <- table_regression(m, show_columns = c("b", "se", "p"))
-  s <- spicy:::.split_ci_columns(
-    as.data.frame(r), attr(r, "col_spec"), attr(r, "spanners")
-  )
-  expect_identical(names(s$body), names(as.data.frame(r)))
-  expect_length(s$ci_spanners, 0L)
-})
-
-
-test_that(".detect_level_rows finds rows whose Variable starts with whitespace", {
-  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
-  rendered <- table_regression(m1)
-  lvl <- spicy:::.detect_level_rows(as.data.frame(rendered))
-  # Expected: the three factor(cyl) levels (rows 4, 5, 6 in default body)
-  expect_true(length(lvl) >= 2L)
-  vars <- as.data.frame(rendered)$Variable[lvl]
-  expect_true(all(grepl("^\\s+", vars)))
-})
-
-test_that(".trim_level_indent strips leading whitespace only on level rows", {
-  body <- data.frame(Variable = c("a", "  level", "b"),
-                      val = 1:3, stringsAsFactors = FALSE)
-  lvl <- spicy:::.detect_level_rows(body)
-  expect_identical(lvl, 2L)
-  trimmed <- spicy:::.trim_level_indent(body, lvl)
-  expect_identical(trimmed$Variable, c("a", "level", "b"))
-})
+# (Removed in v0.13: tests for .split_ci_columns no-op case,
+# .detect_level_rows, .trim_level_indent. Those helpers are gone;
+# the renderer's `structured$level_rows` and `structured$body` are the
+# new source of truth.)
 
 test_that("gt output: factor-level indent + decimal alignment via cols_align_decimal", {
   skip_if_not_installed("gt")

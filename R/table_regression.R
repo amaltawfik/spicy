@@ -465,15 +465,15 @@
 #'     \item `"first_col"` (default): the value is placed in the
 #'       FIRST numeric sub-column of each model (typically `B`);
 #'       the model's remaining sub-columns (`SE`, `LL`, `UL`, `p`,
-#'       ...) are left empty for that row. APA convention (Table
-#'       7.13) and the layout used by `gtsummary`, `modelsummary`,
-#'       `sjPlot::tab_model`, `jtools`, `parameters`.
+#'       ...) are left empty for that row. The APA Manual 7
+#'       Table 7.13 layout.
 #'     \item `"merged"`: the model's numeric sub-columns are
 #'       merged into a single wide cell containing the fit-stat
-#'       value, centred under the model spanner. Stata `esttab` /
-#'       Econometrica / AER convention. Resolves the mixed-
-#'       precision look of `"first_col"` (an integer `n` row
-#'       sharing the B column with two-decimal coefficients).
+#'       value, centred under the model spanner. Stata `esttab`
+#'       layout / *Econometrica* and *AER* journal convention.
+#'       Resolves the mixed-precision look of `"first_col"` (an
+#'       integer `n` row sharing the B column with two-decimal
+#'       coefficients).
 #'   }
 #'   Cell merging is supported by `excel`, `flextable`, and
 #'   `word` (via flextable). `gt`, `tinytable`, `clipboard`, and
@@ -587,16 +587,62 @@
 #'   `"Regression"`.
 #' @param clipboard_delim Field delimiter for
 #'   `output = "clipboard"`. Default `"\t"` (tab-separated, pastes
-#'   cleanly into Excel / Google Sheets). The clipboard payload
-#'   mirrors the Excel layout (title row, spanner row, header,
-#'   body, footer note) but is plain text -- horizontal rules,
-#'   cell merging, decimal alignment, monospace font, and factor-
-#'   level indentation cannot be encoded in TSV and are therefore
-#'   absent from the paste. For a fully-formatted result, use
-#'   `output = "excel"` or `output = "word"` and open / paste from
-#'   the produced file.
+#'   cleanly into Excel / Google Sheets / Word). The clipboard
+#'   payload mirrors the Excel layout (title row, spanner row,
+#'   header, body, footer note) but is plain text -- horizontal
+#'   rules, cell merging, decimal alignment, monospace font, and
+#'   factor-level indentation cannot be encoded in TSV and are
+#'   therefore absent from the paste.
+#'
+#'   Paste behaviour by target:
+#'   * **Excel / Google Sheets:** numerics are auto-detected and
+#'     right-aligned; text cells stay left-aligned. (P-values such
+#'     as `.005` get re-parsed as `0.005` by Excel's auto-format
+#'     -- to preserve the APA leading-zero-dropped display, prefer
+#'     `output = "excel"`.)
+#'   * **Word:** the paste is converted to a Word table; all
+#'     cells start left-aligned. Apply a Table Style
+#'     (Insert > Table > Design) for APA-style borders, and
+#'     set right-alignment on numeric columns
+#'     (Layout > Align Right). For a self-contained Word file
+#'     with borders and alignment pre-applied, use
+#'     `output = "word"` instead.
 #' @param word_path File path for `output = "word"`. Default
-#'   `NULL` (required when `output = "word"`).
+#'   `NULL` (required when `output = "word"`). The Word table inherits
+#'   the flextable styling (Calibri font, APA borders, decimal-aligned
+#'   numerics) and adds Word-specific features: an auto-numbered
+#'   caption ("Table 1: ...", "Table 2: ...") via Word's `SEQ`
+#'   field so multiple `table_regression()` calls in one document
+#'   number consecutively; a re-printed header row on each page break;
+#'   row split prevention so a single coefficient row never wraps
+#'   across two pages; and an APA-styled note line (`*Note.*` italic
+#'   prefix per APA Manual 7 §7.14).
+#'
+#'   **R Markdown / Quarto:** for embedded use, prefer `output = "flextable"`
+#'   (returns the flextable object that knits to docx/HTML/PDF natively).
+#'   `output = "word"` writes a standalone .docx file, suited to scripted
+#'   exports rather than chunk-level rendering.
+#' @param word_template Optional path to a custom .docx file used as the
+#'   template for `output = "word"`. The template's header, footer,
+#'   page size, margins, and named styles ("Table Caption" in
+#'   particular) are honoured; the table is appended to the template
+#'   body. Useful for institutional templates with pre-set headers
+#'   ("APA Style", "Manuscript Submission Template", etc.). Default
+#'   `NULL` (uses flextable's stock template).
+#'
+#'   **Customising the caption appearance:** the table caption is
+#'   tagged with the Word named style `"Table Caption"`. The visual
+#'   rendering (italic / bold / colour / font) follows whatever that
+#'   style is set to in the docx template. The stock Word template
+#'   renders `"Table Caption"` in italic — the APA Manual 7 §7.10
+#'   condensed convention. For a different appearance (Nature-style
+#'   bold non-italic, APA-strict 2-line bold-number / italic-title,
+#'   etc.), edit the `"Table Caption"` style in a docx template and
+#'   pass it via `word_template = "your_template.docx"`. Style-based
+#'   delegation keeps the rendered caption consistent with the
+#'   surrounding document and lets editorial conventions (Nature,
+#'   APA-strict, journal-specific) be applied without modifying the
+#'   call site.
 #'
 #' @return A `spicy_regression_table` object (a `data.frame`
 #'   subclass with classes `c("spicy_regression_table",
@@ -637,67 +683,83 @@
 #' [broom::tidy()], [broom::glance()].
 #'
 #' @examples
-#' fit <- lm(wellbeing_score ~ age + sex + education,
-#'           data = sochealth)
+#' # ---- Single-model usage ------------------------------------------
+#' fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 #'
-#' # Default APA layout (single model)
+#' # Default APA layout: B / SE / 95% CI / p plus the n / R^2 /
+#' # Adj.R^2 fit-stats footer. Factor reference level is annotated
+#' # with `(ref.)` and shows an em-dash in the statistic columns.
 #' table_regression(fit)
 #'
-#' # Standardised coefficients (beta) alongside B
+#' # Standardised coefficients (beta) injected next to B. Four
+#' # methods available; "refit" is the SPSS / Stata regress, beta
+#' # gold standard.
 #' table_regression(fit, standardized = "refit")
 #'
-#' # Custom column set: AME alongside its own p-value
+#' # Custom column set: B + AME + AME-specific p-value. Note that
+#' # the `p` token always belongs to B, never to AME -- use the
+#' # explicit `ame_p` token for AME inference.
 #' table_regression(
 #'   fit,
 #'   show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
 #' )
 #'
-#' # Group-token shortcuts: "all_b" + "all_ame" expand to the
-#' # full B / AME column families.
+#' # Group-token shortcut: "all_b" + "all_ame" expands to the full
+#' # B / AME column families side by side.
 #' table_regression(fit, show_columns = c("all_b", "all_ame"))
 #'
-#' # Cluster-robust SE (CR2 with Satterthwaite df). Three accepted
-#' # forms for `cluster`; the formula is preferred.
+#' # ---- Cluster-robust variance -------------------------------------
+#' # CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the
+#' # recommended default under few clusters. Three forms are accepted
+#' # for `cluster`; the formula is preferred for composability with
+#' # multi-way clustering and for programmatic robustness.
 #' table_regression(fit, vcov = "CR2", cluster = ~region)
 #' table_regression(fit, vcov = "CR2", cluster = "region")
-#' table_regression(fit, vcov = "CR2", cluster = sochealth$region)
-#'
-#' # Multi-way clustering via formula interaction
 #' table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 #'
-#' # Hierarchical (nested) regression: change-stat rows appear
-#' # below R-squared / Adj.R-squared.
-#' m1 <- lm(wellbeing_score ~ age,                       data = sochealth)
-#' m2 <- lm(wellbeing_score ~ age + sex,                 data = sochealth)
-#' m3 <- lm(wellbeing_score ~ age + sex + education,     data = sochealth)
+#' # ---- Hierarchical (nested) regression ----------------------------
+#' # Adds in-table change-statistic rows (Delta R^2 / F-change /
+#' # p-change for lm; LRT / p-change for glm) below the fit-stats.
+#' # Note: hierarchical comparison requires identical observations
+#' # across all models -- prepare a complete-case subset first so
+#' # R's listwise deletion does not produce different `nobs` per
+#' # model (which the function rejects).
+#' sochealth_cc <- na.omit(
+#'   sochealth[, c("wellbeing_score", "age", "sex", "smoking")]
+#' )
+#' m1 <- lm(wellbeing_score ~ age,                  data = sochealth_cc)
+#' m2 <- lm(wellbeing_score ~ age + sex,            data = sochealth_cc)
+#' m3 <- lm(wellbeing_score ~ age + sex + smoking,  data = sochealth_cc)
 #' table_regression(
 #'   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
 #'   nested = TRUE
 #' )
 #'
-#' # Side-by-side SE comparison (same fit, three vcovs)
+#' # ---- Side-by-side variance comparison ----------------------------
+#' # Same fit, three vcovs in one wide table. Useful for showing the
+#' # sensitivity of inference to the variance assumption.
 #' table_regression(
 #'   list("Classical" = fit, "HC3" = fit, "CR2" = fit),
 #'   vcov    = list("classical", "HC3", "CR2"),
 #'   cluster = list(NULL, NULL, ~region)
 #' )
 #'
-#' # Tidy long format for downstream pipelines
+#' # ---- Tidy long format for downstream pipelines -------------------
 #' broom::tidy(table_regression(fit))
 #'
 #' \dontrun{
-#' # Rich-format outputs (require optional Suggests packages)
+#' # ---- Rich-format outputs (require optional Suggests packages) ----
 #' table_regression(fit, output = "gt")
 #' table_regression(fit, output = "flextable")
 #' table_regression(fit, output = "tinytable")
 #'
-#' # File outputs
+#' # ---- File outputs ------------------------------------------------
 #' table_regression(fit, output = "excel",
 #'                  excel_path = tempfile(fileext = ".xlsx"))
 #' table_regression(fit, output = "word",
 #'                  word_path  = tempfile(fileext = ".docx"))
 #'
-#' # System clipboard (interactive use)
+#' # ---- System clipboard (interactive use) --------------------------
 #' table_regression(fit, output = "clipboard")
 #' }
 #'
@@ -762,7 +824,8 @@ table_regression <- function(
   excel_path = NULL,
   excel_sheet = "Regression",
   clipboard_delim = "\t",
-  word_path = NULL
+  word_path = NULL,
+  word_template = NULL
 ) {
   # Capture the cluster expression BEFORE evaluation so we can
   # (a) derive a friendly name for the footer ("clusters by
@@ -835,7 +898,6 @@ table_regression <- function(
   # drop CI to fit the side-by-side layout in a typical console /
   # page width ("all_b_compact"). The user can pass
   # `show_columns = "all_b"` (or atomic tokens) to restore CI.
-  # Matches modelsummary's behaviour.
   if (is.null(show_columns)) {
     is_multi <- is.list(models) && !inherits(models, "lm") &&
                   length(models) >= 2L
@@ -1289,6 +1351,7 @@ table_regression <- function(
     excel_path = excel_path,
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
-    word_path = word_path
+    word_path = word_path,
+    word_template = word_template
   )
 }

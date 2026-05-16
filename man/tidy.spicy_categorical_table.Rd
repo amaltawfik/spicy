@@ -24,8 +24,7 @@ Standard \code{\link[broom:tidy]{broom::tidy()}} and \code{\link[broom:glance]{b
 object returned by \code{\link[=table_categorical]{table_categorical()}}. They re-shape the
 underlying long-format data (stored on the object as the
 \code{"long_data"} attribute) into the two canonical broom views so the
-table can be consumed by \code{gtsummary}, \code{modelsummary}, \code{parameters},
-and any other tidyverse-stats pipeline.
+table can be consumed by any downstream tidyverse-stats pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(variable x level)} -- or per

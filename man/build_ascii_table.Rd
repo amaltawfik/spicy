@@ -64,15 +64,15 @@ right-aligned.}
 \item{center_headers}{Logical. When \code{TRUE}, column headers are
 centered above their column content even when the data itself
 is right-aligned (the publication convention for
-coefficient / summary tables; matches Stata regress /
-parameters::model_parameters / modelsummary). Left-aligned
-columns (per \code{align_left_cols}) keep their header on the
-left. Defaults to \code{FALSE} for backward compatibility; the
+coefficient / summary tables; matches Stata \code{regress} and
+SPSS \code{REGRESSION} output). Left-aligned columns (per
+\code{align_left_cols}) keep their header on the left. Defaults to
+\code{FALSE} for backward compatibility; the
 \code{print.spicy_regression_table} method enables it.}
 
 \item{spanners}{Optional named list defining a \emph{column group row}
 drawn above the column headers (the "spanner" / "supra-header"
-convention used by gt, flextable, kableExtra, modelsummary).
+convention; APA Manual 7 §7.13).
 Names are spanner labels; values are integer vectors of 1-based
 column indices the label spans (must be contiguous). A thin
 underline rule is drawn below each spanner across its span.

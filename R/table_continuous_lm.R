@@ -596,7 +596,7 @@
 #'   Expected and empirical coverages of different methods for generating
 #'   noncentral *t* confidence intervals for a standardized mean
 #'   difference. *Behavior Research Methods*, **53**, 2376--2394.
-#'   \doi{10.3758/Section 13428-021-01550-4}
+#'   \doi{10.3758/s13428-021-01550-4}
 #'
 #' Cribari-Neto, F. (2004).
 #'   Asymptotic inference under heteroskedasticity of unknown form.
@@ -613,7 +613,7 @@
 #'   A new heteroskedasticity-consistent covariance matrix estimator
 #'   for the linear regression model.
 #'   *AStA Advances in Statistical Analysis*, **95**(2), 129--146.
-#'   \doi{10.1007/Section 10182-010-0141-2}
+#'   \doi{10.1007/s10182-010-0141-2}
 #'
 #' Davison, A. C., & Hinkley, D. V. (1997).
 #'   *Bootstrap Methods and Their Application*.

@@ -978,7 +978,11 @@ test_that("spanner — flextable output adds a header row with spanners", {
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   f <- table_regression(list("A" = m1, "B" = m2), output = "flextable")
   hdr <- f$header$dataset
-  expect_equal(nrow(hdr), 2L)                          # spanner + sub-cols
+  # Multi-model header layout (matches gt / tinytable convention):
+  #   row 1: model spanner (A / B)
+  #   row 2: per-col + CI spanner (B / 95% CI / p / ...)
+  #   row 3: column-labels row (Variable / LL / UL / ...)
+  expect_equal(nrow(hdr), 3L)
   expect_true(any(unlist(hdr[1, ]) == "A"))
   expect_true(any(unlist(hdr[1, ]) == "B"))
 })

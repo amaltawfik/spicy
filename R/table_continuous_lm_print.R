@@ -208,8 +208,8 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #' Standard [broom::tidy()] and [broom::glance()] interfaces for an
 #' object returned by [table_continuous_lm()]. They re-shape the
 #' underlying long-format data into the two canonical broom views so
-#' the table can be consumed by `gtsummary`, `modelsummary`,
-#' `parameters`, and any other tidyverse-stats pipeline.
+#' the table can be consumed by any downstream tidyverse-stats
+#' pipeline.
 #'
 #' `tidy()` returns one row per **estimated parameter** across all
 #' outcomes:

@@ -383,7 +383,28 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       col_name
     }
     fmeta <- factor_meta[[term_id]]
-    build_one_b_row(
+    # For ordered factors fit with the default `contr.poly`, the
+    # lm coef names are `<var>.L` / `<var>.Q` / ... while
+    # marginaleffects emits one AME row per contrast LEVEL (named
+    # `<var><level>`). The `factor_meta` lookup keyed on the
+    # poly-coef name therefore misses; we extract the level
+    # string from the contrast and stash it as `_lvl_pos` so the
+    # post-build sort orders these rows by the factor's actual
+    # `levels()` rather than alphabetically (the marginaleffects
+    # default). `_lvl_pos` is dropped before returning.
+    lvl_pos <- NA_integer_
+    if (is_factor_var) {
+      lvl_str <- if (!is.na(contrast_str) &&
+                       grepl(" - ", contrast_str)) {
+        sub(" - .*$", "", contrast_str)
+      } else {
+        NA_character_
+      }
+      if (!is.na(lvl_str)) {
+        lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+      }
+    }
+    row <- build_one_b_row(
       nm = term_id,
       model_id = model_id,
       outcome = outcome,
@@ -402,8 +423,23 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       factor_term = fmeta$factor_term %||% NA_character_,
       factor_level = fmeta$factor_level %||% NA_character_
     )
+    row$`.spicy_var` <- col_name
+    row$`.spicy_lvl_pos` <- lvl_pos
+    row
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  # Sort within each variable: factor rows by their level position
+  # in `levels(mf[[var]])`; non-factor rows keep their input order.
+  # Then drop the helper columns.
+  if (nrow(out) > 1L) {
+    out <- out[order(match(out$`.spicy_var`, unique(out$`.spicy_var`)),
+                       out$`.spicy_lvl_pos`,
+                       na.last = FALSE), , drop = FALSE]
+    rownames(out) <- NULL
+  }
+  out$`.spicy_var` <- NULL
+  out$`.spicy_lvl_pos` <- NULL
+  out
 }
 
 

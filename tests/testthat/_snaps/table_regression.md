@@ -70,5 +70,6 @@
       
       Note. Linear regression.
       Std. errors: classical (OLS).
+      β = standardised coefficient.
       *** p < .001, ** p < .01, * p < .05.
 

@@ -23,9 +23,8 @@ A \code{tbl_df} (when \code{tibble} is installed) or a plain
 Standard \code{\link[broom:tidy]{broom::tidy()}} and \code{\link[broom:glance]{broom::glance()}} interfaces for an
 object returned by \code{\link[=table_continuous]{table_continuous()}}. They re-shape the
 underlying long-format data into the two canonical broom views so
-the descriptive table can be consumed by \code{gtsummary},
-\code{modelsummary}, \code{parameters}, and any other tidyverse-stats
-pipeline.
+the descriptive table can be consumed by any downstream
+tidyverse-stats pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(variable x group)} (or per

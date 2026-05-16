@@ -217,9 +217,8 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' Standard [broom::tidy()] and [broom::glance()] interfaces for an
 #' object returned by [table_continuous()]. They re-shape the
 #' underlying long-format data into the two canonical broom views so
-#' the descriptive table can be consumed by `gtsummary`,
-#' `modelsummary`, `parameters`, and any other tidyverse-stats
-#' pipeline.
+#' the descriptive table can be consumed by any downstream
+#' tidyverse-stats pipeline.
 #'
 #' `tidy()` returns one row per `(variable x group)` (or per
 #' `variable` when `by` is not used) with broom-conventional columns:

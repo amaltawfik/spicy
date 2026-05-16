@@ -127,14 +127,14 @@
 #' @param center_headers Logical. When `TRUE`, column headers are
 #'   centered above their column content even when the data itself
 #'   is right-aligned (the publication convention for
-#'   coefficient / summary tables; matches Stata regress /
-#'   parameters::model_parameters / modelsummary). Left-aligned
-#'   columns (per `align_left_cols`) keep their header on the
-#'   left. Defaults to `FALSE` for backward compatibility; the
+#'   coefficient / summary tables; matches Stata `regress` and
+#'   SPSS `REGRESSION` output). Left-aligned columns (per
+#'   `align_left_cols`) keep their header on the left. Defaults to
+#'   `FALSE` for backward compatibility; the
 #'   `print.spicy_regression_table` method enables it.
 #' @param spanners Optional named list defining a *column group row*
 #'   drawn above the column headers (the "spanner" / "supra-header"
-#'   convention used by gt, flextable, kableExtra, modelsummary).
+#'   convention; APA Manual 7 §7.13).
 #'   Names are spanner labels; values are integer vectors of 1-based
 #'   column indices the label spans (must be contiguous). A thin
 #'   underline rule is drawn below each spanner across its span.
@@ -188,6 +188,7 @@ build_ascii_table <- function(
   spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = NULL,
+  display_labels = NULL,
   ...
 ) {
   stopifnot(is.data.frame(x))
@@ -196,6 +197,18 @@ build_ascii_table <- function(
 
   df <- as.data.frame(x, check.names = FALSE)
   df[] <- lapply(df, as.character)
+
+  # `display_labels`, when supplied, override `colnames(df)` for the
+  # printed header text. The data.frame's actual colnames are still
+  # used by the caller for indexing (`x[, cols]`); only the visual
+  # header that the reader sees in the console is swapped. Lets
+  # `print.spicy_regression_table` and `clipboard_payload` show the
+  # bare label ("95% CI", "p") in both blocks of a B + AME table
+  # rather than the data-layer's deduplicated `"95% CI.2"` / `"p.2"`.
+  if (!is.null(display_labels)) {
+    stopifnot(length(display_labels) == ncol(df))
+    names(df) <- as.character(display_labels)
+  }
 
   w <- ascii_table_widths(df, padding)
 
@@ -639,6 +652,7 @@ spicy_print_table <- function(
   spanners = NULL,
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
+  display_labels = NULL,
   ...
 ) {
   stopifnot(is.data.frame(x))
@@ -656,6 +670,20 @@ spicy_print_table <- function(
   }
   if (!is.null(note)) {
     attr(x, "note") <- note
+  }
+
+  # Apply `display_labels` to x BEFORE the panel-split decision so
+  # `ascii_table_panels()` measures column widths against the SHORT
+  # printed labels (e.g. "B", "p"), not the deduplicated, model-
+  # prefixed dataframe names (e.g. "Model 1: B", "Model 2: p"). Without
+  # this, a multi-model table over-splits — the panel logic budgets
+  # for "Model 2: SE"-wide columns even though the printed header only
+  # shows "SE". Downstream `x[, cols]` slicing uses integer indices
+  # (not name lookup), so the resulting duplicate names ("p", "p") are
+  # harmless here.
+  if (!is.null(display_labels)) {
+    stopifnot(length(display_labels) == ncol(x))
+    names(x) <- as.character(display_labels)
   }
 
   panel_cols <- ascii_table_panels(
@@ -699,6 +727,13 @@ spicy_print_table <- function(
       # names that the print method handed us.
       sub <- x[, cols, drop = FALSE]
       names(sub) <- names(x)[cols]
+      # Slice display_labels to the same panel columns so each panel
+      # gets its own header text.
+      panel_display_labels <- if (!is.null(display_labels)) {
+        display_labels[cols]
+      } else {
+        NULL
+      }
       build_ascii_table(
         sub,
         padding = padding,
@@ -713,6 +748,7 @@ spicy_print_table <- function(
         spanners = panel_spanners,
         group_sep_rows = group_sep_rows,
         total_row_idx = total_row_idx,
+        display_labels = panel_display_labels,
         ...
       )
     },

@@ -91,6 +91,8 @@ build_regression_footer <- function(
   themes <- list(
     build_regression_type_footer_block(extracts),
     build_vcov_footer_block(extracts),
+    build_abbreviations_footer_block(show_columns, extracts,
+                                       standardized),
     build_ame_satterthwaite_footer_block(extracts, show_columns),
     build_exponentiate_footer_block(extracts),
     build_standardized_caveat_footer_block(extracts, standardized),
@@ -195,6 +197,76 @@ format_vcov_label <- function(extract) {
 
 
 # ---- Theme: AME-Satterthwaite affirmative (Q14b) -------------------------
+
+# ---- Theme: abbreviation definitions -------------------------------------
+
+# APA Manual 7 Section 7.14: every non-universal abbreviation that appears in
+# a table must be defined in the note. Universal stat abbreviations
+# (`B`, `SE`, `CI`, `p`, `t`, `z`) are excluded. Definitions covered:
+#   * AME -- when any `ame*` token is in `show_columns`
+#   * \u03B2 (beta) -- when `standardized != "none"` (the `"beta"` column
+#     is auto-injected by `table_regression()` in that case)
+#   * OR / IRR / HR / RR / MR / exp(B) -- when one or more extracts
+#     applied `exponentiate = TRUE` (`e$exp_applied`); the actual
+#     headers used are read from `e$exp_header`
+#   * f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2 / \u03C7\u00B2 -- when any
+#     `partial_*` token is in `show_columns`
+build_abbreviations_footer_block <- function(show_columns,
+                                              extracts = list(),
+                                              standardized = "none") {
+  defs <- character(0)
+
+  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
+    defs <- c(defs, "AME = average marginal effect")
+  }
+
+  if (!identical(standardized, "none")) {
+    defs <- c(defs, "\u03B2 = standardised coefficient")
+  }
+
+  # Exponentiate: define each unique header that the user actually sees.
+  # Multiple extracts with different families produce multiple entries
+  # ("OR = ...", "IRR = ..." both appear).
+  if (is.list(extracts) && length(extracts) > 0L) {
+    applied <- vapply(extracts,
+                       function(e) isTRUE(e$exp_applied), logical(1))
+    if (any(applied)) {
+      hdrs <- unique(vapply(extracts[applied],
+                              function(e) e$exp_header, character(1)))
+      exp_defs <- c(
+        "OR" = "OR = odds ratio",
+        "IRR" = "IRR = incidence rate ratio",
+        "HR" = "HR = hazard ratio",
+        "RR" = "RR = risk ratio",
+        "MR" = "MR = mean ratio",
+        "exp(B)" = "exp(B) = exponentiated coefficient"
+      )
+      for (h in hdrs) {
+        if (h %in% names(exp_defs)) defs <- c(defs, exp_defs[[h]])
+      }
+    }
+  }
+
+  # Partial effect sizes (lm: f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2;
+  # glm: \u03C7\u00B2). Each token includes both the point-estimate
+  # column and its `_ci` companion.
+  if (any(c("partial_f2", "partial_f2_ci") %in% show_columns)) {
+    defs <- c(defs, "f\u00B2 = Cohen's partial f\u00B2")
+  }
+  if (any(c("partial_eta2", "partial_eta2_ci") %in% show_columns)) {
+    defs <- c(defs, "\u03B7\u00B2 = partial eta-squared")
+  }
+  if (any(c("partial_omega2", "partial_omega2_ci") %in% show_columns)) {
+    defs <- c(defs, "\u03C9\u00B2 = bias-corrected partial omega-squared")
+  }
+  if ("partial_chi2" %in% show_columns) {
+    defs <- c(defs, "\u03C7\u00B2 = partial likelihood-ratio chi-squared")
+  }
+
+  if (length(defs) == 0L) return(NULL)
+  paste0(paste(defs, collapse = "; "), ".")
+}
+
 
 build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
   if (!"ame" %in% show_columns) return(NULL)

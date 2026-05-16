@@ -24,8 +24,8 @@ A \code{tbl_df} (when \code{tibble} is installed) or a plain
 Standard \code{\link[broom:tidy]{broom::tidy()}} / \code{\link[broom:glance]{broom::glance()}} interfaces for an
 object returned by \code{\link[=table_regression]{table_regression()}}. They re-shape the
 underlying long-format data into the two canonical broom views
-so the table can be consumed by \code{gtsummary}, \code{modelsummary},
-\code{parameters}, and any tidyverse-stats pipeline.
+so the table can be consumed by any downstream tidyverse-stats
+pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(model_id, term, estimate_type)}

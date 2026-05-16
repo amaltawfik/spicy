@@ -29,8 +29,8 @@
 #' Standard [broom::tidy()] / [broom::glance()] interfaces for an
 #' object returned by [table_regression()]. They re-shape the
 #' underlying long-format data into the two canonical broom views
-#' so the table can be consumed by `gtsummary`, `modelsummary`,
-#' `parameters`, and any tidyverse-stats pipeline.
+#' so the table can be consumed by any downstream tidyverse-stats
+#' pipeline.
 #'
 #' `tidy()` returns one row per `(model_id, term, estimate_type)`
 #' triplet, with `estimate_type` in
