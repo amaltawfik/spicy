@@ -61,13 +61,12 @@
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):
 
   Coefficient tables for `lm` and `glm` fits with APA-aligned
-  formatting, classical / heteroskedasticity-consistent / cluster-robust
-  / bootstrap / jackknife variance, Average Marginal Effects with
-  Satterthwaite-corrected degrees of freedom under cluster-robust
-  variance, four standardisation methods, per-coefficient effect sizes
-  with noncentral CIs, multiple-comparison adjustment, focal-predictor
-  filtering, side-by-side and hierarchical layouts, and output to
-  console, gt, tinytable, flextable, Excel, Word, or clipboard.
+  formatting: classical, heteroskedasticity-consistent and
+  cluster-robust variance, four standardisation methods, partial effect
+  sizes with noncentral-F CIs, average marginal effects,
+  multiple-comparison adjustment, side-by-side and hierarchical layouts,
+  and output to console, gt, tinytable, flextable, Excel, Word, or
+  clipboard.
 
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):

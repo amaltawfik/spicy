@@ -3,14 +3,6 @@
 ``` r
 
 library(spicy)
-
-# Complete-case subset for the cluster-robust examples — the cluster
-# vector must align with the rows actually used by `lm()`, so we
-# drop the 25 rows with at least one NA in the predictor set up front.
-sochealth_cc <- na.omit(
-  sochealth[, c("wellbeing_score", "bmi", "age", "sex",
-                "smoking", "education", "region")]
-)
 ```
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -22,51 +14,25 @@ Psychological Association 2020, Tables 7.13–7.15) formatting
 conventions: paired estimate-and-CI columns, APA p-values without
 leading zero, factor levels grouped under their parent variable, fit
 statistics at the foot of the table, and a self-documenting note line
-stating the variance estimator and any methodological choice that
+that names the variance estimator and any methodological choice that
 affected the rendered values.
 
 The function is **fit-first**: you pass already-fitted models, not raw
-data and a formula. Internally each row of the table is represented by
-an `(model_id, term, estimate_type)` triplet, so the same object exports
-cleanly to long format for downstream work
+data and a formula. The same object exports cleanly to a long
+broom-canonical frame
 ([`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)) and
 to a one-row-per-model glance summary
 ([`broom::glance()`](https://generics.r-lib.org/reference/glance.html)).
 
-Two methodological choices deserve highlighting up front:
-
-- **Average Marginal Effects under cluster-robust variance with
-  Satterthwaite-corrected df.** When `vcov` is set to `"CR0"` / `"CR1"`
-  / `"CR2"` / `"CR3"` and the user requests AME columns, the function
-  constructs the closed-form linear contrast representing each AME and
-  inverts it through
-  \[[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md)\]\[clubSandwich::linear_contrast\]
-  with `test = "Satterthwaite"`. The B coefficient and the AME therefore
-  share the same inferential regime — t-distribution with the same df —
-  in the same table. The z-asymptotic alternative is anti-conservative
-  for few clusters (Pustejovsky and Tipton 2018).
-- **Transparency on standardised coefficients with non-additive terms.**
-  When `standardized != "none"` and the model contains an interaction or
-  a transformed term ([`I()`](https://rdrr.io/r/base/AsIs.html),
-  [`poly()`](https://rdrr.io/r/stats/poly.html),
-  [`log()`](https://rdrr.io/r/base/Log.html),
-  [`splines::ns()`](https://rdrr.io/r/splines/ns.html)), the function
-  emits a classed `spicy_caveat` warning at runtime AND prints a
-  method-specific caveat in the table footer (Aiken and West 1991;
-  Cohen, Cohen, West, and Aiken 2003 §7.7). The table is rendered; the
-  limitation is exposed at the point of use.
-
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports `lm` and `glm` (binomial / Poisson / Gamma / inverse.gaussian /
-quasi families with any link). The *Generalised linear models* section
-below covers the glm-specific argument semantics. Mixed-effects models
-are on the roadmap.
+`lm` and `glm` are both supported. The *Generalised linear models*
+section covers the glm-specific argument semantics; everything else
+applies to both. Mixed-effects models are on the roadmap.
 
 ## Basic usage
 
 Pass a fitted [`lm()`](https://rdrr.io/r/stats/lm.html) object. The
 default rendering returns a single-model table with `B`, `SE`, `95% CI`,
-and `p` columns plus a fit-statistics footer (`n`, `R²`, `Adj.R²`):
+and `p` columns and a fit-statistics footer (`n`, `R²`, `Adj.R²`):
 
 ``` r
 
@@ -105,204 +71,37 @@ Reading the table:
   switching to `ci_level = 0.99` re-labels the column accordingly.
 - The footer line names the variance estimator in plain English so the
   reader can find the inferential regime without leaving the table. The
-  estimator switches with `vcov` (next section).
-
-## Heteroskedasticity-consistent variance
-
-Set `vcov = "HC*"` for sandwich-style standard errors via
-\[[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)\]\[sandwich::vcovHC\].
-The valid types are `HC0` through `HC5`; `HC3` is the
-small-sample-friendly default (Long and Ervin 2000):
-
-``` r
-
-fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
-table_regression(fit, vcov = "HC3")
-#> Linear regression: wellbeing_score
-#> 
-#>  Variable        │    B      SE       95% CI        p   
-#> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   65.20  1.61  [62.05, 68.35]  <.001 
-#>  age             │    0.05  0.03  [-0.01,  0.11]   .127 
-#>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.86  0.91  [ 2.07,  5.64]  <.001 
-#>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
-#>    Yes           │   -1.72  1.11  [-3.91,  0.47]   .123 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1175                                 
-#>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
-#> 
-#> Note. Linear regression.
-#> Std. errors: heteroskedasticity-robust (HC3).
-```
-
-The footer reads “*Std. errors: heteroskedasticity-robust (HC3)*”; the
-column header for the confidence interval automatically tracks
-`ci_level`.
-
-## Cluster-robust variance
-
-For clustered observations, `vcov = "CR*"` requests cluster-robust
-variance via
-\[[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)\]\[clubSandwich::vcovCR\],
-with the cluster identifier supplied through `cluster`. Three forms are
-accepted, in order of preference:
-
-- **Formula** – `cluster = ~region`. The variables are looked up in
-  `model.frame(fit)` first, then in the model’s original `data`
-  argument. Recommended: independent of the dataset’s name, composable
-  for multi-way clustering (`cluster = ~region:year`).
-- **String** – `cluster = "region"`. Single column name resolved the
-  same way as the formula. Convenient but cannot express interactions.
-- **Vector** – `cluster = df$region`. An atomic vector of length
-  `nobs(fit)`. Use this when the cluster key is **derived on the fly**
-  (`cluster = interaction(df$region, df$year)`,
-  `cluster = as.integer(format(df$date, "%Y"))`), or pulled from a
-  different dataset with matching row order.
-
-Bare unquoted names (`cluster = region`) are **not** accepted – they
-would require non-standard evaluation that breaks under programmatic use
-(function wrapping, loops, dynamic column choice). Use `~region` or
-`"region"` instead.
-
-``` r
-
-fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth_cc)
-table_regression(
-  fit,
-  vcov = "CR2",
-  cluster = ~region
-)
-#> Registered S3 method overwritten by 'clubSandwich':
-#>   method    from    
-#>   bread.mlm sandwich
-#> Linear regression: wellbeing_score
-#> 
-#>  Variable        │    B      SE       95% CI        p   
-#> ─────────────────┼──────────────────────────────────────
-#>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001 
-#>  age             │    0.05  0.04  [-0.05,  0.15]   .247 
-#>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
-#>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006 
-#>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
-#>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                                 
-#>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
-#> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
-```
-
-`CR2` (the Bell-McCaffrey adjustment) is the recommended default under
-few clusters (Pustejovsky and Tipton 2018; Imbens and Kolesár 2016).
-Coefficient inference uses
-\[[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)\]\[clubSandwich::coef_test\]
-with Satterthwaite-corrected degrees of freedom – visible in the footer
-when AME is also requested (next section).
-
-## Average Marginal Effects with Satterthwaite df
-
-Add `"ame"` to `show_columns` to display the average marginal effect of
-each predictor. Use `"ame_ci"` and `"ame_p"` for the corresponding CI
-and p-value columns; the shortcut `"all_ame"` expands to
-`c("ame", "ame_se", "ame_ci", "ame_p")`. When the variance estimator is
-cluster-robust,
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-constructs the linear contrast representing each AME and inverts it
-through
-[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md)
-with the Satterthwaite framework, so B and AME share the same
-t-distribution with the same df:
-
-``` r
-
-fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth_cc)
-table_regression(
-  fit,
-  vcov = "CR2",
-  cluster = ~region,
-  show_columns = c("b", "se", "ci", "p", "ame", "ame_ci", "ame_p")
-)
-#> Linear regression: wellbeing_score
-#> 
-#>  Variable        │    B      SE       95% CI        p     AME      95% CI     
-#> ─────────────────┼────────────────────────────────────────────────────────────
-#>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001                       
-#>  age             │    0.05  0.04  [-0.05,  0.15]   .247   0.05  [-0.05, 0.15] 
-#>  sex:            │                                                            
-#>    Female (ref.) │     —     —          —          —       —          —       
-#>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006   3.88  [ 1.68, 6.07] 
-#>  smoking:        │                                                            
-#>    No (ref.)     │     —     —          —          —       —          —       
-#>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331  -1.68  [-5.72, 2.37] 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                                                       
-#>  R²              │    0.02                                                    
-#>  Adj.R²          │    0.02                                                    
-#> 
-#>  Variable        │   p   
-#> ─────────────────┼───────
-#>  (Intercept)     │       
-#>  age             │  .247 
-#>  sex:            │       
-#>    Female (ref.) │  —    
-#>    Male          │  .006 
-#>  smoking:        │       
-#>    No (ref.)     │  —    
-#>    Yes           │  .331 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R²              │       
-#>  Adj.R²          │       
-#> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
-#> AME = average marginal effect.
-#> AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`.
-```
-
-Note that `"p"` always refers to the B (or β) coefficient, never to the
-AME. To display the AME-specific p-value, include `"ame_p"` in
-`show_columns`. Placing `"ame"` after `"p"` makes the “which p belongs
-to what” reading unambiguous.
-
-The footer now reads “*AME inference: t-distribution with
-Satterthwaite-corrected df (Pustejovsky and Tipton 2018) via
-[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md)*”.
-For non-CR variance estimators the AME column delegates to
-\[[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)\]\[marginaleffects::avg_slopes\]
-with a df argument coherent with B (residual df for classical and HC,
-asymptotic z for bootstrap and jackknife).
+  estimator switches with `vcov` (covered in *Robust variance* below).
 
 ## Standardised coefficients
 
-`standardized` controls the standardisation method. Four are available;
-the choice is consequential and the differences are documented in the
-literature (Cohen et al. 2003 §3.4; Gelman 2008):
+Standardised coefficients (`β`) make predictors with different natural
+scales comparable: a one-standard-deviation increase in `X` predicts a
+`β`-standard-deviation change in `Y`. APA Manual 7 §7.13 recommends
+reporting both `B` and `β` so the unstandardised effect (natural units,
+interpretable) stays alongside the standardised effect (comparable
+across predictors).
 
-- `"refit"` — refit the model on z-scored outcome and predictors. This
-  is the gold-standard convention used by SPSS `REGRESSION` and Stata
+`standardized` selects the method. Four are available; the choice is
+consequential and well-documented (Cohen, Cohen, West, and Aiken 2003
+§3.4; Gelman 2008):
+
+- `"refit"` — refit the model on z-scored outcome and predictors.
+  Gold-standard convention, used by SPSS `REGRESSION` and Stata
   `regress, beta`. Both numeric and dummy-coded predictors enter the
   refit on the same scale.
 - `"posthoc"` — algebraic rescaling `β = B × SD(X) / SD(Y)`, applied to
   the original fit. Numerically identical to `"refit"` for purely
   linear-additive Gaussian models; preferred when refitting is expensive
-  (large `n` × `p`) or when [`lm()`](https://rdrr.io/r/stats/lm.html)
-  was wrapped in a pipeline that resists re-execution.
+  or when [`lm()`](https://rdrr.io/r/stats/lm.html) was wrapped in a
+  pipeline that resists re-execution.
 - `"basic"` — algebraic, but factor dummies keep their 0/1 scale rather
   than being z-scored. Useful when factor levels carry meaningful base
   rates that scale-free standardisation would obscure.
 - `"smart"` — Gelman’s (2008) recommendation: numeric predictors divided
-  by `2 × SD(X)`; binary predictors centred only. The resulting β is the
-  predicted change in `Y` for one within-sample standard deviation of
-  `X`, on the original `Y` scale, which keeps factor and numeric
+  by `2 × SD(X)`; binary predictors centred only. The resulting `β` is
+  the predicted change in `Y` for one within- sample standard deviation
+  of `X`, on the original `Y` scale, which keeps factor and numeric
   coefficients on roughly comparable footing.
 
 When `standardized != "none"`, the `"beta"` token is auto-injected into
@@ -334,26 +133,27 @@ table_regression(fit, standardized = "refit")
 #> β = standardised coefficient.
 ```
 
-The standardised column is labelled `β` in the rendered table; the
-unstandardised `B` stays alongside so both can be reported (the
-convention recommended by APA Manual 7 §7.13 for transparency).
-
-For models with interactions or transformed predictors, the function
-emits a `spicy_caveat` warning AND prints a method-specific caveat line
-in the footer (Aiken and West 1991; Cohen et al. 2003 §7.7). The
-standardised coefficient of a product term has no closed-form
-interpretation as a “one-SD change in X” effect, and the footer makes
-that limitation explicit at the point of use.
+**Caveat: standardised coefficients with interactions or transformed
+terms.** When the model contains a product term, an
+[`I()`](https://rdrr.io/r/base/AsIs.html),
+[`poly()`](https://rdrr.io/r/stats/poly.html),
+[`log()`](https://rdrr.io/r/base/Log.html), or
+[`splines::ns()`](https://rdrr.io/r/splines/ns.html) wrapper, the
+standardised coefficient of the non-additive term has no closed-form
+“one-SD change in X” reading (Aiken and West 1991; Cohen et al. 2003
+§7.7). The function emits a classed `spicy_caveat` warning at runtime
+AND prints a method-specific caveat line in the table footer, so the
+limitation is exposed at the point of use without blocking the table.
 
 ## Per-coefficient effect sizes
 
-Three partial effect-size tokens are available — Cohen’s `f²`
-(`partial_f2`), Pearson’s partial `η²` (`partial_eta2`), and the
-Olejnik–Algina bias-corrected partial `ω²` (`partial_omega2`). Each
-estimate has a confidence interval derived from noncentral-`F` inversion
-(Smithson 2003; Steiger 2004), exposed as a separate `<token>_ci`
-column. The group shortcuts `"all_f2"`, `"all_eta2"`, `"all_omega2"`
-expand to the point estimate and its CI pair in one go:
+For each predictor, you can request a partial effect-size column. Three
+measures are available — Cohen’s `f²` (`partial_f2`), Pearson’s partial
+`η²` (`partial_eta2`), and the Olejnik–Algina bias-corrected partial
+`ω²` (`partial_omega2`). Each carries a confidence interval derived from
+noncentral-`F` inversion (Smithson 2003; Steiger 2004), exposed as a
+separate `<token>_ci` column. The shortcuts `"all_f2"`, `"all_eta2"`,
+`"all_omega2"` expand to the point estimate and its CI pair in one go:
 
 ``` r
 
@@ -392,7 +192,7 @@ table_regression(
 #> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
-Methodology of the per-coefficient effect sizes:
+Methodology notes:
 
 - The partial F-test is computed on a Type-II ANOVA reference
   (`car::Anova`), which respects the principle of marginality and is the
@@ -400,15 +200,329 @@ Methodology of the per-coefficient effect sizes:
 - The `ω²` point estimate is bias-corrected via the Olejnik and
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
-- The CI bounds are obtained by inverting the noncentrality parameter of
-  the F-distribution at the lower and upper confidence level (Steiger
-  2004 §4). The Steiger inversion bounds always bracket the
-  corresponding bias-corrected point estimate even when the lower bound
-  clips at zero (a common occurrence for near-null terms).
+- The CI bounds come from inverting the noncentrality parameter of the
+  F-distribution at the lower and upper confidence levels (Steiger 2004
+  §4). The Steiger inversion always brackets the bias-corrected point
+  estimate, even when the lower bound clips at zero (common for
+  near-null terms).
 - For factor predictors with `k` levels, the partial F-test is the joint
   `(k − 1)` df Wald test, so the same effect-size value is broadcast
   across all non-reference dummy rows; the reference row shows an
   em-dash.
+
+## Average marginal effects (AME)
+
+The `B` coefficient is the model’s *structural* effect — the change in
+the linear predictor `Xβ` for a one-unit change in `x`, holding the
+other predictors constant. The **average marginal effect (AME)** is the
+*observable* effect on the response: the average partial derivative
+`dE[Y|X] / dx` over the sample. For a purely linear-additive
+[`lm()`](https://rdrr.io/r/stats/lm.html) the two coincide. For models
+with interactions or transformed terms, and for any
+[`glm()`](https://rdrr.io/r/stats/glm.html) with a non-identity link,
+the AME is the quantity the substantive reader actually needs.
+
+Add `"ame"` to `show_columns` for the point estimate. Companion tokens
+display the SE, CI, and p-value: `"ame_se"`, `"ame_ci"`, `"ame_p"`. The
+shortcut `"all_ame"` expands to the full set.
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+table_regression(
+  fit,
+  show_columns = c("b", "ame", "ame_ci", "ame_p")
+)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      AME      95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20                              
+#>  age             │    0.05   0.05  [-0.01, 0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │     —      —          —         —    
+#>    Male          │    3.86   3.86  [ 2.08, 5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —      —          —         —    
+#>    Yes           │   -1.72  -1.72  [-3.89, 0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> AME = average marginal effect.
+```
+
+Reading conventions:
+
+- `"p"` always refers to the `B` (or `β`) coefficient, never to the AME.
+  Use `"ame_p"` for the AME-specific p-value.
+- Placing `"ame"` after `"p"` keeps the “which p belongs to what”
+  reading unambiguous — the B-block (`B / SE / p`) is closed before the
+  AME-block opens.
+- For non-linear models the AME is reported on the **response scale**,
+  not the link scale. The *Generalised linear models* section below
+  works out a logistic-regression example.
+
+Inference is delegated to
+\[[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)\]\[marginaleffects::avg_slopes\]
+and respects the chosen variance estimator. Under cluster-robust
+variance (covered in *Robust variance*), the AME inference shares the
+coefficient’s t-distribution and Satterthwaite-corrected degrees of
+freedom via
+[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
+so `B` and AME are reported on the same inferential footing in the same
+table.
+
+## Multiple models side by side
+
+Pass a list of [`lm()`](https://rdrr.io/r/stats/lm.html) fits. The
+default column layout places each model in its own panel under a
+centered **spanner label** showing the model name; sub-columns
+(`B / SE / p`) are repeated under the spanner. When dependent variables
+differ across models and the user did not supply labels
+(`model_labels =` or named list), the bare DV name is lifted into the
+spanner automatically:
+
+``` r
+
+m_wellbeing <- lm(wellbeing_score ~ age + sex + smoking,
+                   data = sochealth)
+m_bmi       <- lm(bmi             ~ age + sex + smoking,
+                   data = sochealth)
+table_regression(list(m_wellbeing, m_bmi))
+#> Linear regression comparison
+#> 
+#>                      wellbeing_score             bmi          
+#>                    ────────────────────  ──────────────────── 
+#>  Variable        │    B      SE     p       B      SE     p   
+#> ─────────────────┼────────────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  <.001    23.98  0.40  <.001 
+#>  age             │    0.05  0.03   .130     0.04  0.01  <.001 
+#>  sex:            │                                            
+#>    Female (ref.) │     —     —     —         —     —     —    
+#>    Male          │    3.86  0.91  <.001     0.51  0.22   .018 
+#>  smoking:        │                                            
+#>    No (ref.)     │     —     —     —         —     —     —    
+#>    Yes           │   -1.72  1.11   .121    -0.06  0.26   .822 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                  1163                 
+#>  R²              │    0.02                  0.02              
+#>  Adj.R²          │    0.02                  0.02              
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+```
+
+When all models share the same DV, the DV appears in the title. Use a
+named list — e.g. `list(Crude = m1, Adjusted = m2)` — to set the spanner
+labels explicitly; pass `model_labels = c(...)` to override the names
+from the list.
+
+## Hierarchical / nested regression
+
+Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
+7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
+pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
+below `R² / Adj.R²`; the FIRST model column gets em-dashes (no previous
+model to compare to).
+
+Hierarchical regression requires every model in the sequence to share
+the same analytic sample: identical `nobs` AND identical response
+variable. R’s listwise deletion otherwise produces different `n` per
+model as soon as a predictor introduced by M2 or M3 has missing values
+that M1 did not see — a silent bias on the change statistics. We
+restrict to complete cases on the union of predictors up front:
+
+``` r
+
+sochealth_cc <- sochealth |>
+  dplyr::select(wellbeing_score, age, sex, smoking, bmi, region) |>
+  na.omit()
+```
+
+``` r
+
+m1 <- lm(wellbeing_score ~ age + sex,                 data = sochealth_cc)
+m2 <- lm(wellbeing_score ~ age + sex + smoking,       data = sochealth_cc)
+m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
+table_regression(list(m1, m2, m3), nested = TRUE)
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                          Model 1                Model 2            Model 3     
+#>                    ────────────────────  ─────────────────────  ────────────── 
+#>  Variable        │    B      SE     p       B       SE     p       B       SE  
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.66  <.001    65.00   1.67  <.001    80.57   3.37 
+#>  age             │    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 
+#>  sex:            │                                                             
+#>    Female (ref.) │     —     —     —         —      —     —         —      —   
+#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.90 
+#>  smoking:        │                                                             
+#>    No (ref.)     │     —     —     —         —      —     —         —      —   
+#>    Yes           │                         -1.68   1.11   .132    -1.71   1.10 
+#>  bmi             │                                                -0.65   0.12 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                   1163           
+#>  R²              │    0.02                  0.02                   0.04        
+#>  Adj.R²          │    0.02                  0.02                   0.04        
+#>  ΔR²             │     —                   +0.00                  +0.02        
+#>  F-change        │     —                   +2.28                 +28.13        
+#>  p (change)      │     —                     .132                  <.001       
+#> 
+#>                    Model 
+#>                    ───── 
+#>  Variable        │   p   
+#> ─────────────────┼───────
+#>  (Intercept)     │ <.001 
+#>  age             │  .019 
+#>  sex:            │       
+#>    Female (ref.) │  —    
+#>    Male          │ <.001 
+#>  smoking:        │       
+#>    No (ref.)     │  —    
+#>    Yes           │  .119 
+#>  bmi             │ <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n               │       
+#>  R²              │       
+#>  Adj.R²          │       
+#>  ΔR²             │       
+#>  F-change        │       
+#>  p (change)      │       
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+```
+
+Default change tokens auto-injected:
+`c("r2_change", "f_change", "p_change")` for `lm` (APA
+hierarchical-regression standard), `c("lrt_change", "p_change")` for
+`glm` (Hosmer & Lemeshow §3.5). Customise via `show_fit_stats`; the
+order of tokens controls the order of the rows. Other change tokens are
+available: `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
+`"aic_change"` / `"aicc_change"` / `"bic_change"`.
+
+Validation is strict: identical `nobs` AND identical response across all
+models, otherwise a `spicy_invalid_input` error explains the
+listwise-deletion trap and suggests refitting on the common subset.
+
+## Robust variance
+
+The default `vcov = "classical"` reports the OLS standard error, valid
+under homoskedastic, independent errors. Two robust alternatives are
+first-class arguments; bootstrap and jackknife variants are also
+available via `vcov = "bootstrap"` / `"jackknife"`.
+
+### Heteroskedasticity-consistent (HC)
+
+When error variance plausibly depends on the predictors (a ubiquitous
+concern in cross-sectional social-science data), set `vcov = "HC*"` for
+sandwich-style standard errors via
+\[[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)\]\[sandwich::vcovHC\].
+The valid types are `HC0` through `HC5`; `HC3` is the
+small-sample-friendly default (Long and Ervin 2000):
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+table_regression(fit, vcov = "HC3")
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.61  [62.05, 68.35]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .127 
+#>  sex:            │                                      
+#>    Female (ref.) │     —     —          —          —    
+#>    Male          │    3.86  0.91  [ 2.07,  5.64]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.11  [-3.91,  0.47]   .123 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: heteroskedasticity-robust (HC3).
+```
+
+The footer reads “*Std. errors: heteroskedasticity-robust (HC3)*”; the
+column header for the confidence interval automatically tracks
+`ci_level`.
+
+### Cluster-robust (CR)
+
+For clustered observations (repeated measures on the same person,
+students within schools, observations within regions), `vcov = "CR*"`
+requests cluster-robust variance via
+\[[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)\]\[clubSandwich::vcovCR\],
+with the cluster identifier supplied through `cluster`. Three forms are
+accepted:
+
+- **Formula** — `cluster = ~region`. The variables are looked up in
+  `model.frame(fit)` first, then in the model’s original `data`
+  argument. Recommended: independent of the dataset’s name, composable
+  for multi-way clustering (`cluster = ~region:year`).
+- **String** — `cluster = "region"`. Single column name resolved the
+  same way. Convenient but cannot express interactions.
+- **Vector** — `cluster = df$region`. Atomic vector of length
+  `nobs(fit)`. Use this when the cluster key is derived on the fly
+  (`cluster = interaction(df$region, df$year)`) or pulled from a
+  different dataset with matching row order.
+
+Bare unquoted names (`cluster = region`) are **not** accepted — they
+would require non-standard evaluation that breaks under programmatic use
+(function wrapping, loops, dynamic column choice).
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth_cc)
+table_regression(
+  fit,
+  vcov = "CR2",
+  cluster = ~region,
+  show_columns = c("b", "se", "ci", "p", "ame", "ame_p")
+)
+#> Registered S3 method overwritten by 'clubSandwich':
+#>   method    from    
+#>   bread.mlm sandwich
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p     AME     p   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001               
+#>  age             │    0.05  0.04  [-0.05,  0.15]   .247   0.05   .247 
+#>  sex:            │                                                    
+#>    Female (ref.) │     —     —          —          —       —     —    
+#>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006   3.88   .006 
+#>  smoking:        │                                                    
+#>    No (ref.)     │     —     —          —          —       —     —    
+#>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331  -1.68   .331 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                               
+#>  R²              │    0.02                                            
+#>  Adj.R²          │    0.02                                            
+#> 
+#> Note. Linear regression.
+#> Std. errors: cluster-robust (CR2), clusters by region.
+#> AME = average marginal effect.
+#> AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`.
+```
+
+`CR2` (the Bell-McCaffrey adjustment) is the recommended default under
+few clusters (Pustejovsky and Tipton 2018; Imbens and Kolesár 2016).
+Coefficient inference uses
+\[[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)\]\[clubSandwich::coef_test\]
+with Satterthwaite-corrected degrees of freedom. When AME columns are
+requested, the same Satterthwaite framework is applied to the AME
+contrast via
+[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
+so `B` and AME share the same t-distribution with the same df — visible
+in the footer.
 
 ## Multiple-comparison adjustment
 
@@ -545,128 +659,7 @@ Together with `p_adjust`, this is the article-ready workflow: adjust on
 the full model, display only the rows the reader cares about —
 `table_regression(fit, p_adjust = "BH", keep = "^treatment")`.
 
-## Multiple models side by side
-
-Pass a list of [`lm()`](https://rdrr.io/r/stats/lm.html) fits. The
-default column layout places each model in its own panel under a
-centered **spanner label** showing the model name; sub-columns
-(`B / SE / p`) are shared across the spanner. When dependent variables
-differ across models and the user did not supply labels
-(`model_labels =` or named list), the bare DV name is lifted into the
-spanner automatically:
-
-``` r
-
-m_wellbeing <- lm(wellbeing_score ~ age + sex + smoking,
-                   data = sochealth)
-m_bmi       <- lm(bmi             ~ age + sex + smoking,
-                   data = sochealth)
-table_regression(list(m_wellbeing, m_bmi))
-#> Linear regression comparison
-#> 
-#>                      wellbeing_score             bmi          
-#>                    ────────────────────  ──────────────────── 
-#>  Variable        │    B      SE     p       B      SE     p   
-#> ─────────────────┼────────────────────────────────────────────
-#>  (Intercept)     │   65.20  1.66  <.001    23.98  0.40  <.001 
-#>  age             │    0.05  0.03   .130     0.04  0.01  <.001 
-#>  sex:            │                                            
-#>    Female (ref.) │     —     —     —         —     —     —    
-#>    Male          │    3.86  0.91  <.001     0.51  0.22   .018 
-#>  smoking:        │                                            
-#>    No (ref.)     │     —     —     —         —     —     —    
-#>    Yes           │   -1.72  1.11   .121    -0.06  0.26   .822 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1175                  1163                 
-#>  R²              │    0.02                  0.02              
-#>  Adj.R²          │    0.02                  0.02              
-#> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
-```
-
-When all models share the same DV, the DV appears in the title. Use a
-named list – e.g. `list(Crude = m1, Adjusted = m2)` – to set the spanner
-labels explicitly; pass `model_labels = c(...)` to override the names
-from the list.
-
-## Hierarchical / nested regression
-
-Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
-7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
-pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
-below `R² / Adj.R²`; the FIRST model column gets em-dashes (no previous
-model to compare to):
-
-``` r
-
-m1 <- lm(wellbeing_score ~ age + sex,                 data = sochealth_cc)
-m2 <- lm(wellbeing_score ~ age + sex + smoking,       data = sochealth_cc)
-m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
-table_regression(list(m1, m2, m3), nested = TRUE)
-#> Hierarchical linear regression: wellbeing_score
-#> 
-#>                          Model 1                Model 2            Model 3     
-#>                    ────────────────────  ─────────────────────  ────────────── 
-#>  Variable        │    B      SE     p       B       SE     p       B       SE  
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)     │   64.70  1.66  <.001    65.00   1.67  <.001    80.57   3.37 
-#>  age             │    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 
-#>  sex:            │                                                             
-#>    Female (ref.) │     —     —     —         —      —     —         —      —   
-#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.90 
-#>  smoking:        │                                                             
-#>    No (ref.)     │     —     —     —         —      —     —         —      —   
-#>    Yes           │                         -1.68   1.11   .132    -1.71   1.10 
-#>  bmi             │                                                -0.65   0.12 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                  1163                   1163           
-#>  R²              │    0.02                  0.02                   0.04        
-#>  Adj.R²          │    0.02                  0.02                   0.04        
-#>  ΔR²             │     —                   +0.00                  +0.02        
-#>  F-change        │     —                   +2.28                 +28.13        
-#>  p (change)      │     —                     .132                  <.001       
-#> 
-#>                    Model 
-#>                    ───── 
-#>  Variable        │   p   
-#> ─────────────────┼───────
-#>  (Intercept)     │ <.001 
-#>  age             │  .019 
-#>  sex:            │       
-#>    Female (ref.) │  —    
-#>    Male          │ <.001 
-#>  smoking:        │       
-#>    No (ref.)     │  —    
-#>    Yes           │  .119 
-#>  bmi             │ <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R²              │       
-#>  Adj.R²          │       
-#>  ΔR²             │       
-#>  F-change        │       
-#>  p (change)      │       
-#> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
-```
-
-Default change tokens auto-injected:
-`c("r2_change", "f_change", "p_change")` for `lm` (APA
-hierarchical-regression standard), `c("lrt_change", "p_change")` for
-`glm` (Hosmer & Lemeshow §3.5). Customise via `show_fit_stats`; the
-order of tokens controls the order of the rows. Other change tokens are
-available: `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
-`"aic_change"` / `"aicc_change"` / `"bic_change"`.
-
-Validation is strict: identical `nobs` AND identical response variable
-across all models, otherwise a `spicy_invalid_input` error explains that
-R’s listwise deletion may produce different `n` per model and suggests
-refitting on the common subset (the reason for `sochealth_cc` being
-prepared at the top of the vignette).
-
-## Generalised linear models (`glm`)
+## Generalised linear models (glm)
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 accepts any [`glm()`](https://rdrr.io/r/stats/glm.html) fit. Inference
@@ -737,9 +730,9 @@ table_regression(fit, exponentiate = TRUE)
 
 `partial_chi2` is the glm analog of `partial_f2`: for each model term,
 the partial likelihood-ratio chi-square via `drop1(test = "LRT")` (SAS
-PROC LOGISTIC `TYPE3`; Long & Freese 2014 §3.5; Allison “TYPE3”).
-Rendered as `value (df)` so factor terms (k−1 df) and numeric terms (1
-df) read at a glance:
+PROC LOGISTIC `TYPE3`; Long & Freese 2014 §3.5). Rendered as
+`value (df)` so factor terms (`k − 1` df) and numeric terms (1 df) read
+at a glance:
 
 ``` r
 
@@ -804,17 +797,17 @@ table_regression(fit, standardized = "pseudo")
 #> β = standardised coefficient.
 ```
 
-### Average Marginal Effects (AME)
+### Average marginal effects: probability units, not log-odds
 
-The `ame` token returns response-scale marginal effects via
-[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html).
-For `glm`, AME is computed as the average of `dE[Y|X]/dx` over the
-observed sample (so for logistic regression the displayed AME is in
-probability units, not log-odds). Under cluster-robust variance
-(`vcov = "CR2"` etc.), the inference uses Satterthwaite df from
-[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
-on the dominant underlying coefficient — Pustejovsky & Tipton (2018) §4
-approximation for nonlinear contrasts:
+For `glm`, AME is computed as the average of `dE[Y|X] / dx` over the
+observed sample — **on the response scale, not the link scale**. For
+logistic regression this means the displayed AME is in **probability
+units, not log-odds**: an AME of `0.04` for `mpg` reads “on average, a
+one-unit increase in `mpg` raises the probability of `am = 1` by 4
+percentage points”. This is almost always the quantity a substantive
+reader wants from a logistic regression, and it is the reason AME is
+increasingly recommended over odds ratios for communicating logistic
+effects (Mood 2010; Long and Freese 2014 §5.3).
 
 ``` r
 
@@ -836,6 +829,11 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #> Std. errors: classical (MLE inverse Hessian).
 #> AME = average marginal effect.
 ```
+
+Point estimate and inference are delegated to
+\[[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)\]\[marginaleffects::avg_slopes\].
+Under cluster-robust variance, the Satterthwaite-df handling described
+in the *Robust variance* section applies to `glm` AME as well.
 
 ### Profile-likelihood CIs: `ci_method = "profile"`
 
@@ -880,8 +878,8 @@ return em-dashes if explicitly requested:
 
 ``` r
 
-m1 <- glm(am ~ mpg,                 data = mtcars, family = binomial)
-m2 <- glm(am ~ mpg + wt,            data = mtcars, family = binomial)
+m1 <- glm(am ~ mpg,                    data = mtcars, family = binomial)
+m2 <- glm(am ~ mpg + wt,               data = mtcars, family = binomial)
 m3 <- glm(am ~ mpg + wt + factor(cyl), data = mtcars, family = binomial)
 table_regression(list(m1, m2, m3), nested = TRUE)
 #> Hierarchical logistic regression: am
@@ -932,9 +930,9 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 
 A [`glm()`](https://rdrr.io/r/stats/glm.html) with `family = gaussian`
 and `link = "identity"` is mathematically equivalent to
-[`lm()`](https://rdrr.io/r/stats/lm.html) but lacks the
-variance-explained effect-size family (`partial_f2 / η² / ω²`) and the
-Satterthwaite- corrected AME path. Following the *transparency over
+[`lm()`](https://rdrr.io/r/stats/lm.html) but lacks the variance-
+explained effect-size family (`partial_f2 / η² / ω²`) and the
+Satterthwaite-corrected AME path. Following the *transparency over
 rejection* rule, spicy accepts the fit and emits a `spicy_caveat`
 suggesting a refit with [`lm()`](https://rdrr.io/r/stats/lm.html).
 
@@ -973,8 +971,8 @@ table_regression(fit, stars = TRUE)
 #> *** p < .001, ** p < .01, * p < .05.
 ```
 
-Stars suffix the B column (or β when standardisation is requested); the
-threshold mapping is auto-documented in the footer. The `p` column
+Stars suffix the `B` column (or `β` when standardisation is requested);
+the threshold mapping is auto-documented in the footer. The `p` column
 itself remains unstarred so the numeric value stays readable.
 
 ## Display knobs
@@ -1264,9 +1262,9 @@ broom::glance(out)
 The long format is the right entry point when the table is one step in a
 larger pipeline — saving to disk for the manuscript appendix, faceting
 by subgroup, or feeding a downstream post-estimation analysis. The
-`tidy()` output keeps the bilateral `estimate_type` column so the same
-data frame can hold rows for B, β, AME, and per-coefficient effect-size
-estimates without ambiguity.
+`tidy()` output keeps the `estimate_type` column so the same data frame
+can hold rows for B, β, AME, and per-coefficient effect-size estimates
+without ambiguity.
 
 ## See also
 
@@ -1274,8 +1272,8 @@ estimates without ambiguity.
   for the one-predictor-by-many-outcomes counterpart (estimated marginal
   means, contrast or slope, four effect-size families).
 - [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for an end-to-end reporting workflow combining the spicy summary-table
-  helpers.
+  for an end-to-end reporting workflow combining the spicy summary-
+  table helpers.
 
 ## References
 
@@ -1326,6 +1324,10 @@ regression coefficients. *The American Statistician*, 58(3), 218–223.
 
 Menard, S. (2011). Standards for standardized logistic regression
 coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Mood, C. (2010). Logistic regression: Why we cannot do what we think we
+can do, and what we can do about it. *European Sociological Review*,
+26(1), 67–82.
 
 Nagelkerke, N. J. D. (1991). A note on a general definition of the
 coefficient of determination. *Biometrika*, 78(3), 691–692.
