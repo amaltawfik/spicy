@@ -1047,6 +1047,7 @@ test_that("table_continuous excel output works", {
 })
 
 test_that("table_continuous excel errors without path", {
+  skip_if_not_installed("openxlsx2")
   expect_error(
     table_continuous(iris, select = c(Sepal.Length), output = "excel"),
     "excel_path"
@@ -1054,6 +1055,7 @@ test_that("table_continuous excel errors without path", {
 })
 
 test_that("table_continuous excel errors with empty path", {
+  skip_if_not_installed("openxlsx2")
   expect_error(
     table_continuous(
       iris,

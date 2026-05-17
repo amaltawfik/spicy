@@ -802,17 +802,20 @@ test_that("table_continuous_lm internal covariance helper covers fallback branch
   expect_false(anyNA(vc))
 })
 
-test_that("table_continuous_lm export helper validates output-specific paths", {
-  display_df <- data.frame(
+.export_lm_display_df <- function() {
+  data.frame(
     Variable = "x",
     `M (A)` = "1.00",
     p = ".050",
     check.names = FALSE
   )
+}
 
+test_that("table_continuous_lm export helper validates excel_path", {
+  skip_if_not_installed("openxlsx2")
   expect_error(
     spicy:::export_continuous_lm_table(
-      display_df,
+      .export_lm_display_df(),
       output = "excel",
       ci_level = 0.95,
       excel_path = NULL,
@@ -822,9 +825,14 @@ test_that("table_continuous_lm export helper validates output-specific paths", {
     ),
     "excel_path"
   )
+})
+
+test_that("table_continuous_lm export helper validates word_path", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
   expect_error(
     spicy:::export_continuous_lm_table(
-      display_df,
+      .export_lm_display_df(),
       output = "word",
       ci_level = 0.95,
       excel_path = NULL,
@@ -834,9 +842,12 @@ test_that("table_continuous_lm export helper validates output-specific paths", {
     ),
     "word_path"
   )
+})
+
+test_that("table_continuous_lm export helper rejects unknown output format", {
   expect_error(
     spicy:::export_continuous_lm_table(
-      display_df,
+      .export_lm_display_df(),
       output = "bogus",
       ci_level = 0.95,
       excel_path = NULL,
