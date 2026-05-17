@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>spicy: frequency tables, cross-tabulations, and summary tables in R • spicy</title>
+<title>spicy: APA-style regression and summary tables for R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -24,10 +24,10 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
-<meta property="og:title" content="spicy: frequency tables, cross-tabulations, and summary tables in R">
-<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, and interactive codebooks. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
+<meta property="og:title" content="spicy: APA-style regression and summary tables for R">
+<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow APA conventions, expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
-<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and effect sizes, association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, and interactive codebooks. A tidyverse-friendly alternative to SPSS and Stata for survey and social science data analysis.
+<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow APA conventions, expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -117,7 +117,7 @@
 <li>
 <strong>Build model-based continuous summary tables in R</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear regression reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’ g, Hays’ omega²) with noncentral CIs, optional <strong>additive covariate adjustment</strong> with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, weighted comparisons, and console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
 <li>
-<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more <code>lm</code> or <code>glm</code> fits side by side: classical / HC* / cluster-robust (with Satterthwaite-corrected df) / bootstrap / jackknife variance, five standardisation methods, family-aware exponentiate (OR / IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal effects, partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / χ², pseudo-<em>R²</em> family, hierarchical comparisons, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output.</li>
+<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more <code>lm</code> or <code>glm</code> fits side by side: classical / HC* / cluster-robust / bootstrap / jackknife variance, four standardisation methods (plus <code>pseudo</code> for <code>glm</code>), family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal effects on the response scale, partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, pseudo-<em>R²</em> family, hierarchical model comparisons, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output.</li>
 <li>
 <strong>Generate interactive and exportable codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
 <li>
@@ -366,12 +366,34 @@
 <span><span class="co">#&gt;                    n</span></span>
 <span><span class="co">#&gt; wellbeing_score 1200</span></span>
 <span><span class="co">#&gt; bmi             1188</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Linear regression: wellbeing_score</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        │    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; ─────────────────┼──────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  (Intercept)     │   65.20  1.66  [61.95, 68.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             │    0.05  0.03  [-0.01,  0.11]   .130 </span></span>
+<span><span class="co">#&gt;  sex:            │                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.) │     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    Male          │    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        │                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)     │     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  n               │ 1175                                 </span></span>
+<span><span class="co">#&gt;  R²              │    0.02                              </span></span>
+<span><span class="co">#&gt;  Adj.R²          │    0.02                              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Note. Linear regression.</span></span>
+<span><span class="co">#&gt; Std. errors: classical (OLS).</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a> for <code>lm</code> and <code>glm</code> coefficient tables, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
@@ -389,7 +411,7 @@
 <div class="section level3">
 <h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
