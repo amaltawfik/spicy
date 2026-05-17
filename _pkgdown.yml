@@ -1,14 +1,19 @@
 url: https://amaltawfik.github.io/spicy/
 
 home:
-  title: "spicy: frequency tables, cross-tabulations, and summary tables in R"
+  title: "spicy: APA-style regression and summary tables for R"
   description: >
-    R package for frequency tables, cross-tabulations with chi-squared
-    tests and effect sizes, association measures (Cramer's V, Phi,
+    R package for frequency tables, cross-tabulations with
+    chi-squared tests and association measures (Cramer's V, Phi,
     Gamma, Kendall's Tau-b, Somers' D), categorical and continuous
-    summary tables, and interactive codebooks. A tidyverse-friendly
-    alternative to SPSS and Stata for survey and social science data
-    analysis.
+    summary tables, model-based group comparisons for continuous
+    outcomes, and publication-ready regression coefficient tables
+    for one or more `lm` or `glm` fits side by side. All table
+    outputs follow APA conventions, expose `broom`-compatible
+    `tidy()` / `glance()` methods, and export to console, gt,
+    tinytable, flextable, Excel, Word, or clipboard. A
+    tidyverse-friendly alternative to SPSS and Stata for survey,
+    social-science, and clinical reporting.
 
 template:
   bootstrap: 5
