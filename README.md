@@ -54,16 +54,15 @@ With spicy, you can:
   G-computation (Stata `margins` style) or equal-weight (`emmeans`
   style) marginal means, weighted comparisons, and console, gt,
   tinytable, flextable, Excel, Word, or clipboard output.
-- **Build regression coefficient tables in R** with
-  `table_regression()` for one or more `lm` or `glm` fits side by side:
-  classical / HC\* / cluster-robust (with Satterthwaite-corrected df)
-  / bootstrap / jackknife variance, five standardisation methods,
-  family-aware exponentiate (OR / IRR / HR / RR / MR), Wald or
-  profile-likelihood CIs, average marginal effects, partial
-  *f²* / *η²* / *ω²* / χ², pseudo-*R²* family, hierarchical
-  comparisons, multiple-comparison adjustment, and the same
-  console / gt / tinytable / flextable / Excel / Word / clipboard
-  output.
+- **Build regression coefficient tables in R** with `table_regression()`
+  for one or more `lm` or `glm` fits side by side: classical / HC\* /
+  cluster-robust / bootstrap / jackknife variance, four standardisation
+  methods (plus `pseudo` for `glm`), family-aware `exponentiate` (OR /
+  IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal
+  effects on the response scale, partial *f²* / *η²* / *ω²* / *χ²*
+  effect sizes, pseudo-*R²* family, hierarchical model comparisons,
+  multiple-comparison adjustment, and the same console / gt / tinytable
+  / flextable / Excel / Word / clipboard output.
 - **Generate interactive and exportable codebooks** with `code_book()`
   for labelled and survey-style datasets.
 - **Extract variable labels** with `label_from_names()`, including
@@ -347,6 +346,30 @@ table_continuous_lm(
 #> bmi             1188
 ```
 
+``` r
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+table_regression(fit)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │     —     —          —          —    
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
 See [Categorical summary tables in
 R](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
 for categorical summaries, [Continuous summary tables in
@@ -357,8 +380,7 @@ R](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
 for weighted or robust linear-model reporting, [Regression coefficient
 tables in
 R](https://amaltawfik.github.io/spicy/articles/table-regression.html)
-for `lm` and `glm` coefficient tables, and [Summary tables for
-APA-style
+for `lm` and `glm` coefficient tables, and [Summary tables for APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
 
