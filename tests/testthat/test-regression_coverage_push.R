@@ -703,3 +703,262 @@ test_that("as_tibble.spicy_regression_table — returns a tbl_df", {
   tb <- spicy:::as_tibble.spicy_regression_table(out)
   expect_s3_class(tb, "tbl_df")
 })
+
+
+# ============================================================================
+# abort.R — cluster-argument resolution error paths and fallbacks
+# ============================================================================
+
+test_that("resolve_cluster: empty formula errors with spicy_invalid_input", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    spicy:::resolve_cluster(~ 1, fit),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("resolve_cluster: character name not in model frame nor data errors", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    spicy:::resolve_cluster("nonexistent_col", fit),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("cluster_lookup_data: falls back to original data when var not in model.frame", {
+  # `cyl` is in mtcars but NOT in the model formula -> must fall back to
+  # fit$call$data lookup.
+  fit <- lm(mpg ~ wt, data = mtcars)
+  src <- spicy:::cluster_lookup_data(fit, "cyl")
+  expect_length(src$missing, 0L)
+  expect_true(src$tried_original)
+  expect_true("cyl" %in% src$available)
+})
+
+test_that("cluster_lookup_data: respects na.action subsetting when original has dropped rows", {
+  # Construct a dataset where model frame drops NA rows; cluster var
+  # exists only in the full data. Lookup must align via na.action.
+  df <- mtcars
+  df$mpg[1] <- NA
+  df$grp <- factor(rep(letters[1:4], length.out = nrow(df)))
+  fit <- lm(mpg ~ wt, data = df)  # row 1 dropped via na.omit
+  src <- spicy:::cluster_lookup_data(fit, "grp")
+  expect_length(src$missing, 0L)
+  expect_true(src$tried_original)
+  # After na.action alignment, df should have nobs(fit) rows.
+  expect_equal(nrow(src$df), stats::nobs(fit))
+})
+
+test_that("cluster_lookup_data: reports missing var when nowhere", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  src <- spicy:::cluster_lookup_data(fit, c("cyl", "absent_var"))
+  expect_true("absent_var" %in% src$missing)
+  expect_false("cyl" %in% src$missing)
+})
+
+test_that("resolve_cluster: formula with multi-vars returns interaction", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  cl <- spicy:::resolve_cluster(~ cyl + gear, fit)
+  expect_length(cl, stats::nobs(fit))
+  expect_s3_class(cl, "factor")
+})
+
+test_that("resolve_cluster_arg: list-of-clusters with wrong length errors", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl, data = mtcars)
+  expect_error(
+    spicy:::resolve_cluster_arg(list(~cyl), models = list(m1, m2)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("resolve_cluster_arg: list-of-clusters matching length is resolved per model", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt, data = mtcars)
+  res <- spicy:::resolve_cluster_arg(list(~cyl, ~gear), models = list(m1, m2))
+  expect_length(res, 2L)
+})
+
+test_that("resolve_cluster_arg: atomic-vector cluster recycled across models", {
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + cyl, data = mtcars)
+  cv <- factor(rep(letters[1:4], length.out = nrow(mtcars)))
+  res <- spicy:::resolve_cluster_arg(cv, models = list(m1, m2))
+  expect_length(res, 2L)
+})
+
+test_that("resolve_cluster_arg: NULL returns NULL", {
+  expect_null(spicy:::resolve_cluster_arg(NULL, models = list(lm(mpg ~ wt, mt))))
+})
+
+test_that("extract_arg_column_name: NULL / empty symbol -> NA_character_", {
+  expect_true(is.na(spicy:::extract_arg_column_name(NULL)))
+})
+
+
+# ============================================================================
+# regression_dispatch.R — .lookup_display_label CI-fallback branch
+# ============================================================================
+
+test_that(".lookup_display_label: direct match returns display_label", {
+  col_meta <- list(B = list(display_label = "B"))
+  expect_equal(spicy:::.lookup_display_label("B", col_meta), "B")
+})
+
+test_that(".lookup_display_label: merged-CI body name falls back to ': LL' variant", {
+  # Char body merges CI into one "95% CI.2" cell; col_meta keys it split.
+  col_meta <- list(`95% CI.2: LL` = list(display_label = "95% CI"),
+                   `95% CI.2: UL` = list(display_label = "95% CI"))
+  expect_equal(spicy:::.lookup_display_label("95% CI.2", col_meta), "95% CI")
+})
+
+test_that(".lookup_display_label: unknown name returns name verbatim", {
+  expect_equal(spicy:::.lookup_display_label("Unknown", list()), "Unknown")
+})
+
+
+# ============================================================================
+# tables_ascii.R — build_ascii_table display_labels length validation
+# ============================================================================
+
+test_that("build_ascii_table: display_labels with wrong length errors via stopifnot", {
+  df <- data.frame(a = 1:3, b = 4:6)
+  expect_error(
+    spicy:::build_ascii_table(df, display_labels = c("only_one")),
+    "length"
+  )
+})
+
+test_that("build_ascii_table: display_labels overrides colnames in rendered header", {
+  df <- data.frame(a = 1:2, b = 3:4)
+  out <- spicy:::build_ascii_table(df, display_labels = c("X", "Y"))
+  expect_true(grepl("X", out, fixed = TRUE))
+  expect_true(grepl("Y", out, fixed = TRUE))
+  expect_false(grepl("\\ba\\b", out, perl = TRUE))
+})
+
+
+# ============================================================================
+# regression_dispatch.R — as_structured() error paths + print fallback
+# ============================================================================
+
+test_that("as_structured: errors on non-regression-table input", {
+  expect_error(
+    as_structured(mtcars),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("as_structured: errors when 'structured' attribute is missing", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit)
+  attr(out, "structured") <- NULL
+  expect_error(
+    as_structured(out),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("print.spicy_regression_table: falls back to names(body) when structured is NULL", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(fit)
+  attr(out, "structured") <- NULL
+  expect_output(print(out), "B")
+})
+
+
+# ============================================================================
+# regression_dispatch.R — output_word with `word_template`
+# ============================================================================
+
+test_that("output = 'word': non-existent word_template errors with spicy_invalid_input", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
+  fit <- lm(mpg ~ wt, data = mt)
+  tmp <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmp), add = TRUE)
+  expect_error(
+    table_regression(fit,
+                     output = "word",
+                     word_path = tmp,
+                     word_template = "definitely_does_not_exist.docx"),
+    class = "spicy_invalid_input"
+  )
+})
+
+
+# ============================================================================
+# regression_structured.R — small helpers (.excel_numfmt, .below_threshold_text)
+# ============================================================================
+
+test_that(".excel_numfmt: NA / negative precision falls back to integer format", {
+  expect_equal(spicy:::.excel_numfmt(NA_integer_, "decimal"), "0")
+  expect_equal(spicy:::.excel_numfmt(-1L, "decimal"), "0")
+})
+
+test_that(".excel_numfmt: precision > 0 produces zero-padded fractional format", {
+  expect_equal(spicy:::.excel_numfmt(2L, "decimal"), "0.00")
+  expect_equal(spicy:::.excel_numfmt(3L, "apa"), "#.000")
+})
+
+test_that(".below_threshold_text: NULL / non-finite / non-positive threshold returns NULL", {
+  expect_null(spicy:::.below_threshold_text(NULL))
+  expect_null(spicy:::.below_threshold_text(NA_real_))
+  expect_null(spicy:::.below_threshold_text(0))
+  expect_null(spicy:::.below_threshold_text(-0.01))
+})
+
+test_that(".below_threshold_text: threshold >= 1 clamps to 1 decimal digit", {
+  # log10(1) = 0 -> digits = 0 -> clamped to 1 -> "<.1"
+  expect_equal(spicy:::.below_threshold_text(1, "."), "<.1")
+  expect_equal(spicy:::.below_threshold_text(5, ","), "<,1")
+})
+
+test_that(".below_threshold_text: standard 0.001 threshold uses APA notation", {
+  expect_equal(spicy:::.below_threshold_text(0.001, "."), "<.001")
+  expect_equal(spicy:::.below_threshold_text(0.0001, ","), "<,0001")
+})
+
+
+# ============================================================================
+# regression_dispatch.R — HTML postprocess + knit_print methods
+# ============================================================================
+# These methods only fire when the rich-output tables are rendered as
+# HTML (knit context). We force the postprocess by calling knit_print
+# directly. This pulls in the ~50-60 uncovered lines per engine in
+# .spicy_ft_html_postprocess / .spicy_gt_html_postprocess.
+
+test_that("knit_print.spicy_flextable: runs HTML postprocess (covers .spicy_ft_html_postprocess)", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("htmltools")
+  fit <- lm(mpg ~ wt, data = mt)
+  ft <- table_regression(fit, output = "flextable")
+  out <- spicy:::knit_print.spicy_flextable(ft)
+  expect_s3_class(out, "knit_asis")
+})
+
+test_that("knit_print.spicy_gt: runs HTML postprocess (covers .spicy_gt_html_postprocess)", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("htmltools")
+  fit <- lm(mpg ~ wt, data = mt)
+  gt_obj <- table_regression(fit, output = "gt")
+  out <- spicy:::knit_print.spicy_gt(gt_obj)
+  expect_s3_class(out, "knit_asis")
+})
+
+test_that("knit_print.spicy_flextable: handles output with title + footer note", {
+  skip_if_not_installed("flextable")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  ft <- table_regression(fit, output = "flextable")
+  out <- spicy:::knit_print.spicy_flextable(ft)
+  expect_s3_class(out, "knit_asis")
+})
+
+test_that("knit_print.spicy_gt: handles multi-model output", {
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  gt_obj <- table_regression(list(m1, m2), output = "gt")
+  out <- spicy:::knit_print.spicy_gt(gt_obj)
+  expect_s3_class(out, "knit_asis")
+})
