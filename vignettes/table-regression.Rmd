@@ -427,10 +427,23 @@ REGRESSION`. The table title becomes family-aware ("Logistic
 regression", "Poisson regression", "Probit regression", …) and
 the default fit-statistics block swaps in `nobs`,
 `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `AIC` instead
-of `R²` and `Adj.R²`:
+of `R²` and `Adj.R²`.
+
+We illustrate with a logistic regression of `smoking` on `sex`,
+`age`, and `education` from `sochealth`. The `education` variable
+is an ordered factor in the source data; we convert it to a plain
+factor so contrasts are dummy-coded (one row per level) rather
+than the polynomial trends (`.L`, `.Q`, …) R applies by default to
+ordered factors. The model mixes a binary factor (`sex`), a
+numeric predictor (`age`), and a 3-level factor (`education`) —
+enough to exercise every glm-specific feature below.
 
 ```{r glm-basic}
-fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
+sh <- sochealth |>
+  dplyr::mutate(education = factor(education, ordered = FALSE))
+
+fit <- glm(smoking ~ sex + age + education, data = sh,
+           family = binomial)
 table_regression(fit)
 ```
 
@@ -460,8 +473,7 @@ term, the partial likelihood-ratio chi-square via
 df) and numeric terms (1 df) read at a glance:
 
 ```{r glm-partial-chi2}
-mt <- mtcars; mt$cyl <- factor(mt$cyl)
-fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
+fit2 <- glm(smoking ~ age + education, data = sh, family = binomial)
 table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 ```
 
@@ -491,13 +503,15 @@ table_regression(fit, standardized = "pseudo")
 For `glm`, AME is computed as the average of `dE[Y|X] / dx` over
 the observed sample — **on the response scale, not the link
 scale**. For logistic regression this means the displayed AME is
-in **probability units, not log-odds**: an AME of `0.04` for
-`mpg` reads "on average, a one-unit increase in `mpg` raises the
-probability of `am = 1` by 4 percentage points". This is almost
-always the quantity a substantive reader wants from a logistic
-regression, and it is the reason AME is increasingly recommended
-over odds ratios for communicating logistic effects (Mood 2010;
-Long and Freese 2014 §5.3).
+in **probability units, not log-odds**: an AME of `-0.15` for
+`education = Tertiary` reads "on average, holding sex and age
+constant, a respondent with tertiary education is 15 percentage
+points less likely to be a current smoker than one with lower
+secondary education". This is almost always the quantity a
+substantive reader wants from a logistic regression, and it is
+the reason AME is increasingly recommended over odds ratios for
+communicating logistic effects (Mood 2010; Long and Freese 2014
+§5.3).
 
 ```{r glm-ame}
 table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
@@ -535,9 +549,9 @@ chi-square statistic comes from `anova(test = "LRT")`.
 if explicitly requested:
 
 ```{r glm-nested}
-m1 <- glm(am ~ mpg,                    data = mtcars, family = binomial)
-m2 <- glm(am ~ mpg + wt,               data = mtcars, family = binomial)
-m3 <- glm(am ~ mpg + wt + factor(cyl), data = mtcars, family = binomial)
+m1 <- glm(smoking ~ sex,                   data = sh, family = binomial)
+m2 <- glm(smoking ~ sex + age,             data = sh, family = binomial)
+m3 <- glm(smoking ~ sex + age + education, data = sh, family = binomial)
 table_regression(list(m1, m2, m3), nested = TRUE)
 ```
 
