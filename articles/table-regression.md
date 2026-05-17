@@ -669,24 +669,43 @@ defaults to the `z`-asymptotic Wald regime — the convention used by
 family-aware (“Logistic regression”, “Poisson regression”, “Probit
 regression”, …) and the default fit-statistics block swaps in `nobs`,
 `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `AIC` instead of `R²`
-and `Adj.R²`:
+and `Adj.R²`.
+
+We illustrate with a logistic regression of `smoking` on `sex`, `age`,
+and `education` from `sochealth`. The `education` variable is an ordered
+factor in the source data; we convert it to a plain factor so contrasts
+are dummy-coded (one row per level) rather than the polynomial trends
+(`.L`, `.Q`, …) R applies by default to ordered factors. The model mixes
+a binary factor (`sex`), a numeric predictor (`age`), and a 3-level
+factor (`education`) — enough to exercise every glm-specific feature
+below.
 
 ``` r
 
-fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
+sh <- sochealth |>
+  dplyr::mutate(education = factor(education, ordered = FALSE))
+
+fit <- glm(smoking ~ sex + age + education, data = sh,
+           family = binomial)
 table_regression(fit)
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │   B     SE        95% CI        p   
-#> ─────────────────┼─────────────────────────────────────
-#>  (Intercept)     │ 25.89  12.19  [  1.99, 49.79]  .034 
-#>  mpg             │ -0.32   0.24  [ -0.79,  0.15]  .176 
-#>  wt              │ -6.42   2.55  [-11.41, -1.42]  .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                                  
-#>  R² (McFadden)   │  0.60                               
-#>  R² (Nagelkerke) │  0.75                               
-#>  AIC             │ 23.2                                
+#>  Variable                 │    B      SE       95% CI        p   
+#> ──────────────────────────┼──────────────────────────────────────
+#>  (Intercept)              │   -1.11  0.29  [-1.67, -0.55]  <.001 
+#>  sex:                     │                                      
+#>    Female (ref.)          │     —     —          —          —    
+#>    Male                   │   -0.04  0.14  [-0.32,  0.25]   .800 
+#>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
+#>  education:               │                                      
+#>    Lower secondary (ref.) │     —     —          —          —    
+#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
+#>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                 
+#>  R² (McFadden)            │    0.02                              
+#>  R² (Nagelkerke)          │    0.03                              
+#>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -707,18 +726,24 @@ unexponentiated table verbatim:
 ``` r
 
 table_regression(fit, exponentiate = TRUE)
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │    OR         SE          95% CI        p   
-#> ─────────────────┼─────────────────────────────────────────────
-#>  (Intercept)     │  1.75e+11  2.13e+12  [7.30, 4.18e+21]  .034 
-#>  mpg             │  0.72      0.17      [0.45, 1.16    ]  .176 
-#>  wt              │  0.00      0.00      [0.00, 0.24    ]  .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                                          
-#>  R² (McFadden)   │  0.60                                       
-#>  R² (Nagelkerke) │  0.75                                       
-#>  AIC             │ 23.2                                        
+#>  Variable                 │   OR      SE      95% CI       p   
+#> ──────────────────────────┼────────────────────────────────────
+#>  (Intercept)              │    0.33  0.09  [0.19, 0.58]  <.001 
+#>  sex:                     │                                    
+#>    Female (ref.)          │     —     —         —         —    
+#>    Male                   │    0.96  0.14  [0.73, 1.28]   .800 
+#>  age                      │    1.01  0.00  [1.00, 1.02]   .214 
+#>  education:               │                                    
+#>    Lower secondary (ref.) │     —     —         —         —    
+#>    Tertiary               │    0.40  0.08  [0.27, 0.59]  <.001 
+#>    Upper secondary        │    0.62  0.11  [0.44, 0.87]   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                               
+#>  R² (McFadden)            │    0.02                            
+#>  R² (Nagelkerke)          │    0.03                            
+#>  AIC                      │ 1200.9                             
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -736,24 +761,23 @@ at a glance:
 
 ``` r
 
-mt <- mtcars; mt$cyl <- factor(mt$cyl)
-fit2 <- glm(am ~ mpg + cyl, data = mt, family = binomial)
+fit2 <- glm(smoking ~ age + education, data = sh, family = binomial)
 table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │   B       χ²       p   
-#> ─────────────────┼────────────────────────
-#>  (Intercept)     │ -8.34             .104 
-#>  mpg             │  0.37  4.53 (1)   .080 
-#>  cyl:            │                        
-#>    4 (ref.)      │   —     —         —    
-#>    6             │  0.73  0.27 (2)   .605 
-#>    8             │  0.70  0.27 (2)   .720 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                     
-#>  R² (McFadden)   │  0.32                  
-#>  R² (Nagelkerke) │  0.47                  
-#>  AIC             │ 37.4                   
+#>  Variable                 │    B        χ²        p   
+#> ──────────────────────────┼───────────────────────────
+#>  (Intercept)              │   -1.13             <.001 
+#>  age                      │    0.01   1.55 (1)   .213 
+#>  education:               │                           
+#>    Lower secondary (ref.) │     —      —         —    
+#>    Tertiary               │   -0.91  21.70 (2)  <.001 
+#>    Upper secondary        │   -0.48  21.70 (2)   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                      
+#>  R² (McFadden)            │    0.02                   
+#>  R² (Nagelkerke)          │    0.03                   
+#>  AIC                      │ 1198.9                    
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -779,18 +803,24 @@ families; non-binomial returns NA with a `spicy_caveat`:
 ``` r
 
 table_regression(fit, standardized = "pseudo")
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │   B      β     SE        95% CI        p   
-#> ─────────────────┼────────────────────────────────────────────
-#>  (Intercept)     │ 25.89    —    12.19  [  1.99, 49.79]  .034 
-#>  mpg             │ -0.32  -0.39   0.24  [ -0.79,  0.15]  .176 
-#>  wt              │ -6.42  -1.25   2.55  [-11.41, -1.42]  .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                                         
-#>  R² (McFadden)   │  0.60                                      
-#>  R² (Nagelkerke) │  0.75                                      
-#>  AIC             │ 23.2                                       
+#>  Variable                 │    B       β     SE       95% CI        p   
+#> ──────────────────────────┼─────────────────────────────────────────────
+#>  (Intercept)              │   -1.11    —    0.29  [-1.67, -0.55]  <.001 
+#>  sex:                     │                                             
+#>    Female (ref.)          │     —      —     —          —          —    
+#>    Male                   │   -0.04  -0.02  0.14  [-0.32,  0.25]   .800 
+#>  age                      │    0.01   0.05  0.00  [-0.00,  0.02]   .214 
+#>  education:               │                                             
+#>    Lower secondary (ref.) │     —      —     —          —          —    
+#>    Tertiary               │   -0.91  -0.49  0.20  [-1.29, -0.52]  <.001 
+#>    Upper secondary        │   -0.48  -0.26  0.17  [-0.82, -0.14]   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                        
+#>  R² (McFadden)            │    0.02                                     
+#>  R² (Nagelkerke)          │    0.03                                     
+#>  AIC                      │ 1200.9                                      
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -802,28 +832,35 @@ table_regression(fit, standardized = "pseudo")
 For `glm`, AME is computed as the average of `dE[Y|X] / dx` over the
 observed sample — **on the response scale, not the link scale**. For
 logistic regression this means the displayed AME is in **probability
-units, not log-odds**: an AME of `0.04` for `mpg` reads “on average, a
-one-unit increase in `mpg` raises the probability of `am = 1` by 4
-percentage points”. This is almost always the quantity a substantive
-reader wants from a logistic regression, and it is the reason AME is
-increasingly recommended over odds ratios for communicating logistic
-effects (Mood 2010; Long and Freese 2014 §5.3).
+units, not log-odds**: an AME of `-0.15` for `education = Tertiary`
+reads “on average, holding sex and age constant, a respondent with
+tertiary education is 15 percentage points less likely to be a current
+smoker than one with lower secondary education”. This is almost always
+the quantity a substantive reader wants from a logistic regression, and
+it is the reason AME is increasingly recommended over odds ratios for
+communicating logistic effects (Mood 2010; Long and Freese 2014 §5.3).
 
 ``` r
 
 table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │   B     p     AME       95% CI        p   
-#> ─────────────────┼───────────────────────────────────────────
-#>  (Intercept)     │ 25.89  .034                               
-#>  mpg             │ -0.32  .176  -0.03  [-0.06,  0.01]   .137 
-#>  wt              │ -6.42  .012  -0.51  [-0.75, -0.28]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                                        
-#>  R² (McFadden)   │  0.60                                     
-#>  R² (Nagelkerke) │  0.75                                     
-#>  AIC             │ 23.2                                      
+#>  Variable                 │    B       p     AME       95% CI        p   
+#> ──────────────────────────┼──────────────────────────────────────────────
+#>  (Intercept)              │   -1.11  <.001                               
+#>  sex:                     │                                              
+#>    Female (ref.)          │     —     —       —          —          —    
+#>    Male                   │   -0.04   .800  -0.01  [-0.05,  0.04]   .800 
+#>  age                      │    0.01   .214   0.00  [-0.00,  0.00]   .214 
+#>  education:               │                                              
+#>    Lower secondary (ref.) │     —     —       —          —          —    
+#>    Tertiary               │   -0.91  <.001  -0.15  [-0.22, -0.09]  <.001 
+#>    Upper secondary        │   -0.48   .005  -0.09  [-0.16, -0.02]   .007 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                         
+#>  R² (McFadden)            │    0.02                                      
+#>  R² (Nagelkerke)          │    0.03                                      
+#>  AIC                      │ 1200.9                                       
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -850,18 +887,24 @@ CI bounds:
 ``` r
 
 table_regression(fit, ci_method = "profile")
-#> Logistic regression: am
+#> Logistic regression: smoking
 #> 
-#>  Variable        │   B     SE        95% CI        p   
-#> ─────────────────┼─────────────────────────────────────
-#>  (Intercept)     │ 25.89  12.19  [  5.60, 55.83]  .034 
-#>  mpg             │ -0.32   0.24  [ -0.87,  0.12]  .176 
-#>  wt              │ -6.42   2.55  [-12.82, -2.37]  .012 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                                  
-#>  R² (McFadden)   │  0.60                               
-#>  R² (Nagelkerke) │  0.75                               
-#>  AIC             │ 23.2                                
+#>  Variable                 │    B      SE       95% CI        p   
+#> ──────────────────────────┼──────────────────────────────────────
+#>  (Intercept)              │   -1.11  0.29  [-1.68, -0.55]  <.001 
+#>  sex:                     │                                      
+#>    Female (ref.)          │     —     —          —          —    
+#>    Male                   │   -0.04  0.14  [-0.32,  0.25]   .800 
+#>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
+#>  education:               │                                      
+#>    Lower secondary (ref.) │     —     —          —          —    
+#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
+#>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                 
+#>  R² (McFadden)            │    0.02                              
+#>  R² (Nagelkerke)          │    0.03                              
+#>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (MLE inverse Hessian).
@@ -878,49 +921,53 @@ return em-dashes if explicitly requested:
 
 ``` r
 
-m1 <- glm(am ~ mpg,                    data = mtcars, family = binomial)
-m2 <- glm(am ~ mpg + wt,               data = mtcars, family = binomial)
-m3 <- glm(am ~ mpg + wt + factor(cyl), data = mtcars, family = binomial)
+m1 <- glm(smoking ~ sex,                   data = sh, family = binomial)
+m2 <- glm(smoking ~ sex + age,             data = sh, family = binomial)
+m3 <- glm(smoking ~ sex + age + education, data = sh, family = binomial)
 table_regression(list(m1, m2, m3), nested = TRUE)
-#> Hierarchical logistic regression: am
+#> Hierarchical logistic regression: smoking
 #> 
-#>                         Model 1               Model 2            Model 3    
-#>                    ──────────────────  ─────────────────────  ───────────── 
-#>  Variable        │   B     SE     p       B      SE      p      B      SE   
-#> ─────────────────┼──────────────────────────────────────────────────────────
-#>  (Intercept)     │ -6.60  2.35   .005   25.89   12.19   .034  23.93   14.18 
-#>  mpg             │  0.31  0.11   .008   -0.32    0.24   .176  -0.10    0.35 
-#>  wt              │                      -6.42    2.55   .012  -8.18    3.35 
-#>  factor(cyl):    │                                                          
-#>    4 (ref.)      │   —     —     —        —       —     —       —       —   
-#>    6             │                                             3.01    2.51 
-#>    8             │                                             4.98    3.51 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 32                   32                    32            
-#>  R² (McFadden)   │  0.31                 0.60                  0.66         
-#>  R² (Nagelkerke) │  0.47                 0.75                  0.80         
-#>  AIC             │ 33.7                 23.2                  24.6          
-#>  Δχ²             │   —                 +12.49                 +2.60         
-#>  p (change)      │   —                   <.001                  .273        
+#>                                   Model 1                Model 2        
+#>                             ────────────────────  ───────────────────── 
+#>  Variable                 │    B      SE     p       B       SE     p   
+#> ──────────────────────────┼─────────────────────────────────────────────
+#>  (Intercept)              │   -1.29  0.10  <.001    -1.54   0.26  <.001 
+#>  sex:                     │                                             
+#>    Female (ref.)          │     —     —     —         —      —     —    
+#>    Male                   │   -0.05  0.14   .713    -0.05   0.14   .722 
+#>  age                      │                          0.01   0.00   .294 
+#>  education:               │                                             
+#>    Lower secondary (ref.) │     —     —     —         —      —     —    
+#>    Tertiary               │                                             
+#>    Upper secondary        │                                             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                  1175                  
+#>  R² (McFadden)            │    0.00                  0.00               
+#>  R² (Nagelkerke)          │    0.00                  0.00               
+#>  AIC                      │ 1217.6                1218.5                
+#>  Δχ²                      │     —                   +1.10               
+#>  p (change)               │     —                     .294              
 #> 
-#>                    Model 
-#>                    ───── 
-#>  Variable        │   p   
-#> ─────────────────┼───────
-#>  (Intercept)     │  .091 
-#>  mpg             │  .779 
-#>  wt              │  .015 
-#>  factor(cyl):    │       
-#>    4 (ref.)      │  —    
-#>    6             │  .231 
-#>    8             │  .156 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R² (McFadden)   │       
-#>  R² (Nagelkerke) │       
-#>  AIC             │       
-#>  Δχ²             │       
-#>  p (change)      │       
+#>                                    Model 3        
+#>                             ───────────────────── 
+#>  Variable                 │    B       SE     p   
+#> ──────────────────────────┼───────────────────────
+#>  (Intercept)              │   -1.11   0.29  <.001 
+#>  sex:                     │                       
+#>    Female (ref.)          │     —      —     —    
+#>    Male                   │   -0.04   0.14   .800 
+#>  age                      │    0.01   0.00   .214 
+#>  education:               │                       
+#>    Lower secondary (ref.) │     —      —     —    
+#>    Tertiary               │   -0.91   0.20  <.001 
+#>    Upper secondary        │   -0.48   0.17   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                  
+#>  R² (McFadden)            │    0.02               
+#>  R² (Nagelkerke)          │    0.03               
+#>  AIC                      │ 1200.9                
+#>  Δχ²                      │  +21.64               
+#>  p (change)               │    <.001              
 #> 
 #> Note. Logistic regression models.
 #> Std. errors: classical (MLE inverse Hessian).
