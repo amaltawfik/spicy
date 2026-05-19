@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/v0.12.0/inst/CITATION)
 
 Tawfik A (2026). *spicy: Descriptive Statistics, Summary Tables, and
 Data Management Tools*.
