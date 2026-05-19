@@ -1,5 +1,17 @@
 # spicy (development version)
 
+## Bug fixes
+
+* `table_regression()` now renders factor coefficient rows in
+  `levels()` order rather than alphabetical order on the level
+  string. Affected both B-coefficient rows and AME rows for
+  factors whose levels are not in alphabetical order — e.g.
+  `factor(grp, levels = c("low", "med", "high"))` now renders as
+  `low (ref.) → med → high` (was `low (ref.) → high → med`), and
+  AME rows for ordered factors like `education` (Lower < Upper <
+  Tertiary) now follow the factor's level order (was
+  alphabetical: Tertiary, Upper).
+
 # spicy 0.12.0
 
 ## New features
