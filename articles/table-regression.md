@@ -699,8 +699,8 @@ table_regression(fit)
 #>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                      
 #>    Lower secondary (ref.) │     —     —          —          —    
-#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
+#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                 
 #>  R² (McFadden)            │    0.02                              
@@ -737,8 +737,8 @@ table_regression(fit, exponentiate = TRUE)
 #>  age                      │    1.01  0.00  [1.00, 1.02]   .214 
 #>  education:               │                                    
 #>    Lower secondary (ref.) │     —     —         —         —    
-#>    Tertiary               │    0.40  0.08  [0.27, 0.59]  <.001 
 #>    Upper secondary        │    0.62  0.11  [0.44, 0.87]   .005 
+#>    Tertiary               │    0.40  0.08  [0.27, 0.59]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                               
 #>  R² (McFadden)            │    0.02                            
@@ -771,8 +771,8 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  age                      │    0.01   1.55 (1)   .213 
 #>  education:               │                           
 #>    Lower secondary (ref.) │     —      —         —    
-#>    Tertiary               │   -0.91  21.70 (2)  <.001 
 #>    Upper secondary        │   -0.48  21.70 (2)   .005 
+#>    Tertiary               │   -0.91  21.70 (2)  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                      
 #>  R² (McFadden)            │    0.02                   
@@ -814,8 +814,8 @@ table_regression(fit, standardized = "pseudo")
 #>  age                      │    0.01   0.05  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                             
 #>    Lower secondary (ref.) │     —      —     —          —          —    
-#>    Tertiary               │   -0.91  -0.49  0.20  [-1.29, -0.52]  <.001 
 #>    Upper secondary        │   -0.48  -0.26  0.17  [-0.82, -0.14]   .005 
+#>    Tertiary               │   -0.91  -0.49  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                        
 #>  R² (McFadden)            │    0.02                                     
@@ -854,8 +854,8 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>  age                      │    0.01   .214   0.00  [-0.00,  0.00]   .214 
 #>  education:               │                                              
 #>    Lower secondary (ref.) │     —     —       —          —          —    
-#>    Tertiary               │   -0.91  <.001  -0.15  [-0.22, -0.09]  <.001 
 #>    Upper secondary        │   -0.48   .005  -0.09  [-0.16, -0.02]   .007 
+#>    Tertiary               │   -0.91  <.001  -0.15  [-0.22, -0.09]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                         
 #>  R² (McFadden)            │    0.02                                      
@@ -898,8 +898,8 @@ table_regression(fit, ci_method = "profile")
 #>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                      
 #>    Lower secondary (ref.) │     —     —          —          —    
-#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
+#>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                 
 #>  R² (McFadden)            │    0.02                              
@@ -938,8 +938,8 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  age                      │                          0.01   0.00   .294 
 #>  education:               │                                             
 #>    Lower secondary (ref.) │     —     —     —         —      —     —    
-#>    Tertiary               │                                             
 #>    Upper secondary        │                                             
+#>    Tertiary               │                                             
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                  1175                  
 #>  R² (McFadden)            │    0.00                  0.00               
@@ -959,8 +959,8 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  age                      │    0.01   0.00   .214 
 #>  education:               │                       
 #>    Lower secondary (ref.) │     —      —     —    
-#>    Tertiary               │   -0.91   0.20  <.001 
 #>    Upper secondary        │   -0.48   0.17   .005 
+#>    Tertiary               │   -0.91   0.20  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                  
 #>  R² (McFadden)            │    0.02               
