@@ -215,9 +215,16 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
       is_singular = FALSE,
       is_intercept = FALSE,
       is_reference = FALSE,
-      factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_,
-      factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
+      # fmeta is keyed by coef name (e.g. "education.L" for poly-coded
+      # ordered factors). When spec$term_id uses the level-based naming
+      # convention (`paste0(v, lvl)` -> "educationUpper secondary"), the
+      # lookup misses; fall back to the factor metadata carried in spec.
+      factor_term = fmeta$factor_term %||%
+        spec$factor_term %||% NA_character_,
+      factor_level = fmeta$factor_level %||%
+        spec$factor_level %||% NA_character_,
+      factor_level_pos = fmeta$factor_level_pos %||%
+        spec$factor_level_pos %||% NA_integer_
     )
   })
   do.call(rbind, rows)
@@ -249,7 +256,17 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
     for (lvl in lvls[-1]) {
       out[[length(out) + 1L]] <- list(
         term_id = paste0(v, lvl),  # match the lm coef naming convention
-        vector = build_factor_ame_contrast(fit, v, lvl, ref)
+        vector = build_factor_ame_contrast(fit, v, lvl, ref),
+        # Carry factor metadata so extract_ame_satterthwaite() can
+        # populate the row's factor_term / factor_level /
+        # factor_level_pos columns without depending on a
+        # `factor_meta` lookup. The lookup misses for ordered
+        # factors (where coef names are .L / .Q and the AME term_id
+        # is `paste0(v, lvl)`), causing the renderer to drop the
+        # AME row out of its factor group header.
+        factor_term = v,
+        factor_level = lvl,
+        factor_level_pos = match(lvl, lvls)
       )
     }
     return(out)
@@ -384,27 +401,34 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       col_name
     }
     fmeta <- factor_meta[[term_id]]
-    # For ordered factors fit with the default `contr.poly`, the
-    # lm coef names are `<var>.L` / `<var>.Q` / ... while
-    # marginaleffects emits one AME row per contrast LEVEL (named
-    # `<var><level>`). The `factor_meta` lookup keyed on the
-    # poly-coef name therefore misses; we extract the level
-    # string from the contrast and stash it as `_lvl_pos` so the
-    # post-build sort orders these rows by the factor's actual
-    # `levels()` rather than alphabetically (the marginaleffects
-    # default). `_lvl_pos` is dropped before returning.
+    # For ordered factors fit with the default `contr.poly`, the lm
+    # coef names are `<var>.L` / `<var>.Q` / ... while marginaleffects
+    # emits one AME row per contrast LEVEL (named `<var><level>`).
+    # The `factor_meta` lookup keyed on the poly-coef name therefore
+    # misses, so we reconstruct factor metadata locally from
+    # `col_name` + the level string extracted from `contrast_str`.
+    # This serves two purposes:
+    #   (1) `lvl_pos` lets us sort AME rows by the factor's actual
+    #       `levels()` instead of marginaleffects' alphabetical order.
+    #   (2) `factor_term` / `factor_level` populated via the fallback
+    #       below let the renderer nest the AME row under the factor
+    #       group header (`education:`) with the bare level label,
+    #       matching how B rows are nested.
+    lvl_str <- NA_character_
     lvl_pos <- NA_integer_
     if (is_factor_var) {
-      lvl_str <- if (!is.na(contrast_str) &&
-                       grepl(" - ", contrast_str)) {
-        sub(" - .*$", "", contrast_str)
-      } else {
-        NA_character_
-      }
-      if (!is.na(lvl_str)) {
+      if (!is.na(contrast_str) && grepl(" - ", contrast_str)) {
+        lvl_str <- sub(" - .*$", "", contrast_str)
         lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
       }
     }
+    ft_fallback <- if (is_factor_var) col_name else NA_character_
+    fl_fallback <- if (is_factor_var && !is.na(lvl_str)) {
+      lvl_str
+    } else {
+      NA_character_
+    }
+
     row <- build_one_b_row(
       nm = term_id,
       model_id = model_id,
@@ -421,9 +445,9 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       is_singular = FALSE,
       is_intercept = FALSE,
       is_reference = FALSE,
-      factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_,
-      factor_level_pos = lvl_pos
+      factor_term = fmeta$factor_term %||% ft_fallback,
+      factor_level = fmeta$factor_level %||% fl_fallback,
+      factor_level_pos = fmeta$factor_level_pos %||% lvl_pos
     )
     row$`.spicy_var` <- col_name
     row$`.spicy_lvl_pos` <- lvl_pos
@@ -568,24 +592,27 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       }
     }
 
-    # Stash the factor-level position so the rows can be sorted by
-    # `levels(mf[[var]])` (matching the lm path). marginaleffects
-    # for glm returns factor-contrast rows in alphabetical order,
-    # which deviates from R's factor level order; without this sort
-    # an ordered factor like `education` (Lower < Upper < Tertiary)
-    # is displayed as Tertiary / Upper, breaking visual consistency
-    # with the B-coefficient rows and with the lm AME path.
+    # Reconstruct factor metadata locally (same rationale as
+    # extract_ame_marginaleffects, see comment there). For ordered
+    # factors the coef-based `factor_meta` lookup misses on the
+    # level-named AME term_id, and without the fallback below the
+    # AME row would (a) sort alphabetically rather than by
+    # `levels()`, and (b) lose its factor group header so it
+    # renders as a bare `educationUpper secondary` row instead of
+    # the nested `  Upper secondary` under `education:`.
+    lvl_str <- NA_character_
     lvl_pos <- NA_integer_
     if (is_factor_var) {
-      lvl_str <- if (!is.na(contrast_str) &&
-                       grepl(" - ", contrast_str)) {
-        sub(" - .*$", "", contrast_str)
-      } else {
-        NA_character_
-      }
-      if (!is.na(lvl_str)) {
+      if (!is.na(contrast_str) && grepl(" - ", contrast_str)) {
+        lvl_str <- sub(" - .*$", "", contrast_str)
         lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
       }
+    }
+    ft_fallback <- if (is_factor_var) col_name else NA_character_
+    fl_fallback <- if (is_factor_var && !is.na(lvl_str)) {
+      lvl_str
+    } else {
+      NA_character_
     }
 
     row <- build_one_b_row(
@@ -604,9 +631,9 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       is_singular = FALSE,
       is_intercept = FALSE,
       is_reference = FALSE,
-      factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_,
-      factor_level_pos = lvl_pos
+      factor_term = fmeta$factor_term %||% ft_fallback,
+      factor_level = fmeta$factor_level %||% fl_fallback,
+      factor_level_pos = fmeta$factor_level_pos %||% lvl_pos
     )
     row$`.spicy_var` <- col_name
     row$`.spicy_lvl_pos` <- lvl_pos
