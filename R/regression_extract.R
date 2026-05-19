@@ -254,7 +254,8 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         is_intercept = (nm == "(Intercept)"),
         is_reference = FALSE,
         factor_term = fmeta$factor_term %||% NA_character_,
-        factor_level = fmeta$factor_level %||% NA_character_
+        factor_level = fmeta$factor_level %||% NA_character_,
+        factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
       )
     } else {
       # Class-aware inference: glm uses z-asymptotic Wald (matches
@@ -289,7 +290,8 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         is_intercept = (nm == "(Intercept)"),
         is_reference = FALSE,
         factor_term = fmeta$factor_term %||% NA_character_,
-        factor_level = fmeta$factor_level %||% NA_character_
+        factor_level = fmeta$factor_level %||% NA_character_,
+        factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
       )
     }
   })
@@ -304,6 +306,7 @@ build_one_b_row <- function(nm, model_id, outcome,
                              statistic, df, p_value, test_type,
                              is_singular, is_intercept, is_reference,
                              factor_term, factor_level,
+                             factor_level_pos = NA_integer_,
                              estimate_type = "B") {
   data.frame(
     model_id = model_id,
@@ -323,6 +326,7 @@ build_one_b_row <- function(nm, model_id, outcome,
     is_reference = is_reference,
     factor_term = factor_term,
     factor_level = factor_level,
+    factor_level_pos = as.integer(factor_level_pos),
     stringsAsFactors = FALSE
   )
 }
@@ -350,6 +354,11 @@ build_reference_rows <- function(fit, model_id, outcome) {
     if (!isTRUE(ft$reference_dropped)) next
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
+    # Reference row's position = position of `ref_lvl` in the factor's
+    # `levels()`. With the standard contr.treatment convention this is 1
+    # (R picks the first level as reference), but compute explicitly to
+    # remain robust under user-overridden contrasts.
+    ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- build_one_b_row(
       nm = term_name, model_id = model_id, outcome = outcome,
       estimate = NA_real_, se = NA_real_,
@@ -360,7 +369,8 @@ build_reference_rows <- function(fit, model_id, outcome) {
       is_intercept = FALSE,
       is_reference = TRUE,
       factor_term = ft$factor_term,
-      factor_level = ref_lvl
+      factor_level = ref_lvl,
+      factor_level_pos = ref_pos
     )
   }
   if (length(rows) == 0L) {
@@ -493,17 +503,42 @@ match_coef_to_factor <- function(coef_name, xlevels) {
     suffix <- substring(coef_name, nchar(var) + 1L)
     lvls <- xlevels[[var]]
     # Treatment-contrast match: suffix equals one of the actual levels.
+    # Carry the level's position in the original `levels()` vector so the
+    # renderer can sort rows by factor-level order rather than alphabetical
+    # order on the level string (important for factors whose level order
+    # is not alphabetical, e.g. `factor(grp, levels = c("low","med","high"))`
+    # alphabetises as (high, low, med)).
     if (suffix %in% lvls) {
-      return(list(factor_term = var, factor_level = suffix))
+      return(list(factor_term = var,
+                  factor_level = suffix,
+                  factor_level_pos = match(suffix, lvls)))
     }
     # Polynomial-contrast match: suffix is one of the poly names R
-    # generates for a k-level factor under `contr.poly`.
+    # generates for a k-level factor under `contr.poly`. Position is
+    # the polynomial degree (.L=1, .Q=2, .C=3, ^k=k) so rows render
+    # as linear -> quadratic -> cubic -> ...
     poly_names <- poly_suffix_names(length(lvls))
     if (suffix %in% poly_names) {
-      return(list(factor_term = var, factor_level = suffix))
+      return(list(factor_term = var,
+                  factor_level = suffix,
+                  factor_level_pos = poly_suffix_degree(suffix)))
     }
   }
   NULL
+}
+
+# Map a polynomial-contrast suffix (".L", ".Q", ".C", "^4", ...) to its
+# polynomial degree (1, 2, 3, 4, ...). Used by `match_coef_to_factor` to
+# attach a sortable position to poly-coded coefficient rows.
+poly_suffix_degree <- function(suffix) {
+  if (identical(suffix, ".L")) return(1L)
+  if (identical(suffix, ".Q")) return(2L)
+  if (identical(suffix, ".C")) return(3L)
+  if (startsWith(suffix, "^")) {
+    n <- suppressWarnings(as.integer(substring(suffix, 2L)))
+    if (!is.na(n)) return(n)
+  }
+  NA_integer_
 }
 
 
@@ -632,6 +667,7 @@ empty_coefs_long <- function() {
     is_reference = logical(0),
     factor_term = character(0),
     factor_level = character(0),
+    factor_level_pos = integer(0),
     stringsAsFactors = FALSE
   )
 }

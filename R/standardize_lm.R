@@ -409,7 +409,8 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
       is_intercept = is_intercept,
       is_reference = FALSE,
       factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_
+      factor_level = fmeta$factor_level %||% NA_character_,
+      factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
     )
   })
   do.call(rbind, rows)

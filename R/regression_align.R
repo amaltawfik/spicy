@@ -146,11 +146,18 @@ compute_canonical_term_order <- function(extracts) {
 # Reorder a term sequence so that coefs sharing the same `factor_term`
 # stay contiguous (in factor-level order). Non-factor terms keep their
 # relative order. Reference rows of the group land first within their
-# group (factor_level == reference level -> emitted by build_reference_rows
-# with is_reference = TRUE; the level string is the reference label).
+# group.
+#
+# Sorting key: `factor_level_pos` (an integer carried per row by the
+# extract layer, see `match_coef_to_factor()`). For treatment-coded
+# levels it is the level's position in the original `levels()` vector
+# (so the displayed order matches `factor(x, levels = c(...))` rather
+# than an alphabetical sort on the level string). For polynomial-coded
+# levels (`.L`, `.Q`, `.C`, `^4`, ...) it is the polynomial degree so
+# the table reads linear -> quadratic -> cubic -> ...
 group_factor_terms <- function(term_order, coefs_long) {
   meta <- unique(coefs_long[, c("term", "factor_term", "factor_level",
-                                  "is_reference")])
+                                  "factor_level_pos", "is_reference")])
   meta <- meta[!duplicated(meta$term), , drop = FALSE]
   rownames(meta) <- meta$term
 
@@ -165,52 +172,16 @@ group_factor_terms <- function(term_order, coefs_long) {
       visited[[t]] <- TRUE
       next
     }
-    # Collect entire group for this factor; ref row first, then
-    # non-reference levels in factor_level order. For ordered factors
-    # under `contr.poly`, `factor_level` holds the poly-trend suffix
-    # (".L", ".Q", ".C", "^4", ...); sorting alphabetically would
-    # surface `.C` before `.L` / `.Q`, so we use a polynomial rank
-    # for those groups so the table reads linear -> quadratic ->
-    # cubic -> quartic -> ...
     group <- meta$term[!is.na(meta$factor_term) & meta$factor_term == ft]
     group_meta <- meta[group, , drop = FALSE]
-    lvl_key <- factor_level_sort_key(group_meta$factor_level)
     group_meta <- group_meta[order(!group_meta$is_reference,
-                                    lvl_key,
+                                    group_meta$factor_level_pos,
                                     na.last = TRUE), , drop = FALSE]
     new <- intersect(group_meta$term, term_order)  # preserve any drops
     out <- c(out, new)
     visited[new] <- TRUE
   }
   out
-}
-
-# Map a `factor_level` vector to a sort key. Treatment-coded levels
-# (no leading "." or "^") sort by their alphabetic order. Poly-coded
-# levels (".L" / ".Q" / ".C" / "^4" / "^5" / ...) sort by polynomial
-# degree so the table reads linear -> quadratic -> cubic -> ...
-factor_level_sort_key <- function(levels_vec) {
-  if (length(levels_vec) == 0L) return(character(0))
-  s <- as.character(levels_vec)
-  is_poly <- !is.na(s) & (startsWith(s, ".") | startsWith(s, "^"))
-  if (!any(is_poly)) return(s)
-  # Build a numeric rank for poly levels; non-poly entries get NA so
-  # they sort last (they shouldn't co-occur with poly entries in a
-  # well-formed group, but defensive).
-  rank_num <- vapply(s, function(x) {
-    if (is.na(x)) return(NA_real_)
-    if (x == ".L") return(1)
-    if (x == ".Q") return(2)
-    if (x == ".C") return(3)
-    if (startsWith(x, "^")) {
-      n <- suppressWarnings(as.integer(substring(x, 2L)))
-      if (!is.na(n)) return(as.numeric(n))
-    }
-    NA_real_
-  }, numeric(1), USE.NAMES = FALSE)
-  # Format as zero-padded strings so order() yields the right sequence
-  # alongside any non-poly entries (shouldn't happen but cheap).
-  formatC(rank_num, width = 4L, flag = "0", format = "d")
 }
 
 

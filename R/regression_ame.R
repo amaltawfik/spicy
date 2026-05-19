@@ -216,7 +216,8 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
       is_intercept = FALSE,
       is_reference = FALSE,
       factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_
+      factor_level = fmeta$factor_level %||% NA_character_,
+      factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
     )
   })
   do.call(rbind, rows)
@@ -421,7 +422,8 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       is_intercept = FALSE,
       is_reference = FALSE,
       factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_
+      factor_level = fmeta$factor_level %||% NA_character_,
+      factor_level_pos = lvl_pos
     )
     row$`.spicy_var` <- col_name
     row$`.spicy_lvl_pos` <- lvl_pos
@@ -603,7 +605,8 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       is_intercept = FALSE,
       is_reference = FALSE,
       factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_
+      factor_level = fmeta$factor_level %||% NA_character_,
+      factor_level_pos = lvl_pos
     )
     row$`.spicy_var` <- col_name
     row$`.spicy_lvl_pos` <- lvl_pos

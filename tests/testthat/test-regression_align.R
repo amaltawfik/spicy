@@ -217,46 +217,21 @@ test_that("pivot_aligned_wide — empty aligned returns empty wide frame", {
 
 
 # ============================================================================
-# factor_level_sort_key — defensive paths + high-degree poly
+# Factor-level ordering (poly degree + treatment-coded position)
 # ============================================================================
+# These end-to-end tests verify the row ordering of factor coefficients
+# in the rendered table, regardless of the internal sort-key
+# implementation. Two scenarios:
+#
+#   1. Ordered factors (contr.poly): R emits .L / .Q / .C / ^4 / ^5
+#      coefficients; rows must appear in polynomial degree order
+#      (linear -> quadratic -> cubic -> ...).
+#   2. Treatment-coded factors with custom (non-alphabetical) levels:
+#      e.g. factor(grp, levels = c("low","med","high")); rows must
+#      appear in factor-level order, not alphabetical order of the
+#      level string.
 
-test_that("factor_level_sort_key — empty input returns empty character", {
-  expect_identical(spicy:::factor_level_sort_key(character(0)),
-                    character(0))
-})
-
-test_that("factor_level_sort_key — all-treatment levels sort alphabetically", {
-  expect_identical(spicy:::factor_level_sort_key(c("Female", "Male")),
-                    c("Female", "Male"))
-})
-
-test_that("factor_level_sort_key — NA element returns a non-numeric key (formatC NA)", {
-  out <- spicy:::factor_level_sort_key(c(".L", NA, ".Q"))
-  # Defensive branch: NA in the input becomes the formatC NA string;
-  # the test just verifies the function returns a same-length result.
-  expect_length(out, 3L)
-  # The two poly entries keep their correct relative degree order.
-  expect_true(out[1] < out[3])
-})
-
-test_that("factor_level_sort_key — high-degree poly suffix '^4' / '^5' parsed correctly", {
-  # Reachable via an ordered factor with 5+ levels under contr.poly:
-  # R generates ".L", ".Q", ".C", "^4", "^5", ...
-  out <- spicy:::factor_level_sort_key(c(".L", ".Q", ".C", "^4", "^5"))
-  # Each yields a string ranked by polynomial degree; we test that the
-  # ordering induced by the keys matches the input order.
-  expect_equal(order(out), 1:5)
-})
-
-test_that("factor_level_sort_key — bogus '^xx' falls through to a non-crashing key", {
-  out <- spicy:::factor_level_sort_key(c(".L", "^bogus"))
-  expect_length(out, 2L)
-  # Specifically: the .L entry gets its zero-padded numeric rank;
-  # the bogus entry returns NA-rank -> formatC NA placeholder.
-  expect_match(out[1], "^0+1$")
-})
-
-test_that("end-to-end: 5-level ordered factor renders in polynomial degree order", {
+test_that("ordered factor (5 levels): rows render in polynomial degree order", {
   set.seed(1)
   df <- data.frame(
     y  = rnorm(300),
@@ -271,4 +246,23 @@ test_that("end-to-end: 5-level ordered factor renders in polynomial degree order
   c4 <- which(vars == ".C")
   qu <- which(vars == "^4")
   expect_true(l < q && q < c4 && c4 < qu)
+})
+
+test_that("treatment-coded factor: rows render in factor-level order, not alphabetical", {
+  set.seed(1)
+  df <- data.frame(
+    y = rnorm(200),
+    # Non-alphabetical level order: alphabetical(low, med, high) = (high, low, med).
+    # Reference = first level = "low". Expected coef rows: med, then high.
+    grp = factor(sample(c("low", "med", "high"), 200, replace = TRUE),
+                 levels = c("low", "med", "high"))
+  )
+  fit <- lm(y ~ grp, df)
+  out <- table_regression(fit)
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  med_pos <- which(vars == "med")
+  high_pos <- which(vars == "high")
+  expect_length(med_pos, 1L)
+  expect_length(high_pos, 1L)
+  expect_lt(med_pos, high_pos)  # med before high (levels order, not alpha)
 })

@@ -114,7 +114,8 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
         is_intercept = FALSE,
         is_reference = FALSE,
         factor_term = fmeta$factor_term %||% NA_character_,
-        factor_level = fmeta$factor_level %||% NA_character_
+        factor_level = fmeta$factor_level %||% NA_character_,
+        factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
       )
     }
   }
