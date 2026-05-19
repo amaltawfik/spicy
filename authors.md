@@ -8,18 +8,19 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/v0.12.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/main/inst/CITATION)
 
 Tawfik A (2026). *spicy: Descriptive Statistics, Summary Tables, and
 Data Management Tools*.
 [doi:10.32614/CRAN.package.spicy](https://doi.org/10.32614/CRAN.package.spicy).
-R package version 0.12.0, <https://CRAN.R-project.org/package=spicy>.
+R package version 0.12.0.9000,
+<https://CRAN.R-project.org/package=spicy>.
 
     @Manual{,
       title = {spicy: Descriptive Statistics, Summary Tables, and Data Management Tools},
       author = {Amal Tawfik},
       year = {2026},
-      note = {R package version 0.12.0},
+      note = {R package version 0.12.0.9000},
       url = {https://CRAN.R-project.org/package=spicy},
       doi = {10.32614/CRAN.package.spicy},
     }
