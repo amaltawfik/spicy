@@ -566,7 +566,27 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       }
     }
 
-    build_one_b_row(
+    # Stash the factor-level position so the rows can be sorted by
+    # `levels(mf[[var]])` (matching the lm path). marginaleffects
+    # for glm returns factor-contrast rows in alphabetical order,
+    # which deviates from R's factor level order; without this sort
+    # an ordered factor like `education` (Lower < Upper < Tertiary)
+    # is displayed as Tertiary / Upper, breaking visual consistency
+    # with the B-coefficient rows and with the lm AME path.
+    lvl_pos <- NA_integer_
+    if (is_factor_var) {
+      lvl_str <- if (!is.na(contrast_str) &&
+                       grepl(" - ", contrast_str)) {
+        sub(" - .*$", "", contrast_str)
+      } else {
+        NA_character_
+      }
+      if (!is.na(lvl_str)) {
+        lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+      }
+    }
+
+    row <- build_one_b_row(
       nm = term_id,
       model_id = model_id,
       outcome = outcome,
@@ -585,8 +605,22 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       factor_term = fmeta$factor_term %||% NA_character_,
       factor_level = fmeta$factor_level %||% NA_character_
     )
+    row$`.spicy_var` <- col_name
+    row$`.spicy_lvl_pos` <- lvl_pos
+    row
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  # Sort within each variable: factor rows by their level position
+  # in `levels(mf[[var]])`; non-factor rows keep their input order.
+  if (nrow(out) > 1L) {
+    out <- out[order(match(out$`.spicy_var`, unique(out$`.spicy_var`)),
+                       out$`.spicy_lvl_pos`,
+                       na.last = FALSE), , drop = FALSE]
+    rownames(out) <- NULL
+  }
+  out$`.spicy_var` <- NULL
+  out$`.spicy_lvl_pos` <- NULL
+  out
 }
 
 
