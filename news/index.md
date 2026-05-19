@@ -4,16 +4,10 @@
 
 ### Bug fixes
 
-- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  now renders factor coefficient rows in
-  [`levels()`](https://rdrr.io/r/base/levels.html) order rather than
-  alphabetical order on the level string. Affected both B-coefficient
-  rows and AME rows for factors whose levels are not in alphabetical
-  order — e.g. `factor(grp, levels = c("low", "med", "high"))` now
-  renders as `low (ref.) → med → high` (was `low (ref.) → high → med`),
-  and AME rows for ordered factors like `education` (Lower \< Upper \<
-  Tertiary) now follow the factor’s level order (was alphabetical:
-  Tertiary, Upper).
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  factor coefficient and AME rows now follow the factor’s
+  [`levels()`](https://rdrr.io/r/base/levels.html) order (previously
+  sorted alphabetically on the level string).
 
 ## spicy 0.12.0
 
