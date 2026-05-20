@@ -22,10 +22,11 @@
   for plain factors. Multi-model reference-row display tightened to
   match `modelsummary` / `gtsummary` / Stata `esttab`.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  `stars = TRUE` now suffixes significance stars on the AME cells when
-  AME is in `show_columns`, on the same rule that already applied to B /
-  β (stars convey the underlying p-value compactly, regardless of
-  whether the p column is also displayed).
+  `stars = TRUE` now anchors significance stars on B by default
+  (matching the convention in SPSS, Stata `esttab`, SAS, and the R
+  packages `modelsummary` / `gtsummary` / `parameters`). Previously
+  stars went on β when both B and β were shown. Stars also extend to AME
+  cells when AME is in `show_columns`.
 
 ## spicy 0.12.0
 

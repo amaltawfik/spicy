@@ -70,7 +70,7 @@
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now show a reference row (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors. Multi-model reference-row display tightened to match <code>modelsummary</code> / <code>gtsummary</code> / Stata <code>esttab</code>.</li>
 <li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: <code>stars = TRUE</code> now suffixes significance stars on the AME cells when AME is in <code>show_columns</code>, on the same rule that already applied to B / β (stars convey the underlying p-value compactly, regardless of whether the p column is also displayed).</li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: <code>stars = TRUE</code> now anchors significance stars on B by default (matching the convention in SPSS, Stata <code>esttab</code>, SAS, and the R packages <code>modelsummary</code> / <code>gtsummary</code> / <code>parameters</code>). Previously stars went on β when both B and β were shown. Stars also extend to AME cells when AME is in <code>show_columns</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
