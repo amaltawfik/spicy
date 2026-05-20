@@ -3,9 +3,10 @@ title: "Getting started with spicy"
 description: >
   Get started with spicy for descriptive statistics, variable
   inspection, frequency tables, cross-tabulations, association
-  measures, categorical and continuous summary tables, and codebooks in
-  R. A tidyverse-friendly alternative to SPSS and Stata for survey and
-  labelled data workflows.
+  measures, categorical and continuous summary tables, regression
+  coefficient tables, and codebooks in R. A tidyverse-friendly
+  alternative to SPSS and Stata for survey and labelled data
+  workflows.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -160,9 +161,21 @@ table_continuous_lm(
 )
 ```
 
+`table_regression()` reports the full coefficient table for one or
+several fitted `lm()` or `glm()` models, with APA-aligned formatting,
+factor grouping with reference rows, robust variance, standardised
+coefficients, average marginal effects, hierarchical comparisons, and
+side-by-side multi-model layouts:
+
+```{r table-regression}
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+table_regression(fit)
+```
+
 For detailed guidance, see the dedicated articles on
 `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-and the final reporting overview for APA-style summary tables.
+`table_regression()`, and the final reporting overview for APA-style
+summary tables.
 
 ## Row-wise summaries
 
@@ -197,6 +210,10 @@ sochealth |>
 - See `?table_continuous_lm` for model-based mean-comparison tables
   with robust / cluster-robust / bootstrap / jackknife SE, case
   weights, or additive covariate adjustment.
+- See `?table_regression` for `lm` / `glm` coefficient tables with
+  APA-aligned formatting, robust variance, standardised coefficients,
+  average marginal effects, hierarchical comparisons, and
+  side-by-side multi-model layouts.
 - See `?mean_n`, `?sum_n`, `?count_n` for row-wise summaries with
   optional minimum-valid-values rules.
 - See `?code_book` to generate an interactive HTML codebook;
