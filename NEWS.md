@@ -16,6 +16,10 @@
   nested under the factor group header with bare level labels
   (e.g. `Upper secondary`), instead of appearing as ungrouped
   rows with the full coefficient name (`educationUpper secondary`).
+* `table_regression()`: requesting AME companion columns
+  (`ame_ci`, `ame_p`, `ame_se`) without the bare `ame` token now
+  correctly populates those columns. Previously the columns
+  appeared in the header but were empty.
 
 # spicy 0.12.0
 
