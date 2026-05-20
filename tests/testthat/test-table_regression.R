@@ -78,13 +78,19 @@ test_that("table_regression — stars = TRUE applied to B (no β requested)", {
   expect_match(wt_row$B, "\\*\\*\\*$")
 })
 
-test_that("table_regression — stars on β when standardized != 'none'", {
+test_that("table_regression — stars on B when both B and β are shown", {
+  # Convention aligned with SPSS, Stata `esttab`, SAS, and the R
+  # ecosystem (modelsummary, gtsummary, parameters): stars are
+  # anchored on the raw coefficient B. β is a deterministic
+  # rescaling of B; its p-value is identical, so adding stars on
+  # both columns would be redundant. β stays plain, B carries
+  # the significance signal.
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, standardized = "refit", stars = TRUE)
   wt_row <- out[out$Variable == "wt", , drop = FALSE]
-  expect_match(wt_row$β, "\\*\\*\\*$")
-  # B should NOT carry the stars when β is shown
-  expect_false(grepl("\\*", wt_row$B))
+  expect_match(wt_row$B, "\\*\\*\\*$")
+  # β should NOT carry the stars when B is shown.
+  expect_false(grepl("\\*", wt_row$β))
 })
 
 

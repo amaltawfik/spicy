@@ -652,28 +652,36 @@ format_cell_value <- function(long_row, cs, stars_map,
 
   # Stars suffix the displayed estimate. The token determines whose
   # p-value to use:
-  #   * `b`    -> uses B's p_value (the row's own p, since long_row
-  #               is filtered upstream by estimate_type == "B"). Skipped
-  #               when `beta` is also displayed, to avoid stars on
-  #               both B and beta cells of the same coefficient row
-  #               (they share the same p; stars on beta is the
-  #               publication convention when standardisation is
-  #               requested).
-  #   * `beta` -> uses B's p_value, same row.
-  #   * `ame`  -> uses AME's p_value (long_row is filtered to the
-  #               AME row, so .p_value here is the AME-specific p).
-  #               Stars on AME convey significance of the marginal
-  #               effect -- the user-substantive quantity for `glm`
-  #               and any model with interactions. Matches Mood
-  #               (2010) and Long & Freese (2014 sec 5.3) advice.
+  #   * `b`    -> stars on B (always when B is shown). B is the
+  #               raw coefficient on which the test is performed;
+  #               this matches the dominant convention in published
+  #               regression tables from SPSS, Stata (esttab) and
+  #               SAS user workflows, and in the R ecosystem
+  #               (modelsummary, gtsummary, parameters all star B
+  #               by default).
+  #   * `beta` -> stars on beta ONLY when B is not also shown. The
+  #               standardised coefficient is a deterministic
+  #               rescaling of B; its p-value is identical to B's
+  #               (test statistic is invariant under linear
+  #               rescaling). Adding stars on both B and beta cells
+  #               of the same coefficient row is redundant; the
+  #               convention is to anchor the significance signal
+  #               on the raw coefficient and leave beta as the
+  #               magnitude-comparison column without stars.
+  #   * `ame`  -> stars on AME (uses AME's p_value via the upstream
+  #               estimate_type filter). Stars on AME convey
+  #               significance of the marginal effect -- the
+  #               user-substantive quantity for `glm` and any model
+  #               with interactions (Mood 2010; Long & Freese 2014
+  #               sec 5.3).
   #
   # Stars are independent of whether the corresponding p column is
   # displayed in `show_columns`; their purpose is precisely to
   # convey significance compactly without spending a column on the
   # p-value.
   apply_stars <- !is.null(stars_map) && (
-    (tk == "b" && !"beta" %in% show_columns) ||
-    (tk == "beta") ||
+    (tk == "b") ||
+    (tk == "beta" && !"b" %in% show_columns) ||
     (tk == "ame")
   )
   if (apply_stars) {
