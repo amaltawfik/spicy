@@ -30,6 +30,14 @@
   em-dashes while non-reference rows of the same factor were blank — an
   asymmetric display). Matches the convention of `modelsummary`,
   `gtsummary`, and Stata `esttab`.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  em-dashes on a factor’s reference row now appear under the columns
+  whose estimate type the level is actually a reference for. For a plain
+  treatment-coded factor (`sex`), em-dashes appear under both the B
+  block AND the AME block. For an ordered factor with AME (`education`),
+  em-dashes appear under the AME block only (the `.L` / `.Q` polynomial
+  trends have no per-level reference). The em-dash placement is now a
+  semantic signal, independent of column order in `show_columns`.
 
 ## spicy 0.12.0
 

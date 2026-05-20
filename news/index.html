@@ -74,6 +74,8 @@
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now correctly populates those columns. Previously the columns appeared in the header but were empty.</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: in multi-model layout, the reference row of a factor absent from a given model is now blank in that model’s columns (previously it showed em-dashes while non-reference rows of the same factor were blank — an asymmetric display). Matches the convention of <code>modelsummary</code>, <code>gtsummary</code>, and Stata <code>esttab</code>.</li>
+<li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: em-dashes on a factor’s reference row now appear under the columns whose estimate type the level is actually a reference for. For a plain treatment-coded factor (<code>sex</code>), em-dashes appear under both the B block AND the AME block. For an ordered factor with AME (<code>education</code>), em-dashes appear under the AME block only (the <code>.L</code> / <code>.Q</code> polynomial trends have no per-level reference). The em-dash placement is now a semantic signal, independent of column order in <code>show_columns</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
