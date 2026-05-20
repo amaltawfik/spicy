@@ -78,3 +78,43 @@ test_that("glm(poisson) AME: ordered-factor rows in levels() order (family-agnos
   # Alphabetical would put Alpha first (A < G).
   expect_equal(ord, c("grpGamma", "grpAlpha"))
 })
+
+
+# ============================================================================
+# Synthetic reference row for ordered factors when AME is requested
+# ============================================================================
+# Polynomial contrasts have no concept of a reference level (`.L` / `.Q`
+# are orthogonal trends, not comparisons against a baseline). But when
+# AME is requested alongside, marginaleffects emits per-level contrasts
+# against `levels()[1]`, and the reader needs to see which level is the
+# baseline. `build_reference_rows()` emits a synthetic ref row anchored
+# on `levels()[1]` only when AME is in show_columns -- the row is
+# em-dashed in both B and AME columns (consistent with how plain
+# factors already display their reference row).
+
+test_that("ordered factor + AME: synthetic reference row is emitted", {
+  skip_if_no_marginaleffects()
+  out <- table_regression(
+    glm(smoking ~ sex + age + education, data = sochealth,
+        family = binomial),
+    show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
+  )
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(body$Variable)
+  # The reference row appears with the "(ref.)" annotation. For an
+  # ordered factor whose first level is "Lower secondary", the row
+  # label is "Lower secondary (ref.)".
+  expect_true(any(grepl("Lower secondary \\(ref\\.\\)", vars)))
+})
+
+test_that("ordered factor WITHOUT AME: no synthetic reference row", {
+  out <- table_regression(
+    glm(smoking ~ sex + age + education, data = sochealth,
+        family = binomial)
+  )
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(body$Variable)
+  # When no AME is requested, the poly trends `.L` / `.Q` stand alone
+  # with no reference anchor (they're not contrasts against a baseline).
+  expect_false(any(grepl("Lower secondary \\(ref\\.\\)", vars)))
+})

@@ -80,10 +80,19 @@ extract_lm_phase1 <- function(
   )
 
   # ---- Reference-level placeholder rows (Q5 em-dash) ----------------------
+  # `ame_requested` controls whether ordered (polynomial-coded) factors
+  # also get a synthetic reference row. The poly contrasts (`.L`, `.Q`)
+  # have no concept of a reference level on their own, but the AME
+  # block emitted alongside them IS a per-level contrast against the
+  # first level. Surfacing the reference explicitly closes the
+  # asymmetry with plain factors (where `Female (ref.)` is already
+  # shown) and makes the AME baseline visible to the reader.
+  ame_requested <- "ame" %in% show_columns
   ref_rows <- build_reference_rows(
     fit = fit,
     model_id = model_id,
-    outcome = outcome
+    outcome = outcome,
+    ame_requested = ame_requested
   )
   coefs_long <- rbind(coefs_B, ref_rows)
 
@@ -343,7 +352,8 @@ build_one_b_row <- function(nm, model_id, outcome,
 # In a no-intercept formula like `y ~ 0 + cyl`, R fits ALL k levels
 # of the first factor as real coefficients -- `detect_factor_terms()`
 # flags `reference_dropped = FALSE` for these and we skip them here.
-build_reference_rows <- function(fit, model_id, outcome) {
+build_reference_rows <- function(fit, model_id, outcome,
+                                   ame_requested = FALSE) {
   factor_terms <- detect_factor_terms(fit)
   if (length(factor_terms) == 0L) {
     return(empty_coefs_long())
@@ -351,8 +361,24 @@ build_reference_rows <- function(fit, model_id, outcome) {
 
   rows <- list()
   for (ft in factor_terms) {
-    if (!isTRUE(ft$reference_dropped)) next
-    ref_lvl <- ft$reference_level
+    is_treatment_dropped <- isTRUE(ft$reference_dropped)
+    # Polynomial-coded factors (R's contr.poly for `ordered()`) have no
+    # natural reference -- the `.L` / `.Q` / `.C` contrasts are
+    # orthogonal trends, not comparisons against a baseline level. But
+    # when AME columns are requested, marginaleffects emits one row per
+    # per-level contrast against `levels()[1]`, and the reader needs
+    # to see which level is the baseline. Emit a synthetic reference
+    # row anchored on `levels()[1]` in that case.
+    is_poly_with_ame <- identical(ft$contrast_type, "polynomial") &&
+      isTRUE(ame_requested)
+    if (!is_treatment_dropped && !is_poly_with_ame) next
+
+    ref_lvl <- if (is_treatment_dropped) {
+      ft$reference_level
+    } else {
+      # Polynomial case: marginaleffects baselines on the first level.
+      ft$levels[1L]
+    }
     term_name <- paste0(ft$factor_term, ref_lvl)
     # Reference row's position = position of `ref_lvl` in the factor's
     # `levels()`. With the standard contr.treatment convention this is 1
