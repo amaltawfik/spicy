@@ -275,13 +275,15 @@ printed ASCII table and in the <code>tinytable</code>, <code>gt</code>, <code>fl
 <code>word</code>, and <code>clipboard</code> outputs. The first column (<code>Variable</code>)
 is always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
 mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
-<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and <code>tinytable::style_tt(align = "d")</code>.
-For engines without a native primitive (<code>flextable</code>, <code>word</code>,
-<code>clipboard</code>, ASCII print), numeric cells are pre-padded with
-leading and trailing spaces so the dots line up vertically,
-then centred in the default body font (single-font policy
-matching <code><a href="table_regression.html">table_regression()</a></code>).</p></li>
+SPSS, SAS, and LaTeX <code>siunitx</code>. Numeric cells are pre-padded
+with figure-spaces (U+2007, digit-width) so every string in a
+column has the same width with the decimal mark at the same
+internal position; centring those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-centre
+strategy is applied on every engine (<code>gt</code>, <code>tinytable</code>,
+<code>flextable</code>, <code>word</code>, <code>clipboard</code>, ASCII print) for a
+homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
 </ul><p>The <code>excel</code> output uses the engine's default alignment in any
