@@ -14,9 +14,9 @@
   populates those columns (was empty).
 * `table_regression()`: ordered factors with AME columns now
   show a reference row (e.g. `Lower secondary (ref.)`), matching
-  the convention already used for plain factors. Multi-model
-  reference-row display tightened to match `modelsummary` /
-  `gtsummary` / Stata `esttab`.
+  the convention already used for plain factors. In multi-model
+  layout, a factor's reference row is now blank in models that
+  do not include the factor (was em-dashed regardless).
 * `table_regression()`: `stars = TRUE` now anchors stars on B
   and on AME (when shown). Previously stars went on β instead
   of B when both were displayed.
