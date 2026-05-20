@@ -72,6 +72,8 @@
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: AME rows for ordered factors are now nested under the factor group header with bare level labels (e.g. <code>Upper secondary</code>), instead of appearing as ungrouped rows with the full coefficient name (<code>educationUpper secondary</code>).</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now correctly populates those columns. Previously the columns appeared in the header but were empty.</li>
+<li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: in multi-model layout, the reference row of a factor absent from a given model is now blank in that model’s columns (previously it showed em-dashes while non-reference rows of the same factor were blank — an asymmetric display). Matches the convention of <code>modelsummary</code>, <code>gtsummary</code>, and Stata <code>esttab</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
