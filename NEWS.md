@@ -9,29 +9,15 @@
 ## Minor improvements
 
 * `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
-  `flextable` and `word` outputs no longer apply a monospace
-  (`Consolas`) override on numeric body cells. The table now uses
-  a single font throughout, matching the existing policy in
-  `table_regression()`. Decimal alignment is preserved via the
-  same uniform-width padding + centred cells convention.
-* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
-  decimal alignment in `gt`, `tinytable`, `flextable`, and `word`
-  outputs now produces visually-stacked decimal points across rows.
-  Previously the cell padding used the regular ASCII space (U+0020),
-  which HTML renderers collapse and markdown-table cell parsers
-  strip on the cell edges -- silently undoing the alignment in
-  those outputs. Padding now uses the figure-space character
-  (U+2007, digit-width), which both HTML and markdown preserve.
-  This is the same convention already used by `table_regression()`,
-  so all `table_*` functions now share one decimal-alignment
-  strategy across every rendered engine. (The native primitives
-  `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`
-  are no longer used: each renders differently per engine -- gt
-  appears right-aligned, tinytable centres each cell on its own
-  value rather than on the decimal mark -- so they do not deliver
-  homogeneous output.)
+  `flextable` and `word` outputs now use a single font throughout
+  (was a `Consolas` override on numeric cells), matching
+  `table_regression()`.
 
 ## Bug fixes
+
+* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
+  fix decimal-point alignment in `gt`, `tinytable`, `flextable`,
+  and `word` outputs.
 
 * `table_regression()`: factor coefficient and AME rows now
   follow the factor's `levels()` order (previously sorted
