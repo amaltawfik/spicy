@@ -2,13 +2,6 @@
 
 ## spicy (development version)
 
-### Minor improvements
-
-- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  ordered factors with AME columns now display the reference level
-  explicitly (e.g. `Lower secondary (ref.)`), matching the convention
-  already used for plain factors.
-
 ### Bug fixes
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
@@ -17,27 +10,17 @@
   sorted alphabetically on the level string).
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   AME rows for ordered factors are now nested under the factor group
-  header with bare level labels (e.g. `Upper secondary`), instead of
-  appearing as ungrouped rows with the full coefficient name
+  header with bare level labels (e.g. `Upper secondary`), not as
+  ungrouped rows with the full coefficient name
   (`educationUpper secondary`).
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   requesting AME companion columns (`ame_ci`, `ame_p`, `ame_se`) without
-  the bare `ame` token now correctly populates those columns. Previously
-  the columns appeared in the header but were empty.
+  the bare `ame` token now populates those columns (was empty).
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  in multi-model layout, the reference row of a factor absent from a
-  given model is now blank in that model’s columns (previously it showed
-  em-dashes while non-reference rows of the same factor were blank — an
-  asymmetric display). Matches the convention of `modelsummary`,
-  `gtsummary`, and Stata `esttab`.
-- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  em-dashes on a factor’s reference row now appear under the columns
-  whose estimate type the level is actually a reference for. For a plain
-  treatment-coded factor (`sex`), em-dashes appear under both the B
-  block AND the AME block. For an ordered factor with AME (`education`),
-  em-dashes appear under the AME block only (the `.L` / `.Q` polynomial
-  trends have no per-level reference). The em-dash placement is now a
-  semantic signal, independent of column order in `show_columns`.
+  ordered factors with AME columns now show a reference row
+  (e.g. `Lower secondary (ref.)`), matching the convention already used
+  for plain factors. Multi-model reference-row display tightened to
+  match `modelsummary` / `gtsummary` / Stata `esttab`.
 
 ## spicy 0.12.0
 

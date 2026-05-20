@@ -60,22 +60,15 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
 <div class="section level3">
-<h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
-<ul><li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now display the reference level explicitly (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors.</li>
-</ul></div>
-<div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: factor coefficient and AME rows now follow the factor’s <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (previously sorted alphabetically on the level string).</li>
 <li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: AME rows for ordered factors are now nested under the factor group header with bare level labels (e.g. <code>Upper secondary</code>), instead of appearing as ungrouped rows with the full coefficient name (<code>educationUpper secondary</code>).</li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: AME rows for ordered factors are now nested under the factor group header with bare level labels (e.g. <code>Upper secondary</code>), not as ungrouped rows with the full coefficient name (<code>educationUpper secondary</code>).</li>
 <li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now correctly populates those columns. Previously the columns appeared in the header but were empty.</li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now populates those columns (was empty).</li>
 <li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: in multi-model layout, the reference row of a factor absent from a given model is now blank in that model’s columns (previously it showed em-dashes while non-reference rows of the same factor were blank — an asymmetric display). Matches the convention of <code>modelsummary</code>, <code>gtsummary</code>, and Stata <code>esttab</code>.</li>
-<li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code>: em-dashes on a factor’s reference row now appear under the columns whose estimate type the level is actually a reference for. For a plain treatment-coded factor (<code>sex</code>), em-dashes appear under both the B block AND the AME block. For an ordered factor with AME (<code>education</code>), em-dashes appear under the AME block only (the <code>.L</code> / <code>.Q</code> polynomial trends have no per-level reference). The em-dash placement is now a semantic signal, independent of column order in <code>show_columns</code>.</li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now show a reference row (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors. Multi-model reference-row display tightened to match <code>modelsummary</code> / <code>gtsummary</code> / Stata <code>esttab</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
