@@ -306,13 +306,15 @@
 #'   is always left-aligned. One of:
 #'   - `"decimal"` (default): align numeric columns on the decimal
 #'     mark, the standard scientific-publication convention used by
-#'     SPSS, SAS, LaTeX `siunitx`, and the native primitives of
-#'     [gt::cols_align_decimal()] and `tinytable::style_tt(align = "d")`.
-#'     For engines without a native primitive (`flextable`, `word`,
-#'     `clipboard`, ASCII print), numeric cells are pre-padded with
-#'     leading and trailing spaces so the dots line up vertically,
-#'     then centred in the default body font (single-font policy
-#'     matching `table_regression()`).
+#'     SPSS, SAS, and LaTeX `siunitx`. Numeric cells are pre-padded
+#'     with figure-spaces (U+2007, digit-width) so every string in a
+#'     column has the same width with the decimal mark at the same
+#'     internal position; centring those uniform-width strings then
+#'     stacks the decimal points vertically. The same pad-then-centre
+#'     strategy is applied on every engine (`gt`, `tinytable`,
+#'     `flextable`, `word`, `clipboard`, ASCII print) for a
+#'     homogeneous rendering, matching `table_regression()` and
+#'     `table_continuous_lm()`.
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
@@ -924,11 +926,15 @@ table_categorical <- function(
   }
 
   # Pre-pad numeric (i.e. non-Variable) columns of a display data
-  # frame with leading / trailing spaces so the decimal mark falls at
-  # the same horizontal position across each column. Used by engines
-  # without a native decimal-alignment primitive (`flextable`, `word`,
-  # `clipboard`, ASCII print). The first column is the variable /
-  # level label and is left untouched. No-op unless `align == "decimal"`.
+  # frame with figure-spaces (U+2007, digit-width) so the decimal
+  # mark falls at the same horizontal position across each column.
+  # Used by every body-rendering engine (`gt`, `tinytable`,
+  # `flextable`, `word`, `clipboard`, ASCII print) so the rendered
+  # output is homogeneous: centring uniform-width strings stacks the
+  # decimal points vertically. Same strategy as `table_regression()`
+  # and `table_continuous_lm()`. The first column is the variable /
+  # level label and is left untouched. No-op unless
+  # `align == "decimal"`.
   pad_decimal_cols <- function(df) {
     if (!identical(align, "decimal") || ncol(df) < 2L) {
       return(df)
@@ -936,7 +942,8 @@ table_categorical <- function(
     for (j in seq_along(df)[-1]) {
       df[[j]] <- decimal_align_strings(
         df[[j]],
-        decimal_mark = decimal_mark
+        decimal_mark = decimal_mark,
+        pad_char = "\u2007"
       )
     }
     df
@@ -1181,6 +1188,13 @@ table_categorical <- function(
       on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
       dat_tt <- report_wide_char
+      # Pre-pad numeric cells so centring stacks the decimal points
+      # vertically (same strategy as table_regression() /
+      # table_continuous_lm()). The native tinytable
+      # `style_tt(align = "d")` centres each cell on its own value
+      # rather than on the decimal mark, which is inconsistent with
+      # the rendering used by the other engines.
+      dat_tt <- pad_decimal_cols(dat_tt)
       mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
       if (length(mod_rows)) {
         dat_tt[[1]][mod_rows] <- paste0(
@@ -1195,7 +1209,7 @@ table_categorical <- function(
       tt <- tinytable::style_tt(tt, j = 1, align = "l")
       tt_align <- switch(
         align,
-        decimal = "d",
+        decimal = "c",
         center = "c",
         right = "r",
         "r"
@@ -1244,6 +1258,12 @@ table_categorical <- function(
         spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
       }
       dat_gt <- report_wide_char
+      # Pre-pad numeric cells so centring stacks the decimal points
+      # vertically (same strategy as table_regression() /
+      # table_continuous_lm()). gt's native `cols_align_decimal()`
+      # renders visually right-aligned, which is inconsistent with
+      # the rendering used by the other engines.
+      dat_gt <- pad_decimal_cols(dat_gt)
       mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
       if (length(mod_rows)) {
         dat_gt[[1]][mod_rows] <- paste0(
@@ -1256,7 +1276,7 @@ table_categorical <- function(
       tbl <- gt::cols_label(tbl, Variable = "", n = "n", pct = "%")
       tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
       if (identical(align, "decimal")) {
-        tbl <- gt::cols_align_decimal(tbl, columns = c("n", "pct"))
+        tbl <- gt::cols_align(tbl, align = "center", columns = c("n", "pct"))
       } else if (identical(align, "center")) {
         tbl <- gt::cols_align(tbl, align = "center", columns = c("n", "pct"))
       } else {
@@ -1973,6 +1993,13 @@ table_categorical <- function(
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
     dat_tt <- merge_ci_inline(report_wide_char)
+    # Pre-pad numeric cells so centring stacks the decimal points
+    # vertically (same strategy as table_regression() /
+    # table_continuous_lm()). The native tinytable
+    # `style_tt(align = "d")` centres each cell on its own value
+    # rather than on the decimal mark, which is inconsistent with
+    # the rendering used by the other engines.
+    dat_tt <- pad_decimal_cols(dat_tt)
 
     # Detect modality rows before header rename
     mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
@@ -2006,10 +2033,10 @@ table_categorical <- function(
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- tinytable::theme_empty(tt)
 
-    # Alignment. Honour the `align` argument: "decimal" uses the
-    # native tinytable decimal-alignment primitive on every numeric
-    # column; "center" / "right" apply literal alignment; "auto"
-    # preserves the legacy right-alignment.
+    # Alignment. Honour the `align` argument: "decimal" centres
+    # uniform-width pre-padded strings (same strategy as
+    # table_regression() / table_continuous_lm()); "center" / "right"
+    # apply literal alignment.
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
     stat_j <- if (show_assoc) {
@@ -2019,7 +2046,7 @@ table_categorical <- function(
     }
     tt_align <- switch(
       align,
-      decimal = "d",
+      decimal = "c",
       center = "c",
       right = "r",
       "r"
@@ -2091,6 +2118,12 @@ table_categorical <- function(
     }
 
     dat_gt <- merge_ci_inline(report_wide_char)
+    # Pre-pad numeric cells so centring stacks the decimal points
+    # vertically (same strategy as table_regression() /
+    # table_continuous_lm()). gt's native `cols_align_decimal()`
+    # renders visually right-aligned, which is inconsistent with
+    # the rendering used by the other engines.
+    dat_gt <- pad_decimal_cols(dat_gt)
 
     # Indent modality rows with non-breaking spaces
     mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
@@ -2163,10 +2196,10 @@ table_categorical <- function(
     }
 
     # Alignment. The Variable column is always left-aligned; numeric
-    # columns honour the `align` argument: "decimal" uses
-    # gt::cols_align_decimal() (the native gt primitive); "center" /
-    # "right" use gt::cols_align(); "auto" preserves the legacy
-    # rule (centre for group n/%, right for p / association measure).
+    # columns honour the `align` argument: "decimal" centres
+    # uniform-width pre-padded strings (same strategy as
+    # table_regression() / table_continuous_lm()); "center" / "right"
+    # use gt::cols_align() literally.
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
     grp_cols <- unlist(lapply(group_levels, function(g) {
       c(paste0(g, "_n"), paste0(g, "_pct"))
@@ -2177,7 +2210,7 @@ table_categorical <- function(
     }
     numeric_cols <- c(grp_cols, right_cols)
     if (identical(align, "decimal") && length(numeric_cols) > 0L) {
-      tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+      tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "center") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {

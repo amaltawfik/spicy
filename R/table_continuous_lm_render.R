@@ -338,14 +338,33 @@ export_continuous_lm_table <- function(
   # padding unreliable; native decimal alignment in Excel would
   # require writing raw numbers + a number format).
   use_decimal <- identical(align, "decimal")
+  # gt and tinytable join the padding engines. Their native
+  # decimal primitives (`gt::cols_align_decimal()`,
+  # `tinytable::style_tt(align = "d")`) do not produce visually
+  # centred decimal alignment:
+  #   * gt renders as right-anchored with the decimal point at
+  #     a column-internal right boundary;
+  #   * tinytable centres each cell on its OWN value, ignoring
+  #     other cells -- so decimals do not coincide across rows.
+  # Same single-font decimal-anchored convention as
+  # table_regression() (regression_dispatch.R:639-661 for gt and
+  # the tinytable handler nearby): pad cells to uniform width
+  # upstream, centre them downstream, decimals coincide because
+  # every cell has the same character width on each side of the
+  # dot.
   needs_padding_engine <- output %in%
-    c("flextable", "word", "clipboard")
+    c("flextable", "word", "clipboard", "gt", "tinytable")
   if (use_decimal && needs_padding_engine) {
+    # Pad with U+2007 FIGURE SPACE so the padding survives HTML
+    # whitespace collapsing and markdown-table cell-edge trimming.
+    # Same convention as `.pad_for_decimal_align()` in
+    # `table_regression()`.
     numeric_cols <- setdiff(seq_along(display_df), 1L)
     for (j in numeric_cols) {
       display_df[[j]] <- decimal_align_strings(
         display_df[[j]],
-        decimal_mark = decimal_mark
+        decimal_mark = decimal_mark,
+        pad_char = "\u2007"
       )
     }
   }
@@ -389,9 +408,12 @@ export_continuous_lm_table <- function(
     if (ncol(display_df) > 1L) {
       numeric_j <- setdiff(seq_len(nc), 1L)
       if (use_decimal && length(numeric_j) > 0L) {
-        for (rj in numeric_j) {
-          tt <- tinytable::style_tt(tt, j = rj, align = "d")
-        }
+        # Cells were pre-padded upstream; centring uniform-width
+        # strings places the decimal points at the same horizontal
+        # position. Same tinytable strategy as table_regression()
+        # (uses align = "c" with pre-padding rather than align = "d"
+        # which centres each cell on its own value independently).
+        tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
       } else if (identical(align, "center") && length(numeric_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
       } else if (identical(align, "right") && length(numeric_j) > 0L) {
@@ -495,7 +517,10 @@ export_continuous_lm_table <- function(
     tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
     numeric_cols <- setdiff(col_keys, "Variable")
     if (use_decimal && length(numeric_cols) > 0L) {
-      tbl <- gt::cols_align_decimal(tbl, columns = numeric_cols)
+      # Cells were pre-padded with figure-spaces upstream; centring
+      # uniform-width strings places the decimal points at the same
+      # horizontal position. Same gt strategy as table_regression().
+      tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "center") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {

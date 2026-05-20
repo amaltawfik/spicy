@@ -14,6 +14,22 @@
   a single font throughout, matching the existing policy in
   `table_regression()`. Decimal alignment is preserved via the
   same uniform-width padding + centred cells convention.
+* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
+  decimal alignment in `gt`, `tinytable`, `flextable`, and `word`
+  outputs now produces visually-stacked decimal points across rows.
+  Previously the cell padding used the regular ASCII space (U+0020),
+  which HTML renderers collapse and markdown-table cell parsers
+  strip on the cell edges -- silently undoing the alignment in
+  those outputs. Padding now uses the figure-space character
+  (U+2007, digit-width), which both HTML and markdown preserve.
+  This is the same convention already used by `table_regression()`,
+  so all `table_*` functions now share one decimal-alignment
+  strategy across every rendered engine. (The native primitives
+  `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`
+  are no longer used: each renders differently per engine -- gt
+  appears right-aligned, tinytable centres each cell on its own
+  value rather than on the decimal mark -- so they do not deliver
+  homogeneous output.)
 
 ## Bug fixes
 

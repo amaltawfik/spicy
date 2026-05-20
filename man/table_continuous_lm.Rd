@@ -365,13 +365,14 @@ left-aligned. One of:
 \itemize{
 \item \code{"decimal"} (default): align numeric columns on the decimal
 mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and
-\code{tinytable::style_tt(align = "d")}. For engines without a
-native decimal-alignment primitive (\code{flextable}, \code{word},
-\code{clipboard}, ASCII print), values are pre-padded with leading
-and trailing spaces so the dots line up vertically, then
-centred in the default body font (single-font policy matching
-\code{table_regression()}).
+SPSS, SAS, and LaTeX \code{siunitx}. Numeric cells are pre-padded
+with figure-spaces (U+2007, digit-width) so every string in a
+column has the same width with the decimal mark at the same
+internal position; centring those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-centre
+strategy is applied on every engine (\code{gt}, \code{tinytable},
+\code{flextable}, \code{word}, \code{clipboard}, ASCII print) for a
+homogeneous rendering, matching \code{table_regression()}.
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
 }

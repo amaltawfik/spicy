@@ -301,13 +301,14 @@
 #'   left-aligned. One of:
 #'   - `"decimal"` (default): align numeric columns on the decimal
 #'     mark, the standard scientific-publication convention used by
-#'     SPSS, SAS, LaTeX `siunitx`, [gt::cols_align_decimal()] and
-#'     `tinytable::style_tt(align = "d")`. For engines without a
-#'     native decimal-alignment primitive (`flextable`, `word`,
-#'     `clipboard`, ASCII print), values are pre-padded with leading
-#'     and trailing spaces so the dots line up vertically, then
-#'     centred in the default body font (single-font policy matching
-#'     `table_regression()`).
+#'     SPSS, SAS, and LaTeX `siunitx`. Numeric cells are pre-padded
+#'     with figure-spaces (U+2007, digit-width) so every string in a
+#'     column has the same width with the decimal mark at the same
+#'     internal position; centring those uniform-width strings then
+#'     stacks the decimal points vertically. The same pad-then-centre
+#'     strategy is applied on every engine (`gt`, `tinytable`,
+#'     `flextable`, `word`, `clipboard`, ASCII print) for a
+#'     homogeneous rendering, matching `table_regression()`.
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'

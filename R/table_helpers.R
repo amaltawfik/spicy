@@ -139,7 +139,8 @@ safe_glyph_width <- function(x) {
 # appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
 # guidelines. Multi-char placeholders are centred around the
 # decimal-mark position with bias-left for even widths.
-decimal_align_strings <- function(values, decimal_mark = ".") {
+decimal_align_strings <- function(values, decimal_mark = ".",
+                                   pad_char = " ") {
   if (length(values) == 0L) {
     return(character(0))
   }
@@ -150,6 +151,18 @@ decimal_align_strings <- function(values, decimal_mark = ".") {
   if (all(is_blank)) {
     return(values)
   }
+
+  # `pad_char` controls the padding character used to make every
+  # string in a column share the same width with the decimal mark at
+  # the same internal position. Defaults to ASCII space U+0020 for
+  # ASCII / clipboard / data.frame output (`trimws()` strips it
+  # naturally). HTML / Word renderers (`gt`, `tinytable`,
+  # `flextable`, `word`) should pass `" "` (FIGURE SPACE,
+  # digit-width): HTML collapses runs of ASCII space and markdown
+  # table cells strip leading / trailing ASCII whitespace, which
+  # silently undoes the padding; U+2007 is preserved by both HTML
+  # and markdown parsers and is the same convention used by
+  # `.pad_for_decimal_align()` in `table_regression()`.
 
   dot_pos <- regexpr(decimal_mark, values, fixed = TRUE)
   has_dot <- dot_pos != -1L
@@ -173,18 +186,18 @@ decimal_align_strings <- function(values, decimal_mark = ".") {
     seq_along(values),
     function(i) {
       if (is_blank[i]) {
-        return(strrep(" ", total_width))
+        return(strrep(pad_char, total_width))
       }
       v <- values[i]
       if (has_dot[i]) {
-        pad_l <- strrep(" ", max_before - before[i])
-        pad_r <- strrep(" ", max_after - after[i])
+        pad_l <- strrep(pad_char, max_before - before[i])
+        pad_r <- strrep(pad_char, max_after - after[i])
         return(paste0(pad_l, v, pad_r))
       }
       if (max_after == 0L) {
         # Pure integer column (no decimals anywhere) -- left-pad to
         # right-align the value, no decimal mark to align against.
-        return(paste0(strrep(" ", max_before - before[i]), v))
+        return(paste0(strrep(pad_char, max_before - before[i]), v))
       }
       # Non-decimal cell in a column that has decimals elsewhere.
       # Two sub-cases:
@@ -198,14 +211,14 @@ decimal_align_strings <- function(values, decimal_mark = ".") {
       #       absent value. APA Manual 7 Section 7.13 / Stata
       #       esttab / modelsummary convention.
       if (grepl("^-?[0-9]+$", v)) {
-        pad_l <- strrep(" ", max_before - before[i])
-        pad_r <- strrep(" ", 1L + max_after)
+        pad_l <- strrep(pad_char, max_before - before[i])
+        pad_r <- strrep(pad_char, 1L + max_after)
         return(paste0(pad_l, v, pad_r))
       }
       g <- safe_glyph_width(v)
       pad_l <- max(0L, max_before - (g - 1L) %/% 2L)
       pad_r <- max(0L, max_after - (g %/% 2L))
-      paste0(strrep(" ", pad_l), v, strrep(" ", pad_r))
+      paste0(strrep(pad_char, pad_l), v, strrep(pad_char, pad_r))
     },
     character(1)
   )
@@ -235,7 +248,8 @@ ci_bracket_separator <- function(decimal_mark) {
 # `"[LL, UL]"` or blank / em-dash strings). NA / blank / em-dash
 # cells pass through and are padded to the same total width as
 # the aligned CI cells so the column stays rectangular.
-align_ci_strings <- function(values, decimal_mark = ".") {
+align_ci_strings <- function(values, decimal_mark = ".",
+                              pad_char = " ") {
   if (length(values) == 0L) {
     return(character(0))
   }
@@ -260,12 +274,16 @@ align_ci_strings <- function(values, decimal_mark = ".") {
     }
   }
 
-  aligned_lls <- decimal_align_strings(lls, decimal_mark)
-  aligned_uls <- decimal_align_strings(uls, decimal_mark)
+  aligned_lls <- decimal_align_strings(lls, decimal_mark, pad_char)
+  aligned_uls <- decimal_align_strings(uls, decimal_mark, pad_char)
 
   ci_cells <- paste0("[", aligned_lls, sep, aligned_uls, "]")
   ci_width <- if (length(ci_cells)) max(nchar(ci_cells)) else 0L
 
+  # `pad_char` is the same character passed to decimal_align_strings()
+  # for the LL / UL slots, so blank / em-dash placeholder cells share
+  # the same padding character and the column stays rectangular under
+  # the HTML / markdown / ASCII contracts of the chosen engine.
   out <- character(length(values))
   for (i in seq_along(values)) {
     if (is_ci[i] && length(parts[[i]]) == 3L) {
@@ -273,7 +291,7 @@ align_ci_strings <- function(values, decimal_mark = ".") {
     } else {
       raw <- trimws(values[i])
       if (!nzchar(raw)) {
-        out[i] <- strrep(" ", ci_width)
+        out[i] <- strrep(pad_char, ci_width)
       } else {
         # Center single-glyph fallback (e.g., em-dash "--") within
         # the CI column width so reference / blank rows stay
@@ -283,7 +301,7 @@ align_ci_strings <- function(values, decimal_mark = ".") {
         glyph_w <- safe_glyph_width(raw)
         side <- max(0L, (ci_width - glyph_w) %/% 2L)
         right <- max(0L, ci_width - glyph_w - side)
-        out[i] <- paste0(strrep(" ", side), raw, strrep(" ", right))
+        out[i] <- paste0(strrep(pad_char, side), raw, strrep(pad_char, right))
       }
     }
   }
