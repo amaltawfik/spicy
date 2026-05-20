@@ -1,17 +1,19 @@
-# spicy: frequency tables, cross-tabulations, and summary tables in R
+# spicy: frequency tables, cross-tabulations, summary and regression tables in R
 
 spicy is an R package for frequency tables, cross-tabulations,
-association measures, summary tables, and labelled survey data
-workflows.
+association measures, categorical and continuous summary tables,
+regression coefficient tables for `lm` / `glm` fits, and labelled survey
+data workflows.
 
 ## What is spicy?
 
 spicy helps you explore categorical, continuous, and labelled survey
-data in R. It provides readable, console-first outputs for survey
-research, descriptive statistics, and reporting workflows, including
-frequency tables, cross-tabulations with chi-squared tests and effect
-sizes, categorical and continuous summary tables, variable inspection,
-and codebooks.
+data in R, then report the results in APA-aligned tables. It provides
+readable, console-first outputs for survey research, descriptive
+statistics, and reporting workflows, including frequency tables,
+cross-tabulations with chi-squared tests and effect sizes, categorical
+and continuous summary tables, regression coefficient tables for one or
+more `lm` / `glm` fits, variable inspection, and codebooks.
 
 With spicy, you can:
 
