@@ -19,14 +19,12 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   ordered factors with AME columns now show a reference row
   (e.g. `Lower secondary (ref.)`), matching the convention already used
-  for plain factors. Multi-model reference-row display tightened to
-  match `modelsummary` / `gtsummary` / Stata `esttab`.
+  for plain factors. In multi-model layout, a factor’s reference row is
+  now blank in models that do not include the factor (was em-dashed
+  regardless).
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  `stars = TRUE` now anchors significance stars on B by default
-  (matching the convention in SPSS, Stata `esttab`, SAS, and the R
-  packages `modelsummary` / `gtsummary` / `parameters`). Previously
-  stars went on β when both B and β were shown. Stars also extend to AME
-  cells when AME is in `show_columns`.
+  `stars = TRUE` now anchors stars on B and on AME (when shown).
+  Previously stars went on β instead of B when both were displayed.
 
 ## spicy 0.12.0
 
