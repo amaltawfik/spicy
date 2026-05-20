@@ -60,6 +60,16 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
 <div class="section level3">
+<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<ul><li>
+<code>align = "auto"</code> removed from all <code>table_*</code> functions (was a legacy alias for <code>"right"</code> from spicy &lt; 0.11.0). Use one of <code>"decimal"</code> (default), <code>"center"</code>, or <code>"right"</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, <code><a href="../reference/table_categorical.html">table_categorical()</a></code>: <code>flextable</code> and <code>word</code> outputs no longer apply a monospace (<code>Consolas</code>) override on numeric body cells. The table now uses a single font throughout, matching the existing policy in <code><a href="../reference/table_regression.html">table_regression()</a></code>. Decimal alignment is preserved via the same uniform-width padding + centred cells convention.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: factor coefficient and AME rows now follow the factor’s <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (previously sorted alphabetically on the level string).</li>

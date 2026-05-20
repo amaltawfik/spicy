@@ -2,6 +2,24 @@
 
 ## spicy (development version)
 
+### Breaking changes
+
+- `align = "auto"` removed from all `table_*` functions (was a legacy
+  alias for `"right"` from spicy \< 0.11.0). Use one of `"decimal"`
+  (default), `"center"`, or `"right"`.
+
+### Minor improvements
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  `flextable` and `word` outputs no longer apply a monospace
+  (`Consolas`) override on numeric body cells. The table now uses a
+  single font throughout, matching the existing policy in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+  Decimal alignment is preserved via the same uniform-width padding +
+  centred cells convention.
+
 ### Bug fixes
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):

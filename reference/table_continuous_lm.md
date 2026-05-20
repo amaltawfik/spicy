@@ -56,7 +56,7 @@ table_continuous_lm(
   effect_size_digits = 2,
   p_digits = 3,
   decimal_mark = ".",
-  align = c("decimal", "auto", "center", "right"),
+  align = c("decimal", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -490,17 +490,13 @@ table_continuous_lm(
     and `tinytable::style_tt(align = "d")`. For engines without a native
     decimal-alignment primitive (`flextable`, `word`, `clipboard`, ASCII
     print), values are pre-padded with leading and trailing spaces so
-    the dots line up vertically; the body of the `flextable`/`word`
-    output additionally uses a monospace font to make character widths
-    uniform.
+    the dots line up vertically, then centred in the default body font
+    (single-font policy matching
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
   - `"center"`: center-align all numeric columns.
 
   - `"right"`: right-align all numeric columns.
-
-  - `"auto"`: legacy per-column rule used in spicy \< 0.11.0 (center for
-    the descriptive / inferential columns; right for `n`, `Weighted n`,
-    and `p`).
 
   The `excel` output uses the engine's default alignment in any case:
   cell-string padding does not align decimals under proportional fonts,

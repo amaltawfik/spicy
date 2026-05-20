@@ -424,11 +424,11 @@ SPSS, SAS, LaTeX `siunitx`, and the native primitives of
 [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
 and `tinytable::style_tt(align = "d")`. Engines without a native
 primitive (`flextable`, `word`, `clipboard`, ASCII print) get the
-alignment via leading / trailing space padding, with `flextable` /
-`word` switching the body font to `Consolas` so character widths match.
+alignment via leading / trailing space padding, then centring in the
+default body font — same single-font policy as
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 
-Pass `align = "auto"` to revert to the legacy uniform right-alignment
-used in spicy \< 0.11.0:
+`"center"` and `"right"` apply literal alignment:
 
 ``` r
 
@@ -436,7 +436,7 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = sex,
-  align = "auto"
+  align = "right"
 )
 #> Categorical table by sex
 #> 
@@ -460,8 +460,6 @@ table_categorical(
 #>    No              │     
 #>    Yes             │
 ```
-
-`"center"` and `"right"` apply literal alignment.
 
 ## Tidying for downstream pipelines
 

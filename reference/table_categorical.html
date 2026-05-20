@@ -113,7 +113,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  assoc_measure <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"auto"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
+<span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  indent_text <span class="op">=</span> <span class="st">"  "</span>,</span>
@@ -279,12 +279,11 @@ SPSS, SAS, LaTeX <code>siunitx</code>, and the native primitives of
 <code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and <code>tinytable::style_tt(align = "d")</code>.
 For engines without a native primitive (<code>flextable</code>, <code>word</code>,
 <code>clipboard</code>, ASCII print), numeric cells are pre-padded with
-leading and trailing spaces so the dots line up vertically;
-the body of the <code>flextable</code>/<code>word</code> output additionally uses
-a monospace font (<code>Consolas</code>) to make character widths uniform.</p></li>
+leading and trailing spaces so the dots line up vertically,
+then centred in the default body font (single-font policy
+matching <code><a href="table_regression.html">table_regression()</a></code>).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
-<li><p><code>"auto"</code>: legacy uniform right-alignment used in spicy &lt; 0.11.0.</p></li>
 </ul><p>The <code>excel</code> output uses the engine's default alignment in any
 case: cell-string padding does not align decimals under
 proportional fonts, and Excel's native right-alignment combined

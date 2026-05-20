@@ -5182,17 +5182,16 @@ primitives of <code><a href="https://gt.rstudio.com/reference/cols_align_decimal
 <code>tinytable::style_tt(align = "d")</code>. Engines without a native
 primitive (<code>flextable</code>, <code>word</code>,
 <code>clipboard</code>, ASCII print) get the alignment via leading /
-trailing space padding, with <code>flextable</code> / <code>word</code>
-switching the body font to <code>Consolas</code> so character widths
-match.</p>
-<p>Pass <code>align = "auto"</code> to revert to the legacy uniform
-right-alignment used in spicy &lt; 0.11.0:</p>
+trailing space padding, then centring in the default body font — same
+single-font policy as <code><a href="../reference/table_regression.html">table_regression()</a></code>.</p>
+<p><code>"center"</code> and <code>"right"</code> apply literal
+alignment:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  align <span class="op">=</span> <span class="st">"auto"</span></span>
+<span>  align <span class="op">=</span> <span class="st">"right"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -5215,8 +5214,6 @@ right-alignment used in spicy &lt; 0.11.0:</p>
 <span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
-<p><code>"center"</code> and <code>"right"</code> apply literal
-alignment.</p>
 </div>
 <div class="section level2">
 <h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
