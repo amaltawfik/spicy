@@ -172,6 +172,43 @@ test_that("ref-row em-dashes follow estimate_type semantics (plain factor: B + A
 })
 
 
+test_that("stars = TRUE suffixes stars to AME cells (independent of ame_p column being shown)", {
+  skip_if_no_marginaleffects()
+  # Stars on AME convey significance compactly without spending a
+  # column on the p-value -- the same convention that already
+  # applied to B. Verified across three configurations:
+  #   * AME alone           -> stars on AME
+  #   * B + AME (no p cols) -> stars on B AND on AME
+  #   * B + AME + both p    -> stars on B AND on AME (independent of
+  #                            p columns being displayed)
+  fit <- glm(smoking ~ sex + education, data = sochealth,
+             family = binomial)
+
+  pull_cells <- function(out, col_name) {
+    body <- as.data.frame(out, stringsAsFactors = FALSE,
+                          check.names = FALSE)
+    body[[col_name]]
+  }
+
+  # AME alone
+  out1 <- table_regression(fit, stars = TRUE, show_columns = "ame")
+  ame_cells_1 <- pull_cells(out1, "AME")
+  expect_true(any(grepl("\\*", ame_cells_1)))
+
+  # B + AME (no p columns)
+  out2 <- table_regression(fit, stars = TRUE,
+                           show_columns = c("b", "ame"))
+  expect_true(any(grepl("\\*", pull_cells(out2, "B"))))
+  expect_true(any(grepl("\\*", pull_cells(out2, "AME"))))
+
+  # B + p + AME + ame_p (everything)
+  out3 <- table_regression(fit, stars = TRUE,
+                           show_columns = c("b", "p", "ame", "ame_p"))
+  expect_true(any(grepl("\\*", pull_cells(out3, "B"))))
+  expect_true(any(grepl("\\*", pull_cells(out3, "AME"))))
+})
+
+
 test_that("ref-row em-dashes follow estimate_type semantics (ordered factor: AME only)", {
   skip_if_no_marginaleffects()
   # Ordered factor with poly contrasts + AME requested: the .L /

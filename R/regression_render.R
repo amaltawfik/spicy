@@ -650,10 +650,31 @@ format_cell_value <- function(long_row, cs, stars_map,
 
   out <- format_number(val, digits_to_use, decimal_mark)
 
-  # Stars suffix on B (or \u03b2 if standardized && beta requested instead of B)
+  # Stars suffix the displayed estimate. The token determines whose
+  # p-value to use:
+  #   * `b`    -> uses B's p_value (the row's own p, since long_row
+  #               is filtered upstream by estimate_type == "B"). Skipped
+  #               when `beta` is also displayed, to avoid stars on
+  #               both B and beta cells of the same coefficient row
+  #               (they share the same p; stars on beta is the
+  #               publication convention when standardisation is
+  #               requested).
+  #   * `beta` -> uses B's p_value, same row.
+  #   * `ame`  -> uses AME's p_value (long_row is filtered to the
+  #               AME row, so .p_value here is the AME-specific p).
+  #               Stars on AME convey significance of the marginal
+  #               effect -- the user-substantive quantity for `glm`
+  #               and any model with interactions. Matches Mood
+  #               (2010) and Long & Freese (2014 sec 5.3) advice.
+  #
+  # Stars are independent of whether the corresponding p column is
+  # displayed in `show_columns`; their purpose is precisely to
+  # convey significance compactly without spending a column on the
+  # p-value.
   apply_stars <- !is.null(stars_map) && (
     (tk == "b" && !"beta" %in% show_columns) ||
-    (tk == "beta")
+    (tk == "beta") ||
+    (tk == "ame")
   )
   if (apply_stars) {
     p_val <- long_row$p_value[1]
