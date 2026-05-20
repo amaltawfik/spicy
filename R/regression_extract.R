@@ -87,7 +87,9 @@ extract_lm_phase1 <- function(
   # first level. Surfacing the reference explicitly closes the
   # asymmetry with plain factors (where `Female (ref.)` is already
   # shown) and makes the AME baseline visible to the reader.
-  ame_requested <- "ame" %in% show_columns
+  ame_requested <- any(
+    c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns
+  )
   ref_rows <- build_reference_rows(
     fit = fit,
     model_id = model_id,
@@ -125,7 +127,15 @@ extract_lm_phase1 <- function(
   }
 
   # ---- AME rows (Step 5) --------------------------------------------------
-  if ("ame" %in% show_columns) {
+  # Trigger the AME extraction if ANY token of the AME family is in
+  # show_columns. Previously this was gated on `"ame"` only, which
+  # silently dropped the AME extraction when the user asked for just
+  # `ame_ci` / `ame_p` / `ame_se` (a legitimate compact-table choice):
+  # the columns appeared in the header (col_spec validates them) but
+  # were empty. After `expand_show_columns()`, the group token
+  # `"all_ame"` is already expanded to the atomic set, so we only need
+  # to check the atomic tokens here.
+  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
     ame_rows <- extract_ame_rows(
       fit = fit,
       vc = vc,

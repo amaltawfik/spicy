@@ -124,6 +124,31 @@ test_that("ordered factor WITHOUT AME: no synthetic reference row", {
 # Edge case: 2-level ordered factor + AME (poly produces only .L)
 # ============================================================================
 
+test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')", {
+  skip_if_no_marginaleffects()
+  # Pre-fix the orchestration gated the AME extraction on `"ame"`
+  # alone, so requesting just `ame_ci` and `ame_p` (a legitimate
+  # compact-table choice) produced empty columns in the header.
+  # The fix accepts any token of the AME family.
+  fit <- glm(smoking ~ age + education, data = sochealth,
+             family = binomial)
+
+  for (cols in list(
+    c("b", "p", "ame_ci"),
+    c("b", "p", "ame_p"),
+    c("b", "p", "ame_se"),
+    c("b", "p", "ame_ci", "ame_p")
+  )) {
+    out <- table_regression(fit, show_columns = cols)
+    long <- broom::tidy(out)
+    n_ame_rows <- sum(long$estimate_type == "AME", na.rm = TRUE)
+    expect_gt(n_ame_rows, 0L,
+              label = sprintf("show_columns = c(%s)",
+                              paste(shQuote(cols), collapse = ", ")))
+  }
+})
+
+
 test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
   skip_if_no_marginaleffects()
   # A binary ordered factor under contr.poly produces exactly one
