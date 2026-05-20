@@ -70,6 +70,8 @@
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: factor coefficient and AME rows now follow the factor’s <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (previously sorted alphabetically on the level string).</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: AME rows for ordered factors are now nested under the factor group header with bare level labels (e.g. <code>Upper secondary</code>), instead of appearing as ungrouped rows with the full coefficient name (<code>educationUpper secondary</code>).</li>
+<li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now correctly populates those columns. Previously the columns appeared in the header but were empty.</li>
 </ul></div>
 </div>
     <div class="section level2">
