@@ -34,7 +34,7 @@ table_regression(
   fit_digits = 2L,
   ic_digits = 1L,
   decimal_mark = ".",
-  align = c("decimal", "center", "right", "auto"),
+  align = c("decimal", "center", "right"),
   padding = 0L,
   labels = NULL,
   title = NULL,

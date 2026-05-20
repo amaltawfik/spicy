@@ -2273,7 +2273,7 @@ test_that("p_digits validates and renders accordingly", {
 })
 
 test_that("align argument validates and stores the choice", {
-  for (a in c("decimal", "auto", "center", "right")) {
+  for (a in c("decimal", "center", "right")) {
     out <- table_continuous(sleep, select = extra, by = group, align = a)
     expect_equal(attr(out, "align"), a)
   }
@@ -2667,7 +2667,7 @@ test_that("every align value renders cleanly across every rendered engine", {
     select = quote(extra),
     by = quote(group)
   )
-  for (al in c("center", "right", "auto")) {
+  for (al in c("center", "right")) {
     if (requireNamespace("tinytable", quietly = TRUE)) {
       out <- do.call(table_continuous, c(base_args, list(
         output = "tinytable", align = al

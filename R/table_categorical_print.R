@@ -37,9 +37,8 @@ print.spicy_categorical_table <- function(x, ...) {
   # HEADERS centre over the dot-aligned data (otherwise they'd be
   # right-aligned by the default in `build_ascii_table()`, which
   # makes the header sit visually disconnected from the data column).
-  # "center" puts numeric cells in `align_center_cols`. "right" /
-  # "auto" leave them in neither -> right-aligned by default,
-  # matching the legacy categorical-table behaviour.
+  # "center" puts numeric cells in `align_center_cols`. "right"
+  # leaves them in neither -> right-aligned by default.
   if (identical(align, "decimal") && length(numeric_j) > 0L) {
     for (j in numeric_j) {
       display_df[[j]] <- decimal_align_strings(
@@ -51,7 +50,7 @@ print.spicy_categorical_table <- function(x, ...) {
   } else if (identical(align, "center")) {
     align_center <- numeric_j
   } else {
-    # "right" / "auto" (legacy): default right-alignment for numeric.
+    # "right": default right-alignment for numeric.
     align_center <- integer(0)
   }
 

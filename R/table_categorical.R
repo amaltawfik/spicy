@@ -315,7 +315,6 @@
 #'     a monospace font (`Consolas`) to make character widths uniform.
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
-#'   - `"auto"`: legacy uniform right-alignment used in spicy < 0.11.0.
 #'
 #'   The `excel` output uses the engine's default alignment in any
 #'   case: cell-string padding does not align decimals under
@@ -578,7 +577,7 @@ table_categorical <- function(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
-  align = c("decimal", "auto", "center", "right"),
+  align = c("decimal", "center", "right"),
   output = c(
     "default",
     "data.frame",
@@ -1320,7 +1319,7 @@ table_categorical <- function(
       # Numeric column alignment honours `align`. For "decimal" the
       # cells were pre-padded above; right-aligning the padded strings
       # preserves the dot-aligned column. Use a monospace font in the
-      # body so character widths match. For "center" / "right" / "auto"
+      # body so character widths match. For "center" / "right",
       # apply the literal alignment.
       num_j <- 2:ncol(df)
       if (identical(align, "decimal") && length(num_j) > 0L) {
@@ -2323,7 +2322,7 @@ table_categorical <- function(
     # were pre-padded above by `pad_decimal_cols()`; right-aligning
     # the padded strings preserves the dot-aligned column. Use a
     # monospace font in the body so character widths match. For
-    # "center" / "right" / "auto", apply the literal alignment.
+    # "center" / "right", apply the literal alignment.
     num_j <- 2:ncol(df)
     if (identical(align, "decimal") && length(num_j) > 0L) {
       ft <- flextable::align(

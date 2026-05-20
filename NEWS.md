@@ -1,5 +1,11 @@
 # spicy (development version)
 
+## Breaking changes
+
+* `align = "auto"` removed from all `table_*` functions (was a
+  legacy alias for `"right"` from spicy < 0.11.0). Use one of
+  `"decimal"` (default), `"center"`, or `"right"`.
+
 ## Bug fixes
 
 * `table_regression()`: factor coefficient and AME rows now

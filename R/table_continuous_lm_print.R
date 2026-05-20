@@ -65,16 +65,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   } else if (identical(align, "center")) {
     right_cols <- integer(0)
     align_center <- setdiff(seq_along(display_df), align_left)
-  } else if (identical(align, "right")) {
+  } else {
+    # "right": all numeric columns right-aligned.
     right_cols <- setdiff(seq_along(display_df), align_left)
     align_center <- integer(0)
-  } else {
-    # "auto": legacy per-column rule
-    right_cols <- which(names(display_df) %in% c("n", "Weighted n", "p"))
-    align_center <- setdiff(
-      seq_len(ncol(display_df)),
-      c(align_left, right_cols)
-    )
   }
 
   # Auto-select padding: use 0 (compact) when the default 2-char

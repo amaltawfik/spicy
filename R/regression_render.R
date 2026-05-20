@@ -51,7 +51,7 @@ render_regression_table <- function(
     fit_digits = 2L,
     ic_digits = 1L,
     decimal_mark = ".",
-    align = c("decimal", "center", "right", "auto"),
+    align = c("decimal", "center", "right"),
     labels = NULL,
     outcome_labels = NULL,
     title = NULL,

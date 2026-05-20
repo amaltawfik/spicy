@@ -582,9 +582,9 @@ test_that("align — 'decimal' is default; padding applied to numeric cols", {
   expect_true(any(grepl("^[ ].*", b_col) | grepl(".*[ ]$", b_col)))
 })
 
-test_that("align — 'auto' / 'right' / 'center' are accepted (no decimal pad)", {
+test_that("align — 'right' / 'center' are accepted (no decimal pad)", {
   fit <- lm(mpg ~ wt, data = mt)
-  for (a in c("center", "right", "auto")) {
+  for (a in c("center", "right")) {
     out <- table_regression(fit, align = a)
     expect_equal(attr(out, "align"), a)
   }
@@ -592,7 +592,7 @@ test_that("align — 'auto' / 'right' / 'center' are accepted (no decimal pad)",
 
 test_that("print — align = 'center' propagates to align_center_cols", {
   # Exercises the data_col_idx branch in print.spicy_regression_table
-  # when align is "center" (vs "decimal" / "right" / "auto").
+  # when align is "center" (vs "decimal" / "right").
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, align = "center")
   txt <- capture.output(print(out))

@@ -63,7 +63,6 @@ print.spicy_continuous_table <- function(x, ...) {
   #   behaviour of `print.spicy_continuous_lm_table()`.
   # - "center": numeric cells in `align_center_cols`.
   # - "right": numeric cells in neither -> right-aligned by default.
-  # - "auto": legacy per-column rule (right for n/p, centre otherwise).
   if (identical(align, "decimal") && length(numeric_j) > 0L) {
     for (j in numeric_j) {
       display_df[[j]] <- decimal_align_strings(
@@ -74,15 +73,9 @@ print.spicy_continuous_table <- function(x, ...) {
     align_center <- numeric_j
   } else if (identical(align, "center")) {
     align_center <- numeric_j
-  } else if (identical(align, "right")) {
-    align_center <- integer(0)
   } else {
-    # "auto": legacy per-column rule.
-    right_cols <- which(names(display_df) == "n")
-    if (has_p) {
-      right_cols <- c(right_cols, which(names(display_df) == "p"))
-    }
-    align_center <- setdiff(numeric_j, right_cols)
+    # "right": numeric cells in neither bucket -> right-aligned default.
+    align_center <- integer(0)
   }
 
   # Compute separator rows: first row of each variable block (except first)

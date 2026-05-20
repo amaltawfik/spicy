@@ -23,7 +23,7 @@ table_categorical(
   assoc_measure = "auto",
   assoc_ci = FALSE,
   decimal_mark = ".",
-  align = c("decimal", "auto", "center", "right"),
+  align = c("decimal", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -164,7 +164,6 @@ the body of the \code{flextable}/\code{word} output additionally uses
 a monospace font (\code{Consolas}) to make character widths uniform.
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
-\item \code{"auto"}: legacy uniform right-alignment used in spicy < 0.11.0.
 }
 
 The \code{excel} output uses the engine's default alignment in any

@@ -3378,9 +3378,9 @@ test_that("table_continuous_lm gt output is rendered (decimal align default)", {
   expect_s3_class(out, "gt_tbl")
 })
 
-test_that("table_continuous_lm gt output respects align = 'center' / 'right' / 'auto'", {
+test_that("table_continuous_lm gt output respects align = 'center' / 'right'", {
   skip_if_not_installed("gt")
-  for (al in c("center", "right", "auto")) {
+  for (al in c("center", "right")) {
     out <- table_continuous_lm(
       sochealth,
       select = wellbeing_score,
@@ -3392,9 +3392,9 @@ test_that("table_continuous_lm gt output respects align = 'center' / 'right' / '
   }
 })
 
-test_that("table_continuous_lm tinytable output respects align = 'center' / 'right' / 'auto'", {
+test_that("table_continuous_lm tinytable output respects align = 'center' / 'right'", {
   skip_if_not_installed("tinytable")
-  for (al in c("center", "right", "auto")) {
+  for (al in c("center", "right")) {
     out <- table_continuous_lm(
       sochealth,
       select = wellbeing_score,
@@ -3417,9 +3417,9 @@ test_that("table_continuous_lm flextable output is rendered (decimal default)", 
   expect_s3_class(out, "flextable")
 })
 
-test_that("table_continuous_lm flextable output respects align = 'center' / 'right' / 'auto'", {
+test_that("table_continuous_lm flextable output respects align = 'center' / 'right'", {
   skip_if_not_installed("flextable")
-  for (al in c("center", "right", "auto")) {
+  for (al in c("center", "right")) {
     out <- table_continuous_lm(
       sochealth,
       select = wellbeing_score,

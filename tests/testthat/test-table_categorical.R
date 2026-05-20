@@ -1708,7 +1708,7 @@ test_that("table_categorical grouped word errors for missing officer", {
 # ---- harmonisation with table_continuous() / _lm() (Phase 2) -------------
 
 test_that("align argument validates and is stored as attribute", {
-  for (a in c("decimal", "auto", "center", "right")) {
+  for (a in c("decimal", "center", "right")) {
     out <- table_categorical(sochealth, select = smoking, by = sex, align = a)
     expect_equal(attr(out, "align"), a)
   }
@@ -1739,10 +1739,10 @@ test_that("align = 'decimal' produces gt and tinytable outputs", {
   expect_true(inherits(out_tt, "tinytable"))
 })
 
-test_that("align = 'center' / 'right' / 'auto' all render gt + tinytable", {
+test_that("align = 'center' / 'right' all render gt + tinytable", {
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
-  for (a in c("center", "right", "auto")) {
+  for (a in c("center", "right")) {
     expect_s3_class(
       table_categorical(
         sochealth, select = smoking, by = sex, output = "gt", align = a
@@ -1758,9 +1758,9 @@ test_that("align = 'center' / 'right' / 'auto' all render gt + tinytable", {
   }
 })
 
-test_that("align = 'decimal' / 'center' / 'right' / 'auto' all render flextable", {
+test_that("align = 'decimal' / 'center' / 'right' all render flextable", {
   skip_if_not_installed("flextable")
-  for (a in c("decimal", "center", "right", "auto")) {
+  for (a in c("decimal", "center", "right")) {
     expect_s3_class(
       table_categorical(
         sochealth, select = smoking, by = sex,
@@ -1781,7 +1781,7 @@ test_that("align = 'decimal' / 'center' / 'right' / 'auto' all render flextable"
 test_that("align flows to word output (cross-tab + oneway)", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
-  for (a in c("decimal", "auto")) {
+  for (a in c("decimal", "center")) {
     tmp <- tempfile(fileext = ".docx")
     on.exit(unlink(tmp), add = TRUE)
     res <- table_categorical(
@@ -1804,7 +1804,7 @@ test_that("align flows to word output (cross-tab + oneway)", {
 
 test_that("align flows to excel output (cross-tab + oneway, all values)", {
   skip_if_not_installed("openxlsx2")
-  for (a in c("decimal", "center", "right", "auto")) {
+  for (a in c("decimal", "center", "right")) {
     tmp <- tempfile(fileext = ".xlsx")
     on.exit(unlink(tmp), add = TRUE)
     res <- table_categorical(
@@ -1829,13 +1829,13 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
 
   # Oneway: with decimal, the n-column header value "smoking" sits
   # alongside padded blank cells, making the column dot-aligned for
-  # plain-text consumers. With auto, no padding is applied.
+  # plain-text consumers. With center, no padding is applied.
   table_categorical(
     sochealth, select = smoking, output = "clipboard", align = "decimal"
   )
   txt_dec <- captured$text
   table_categorical(
-    sochealth, select = smoking, output = "clipboard", align = "auto"
+    sochealth, select = smoking, output = "clipboard", align = "center"
   )
   txt_auto <- captured$text
   expect_true(nchar(txt_dec) > nchar(txt_auto))

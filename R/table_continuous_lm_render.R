@@ -500,16 +500,6 @@ export_continuous_lm_table <- function(
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
-    } else {
-      # "auto": legacy per-column rule
-      center_cols <- setdiff(col_keys, c("Variable", "n", "p"))
-      if (length(center_cols) > 0L) {
-        tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-      }
-      right_cols <- intersect(c("n", "Weighted n", "p"), col_keys)
-      if (length(right_cols) > 0L) {
-        tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
-      }
     }
 
     rule <- gt::cell_borders(
@@ -674,17 +664,6 @@ export_continuous_lm_table <- function(
     } else if (identical(align, "right") && length(numeric_j) > 0L) {
       ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
       ft <- flextable::align(ft, j = numeric_j, part = "body", align = "right")
-    } else {
-      # "auto": legacy per-column rule
-      right_j <- which(col_keys %in% c("n", "Weighted n", "p"))
-      center_j <- setdiff(seq_along(col_keys), c(left_j, right_j))
-      if (length(center_j) > 0L) {
-        ft <- flextable::align(ft, j = center_j, part = "all", align = "center")
-      }
-      if (length(right_j) > 0L) {
-        ft <- flextable::align(ft, j = right_j, part = "header", align = "center")
-        ft <- flextable::align(ft, j = right_j, part = "body", align = "right")
-      }
     }
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
