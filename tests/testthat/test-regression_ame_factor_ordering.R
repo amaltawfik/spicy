@@ -149,6 +149,34 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
 })
 
 
+test_that("multi-model: ref-row of a factor missing from a model is BLANK in that model's columns", {
+  # Pre-fix, an `is_reference = TRUE` row was em-dashed across ALL
+  # model columns regardless of whether the factor was in each
+  # model. The non-reference rows were correctly blanked when the
+  # factor was absent -- producing an asymmetric multi-model
+  # display (ref-row em-dashes everywhere, non-ref rows blank when
+  # absent). The fix aligns spicy with modelsummary / gtsummary /
+  # Stata `esttab`: when a factor is absent from a model, ALL its
+  # rows (ref + non-ref) are blank in that model's columns.
+  sh <- na.omit(sochealth[, c("smoking", "sex", "physical_activity")])
+  m1 <- glm(smoking ~ sex + physical_activity, data = sh,
+            family = binomial)
+  m2 <- glm(smoking ~ sex, data = sh, family = binomial)
+  out <- table_regression(list(M1 = m1, M2 = m2))
+  body <- as.data.frame(out, stringsAsFactors = FALSE,
+                         check.names = FALSE)
+  ref_row <- body[trimws(body$Variable) == "No (ref.)", , drop = FALSE]
+  expect_equal(nrow(ref_row), 1L)
+  # M1 columns: em-dash (factor present, reference level).
+  m1_cells <- as.character(ref_row[grepl("^M1", names(ref_row))])
+  expect_true(all(grepl("—", m1_cells)))
+  # M2 columns: blank (factor absent from M2). The cells contain
+  # only whitespace -- trimws() yields an empty string.
+  m2_cells <- as.character(ref_row[grepl("^M2", names(ref_row))])
+  expect_true(all(trimws(m2_cells) == ""))
+})
+
+
 test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
   skip_if_no_marginaleffects()
   # A binary ordered factor under contr.poly produces exactly one

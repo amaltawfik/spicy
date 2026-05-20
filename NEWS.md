@@ -20,6 +20,12 @@
   (`ame_ci`, `ame_p`, `ame_se`) without the bare `ame` token now
   correctly populates those columns. Previously the columns
   appeared in the header but were empty.
+* `table_regression()`: in multi-model layout, the reference row
+  of a factor absent from a given model is now blank in that
+  model's columns (previously it showed em-dashes while
+  non-reference rows of the same factor were blank — an
+  asymmetric display). Matches the convention of `modelsummary`,
+  `gtsummary`, and Stata `esttab`.
 
 # spicy 0.12.0
 

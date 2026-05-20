@@ -559,16 +559,29 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
   ))
 
   for (cs in col_spec) {
-    if (isTRUE(term_row$is_reference)) {
-      cells[[cs$col_name]] <- "\u2014"   # em-dash
-      next
-    }
     long_row <- coefs[coefs$model_id == cs$model_id &
                        coefs$term == term_row$term &
                        coefs$estimate_type == cs$estimate_type, ,
                        drop = FALSE]
+    # When the row's term does NOT exist in this model's coefs,
+    # leave the cell BLANK -- regardless of whether the term is a
+    # reference level for some other model. Previously the em-dash
+    # was applied globally on `term_row$is_reference`, which produced
+    # an inconsistent multi-model display: a factor missing from a
+    # given model showed em-dashes on its reference row but blanks
+    # on its non-reference rows. The convention now matches
+    # modelsummary / gtsummary / parameters / Stata `esttab`: when
+    # the factor is absent from a model, ALL its rows (ref + non-ref)
+    # are blank in that model's columns.
     if (nrow(long_row) == 0L) {
       cells[[cs$col_name]] <- ""
+      next
+    }
+    # Per-model reference check. The factor IS in this model and
+    # this row is its reference level here -- em-dash conveys
+    # "reference, no estimate by design".
+    if (isTRUE(long_row$is_reference[1L])) {
+      cells[[cs$col_name]] <- "\u2014"   # em-dash
       next
     }
     cells[[cs$col_name]] <- format_cell_value(
