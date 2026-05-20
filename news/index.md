@@ -2,12 +2,24 @@
 
 ## spicy (development version)
 
+### Minor improvements
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  ordered factors with AME columns now display the reference level
+  explicitly (e.g. `Lower secondary (ref.)`), matching the convention
+  already used for plain factors.
+
 ### Bug fixes
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   factor coefficient and AME rows now follow the factor’s
   [`levels()`](https://rdrr.io/r/base/levels.html) order (previously
   sorted alphabetically on the level string).
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  AME rows for ordered factors are now nested under the factor group
+  header with bare level labels (e.g. `Upper secondary`), instead of
+  appearing as ungrouped rows with the full coefficient name
+  (`educationUpper secondary`).
 
 ## spicy 0.12.0
 

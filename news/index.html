@@ -60,9 +60,16 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
 <div class="section level3">
+<h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now display the reference level explicitly (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: factor coefficient and AME rows now follow the factor’s <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (previously sorted alphabetically on the level string).</li>
+<li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: AME rows for ordered factors are now nested under the factor group header with bare level labels (e.g. <code>Upper secondary</code>), instead of appearing as ungrouped rows with the full coefficient name (<code>educationUpper secondary</code>).</li>
 </ul></div>
 </div>
     <div class="section level2">
