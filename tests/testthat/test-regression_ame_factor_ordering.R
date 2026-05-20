@@ -118,3 +118,37 @@ test_that("ordered factor WITHOUT AME: no synthetic reference row", {
   # with no reference anchor (they're not contrasts against a baseline).
   expect_false(any(grepl("Lower secondary \\(ref\\.\\)", vars)))
 })
+
+
+# ============================================================================
+# Edge case: 2-level ordered factor + AME (poly produces only .L)
+# ============================================================================
+
+test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
+  skip_if_no_marginaleffects()
+  # A binary ordered factor under contr.poly produces exactly one
+  # polynomial contrast (.L). The AME block has one contrast row
+  # (level 2 vs reference). Verifies the synthetic ref-row + sort
+  # logic degrades gracefully on the minimal case.
+  set.seed(1)
+  df <- data.frame(
+    y   = rnorm(200),
+    grp = ordered(sample(c("Lo", "Hi"), 200, replace = TRUE),
+                  levels = c("Lo", "Hi"))
+  )
+  out <- table_regression(
+    lm(y ~ grp, data = df),
+    show_columns = c("b", "p", "ame", "ame_p")
+  )
+  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(body$Variable)
+  ref_pos  <- which(grepl("^Lo \\(ref\\.\\)$", vars))
+  poly_pos <- which(vars == ".L")
+  ame_pos  <- which(vars == "Hi")
+  expect_length(ref_pos, 1L)
+  expect_length(poly_pos, 1L)
+  expect_length(ame_pos, 1L)
+  # Display order: ref row, then .L, then the AME contrast row.
+  expect_lt(ref_pos, poly_pos)
+  expect_lt(poly_pos, ame_pos)
+})

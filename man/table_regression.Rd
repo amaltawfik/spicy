@@ -194,7 +194,17 @@ responsible for stating the reference convention
 elsewhere (article text, table caption). Under
 \code{factor_layout = "flat"}, an informational message is
 emitted to flag the silent omission.
-}}
+}
+\strong{Ordered factors with AME}: under R's default \code{contr.poly},
+ordered factors have B coefficients named \code{.L} / \code{.Q} / \code{.C}
+(orthogonal polynomial trends) which have no per-level reference
+semantics. When \code{"ame"} is in \code{show_columns}, however, the AME
+block is per-level contrasts against \code{levels()[1]}. A synthetic
+reference row anchored on \code{levels()[1]} is therefore emitted so
+the reader sees the AME baseline explicitly, with the same
+\code{reference_style} handling as plain treatment-coded factors. The
+\verb{[vs <ref>]} annotation in \code{"annotation"} mode is attached to the
+first AME row, not to the polynomial-trend rows.}
 
 \item{reference_label}{Suffix shown after the reference level in
 \code{reference_style = "row"} mode. Default \code{"(ref.)"}. Ignored

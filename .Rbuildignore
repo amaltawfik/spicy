@@ -22,3 +22,4 @@
 ^\.Rhistory$
 ^\.Rdata$
 ^\.DS_Store$
+^tests/testthat/_snaps/_problems$
