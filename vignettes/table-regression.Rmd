@@ -675,12 +675,19 @@ ambiguity.
 
 ## See also
 
+- `vignette("table-categorical", package = "spicy")` for the APA
+  Table 1 categorical descriptors (factors, labelled variables,
+  chi-squared tests, association measures).
+- `vignette("table-continuous", package = "spicy")` for the APA
+  Table 1 / Table 2 continuous descriptors and unadjusted
+  group-comparison tests.
 - `vignette("table-continuous-lm", package = "spicy")` for the
-  one-predictor-by-many-outcomes counterpart (estimated marginal
-  means, contrast or slope, four effect-size families).
-- `vignette("summary-tables-reporting", package = "spicy")` for
-  an end-to-end reporting workflow combining the spicy summary-
-  table helpers.
+  one-predictor-by-many-outcomes linear-model counterpart
+  (estimated marginal means, contrast or slope, four effect-size
+  families with noncentral CIs).
+- `vignette("summary-tables-reporting", package = "spicy")` for an
+  end-to-end reporting workflow that combines the four spicy
+  summary-table helpers along the APA Table 1 / 2 / 3 sequence.
 
 ## References
 

@@ -318,5 +318,9 @@ head(as.data.frame(out))
 - See `vignette("table-continuous-lm", package = "spicy")` for
   model-based continuous summary tables with robust standard errors or
   case weights.
+- See `vignette("table-regression", package = "spicy")` for full
+  coefficient tables from one or several fitted `lm` / `glm` models
+  (APA Table 3).
 - See `vignette("summary-tables-reporting", package = "spicy")` for a
-  cross-function reporting workflow using both summary-table helpers.
+  cross-function reporting workflow that ties the four summary-table
+  helpers together along the APA Table 1 / 2 / 3 sequence.

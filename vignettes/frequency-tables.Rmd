@@ -230,4 +230,8 @@ options(
   for your contingency table.
 - `vignette("table-categorical")` - building publication-ready
   categorical tables.
+- `vignette("summary-tables-reporting")` - end-to-end reporting
+  workflow that ties the four `table_*` helpers together along the
+  APA Table 1 / 2 / 3 sequence (including `table_regression()` for
+  the coefficient table).
 - `?freq` and `?cross_tab` for the full argument reference.

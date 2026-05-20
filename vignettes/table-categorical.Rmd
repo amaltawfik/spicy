@@ -389,3 +389,17 @@ table_categorical(
   output = "clipboard"
 )
 ```
+
+## See also
+
+- See `vignette("table-continuous", package = "spicy")` for the
+  continuous counterpart with classical group-comparison tests.
+- See `vignette("table-continuous-lm", package = "spicy")` for
+  model-based continuous summary tables.
+- See `vignette("table-regression", package = "spicy")` for the
+  full coefficient table from one or several fitted `lm` / `glm`
+  models (APA Table 3).
+- See `vignette("summary-tables-reporting", package = "spicy")` for
+  a cross-function reporting workflow that ties the four
+  summary-table helpers together along the APA Table 1 / 2 / 3
+  sequence.
