@@ -11,6 +11,8 @@
 
 ## spicy 0.12.0
 
+CRAN release: 2026-05-19
+
 ### New features
 
 - New
