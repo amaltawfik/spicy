@@ -147,6 +147,14 @@ render_regression_table <- function(
 
   rows <- list()
   current_factor <- NA_character_
+  # Set of factor_term values that have already received the
+  # ` [vs <ref_level>]` annotation in flat layout. Used instead of
+  # the previous "first row of factor group" heuristic so the
+  # annotation lands on the FIRST row that is actually a contrast
+  # vs the reference (treatment-coded level dummy or AME contrast),
+  # never on a polynomial-trend row (.L / .Q / .C / ^k) which has
+  # no per-level reference semantics.
+  annotation_lifted_for <- character(0)
   for (i in seq_len(nrow(term_meta))) {
     rt <- term_meta[i, , drop = FALSE]
     # Insert factor header row at the start of each factor group
@@ -165,8 +173,6 @@ render_regression_table <- function(
       )
       current_factor <- rt$factor_term
     }
-    new_factor_row <- !is.na(rt$factor_term) &&
-                        !identical(rt$factor_term, current_factor)
     if (is.na(rt$factor_term)) current_factor <- NA_character_
 
     new_row <- build_body_row(
@@ -181,20 +187,34 @@ render_regression_table <- function(
       labels = labels
     )
     # `reference_style = "annotation"` in flat layout: attach
-    # ` [vs <ref_level>]` to the FIRST non-reference dummy of each
-    # factor. Subsequent dummies of the same factor inherit the
+    # ` [vs <ref_level>]` to the FIRST contrast-vs-reference row of
+    # each factor. Subsequent rows of the same factor inherit the
     # same reference -- repeating the annotation would just be
     # noise. The grouped layout already gets `[ref: <level>]` in
     # the factor header above (via build_factor_header_row).
+    #
+    # Skip polynomial-trend rows (factor_level == ".L" / ".Q" /
+    # ".C" / "^k"): they are orthogonal trends, NOT comparisons
+    # against a baseline level, so a `[vs Lower secondary]` tag on
+    # them would mislead the reader. The annotation will fall
+    # through to the next non-poly row of the same factor (the
+    # first level-named row when AME columns are requested).
+    is_poly_suffix <- !is.na(rt$factor_level) &&
+      (startsWith(rt$factor_level, ".") ||
+         startsWith(rt$factor_level, "^"))
     if (identical(reference_style, "annotation") &&
           !isTRUE(group_factor_levels) &&
-          isTRUE(new_factor_row) &&
+          !is.na(rt$factor_term) &&
+          !isTRUE(rt$is_reference) &&
+          !is_poly_suffix &&
+          !(rt$factor_term %in% annotation_lifted_for) &&
           rt$factor_term %in% names(ref_level_map)) {
       ref_lvl_flat <- ref_level_map[[rt$factor_term]]
       if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
         new_row$Variable <- paste0(new_row$Variable,
                                     " [vs ", ref_lvl_flat, "]")
-        current_factor <- rt$factor_term   # mark factor seen
+        annotation_lifted_for <- c(annotation_lifted_for,
+                                    rt$factor_term)
       }
     }
     rows[[length(rows) + 1L]] <- new_row
