@@ -17,12 +17,9 @@
   the convention already used for plain factors. Multi-model
   reference-row display tightened to match `modelsummary` /
   `gtsummary` / Stata `esttab`.
-* `table_regression()`: `stars = TRUE` now anchors significance
-  stars on B by default (matching the convention in SPSS, Stata
-  `esttab`, SAS, and the R packages `modelsummary` /
-  `gtsummary` / `parameters`). Previously stars went on β when
-  both B and β were shown. Stars also extend to AME cells when
-  AME is in `show_columns`.
+* `table_regression()`: `stars = TRUE` now anchors stars on B
+  and on AME (when shown). Previously stars went on β instead
+  of B when both were displayed.
 
 # spicy 0.12.0
 
