@@ -7,9 +7,9 @@
 
   Get started with spicy for descriptive statistics, variable
   inspection, frequency tables, cross-tabulations, association measures,
-  categorical and continuous summary tables, and codebooks in R. A
-  tidyverse-friendly alternative to SPSS and Stata for survey and
-  labelled data workflows.
+  categorical and continuous summary tables, regression coefficient
+  tables, and codebooks in R. A tidyverse-friendly alternative to SPSS
+  and Stata for survey and labelled data workflows.
 
 - [Explore variables and build codebooks in
   R](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):

@@ -343,10 +343,44 @@ table_continuous_lm(
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188
 ```
 
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+reports the full coefficient table for one or several fitted
+[`lm()`](https://rdrr.io/r/stats/lm.html) or
+[`glm()`](https://rdrr.io/r/stats/glm.html) models, with APA-aligned
+formatting, factor grouping with reference rows, robust variance,
+standardised coefficients, average marginal effects, hierarchical
+comparisons, and side-by-side multi-model layouts:
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+table_regression(fit)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │     —     —          —          —    
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     —     —          —          —    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
 For detailed guidance, see the dedicated articles on
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
 and the final reporting overview for APA-style summary tables.
 
 ## Row-wise summaries
@@ -412,6 +446,11 @@ sochealth |>
   for model-based mean-comparison tables with robust / cluster-robust /
   bootstrap / jackknife SE, case weights, or additive covariate
   adjustment.
+- See
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  for `lm` / `glm` coefficient tables with APA-aligned formatting,
+  robust variance, standardised coefficients, average marginal effects,
+  hierarchical comparisons, and side-by-side multi-model layouts.
 - See
   [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`?sum_n`](https://amaltawfik.github.io/spicy/reference/sum_n.md),

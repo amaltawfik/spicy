@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Getting started with spicy">
-<meta name="description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
+<meta name="description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, regression coefficient tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
 ">
-<meta property="og:description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
+<meta property="og:description" content="Get started with spicy for descriptive statistics, variable inspection, frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, regression coefficient tables, and codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for survey and labelled data workflows.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -566,10 +566,38 @@ covariate adjustment:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  1188</span></span></code></pre></div>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> reports the full coefficient table
+for one or several fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> or <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
+models, with APA-aligned formatting, factor grouping with reference
+rows, robust variance, standardised coefficients, average marginal
+effects, hierarchical comparisons, and side-by-side multi-model
+layouts:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>For detailed guidance, see the dedicated articles on
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview for
-APA-style summary tables.</p>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_regression.html">table_regression()</a></code>, and
+the final reporting overview for APA-style summary tables.</p>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -577,7 +605,7 @@ APA-style summary tables.</p>
 <p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and
 <code><a href="../reference/count_n.html">count_n()</a></code> compute row-wise statistics across selected
 columns, with automatic handling of missing values.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -622,6 +650,10 @@ group comparisons.</li>
 <li>See <code><a href="../reference/table_continuous_lm.html">?table_continuous_lm</a></code> for model-based
 mean-comparison tables with robust / cluster-robust / bootstrap /
 jackknife SE, case weights, or additive covariate adjustment.</li>
+<li>See <code><a href="../reference/table_regression.html">?table_regression</a></code> for <code>lm</code> /
+<code>glm</code> coefficient tables with APA-aligned formatting, robust
+variance, standardised coefficients, average marginal effects,
+hierarchical comparisons, and side-by-side multi-model layouts.</li>
 <li>See <code><a href="../reference/mean_n.html">?mean_n</a></code>, <code><a href="../reference/sum_n.html">?sum_n</a></code>, <code><a href="../reference/count_n.html">?count_n</a></code>
 for row-wise summaries with optional minimum-valid-values rules.</li>
 <li>See <code><a href="../reference/code_book.html">?code_book</a></code> to generate an interactive HTML
