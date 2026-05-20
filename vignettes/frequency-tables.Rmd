@@ -4,7 +4,10 @@ description: >
   Create frequency tables and cross-tabulations with chi-squared tests,
   effect sizes, and weighted counts in R using the spicy package.
   Covers sorting, percentages, grouping, and labelled data.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Frequency tables and cross-tabulations in R}
   %\VignetteEngine{knitr::rmarkdown}

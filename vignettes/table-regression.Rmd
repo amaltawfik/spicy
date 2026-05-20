@@ -8,7 +8,10 @@ description: >
   multiple-comparison adjustment, side-by-side and hierarchical
   layouts, and output to console, gt, tinytable, flextable,
   Excel, Word, or clipboard.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Publication-ready regression tables}
   %\VignetteEngine{knitr::rmarkdown}

@@ -4,7 +4,10 @@ description: >
   Explore variables, inspect labels, and build interactive codebooks in R
   with spicy. Learn how to use varlist(), vl(), code_book(), and
   label_from_names() for survey and labelled datasets.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Explore variables and build codebooks in R}
   %\VignetteEngine{knitr::rmarkdown}

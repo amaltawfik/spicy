@@ -5,7 +5,10 @@ description: >
   table_continuous_lm() for APA-style reporting in R, how their shared
   arguments fit together, and which output format to choose for
   console, Quarto, Word, or Excel workflows.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Summary tables for APA-style reporting}
   %\VignetteEngine{knitr::rmarkdown}

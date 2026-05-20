@@ -8,7 +8,10 @@ description: >
   equal-weight), four effect-size families (f2, Cohen's d, Hedges'
   g, Hays' omega2) with noncentral CIs, and APA-style output to
   console, gt, tinytable, flextable, Excel, Word, or clipboard.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Model-based continuous summary tables in R}
   %\VignetteEngine{knitr::rmarkdown}

@@ -6,7 +6,10 @@ description: >
   measures, categorical and continuous summary tables, and codebooks in
   R. A tidyverse-friendly alternative to SPSS and Stata for survey and
   labelled data workflows.
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Getting started with spicy}
   %\VignetteEngine{knitr::rmarkdown}
