@@ -309,7 +309,16 @@ responsible for stating the reference convention
 elsewhere (article text, table caption). Under
 <code>factor_layout = "flat"</code>, an informational message is
 emitted to flag the silent omission.</p></li>
-</ul></dd>
+</ul><p><strong>Ordered factors with AME</strong>: under R's default <code>contr.poly</code>,
+ordered factors have B coefficients named <code>.L</code> / <code>.Q</code> / <code>.C</code>
+(orthogonal polynomial trends) which have no per-level reference
+semantics. When <code>"ame"</code> is in <code>show_columns</code>, however, the AME
+block is per-level contrasts against <code>levels()[1]</code>. A synthetic
+reference row anchored on <code>levels()[1]</code> is therefore emitted so
+the reader sees the AME baseline explicitly, with the same
+<code>reference_style</code> handling as plain treatment-coded factors. The
+<code>[vs &lt;ref&gt;]</code> annotation in <code>"annotation"</code> mode is attached to the
+first AME row, not to the polynomial-trend rows.</p></dd>
 
 
 <dt id="arg-reference-label">reference_label<a class="anchor" aria-label="anchor" href="#arg-reference-label"></a></dt>

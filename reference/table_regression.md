@@ -230,6 +230,17 @@ table_regression(
     `factor_layout = "flat"`, an informational message is emitted to
     flag the silent omission.
 
+  **Ordered factors with AME**: under R's default `contr.poly`, ordered
+  factors have B coefficients named `.L` / `.Q` / `.C` (orthogonal
+  polynomial trends) which have no per-level reference semantics. When
+  `"ame"` is in `show_columns`, however, the AME block is per-level
+  contrasts against `levels()[1]`. A synthetic reference row anchored on
+  `levels()[1]` is therefore emitted so the reader sees the AME baseline
+  explicitly, with the same `reference_style` handling as plain
+  treatment-coded factors. The `[vs <ref>]` annotation in `"annotation"`
+  mode is attached to the first AME row, not to the polynomial-trend
+  rows.
+
 - reference_label:
 
   Suffix shown after the reference level in `reference_style = "row"`
