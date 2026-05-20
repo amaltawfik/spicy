@@ -13,52 +13,40 @@
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
-  `flextable` and `word` outputs no longer apply a monospace
-  (`Consolas`) override on numeric body cells. The table now uses a
-  single font throughout, matching the existing policy in
+  `flextable` and `word` outputs now use a single font throughout (was a
+  `Consolas` override on numeric cells), matching
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
-  Decimal alignment is preserved via the same uniform-width padding +
-  centred cells convention.
+
+### Bug fixes
+
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
-  decimal alignment in `gt`, `tinytable`, `flextable`, and `word`
-  outputs now produces visually-stacked decimal points across rows.
-  Previously the cell padding used the regular ASCII space (U+0020),
-  which HTML renderers collapse and markdown-table cell parsers strip on
-  the cell edges – silently undoing the alignment in those outputs.
-  Padding now uses the figure-space character (U+2007, digit-width),
-  which both HTML and markdown preserve. This is the same convention
-  already used by
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
-  so all `table_*` functions now share one decimal-alignment strategy
-  across every rendered engine. (The native primitives
-  [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
-  and `tinytable::style_tt(align = "d")` are no longer used: each
-  renders differently per engine – gt appears right-aligned, tinytable
-  centres each cell on its own value rather than on the decimal mark –
-  so they do not deliver homogeneous output.)
-
-### Bug fixes
+  fix decimal-point alignment in `gt`, `tinytable`, `flextable`, and
+  `word` outputs.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   factor coefficient and AME rows now follow the factor’s
   [`levels()`](https://rdrr.io/r/base/levels.html) order (previously
   sorted alphabetically on the level string).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   AME rows for ordered factors are now nested under the factor group
   header with bare level labels (e.g. `Upper secondary`), not as
   ungrouped rows with the full coefficient name
   (`educationUpper secondary`).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   requesting AME companion columns (`ame_ci`, `ame_p`, `ame_se`) without
   the bare `ame` token now populates those columns (was empty).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   ordered factors with AME columns now show a reference row
   (e.g. `Lower secondary (ref.)`), matching the convention already used
   for plain factors. In multi-model layout, a factor’s reference row is
   now blank in models that do not include the factor (was em-dashed
   regardless).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `stars = TRUE` now anchors stars on B and on AME (when shown).
   Previously stars went on β instead of B when both were displayed.
