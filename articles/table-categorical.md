@@ -567,3 +567,20 @@ table_categorical(
   output = "clipboard"
 )
 ```
+
+## See also
+
+- See
+  [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+  for the continuous counterpart with classical group-comparison tests.
+- See
+  [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+  for model-based continuous summary tables.
+- See
+  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  for the full coefficient table from one or several fitted `lm` / `glm`
+  models (APA Table 3).
+- See
+  [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+  for a cross-function reporting workflow that ties the four
+  summary-table helpers together along the APA Table 1 / 2 / 3 sequence.

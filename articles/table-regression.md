@@ -1315,12 +1315,19 @@ without ambiguity.
 
 ## See also
 
+- [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+  for the APA Table 1 categorical descriptors (factors, labelled
+  variables, chi-squared tests, association measures).
+- [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+  for the APA Table 1 / Table 2 continuous descriptors and unadjusted
+  group-comparison tests.
 - [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
-  for the one-predictor-by-many-outcomes counterpart (estimated marginal
-  means, contrast or slope, four effect-size families).
+  for the one-predictor-by-many-outcomes linear-model counterpart
+  (estimated marginal means, contrast or slope, four effect-size
+  families with noncentral CIs).
 - [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for an end-to-end reporting workflow combining the spicy summary-
-  table helpers.
+  for an end-to-end reporting workflow that combines the four spicy
+  summary-table helpers along the APA Table 1 / 2 / 3 sequence.
 
 ## References
 

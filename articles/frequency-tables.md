@@ -605,6 +605,11 @@ options(
   choosing the right effect size for your contingency table.
 - [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md) -
   building publication-ready categorical tables.
+- [`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md) -
+  end-to-end reporting workflow that ties the four `table_*` helpers
+  together along the APA Table 1 / 2 / 3 sequence (including
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  for the coefficient table).
 - [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   for the full argument reference.

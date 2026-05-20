@@ -5,43 +5,75 @@
 library(spicy)
 ```
 
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-and
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-share the same reporting grammar: choose variables with `select`,
-optionally split the table with `by`, apply readable labels, and pick an
-output format that matches your reporting workflow. This vignette
-focuses on that shared logic rather than repeating every
-function-specific option.
+spicy’s four reporting helpers cover the full APA Manual 7 table
+sequence used in empirical articles:
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  build **Table 1** (sample characteristics) and **Table 2** (group
+  comparisons);
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  extends Table 2 to the linear-model regime when group means need
+  robust SE, weights, or covariate adjustment;
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  builds **Table 3** (the coefficient table) from one or several fitted
+  [`lm()`](https://rdrr.io/r/stats/lm.html) /
+  [`glm()`](https://rdrr.io/r/stats/glm.html) models.
+
+The four functions share the same output grammar — the same `output`
+formats (`gt`, `tinytable`, `flextable`, `word`, `excel`, `clipboard`),
+the same `decimal_mark`, `digits`, `p_digits`, `labels`, and `align`
+arguments — so a single reporting workflow can move smoothly from
+descriptive to inferential without juggling different APIs. This
+vignette focuses on that shared logic; the function-specific articles
+cover the methodological options in depth.
 
 ## Choose the right function
 
-Use the function that matches the type of variables you want to report:
+Use the function that matches the unit you want to report:
 
-| Function | Use for | Optional `by` | Typical additions |
+| Function | Reports | Selection grammar | Typical additions |
 |:---|:---|:---|:---|
-| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Factors, labelled categorical variables, grouped frequency-style summaries | Yes | Chi-squared test, association measure, confidence interval |
-| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric or continuous variables | Yes | Group-comparison test, statistic, effect size |
-| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Continuous outcomes in a linear-model framework | No, requires a single predictor | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size families with noncentral CIs |
+| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
+| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (`d`, `g`, `r`, `eta²`, `omega²`) |
+| [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size families with noncentral CIs |
+| [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) models | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
-In practice:
+In practice, follow the APA sequence:
 
-- use
+- start with
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  for smoking status, education, or activity;
+  for smoking, education, or activity — APA Table 1 categorical
+  descriptors;
 - use
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  for BMI, income, or scale scores;
-- use
+  for BMI, well-being, or income — Table 1 continuous descriptors and
+  Table 2 unadjusted group comparisons;
+- switch to
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  when the same outcomes should be reported through simple weighted or
-  robust linear models;
-- keep `by` for the grouping variable you want to compare across.
+  when the same comparison must account for survey weights, robust SE,
+  or covariate adjustment;
+- finish with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  once the substantive model is fitted — APA Table 3 with all
+  predictors, factor groupings, reference rows, and (optionally)
+  standardised coefficients, marginal effects, or nested model
+  comparisons.
+
+The first three functions live inside a `select` / `by` data-frame
+grammar;
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+is **fit-first** — you build the model the usual R way
+([`lm()`](https://rdrr.io/r/stats/lm.html) or
+[`glm()`](https://rdrr.io/r/stats/glm.html)) and hand the object in. All
+four share the post-construction grammar (`output`, `labels`, `digits`,
+`decimal_mark`, `align`), so swapping functions never breaks your
+rendering pipeline.
 
 ## A shared interface
 
-Both functions use the same core arguments:
+The three descriptive functions share the same core arguments:
 
 ``` r
 
@@ -115,7 +147,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │     3.39      <.001  0.15  1192
 ```
 
-The same argument pattern works in both cases:
+The same argument pattern is used in all three cases:
 
 - `select` chooses the reported variables;
 - `by` defines the grouping structure;
@@ -124,6 +156,66 @@ The same argument pattern works in both cases:
 
 For model-based continuous tables, the same pattern applies, but `by`
 must be a single predictor because one linear model is fit per outcome.
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+joins the same `labels` / `output` / `decimal_mark` / `digits` grammar
+but is **fit-first**: rather than expressing model structure inline
+through `select` and `by`, you pass one or several already-fitted
+[`lm()`](https://rdrr.io/r/stats/lm.html) or
+[`glm()`](https://rdrr.io/r/stats/glm.html) objects:
+
+``` r
+
+fit <- lm(
+  wellbeing_score ~ age + sex + smoking + physical_activity,
+  data = sochealth
+)
+table_regression(
+  fit,
+  labels = c(
+    age               = "Age (years)",
+    sex               = "Sex",
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  ),
+  output = "tinytable"
+)
+```
+
+| Variable                   | B       | SE   | 95% CI |       | p      |
+|----------------------------|---------|------|--------|-------|--------|
+|                            |         |      | LL     | UL    |        |
+| (Intercept)                |   64.18 | 1.69 | 60.87  | 67.49 | \<.001 |
+| Age (years)                |    0.04 | 0.03 | -0.02  |  0.10 |  .171  |
+| Sex:                       |         |      |        |       |        |
+| Female (ref.)              | —       | —    | —      | —     | —      |
+| Male                       |    3.88 | 0.90 |  2.11  |  5.65 | \<.001 |
+| Smoking status:            |         |      |        |       |        |
+| No (ref.)                  | —       | —    | —      | —     | —      |
+| Yes                        |   -1.73 | 1.10 | -3.90  |  0.43 |  .117  |
+| Regular physical activity: |         |      |        |       |        |
+| No (ref.)                  | —       | —    | —      | —     | —      |
+| Yes                        |    2.70 | 0.91 |  0.93  |  4.48 |  .003  |
+| n                          | 1175    |      |        |       |        |
+| R²                         |    0.03 |      |        |       |        |
+| Adj.R²                     |    0.02 |      |        |       |        |
+
+Linear regression: wellbeing_score {#tinytable_89eecxpavj13sbxk9hgi
+.table .tinytable
+style="width: auto; margin-left: auto; margin-right: auto;"
+quarto-disable-processing="true"}
+
+*Note.* Linear regression. Std. errors: classical (OLS).
+
+This split is intentional. The descriptive trio (categorical,
+continuous, continuous_lm) reports the *data* — `select` and `by`
+describe what you want to see.
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+reports the *model* — the model formula has already declared which
+predictors, interactions, polynomials, transformations, splines, and
+contrasts to report, so passing those again through `select` / `by`
+would duplicate the model object’s information and risk diverging from
+it.
 
 ## A practical reporting sequence
 
@@ -200,9 +292,103 @@ This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
 standard errors.
 
+### The coefficient table
+
+Once the substantive model is fitted,
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+produces the APA Table 3 coefficient summary. The same `output` argument
+controls rendering, so the regression table sits in the same reporting
+pipeline as the descriptive ones above:
+
+``` r
+
+fit <- lm(
+  wellbeing_score ~ age + sex + smoking + physical_activity,
+  data = sochealth
+)
+pkgdown_dark_gt(
+  table_regression(
+    fit,
+    standardized = "refit",
+    show_columns = c("b", "beta", "ci", "p"),
+    vcov = "HC3",
+    output = "gt"
+  )
+)
+```
+
+[TABLE]
+
+*Note.* Linear regression. Std. errors: heteroskedasticity-robust (HC3).
+β = standardised coefficient.
+
+The default footer documents the variance estimator and any
+methodological choice that affected the rendered values (robust SE,
+standardisation method, multiplicity correction) so the inferential
+regime is visible without leaving the table.
+
+Side-by-side reporting of competing specifications (e.g., unadjusted
+vs. covariate-adjusted, or `lm` vs. `glm`) is supported by passing a
+list of fits:
+
+``` r
+
+fit_unadj <- lm(wellbeing_score ~ smoking, data = sochealth)
+fit_adj   <- lm(
+  wellbeing_score ~ smoking + age + sex + physical_activity,
+  data = sochealth
+)
+pkgdown_dark_gt(
+  table_regression(
+    list("Unadjusted" = fit_unadj, "Adjusted" = fit_adj),
+    show_columns = c("b", "ci", "p"),
+    output = "gt"
+  )
+)
+```
+
+[TABLE]
+
+*Note.* Linear regression models. Std. errors: classical (OLS).
+
+For binary or count outcomes, swap
+[`lm()`](https://rdrr.io/r/stats/lm.html) for
+[`glm()`](https://rdrr.io/r/stats/glm.html) and request response-scale
+reporting (odds ratios, incidence rate ratios, etc.):
+
+``` r
+
+fit_glm <- glm(
+  smoking ~ age + sex + physical_activity,
+  data = sochealth,
+  family = binomial()
+)
+pkgdown_dark_gt(
+  table_regression(
+    fit_glm,
+    exponentiate = TRUE,
+    show_columns = c("b", "ci", "p", "ame", "ame_ci"),
+    output = "gt"
+  )
+)
+#> Warning: `"ame"` and `"p"` shown without `"ame_p"`: the `p` column is for B (or beta), not the AME. They can differ under non-linear links or interactions.
+#> ℹ Add `"ame_p"` to display the AME-specific p-value.
+```
+
+[TABLE]
+
+*Note.* Logistic regression. Std. errors: classical (MLE inverse
+Hessian). AME = average marginal effect; OR = odds ratio. Coefficients
+exponentiated and displayed as OR; CI bounds exponentiated; SE
+delta-method approximation: SE_OR = OR × SE_link.
+
+Average marginal effects (`ame`) are useful next to the odds ratio
+because they report a probability-scale change for each predictor — the
+quantity most reviewers want to interpret directly.
+
 ## Choose the output format
 
-All three functions support the same reporting formats:
+All four functions support the same reporting formats:
 
 | Output        | Best use                                     |
 |:--------------|:---------------------------------------------|
@@ -235,9 +421,12 @@ if (requireNamespace("flextable", quietly = TRUE)) {
 
 ## Post-process the returned table object
 
-Both summary-table helpers return regular `gt`, `tinytable`, or
+All four summary-table helpers return regular `gt`, `tinytable`, or
 `flextable` objects, so you can keep styling them with the native
-package API.
+package API. This includes
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+nothing about the fit-first interface changes what the rendering engine
+produces.
 
 Use `gt::` functions when you want to keep the `gt` workflow:
 
@@ -333,6 +522,12 @@ The dedicated articles go deeper into each function:
   cluster-robust / bootstrap / jackknife variance, case weights,
   additive covariate adjustment (G-computation or equal-weight), and
   four effect-size families with noncentral CIs.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  covers single- and multi-model coefficient tables for `lm` / `glm`,
+  four standardisation methods, partial effect sizes with noncentral-F
+  CIs, average marginal effects, hierarchical (`nested = TRUE`)
+  comparisons, multiplicity correction, and response-scale reporting for
+  GLMs.
 
 Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.

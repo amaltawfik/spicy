@@ -730,6 +730,10 @@ head(as.data.frame(out))
   for model-based continuous summary tables with robust standard errors
   or case weights.
 - See
+  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  for full coefficient tables from one or several fitted `lm` / `glm`
+  models (APA Table 3).
+- See
   [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for a cross-function reporting workflow using both summary-table
-  helpers.
+  for a cross-function reporting workflow that ties the four
+  summary-table helpers together along the APA Table 1 / 2 / 3 sequence.

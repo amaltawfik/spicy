@@ -651,6 +651,12 @@ broom::glance(out)
   for descriptive continuous summary tables with classical
   group-comparison tests.
 - See
+  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  for the full coefficient table when the analysis moves from a
+  per-outcome one-predictor model to a single multi-predictor `lm` /
+  `glm`, including interactions, polynomials, and standardised
+  coefficients.
+- See
   [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow using the summary-table
-  helpers.
+  helpers along the APA Table 1 / 2 / 3 sequence.
