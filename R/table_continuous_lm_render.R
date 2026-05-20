@@ -647,18 +647,16 @@ export_continuous_lm_table <- function(
     ft <- flextable::align(ft, j = left_j, part = "body", align = "left")
 
     if (use_decimal && length(numeric_j) > 0L) {
-      # Cells are pre-padded for decimal alignment; right-align the
-      # padded strings preserves the dot-aligned column. Use a
-      # monospace font in the body so character widths match. (For
-      # proportional fonts, alignment is approximate.)
+      # Cells are pre-padded for decimal alignment; CENTRE the
+      # padded strings in the default body font (no monospace
+      # override). Same single-font policy as table_regression()
+      # (regression_dispatch.R:1345): with uniform-precision columns
+      # the cells have the same character width, so centring still
+      # LOOKS decimal-aligned in any font with tabular figures
+      # (Calibri's default in Word tables). Trade strict decimal
+      # alignment for a single-font, visually consistent table.
       ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
-      ft <- flextable::align(ft, j = numeric_j, part = "body", align = "right")
-      ft <- flextable::font(
-        ft,
-        j = numeric_j,
-        part = "body",
-        fontname = "Consolas"
-      )
+      ft <- flextable::align(ft, j = numeric_j, part = "body", align = "center")
     } else if (identical(align, "center") && length(numeric_j) > 0L) {
       ft <- flextable::align(ft, j = numeric_j, part = "all", align = "center")
     } else if (identical(align, "right") && length(numeric_j) > 0L) {

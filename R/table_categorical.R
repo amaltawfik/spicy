@@ -310,9 +310,9 @@
 #'     [gt::cols_align_decimal()] and `tinytable::style_tt(align = "d")`.
 #'     For engines without a native primitive (`flextable`, `word`,
 #'     `clipboard`, ASCII print), numeric cells are pre-padded with
-#'     leading and trailing spaces so the dots line up vertically;
-#'     the body of the `flextable`/`word` output additionally uses
-#'     a monospace font (`Consolas`) to make character widths uniform.
+#'     leading and trailing spaces so the dots line up vertically,
+#'     then centred in the default body font (single-font policy
+#'     matching `table_regression()`).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
@@ -1323,6 +1323,10 @@ table_categorical <- function(
       # apply the literal alignment.
       num_j <- 2:ncol(df)
       if (identical(align, "decimal") && length(num_j) > 0L) {
+        # Single-font policy (matches table_regression()):
+        # cells were pre-padded above for uniform width; centring
+        # in the default body font produces approximate decimal
+        # alignment without forcing a monospace override.
         ft <- flextable::align(
           ft,
           j = num_j,
@@ -1333,13 +1337,7 @@ table_categorical <- function(
           ft,
           j = num_j,
           part = "body",
-          align = "right"
-        )
-        ft <- flextable::font(
-          ft,
-          j = num_j,
-          part = "body",
-          fontname = "Consolas"
+          align = "center"
         )
       } else if (identical(align, "center") && length(num_j) > 0L) {
         ft <- flextable::align(ft, j = num_j, part = "all", align = "center")
@@ -2319,23 +2317,17 @@ table_categorical <- function(
 
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
     # Numeric column alignment honours `align`. For "decimal", cells
-    # were pre-padded above by `pad_decimal_cols()`; right-aligning
-    # the padded strings preserves the dot-aligned column. Use a
-    # monospace font in the body so character widths match. For
-    # "center" / "right", apply the literal alignment.
+    # were pre-padded above by `pad_decimal_cols()`; CENTRE the
+    # padded strings in the default body font (single-font policy
+    # matching table_regression()). For "center" / "right", apply
+    # the literal alignment.
     num_j <- 2:ncol(df)
     if (identical(align, "decimal") && length(num_j) > 0L) {
       ft <- flextable::align(
         ft,
         j = num_j,
         part = "body",
-        align = "right"
-      )
-      ft <- flextable::font(
-        ft,
-        j = num_j,
-        part = "body",
-        fontname = "Consolas"
+        align = "center"
       )
     } else if (identical(align, "center") && length(num_j) > 0L) {
       ft <- flextable::align(

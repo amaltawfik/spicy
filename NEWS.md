@@ -6,6 +6,15 @@
   legacy alias for `"right"` from spicy < 0.11.0). Use one of
   `"decimal"` (default), `"center"`, or `"right"`.
 
+## Minor improvements
+
+* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
+  `flextable` and `word` outputs no longer apply a monospace
+  (`Consolas`) override on numeric body cells. The table now uses
+  a single font throughout, matching the existing policy in
+  `table_regression()`. Decimal alignment is preserved via the
+  same uniform-width padding + centred cells convention.
+
 ## Bug fixes
 
 * `table_regression()`: factor coefficient and AME rows now

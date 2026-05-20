@@ -369,14 +369,11 @@ SPSS, SAS, LaTeX \code{siunitx}, \code{\link[gt:cols_align_decimal]{gt::cols_ali
 \code{tinytable::style_tt(align = "d")}. For engines without a
 native decimal-alignment primitive (\code{flextable}, \code{word},
 \code{clipboard}, ASCII print), values are pre-padded with leading
-and trailing spaces so the dots line up vertically; the body
-of the \code{flextable}/\code{word} output additionally uses a monospace
-font to make character widths uniform.
+and trailing spaces so the dots line up vertically, then
+centred in the default body font (single-font policy matching
+\code{table_regression()}).
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
-\item \code{"auto"}: legacy per-column rule used in spicy < 0.11.0
-(center for the descriptive / inferential columns; right for
-\code{n}, \verb{Weighted n}, and \code{p}).
 }
 
 The \code{excel} output uses the engine's default alignment in any

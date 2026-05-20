@@ -144,13 +144,11 @@
 #'     `tinytable::style_tt(align = "d")`. For engines without a
 #'     native decimal-alignment primitive (`flextable`, `word`,
 #'     `clipboard`, ASCII print), values are pre-padded with leading
-#'     and trailing spaces so the dots line up vertically; the body
-#'     of the `flextable`/`word` output additionally uses a monospace
-#'     font to make character widths uniform.
+#'     and trailing spaces so the dots line up vertically, then
+#'     centred in the default body font (single-font policy matching
+#'     `table_regression()`).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
-#'   - `"auto"`: legacy per-column rule (center for the descriptive
-#'     columns, right for `n` and `p`).
 #'
 #'   The `excel` output uses the engine's default alignment in any
 #'   case: cell-string padding does not align decimals under
@@ -1879,9 +1877,11 @@ export_desc_table <- function(
     ft <- flextable::align(ft, j = left_j, part = "all", align = "left")
     if (use_decimal && length(numeric_j) > 0L) {
       # Cells were pre-padded by `decimal_align_strings()` above;
-      # right-aligning the padded strings preserves the dot-aligned
-      # column. Use a monospace font in the body so character widths
-      # match (proportional fonts give approximate alignment).
+      # CENTRE the padded strings in the default body font (no
+      # monospace override). Same single-font policy as
+      # table_regression() (regression_dispatch.R:1345): with
+      # uniform-precision columns, centring still LOOKS decimal-
+      # aligned because every cell has the same character width.
       ft <- flextable::align(
         ft,
         j = numeric_j,
@@ -1892,13 +1892,7 @@ export_desc_table <- function(
         ft,
         j = numeric_j,
         part = "body",
-        align = "right"
-      )
-      ft <- flextable::font(
-        ft,
-        j = numeric_j,
-        part = "body",
-        fontname = "Consolas"
+        align = "center"
       )
     } else if (identical(align, "center") && length(numeric_j) > 0L) {
       ft <- flextable::align(

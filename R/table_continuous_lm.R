@@ -305,14 +305,11 @@
 #'     `tinytable::style_tt(align = "d")`. For engines without a
 #'     native decimal-alignment primitive (`flextable`, `word`,
 #'     `clipboard`, ASCII print), values are pre-padded with leading
-#'     and trailing spaces so the dots line up vertically; the body
-#'     of the `flextable`/`word` output additionally uses a monospace
-#'     font to make character widths uniform.
+#'     and trailing spaces so the dots line up vertically, then
+#'     centred in the default body font (single-font policy matching
+#'     `table_regression()`).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
-#'   - `"auto"`: legacy per-column rule used in spicy < 0.11.0
-#'     (center for the descriptive / inferential columns; right for
-#'     `n`, `Weighted n`, and `p`).
 #'
 #'   The `excel` output uses the engine's default alignment in any
 #'   case: cell-string padding does not align decimals under

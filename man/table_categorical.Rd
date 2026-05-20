@@ -159,9 +159,9 @@ SPSS, SAS, LaTeX \code{siunitx}, and the native primitives of
 \code{\link[gt:cols_align_decimal]{gt::cols_align_decimal()}} and \code{tinytable::style_tt(align = "d")}.
 For engines without a native primitive (\code{flextable}, \code{word},
 \code{clipboard}, ASCII print), numeric cells are pre-padded with
-leading and trailing spaces so the dots line up vertically;
-the body of the \code{flextable}/\code{word} output additionally uses
-a monospace font (\code{Consolas}) to make character widths uniform.
+leading and trailing spaces so the dots line up vertically,
+then centred in the default body font (single-font policy
+matching \code{table_regression()}).
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
 }
