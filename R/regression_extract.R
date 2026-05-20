@@ -90,11 +90,13 @@ extract_lm_phase1 <- function(
   ame_requested <- any(
     c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns
   )
+  beta_requested <- !identical(standardized, "none")
   ref_rows <- build_reference_rows(
     fit = fit,
     model_id = model_id,
     outcome = outcome,
-    ame_requested = ame_requested
+    ame_requested = ame_requested,
+    beta_requested = beta_requested
   )
   coefs_long <- rbind(coefs_B, ref_rows)
 
@@ -363,7 +365,8 @@ build_one_b_row <- function(nm, model_id, outcome,
 # of the first factor as real coefficients -- `detect_factor_terms()`
 # flags `reference_dropped = FALSE` for these and we skip them here.
 build_reference_rows <- function(fit, model_id, outcome,
-                                   ame_requested = FALSE) {
+                                   ame_requested = FALSE,
+                                   beta_requested = FALSE) {
   factor_terms <- detect_factor_terms(fit)
   if (length(factor_terms) == 0L) {
     return(empty_coefs_long())
@@ -395,19 +398,40 @@ build_reference_rows <- function(fit, model_id, outcome,
     # (R picks the first level as reference), but compute explicitly to
     # remain robust under user-overridden contrasts.
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
-    rows[[length(rows) + 1L]] <- build_one_b_row(
-      nm = term_name, model_id = model_id, outcome = outcome,
-      estimate = NA_real_, se = NA_real_,
-      ci_low = NA_real_, ci_high = NA_real_,
-      statistic = NA_real_, df = NA_real_, p_value = NA_real_,
-      test_type = NA_character_,
-      is_singular = FALSE,
-      is_intercept = FALSE,
-      is_reference = TRUE,
-      factor_term = ft$factor_term,
-      factor_level = ref_lvl,
-      factor_level_pos = ref_pos
-    )
+
+    # Determine which estimate_types this factor has a reference for.
+    # The em-dash on the rendered cell is a semantic signal -- it
+    # appears under columns where the row IS the reference. For a
+    # treatment-coded factor, the same level is the reference for B,
+    # for `beta` (standardised refit), AND for AME (since
+    # marginaleffects contrasts against `levels()[1]`). For a
+    # polynomial-coded ordered factor, the `.L` / `.Q` trends have NO
+    # per-level reference, so we only emit an AME ref-row.
+    est_types <- character()
+    if (is_treatment_dropped) {
+      est_types <- c(est_types, "B")
+      if (isTRUE(beta_requested)) est_types <- c(est_types, "beta")
+      if (isTRUE(ame_requested))  est_types <- c(est_types, "AME")
+    } else if (is_poly_with_ame) {
+      est_types <- "AME"
+    }
+
+    for (et in est_types) {
+      rows[[length(rows) + 1L]] <- build_one_b_row(
+        nm = term_name, model_id = model_id, outcome = outcome,
+        estimate = NA_real_, se = NA_real_,
+        ci_low = NA_real_, ci_high = NA_real_,
+        statistic = NA_real_, df = NA_real_, p_value = NA_real_,
+        test_type = NA_character_,
+        is_singular = FALSE,
+        is_intercept = FALSE,
+        is_reference = TRUE,
+        factor_term = ft$factor_term,
+        factor_level = ref_lvl,
+        factor_level_pos = ref_pos,
+        estimate_type = et
+      )
+    }
   }
   if (length(rows) == 0L) {
     return(empty_coefs_long())
