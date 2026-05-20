@@ -69,6 +69,8 @@
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now populates those columns (was empty).</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now show a reference row (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors. Multi-model reference-row display tightened to match <code>modelsummary</code> / <code>gtsummary</code> / Stata <code>esttab</code>.</li>
+<li>
+<code><a href="../reference/table_regression.html">table_regression()</a></code>: <code>stars = TRUE</code> now suffixes significance stars on the AME cells when AME is in <code>show_columns</code>, on the same rule that already applied to B / β (stars convey the underlying p-value compactly, regardless of whether the p column is also displayed).</li>
 </ul></div>
 </div>
     <div class="section level2">
