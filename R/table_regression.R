@@ -1198,17 +1198,15 @@ table_regression <- function(
     vapply(seq_len(n_models), default_id, character(1))
   }
 
+  # Phase 0b sub-step 4 + Phase 0c sub-step C1: we keep BOTH the frame
+  # (consumed by build_regression_title_from_frames() below) and the
+  # legacy-shaped extract (consumed by the footer / body / alignment
+  # renderers, which migrate to frames in Phase 0c sub-steps C2-C4).
+  # Once all renderers consume frames, the adapter call disappears.
+  frames   <- vector("list", n_models)
   extracts <- vector("list", n_models)
   for (i in seq_len(n_models)) {
-    # Phase 0b sub-step 4: route through the new as_regression_frame()
-    # generic + frame-to-legacy adapter instead of calling
-    # extract_lm_phase1() directly. The adapter's output is shape-
-    # identical to the legacy extract (proven byte-equivalent on every
-    # field the downstream renderers read by test-regression_frame_adapter.R),
-    # so nothing below this line needs to change. extract_lm_phase1()
-    # remains the underlying engine inside the .lm() / .glm() methods;
-    # sub-step 5 will inline it once all downstream paths route here.
-    frame <- as_regression_frame(
+    frames[[i]] <- as_regression_frame(
       models[[i]],
       model_id              = model_ids[i],
       vcov                  = vcov_list[[i]],
@@ -1223,7 +1221,7 @@ table_regression <- function(
       use_ame_satterthwaite = use_ame_satt,
       cluster_name          = cluster_name_list[i]
     )
-    extracts[[i]] <- .frame_to_legacy_extract(frame,
+    extracts[[i]] <- .frame_to_legacy_extract(frames[[i]],
                                               model_id = model_ids[i])
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block()) can
@@ -1273,7 +1271,11 @@ table_regression <- function(
   # "none" + flat informational message tied to reference_style; the
   # override / suppression happens last).
   title <- if (is.null(title)) {
-    build_regression_title(extracts, nested = nested)
+    # Phase 0c sub-step C1: title is now built from frames directly,
+    # bypassing the legacy-extract adapter for this code path. The
+    # other renderers (footer / body / alignment) continue to consume
+    # the legacy extract shape until sub-steps C2-C4 land.
+    build_regression_title_from_frames(frames, nested = nested)
   } else if (isFALSE(title)) {
     NULL
   } else {

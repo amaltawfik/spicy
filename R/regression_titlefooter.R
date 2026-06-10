@@ -72,6 +72,57 @@ build_regression_title <- function(extracts, nested = FALSE) {
 }
 
 
+# Frame-aware sibling of build_regression_title(). Reads from each
+# frame's info$dv (DV name) and info$extras$title_prefix (family-aware
+# label) instead of the legacy extract's $outcome and $title_prefix
+# fields. Logic is identical -- byte-equivalence is tested in
+# tests/testthat/test-renderer_migration_title.R.
+#
+# Phase 0c sub-step C1: first renderer migrated to consume frames
+# directly. The flip in table_regression.R bypasses the
+# .frame_to_legacy_extract() adapter for the title path; the other
+# renderers (footer blocks, body builder, alignment) continue to
+# consume the legacy extract shape until sub-steps C2-C4 land.
+build_regression_title_from_frames <- function(frames, nested = FALSE) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return("Regression")
+  }
+  outcomes <- vapply(frames, function(f) {
+    f$info$dv %||% NA_character_
+  }, character(1))
+  outcomes <- outcomes[!is.na(outcomes)]
+  n <- length(frames)
+
+  prefixes <- vapply(frames, function(f) {
+    f$info$extras$title_prefix %||% "Regression"
+  }, character(1))
+  prefix <- if (length(unique(prefixes)) == 1L) {
+    prefixes[1L]
+  } else {
+    "Regression"
+  }
+
+  if (n == 1L) {
+    if (length(outcomes) == 0L) return(prefix)
+    return(sprintf("%s: %s", prefix, outcomes[1]))
+  }
+
+  identical_dv <- length(unique(outcomes)) == 1L
+
+  if (isTRUE(nested)) {
+    lower_prefix <- paste0(
+      tolower(substr(prefix, 1L, 1L)),
+      substr(prefix, 2L, nchar(prefix))
+    )
+    return(sprintf("Hierarchical %s: %s", lower_prefix, outcomes[1]))
+  }
+  if (identical_dv) {
+    return(sprintf("%s comparison: %s", prefix, outcomes[1]))
+  }
+  sprintf("%s comparison", prefix)
+}
+
+
 # ---- Footer dispatcher ---------------------------------------------------
 
 # Build the full multi-line footer. Returns NULL if no theme applies.
