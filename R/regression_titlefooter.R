@@ -389,6 +389,64 @@ build_abbreviations_footer_block <- function(show_columns,
 }
 
 
+# Frame-aware sibling of build_abbreviations_footer_block().
+# Reads frame$info$extras$exp_applied (was extract$exp_applied) and
+# frame$info$extras$exp_header (was extract$exp_header). show_columns
+# and standardized stay scalar args (not per-fit), unchanged from the
+# legacy signature.
+build_abbreviations_footer_block_from_frames <- function(show_columns,
+                                                          frames = list(),
+                                                          standardized = "none") {
+  defs <- character(0)
+
+  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
+    defs <- c(defs, "AME = average marginal effect")
+  }
+
+  if (!identical(standardized, "none")) {
+    defs <- c(defs, "β = standardised coefficient")
+  }
+
+  if (is.list(frames) && length(frames) > 0L) {
+    applied <- vapply(frames,
+                      function(f) isTRUE(f$info$extras$exp_applied),
+                      logical(1))
+    if (any(applied)) {
+      hdrs <- unique(vapply(frames[applied],
+                            function(f) f$info$extras$exp_header,
+                            character(1)))
+      exp_defs <- c(
+        "OR" = "OR = odds ratio",
+        "IRR" = "IRR = incidence rate ratio",
+        "HR" = "HR = hazard ratio",
+        "RR" = "RR = risk ratio",
+        "MR" = "MR = mean ratio",
+        "exp(B)" = "exp(B) = exponentiated coefficient"
+      )
+      for (h in hdrs) {
+        if (h %in% names(exp_defs)) defs <- c(defs, exp_defs[[h]])
+      }
+    }
+  }
+
+  if (any(c("partial_f2", "partial_f2_ci") %in% show_columns)) {
+    defs <- c(defs, "f² = Cohen's partial f²")
+  }
+  if (any(c("partial_eta2", "partial_eta2_ci") %in% show_columns)) {
+    defs <- c(defs, "η² = partial eta-squared")
+  }
+  if (any(c("partial_omega2", "partial_omega2_ci") %in% show_columns)) {
+    defs <- c(defs, "ω² = bias-corrected partial omega-squared")
+  }
+  if ("partial_chi2" %in% show_columns) {
+    defs <- c(defs, "χ² = partial likelihood-ratio chi-squared")
+  }
+
+  if (length(defs) == 0L) return(NULL)
+  paste0(paste(defs, collapse = "; "), ".")
+}
+
+
 build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
   if (!"ame" %in% show_columns) return(NULL)
   if (!is.list(extracts) || length(extracts) == 0L) return(NULL)
@@ -414,6 +472,43 @@ build_ame_satterthwaite_footer_block <- function(extracts, show_columns) {
     paste0(
       "via `clubSandwich::coef_test()` on the dominant underlying ",
       "coefficient (response-scale AME is non-linear in \u03B2)."
+    )
+  } else {
+    "via `clubSandwich::linear_contrast()`."
+  }
+  paste0(
+    "AME inference: t-distribution with Satterthwaite-corrected df ",
+    "(Pustejovsky & Tipton 2018) ", mechanism
+  )
+}
+
+
+# Frame-aware sibling of build_ame_satterthwaite_footer_block(). Reads
+#   frame$info$extras$use_ame_satterthwaite (was extract$use_ame_satterthwaite)
+#   frame$info$class                         (was extract$is_glm; derived
+#                                             as class == "glm")
+build_ame_satterthwaite_footer_block_from_frames <- function(frames, show_columns) {
+  if (!"ame" %in% show_columns) return(NULL)
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  any_satt <- any(vapply(frames,
+                         function(f) isTRUE(f$info$extras$use_ame_satterthwaite),
+                         logical(1)))
+  if (!any_satt) return(NULL)
+  any_lm  <- any(vapply(frames,
+                        function(f) !identical(f$info$class, "glm"),
+                        logical(1)))
+  any_glm <- any(vapply(frames,
+                        function(f) identical(f$info$class, "glm"),
+                        logical(1)))
+  mechanism <- if (any_lm && any_glm) {
+    paste0(
+      "via `clubSandwich` (closed-form `linear_contrast()` for `lm`; ",
+      "dominant-coef `coef_test()` approximation for `glm`)."
+    )
+  } else if (any_glm) {
+    paste0(
+      "via `clubSandwich::coef_test()` on the dominant underlying ",
+      "coefficient (response-scale AME is non-linear in β)."
     )
   } else {
     "via `clubSandwich::linear_contrast()`."
@@ -563,6 +658,38 @@ build_exponentiate_footer_block <- function(extracts) {
   hdrs <- unique(vapply(
     extracts[applied], function(e) e$exp_header, character(1)
   ))
+  if (length(hdrs) == 1L) {
+    hdr <- hdrs[1L]
+    return(sprintf(
+      paste0(
+        "Coefficients exponentiated and displayed as %s; CI bounds ",
+        "exponentiated; SE delta-method approximation: ",
+        "SE_%s = %s \u00D7 SE_link."
+      ),
+      hdr, hdr, hdr
+    ))
+  }
+  paste0(
+    "Coefficients exponentiated and displayed as ",
+    paste(hdrs, collapse = " / "),
+    " (per family); CI bounds exponentiated; SE delta-method ",
+    "approximation: SE_exp = exp(B) \u00D7 SE_link."
+  )
+}
+
+
+# Frame-aware sibling of build_exponentiate_footer_block(). Reads
+#   frame$info$extras$exp_applied (was extract$exp_applied)
+#   frame$info$extras$exp_header  (was extract$exp_header)
+build_exponentiate_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  applied <- vapply(frames,
+                    function(f) isTRUE(f$info$extras$exp_applied),
+                    logical(1))
+  if (!any(applied)) return(NULL)
+  hdrs <- unique(vapply(frames[applied],
+                        function(f) f$info$extras$exp_header,
+                        character(1)))
   if (length(hdrs) == 1L) {
     hdr <- hdrs[1L]
     return(sprintf(
