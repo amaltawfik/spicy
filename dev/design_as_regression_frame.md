@@ -424,12 +424,60 @@ column for Bayesian rows are the visual signal of regime mixing.
   warning, not an abort) the first time the mix is detected in a
   session.
 
-**Q4.** Ordinal / multinomial models produce coefficients per
-outcome level (a matrix). The schema has `outcome_level`, but the
-rendering pipeline currently assumes a single outcome row. How is
-the side-by-side layout extended?
-→ Defer to Phase 4. Phase 0–3 don't need this. Note here so we don't
-re-paint ourselves into a corner.
+**Q4 — SETTLED 2026-05-21 (high-level; details deferred to Phase 4
+implementation).** *Ordinal / multinomial / categorical Bayesian
+models produce coefficients per outcome level (a matrix). How does
+the rendering pipeline handle them?*
+
+**Resolution (high level)**:
+
+1. The `outcome_level` column in `coefs` (already in the schema)
+   is the carrier. Each per-class method populates it with the
+   level name for matrix-coef models, `NA_character_` for
+   single-coef models.
+2. **Wide layout by default, long opt-in.** Multinomial / non-prop
+   ordinal / Bayesian categorical fits reuse the existing
+   `build_model_spanners()` machinery — each outcome level is
+   treated as a sub-model column block. A new argument
+   `multinom_layout = c("wide", "long")` (default `"wide"`) lets
+   the user switch to one-row-per-(predictor × level) when
+   K is large.
+3. **Ordinal proportional-odds** (`polr`, `clm` default) is NOT a
+   matrix case: a single β per predictor (proportional odds
+   assumption) plus K-1 threshold intercepts. `outcome_level`
+   stays `NA_character_`; thresholds appear as additional rows
+   marked as `is_threshold = TRUE` (similar in spirit to
+   `is_ref` / fit-stat rows) so the renderer can place them
+   between the coefficient block and the fit stats. Same pattern
+   as `parameters::model_parameters.polr()`.
+4. **Structural carve-out** (cross-references Q3 settlement): a
+   list mixing matrix-coef fits (multinomial, non-prop ordinal,
+   Bayesian categorical) with single-coef fits (lm, glm, lmer,
+   polr, ...) aborts with a structural-incompatibility error.
+   This is layout incompatibility, not methodological purity, so
+   it is consistent with Q3's "permissive on methodology" stance.
+5. **Phase 4 implementation** (2027 H1). The schema already has
+   the affordances needed (`outcome_level`); the rendering
+   pipeline detail work waits until Phases 0-3 (lm, glm, lmer,
+   glmer, svyglm, stanreg, brmsfit) have stress-tested the
+   surrounding machinery.
+
+**Decisions deferred to Phase 4 implementation**:
+
+- Exact threshold-row formatting (label format,
+  per-engine cosmetic).
+- Threshold value used in `multinom_layout = "long"` for the
+  break point between wide and long suggestion in `?table_regression`.
+- Whether ordinal-with-thresholds gets a dedicated `show_columns`
+  token (`"thresholds"`).
+- Header convention for multinomial spanners
+  (`"Bus: B"` vs `"B (Bus)"` vs spanner row).
+
+These decisions wait until Phase 4 because they require visual
+prototyping against real data, not paper-design alone.
+
+**Confirmed by user 2026-05-21**: validate the high-level frame,
+defer detail-level decisions to Phase 4 implementation.
 
 **Q5.** Should `info$call` store the full `match.call()` or just the
 formula and data name? Full call leaks the data object name into the
