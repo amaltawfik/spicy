@@ -200,6 +200,34 @@ capitalize_first <- function(s) {
 }
 
 
+# Frame-aware sibling of build_regression_type_footer_block().
+# Reads from frame$info$extras$title_prefix instead of extract$title_prefix.
+# Logic and output are identical; byte-equivalence is tested in
+# tests/testthat/test-renderer_migration_footer_simple.R.
+#
+# Phase 0c sub-step C2.a: migrating one footer-block builder at a time so
+# each gets its own byte-equivalence gate. The dispatcher
+# build_regression_footer() will keep consuming legacy extracts until
+# every builder has a _from_frames sibling.
+build_regression_type_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  types <- vapply(frames, function(f) {
+    tp <- f$info$extras$title_prefix %||% "Regression"
+    tolower(tp)
+  }, character(1))
+  if (length(types) == 1L) {
+    return(paste0(capitalize_first(types[1]), "."))
+  }
+  if (length(unique(types)) == 1L) {
+    return(paste0(capitalize_first(types[1]), " models."))
+  }
+  per <- vapply(seq_along(types), function(i) {
+    sprintf("Model %d: %s", i, types[i])
+  }, character(1))
+  paste0(paste(per, collapse = "; "), ".")
+}
+
+
 # ---- Theme: vcov block (Q7 / Q13) ----------------------------------------
 
 # Uniform vcov across models  -> single line:
@@ -244,6 +272,48 @@ format_vcov_label <- function(extract) {
   }
   if (vt %in% c("bootstrap", "jackknife")) return(vt)
   vt
+}
+
+
+# Frame-aware sibling of format_vcov_label(). Reads from
+#   frame$info$vcov_kind          (was extract$vcov_type)
+#   frame$info$extras$cluster_name (was extract$cluster_name)
+#   frame$info$class               (was extract$is_glm; derived)
+# instead of the legacy extract fields. Logic identical.
+format_vcov_label_from_frame <- function(frame) {
+  vt <- frame$info$vcov_kind %||% "classical"
+  cn <- frame$info$extras$cluster_name %||% NA_character_
+  is_glm <- identical(frame$info$class, "glm")
+  if (vt == "classical") {
+    return(if (is_glm) "classical (MLE inverse Hessian)" else "classical (OLS)")
+  }
+  if (startsWith(vt, "HC")) {
+    return(sprintf("heteroskedasticity-robust (%s)", vt))
+  }
+  if (startsWith(vt, "CR")) {
+    cluster_part <- if (is.na(cn) || !nzchar(cn)) {
+      "cluster vector supplied"
+    } else {
+      sprintf("clusters by %s", cn)
+    }
+    return(sprintf("cluster-robust (%s), %s", vt, cluster_part))
+  }
+  if (vt %in% c("bootstrap", "jackknife")) return(vt)
+  vt
+}
+
+
+# Frame-aware sibling of build_vcov_footer_block().
+build_vcov_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  labels <- vapply(frames, format_vcov_label_from_frame, character(1))
+  if (all(labels == labels[1])) {
+    return(paste0("Std. errors: ", labels[1], "."))
+  }
+  per <- vapply(seq_along(labels), function(i) {
+    sprintf("  Model %d: %s", i, labels[i])
+  }, character(1))
+  paste0("Std. errors:\n", paste(per, collapse = "\n"))
 }
 
 
@@ -446,6 +516,26 @@ build_singular_footer_block <- function(extracts) {
   if (!any(flags)) return(NULL)
   affected <- which(flags)
   if (length(extracts) == 1L) {
+    return("Rank-deficient model: dropped coefficient(s) shown as \u2014.")
+  }
+  paste0(
+    "Rank-deficient model(s) ",
+    paste(sprintf("Model %d", affected), collapse = ", "),
+    ": dropped coefficient(s) shown as \u2014."
+  )
+}
+
+
+# Frame-aware sibling of build_singular_footer_block().
+# Reads frame$info$extras$has_singular instead of extract$has_singular.
+build_singular_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  flags <- vapply(frames, function(f) {
+    isTRUE(f$info$extras$has_singular)
+  }, logical(1))
+  if (!any(flags)) return(NULL)
+  affected <- which(flags)
+  if (length(frames) == 1L) {
     return("Rank-deficient model: dropped coefficient(s) shown as \u2014.")
   }
   paste0(
