@@ -1,9 +1,13 @@
 # `as_regression_frame()` — design doc
 
-> **Status**: DRAFT, awaiting user validation before Phase 0 refactor begins.
+> **Status**: ACTIVE. Phase 0a (design) + Phase 0b (lm/glm migration onto
+> the generic) complete as of 2026-06-11 (5 commits, 3976 / 0 / 8 tests,
+> see §14). Phase 0c (renderer migration to consume frames directly)
+> next on the roadmap.
 >
 > **Branch**: `feature/mixed-effects` (forked from `main` at `2c3b079`).
-> **Created**: 2026-05-21. **Author**: Amal + Claude pairing session 2026-05-21.
+> **Created**: 2026-05-21. **Author**: Amal + Claude pairing sessions
+> 2026-05-21 (design) and 2026-06-11 (Phase 0b implementation).
 >
 > **Purpose**: pin the data contract that lets `table_regression()` support
 > arbitrary model classes (lmer, glmer, svyglm, stanreg, brmsfit, coxph,
@@ -592,7 +596,8 @@ not belong in `info`. Neither do `has_offset`, `non_default_contrasts`,
 | Phase | Deliverable | Estimated window | Risk |
 |---|---|---|---|
 | **0a** | Design doc validated (this file) | 2026-05-21 | — |
-| **0b** | Refactor `lm` / `glm` extraction onto `as_regression_frame()`; all existing tests pass; no new user-visible feature | 2026-05-22 to 2026-07-15 | High up-front; pays back in every subsequent phase |
+| **0b** | Refactor `lm` / `glm` extraction onto `as_regression_frame()`; orchestrator routes through the generic; round-trip via `.frame_to_legacy_extract()` keeps renderers unchanged | **DONE 2026-06-11** | Validated at 3976 / 0 / 8 tests |
+| **0c** | Migrate downstream renderers (title, footer blocks, body builder, multi-model alignment) to consume `frame$info` and `frame$coefs` directly; delete `.frame_to_legacy_extract()` adapter once dead | Q3 2026 | Medium; ~2000 LoC of renderer code touched across 4 sub-steps (see §14) |
 | **1** | `lmer` / `glmer` support (lme4 + lmerTest in Suggests) | August–September 2026 | Medium; random effects footer + ICC are new |
 | **2** | `svyglm` support (survey in Suggests) | October 2026 | Low |
 | **3** | `stanreg` / `brmsfit` support (rstanarm + brms in Suggests) | November–December 2026 | Medium; posterior CI semantics |
@@ -740,6 +745,121 @@ respective classes are first added:
   conventions stable.
 
 Bump these as needed when a Phase ships.
+
+---
+
+## 14. Phase 0b completion summary + Phase 0c scope (2026-06-11)
+
+### 14.1 Phase 0b — DONE
+
+Phase 0b delivered the `as_regression_frame()` generic + the
+`lm` / `glm` migration in five atomic sub-steps over the
+2026-06-11 pairing session:
+
+| Sub-step | Commit | New tests | Cumulative PASS / FAIL / SKIP |
+|---|---|---|---|
+| 1. Scaffolding (generic + default + validator) | `3b91318` | +106 | 3673 / 0 / 44 |
+| 2. `as_regression_frame.lm()` / `.glm()` methods | `d20db21` | +117 | 3790 / 0 / 44 |
+| 3. `.frame_to_legacy_extract()` round-trip adapter | `ece7ae3` | +97 | 3887 / 2 / 44 |
+| 3.5. (env fix) Install `zip` to unblock flextable | (no commit) | — | 3976 / 0 / 8 |
+| 4. Flip orchestrator call site | `14d2871` | — | 3976 / 0 / 8 |
+| 5. Phase 0b close + design doc update | this commit | — | 3976 / 0 / 8 |
+
+What works after Phase 0b:
+
+- `as_regression_frame(fit, ...)` produces a schema-valid frame
+  for any `lm` or `glm` fit. The validator enforces the contract
+  in §§3-4 with structured `spicy_invalid_frame` errors.
+- `.frame_to_legacy_extract(frame)` round-trips the frame back
+  into the legacy `extract_lm_phase1()` shape. Proven byte-
+  equivalent on every field the title, footer (all 12 blocks),
+  and body-builder renderers read.
+- `table_regression()` routes through the new generic and the
+  adapter; user-visible behaviour is unchanged (proven by 3976
+  passing tests including the unchanged snapshots).
+- `info$extras` vocabulary documented inline:
+  `cluster_name`, `use_ame_satterthwaite`, `has_singular`,
+  `singular_terms`, `has_weights`, `weighted_n`, `title_prefix`,
+  `family_info`, `exp_applied`, `exp_header`. Per Q5 (§9), the
+  footer renderer reads these keys case-by-case; unknown keys
+  are silently ignored.
+
+What does NOT yet work after Phase 0b:
+
+- The renderers still consume the **legacy extract shape**, not
+  the frame. The pipeline today is
+  `fit → as_regression_frame() → frame → .frame_to_legacy_extract() → legacy → renderers`.
+  The frame is created then re-destroyed every call. Cheap
+  (microseconds), invisible to users, but architecturally a
+  round-trip with no benefit yet realised. Phase 0c removes it.
+- `extract_lm_phase1()` is still called inside
+  `as_regression_frame.lm()`. Encapsulated, not public-facing,
+  but the dependency is real. Phase 0c does NOT delete it —
+  see §14.2 below.
+
+Vocabulary expansions during the migration (additive, no
+`spicy_frame_version` bump per §5 rules):
+
+- `estimate_type` allowed values extended from `{"B", "beta",
+  "ame"}` to also accept `"AME"` (legacy capitalisation) and
+  the partial-effect-size tokens `"partial_f2"`,
+  `"partial_eta2"`, `"partial_omega2"`, `"partial_chi2"`.
+  Phase 0c will decide whether to normalise to lowercase
+  during the renderer migration.
+- Optional `coefs$test_type` column added to the schema (read
+  by `broom::tidy.spicy_regression_table()` for the "t" / "z"
+  inference family signal).
+
+### 14.2 Phase 0c — renderer migration to the frame
+
+Phase 0c removes the round-trip by migrating each downstream
+renderer to read directly from `frame$info` and `frame$coefs`.
+Sub-step decomposition (each sub-step is its own commit, each
+guarded by byte-equivalence tests against the pre-migration
+output):
+
+| Sub-step | Target | LoC | Risk |
+|---|---|---|---|
+| C1 | `build_regression_title()` (R/regression_titlefooter.R:26-72) | ~80 | Low; smallest renderer, isolated |
+| C2 | The 12 footer-block builders (R/regression_titlefooter.R:83-660) | ~600 | Medium; one builder per commit; per-block byte-equivalence tests already exist in test-regression_frame_adapter.R as a baseline |
+| C3 | `align_multimodel_frames()` (R/regression_align.R, currently legacy-shaped) | ~300 | Medium |
+| C4 | `build_structured_body()` (R/regression_structured.R) | ~1000 | High; most complex consumer; landlord of column-level rendering |
+| C5 | Delete `.frame_to_legacy_extract()` + its tests + clean up legacy `extract_lm_phase1()` (decide: inline into the lm/glm methods, or keep as internal primitive) | ~400 | Low; pure cleanup after C1-C4 land |
+
+Phase 0c timing: 3-4 dedicated sessions. Estimated window
+Q3 2026. Does NOT block Phase 1 (lmer/glmer) — Phase 1 can
+start in parallel because new methods produce frames that the
+adapter still bridges to renderers until Phase 0c lands.
+
+Phase 0c re-entry checklist (when work resumes):
+
+1. Re-read this document end-to-end, especially Q1-Q5 (§9) and
+   §12 (fit / standardisation / AME orchestration).
+2. Re-read `R/regression_titlefooter.R:1-150` (the entry
+   builders) to map every `extracts[[i]]$X` access to its
+   `frame$info$Y` or `frame$coefs$Z` equivalent.
+3. Implement sub-step C1 (title) first. Set the byte-equivalence
+   pattern that subsequent sub-steps will reuse.
+4. Audit gate before each sub-step: cross-check against the
+   `.expect_extracts_renderer_equivalent()` helper in
+   `tests/testthat/test-regression_frame_adapter.R` to confirm
+   the source data is reachable from the frame side.
+
+### 14.3 Note on `extract_lm_phase1()` after Phase 0c
+
+After Phase 0c lands, `extract_lm_phase1()` will either:
+
+- (A) Stay as the internal implementation of
+  `as_regression_frame.lm()` / `.glm()`. Encapsulated, not
+  reused elsewhere. Cost: continued maintenance of a
+  ~1700-line function that does the actual extraction.
+- (B) Be inlined into the methods, then deleted. The methods
+  grow larger but the codebase has one fewer indirection.
+
+Decision deferred to Phase 0c sub-step C5. Both are valid for
+the 15-year horizon; (A) keeps the well-tested extraction
+function intact, (B) removes one layer. Pick whichever feels
+cleaner once the renderer migration is done.
 
 ---
 
