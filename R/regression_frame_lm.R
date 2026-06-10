@@ -191,6 +191,16 @@ as_regression_frame.glm <- function(fit, ...) {
 
 
 # Internal: build the info list from the legacy extractor output + fit.
+#
+# Captures every field the downstream renderers (title, footer, body) read
+# from the legacy extract list. Schema-level fields go into `info` proper
+# (class, family, dv, n_obs, weights_kind, vcov_*, ci_*, supports,
+# fit_stats); class-specific oddities that the FOOTER reads case-by-case
+# go into `info$extras` per Q5 (cluster_name, exp_applied, exp_header,
+# use_ame_satterthwaite, singular_terms, weighted_n, title_prefix,
+# family_info). This keeps the schema minimal while preserving every
+# byte the footer renderer needs for byte-identical output after
+# round-tripping through `.frame_to_legacy_extract()` in sub-step 3.
 .build_info <- function(legacy, fit, vcov_kind, vcov_label,
                          ci_level, ci_method) {
   is_glm <- inherits(fit, "glm")
@@ -232,6 +242,24 @@ as_regression_frame.glm <- function(fit, ...) {
     NULL
   }
 
+  # Extras vocabulary (sub-step 3): every field the legacy extract carried
+  # that the footer / title renderer reads case-by-case. Documented here
+  # so future per-class methods (lmer, glmer, svyglm, ...) know which
+  # extras keys to populate for parity with the existing renderers.
+  extras <- list(
+    cluster_name          = legacy$cluster_name,
+    use_ame_satterthwaite = isTRUE(legacy$use_ame_satterthwaite),
+    has_singular          = isTRUE(legacy$has_singular),
+    singular_terms        = legacy$singular_terms %||% character(0),
+    has_weights           = isTRUE(legacy$has_weights),
+    weighted_n            = legacy$weighted_n %||% NA_real_,
+    title_prefix          = legacy$title_prefix %||%
+      (if (is_glm) "Generalized linear regression" else "Linear regression"),
+    family_info           = legacy$family_info,
+    exp_applied           = isTRUE(legacy$exp_applied),
+    exp_header            = legacy$exp_header %||% NA_character_
+  )
+
   list(
     class          = class(fit)[1],
     family         = family,
@@ -247,8 +275,132 @@ as_regression_frame.glm <- function(fit, ...) {
     ci_level       = as.numeric(ci_level),
     ci_method      = ci_method,
     supports       = supports,
-    extras         = list()
+    extras         = extras
   )
+}
+
+
+# ---- Adapter: frame -> legacy-extract shape -------------------------------
+
+# Round-trips a frame back into a list shaped like `extract_lm_phase1()`'s
+# return value. Used by the title / footer renderers (and the body builder
+# in sub-step 4) so they can switch their input source from the legacy
+# pipeline to the frame pipeline without changing a single line of their
+# own code.
+#
+# The adapter is the dual of `.legacy_to_frame()`. Together they prove
+# that the frame is information-equivalent to the legacy extract for the
+# downstream consumers we ship today.
+#
+# `coefs` round-trip rules (inverse of `.reshape_coefs()`):
+#   se               <- std_error
+#   ci_low           <- ci_lower
+#   ci_high          <- ci_upper
+#   is_reference     <- is_ref
+#   factor_term      <- parent_var unless parent_var == term (NA fallback)
+#   factor_level     <- label      unless label      == term (NA fallback)
+#   is_intercept     <- term == "(Intercept)"   (derived; not stored)
+#   is_singular      <- term %in% info$extras$singular_terms (derived)
+#   test_type        <- NA_character_ (dropped; legacy footer doesn't read)
+#   model_id         <- "M1" or supplied (renderer concern only)
+#   outcome          <- info$dv
+.frame_to_legacy_extract <- function(frame, model_id = "M1") {
+  validate_regression_frame(frame)
+  info  <- frame$info
+  coefs <- frame$coefs
+  fit   <- attr(frame, "fit")
+  is_glm <- inherits(fit, "glm")
+
+  singular_terms <- info$extras$singular_terms %||% character(0)
+  is_singular_vec <- coefs$term %in% singular_terms
+
+  factor_term_back <- ifelse(
+    coefs$parent_var == coefs$term,
+    NA_character_,
+    coefs$parent_var
+  )
+  factor_level_back <- ifelse(
+    coefs$label == coefs$term,
+    NA_character_,
+    coefs$label
+  )
+
+  legacy_coefs <- data.frame(
+    model_id         = rep(model_id, nrow(coefs)),
+    outcome          = rep(info$dv, nrow(coefs)),
+    term             = coefs$term,
+    estimate_type    = coefs$estimate_type,
+    estimate         = coefs$estimate,
+    se               = coefs$std_error,
+    ci_low           = coefs$ci_lower,
+    ci_high          = coefs$ci_upper,
+    statistic        = coefs$statistic,
+    df               = coefs$df,
+    p_value          = coefs$p_value,
+    test_type        = rep(NA_character_, nrow(coefs)),
+    is_singular      = is_singular_vec,
+    is_intercept     = coefs$term == "(Intercept)",
+    is_reference     = coefs$is_ref,
+    factor_term      = factor_term_back,
+    factor_level     = factor_level_back,
+    factor_level_pos = coefs$factor_level_pos,
+    stringsAsFactors = FALSE
+  )
+
+  list(
+    model_id              = model_id,
+    outcome               = info$dv,
+    outcome_label         = info$dv_label %||% info$dv,
+    coefs                 = legacy_coefs,
+    fit_stats             = as.data.frame(
+      .compact_fit_stats_for_legacy(info$fit_stats, model_id, info$dv),
+      stringsAsFactors = FALSE
+    ),
+    vcov_type             = info$vcov_kind,
+    cluster_name          = info$extras$cluster_name,
+    use_ame_satterthwaite = isTRUE(info$extras$use_ame_satterthwaite),
+    has_singular          = isTRUE(info$extras$has_singular),
+    singular_terms        = singular_terms,
+    has_weights           = isTRUE(info$extras$has_weights),
+    weighted_n            = info$extras$weighted_n %||% NA_real_,
+    nobs                  = as.integer(info$n_obs),
+    is_glm                = is_glm,
+    family_info           = info$extras$family_info,
+    title_prefix          = info$extras$title_prefix %||%
+      (if (is_glm) "Generalized linear regression" else "Linear regression"),
+    exp_applied           = isTRUE(info$extras$exp_applied),
+    exp_header            = info$extras$exp_header %||% NA_character_
+  )
+}
+
+
+# Helper: legacy `fit_stats` is a single-row data.frame. The frame stores
+# it as a list. Round-trip: rebuild the data.frame structure by selecting
+# only the legacy-named scalar fields (drop the schema aliases and the
+# pseudo_r2 nested list we added in `.build_info()`).
+.compact_fit_stats_for_legacy <- function(fs, model_id, outcome) {
+  # Order matches the original `extract_fit_stats()` return.
+  out <- list(
+    model_id             = model_id,
+    outcome              = outcome,
+    nobs                 = fs$nobs,
+    weighted_nobs        = fs$weighted_nobs        %||% NA_real_,
+    r2                   = fs$r2                   %||% NA_real_,
+    adj_r2               = fs$adj_r2               %||% NA_real_,
+    omega2               = fs$omega2               %||% NA_real_,
+    pseudo_r2_mcfadden   = fs$pseudo_r2_mcfadden   %||% NA_real_,
+    pseudo_r2_nagelkerke = fs$pseudo_r2_nagelkerke %||% NA_real_,
+    pseudo_r2_tjur       = fs$pseudo_r2_tjur       %||% NA_real_,
+    sigma                = fs$sigma                %||% NA_real_,
+    rmse                 = fs$rmse                 %||% NA_real_,
+    f2                   = fs$f2                   %||% NA_real_,
+    AIC                  = fs$AIC                  %||% NA_real_,
+    AICc                 = fs$AICc                 %||% NA_real_,
+    BIC                  = fs$BIC                  %||% NA_real_,
+    deviance             = fs$deviance             %||% NA_real_,
+    df_residual          = fs$df_residual          %||% NA_real_
+  )
+  out
 }
 
 
