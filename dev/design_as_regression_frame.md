@@ -306,11 +306,66 @@ parameters defaults. Spicy is NOT the outlier.
 
 See §12 for the sources used to settle this.
 
-**Q2.** Should `as_regression_frame()` be **exported** or
-**internal-but-documented**? Exporting commits us to backward
-compatibility. Internal-but-documented lets us iterate.
-→ My vote: **exported in 0.14 or later**, internal during 0.13 / 0.14
-while the contract beds in.
+**Q2 — SETTLED 2026-05-21.** *Should `as_regression_frame()` be
+exported or internal?*
+
+**Resolution: internal throughout the 0.x cycle.** Marked
+`@keywords internal`, no user-facing `?as_regression_frame` entry.
+The contract lives in this document (`dev/`), not in user-facing
+roxygen. Exposing the generic is deferred to **1.0.0** (target
+2027+) and only if, at that time, the schema has been stable
+across 7+ model classes for 3+ consecutive minor versions.
+
+**Rationale**:
+
+1. **YAGNI**. Zero external contributor demand exists today. All
+   5 classes planned for end of 2026 (lmer, glmer, svyglm,
+   stanreg, brmsfit) will be implemented in-house by the
+   maintainer. Building an extension API for hypothetical
+   contributors is premature optimisation.
+2. **Pre-1.0 + exported = contradictory signal**. R users
+   reasonably read an exported function as a stable API
+   regardless of "experimental" disclaimers. The first time we
+   evolve the schema in 0.14 we'll get "you broke my code"
+   bug reports we cannot answer.
+3. **Schema not yet stress-tested**. Q1 just settled, Q3–Q5
+   open. We will discover missing fields and rename / restructure
+   during phases 1–3. Doing that under an internal label is a
+   commit; under an exported label it's a CRAN-archive-grade
+   breaking change.
+4. **marginaleffects precedent** (Vincent Arel-Bundock, ~100
+   classes, 5+ years mature). Main extension path = file an
+   issue / contribute back to the package; `get_coef()` /
+   `get_vcov()` / `set_coef()` / `get_predict()` are explicitly
+   marked "Internal function". The user-side extension hatch
+   (`options("marginaleffects_model_classes")`) is documented but
+   secondary, and was added late, not at v0.x kickoff.
+5. **An escape hatch can be added later non-breakingly**. If in
+   2027 external demand materialises, we can introduce a
+   `register_regression_frame_method()` helper modeled on
+   marginaleffects' option-based registry. That addition is
+   purely additive to the public surface.
+
+**Implementation notes**:
+
+- All `as_regression_frame.*` methods live in `R/` inside spicy.
+- `@keywords internal` + `@noRd` on the generic and all methods so
+  they don't appear in pkgdown reference index.
+- A short `## Internal extension contract` section can be added to
+  `?table_regression` for users who notice the dispatch in
+  stack traces, pointing them to `dev/design_as_regression_frame.md`
+  on GitHub for the schema.
+- Phase 0b refactor does NOT export. Tests use the internal
+  `spicy:::as_regression_frame()` directly.
+
+**Trigger for re-evaluation**:
+
+- ≥ 3 external GitHub issues asking how to support a new class, OR
+- The schema has gone unchanged for 3+ consecutive minor versions
+  across 7+ supported classes, AND
+- spicy reaches 1.0.0 readiness on every other front (CRAN cadence
+  ≤ 1 release every 2 months sustained, no other breaking changes
+  in the queue).
 
 **Q3.** Multi-model layouts with heterogeneous classes
 (`list(lm_fit, lmer_fit)`): supported or aborted?
