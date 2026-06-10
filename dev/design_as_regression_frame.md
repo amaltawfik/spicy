@@ -50,8 +50,10 @@ own classes.
 
 ## 2. The contract: `as_regression_frame()`
 
-A new S3 generic, exported from spicy, called once per fit at the top
-of the pipeline. Returns a list with two slots:
+A new S3 generic, **internal** (marked `@keywords internal` +
+`@noRd`, see Q2), called once per fit at the top of the pipeline.
+Returns a list with two slots, plus a few attributes consumed by
+downstream layers:
 
 ```r
 as_regression_frame(fit, ...) -> list(
@@ -59,15 +61,19 @@ as_regression_frame(fit, ...) -> list(
   info  = <list>
 )
 
-# Attribute on the return value:
+# Attributes on the return value:
 attr(out, "spicy_frame_version") <- "1"
+attr(out, "fit")                  <- fit   # reference for downstream
+                                            # consumers (AME, refit
+                                            # standardisation, nested
+                                            # LRT). See §12.
 ```
 
 The generic is dispatched on `class(fit)[1]` and falls through to
 `as_regression_frame.default()` which aborts with a discoverable error
-("model class X is not supported; see ?as_regression_frame for the
-extension contract"). Spicy ships methods for the canonical classes
-(see §6).
+("model class X is not supported; please file a feature request at
+https://github.com/amaltawfik/spicy/issues"). Spicy ships methods for
+the canonical classes (see §6).
 
 `as_regression_frame()` sits **upstream** of the existing
 `build_structured_body()` (which stays as the rendering view). The new
@@ -97,7 +103,7 @@ not enforced; column types and presence are.
 | `factor_level_pos` | int | yes | 1-based position within the factor's `levels()`. `NA_integer_` for non-factor predictors. |
 | `is_ref` | lgl | yes | TRUE iff this row is a reference level (no estimate to display; em-dash). |
 | `estimate_type` | chr | yes | One of `"B"`, `"beta"`, `"ame"`. Spicy adds AME rows downstream via marginaleffects; the per-class method only needs `"B"` (and `"beta"` if it computes standardised internally). |
-| `outcome_level` | chr | no | Outcome category for ordinal / multinomial / multi-DV Bayesian. `NA_character_` for single-outcome models. |
+| `outcome_level` | chr | no | Outcome category for multinomial / non-prop ordinal / Bayesian categorical fits. `NA_character_` for single-outcome models. See Q4 for layout. |
 | `estimate` | dbl | yes | Point estimate. `NA_real_` for reference rows. |
 | `std_error` | dbl | yes | Standard error. `NA_real_` if the model doesn't expose one (e.g. some Bayesian summaries). |
 | `df` | dbl | no | Residual / Satterthwaite degrees of freedom; `NA_real_` if not applicable. |
@@ -105,7 +111,7 @@ not enforced; column types and presence are.
 | `p_value` | dbl | no | Two-sided frequentist *p*. `NA_real_` for Bayesian models (see Q1 settled in §9). |
 | `pd` | dbl | no | Posterior probability of direction, range `[0.5, 1]`. `NA_real_` for frequentist models. Reserved for Bayesian classes; the default rendered table does NOT show this column unless the user opts in via `show_columns = c(..., "pd")`. |
 | `ci_lower`, `ci_upper` | dbl | yes | Confidence / credible interval at `info$ci_level`. The renderer relabels the column header to `"95% CrI"` when `info$ci_method` is posterior-based. |
-| `extras` | list | no | List-column reserved for class-specific fields the renderer does not consume (e.g. posterior draws for trace plots). Engines ignore. |
+| `row_extras` | list | no | Per-row list-column for class-specific data the renderer does not consume (e.g. posterior draws for trace plots). Renamed from `extras` to distinguish from `info$extras` (per-model). Engines ignore. |
 
 `estimate_type = "beta"` rows are emitted only when spicy can compute
 the standardisation internally; otherwise they are produced by
@@ -206,7 +212,7 @@ which spicy version their method targeted.
 | `lmerMod` | `as_regression_frame_merMod.R` | `lme4::fixef()` | `vcov()` | Satterthwaite via `lmerTest` if available, else Wald | `random_effects` filled from `lme4::VarCorr()`; ICC via direct ratio (no performance dep). |
 | `glmerMod` | `as_regression_frame_merMod.R` | `lme4::fixef()` | `vcov()` | Wald *z* | family from the fit; `supports$classical_r2 = FALSE`. |
 | `svyglm` | `as_regression_frame_svyglm.R` | `coef()` | `vcov()` (design-based) | Wald with `survey` df | `vcov_label = "survey design (Taylor)"`. |
-| `stanreg` | `as_regression_frame_stan.R` | posterior median | posterior cov | quantile interval | `ci_method = "posterior_quantile"`, `p_value = Pr(direction)`, `supports$ame = TRUE` (via marginaleffects). |
+| `stanreg` | `as_regression_frame_stan.R` | posterior median | posterior cov | quantile interval | `ci_method = "posterior_quantile"`, `coefs$p_value = NA_real_`, `coefs$pd` populated. See Q1. `supports$ame = TRUE` (via marginaleffects). |
 | `brmsfit` | `as_regression_frame_stan.R` | idem | idem | idem | idem |
 
 Each method targets ~150 LoC and gets a paired test file with the
@@ -237,22 +243,53 @@ Each `as_regression_frame.X` ships with:
 Oracle tests are gated by `skip_if_not_installed()` so production CI
 without parameters/marginaleffects still runs the spicy-internal tests.
 
----
-
-## 8. Extension contract for external authors
-
-Exported helpers:
+**Oracle stability discipline (audit 2026-05-21)**: oracle calls
+must pin all arguments explicitly to documented values, never rely
+on the oracle's defaults. If `parameters::model_parameters()` changes
+its default `ci_method` from `"wald"` to something else in a future
+release, our tests must keep cross-validating against the SAME
+intended method, not against whatever parameters now defaults to.
+Concretely:
 
 ```r
-spicy::as_regression_frame              # the S3 generic
-spicy::validate_regression_frame(frame) # schema check, invisible TRUE or abort
-spicy::regression_frame_template()      # prints the schema reference
+oracle <- parameters::model_parameters(
+  fit,
+  ci_method = "wald",       # explicit, not implicit
+  centrality = "median",    # explicit
+  test = NULL               # do not request pd or other extras
+)
 ```
 
-A dedicated vignette (`vignette("extending-table-regression")`) shows
-a worked example: support for a hypothetical class with a base R fit
-function (e.g. `MASS::rlm`). The vignette doubles as a regression test
-target.
+Same rule for `marginaleffects::avg_slopes()`: pin `vcov`, `type`,
+`by` explicitly.
+
+---
+
+## 8. Extension contract — deferred to 1.0.0 (see Q2)
+
+During the 0.x cycle, `as_regression_frame()` is **internal**. No
+exported helpers, no extension vignette, no user-facing schema
+reference. External users wanting to add a class file an issue at
+<https://github.com/amaltawfik/spicy/issues>; spicy maintainers
+implement and ship.
+
+A `dev/`-internal helper `validate_regression_frame(frame)` is
+implemented during Phase 0b for spicy's own use in tests, but not
+exported.
+
+**Post-1.0 work** (deferred, see Q2 triggers):
+
+- Export the generic with a documented schema.
+- Add `spicy::regression_frame_template()` printable schema
+  reference.
+- Ship `vignette("extending-table-regression")` with a worked
+  example (e.g. a hypothetical class wrapping `MASS::rlm`).
+- Optionally add an option-based registry hatch (modelled on
+  marginaleffects' `options("marginaleffects_model_classes")`) for
+  classes that want to register without contributing back.
+
+None of this is in scope before 1.0.0 readiness criteria are met
+(see Q2's trigger list).
 
 ---
 
@@ -555,17 +592,40 @@ not belong in `info`. Neither do `has_offset`, `non_default_contrasts`,
 | Phase | Deliverable | Estimated window | Risk |
 |---|---|---|---|
 | **0a** | Design doc validated (this file) | 2026-05-21 | — |
-| **0b** | Refactor `lm` / `glm` extraction onto `as_regression_frame()`; all existing tests pass; no new feature | 2026-05-22 to 2026-07-15 | High up-front; pays back in every subsequent phase |
-| **1** | `lmer` / `glmer` support (lme4 + lmerTest in Suggests) | August 2026 | Medium; random effects footer + ICC are new |
-| **2** | `svyglm` support (survey in Suggests) | September 2026 | Low |
-| **3** | `stanreg` / `brmsfit` support (rstanarm + brms in Suggests) | October–November 2026 | Medium; posterior CI semantics |
+| **0b** | Refactor `lm` / `glm` extraction onto `as_regression_frame()`; all existing tests pass; no new user-visible feature | 2026-05-22 to 2026-07-15 | High up-front; pays back in every subsequent phase |
+| **1** | `lmer` / `glmer` support (lme4 + lmerTest in Suggests) | August–September 2026 | Medium; random effects footer + ICC are new |
+| **2** | `svyglm` support (survey in Suggests) | October 2026 | Low |
+| **3** | `stanreg` / `brmsfit` support (rstanarm + brms in Suggests) | November–December 2026 | Medium; posterior CI semantics |
 | **4** | Survival + ordinal / multinomial | 2027 H1 | High; new layout for matrix-valued coefs |
-| **5+** | Long tail via external contributions on the public contract | ongoing | Low if contract is stable |
+| **5+** | Long tail (gam, fixest, glmmTMB, ...) on internal generic; external authors via 1.0.0 contract once exported | ongoing | Low if contract is stable |
 
-CRAN release plan: Phase 0b + Phase 1 ship as **0.13.0** in
-September 2026 (aligned with the cadence-decay window — see
-`feedback_cran_cadence_limit.md`). Phase 2 and 3 ride 0.14.0 in
-Q1 2027.
+**CRAN release plan (audit 2026-05-21)**: decouple architecture
+from features for a cleaner NEWS narrative and looser timing:
+
+- **0.13.0** (target September 2026, aligned with the cadence-decay
+  window — see `feedback_cran_cadence_limit.md`): **Phase 0b only**.
+  Internal refactor, no new user-visible feature. NEWS line:
+  *"internal architecture refactor; no user-visible change. lm and
+  glm support is now routed through an internal generic to enable
+  future model classes."*
+- **0.14.0** (target Q1 2027): **Phase 1** (lmer / glmer) +
+  **Phase 2** (svyglm). NEWS line: *"support for linear and
+  generalised linear mixed-effects models (lme4) and survey-weighted
+  regression (survey::svyglm)."*
+- **0.15.0** (target Q2 2027): **Phase 3** (stanreg / brmsfit).
+- **0.16.0+** (2027 H2): **Phase 4** and beyond.
+
+This split has three advantages:
+
+1. Phase 0b can ship without rushing to fit Phase 1 in the same
+   release.
+2. NEWS is easier to read: one release = one coherent theme.
+3. If Phase 1 slips, 0.13.0 still ships clean on time.
+
+Alternative kept on the table: if Phase 0b finishes early (say
+2026-06-15), Phase 1 could ride 0.13.0 in September. Decide at
+Phase 0b completion based on actual remaining time vs. polish
+needed.
 
 ---
 
@@ -575,15 +635,115 @@ Q1 2027.
   object after Phase 0b. New classes = new dispatch method + tests.
 - **Dependency drift**: only Suggests grow. Imports stay stable.
 - **Contract drift**: `spicy_frame_version` lets us migrate cleanly.
-- **External contributions**: a documented contract means PRs from
-  users supporting their own classes can be reviewed in hours, not
-  days.
+- **In-house extensibility (0.x)**: in-house additions (lmer,
+  glmer, svyglm, stanreg, brmsfit) only need a new dispatch method
+  + its tests. PRs reviewable in hours.
+- **External extensibility (post-1.0)**: same review economics
+  apply once the contract is exported (see §8).
 - **Test rot**: oracle cross-validation against parameters /
   marginaleffects keeps spicy honest as those packages evolve.
+- **Privacy / serialisation safety**: the `attr(frame, "fit")`
+  reference (§12.1) is stripped by `as.data.frame.spicy_regression_table()`
+  and by clipboard / Excel / Word exports so that user data /
+  environments do not leak into shared artefacts.
 
 ---
 
-## 12. References used to settle open questions
+## 12. Fit reference, standardisation, and AME orchestration (settled 2026-05-21)
+
+Three coupling questions arose during the audit. Settled here so
+Phase 0b implementation can proceed unambiguously.
+
+### 12.1 Where does the fit object live after extraction?
+
+The frame keeps a reference to the original fit at
+`attr(frame, "fit")`. Downstream consumers that genuinely need the
+fit (AME extraction, refit standardisation, nested LRT,
+post-extraction transformations) read from there. The per-class
+method puts the fit into the attribute on return.
+
+**Why an attribute and not an `info` field**: the attribute is
+**not part of the serialised contract**. `as.data.frame()`,
+`tibble::as_tibble()`, `broom::tidy()`, `broom::glance()`, the
+clipboard exporter, the Excel exporter, and the Word exporter all
+strip `attr(., "fit")` before producing their output. This keeps
+user data and environments out of shared artefacts (privacy +
+serialisation safety, see §11).
+
+The attribute is preserved during in-memory operations only. It
+exists from the moment the frame is built until the rendered table
+is returned to the user.
+
+### 12.2 Where does standardisation (`refit`, `partial`, `scale`, `pseudo`) happen?
+
+Standardisation is **invoked from inside `as_regression_frame()`**,
+not from a separate downstream pass. The per-class method signature
+is:
+
+```r
+as_regression_frame(fit,
+                    standardized = "none" | "refit" | "partial" |
+                                   "scale" | "pseudo",
+                    vcov         = "model" | "HC0" | ... | "CR1",
+                    ci_level     = 0.95,
+                    ci_method    = NULL,  # NULL = class default
+                    ...)
+```
+
+For `standardized = "refit"`, the per-class method calls a
+class-specific refit (e.g. `lm()` with z-scored data) and produces
+both `estimate_type = "B"` rows AND `estimate_type = "beta"` rows
+in the same `coefs` tibble. The downstream renderer simply consumes
+both row types.
+
+For `standardized = "partial"` / `"scale"` / `"pseudo"`, the
+computation is class-agnostic enough to live in
+`regression_transform.R` as today, but is called from within the
+per-class method so that the frame returned is already final.
+
+This keeps the downstream pipeline class-agnostic and avoids
+"chase the fit" code in three different places.
+
+### 12.3 Where does the AME pipeline append rows?
+
+AME extraction (`estimate_type = "ame"` rows) is a **separate
+class-agnostic pass** that runs after `as_regression_frame()`:
+
+```r
+frame <- as_regression_frame(fit, ...)
+if (info$supports$ame && user_requested_ame) {
+  frame <- append_ame_rows(frame)   # reads attr(frame, "fit")
+}
+```
+
+The per-class method does NOT need to know about AME. It just
+declares `info$supports$ame = TRUE` (or `FALSE`). The AME pipeline
+in `regression_ame.R` orchestrates the call to
+`marginaleffects::avg_slopes()` using the fit reference, and
+appends rows with `estimate_type = "ame"` to `coefs`.
+
+This is the cleanest separation: the per-class method extracts what
+it knows; the cross-class AME pipeline handles AME for all
+marginaleffects-supported classes uniformly.
+
+### 12.4 Minimum dependency versions
+
+To protect against regression in cross-class behaviour, the
+following minimum versions go into DESCRIPTION Suggests when their
+respective classes are first added:
+
+- `marginaleffects (>= 0.20.0)` — pinned to a version known to
+  support all the classes spicy targets through Phase 3.
+- `lme4 (>= 1.1-35)` — random-effects API stable.
+- `survey (>= 4.4)` — `svyglm` design-based vcov stable.
+- `rstanarm (>= 2.21)` and `brms (>= 2.20)` — posterior summary
+  conventions stable.
+
+Bump these as needed when a Phase ships.
+
+---
+
+## 13. References used to settle open questions
 
 ### Q1 — Bayesian default table layout
 
