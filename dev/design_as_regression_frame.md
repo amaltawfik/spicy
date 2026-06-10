@@ -367,10 +367,62 @@ across 7+ model classes for 3+ consecutive minor versions.
   ≤ 1 release every 2 months sustained, no other breaking changes
   in the queue).
 
-**Q3.** Multi-model layouts with heterogeneous classes
-(`list(lm_fit, lmer_fit)`): supported or aborted?
-→ My vote: **aborted with a clear message** for 0.13–0.15; revisit
-later. Mixing classes loses the comparability the layout implies.
+**Q3 — SETTLED 2026-05-21.** *Multi-model layouts with
+heterogeneous classes (e.g. `list(lm_fit, lmer_fit, stan_fit)`):
+supported or aborted?*
+
+**Resolution: permissive — any mix of classes is allowed. No
+warning, no abort.** The per-column footer carries the methodological
+documentation (variance estimator, CI method, inferential regime).
+The CI header relabels CI → CrI per column. NA cells in the `p`
+column for Bayesian rows are the visual signal of regime mixing.
+
+**Rationale**:
+
+1. **Ecosystem alignment**. Both gtsummary (`tbl_merge`) and
+   modelsummary allow any heterogeneous list without warning.
+   Aborting would make spicy an outlier with no upside.
+2. **Footer infrastructure already exists**. Spicy's per-column
+   variance-estimator footer is the differentiator vs.
+   modelsummary; it is the right place to document mixing, not
+   an abort gate.
+3. **Legitimate use case: sensitivity analysis**. Reporting OLS
+   alongside robust SE alongside multilevel alongside Bayesian on
+   the same DV is a routine pro practice (Gelman explicitly
+   encourages this). Blocking it would be over-paternalistic.
+4. **Trust the user**. A researcher passing `list(lm_fit, stan_fit)`
+   is not making a mistake; they are doing comparative analysis.
+5. **Intrinsic visual signal**. Column-header relabel (CI → CrI),
+   NA cells in `p` for Bayesian rows, per-model footer line — the
+   regime difference is already visible without a warning.
+
+**Implementation notes**:
+
+- `build_model_footer()` documents per-column variance estimator
+  and CI method (already partially done; extend to cover lmer,
+  svyglm, stanreg, brmsfit semantics).
+- CI column header is per-column, not global: M1/M2/M3 show
+  `"95% CI"`, M4 (Bayesian) shows `"95% CrI"`. Driven by
+  `info$ci_method` of each frame.
+- `align_multimodel_frames()` aligns on
+  `parent_var + label`. If zero variables overlap across the
+  passed fits, emit a clear error
+  (`"models share no predictors in common"`); that is a structural
+  failure, not a methodological one.
+- Phase 4 carve-out: ordinal / multinomial fits cannot mix with
+  non-ordinal because the coef-matrix layout is structurally
+  incompatible. That carve-out is structural, not methodological,
+  and is consistent with this Q3 settlement (block only when the
+  table cannot be drawn coherently, never for "methodological
+  purity").
+
+**Trigger for revisiting**:
+
+- If we see real user confusion in bug reports (e.g. users
+  systematically misinterpreting Bayesian CrI as frequentist CI in
+  a mixed table), reconsider adding a one-line `message()` (not a
+  warning, not an abort) the first time the mix is detected in a
+  session.
 
 **Q4.** Ordinal / multinomial models produce coefficients per
 outcome level (a matrix). The schema has `outcome_level`, but the
