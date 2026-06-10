@@ -1225,8 +1225,13 @@ table_regression <- function(
                                               model_id = model_ids[i])
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block()) can
-    # decide without reaching back to the live fit.
-    extracts[[i]][["non_additive"]] <- detect_non_additive_terms(models[[i]])
+    # decide without reaching back to the live fit. Phase 0c C2.c:
+    # also attach to frames[[i]]$info$extras so the frame-aware
+    # sibling (..._from_frames) can read it without consulting the
+    # parallel extracts list.
+    non_add <- detect_non_additive_terms(models[[i]])
+    extracts[[i]][["non_additive"]]      <- non_add
+    frames[[i]]$info$extras$non_additive <- non_add
 
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept

@@ -565,6 +565,48 @@ build_standardized_caveat_footer_block <- function(extracts, standardized) {
 }
 
 
+# Frame-aware sibling of build_standardized_caveat_footer_block().
+# The fit lives at attr(frame, "fit") per Phase 0b sub-step 3; the
+# non_additive metadata is attached by the orchestrator at
+# table_regression.R:1234 to both frames[[i]]$info$extras$non_additive
+# and extracts[[i]][["non_additive"]].
+build_standardized_caveat_footer_block_from_frames <- function(frames,
+                                                                standardized) {
+  if (identical(standardized, "none")) return(NULL)
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  any_problem <- FALSE
+  for (f in frames) {
+    nonadd <- f$info$extras$non_additive
+    if (is.null(nonadd)) {
+      fit <- attr(f, "fit")
+      if (!is.null(fit)) {
+        nonadd <- detect_non_additive_terms(fit)
+      }
+    }
+    if (isTRUE(nonadd$has_problem)) {
+      any_problem <- TRUE
+      break
+    }
+  }
+  if (!any_problem) return(NULL)
+
+  caveat <- if (identical(standardized, "refit")) {
+    paste0(
+      "Standardised \u03B2: after refit on z-scored data, \u03B2 for interaction ",
+      "and transform terms reflects the interaction of z-scored ",
+      "variables, not the standardisation of the original term."
+    )
+  } else {
+    paste0(
+      "Standardised \u03B2: for interaction and transform terms, \u03B2 uses ",
+      "SD of the product / transformed column, which differs from ",
+      "SD(x) \u00D7 SD(z) and may be unstable (Cohen et al. 2003 \u00A77.7)."
+    )
+  }
+  caveat
+}
+
+
 # ---- Theme: stars mapping (Q12) ------------------------------------------
 
 # stars = FALSE                  -> NULL (no footer note)
@@ -742,6 +784,38 @@ build_p_adjust_footer_block <- function(extracts, p_adjust) {
 }
 
 
+# Frame-aware sibling of build_p_adjust_footer_block().
+# Column mapping (legacy -> frame, established in Phase 0b sub-step 2):
+#   cf$estimate_type -> coefs$estimate_type   (same column name)
+#   cf$is_intercept  -> derived (term == "(Intercept)")
+#   cf$is_reference  -> coefs$is_ref          (renamed)
+#   cf$p_value       -> coefs$p_value         (same)
+build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
+  if (identical(p_adjust, "none") || is.null(p_adjust) ||
+        !is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  sizes <- vapply(frames, function(f) {
+    cf <- f$coefs
+    if (is.null(cf) || nrow(cf) == 0L) return(0L)
+    sum(cf$estimate_type == "B" &
+          cf$term != "(Intercept)" &
+          !cf$is_ref &
+          !is.na(cf$p_value))
+  }, integer(1))
+  size_part <- if (length(unique(sizes)) == 1L) {
+    sprintf("m = %d coefficient(s) per model", sizes[1L])
+  } else {
+    sprintf("m = (%s) coefficient(s) per model",
+            paste(sizes, collapse = ", "))
+  }
+  sprintf(
+    "P-values adjusted via stats::p.adjust(method = %s); %s.",
+    shQuote(p_adjust), size_part
+  )
+}
+
+
 # ---- Theme: polynomial contrasts (ordered factors) -----------------------
 
 # Publication-grade note: ONE sentence, statistics vocabulary only
@@ -816,6 +890,75 @@ build_polynomial_contrasts_footer_block <- function(extracts) {
     vars_str, ": polynomial trends (", legend, ")."
   )
 }
+
+
+# Frame-aware sibling of build_polynomial_contrasts_footer_block().
+# Column mapping:
+#   coefs$factor_level -> coefs$label   (renamed; never NA in frame --
+#                                        fallback to term for non-factor
+#                                        predictors). The startsWith
+#                                        check on "." or "^" still
+#                                        correctly identifies poly rows.
+#   coefs$factor_term  -> coefs$parent_var
+build_polynomial_contrasts_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  poly_vars <- character(0)
+  poly_suffixes <- character(0)
+  for (f in frames) {
+    coefs <- f$coefs
+    if (is.null(coefs) || nrow(coefs) == 0L) next
+    is_poly <- !is.na(coefs$label) &
+      (startsWith(coefs$label, ".") |
+         startsWith(coefs$label, "^"))
+    if (any(is_poly)) {
+      poly_vars <- union(poly_vars,
+                         unique(coefs$parent_var[is_poly]))
+      poly_suffixes <- union(poly_suffixes,
+                             unique(coefs$label[is_poly]))
+    }
+  }
+  if (length(poly_vars) == 0L) return(NULL)
+  inform_polynomial_pedagogy()
+
+  vars_str <- paste0("`", poly_vars, "`", collapse = ", ")
+  plural <- length(poly_vars) > 1L
+
+  suffix_rank <- function(s) {
+    if (s == ".L") return(1)
+    if (s == ".Q") return(2)
+    if (s == ".C") return(3)
+    if (startsWith(s, "^")) {
+      n <- suppressWarnings(as.integer(substring(s, 2L)))
+      if (!is.na(n)) return(as.numeric(n))
+    }
+    NA_real_
+  }
+  suffix_label <- function(s) {
+    switch(s,
+      ".L" = "linear",
+      ".Q" = "quadratic",
+      ".C" = "cubic",
+      if (startsWith(s, "^")) {
+        n <- suppressWarnings(as.integer(substring(s, 2L)))
+        if (!is.na(n)) ordinal_label(n) else s
+      } else s
+    )
+  }
+  suff_ord <- order(vapply(poly_suffixes, suffix_rank, numeric(1)))
+  poly_suffixes <- poly_suffixes[suff_ord]
+  legend <- paste(
+    vapply(poly_suffixes,
+            function(s) sprintf("%s = %s", s, suffix_label(s)),
+            character(1)),
+    collapse = ", "
+  )
+
+  paste0(
+    if (plural) "Ordered factors " else "Ordered factor ",
+    vars_str, ": polynomial trends (", legend, ")."
+  )
+}
+
 
 # English ordinal labels for polynomial degrees >= 4 (.L .Q .C are
 # special-cased in suffix_label). "^4" -> "quartic", "^5" -> "quintic",
@@ -895,6 +1038,44 @@ build_reference_categories_footer_block <- function(extracts,
   if (!length(pairs)) return(NULL)
   paste0("Reference categories: ", paste(pairs, collapse = "; "), ".")
 }
+
+
+# Frame-aware sibling of build_reference_categories_footer_block().
+# Column mapping:
+#   coefs$is_reference -> coefs$is_ref       (renamed)
+#   coefs$factor_term  -> coefs$parent_var   (renamed; fallback to term
+#                                             handled at reshape time;
+#                                             for is_ref rows the
+#                                             parent_var IS the factor
+#                                             variable name)
+#   coefs$factor_level -> coefs$label        (renamed; for is_ref rows
+#                                             the label IS the reference
+#                                             level name)
+build_reference_categories_footer_block_from_frames <- function(frames,
+                                                                reference_style) {
+  if (!identical(reference_style, "footer")) return(NULL)
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  pairs <- character(0)
+  seen <- character(0)
+  for (f in frames) {
+    coefs <- f$coefs
+    if (is.null(coefs) || nrow(coefs) == 0L) next
+    ref_rows <- coefs[isTRUE_vec(coefs$is_ref), , drop = FALSE]
+    if (nrow(ref_rows) == 0L) next
+    for (i in seq_len(nrow(ref_rows))) {
+      ft  <- ref_rows$parent_var[i]
+      lvl <- ref_rows$label[i]
+      if (is.na(ft) || !nzchar(ft) || is.na(lvl) || !nzchar(lvl)) next
+      key <- paste0(ft, "=", lvl)
+      if (key %in% seen) next
+      seen <- c(seen, key)
+      pairs <- c(pairs, sprintf("%s = %s", ft, lvl))
+    }
+  }
+  if (!length(pairs)) return(NULL)
+  paste0("Reference categories: ", paste(pairs, collapse = "; "), ".")
+}
+
 
 # Vectorised isTRUE: maps each element to TRUE iff it is TRUE
 # (length-1, non-NA, non-FALSE). Used in the footer collector
