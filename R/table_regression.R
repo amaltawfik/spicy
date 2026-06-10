@@ -1200,21 +1200,31 @@ table_regression <- function(
 
   extracts <- vector("list", n_models)
   for (i in seq_len(n_models)) {
-    extracts[[i]] <- extract_lm_phase1(
+    # Phase 0b sub-step 4: route through the new as_regression_frame()
+    # generic + frame-to-legacy adapter instead of calling
+    # extract_lm_phase1() directly. The adapter's output is shape-
+    # identical to the legacy extract (proven byte-equivalent on every
+    # field the downstream renderers read by test-regression_frame_adapter.R),
+    # so nothing below this line needs to change. extract_lm_phase1()
+    # remains the underlying engine inside the .lm() / .glm() methods;
+    # sub-step 5 will inline it once all downstream paths route here.
+    frame <- as_regression_frame(
       models[[i]],
-      model_id = model_ids[i],
-      vcov_type = vcov_list[[i]],
-      cluster = cluster_list[[i]],
-      boot_n = boot_n,
-      ci_level = ci_level,
-      ci_method = ci_method,
-      standardized = standardized,
-      exponentiate = exponentiate,
-      show_columns = show_columns,
-      show_fit_stats = show_fit_stats,
+      model_id              = model_ids[i],
+      vcov                  = vcov_list[[i]],
+      cluster               = cluster_list[[i]],
+      boot_n                = boot_n,
+      ci_level              = ci_level,
+      ci_method             = ci_method,
+      standardized          = standardized,
+      exponentiate          = exponentiate,
+      show_columns          = show_columns,
+      show_fit_stats        = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,
-      cluster_name = cluster_name_list[i]
+      cluster_name          = cluster_name_list[i]
     )
+    extracts[[i]] <- .frame_to_legacy_extract(frame,
+                                              model_id = model_ids[i])
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block()) can
     # decide without reaching back to the live fit.

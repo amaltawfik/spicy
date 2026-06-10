@@ -287,6 +287,7 @@ validate_regression_frame <- function(frame) {
     statistic     = "double",
     p_value       = "double",
     pd            = "double",
+    test_type     = "character",
     row_extras    = "list"
   )
   for (col in names(optional_specs)) {
@@ -308,11 +309,20 @@ validate_regression_frame <- function(frame) {
     }
   }
 
-  # Restricted values for estimate_type. Bayesian frames may add other
-  # estimate_type tokens later (e.g. "median_b" if we ever surface a
-  # posterior-median-only column distinct from B); for now the contract
-  # locks the vocabulary to the three documented tokens.
-  allowed_types <- c("B", "beta", "ame")
+  # Restricted values for estimate_type. The design doc canonical
+  # vocabulary is c("B", "beta", "ame") (lowercase); the legacy
+  # extract_lm_phase1() pipeline additionally emits "AME" (uppercase
+  # capitalisation accident, harmless) and partial-effect-size tokens
+  # ("partial_f2", "partial_eta2", "partial_omega2", "partial_chi2")
+  # via extract_partial_effect_rows(). During the strangler-fig phases
+  # (Phase 0b sub-steps 2-4) the frame must accept the full legacy
+  # vocabulary so the round-trip adapter does not need to rewrite
+  # rows. Sub-step 5 will decide whether to normalise to lowercase
+  # and / or split partial_* into a dedicated pipeline.
+  allowed_types <- c(
+    "B", "beta", "ame", "AME",
+    "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2"
+  )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)
   if (length(bad_types) > 0L) {
     spicy_abort(
