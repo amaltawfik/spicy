@@ -102,8 +102,9 @@ not enforced; column types and presence are.
 | `std_error` | dbl | yes | Standard error. `NA_real_` if the model doesn't expose one (e.g. some Bayesian summaries). |
 | `df` | dbl | no | Residual / Satterthwaite degrees of freedom; `NA_real_` if not applicable. |
 | `statistic` | dbl | no | Wald / *t* / *z* / posterior median statistic. Optional. |
-| `p_value` | dbl | no | Two-sided. For Bayesian models: `Pr(direction)` (interpretation flagged in `info$supports`). |
-| `ci_lower`, `ci_upper` | dbl | yes | Confidence / credible interval at `info$ci_level`. |
+| `p_value` | dbl | no | Two-sided frequentist *p*. `NA_real_` for Bayesian models (see Q1 settled in §9). |
+| `pd` | dbl | no | Posterior probability of direction, range `[0.5, 1]`. `NA_real_` for frequentist models. Reserved for Bayesian classes; the default rendered table does NOT show this column unless the user opts in via `show_columns = c(..., "pd")`. |
+| `ci_lower`, `ci_upper` | dbl | yes | Confidence / credible interval at `info$ci_level`. The renderer relabels the column header to `"95% CrI"` when `info$ci_method` is posterior-based. |
 | `extras` | list | no | List-column reserved for class-specific fields the renderer does not consume (e.g. posterior draws for trace plots). Engines ignore. |
 
 `estimate_type = "beta"` rows are emitted only when spicy can compute
@@ -261,13 +262,49 @@ target.
 
 These need user resolution before Phase 0 starts.
 
-**Q1.** For Bayesian models, `p_value` repurposes the column as
-`Pr(direction)`. Should we instead leave `p_value` `NA` and add a
-`pr_direction` column?
-→ **Trade-off**: reusing keeps the schema uniform across model
-families; adding a column makes the semantic explicit. My vote:
-**reuse** with `info$ci_method == "posterior_quantile"` as the
-discriminator; the footer flags it.
+**Q1 — SETTLED 2026-05-21.** *How to represent "significance"
+information for Bayesian models?*
+
+**Resolution: separate optional `pd` column; `p_value` stays `NA`
+for Bayesian fits; the default rendered table for a Bayesian model
+shows estimate + 95% credible interval ONLY.** Matches BDA3 (Gelman
+et al.), BARG (Kruschke 2021), brms `summary()`, rstanarm
+`summary()`, broom.mixed, gtsummary, modelsummary, and
+parameters defaults. Spicy is NOT the outlier.
+
+**Rationale**:
+
+1. The BARG explicitly advises against reporting "p-value
+   equivalents" in Bayesian analyses; reusing the `p_value` column
+   would tempt users into NHST-style dichotomous thinking that
+   Bayesian methodology rejects.
+2. The math relationship `p_two-sided ≈ 2 × (1 − pd)` means that
+   stacking pd in a column labelled "p" would mislead readers
+   familiar with the frequentist threshold convention
+   (pd = 0.95 ≈ p = 0.10, not p = 0.05).
+3. Every other major R package (brms, rstanarm, broom.mixed,
+   gtsummary, modelsummary, parameters) defaults to estimate + CI
+   only. Reusing `p_value` would make spicy the outlier with no
+   methodological justification.
+
+**Implementation notes**:
+
+- `coefs$p_value <- NA_real_` for every Bayesian frame.
+- `coefs$pd` is a NEW optional column, populated for Bayesian frames,
+  `NA_real_` for frequentist.
+- Default `show_columns` for Bayesian frames excludes `pd`.
+- User opts in via `show_columns = c("b", "ci", "pd")`.
+- Header convention: slot name `pd` (R Bayesian standard, matches
+  bayestestR / parameters / blavaan). Rendered column header defaults
+  to `pd`. A `pd_label` argument lets the user request `"Pr(direction)"`
+  for journals that prefer the explicit form.
+- Footer: if `pd` is shown, append "*pd = posterior probability of
+  direction (Makowski et al., 2019).*"
+- `info$ci_method = "posterior_quantile"` (default ETI) or
+  `"posterior_hdi"` controls the CI header relabel
+  (`"95% CI"` → `"95% CrI"`).
+
+See §12 for the sources used to settle this.
 
 **Q2.** Should `as_regression_frame()` be **exported** or
 **internal-but-documented**? Exporting commits us to backward
@@ -325,3 +362,57 @@ Q1 2027.
   days.
 - **Test rot**: oracle cross-validation against parameters /
   marginaleffects keeps spicy honest as those packages evolve.
+
+---
+
+## 12. References used to settle open questions
+
+### Q1 — Bayesian default table layout
+
+The following sources were audited 2026-05-21 to determine the
+default-column convention for Bayesian fits. The unanimous
+convention (estimate + credible interval, no *p*, no pd by default)
+informed the settled resolution above.
+
+- Kruschke, J. K. (2021). *Bayesian Analysis Reporting Guidelines.*
+  Nature Human Behaviour, 5, 1282–1291.
+  [PMC8526359](https://pmc.ncbi.nlm.nih.gov/articles/PMC8526359/).
+  *Recommends central tendency + credible interval; explicitly
+  declines to endorse p-value equivalents.*
+- Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari,
+  A., & Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.).
+  CRC Press. [Book home](https://sites.stat.columbia.edu/gelman/book/).
+  *Chap. 2.3, 10.5: report posterior percentiles
+  (2.5 / 25 / 50 / 75 / 97.5). No p-value-equivalent in regression
+  tables. Verified via course handouts
+  ([Aalto BDA3 notes](https://avehtari.github.io/BDA_course_Aalto/BDA3_notes.html),
+  [bookdown mirror](https://bookdown.org/marklhc/notes_bookdown/bayesian-inference.html));
+  full PDF (720pp) was not fetched line-by-line.*
+- Makowski, D., Ben-Shachar, M. S., Chen, S. H. A., & Lüdecke, D.
+  (2019). *Indices of Effect Existence and Significance in the
+  Bayesian Framework.* Frontiers in Psychology.
+  [arXiv:2005.13181](https://arxiv.org/pdf/2005.13181).
+  *Source of the modern "pd" terminology (renamed from MPE).*
+- bayestestR reporting guidelines:
+  [easystats.github.io/bayestestR/articles/guidelines.html](https://easystats.github.io/bayestestR/articles/guidelines.html).
+  *Template format reports pd in sentence form, not as a table
+  column.*
+- bayestestR p_direction:
+  [easystats.github.io/bayestestR/articles/probability_of_direction.html](https://easystats.github.io/bayestestR/articles/probability_of_direction.html).
+  *Formal mapping `p_two-sided = 2(1 − pd)`; argues pd is a
+  "bridge", not a substitute for p.*
+- brms posterior summary:
+  [paulbuerkner.com/brms/reference/posterior_summary.html](https://paulbuerkner.com/brms/reference/posterior_summary.html).
+  *Default columns: Estimate, Est.Error, l-95% CI, u-95% CI, Rhat,
+  Bulk_ESS, Tail_ESS. No p, no pd.*
+- gtsummary `tbl_regression_methods` (stanreg, brmsfit):
+  [danieldsjoberg.com/gtsummary/reference/tbl_regression_methods.html](https://www.danieldsjoberg.com/gtsummary/reference/tbl_regression_methods.html).
+  *Uses `broom.mixed::tidy` → estimate + CI only; relabels "CI" to
+  "Credible Interval".*
+- modelsummary vignette:
+  [modelsummary.com/vignettes/modelsummary.html](https://modelsummary.com/vignettes/modelsummary.html).
+  *Default Bayesian output: estimate (median) + MAD. No p, no pd
+  unless explicitly requested via `test = "pd"`.*
+- parameters `model_parameters`:
+  [easystats.github.io/parameters/reference/model_parameters.html](https://easystats.github.io/parameters/reference/model_parameters.html).
+  *Defaults: estimate + 95% CI. `pd = TRUE` is an opt-in.*
