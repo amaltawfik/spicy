@@ -125,8 +125,6 @@ info <- list(
   dv_label        = NULL | chr,           # from labelled::var_label if present
   n_obs           = 1200L,
   n_groups        = NULL | named int list, # for mixed: c(subject = 30, school = 12)
-  call            = quote(lm(...)),       # for the footer / reproducibility
-  contrasts       = list(<var> = "contr.treatment", ...),
   weights_kind    = "none" | "frequency" | "sampling" | "case",
 
   random_effects  = NULL | list(
@@ -479,11 +477,76 @@ prototyping against real data, not paper-design alone.
 **Confirmed by user 2026-05-21**: validate the high-level frame,
 defer detail-level decisions to Phase 4 implementation.
 
-**Q5.** Should `info$call` store the full `match.call()` or just the
-formula and data name? Full call leaks the data object name into the
-table footer; formula only is more portable.
-→ My vote: **formula + data name as a string**, never the full
-environment.
+**Q5 — SETTLED 2026-05-21.** *Should `info$call` store the full
+`match.call()`, a formula+data_name pair, or something else?*
+
+**Resolution: drop `info$call` entirely from the schema. No
+top-level call-related field exists.** Class-specific oddities that
+need to surface in the footer (offset, non-default contrasts,
+multiple imputation, convergence warnings, etc.) flow through
+`info$extras` using a documented vocabulary of keys the footer
+renderer recognises.
+
+**Rationale (the rule of thumb that drives this)**:
+
+> For each candidate field of `info`, ask: *does the default
+> footer render it for ALL supported classes?*
+>
+> - Yes → it belongs in `info` (`vcov_label`, `n_obs`, `dv`, ...).
+> - No  → it belongs in `info$extras` (per-class opportunistic
+>         signalling).
+
+`info$call` fails the test: the default footer never shows the raw
+R formula or the data object name for any class. Therefore it does
+not belong in `info`. Neither do `has_offset`, `non_default_contrasts`,
+`n_imputations`, `convergence_warning` — they go in `extras`.
+
+**Rationale (why this beats earlier options A–F)**:
+
+1. **Minimum schema commitment**. Every field in `info` is a
+   15-year contract; adding a field "just in case" creates
+   maintenance debt across every per-class method. `info$extras`
+   moves all the "just in case" stuff out of the contract.
+2. **Forward-compatible**. If 2031 we discover a new case worth
+   surfacing in the footer (e.g. `family = quasi`,
+   `dispersion_parameter`, `posterior_chain_failure_count`), we
+   add a key to `info$extras` of the relevant class + a line in
+   the footer renderer. Zero schema migration. Zero version bump
+   of `spicy_frame_version`.
+3. **Per-class methods stay trivial**. 95% of fits ship
+   `info$extras = list()`. Only fits with a special situation
+   populate it. The maintenance surface scales with edge cases,
+   not with model classes.
+4. **The footer renderer is opinionated and discoverable**. The
+   vocabulary of recognised `extras` keys is documented in
+   `R/regression_titlefooter.R` (one constant near the renderer).
+   Unknown keys are silently ignored — no errors, no warnings.
+5. **APA alignment**. APA Manual 7 §7.13 does not require formula
+   or data-object name in the regression-table footer. Spicy's
+   default footer matches APA, not Stata / R user habit.
+6. **Reproducibility is user-owned**. The script that produced
+   the fit is the canonical artefact; spicy does not double up.
+   If a user wants the formula visible, they put it in
+   `title = "..."` (existing arg) or describe it in their methods
+   section.
+
+**Implementation notes**:
+
+- Remove `info$call` and `info$contrasts` from §4 schema (done
+  in the same commit as this settlement).
+- Phase 0b per-class methods (lm, glm) initialise
+  `info$extras = list()` by default; populate only when needed.
+- Initial `extras` vocabulary the footer renderer recognises
+  (documented in `R/regression_titlefooter.R`):
+  - `has_offset`        (lgl) → "Model includes an offset."
+  - `non_default_contrasts` (lgl) → "Non-default contrasts used; coefficient interpretation differs from the treatment-contrast convention."
+  - `n_imputations`     (int) → "Pooled across N multiple-imputation completions (Rubin's rules)."
+  - `convergence_warning` (chr) → footer renders the message verbatim.
+- `show_formula` argument: **not implemented**. Out of scope. If
+  ever needed later, the responsible per-class method can write
+  `info$extras$formula_text <- deparse1(formula(fit))` and the
+  renderer can render it when `show_formula = TRUE` is passed.
+  No schema change required.
 
 ---
 
