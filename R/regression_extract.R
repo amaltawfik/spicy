@@ -455,7 +455,7 @@ build_reference_rows <- function(fit, model_id, outcome,
 #                         (no-intercept case).
 #   levels              -- full level vector (in factor order)
 detect_factor_terms <- function(fit) {
-  trms <- attr(stats::terms(fit), "term.labels")
+  trms <- attr(.spicy_get_terms(fit), "term.labels")
   xlevels <- .spicy_get_xlevels(fit)
   if (is.null(xlevels) || length(xlevels) == 0L) {
     return(list())
@@ -552,12 +552,48 @@ detect_factor_term_meta <- function(fit) {
 # Return the xlevels list for a fitted model. S3 models (lm, glm) expose
 # this directly at `fit$xlevels`. S4 models (lmerMod, glmerMod from
 # lme4) do not; we reconstruct it from the model frame via
-# `stats::.getXlevels()`. Returns NULL if no factor predictor exists or
-# the helpers fail.
+# `stats::.getXlevels()`. Bayesian fits (brmsfit, stanreg) need a
+# class-specific path because `formula(fit)` may return a wrapper
+# (brmsformula) and `model.frame(fit)` may not be implemented. Returns
+# NULL if no factor predictor exists or the helpers fail.
 .spicy_get_xlevels <- function(fit) {
   # Fast path: S3 fits store xlevels as a named list attribute.
   xlev <- tryCatch(fit$xlevels, error = function(e) NULL)
   if (!is.null(xlev)) return(xlev)
+  # brmsfit: extract from fit$data (the original modelling data frame
+  # stored by brms) using the formula's RHS to identify which columns
+  # the model used. This avoids the brmsformula / model.frame
+  # discrepancies that bite the generic path.
+  if (inherits(fit, "brmsfit")) {
+    return(tryCatch({
+      f <- stats::formula(fit)
+      if (inherits(f, "brmsformula")) f <- f$formula
+      d <- fit$data
+      if (is.null(d)) return(NULL)
+      rhs_vars <- intersect(all.vars(f[-2L]), names(d))
+      out <- list()
+      for (v in rhs_vars) {
+        col <- d[[v]]
+        if (is.factor(col)) out[[v]] <- levels(col)
+      }
+      if (length(out) == 0L) NULL else out
+    }, error = function(e) NULL))
+  }
+  # stanreg: rstanarm stores the model frame at fit$data; same pattern
+  # as brmsfit. Falls through to the generic path if missing.
+  if (inherits(fit, "stanreg") && !is.null(fit$data)) {
+    return(tryCatch({
+      f <- stats::formula(fit)
+      d <- fit$data
+      rhs_vars <- intersect(all.vars(f[-2L]), names(d))
+      out <- list()
+      for (v in rhs_vars) {
+        col <- d[[v]]
+        if (is.factor(col)) out[[v]] <- levels(col)
+      }
+      if (length(out) == 0L) NULL else out
+    }, error = function(e) NULL))
+  }
   # Generic path (S4 merMod, others): reconstruct from terms + model frame.
   tryCatch({
     trms <- stats::terms(fit)
@@ -567,14 +603,52 @@ detect_factor_term_meta <- function(fit) {
 }
 
 
+# Return the terms object for a fitted model. Falls back to a class-
+# specific path for brmsfit (formula(fit) returns a brmsformula wrapper
+# whose $formula slot is the actual formula) and for any S4 fit where
+# stats::terms() raises on the fit directly.
+.spicy_get_terms <- function(fit) {
+  # Try the generic path first (lm, glm, merMod, svyglm, stanreg).
+  trms <- tryCatch(stats::terms(fit), error = function(e) NULL)
+  if (!is.null(trms)) return(trms)
+  # brmsfit-specific path: unwrap the brmsformula.
+  if (inherits(fit, "brmsfit")) {
+    f <- tryCatch(stats::formula(fit), error = function(e) NULL)
+    if (inherits(f, "brmsformula")) f <- f$formula
+    if (!is.null(f)) {
+      return(tryCatch(stats::terms(f), error = function(e) NULL))
+    }
+  }
+  NULL                                                              # nocov
+}
+
+
 # Return the names of the FIXED-effect coefficients for a fitted model.
-# For lm / glm this is `names(coef(fit))`. For merMod it is
-# `names(lme4::fixef(fit))` -- `coef(fit)` on a merMod returns the BLUPs,
-# which we never want in the coefficient table (random effects live in
-# `info$random_effects`).
+# Returns the human-readable names (no `b_` prefix for brms; `(Intercept)`
+# in parentheses by lm convention) so downstream consumers like
+# detect_factor_term_meta() can match coefficient names against the
+# corresponding factor variable.
+#   * lm / glm / svyglm: names(coef(fit))
+#   * merMod (lme4): names(lme4::fixef(fit)) -- coef(merMod) returns
+#     BLUPs which we never want in the coefficient table.
+#   * brmsfit: posterior::variables(as_draws_array(fit)) filtered to
+#     `b_*`, with the prefix stripped and `b_Intercept` rewritten to
+#     `(Intercept)`.
+#   * stanreg: names(fit$coefficients) which already match lm/glm
+#     convention.
 .spicy_fixed_coef_names <- function(fit) {
   if (inherits(fit, "merMod")) {
     return(names(lme4::fixef(fit)))
+  }
+  if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
+    draws_vars <- posterior::variables(posterior::as_draws_array(fit))
+    b_names <- grep("^b_", draws_vars, value = TRUE)
+    return(ifelse(b_names == "b_Intercept",
+                  "(Intercept)",
+                  sub("^b_", "", b_names)))
+  }
+  if (inherits(fit, "stanreg") && !is.null(fit$coefficients)) {
+    return(names(fit$coefficients))
   }
   names(stats::coef(fit))
 }
