@@ -456,11 +456,11 @@ build_reference_rows <- function(fit, model_id, outcome,
 #   levels              -- full level vector (in factor order)
 detect_factor_terms <- function(fit) {
   trms <- attr(stats::terms(fit), "term.labels")
-  xlevels <- fit$xlevels   # named list: factor_var -> levels
+  xlevels <- .spicy_get_xlevels(fit)
   if (is.null(xlevels) || length(xlevels) == 0L) {
     return(list())
   }
-  cf_names <- names(stats::coef(fit))
+  cf_names <- .spicy_fixed_coef_names(fit)
 
   out <- list()
   for (var in names(xlevels)) {
@@ -532,8 +532,8 @@ poly_suffix_names <- function(k) {
 # non-factor coefficients (intercept, numeric predictors,
 # interactions, transforms).
 detect_factor_term_meta <- function(fit) {
-  cf_names <- names(stats::coef(fit))
-  xlevels <- fit$xlevels
+  cf_names <- .spicy_fixed_coef_names(fit)
+  xlevels <- .spicy_get_xlevels(fit)
   if (is.null(xlevels) || length(xlevels) == 0L) {
     return(setNames(replicate(length(cf_names), NULL), cf_names))
   }
@@ -544,6 +544,39 @@ detect_factor_term_meta <- function(fit) {
     out[[cn]] <- match_coef_to_factor(cn, xlevels)
   }
   out
+}
+
+
+# ---- Polymorphic accessors for fit metadata -------------------------------
+
+# Return the xlevels list for a fitted model. S3 models (lm, glm) expose
+# this directly at `fit$xlevels`. S4 models (lmerMod, glmerMod from
+# lme4) do not; we reconstruct it from the model frame via
+# `stats::.getXlevels()`. Returns NULL if no factor predictor exists or
+# the helpers fail.
+.spicy_get_xlevels <- function(fit) {
+  # Fast path: S3 fits store xlevels as a named list attribute.
+  xlev <- tryCatch(fit$xlevels, error = function(e) NULL)
+  if (!is.null(xlev)) return(xlev)
+  # Generic path (S4 merMod, others): reconstruct from terms + model frame.
+  tryCatch({
+    trms <- stats::terms(fit)
+    mf <- stats::model.frame(fit)
+    stats::.getXlevels(trms, mf)
+  }, error = function(e) NULL)
+}
+
+
+# Return the names of the FIXED-effect coefficients for a fitted model.
+# For lm / glm this is `names(coef(fit))`. For merMod it is
+# `names(lme4::fixef(fit))` -- `coef(fit)` on a merMod returns the BLUPs,
+# which we never want in the coefficient table (random effects live in
+# `info$random_effects`).
+.spicy_fixed_coef_names <- function(fit) {
+  if (inherits(fit, "merMod")) {
+    return(names(lme4::fixef(fit)))
+  }
+  names(stats::coef(fit))
 }
 
 # For a given coef name, find which factor it belongs to (if any) and
