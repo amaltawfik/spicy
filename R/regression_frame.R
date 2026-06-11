@@ -86,7 +86,7 @@ as_regression_frame.default <- function(fit, ...) {
         "Supported classes today: lm, glm, lmerMod / lmerModLmerTest, glmerMod, ",
         "glmmTMB, lme (nlme), gls (nlme), coxph (survival), survreg (survival), ",
         "polr (MASS), clm (ordinal), multinom (nnet), ",
-        "lm_robust / iv_robust (estimatr), ",
+        "lm_robust / iv_robust (estimatr), fixest (fixest), ",
         "svyglm, stanreg, brmsfit. ",
         "Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
         "are on the 2026-2027 roadmap."

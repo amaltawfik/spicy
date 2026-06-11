@@ -594,6 +594,16 @@ detect_factor_term_meta <- function(fit) {
       if (length(out) == 0L) NULL else out
     }, error = function(e) NULL))
   }
+  # fixest: stats::model.frame(fit) returns an empty list. Reconstruct
+  # the modelling data frame by evaluating fit$call$data in
+  # fit$call_env (the call's lexical environment that fixest preserves).
+  if (inherits(fit, "fixest")) {
+    return(tryCatch({
+      d <- eval(fit$call$data, envir = fit$call_env %||% parent.frame())
+      if (is.null(d)) return(NULL)
+      stats::.getXlevels(stats::terms(fit), d)
+    }, error = function(e) NULL))
+  }
   # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
   # objects (not the data frame). Use nlme::getData() which reconstructs
   # the modelling data frame from fit$call.
