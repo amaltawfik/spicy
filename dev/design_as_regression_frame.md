@@ -964,6 +964,7 @@ extends the polymorphic accessors in `R/regression_extract.R`
 | 6g | `ols`, `lrm`, `cph`, `Glm` (rms) | `R/regression_frame_rms.R` | `test-regression_frame_rms.R` | 45 | `rms (>= 6.7)` |
 | 6h | `mlogit`, `betareg` | `R/regression_frame_mlogit_betareg.R` | `test-regression_frame_mlogit_betareg.R` | 63 | `mlogit (>= 1.1)`, `betareg (>= 3.1)` |
 | 6i | `flexsurvreg`, `selection` | `R/regression_frame_flexsurv_selection.R` | `test-regression_frame_flexsurv_selection.R` | 30 | `flexsurv (>= 2.2)`, `sampleSelection (>= 1.2)` |
+| 6j | `nls` | `R/regression_frame_nls.R` | `test-regression_frame_nls.R` | 41 | (base R `stats`) |
 
 ### Phase 4a — glmmTMB (2026-06-11)
 
