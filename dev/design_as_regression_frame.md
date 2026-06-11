@@ -825,11 +825,11 @@ output):
 | C2.b | 3 more scalar footer builders (ame_satterthwaite, exponentiate, abbreviations) | `a54699d` | +20 | 4049 / 0 / 8 |
 | C2.c | 4 coefs-touching footer builders (p_adjust, polynomial, reference_categories, standardized_caveat) | `4ffe5ca` | +34 | 4083 / 0 / 8 |
 | C2.last | Flip `build_regression_footer()` dispatcher to the frame side | `f3bcfa4` | — | 4083 / 0 / 8 |
-| C3 | `align_multimodel_frames()` (R/regression_align.R, currently legacy-shaped) | — | TBD | ~300 LoC, medium risk |
+| C3 | `align_extracts()` -> `align_frames()` + `attach_nested_stats_to_frames()` + `apply_p_adjust_to_frame_coefs()` | `4112bec` | +579 | 4662 / 0 / 8 |
 | C4 | `build_structured_body()` (R/regression_structured.R) | — | TBD | ~1000 LoC, high risk |
-| C5 | Delete `.frame_to_legacy_extract()` + the 12 legacy footer builders + decide on `extract_lm_phase1()` retention | — | TBD | ~400 LoC, low risk |
+| C5 | Delete `.frame_to_legacy_extract()` + the 12 legacy footer builders + the legacy alignment + legacy p_adjust + decide on `extract_lm_phase1()` retention | — | TBD | ~500 LoC, low risk |
 
-What is DONE in Phase 0c after 2026-06-11 session 2:
+What is DONE in Phase 0c after 2026-06-11 session 3:
 
 - **Title** (C1): `table_regression()` builds the title directly from
   `frame$info$dv` + `frame$info$extras$title_prefix`. The legacy
@@ -839,53 +839,85 @@ What is DONE in Phase 0c after 2026-06-11 session 2:
   builder on every fixture combination. The dispatcher
   `build_regression_footer_from_frames()` orchestrates them and is
   the live path. The 12 legacy footer builders stay as dead code.
-- **Round-trip elimination** for title and footer: these renderers
-  no longer go through `.frame_to_legacy_extract()`. The adapter is
-  still called once per fit in the orchestrator because the body
-  builder and the multi-model alignment still consume legacy
-  extracts; that disappears in C4.
+- **Alignment + nested-LRT change tokens + p_adjust** (C3):
+  `align_frames()` consumes the frames list directly and produces
+  an aligned object SHAPE-IDENTICAL to `align_extracts()`. The
+  nested-LRT change tokens flow through
+  `attach_nested_stats_to_frames()` into each frame's
+  `info$fit_stats` list, then through
+  `.compact_fit_stats_for_legacy()` into the legacy-shape
+  `fit_stats_aligned` data.frame. `apply_p_adjust_to_frame_coefs()`
+  is the frame-aware sibling needed because the displayed p-values
+  now flow through the frame side.
+- **Round-trip elimination** for title, footer, alignment, and
+  nested-LRT augmentation: these no longer go through
+  `.frame_to_legacy_extract()`. The adapter is still called once
+  per fit in the orchestrator because the body builder consumes the
+  `extracts` list for legacy debug / inspection paths; C5 removes
+  that.
 
 What is still on the round-trip in the live path:
 
-- **Multi-model alignment** (C3) reads `extracts[[i]]$coefs`.
-- **Body builder** (C4) reads `extracts[[i]]$coefs` and all the
-  scalar fields used by the renderer engine dispatch.
-- After C3 + C4 land, the `.frame_to_legacy_extract()` adapter is
-  dead code that C5 removes.
+- **Body builder** (C4) reads `aligned$coefs_aligned` which is
+  legacy-shaped (column names: `se`, `ci_low`, `ci_high`,
+  `is_reference`, `is_intercept`, `factor_term`, `factor_level`,
+  `model_id`, `outcome`). Note: this is produced by
+  `align_frames()`, not the adapter -- the legacy SHAPE is preserved
+  to keep the body builder undisturbed until C4 migrates it.
+- After C4 lands, `.frame_to_legacy_extract()` becomes dead code
+  that C5 removes alongside the 12 legacy footer builders, the
+  legacy dispatcher, the legacy title, the legacy alignment, and
+  the legacy `apply_p_adjust()`.
 
-Phase 0c re-entry checklist (when work resumes for C3 / C4 / C5):
+Phase 0c C4 re-entry checklist (when work resumes):
 
 1. Re-read this document end-to-end, especially §§3-4 (schema),
-   §12 (fit / standardisation / AME orchestration), and the
-   "Vocabulary expansions" note in §14.1.
-2. C3 audit: read `R/regression_align.R` end-to-end (~300 LoC).
-   Build the legacy-column-to-frame-column map for every
-   `aligned[[...]]` access. The map established in Phase 0b
-   sub-step 2 still applies (`factor_term → parent_var`,
-   `factor_level → label`, `is_reference → is_ref`, `is_intercept`
-   derived from `term == "(Intercept)"`).
-3. C3 pattern: write `align_multimodel_frames_from_frames()`
-   sibling, add byte-equivalence tests against the legacy
-   `align_multimodel_frames()` on fixtures from
-   `test-regression_frame_adapter.R`, flip the call site in
-   `table_regression.R`.
-4. C4 follows the same pattern but on
-   `R/regression_structured.R` (~1000 LoC). This is the most
-   complex sub-step; budget a dedicated session.
-5. C4 dependency: `apply_p_adjust()` reads the legacy column names
-   (`is_intercept`, `is_reference`). When C4 lands, also write
-   `apply_p_adjust_to_frame_coefs()` sibling so the body's
-   p-values pick up the adjusted values from the frame side.
-6. C5 cleanup once C4 lands: delete the 12 legacy footer builders,
+   §12 (fit / standardisation / AME orchestration), the
+   "Vocabulary expansions" note in §14.1, and the column-rename
+   map embedded in `align_frames()` (R/regression_align.R).
+2. C4 audit: read `R/regression_structured.R` end-to-end
+   (~1000 LoC). Identify every access to `aligned$coefs_aligned`'s
+   legacy column names and map them to the frame-side equivalents.
+   The map established in Phase 0b sub-step 2 plus the C3 additions:
+   `se -> std_error`, `ci_low -> ci_lower`, `ci_high -> ci_upper`,
+   `is_reference -> is_ref`, `is_intercept` derived from
+   `term == "(Intercept)"`, `factor_term -> parent_var` with NA
+   fallback inverse, `factor_level -> label` with NA fallback
+   inverse.
+3. C4 strategy decision (the hard one): either
+   (a) extend `align_frames()` to produce a frame-native aligned
+       shape (renamed columns), then migrate the body builder to
+       read those, OR
+   (b) write the body builder's frame-native sibling reading from
+       `frames` directly (skip the aligned object for the body
+       path), OR
+   (c) keep `align_frames()` legacy-shaped and migrate the body
+       builder to translate at read time.
+   Decision: (a) is cleanest end-state but requires updating
+   `align_frames()` mid-migration. (b) is the strangler-fig
+   continuation but duplicates the alignment logic. (c) is the
+   minimal change but spreads the translation across 1000+ LoC.
+   Recommendation: (a) -- bump `align_frames()` output column
+   names in a separate sub-commit before touching the body builder.
+4. C4 byte-equivalence pattern: build the body via legacy path,
+   capture the rendered ASCII / HTML output for ~15 fixtures, then
+   migrate, then assert identity. The existing
+   `test-table_regression.R` snapshots already provide much of
+   this safety net (3656 of the 4662 passing tests exercise
+   table_regression's full pipeline).
+5. C5 cleanup once C4 lands: delete the 12 legacy footer builders,
    delete `build_regression_footer()` (legacy dispatcher),
-   delete `build_regression_title()` (legacy), delete
-   `.frame_to_legacy_extract()`, decide on
+   delete `build_regression_title()` (legacy),
+   delete `align_extracts()`, delete
+   `attach_nested_stats_to_extracts()`, delete `apply_p_adjust()`,
+   delete `.frame_to_legacy_extract()`, decide on
    `extract_lm_phase1()` retention per §14.3.
 
-Phase 0c timing update (2026-06-11): C1 + C2 done in one session
-(2.5 hours). C3 + C4 + C5 expected to take 2-3 more sessions of
-similar density. Total Phase 0c window: Q3 2026, on track for
-the 0.13.0 cadence-decay submission window.
+Phase 0c timing update (2026-06-11): C1 + C2 + C3 done in two
+sessions totaling ~4.5 hours. C4 expected to take 1-2 more
+dedicated sessions; C5 a half-day of pure cleanup. Total Phase 0c
+window: Q3 2026, on track for the 0.13.0 cadence-decay submission
+window.
 
 ### 14.3 Note on `extract_lm_phase1()` after Phase 0c
 
