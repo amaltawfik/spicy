@@ -90,6 +90,7 @@ as_regression_frame.default <- function(fit, ...) {
         "hurdle / zeroinfl (pscl), rq (quantreg), ivreg / tobit (AER), ",
         "gam / bam (mgcv), ols / lrm / cph / Glm (rms), ",
         "mlogit (mlogit), betareg (betareg), ",
+        "flexsurvreg (flexsurv), selection (sampleSelection), ",
         "svyglm, stanreg, brmsfit. ",
         "Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
         "are on the 2026-2027 roadmap."
