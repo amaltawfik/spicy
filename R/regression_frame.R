@@ -85,7 +85,7 @@ as_regression_frame.default <- function(fit, ...) {
       "i" = paste0(
         "Supported classes today: lm, glm, lmerMod / lmerModLmerTest, glmerMod, ",
         "glmmTMB, lme (nlme), gls (nlme), coxph (survival), survreg (survival), ",
-        "polr (MASS), clm (ordinal), multinom (nnet), ",
+        "polr / glm.nb / rlm (MASS), clm (ordinal), multinom (nnet), ",
         "lm_robust / iv_robust (estimatr), fixest (fixest), ",
         "hurdle / zeroinfl (pscl), ",
         "svyglm, stanreg, brmsfit. ",
