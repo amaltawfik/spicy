@@ -48,6 +48,7 @@ Suggests:
     lme4 (>= 1.1-35),
     lmerTest (>= 3.1-3),
     marginaleffects,
+    survey (>= 4.4),
     officer,
     openxlsx2,
     parameters,
