@@ -594,6 +594,16 @@ detect_factor_term_meta <- function(fit) {
       if (length(out) == 0L) NULL else out
     }, error = function(e) NULL))
   }
+  # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
+  # objects (not the data frame). Use nlme::getData() which reconstructs
+  # the modelling data frame from fit$call.
+  if (inherits(fit, c("lme", "gls"))) {
+    return(tryCatch({
+      d <- nlme::getData(fit)
+      if (is.null(d)) return(NULL)
+      stats::.getXlevels(stats::terms(fit), d)
+    }, error = function(e) NULL))
+  }
   # Generic path (S4 merMod, others): reconstruct from terms + model frame.
   tryCatch({
     trms <- stats::terms(fit)
@@ -646,6 +656,12 @@ detect_factor_term_meta <- function(fit) {
     # conditional component only; zi/disp coefficients live in
     # info$extras for advanced consumers.
     return(names(glmmTMB::fixef(fit)$cond))
+  }
+  if (inherits(fit, "lme")) {
+    # nlme::fixef() returns a flat named numeric vector. coef(lme)
+    # returns per-group random-effect-augmented coefficients, NOT the
+    # fixed effects, so the generic path is wrong here.
+    return(names(nlme::fixef(fit)))
   }
   if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
     draws_vars <- posterior::variables(posterior::as_draws_array(fit))

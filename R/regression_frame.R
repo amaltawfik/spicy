@@ -84,8 +84,8 @@ as_regression_frame.default <- function(fit, ...) {
       ),
       "i" = paste0(
         "Supported classes today: lm, glm, lmerMod / lmerModLmerTest, glmerMod, ",
-        "glmmTMB, svyglm, stanreg, brmsfit. ",
-        "Other glmmTMB-adjacent and survival classes (nlme, coxph, polr, ...) ",
+        "glmmTMB, lme (nlme), gls (nlme), svyglm, stanreg, brmsfit. ",
+        "Survival (coxph), ordinal (polr / clm), and other classes ",
         "are on the 2026-2027 roadmap."
       ),
       "i" = paste0(

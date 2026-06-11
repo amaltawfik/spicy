@@ -952,6 +952,7 @@ extends the polymorphic accessors in `R/regression_extract.R`
 | 2 | `svyglm` | `R/regression_frame_svyglm.R` | `test-regression_frame_svyglm.R` | 65 | `survey (>= 4.4)` |
 | 3 | `stanreg`, `brmsfit` | `R/regression_frame_stan.R` | `test-regression_frame_stan.R` | ~65 | `posterior (>= 1.5.0)`, `rstanarm (>= 2.21)`, `brms (>= 2.20)` |
 | 4a | `glmmTMB` | `R/regression_frame_glmmTMB.R` | `test-regression_frame_glmmTMB.R` | 74 | `glmmTMB (>= 1.1.7)` |
+| 4b | `lme`, `gls` | `R/regression_frame_nlme.R` | `test-regression_frame_nlme.R` | 82 | `nlme (>= 3.1-160)` |
 
 ### Phase 4a — glmmTMB (2026-06-11)
 
@@ -996,9 +997,55 @@ Implementation choices:
 - **`info$class = "glmmTMB"`** — single-class dispatch, no
   parent-class normalisation needed.
 
-Phase 4b (`nlme::lme` + `nlme::gls`) is the next mixed-effects
-target; Phase 5+ covers survival / ordinal / robust families per
-the post-0.12 roadmap.
+### Phase 4b — nlme (2026-06-11)
+
+`as_regression_frame.lme()` covers the fixed-effects component of a
+linear mixed-effects fit from `nlme::lme()`; `as_regression_frame.gls()`
+covers generalised least squares (no random effects, but supports
+correlation structures via `correlation = corCompSymm(...)` etc.).
+
+Implementation choices:
+
+- **Inference: Wald-t.** `nlme` ships per-coefficient containment
+  DF natively, surfaced in `summary(fit)$tTable[, "DF"]` for `lme`
+  (e.g. 80 for a within-subject term vs 25 for a between-subject
+  term in the Orthodont fixture). For `gls` the engine carries no
+  DF column, so the frame derives df = `nobs(fit) - length(coef(fit))`
+  uniformly across all coefficients. Both classes report
+  `test_type = "t"`, `ci_method = "wald"`.
+- **`stats::model.frame(fit)` is broken** for both classes: it
+  returns the random-effects (`reStruct`) or correlation
+  (`corStruct`) wrapper, not the data frame. Polymorphic accessor
+  `.spicy_get_xlevels()` extended with an `lme` / `gls` branch
+  that routes through `nlme::getData(fit)` instead.
+- **`stats::family(fit)` errors** — `nlme` is Gaussian-only, so
+  family is hardcoded to `gaussian / identity` in `info$family`.
+- **VarCorr for `lme` returns a character matrix** of class
+  `"VarCorr.lme"`. `.lme_random_effects()` parses the
+  `"Variance"` / `"StdDev"` columns via `suppressWarnings(as.numeric())`
+  and reuses `.merMod_icc()` for the variance-ratio rule.
+- **Grouping factor count:** `summary(fit)$ngrps` is NULL for `lme`;
+  the primary grouping factor count lives at `fit$dims$ngrps[1L]`
+  (the trailing `"X"` / `"y"` slots are fixed-effect / response
+  dummies). `gls` has no random effects, so `info$n_groups` is
+  `NULL` and `info$random_effects$icc` is `NA`.
+- **Fixed-effect coefficient names:** for `lme`, `stats::coef(fit)`
+  returns per-group random-effect-augmented coefficients (one row
+  per subject × term), NOT the fixed effects. Polymorphic accessor
+  `.spicy_fixed_coef_names()` extended with an `lme` branch using
+  `nlme::fixef(fit)`. `gls` has no random effects so the generic
+  `names(stats::coef(fit))` path works as-is.
+- **Correlation structure label:** for `gls`, the corStruct
+  class name (`"corCompSymm"`, `"corAR1"`, ...) is surfaced in
+  both `info$vcov_label` (`"Wald (model-based, corCompSymm)"`)
+  and `info$extras$correlation_structure` for renderers that want
+  to highlight it. NULL when no structure was specified.
+- **Title prefixes:** `"Linear mixed-effects regression (nlme)"`
+  for `lme`, `"Generalised least squares (nlme)"` for `gls`.
+
+Phase 5+ covers survival (`coxph`, `survreg`), ordinal
+(`polr`, `clm`), multinomial (`multinom`), and robust families
+per the post-0.12 roadmap.
 
 ---
 
