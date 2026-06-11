@@ -160,6 +160,46 @@ build_regression_footer <- function(
 }
 
 
+# Frame-aware dispatcher. Same signature as build_regression_footer()
+# but reads frames instead of extracts. Calls each builder's
+# _from_frames sibling (added in Phase 0c sub-steps C1, C2.a, C2.b,
+# C2.c). build_stars_footer_block() and build_nested_footer_block()
+# don't take an extracts arg -- they are reused unchanged.
+#
+# Phase 0c sub-step C2.last: orchestrator (table_regression.R) flips
+# to this dispatcher. The legacy build_regression_footer() stays in
+# the codebase until C5 cleanup so we can revert quickly if a corner
+# case slips through the byte-equivalence gates.
+build_regression_footer_from_frames <- function(
+    frames,
+    standardized = "none",
+    p_adjust = "none",
+    stars = FALSE,
+    nested = FALSE,
+    show_columns = character(0),
+    reference_style = "row") {
+  themes <- list(
+    build_regression_type_footer_block_from_frames(frames),
+    build_vcov_footer_block_from_frames(frames),
+    build_abbreviations_footer_block_from_frames(show_columns, frames,
+                                                  standardized),
+    build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
+    build_exponentiate_footer_block_from_frames(frames),
+    build_standardized_caveat_footer_block_from_frames(frames, standardized),
+    build_p_adjust_footer_block_from_frames(frames, p_adjust),
+    build_stars_footer_block(stars),
+    build_singular_footer_block_from_frames(frames),
+    build_polynomial_contrasts_footer_block_from_frames(frames),
+    build_reference_categories_footer_block_from_frames(frames,
+                                                        reference_style),
+    build_nested_footer_block(nested)
+  )
+  themes <- Filter(function(x) !is.null(x) && nzchar(x), themes)
+  if (length(themes) == 0L) return(NULL)
+  paste0("Note. ", paste(themes, collapse = "\n"))
+}
+
+
 # ---- Theme: regression-type block ----------------------------------------
 
 # Emits a one-line declaration of each model's regression type at the

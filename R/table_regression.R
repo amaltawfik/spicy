@@ -1236,6 +1236,15 @@ table_regression <- function(
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept
     # and reference rows excluded), not just the displayed subset.
+    # apply_p_adjust() reads the legacy column names (is_intercept,
+    # is_reference); the body builder consumes the result via
+    # extracts[[i]]$coefs until C4 flips it to the frame side. At
+    # that point a frame-aware sibling of apply_p_adjust() will write
+    # adjusted p_values back into frames[[i]]$coefs. For C2.last
+    # (footer flip only), the frame's p_value column is read only
+    # for the m = K count by build_p_adjust_footer_block_from_frames();
+    # p.adjust() never turns a non-NA p into NA, so the count is
+    # invariant under p_adjust.
     if (!identical(p_adjust, "none")) {
       extracts[[i]]$coefs <- apply_p_adjust(extracts[[i]]$coefs,
                                             p_adjust)
@@ -1286,8 +1295,13 @@ table_regression <- function(
   } else {
     as.character(title)
   }
-  footer_main <- build_regression_footer(
-    extracts,
+  # Phase 0c sub-step C2.last: the footer dispatcher now reads from
+  # frames directly. Each builder calls its _from_frames sibling (added
+  # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
+  # kept in the codebase for C5 cleanup so we can revert quickly if a
+  # corner case slips through the byte-equivalence gates.
+  footer_main <- build_regression_footer_from_frames(
+    frames,
     standardized = standardized,
     p_adjust = p_adjust,
     stars = stars,
