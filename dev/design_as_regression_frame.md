@@ -955,6 +955,15 @@ extends the polymorphic accessors in `R/regression_extract.R`
 | 4b | `lme`, `gls` | `R/regression_frame_nlme.R` | `test-regression_frame_nlme.R` | 82 | `nlme (>= 3.1-160)` |
 | 5a | `coxph`, `survreg` | `R/regression_frame_survival.R` | `test-regression_frame_survival.R` | 83 | `survival (>= 3.5)` |
 | 5b | `polr`, `clm`, `multinom` | `R/regression_frame_ordinal.R`, `R/regression_frame_multinom.R` | `test-regression_frame_ordinal.R`, `test-regression_frame_multinom.R` | 127 | `MASS`, `ordinal (>= 2022.11)`, `nnet` |
+| 6a | `lm_robust`, `iv_robust` | `R/regression_frame_estimatr.R` | `test-regression_frame_estimatr.R` | 63 | `estimatr (>= 1.0.0)` |
+| 6b | `fixest` (feols / feglm / fepois) | `R/regression_frame_fixest.R` | `test-regression_frame_fixest.R` | 48 | `fixest (>= 0.11)` |
+| 6c | `hurdle`, `zeroinfl` | `R/regression_frame_pscl.R` | `test-regression_frame_pscl.R` | 36 | `pscl (>= 1.5)` |
+| 6d | `negbin` (glm.nb), `rlm` | `R/regression_frame_MASS.R` | `test-regression_frame_MASS.R` | 47 | `MASS` |
+| 6e | `rq`, `ivreg`, `tobit` | `R/regression_frame_quantreg_AER.R` | `test-regression_frame_quantreg_AER.R` | 46 | `quantreg (>= 5.86)`, `AER (>= 1.2)` |
+| 6f | `gam`, `bam` | `R/regression_frame_mgcv.R` | `test-regression_frame_mgcv.R` | 54 | `mgcv (>= 1.9)` |
+| 6g | `ols`, `lrm`, `cph`, `Glm` (rms) | `R/regression_frame_rms.R` | `test-regression_frame_rms.R` | 45 | `rms (>= 6.7)` |
+| 6h | `mlogit`, `betareg` | `R/regression_frame_mlogit_betareg.R` | `test-regression_frame_mlogit_betareg.R` | 63 | `mlogit (>= 1.1)`, `betareg (>= 3.1)` |
+| 6i | `flexsurvreg`, `selection` | `R/regression_frame_flexsurv_selection.R` | `test-regression_frame_flexsurv_selection.R` | 30 | `flexsurv (>= 2.2)`, `sampleSelection (>= 1.2)` |
 
 ### Phase 4a — glmmTMB (2026-06-11)
 
@@ -1175,8 +1184,66 @@ Multinomial (multinom) implementation choices:
 - **Title prefix:** `"Multinomial logistic regression"`.
 
 Phase 5c (the long tail) will cover `robustlmm::rlmer` (robust
-linear mixed-effects), `MCMCglmm` (Bayesian hierarchical), and
-potentially `fixest::feols` (high-dimensional fixed effects).
+linear mixed-effects) and `MCMCglmm` (Bayesian hierarchical).
+
+### Phase 6 — broad coverage (2026-06-11)
+
+Following an audit against marginaleffects' 49 supported model
+packages, Phase 6 added 10 packages in 9 sub-phases to bring spicy's
+coverage in line with the marginaleffects / parameters universe.
+The cumulative class count went from 18 (end of Phase 5b) to 34.
+
+Patterns established / reinforced:
+
+- **Inheritance trap**: classes that "inherit from lm/glm/coxph" do
+  NOT always work via fallback dispatch. estimatr (lm_robust),
+  rms (ols/lrm/cph/Glm), and AER::tobit all inherit from a standard
+  base class but the inherited method either errors (rms) or
+  produces wrong/incomplete output (tobit's title). The default
+  rule: when in doubt, register a dedicated method.
+- **vcov accessor traps**: `fit$var` is populated only for some
+  classes (e.g. rms::ols) — always prefer `stats::vcov(fit)` unless
+  there is a reason not to.
+- **nobs accessor traps**:
+  - `pscl::hurdle`, `pscl::zeroinfl`, `quantreg::rq`, `mlogit`,
+    `nnet::multinom` do NOT register `nobs()`; sample size comes
+    from `fit$n`, `length(fit$residuals)`, or
+    `nrow(fit$fitted.values)` depending on the class
+  - `summary(multinom)$n` returns the NEURAL-NETWORK LAYER SIZES,
+    not the sample count — always use `nrow(fit$fitted.values)`
+- **`(Intercept)` naming**: rms uses `"Intercept"` (no parentheses);
+  the frame normalises to `"(Intercept)"` for schema consistency.
+  fixest, coxph, polr, clm have NO intercept row at all.
+- **Factor encoding**: rms uses `"varname=level"` syntax; lm-family
+  uses `"varnamelevel"`. rms-specific factor parsing reads the
+  levels from `fit$Design$parms$<var_name>`.
+- **Two-component models**: hurdle / zeroinfl / betareg / glmmTMB
+  all follow the same convention — `coefs` carries the conditional
+  (main) component; the auxiliary component (zero / precision / zi /
+  disp) is stashed in `info$extras`.
+- **outcome_level overloading**: schema's `coefs$outcome_level`
+  column is used for both response categories (multinom) and
+  model components (mlogit's per-alternative intercepts;
+  sampleSelection's selection/outcome blocks). This is documented
+  per-method but the column type stays uniform.
+- **Polymorphic accessor extensions**: 4 new branches added in
+  Phase 6 — `.spicy_get_xlevels` for fixest (model.frame returns
+  empty list), `.spicy_fixed_coef_names` for hurdle/zeroinfl
+  (prefixed coef names), implicit fallback for negbin / tobit
+  (they delegate via dedicated overlay methods).
+- **Title prefix conventions**: family-aware for non-trivial
+  classes — "Cumulative logit regression (proportional odds)",
+  "Weibull AFT regression", "Logistic regression (rms)",
+  "Quantile regression (τ = 0.50)" with the tau value in the title.
+
+Pending future-Phase work:
+
+- **Phase 5c** (robustlmm, MCMCglmm) — niche enough to defer until
+  user demand.
+- **Phase 7** — renderer integration: wire the new classes through
+  `table_regression()` so they produce ASCII / HTML / Word tables.
+  Without this, the methods exist but are not user-visible.
+- **Phase 8** — vignette + NEWS.md for the expanded class coverage.
 
 ---
 
