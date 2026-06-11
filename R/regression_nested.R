@@ -210,37 +210,6 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
 }
 
 
-# ---- Per-model attachment ------------------------------------------------
-
-# Takes the list of `extracts` (one per model) and, when nested = TRUE,
-# augments each `extracts[[i]]$fit_stats` row with the change-stat
-# columns: NA for the first model (no previous to compare to), the
-# pairwise result for i >= 2.
-#
-# Returns the updated `extracts` list. The fit_stats columns added:
-#   r2_change, adj_r2_change, f_change, f2_change, lrt_change,
-#   aic_change, aicc_change, bic_change, deviance_change, p_change.
-attach_nested_stats_to_extracts <- function(extracts, fits) {
-  if (!isTRUE(length(fits) >= 2L)) return(extracts)
-  comp <- compute_nested_comparisons(fits)
-  if (nrow(comp) == 0L) return(extracts)
-  # NA row for Model 1 (no previous comparison).
-  na_row <- comp[1L, , drop = FALSE]
-  na_row[1L, ] <- NA
-  change_cols <- setdiff(names(comp), "comparison")
-  for (i in seq_along(extracts)) {
-    fs <- extracts[[i]]$fit_stats
-    if (is.null(fs) || nrow(fs) == 0L) next                       # nocov
-    pair_row <- if (i == 1L) na_row else comp[i - 1L, , drop = FALSE]
-    for (col in change_cols) {
-      fs[[col]] <- pair_row[[col]][1L]
-    }
-    extracts[[i]]$fit_stats <- fs
-  }
-  extracts
-}
-
-
 # Frame-aware sibling of attach_nested_stats_to_extracts(). Injects the
 # same change tokens (r2_change, adj_r2_change, f_change, ..., p_change)
 # into each `frames[[i]]$info$fit_stats` list. After this call, the

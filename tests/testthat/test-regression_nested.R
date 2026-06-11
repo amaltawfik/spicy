@@ -114,37 +114,39 @@ test_that("compute_one_pair_glm - variance-explained tokens are NA", {
 
 
 # ============================================================================
-# attach_nested_stats_to_extracts() -- Model 1 gets NA, M2+ gets pair stats
+# attach_nested_stats_to_frames() -- Model 1 gets NA, M2+ gets pair stats
+# Phase 0c sub-step C5: migrated from the deleted
+# attach_nested_stats_to_extracts() to its frame-side sibling.
 # ============================================================================
 
-test_that("attach_nested_stats_to_extracts - Model 1 cells NA, M2+ filled", {
+test_that("attach_nested_stats_to_frames - Model 1 cells NA, M2+ filled", {
   fits <- list(
     lm(mpg ~ wt, mt),
     lm(mpg ~ wt + cyl, mt),
     lm(mpg ~ wt + cyl + hp, mt)
   )
-  extracts <- lapply(seq_along(fits), function(i) {
-    spicy:::extract_lm_phase1(fits[[i]], model_id = paste0("M", i))
+  frames <- lapply(seq_along(fits), function(i) {
+    spicy:::as_regression_frame(fits[[i]], model_id = paste0("M", i))
   })
-  out <- spicy:::attach_nested_stats_to_extracts(extracts, fits)
-  for (e in out) {
-    expect_true("r2_change" %in% names(e$fit_stats))
-    expect_true("f_change" %in% names(e$fit_stats))
-    expect_true("p_change" %in% names(e$fit_stats))
+  out <- spicy:::attach_nested_stats_to_frames(frames, fits)
+  for (f in out) {
+    expect_true("r2_change" %in% names(f$info$fit_stats))
+    expect_true("f_change"  %in% names(f$info$fit_stats))
+    expect_true("p_change"  %in% names(f$info$fit_stats))
   }
-  expect_true(is.na(out[[1L]]$fit_stats$r2_change))
-  expect_true(is.na(out[[1L]]$fit_stats$f_change))
-  expect_true(is.finite(out[[2L]]$fit_stats$r2_change))
-  expect_true(is.finite(out[[3L]]$fit_stats$f_change))
+  expect_true(is.na(out[[1L]]$info$fit_stats$r2_change))
+  expect_true(is.na(out[[1L]]$info$fit_stats$f_change))
+  expect_true(is.finite(out[[2L]]$info$fit_stats$r2_change))
+  expect_true(is.finite(out[[3L]]$info$fit_stats$f_change))
 })
 
-test_that("attach_nested_stats_to_extracts - single-fit no-op", {
-  extracts <- list(spicy:::extract_lm_phase1(lm(mpg ~ wt, mt),
+test_that("attach_nested_stats_to_frames - single-fit no-op", {
+  frames <- list(spicy:::as_regression_frame(lm(mpg ~ wt, mt),
                                               model_id = "M1"))
-  out <- spicy:::attach_nested_stats_to_extracts(
-    extracts, list(lm(mpg ~ wt, mt))
+  out <- spicy:::attach_nested_stats_to_frames(
+    frames, list(lm(mpg ~ wt, mt))
   )
-  expect_identical(out, extracts)
+  expect_identical(out, frames)
 })
 
 

@@ -165,8 +165,8 @@ test_that("output = 'flextable' attaches caption + footer lines", {
 
 test_that("dispatch_regression_output — unknown output rejected by match.arg", {
   fit <- lm(mpg ~ wt, data = mt)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  aligned <- spicy:::align_extracts(list(ex))
+  fr <- spicy:::as_regression_frame(fit, model_id = "M1")
+  aligned <- spicy:::align_frames(list(fr), model_ids = "M1")
   rendered <- spicy:::render_regression_table(aligned)
   # match.arg upstream of the switch fires first, so the error is the
   # base-R "should be one of ..." rather than the dispatcher's

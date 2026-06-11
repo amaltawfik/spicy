@@ -3,21 +3,24 @@
 mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
-mk_extract_lm <- function(formula, model_id, data = mt,
-                           show_columns = c("b", "se", "ci", "p")) {
+# Phase 0c sub-step C5: migrated from extract_lm_phase1 + align_extracts
+# (deleted) to as_regression_frame + align_frames. The aligned object
+# shape is identical via both paths.
+mk_frame_lm <- function(formula, model_id, data = mt,
+                         show_columns = c("b", "se", "ci", "p")) {
   fit <- lm(formula, data = data)
-  spicy:::extract_lm_phase1(fit, model_id = model_id,
-                            show_columns = show_columns)
+  spicy:::as_regression_frame(fit, model_id = model_id,
+                              show_columns = show_columns)
 }
 
 mk_aligned <- function(formulas, ids,
                         show_columns = c("b", "se", "ci", "p"),
                         ...) {
-  ex <- Map(
-    function(f, i) mk_extract_lm(f, i, show_columns = show_columns),
+  frames <- Map(
+    function(f, i) mk_frame_lm(f, i, show_columns = show_columns),
     formulas, ids
   )
-  spicy:::align_extracts(ex, ...)
+  spicy:::align_frames(frames, model_ids = unlist(ids), ...)
 }
 
 
@@ -249,7 +252,7 @@ test_that("render — decimal_mark = ',' uses comma + ';' CI separator", {
 # ============================================================================
 
 test_that("render — empty aligned returns empty data.frame", {
-  empty <- spicy:::align_extracts(list())
+  empty <- spicy:::align_frames(list(), model_ids = character(0))
   rt <- spicy:::render_regression_table(empty)
   expect_equal(nrow(rt), 0L)
   expect_equal(names(rt), "Variable")

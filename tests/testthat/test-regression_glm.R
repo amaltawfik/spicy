@@ -48,12 +48,17 @@ test_that("glm: family-aware title — logit / probit / poisson / Gamma", {
 test_that("glm: hierarchical title is grammatically lower-cased", {
   # Direct unit-test of the title formatter — full nested computation
   # for glm (LRT-based comparison) is part of Step 6.
-  ext <- list(
-    list(outcome = "am", title_prefix = "Logistic regression"),
-    list(outcome = "am", title_prefix = "Logistic regression")
+  # Build minimal frame-shaped objects (only the fields the title
+  # function reads). Phase 0c sub-step C5: migrated from
+  # build_regression_title() to build_regression_title_from_frames().
+  fr <- list(
+    list(info = list(dv = "am",
+                     extras = list(title_prefix = "Logistic regression"))),
+    list(info = list(dv = "am",
+                     extras = list(title_prefix = "Logistic regression")))
   )
   expect_equal(
-    spicy:::build_regression_title(ext, nested = TRUE),
+    spicy:::build_regression_title_from_frames(fr, nested = TRUE),
     "Hierarchical logistic regression: am"
   )
 })
@@ -1525,9 +1530,9 @@ test_that("AUDIT B5: 3-model with non-alphabetical names preserves input order",
 test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
   m1 <- lm(mpg ~ wt, data = mtcars)
   m2 <- lm(mpg ~ wt + cyl, data = mtcars)
-  ext1 <- spicy:::extract_lm_phase1(m1, model_id = "Z")
-  ext2 <- spicy:::extract_lm_phase1(m2, model_id = "A")
-  aligned <- spicy:::align_extracts(list(ext1, ext2))
+  fr1 <- spicy:::as_regression_frame(m1, model_id = "Z")
+  fr2 <- spicy:::as_regression_frame(m2, model_id = "A")
+  aligned <- spicy:::align_frames(list(fr1, fr2), model_ids = c("Z", "A"))
   wide <- spicy:::pivot_aligned_wide(aligned,
                                        model_labels = c("Z-label", "A-label"))
   cols <- names(wide)

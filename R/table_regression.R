@@ -1198,13 +1198,11 @@ table_regression <- function(
     vapply(seq_len(n_models), default_id, character(1))
   }
 
-  # Phase 0b sub-step 4 + Phase 0c sub-step C1: we keep BOTH the frame
-  # (consumed by build_regression_title_from_frames() below) and the
-  # legacy-shaped extract (consumed by the footer / body / alignment
-  # renderers, which migrate to frames in Phase 0c sub-steps C2-C4).
-  # Once all renderers consume frames, the adapter call disappears.
-  frames   <- vector("list", n_models)
-  extracts <- vector("list", n_models)
+  # Phase 0c sub-step C5: orchestrator now builds ONLY the frames list.
+  # The legacy `extracts` list, the `.frame_to_legacy_extract()` adapter,
+  # the legacy `apply_p_adjust()` -- all gone. Every downstream renderer
+  # (title, footer, alignment, nested LRT) consumes frames directly.
+  frames <- vector("list", n_models)
   for (i in seq_len(n_models)) {
     frames[[i]] <- as_regression_frame(
       models[[i]],
@@ -1221,31 +1219,16 @@ table_regression <- function(
       use_ame_satterthwaite = use_ame_satt,
       cluster_name          = cluster_name_list[i]
     )
-    extracts[[i]] <- .frame_to_legacy_extract(frames[[i]],
-                                              model_id = model_ids[i])
     # Attach precomputed non-additivity metadata so the standardized
-    # caveat footer (build_standardized_caveat_footer_block()) can
-    # decide without reaching back to the live fit. Phase 0c C2.c:
-    # also attach to frames[[i]]$info$extras so the frame-aware
-    # sibling (..._from_frames) can read it without consulting the
-    # parallel extracts list.
-    non_add <- detect_non_additive_terms(models[[i]])
-    extracts[[i]][["non_additive"]]      <- non_add
-    frames[[i]]$info$extras$non_additive <- non_add
+    # caveat footer (build_standardized_caveat_footer_block_from_frames())
+    # can decide without reaching back to the live fit.
+    frames[[i]]$info$extras$non_additive <-
+      detect_non_additive_terms(models[[i]])
 
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept
     # and reference rows excluded), not just the displayed subset.
-    # Phase 0c sub-step C3: align_frames() now reads p-values from
-    # the frame side, so we apply the same adjustment to the frame
-    # coefs via apply_p_adjust_to_frame_coefs(). The legacy
-    # apply_p_adjust() on extracts[[i]]$coefs is kept for now (it is
-    # dead code in the table_regression() path after C3, but the
-    # extracts list is still built by the orchestrator for legacy
-    # debug / inspection; C5 cleans it up).
     if (!identical(p_adjust, "none")) {
-      extracts[[i]]$coefs <- apply_p_adjust(extracts[[i]]$coefs,
-                                            p_adjust)
       frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
         frames[[i]]$coefs, p_adjust)
     }
@@ -1267,11 +1250,8 @@ table_regression <- function(
   }
 
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
-  # Phase 0c sub-step C3: alignment now consumes frames directly.
-  # align_frames() produces an aligned object SHAPE-IDENTICAL to
-  # align_extracts() (proven by test-renderer_migration_align.R), so
-  # the body builder (still consuming the legacy-shape aligned object
-  # until C4) is undisturbed.
+  # align_frames() consumes the frames list directly and produces the
+  # aligned long-format data structure consumed by the body builder.
   aligned <- align_frames(
     frames,
     model_ids = model_ids,
@@ -1324,12 +1304,16 @@ table_regression <- function(
   # must be carried by the surrounding article / caption. Only
   # emitted when at least one factor was detected (otherwise
   # there's nothing to be silent about).
+  # Phase 0c sub-step C5: factor-detection scan now reads from frames
+  # directly. Frame coefs have parent_var = term for non-factor predictors
+  # (no NA fallback), so the "any factor" test is parent_var != term on
+  # any non-intercept row.
   if (identical(reference_style, "none") &&
         identical(factor_layout, "flat") &&
-        any(vapply(extracts, function(e) {
-          coefs <- e$coefs
+        any(vapply(frames, function(f) {
+          coefs <- f$coefs
           !is.null(coefs) && nrow(coefs) > 0L &&
-            any(!is.na(coefs$factor_term))
+            any(coefs$parent_var != coefs$term & coefs$term != "(Intercept)")
         }, logical(1)))) {
     spicy_inform(
       c(paste0("`reference_style = \"none\"` with `factor_layout = ",

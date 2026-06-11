@@ -1,78 +1,84 @@
 # Tests for the per-model coefficient transforms in
 # R/regression_transform.R: p_adjust application + keep/drop filter.
+# Phase 0c sub-step C5: migrated to apply_p_adjust_to_frame_coefs()
+# after the legacy apply_p_adjust() was deleted.
 
 mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
 
 # ============================================================================
-# apply_p_adjust — direct unit tests on the helper
+# apply_p_adjust_to_frame_coefs — direct unit tests on the helper
 # ============================================================================
 
-test_that("apply_p_adjust — 'none' returns input unchanged", {
-  fit <- lm(mpg ~ wt + cyl + am, data = mt)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  out <- spicy:::apply_p_adjust(ex$coefs, "none")
-  expect_identical(out, ex$coefs)
+mk_frame_coefs <- function(formula, model_id = "M1", data = mt, ...) {
+  fit <- lm(formula, data = data)
+  spicy:::as_regression_frame(fit, model_id = model_id, ...)$coefs
+}
+
+test_that("apply_p_adjust_to_frame_coefs — 'none' returns input unchanged", {
+  coefs <- mk_frame_coefs(mpg ~ wt + cyl + am)
+  out <- spicy:::apply_p_adjust_to_frame_coefs(coefs, "none")
+  expect_identical(out, coefs)
 })
 
-test_that("apply_p_adjust — empty / NULL inputs return unchanged", {
+test_that("apply_p_adjust_to_frame_coefs — empty / NULL inputs return unchanged", {
+  empty <- mk_frame_coefs(mpg ~ wt + cyl + am)[0, ]
   expect_identical(
-    spicy:::apply_p_adjust(spicy:::empty_coefs_long(), "holm"),
-    spicy:::empty_coefs_long()
+    spicy:::apply_p_adjust_to_frame_coefs(empty, "holm"),
+    empty
   )
-  expect_null(spicy:::apply_p_adjust(NULL, "holm"))
+  expect_null(spicy:::apply_p_adjust_to_frame_coefs(NULL, "holm"))
 })
 
-test_that("apply_p_adjust — bonferroni multiplies p by family size", {
-  fit <- lm(mpg ~ wt + cyl + am, data = mt)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  raw <- ex$coefs
-  out <- spicy:::apply_p_adjust(raw, "bonferroni")
+test_that("apply_p_adjust_to_frame_coefs — bonferroni multiplies p by family size", {
+  raw <- mk_frame_coefs(mpg ~ wt + cyl + am)
+  out <- spicy:::apply_p_adjust_to_frame_coefs(raw, "bonferroni")
 
   # Family = B-rows, no intercept, no ref, no NA
-  fam <- raw$estimate_type == "B" & !raw$is_intercept &
-    !raw$is_reference & !is.na(raw$p_value)
+  fam <- raw$estimate_type == "B" &
+    raw$term != "(Intercept)" &
+    !raw$is_ref &
+    !is.na(raw$p_value)
   m <- sum(fam)
   expect_equal(out$p_value[fam],
                pmin(1, raw$p_value[fam] * m),
                tolerance = 1e-12)
   # Intercept and reference rows untouched
-  expect_equal(out$p_value[raw$is_intercept],
-               raw$p_value[raw$is_intercept])
-  expect_equal(out$p_value[raw$is_reference],
-               raw$p_value[raw$is_reference])
+  intercept_mask <- raw$term == "(Intercept)"
+  expect_equal(out$p_value[intercept_mask],
+               raw$p_value[intercept_mask])
+  expect_equal(out$p_value[raw$is_ref],
+               raw$p_value[raw$is_ref])
 })
 
-test_that("apply_p_adjust — holm respects monotonicity within family", {
-  fit <- lm(mpg ~ wt + cyl + am + hp + disp, data = mtcars)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  out <- spicy:::apply_p_adjust(ex$coefs, "holm")
-  fam <- out$estimate_type == "B" & !out$is_intercept & !out$is_reference
-  # Holm is monotone non-decreasing when p sorted ascending
-  p_sorted <- sort(ex$coefs$p_value[fam])
+test_that("apply_p_adjust_to_frame_coefs — holm respects monotonicity within family", {
+  raw <- mk_frame_coefs(mpg ~ wt + cyl + am + hp + disp, data = mtcars)
+  out <- spicy:::apply_p_adjust_to_frame_coefs(raw, "holm")
+  fam <- out$estimate_type == "B" &
+    out$term != "(Intercept)" & !out$is_ref
+  p_sorted <- sort(raw$p_value[fam])
   adj_sorted <- stats::p.adjust(p_sorted, method = "holm")
   expect_true(all(diff(adj_sorted) >= 0))
 })
 
-test_that("apply_p_adjust — adjusts B and AME independently", {
+test_that("apply_p_adjust_to_frame_coefs — adjusts B and AME independently", {
   skip_if_not_installed("marginaleffects")
-  fit <- lm(mpg ~ wt + cyl + am, data = mt)
-  ex <- spicy:::extract_lm_phase1(
-    fit, model_id = "M1",
-    show_columns = c("b", "se", "p", "ame")
-  )
-  raw <- ex$coefs
-  out <- spicy:::apply_p_adjust(raw, "bonferroni")
+  raw <- mk_frame_coefs(mpg ~ wt + cyl + am,
+                        show_columns = c("b", "se", "p", "ame"))
+  out <- spicy:::apply_p_adjust_to_frame_coefs(raw, "bonferroni")
 
   # B family
-  b_fam <- raw$estimate_type == "B" & !raw$is_intercept & !raw$is_reference
+  b_fam <- raw$estimate_type == "B" &
+    raw$term != "(Intercept)" & !raw$is_ref
   m_b <- sum(b_fam & !is.na(raw$p_value))
-  # AME family (independent)
-  a_fam <- raw$estimate_type == "AME" & !raw$is_intercept & !raw$is_reference
+  # AME family (independent). The legacy used "AME" (uppercase); the
+  # schema validator accepts both "AME" and "ame" during the strangler
+  # phase. Filter on either token.
+  a_fam <- raw$estimate_type %in% c("AME", "ame") &
+    raw$term != "(Intercept)" & !raw$is_ref
   m_a <- sum(a_fam & !is.na(raw$p_value))
 
-  # Each family adjusted with its own m
   expect_equal(out$p_value[b_fam & !is.na(raw$p_value)],
                pmin(1, raw$p_value[b_fam & !is.na(raw$p_value)] * m_b),
                tolerance = 1e-12)
@@ -86,12 +92,17 @@ test_that("apply_p_adjust — adjusts B and AME independently", {
 
 # ============================================================================
 # apply_keep_drop_filter — direct unit tests
+# Phase 0c C5: aligned object now produced by align_frames(); the
+# filter consumes the same aligned shape (legacy column names preserved
+# inside the aligned object as an internal contract).
 # ============================================================================
 
 mk_aligned_for_filter <- function() {
-  fit <- lm(mpg ~ wt + cyl + am + hp, data = mt)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  spicy:::align_extracts(list(ex))
+  fr <- list(spicy:::as_regression_frame(
+    lm(mpg ~ wt + cyl + am + hp, data = mt),
+    model_id = "M1"
+  ))
+  spicy:::align_frames(fr, model_ids = "M1")
 }
 
 test_that("apply_keep_drop_filter — NULL/NULL returns input unchanged", {
@@ -118,7 +129,6 @@ test_that("apply_keep_drop_filter — keep '^cyl' grabs the whole factor group",
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = "^cyl")
   surviving <- unique(out$coefs_aligned$term)
-  # cyl4 (ref) + cyl6 + cyl8 all match
   expect_true(all(c("cyl4", "cyl6", "cyl8") %in% surviving))
   expect_false("wt" %in% surviving)
 })
@@ -150,6 +160,8 @@ test_that("apply_keep_drop_filter — factor_ref_levels cleaned when factor full
 
 # ============================================================================
 # table_regression — end-to-end with p_adjust + keep + drop
+# (Unchanged — these tests exercise the full pipeline regardless of
+# whether the internal path is legacy or frame-based.)
 # ============================================================================
 
 test_that("table_regression — p_adjust = 'bonferroni' multiplies p, footer notes it", {
@@ -158,7 +170,6 @@ test_that("table_regression — p_adjust = 'bonferroni' multiplies p, footer not
   adj <- table_regression(fit, p_adjust = "bonferroni")
   td_raw <- broom::tidy(raw)
   td_adj <- broom::tidy(adj)
-  # Non-intercept, non-NA p-values: bonferroni multiplies by m
   m <- nrow(td_raw[td_raw$estimate_type == "B" &
                      !td_raw$is_intercept &
                      !is.na(td_raw$p.value), ])
@@ -187,16 +198,14 @@ test_that("table_regression — keep filter shows only matching coefs", {
   out <- table_regression(fit, keep = "^wt$")
   surviving_terms <- broom::tidy(out)$term
   expect_setequal(surviving_terms, "wt")
-  # Variable column reflects the filter
   expect_false(any(grepl("cyl|am|hp", out$Variable)))
 })
 
 test_that("table_regression — drop filter hides matching coefs", {
   fit <- lm(mpg ~ wt + cyl + am + hp, data = mt)
   out <- table_regression(fit, drop = "^cyl")
-  expect_false(any(grepl("^  [468]$", out$Variable)))   # no cyl levels
-  expect_false("cyl:" %in% out$Variable)                 # no factor header
-  # Other coefs survive
+  expect_false(any(grepl("^  [468]$", out$Variable)))
+  expect_false("cyl:" %in% out$Variable)
   expect_true("wt" %in% out$Variable)
   expect_true("am" %in% out$Variable)
 })
@@ -210,15 +219,10 @@ test_that("table_regression — keep and drop are mutually exclusive", {
 })
 
 test_that("table_regression — p_adjust runs BEFORE keep filter (full family)", {
-  # The family should be all 4 non-intercept coefs even though keep
-  # restricts the displayed set to 1.
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- table_regression(fit, p_adjust = "bonferroni", keep = "^wt$")
   td <- broom::tidy(out)
-  # Only wt row is displayed
   expect_equal(unique(td$term), "wt")
-  # But its adjusted p-value reflects m = 4 (wt + cyl6 + cyl8 + am),
-  # not m = 1
   raw <- table_regression(fit)
   td_raw <- broom::tidy(raw)
   raw_p_wt <- td_raw$p.value[td_raw$term == "wt" &

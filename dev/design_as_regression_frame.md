@@ -826,8 +826,8 @@ output):
 | C2.c | 4 coefs-touching footer builders (p_adjust, polynomial, reference_categories, standardized_caveat) | `4ffe5ca` | +34 | 4083 / 0 / 8 |
 | C2.last | Flip `build_regression_footer()` dispatcher to the frame side | `f3bcfa4` | — | 4083 / 0 / 8 |
 | C3 | `align_extracts()` -> `align_frames()` + `attach_nested_stats_to_frames()` + `apply_p_adjust_to_frame_coefs()` | `4112bec` | +579 | 4662 / 0 / 8 |
-| C4 | `build_structured_body()` (R/regression_structured.R) | — | TBD | ~1000 LoC, high risk |
-| C5 | Delete `.frame_to_legacy_extract()` + the 12 legacy footer builders + the legacy alignment + legacy p_adjust + decide on `extract_lm_phase1()` retention | — | TBD | ~500 LoC, low risk |
+| C4 | (**dropped** — body builder consumes aligned object whose internal column naming is implementation detail; rename deferred to optional Phase 0d) | n/a | n/a | n/a |
+| C5 | Delete `.frame_to_legacy_extract()`, legacy title + 12 legacy footer builders + legacy dispatcher, `align_extracts()`, `attach_nested_stats_to_extracts()`, legacy `apply_p_adjust()`. Migrate / delete dependent tests. | TBD | -1006 (net) | 3656 / 0 / 8 |
 
 What is DONE in Phase 0c after 2026-06-11 session 3:
 
