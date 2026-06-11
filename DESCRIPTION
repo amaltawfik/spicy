@@ -54,6 +54,7 @@ Suggests:
     rstanarm (>= 2.21),
     brms (>= 2.20),
     survey (>= 4.4),
+    survival (>= 3.5),
     officer,
     openxlsx2,
     parameters,

@@ -953,6 +953,7 @@ extends the polymorphic accessors in `R/regression_extract.R`
 | 3 | `stanreg`, `brmsfit` | `R/regression_frame_stan.R` | `test-regression_frame_stan.R` | ~65 | `posterior (>= 1.5.0)`, `rstanarm (>= 2.21)`, `brms (>= 2.20)` |
 | 4a | `glmmTMB` | `R/regression_frame_glmmTMB.R` | `test-regression_frame_glmmTMB.R` | 74 | `glmmTMB (>= 1.1.7)` |
 | 4b | `lme`, `gls` | `R/regression_frame_nlme.R` | `test-regression_frame_nlme.R` | 82 | `nlme (>= 3.1-160)` |
+| 5a | `coxph`, `survreg` | `R/regression_frame_survival.R` | `test-regression_frame_survival.R` | 83 | `survival (>= 3.5)` |
 
 ### Phase 4a — glmmTMB (2026-06-11)
 
@@ -1043,9 +1044,63 @@ Implementation choices:
 - **Title prefixes:** `"Linear mixed-effects regression (nlme)"`
   for `lme`, `"Generalised least squares (nlme)"` for `gls`.
 
-Phase 5+ covers survival (`coxph`, `survreg`), ordinal
-(`polr`, `clm`), multinomial (`multinom`), and robust families
-per the post-0.12 roadmap.
+### Phase 5a — survival (2026-06-11)
+
+`as_regression_frame.coxph()` covers Cox proportional hazards fits;
+`as_regression_frame.survreg()` covers parametric AFT (Weibull,
+lognormal, loglogistic, exponential, Gaussian, logistic, t).
+
+Implementation choices:
+
+- **coxph has no intercept** — the baseline hazard absorbs it. The
+  coefs table simply omits the `(Intercept)` row; `parent_var` /
+  `label` start at the first covariate.
+- **coxph: `nobs(fit)` returns the number of EVENTS**, not subjects.
+  `info$n_obs` uses `fit$n` (total subjects); `info$extras$n_events`
+  exposes `fit$nevent` for the renderer. This distinction matters
+  for footer reporting ("n = 228 subjects, 165 events").
+- **`stats::family(fit)` errors** for both classes. Hardcoded:
+  `coxph -> list(family = "cox", link = "log")` (the partial-
+  likelihood convention) and `survreg -> list(family = fit$dist,
+  link = link)` where `link = "log"` for log-scale AFT dists
+  (weibull, lognormal, loglogistic, exponential) and `"identity"`
+  for `dist = "gaussian"`.
+- **survreg: `Log(scale)` row excluded from coefs.** The scale
+  parameter is a nuisance fit parameter that appears in
+  `summary(fit)$table` (so users see it in the engine's default
+  printout) but is not a regression coefficient. The frame stashes
+  `fit$scale` in `info$extras$scale_parameter` and
+  `fit$dist` in `info$extras$distribution` so a future renderer
+  can surface them in the footer.
+- **DV display name:** `deparse1(stats::formula(fit)[[2L]])` returns
+  the full LHS expression (`"Surv(time, status)"` or
+  `"survival::Surv(time, status)"`, depending on what the user
+  wrote). `all.vars(formula(fit))[1L]` would return just `"time"`,
+  which is wrong for survival fits.
+- **coxph fit-stats:** `summary(fit)$concordance` (C + SE) goes
+  into `info$extras$concordance`. `summary(fit)$rsq` (Cox-Snell
+  pseudo-R^2 + its theoretical maximum) goes into
+  `fit_stats$pseudo_r2$coxsnell` / `$max_coxsnell`.
+- **Wald-z uniformly** for both classes (`test_type = "z"`,
+  `df = Inf`, `ci_method = "wald"`).
+- **Exponentiate is the canonical report:** TRUE for coxph
+  (hazard ratios) and for all log-scale survreg dists (time
+  ratios). FALSE for `dist = "gaussian"` (identity link).
+- **Title prefixes:** `"Cox proportional hazards regression"` for
+  coxph; `"<Dist> AFT regression"` for survreg where `<Dist>` is
+  the title-cased distribution name (Weibull, Log-normal,
+  Log-logistic, ...).
+
+No new polymorphic-accessor branches were needed: for both classes
+`fit$xlevels` is sometimes NULL (coxph) and sometimes populated
+(survreg), but the generic `.spicy_get_xlevels()` fallback
+(`terms() + model.frame()`) works in both cases. `stats::coef(fit)`
+returns the fixed-effect names directly (survreg already excludes
+`Log(scale)` from coef, so no manual subset is needed there).
+
+Phase 5b will add ordinal (`polr`, `clm`) and multinomial
+(`multinom`) — these need a new `outcome_level` semantics in the
+coefs table for proportional-odds and per-outcome-level coefs.
 
 ---
 
