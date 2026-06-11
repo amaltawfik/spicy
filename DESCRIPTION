@@ -55,6 +55,7 @@ Suggests:
     nlme (>= 3.1-160),
     nnet,
     ordinal (>= 2022.11),
+    pscl (>= 1.5),
     posterior (>= 1.5.0),
     rstanarm (>= 2.21),
     brms (>= 2.20),

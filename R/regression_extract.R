@@ -685,6 +685,13 @@ detect_factor_term_meta <- function(fit) {
     # predictor coefficients only.
     return(names(fit$beta))
   }
+  if (inherits(fit, c("hurdle", "zeroinfl"))) {
+    # pscl::hurdle / zeroinfl: stats::coef(fit) returns names prefixed
+    # with "count_" / "zero_". The unprefixed count-component names
+    # are what live in the frame's coefs table; surface those for
+    # factor-meta matching.
+    return(names(stats::coef(fit, model = "count")))
+  }
   if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
     draws_vars <- posterior::variables(posterior::as_draws_array(fit))
     b_names <- grep("^b_", draws_vars, value = TRUE)
