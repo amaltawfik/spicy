@@ -241,6 +241,36 @@ attach_nested_stats_to_extracts <- function(extracts, fits) {
 }
 
 
+# Frame-aware sibling of attach_nested_stats_to_extracts(). Injects the
+# same change tokens (r2_change, adj_r2_change, f_change, ..., p_change)
+# into each `frames[[i]]$info$fit_stats` list. After this call, the
+# augmented list is consumed by:
+#   * .compact_fit_stats_for_legacy() (which carries the keys through
+#     to the legacy-shaped data.frame consumed by the body builder
+#     until C4);
+#   * the frame's downstream consumers once C4 lands.
+#
+# Phase 0c sub-step C3.
+attach_nested_stats_to_frames <- function(frames, fits) {
+  if (!isTRUE(length(fits) >= 2L)) return(frames)
+  comp <- compute_nested_comparisons(fits)
+  if (nrow(comp) == 0L) return(frames)
+  na_row <- comp[1L, , drop = FALSE]
+  na_row[1L, ] <- NA
+  change_cols <- setdiff(names(comp), "comparison")
+  for (i in seq_along(frames)) {
+    fs <- frames[[i]]$info$fit_stats
+    if (is.null(fs)) next                                          # nocov
+    pair_row <- if (i == 1L) na_row else comp[i - 1L, , drop = FALSE]
+    for (col in change_cols) {
+      fs[[col]] <- pair_row[[col]][1L]
+    }
+    frames[[i]]$info$fit_stats <- fs
+  }
+  frames
+}
+
+
 # ---- Default tokens injected when nested = TRUE -------------------------
 
 # Class-aware default change-token vector. Plugged into `show_fit_stats`

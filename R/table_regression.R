@@ -1236,18 +1236,18 @@ table_regression <- function(
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept
     # and reference rows excluded), not just the displayed subset.
-    # apply_p_adjust() reads the legacy column names (is_intercept,
-    # is_reference); the body builder consumes the result via
-    # extracts[[i]]$coefs until C4 flips it to the frame side. At
-    # that point a frame-aware sibling of apply_p_adjust() will write
-    # adjusted p_values back into frames[[i]]$coefs. For C2.last
-    # (footer flip only), the frame's p_value column is read only
-    # for the m = K count by build_p_adjust_footer_block_from_frames();
-    # p.adjust() never turns a non-NA p into NA, so the count is
-    # invariant under p_adjust.
+    # Phase 0c sub-step C3: align_frames() now reads p-values from
+    # the frame side, so we apply the same adjustment to the frame
+    # coefs via apply_p_adjust_to_frame_coefs(). The legacy
+    # apply_p_adjust() on extracts[[i]]$coefs is kept for now (it is
+    # dead code in the table_regression() path after C3, but the
+    # extracts list is still built by the orchestrator for legacy
+    # debug / inspection; C5 cleans it up).
     if (!identical(p_adjust, "none")) {
       extracts[[i]]$coefs <- apply_p_adjust(extracts[[i]]$coefs,
                                             p_adjust)
+      frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
+        frames[[i]]$coefs, p_adjust)
     }
   }
 
@@ -1255,17 +1255,26 @@ table_regression <- function(
   emit_standardized_caveat_if_needed(models, standardized)
 
   # Nested-comparison change stats (APA Table 7.13 in-table rows).
-  # Augments each `extracts[[i]]$fit_stats` row with `r2_change`,
+  # Augments each `frames[[i]]$info$fit_stats` list with `r2_change`,
   # `f_change`, `p_change`, etc. (NA for Model 1). MUST run BEFORE
-  # align_extracts() because align_extracts() rbinds the per-model
+  # align_frames() because align_frames() rbinds the per-model
   # fit_stats and the column schemas have to be uniform.
+  # Phase 0c sub-step C3: attach to frames; the legacy path
+  # (attach_nested_stats_to_extracts) is no longer called because
+  # align_frames() reads from frames directly.
   if (isTRUE(nested)) {
-    extracts <- attach_nested_stats_to_extracts(extracts, models)
+    frames <- attach_nested_stats_to_frames(frames, models)
   }
 
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
-  aligned <- align_extracts(
-    extracts,
+  # Phase 0c sub-step C3: alignment now consumes frames directly.
+  # align_frames() produces an aligned object SHAPE-IDENTICAL to
+  # align_extracts() (proven by test-renderer_migration_align.R), so
+  # the body builder (still consuming the legacy-shape aligned object
+  # until C4) is undisturbed.
+  aligned <- align_frames(
+    frames,
+    model_ids = model_ids,
     show_intercept = show_intercept,
     intercept_position = intercept_position,
     reference_style = reference_style

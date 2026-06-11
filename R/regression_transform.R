@@ -45,6 +45,38 @@ apply_p_adjust <- function(coefs, method) {
 }
 
 
+# Frame-aware sibling of apply_p_adjust(). Operates on the frame's
+# coefs tibble whose column naming differs from the legacy long coefs:
+#   is_intercept -> derived (term == "(Intercept)")
+#   is_reference -> is_ref
+# The estimate_type / p_value column names are identical in both
+# schemas, so the per-family adjustment loop is unchanged.
+#
+# Phase 0c sub-step C3: align_frames() now reads p-values from the
+# frame side, so the orchestrator must adjust the frame coefs (not
+# just the legacy extract coefs) for the displayed values to reflect
+# the chosen p_adjust method.
+apply_p_adjust_to_frame_coefs <- function(coefs, method) {
+  if (identical(method, "none") || is.null(method)) return(coefs)
+  if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
+
+  family_mask <- coefs$term != "(Intercept)" &
+                   !coefs$is_ref &
+                   !is.na(coefs$p_value)
+
+  if (!any(family_mask)) return(coefs)
+
+  for (et in unique(coefs$estimate_type[family_mask])) {
+    rows <- which(family_mask & coefs$estimate_type == et)
+    if (length(rows) == 0L) next
+    coefs$p_value[rows] <- stats::p.adjust(
+      coefs$p_value[rows], method = method
+    )
+  }
+  coefs
+}
+
+
 # ---- keep / drop filter ---------------------------------------------------
 
 # Filter the aligned long format by regular expression match on the

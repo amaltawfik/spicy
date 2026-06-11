@@ -143,6 +143,173 @@ compute_canonical_term_order <- function(extracts) {
 }
 
 
+# Frame-aware sibling of compute_canonical_term_order(). Reads
+# frames[[i]]$coefs$term instead of extracts[[i]]$coefs$term. The
+# `term` column name is identical in both schemas, so the body of
+# the loop is the same; only the input type differs.
+compute_canonical_term_order_from_frames <- function(frames) {
+  base <- character(0)
+  for (f in frames) {
+    new_terms <- setdiff(unique(f$coefs$term), base)
+    base <- c(base, new_terms)
+  }
+  base
+}
+
+
+# Frame-aware sibling of align_extracts(). Takes a list of frames plus
+# a parallel `model_ids` vector (frames do not carry model_id; it lives
+# in the orchestrator) and produces an aligned object SHAPE-IDENTICAL
+# to align_extracts()'s return value, so the downstream body builder
+# can consume it unchanged until C4 lands.
+#
+# Internal strategy:
+#   1. Build the long-format coefs data.frame by stacking each frame's
+#      coefs with the legacy column names. The Phase 0b sub-step 2
+#      reshape map applies in reverse:
+#        se               <- std_error
+#        ci_low           <- ci_lower
+#        ci_high          <- ci_upper
+#        is_reference     <- is_ref
+#        is_intercept     <- derived: term == "(Intercept)"
+#        is_singular      <- derived: term %in% info$extras$singular_terms
+#        factor_term      <- NA when parent_var == term, else parent_var
+#        factor_level     <- NA when label      == term, else label
+#        test_type        <- coefs$test_type (preserved per row)
+#        model_id         <- model_ids[i]   (injected)
+#        outcome          <- frames[[i]]$info$dv  (injected)
+#   2. Build the fit_stats data.frame by compacting each frame's
+#      fit_stats list via .compact_fit_stats_for_legacy().
+#   3. The remaining alignment logic (factor_ref_levels capture,
+#      compute_canonical_term_order, group_factor_terms,
+#      reference-style filter, order_idx assignment, outcome_labels
+#      and exp_headers vectors) is the same as align_extracts(), just
+#      reading from frames for the input-time vapply.
+#
+# Phase 0c sub-step C3.
+align_frames <- function(
+    frames,
+    model_ids,
+    show_intercept = TRUE,
+    intercept_position = c("first", "last"),
+    reference_style = c("row", "annotation", "footer", "none")) {
+  intercept_position <- match.arg(intercept_position)
+  reference_style <- match.arg(reference_style)
+
+  if (length(frames) == 0L) {
+    return(list(
+      coefs_aligned = empty_coefs_aligned(),
+      fit_stats_aligned = empty_fit_stats_aligned(),
+      term_order = character(0),
+      factor_ref_levels = setNames(character(0), character(0)),
+      n_models = 0L
+    ))
+  }
+
+  # ---- Build legacy-shape long coefs from frames ------------------------
+  coefs_long <- do.call(rbind, lapply(seq_along(frames), function(i) {
+    cf <- frames[[i]]$coefs
+    singular_terms <- frames[[i]]$info$extras$singular_terms %||% character(0)
+    test_type_col <- if (!is.null(cf$test_type)) {
+      as.character(cf$test_type)
+    } else {
+      rep(NA_character_, nrow(cf))
+    }
+    data.frame(
+      model_id         = rep(model_ids[i], nrow(cf)),
+      outcome          = rep(frames[[i]]$info$dv, nrow(cf)),
+      term             = cf$term,
+      estimate_type    = cf$estimate_type,
+      estimate         = cf$estimate,
+      se               = cf$std_error,
+      ci_low           = cf$ci_lower,
+      ci_high          = cf$ci_upper,
+      statistic        = cf$statistic,
+      df               = cf$df,
+      p_value          = cf$p_value,
+      test_type        = test_type_col,
+      is_singular      = cf$term %in% singular_terms,
+      is_intercept     = cf$term == "(Intercept)",
+      is_reference     = cf$is_ref,
+      factor_term      = ifelse(cf$parent_var == cf$term,
+                                NA_character_, cf$parent_var),
+      factor_level     = ifelse(cf$label == cf$term,
+                                NA_character_, cf$label),
+      factor_level_pos = as.integer(cf$factor_level_pos),
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  # ---- Build legacy-shape fit_stats from frames -------------------------
+  fit_stats <- do.call(rbind, lapply(seq_along(frames), function(i) {
+    as.data.frame(
+      .compact_fit_stats_for_legacy(frames[[i]]$info$fit_stats,
+                                    model_ids[i],
+                                    frames[[i]]$info$dv),
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  # ---- Everything below mirrors align_extracts() ------------------------
+  ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
+  factor_ref_levels <- if (nrow(ref_rows_all) == 0L) {
+    setNames(character(0), character(0))
+  } else {
+    lvl_map <- ref_rows_all$factor_level
+    nms <- ref_rows_all$factor_term
+    keep <- !is.na(nms) & !duplicated(nms)
+    setNames(lvl_map[keep], nms[keep])
+  }
+
+  term_order <- compute_canonical_term_order_from_frames(frames)
+
+  if (!isTRUE(show_intercept)) {
+    term_order <- term_order[term_order != "(Intercept)"]
+    coefs_long <- coefs_long[coefs_long$term != "(Intercept)", , drop = FALSE]
+  } else if (identical(intercept_position, "last") &&
+             "(Intercept)" %in% term_order) {
+    term_order <- c(setdiff(term_order, "(Intercept)"), "(Intercept)")
+  }
+
+  term_order <- group_factor_terms(term_order, coefs_long)
+
+  if (!identical(reference_style, "row")) {
+    coefs_long <- coefs_long[!coefs_long$is_reference, , drop = FALSE]
+    term_order <- intersect(term_order, unique(coefs_long$term))
+  }
+
+  coefs_long$order_idx <- match(coefs_long$term, term_order)
+  coefs_long <- coefs_long[order(coefs_long$order_idx,
+                                  coefs_long$estimate_type,
+                                  coefs_long$model_id), , drop = FALSE]
+  rownames(coefs_long) <- NULL
+
+  outcome_labels_auto <- vapply(frames, function(f) {
+    f$info$dv_label %||% f$info$dv
+  }, character(1))
+
+  exp_headers_auto <- vapply(frames, function(f) {
+    if (isTRUE(f$info$extras$exp_applied)) {
+      f$info$extras$exp_header
+    } else {
+      NA_character_
+    }
+  }, character(1))
+  names(exp_headers_auto) <- model_ids
+
+  list(
+    coefs_aligned = coefs_long,
+    fit_stats_aligned = fit_stats,
+    term_order = term_order,
+    factor_ref_levels = factor_ref_levels,
+    outcome_labels_auto = outcome_labels_auto,
+    exp_headers_auto = exp_headers_auto,
+    model_ids = model_ids,
+    n_models = length(frames)
+  )
+}
+
+
 # Reorder a term sequence so that coefs sharing the same `factor_term`
 # stay contiguous (in factor-level order). Non-factor terms keep their
 # relative order. Reference rows of the group land first within their

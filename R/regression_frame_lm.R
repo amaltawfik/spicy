@@ -388,7 +388,11 @@ as_regression_frame.glm <- function(fit, ...) {
 # only the legacy-named scalar fields (drop the schema aliases and the
 # pseudo_r2 nested list we added in `.build_info()`).
 .compact_fit_stats_for_legacy <- function(fs, model_id, outcome) {
-  # Order matches the original `extract_fit_stats()` return.
+  # Order matches the original `extract_fit_stats()` return, with the
+  # nested-LRT change tokens appended at the end (Phase 0c C3:
+  # attach_nested_stats_to_frames() injects these into fs BEFORE
+  # compaction, so they need to be carried through to the legacy-
+  # shaped data.frame consumed by the body builder until C4).
   out <- list(
     model_id             = model_id,
     outcome              = outcome,
@@ -409,6 +413,17 @@ as_regression_frame.glm <- function(fit, ...) {
     deviance             = fs$deviance             %||% NA_real_,
     df_residual          = fs$df_residual          %||% NA_real_
   )
+  # Nested-LRT change tokens (present only when attach_nested_stats_*
+  # ran for this model). Included only when present in `fs` -- this
+  # mirrors the legacy extract_fit_stats() shape, which omits the
+  # change columns when nested = FALSE and adds them post-hoc when
+  # attach_nested_stats_to_extracts() runs.
+  change_keys <- c("r2_change", "adj_r2_change", "f_change", "f2_change",
+                   "lrt_change", "aic_change", "aicc_change",
+                   "bic_change", "deviance_change", "p_change")
+  for (k in change_keys) {
+    if (!is.null(fs[[k]])) out[[k]] <- fs[[k]]
+  }
   out
 }
 
