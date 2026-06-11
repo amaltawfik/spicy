@@ -83,9 +83,10 @@ as_regression_frame.default <- function(fit, ...) {
         sQuote(cls)
       ),
       "i" = paste0(
-        "Supported classes today: lm, glm. ",
-        "Mixed-effects (lmer, glmer), survey (svyglm), and Bayesian ",
-        "(stanreg, brmsfit) are on the 2026-2027 roadmap."
+        "Supported classes today: lm, glm, lmerMod / lmerModLmerTest, glmerMod, ",
+        "glmmTMB, svyglm, stanreg, brmsfit. ",
+        "Other glmmTMB-adjacent and survival classes (nlme, coxph, polr, ...) ",
+        "are on the 2026-2027 roadmap."
       ),
       "i" = paste0(
         "If you would like to see support for ", sQuote(cls), ", ",

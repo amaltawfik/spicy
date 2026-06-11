@@ -640,6 +640,13 @@ detect_factor_term_meta <- function(fit) {
   if (inherits(fit, "merMod")) {
     return(names(lme4::fixef(fit)))
   }
+  if (inherits(fit, "glmmTMB")) {
+    # glmmTMB::fixef() returns a structured list with $cond/$zi/$disp
+    # named numeric vectors. The frame's `coefs` table covers the
+    # conditional component only; zi/disp coefficients live in
+    # info$extras for advanced consumers.
+    return(names(glmmTMB::fixef(fit)$cond))
+  }
   if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
     draws_vars <- posterior::variables(posterior::as_draws_array(fit))
     b_names <- grep("^b_", draws_vars, value = TRUE)

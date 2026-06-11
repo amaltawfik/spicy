@@ -937,6 +937,71 @@ cleaner once the renderer migration is done.
 
 ---
 
+## 15. Phase 1 - 4 method delivery (2026-06)
+
+Once the renderer migration was complete (Phase 0c through C5),
+new model classes were added one Phase at a time. Each Phase
+ships a single S3 method file plus a dedicated test file, and
+extends the polymorphic accessors in `R/regression_extract.R`
+(`.spicy_fixed_coef_names`, `.spicy_get_xlevels`,
+`.spicy_get_terms`) when the class needs class-specific paths.
+
+| Phase | Classes | Method file | Test file | Tests | DESCRIPTION Suggests |
+|---|---|---|---|---|---|
+| 1 | `lmerMod`, `lmerModLmerTest`, `glmerMod` | `R/regression_frame_merMod.R` | `test-regression_frame_merMod.R` | 65 | `lme4 (>= 1.1-35)`, `lmerTest (>= 3.1-3)` |
+| 2 | `svyglm` | `R/regression_frame_svyglm.R` | `test-regression_frame_svyglm.R` | 65 | `survey (>= 4.4)` |
+| 3 | `stanreg`, `brmsfit` | `R/regression_frame_stan.R` | `test-regression_frame_stan.R` | ~65 | `posterior (>= 1.5.0)`, `rstanarm (>= 2.21)`, `brms (>= 2.20)` |
+| 4a | `glmmTMB` | `R/regression_frame_glmmTMB.R` | `test-regression_frame_glmmTMB.R` | 74 | `glmmTMB (>= 1.1.7)` |
+
+### Phase 4a — glmmTMB (2026-06-11)
+
+`as_regression_frame.glmmTMB()` covers the **conditional component**
+of a glmmTMB fit (the "main" linear predictor). Zero-inflation and
+dispersion fixed-effect coefficients are stashed in
+`info$extras$zi_coefs` / `info$extras$disp_coefs` for downstream
+consumers; the `coefs` table itself stays focused on the
+conditional model. This matches `parameters::model_parameters(fit,
+component = "conditional")` and the default `gtsummary` /
+`modelsummary` behaviour for glmmTMB.
+
+Implementation choices:
+
+- **Inference: Wald z uniformly.** glmmTMB does not compute
+  Satterthwaite df even for Gaussian fits; `summary(fit)$ddf =
+  "asymptotic"` is the engine convention. The frame therefore
+  always carries `test_type = "z"`, `df = Inf`, and `ci_method =
+  "wald"`.
+- **vcov accessor:** `vcov(fit)$cond` returns a `matrix`-classed
+  list element (cond / zi / disp); we take the conditional block
+  only.
+- **fixef accessor:** `glmmTMB::fixef(fit)$cond` (a named numeric
+  vector). `stats::coef(fit)` would return random-effect-adjusted
+  per-group coefficients, which is NOT what the coefs table
+  represents. Polymorphic accessor `.spicy_fixed_coef_names()`
+  extended with a `glmmTMB` branch.
+- **`ngrps` surrogate:** glmmTMB does not export `ngrps()`. Per-
+  grouping-factor counts come from `summary(fit)$ngrps$cond` (a
+  named integer vector).
+- **Random effects:** `glmmTMB::VarCorr(fit)$cond` mirrors lme4's
+  layout (named list of vcov matrices per grouping factor).
+  Residual variance is appended only for Gaussian-identity fits
+  (`stats::sigma()` returns NaN for fixed-dispersion families).
+- **ICC:** computed only for Gaussian-identity single-random-
+  intercept fits, reusing `.merMod_icc()`. For other families
+  return NA and let downstream code defer to `performance::icc`
+  if a user needs the latent / mixed variants.
+- **Title prefix:** `"Linear mixed-effects regression (glmmTMB)"`
+  for Gaussian-identity, family-specific otherwise. `(zero-
+  inflated)` suffix is appended when `info$extras$has_zi = TRUE`.
+- **`info$class = "glmmTMB"`** — single-class dispatch, no
+  parent-class normalisation needed.
+
+Phase 4b (`nlme::lme` + `nlme::gls`) is the next mixed-effects
+target; Phase 5+ covers survival / ordinal / robust families per
+the post-0.12 roadmap.
+
+---
+
 ## 13. References used to settle open questions
 
 ### Q1 — Bayesian default table layout
