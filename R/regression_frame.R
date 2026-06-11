@@ -87,7 +87,7 @@ as_regression_frame.default <- function(fit, ...) {
         "glmmTMB, lme (nlme), gls (nlme), coxph (survival), survreg (survival), ",
         "polr / glm.nb / rlm (MASS), clm (ordinal), multinom (nnet), ",
         "lm_robust / iv_robust (estimatr), fixest (fixest), ",
-        "hurdle / zeroinfl (pscl), ",
+        "hurdle / zeroinfl (pscl), rq (quantreg), ivreg / tobit (AER), ",
         "svyglm, stanreg, brmsfit. ",
         "Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
         "are on the 2026-2027 roadmap."

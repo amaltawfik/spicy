@@ -1,0 +1,448 @@
+# ---------------------------------------------------------------------------
+# Phase 6e: as_regression_frame() methods for quantreg + AER.
+#
+# Three model classes:
+#   * rq    -- quantreg::rq() single-quantile quantile regression.
+#              (Multi-tau "rqs" returns matrix coefs; deferred.)
+#   * ivreg -- AER::ivreg() 2SLS instrumental variables. Distinct from
+#              estimatr::iv_robust (Phase 6a) -- AER's variant is the
+#              classical econometrics IV.
+#   * tobit -- AER::tobit() censored regression. Inherits from survreg
+#              but needs an override so the title says "Tobit" instead
+#              of "Weibull AFT" and the censoring fields surface.
+# ---------------------------------------------------------------------------
+
+
+# ============================================================================
+# quantreg::rq
+# ============================================================================
+
+#' `as_regression_frame()` method for `rq` fits (quantreg::rq()).
+#'
+#' @keywords internal
+#' @noRd
+#' @export
+as_regression_frame.rq <- function(fit,
+                                    vcov = "model",
+                                    vcov_label = NULL,
+                                    ci_level = 0.95,
+                                    ci_method = NULL,
+                                    model_id = "M1",
+                                    se = "iid",
+                                    ...) {
+  .check_quantreg_available()
+
+  coefs <- .rq_coefs(fit, ci_level = ci_level, se = se)
+  info  <- .rq_info(fit,
+                    vcov_kind  = vcov,
+                    vcov_label = vcov_label,
+                    ci_level   = ci_level,
+                    ci_method  = ci_method,
+                    model_id   = model_id,
+                    se         = se)
+
+  frame <- list(coefs = coefs, info = info)
+  attr(frame, "spicy_frame_version") <- spicy_frame_version()
+  attr(frame, "fit") <- fit
+  frame
+}
+
+
+.check_quantreg_available <- function() {
+  if (!spicy_pkg_available("quantreg")) {
+    spicy_abort(
+      c(
+        "Cannot extract a regression frame from an rq fit without `quantreg`.",
+        "i" = "Install quantreg: `install.packages(\"quantreg\")`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+}
+
+
+.rq_coefs <- function(fit, ci_level, se) {
+  cf <- stats::coef(fit)
+  est <- unname(cf)
+  nm  <- names(cf)
+
+  sm <- summary(fit, se = se)$coefficients
+  # summary.rq returns a matrix with columns "Value Std. Error t value Pr(>|t|)"
+  # for parametric SE methods; the rank-inversion path returns CIs instead.
+  if (!is.null(sm) && all(c("Std. Error", "t value", "Pr(>|t|)") %in% colnames(sm))) {
+    se_vec  <- unname(sm[nm, "Std. Error"])
+    stat    <- unname(sm[nm, "t value"])
+    p_value <- unname(sm[nm, "Pr(>|t|)"])
+  } else {                                                              # nocov start
+    # Rank-inversion CIs path -- compute SE from CI half-width / z_crit.
+    se_vec  <- rep(NA_real_, length(est))
+    stat    <- rep(NA_real_, length(est))
+    p_value <- rep(NA_real_, length(est))
+  }                                                                     # nocov end
+
+  # quantreg's df.residual(rq) returns numeric(0); n - p is the sensible
+  # asymptotic-t df.
+  n_obs <- as.integer(length(fit$residuals) %||% NA_integer_)
+  df_val <- as.numeric(n_obs - length(cf))
+  df <- rep(df_val, length(est))
+  t_crit <- stats::qt(0.5 + ci_level / 2, df = df_val)
+  ci_lower <- est - t_crit * se_vec
+  ci_upper <- est + t_crit * se_vec
+
+  factor_meta <- detect_factor_term_meta(fit)
+  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
+                character(1))
+  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+                character(1))
+  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+                integer(1))
+
+  parent_var <- ifelse(is.na(ft),  nm,  ft)
+  label      <- ifelse(is.na(lvl), nm, lvl)
+
+  coefs <- data.frame(
+    term             = nm,
+    parent_var       = parent_var,
+    label            = label,
+    factor_level_pos = as.integer(pos),
+    is_ref           = rep(FALSE, length(nm)),
+    estimate_type    = rep("B", length(nm)),
+    estimate         = est,
+    std_error        = se_vec,
+    df               = as.numeric(df),
+    statistic        = stat,
+    p_value          = p_value,
+    ci_lower         = ci_lower,
+    ci_upper         = ci_upper,
+    test_type        = rep("t", length(nm)),
+    stringsAsFactors = FALSE
+  )
+
+  ref_rows <- .qr_reference_rows(fit)
+  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  coefs
+}
+
+
+.rq_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
+                      model_id, se) {
+  dv <- all.vars(stats::formula(fit))[1L]
+  dv_label <- .extract_dv_label(fit, dv)
+
+  fam <- list(family = "gaussian", link = "identity")
+  if (is.null(ci_method)) ci_method <- "wald"
+  tau <- as.numeric(fit$tau %||% 0.5)
+
+  n_obs <- as.integer(length(fit$residuals) %||% NA_integer_)
+  fit_stats <- list(
+    r_squared      = NA_real_,
+    adj_r_squared  = NA_real_,
+    pseudo_r2      = NULL,
+    aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
+                              error = function(e) NA_real_),
+    deviance       = NA_real_,
+    sigma          = NA_real_,
+    nobs           = n_obs
+  )
+
+  supports <- list(
+    ame                 = TRUE,
+    partial_effect_size = FALSE,
+    classical_r2        = FALSE,
+    nested_lrt          = TRUE,
+    exponentiate        = FALSE,
+    standardise_refit   = TRUE
+  )
+
+  extras <- list(
+    cluster_name          = NULL,
+    use_ame_satterthwaite = FALSE,
+    has_singular          = FALSE,
+    singular_terms        = character(0),
+    has_weights           = FALSE,
+    weighted_n            = NA_real_,
+    title_prefix          = sprintf("Quantile regression (τ = %.2f)", tau),
+    family_info           = fam,
+    exp_applied           = FALSE,
+    exp_header            = NA_character_,
+    n_groups              = NULL,
+    tau                   = tau,
+    se_method             = se
+  )
+
+  list(
+    class          = "rq",
+    family         = fam,
+    dv             = dv,
+    dv_label       = dv_label,
+    n_obs          = n_obs,
+    n_groups       = NULL,
+    weights_kind   = "none",
+    random_effects = list(variance_components = data.frame(), icc = NA_real_),
+    fit_stats      = fit_stats,
+    vcov_kind      = vcov_kind,
+    vcov_label     = vcov_label %||% paste0("Quantile (", se, ")"),
+    ci_level       = as.numeric(ci_level),
+    ci_method      = ci_method,
+    supports       = supports,
+    extras         = extras
+  )
+}
+
+
+# ============================================================================
+# AER::ivreg
+# ============================================================================
+
+#' `as_regression_frame()` method for `ivreg` fits (AER::ivreg()).
+#'
+#' @keywords internal
+#' @noRd
+#' @export
+as_regression_frame.ivreg <- function(fit,
+                                       vcov = "model",
+                                       vcov_label = NULL,
+                                       ci_level = 0.95,
+                                       ci_method = NULL,
+                                       model_id = "M1",
+                                       ...) {
+  .check_AER_available()
+
+  coefs <- .ivreg_coefs(fit, ci_level = ci_level)
+  info  <- .ivreg_info(fit,
+                       vcov_kind  = vcov,
+                       vcov_label = vcov_label,
+                       ci_level   = ci_level,
+                       ci_method  = ci_method,
+                       model_id   = model_id)
+
+  frame <- list(coefs = coefs, info = info)
+  attr(frame, "spicy_frame_version") <- spicy_frame_version()
+  attr(frame, "fit") <- fit
+  frame
+}
+
+
+.check_AER_available <- function() {
+  if (!spicy_pkg_available("AER")) {
+    spicy_abort(
+      c(
+        "Cannot extract a regression frame from an AER fit without `AER`.",
+        "i" = "Install AER: `install.packages(\"AER\")`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+}
+
+
+.ivreg_coefs <- function(fit, ci_level) {
+  cf <- stats::coef(fit)
+  V <- as.matrix(stats::vcov(fit))
+  est <- unname(cf)
+  se  <- sqrt(diag(V))
+  nm  <- names(cf)
+
+  sm <- summary(fit)$coefficients
+  if (!is.null(sm) && all(c("t value", "Pr(>|t|)") %in% colnames(sm))) {
+    stat    <- unname(sm[nm, "t value"])
+    p_value <- unname(sm[nm, "Pr(>|t|)"])
+  } else {
+    stat    <- est / se                                                # nocov
+    p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
+  }
+  dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
+  if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+  df <- rep(as.numeric(dfr), length(est))
+  t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
+  ci_lower <- est - t_crit * se
+  ci_upper <- est + t_crit * se
+
+  factor_meta <- detect_factor_term_meta(fit)
+  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
+                character(1))
+  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+                character(1))
+  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+                integer(1))
+
+  parent_var <- ifelse(is.na(ft),  nm,  ft)
+  label      <- ifelse(is.na(lvl), nm, lvl)
+
+  coefs <- data.frame(
+    term             = nm,
+    parent_var       = parent_var,
+    label            = label,
+    factor_level_pos = as.integer(pos),
+    is_ref           = rep(FALSE, length(nm)),
+    estimate_type    = rep("B", length(nm)),
+    estimate         = est,
+    std_error        = se,
+    df               = as.numeric(df),
+    statistic        = stat,
+    p_value          = p_value,
+    ci_lower         = ci_lower,
+    ci_upper         = ci_upper,
+    test_type        = rep("t", length(nm)),
+    stringsAsFactors = FALSE
+  )
+
+  ref_rows <- .qr_reference_rows(fit)
+  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  coefs
+}
+
+
+.ivreg_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+  dv <- all.vars(stats::formula(fit))[1L]
+  dv_label <- .extract_dv_label(fit, dv)
+
+  fam <- list(family = "gaussian", link = "identity")
+  if (is.null(ci_method)) ci_method <- "wald"
+
+  sm <- summary(fit)
+  fit_stats <- list(
+    r_squared      = as.numeric(sm$r.squared     %||% NA_real_),
+    adj_r_squared  = as.numeric(sm$adj.r.squared %||% NA_real_),
+    pseudo_r2      = NULL,
+    aic            = NA_real_,
+    bic            = NA_real_,
+    log_lik        = NA_real_,
+    deviance       = NA_real_,
+    sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    nobs           = as.integer(stats::nobs(fit))
+  )
+
+  supports <- list(
+    ame                 = TRUE,
+    partial_effect_size = FALSE,
+    classical_r2        = FALSE,  # IV r^2 is non-standard
+    nested_lrt          = FALSE,
+    exponentiate        = FALSE,
+    standardise_refit   = TRUE
+  )
+
+  extras <- list(
+    cluster_name          = NULL,
+    use_ame_satterthwaite = FALSE,
+    has_singular          = FALSE,
+    singular_terms        = character(0),
+    has_weights           = FALSE,
+    weighted_n            = NA_real_,
+    title_prefix          = "IV regression (2SLS)",
+    family_info           = fam,
+    exp_applied           = FALSE,
+    exp_header            = NA_character_,
+    n_groups              = NULL
+  )
+
+  list(
+    class          = "ivreg",
+    family         = fam,
+    dv             = dv,
+    dv_label       = dv_label,
+    n_obs          = as.integer(stats::nobs(fit)),
+    n_groups       = NULL,
+    weights_kind   = "none",
+    random_effects = list(variance_components = data.frame(), icc = NA_real_),
+    fit_stats      = fit_stats,
+    vcov_kind      = vcov_kind,
+    vcov_label     = vcov_label %||% "Classical",
+    ci_level       = as.numeric(ci_level),
+    ci_method      = ci_method,
+    supports       = supports,
+    extras         = extras
+  )
+}
+
+
+# ============================================================================
+# AER::tobit (inherits from survreg)
+# ============================================================================
+
+#' `as_regression_frame()` method for `tobit` fits (AER::tobit()).
+#'
+#' tobit inherits from survreg, so the survreg method would dispatch
+#' on it via fallback. This dedicated method overrides the title,
+#' class, and family normalisation so the frame reports "Tobit
+#' regression" rather than "Gaussian AFT regression".
+#'
+#' @keywords internal
+#' @noRd
+#' @export
+as_regression_frame.tobit <- function(fit,
+                                       vcov = "model",
+                                       vcov_label = NULL,
+                                       ci_level = 0.95,
+                                       ci_method = NULL,
+                                       model_id = "M1",
+                                       ...) {
+  .check_AER_available()
+
+  # Delegate to survreg method (tobit IS a survreg).
+  frame <- as_regression_frame.survreg(fit,
+                                        vcov       = vcov,
+                                        vcov_label = vcov_label,
+                                        ci_level   = ci_level,
+                                        ci_method  = ci_method,
+                                        model_id   = model_id,
+                                        ...)
+
+  # Overlay tobit-specific bits.
+  frame$info$class                    <- "tobit"
+  frame$info$extras$title_prefix      <- "Tobit regression"
+  frame$info$family$family            <- "gaussian"
+  frame$info$family$link              <- "identity"
+  frame$info$extras$family_info       <- list(family = "gaussian", link = "identity")
+  # tobit-specific: censoring boundaries. AER::tobit defaults to
+  # left = 0, right = Inf. The values are NOT stored as slots on the
+  # fit; they live in fit$call. Eval them in the call environment so
+  # user-supplied expressions (e.g. left = some_var) resolve correctly.
+  left  <- tryCatch(eval(fit$call$left,  envir = parent.frame()),
+                    error = function(e) NULL)
+  right <- tryCatch(eval(fit$call$right, envir = parent.frame()),
+                    error = function(e) NULL)
+  frame$info$extras$tobit_left  <- as.numeric(left  %||% 0)
+  frame$info$extras$tobit_right <- as.numeric(right %||% Inf)
+
+  attr(frame, "fit") <- fit
+  frame
+}
+
+
+# ============================================================================
+# Shared reference-row helper for rq / ivreg.
+# ============================================================================
+
+.qr_reference_rows <- function(fit) {
+  fts <- detect_factor_terms(fit)
+  if (length(fts) == 0L) return(.empty_coefs_frame())
+  rows <- list()
+  for (ft in fts) {
+    if (!isTRUE(ft$reference_dropped)) next
+    ref_lvl <- ft$reference_level
+    term_name <- paste0(ft$factor_term, ref_lvl)
+    ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
+    rows[[length(rows) + 1L]] <- data.frame(
+      term             = term_name,
+      parent_var       = ft$factor_term,
+      label            = ref_lvl,
+      factor_level_pos = as.integer(ref_pos),
+      is_ref           = TRUE,
+      estimate_type    = "B",
+      estimate         = NA_real_,
+      std_error        = NA_real_,
+      df               = NA_real_,
+      statistic        = NA_real_,
+      p_value          = NA_real_,
+      ci_lower         = NA_real_,
+      ci_upper         = NA_real_,
+      test_type        = NA_character_,
+      stringsAsFactors = FALSE
+    )
+  }
+  if (length(rows) == 0L) return(.empty_coefs_frame())
+  do.call(rbind, rows)
+}
