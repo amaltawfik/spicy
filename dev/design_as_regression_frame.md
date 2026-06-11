@@ -954,6 +954,7 @@ extends the polymorphic accessors in `R/regression_extract.R`
 | 4a | `glmmTMB` | `R/regression_frame_glmmTMB.R` | `test-regression_frame_glmmTMB.R` | 74 | `glmmTMB (>= 1.1.7)` |
 | 4b | `lme`, `gls` | `R/regression_frame_nlme.R` | `test-regression_frame_nlme.R` | 82 | `nlme (>= 3.1-160)` |
 | 5a | `coxph`, `survreg` | `R/regression_frame_survival.R` | `test-regression_frame_survival.R` | 83 | `survival (>= 3.5)` |
+| 5b | `polr`, `clm`, `multinom` | `R/regression_frame_ordinal.R`, `R/regression_frame_multinom.R` | `test-regression_frame_ordinal.R`, `test-regression_frame_multinom.R` | 127 | `MASS`, `ordinal (>= 2022.11)`, `nnet` |
 
 ### Phase 4a — glmmTMB (2026-06-11)
 
@@ -1098,9 +1099,84 @@ No new polymorphic-accessor branches were needed: for both classes
 returns the fixed-effect names directly (survreg already excludes
 `Log(scale)` from coef, so no manual subset is needed there).
 
-Phase 5b will add ordinal (`polr`, `clm`) and multinomial
-(`multinom`) — these need a new `outcome_level` semantics in the
-coefs table for proportional-odds and per-outcome-level coefs.
+### Phase 5b — ordinal + multinomial (2026-06-11)
+
+`as_regression_frame.polr()` and `.clm()` cover the cumulative-link
+proportional-odds family (`MASS::polr`, `ordinal::clm`);
+`as_regression_frame.multinom()` covers `nnet::multinom`. This Phase
+is the first to populate the optional `coefs$outcome_level` column
+from the schema in §3.
+
+Proportional-odds (polr, clm) implementation choices:
+
+- **No `(Intercept)` row in `coefs`.** Under the PO model the
+  intercept is replaced by `k - 1` ordered cumulative thresholds.
+  The thresholds are stashed in `info$extras$thresholds` as a
+  `data.frame(term, estimate, std_error, statistic, p_value)`. A
+  future renderer can emit them as a separate "Thresholds" block.
+- **`outcome_level` stays NA** for PO coefs. By the PO assumption
+  each effect is shared across all cumulative comparisons.
+- **`fit$beta` / `coef(fit)` semantics differ:**
+  - `MASS::polr`: `stats::coef(fit)` returns the **predictor coefs
+    only** (excludes thresholds). `fit$zeta` holds the thresholds.
+  - `ordinal::clm`: `stats::coef(fit)` returns thresholds AND
+    predictors interleaved. We use `fit$beta` (predictors only)
+    and `fit$alpha` (thresholds). Polymorphic accessor
+    `.spicy_fixed_coef_names()` extended with a `clm` branch
+    routing to `names(fit$beta)`.
+- **Inference:**
+  - `MASS::polr` ships `Value / Std. Error / t value` but **NO
+    p-values**. We derive Wald-z asymptotic p = `2 * pnorm(-abs(z))`.
+  - `ordinal::clm` ships `Estimate / Std. Error / z value / Pr(>|z|)`
+    natively. We read p directly from `summary(fit)$coefficients`,
+    byte-equivalent to the engine's report.
+- **Family:** `list(family = "cumulative", link = <link>)` where
+  `<link>` is normalised: `"logit" / "probit" / "cloglog" / "loglog"
+  / "cauchit"`. polr's `fit$method = "logistic"` is normalised to
+  `"logit"` for consistency with clm.
+- **Title prefix:** `"Cumulative <link> regression (proportional
+  odds)"` — e.g. `"Cumulative logit regression (proportional odds)"`.
+- **`supports$exponentiate = TRUE`** — odds ratios for logit,
+  hazard ratios for cloglog, etc.
+
+Multinomial (multinom) implementation choices:
+
+- **`outcome_level` populated on every coefs row.** Schema-wise this
+  is the first class that exercises §3's optional `outcome_level`
+  column. One coefs row per `(outcome, predictor)` combination.
+- **`stats::coef(fit)` returns a MATRIX** of shape
+  `(n_outcomes - 1) x (n_predictors)` (rows = non-reference
+  outcomes, columns = predictors incl. Intercept). The frame
+  unstacks this into per-outcome blocks.
+- **`stats::vcov(fit)` is a flat matrix** using `"<outcome>:<term>"`
+  row / column names. We only need the per-coefficient SEs, which
+  come from `summary(fit)$standard.errors` (same shape as coef).
+- **Polymorphic accessor `.spicy_fixed_coef_names()`** extended
+  with a `multinom` branch returning `colnames(coef(fit))` — the
+  unique predictor names. The generic `names(coef(fit))` path
+  returns NULL on a matrix.
+- **No p-values from nnet.** Derived from Wald-z asymptotic
+  `est / se`. `summary(multinom)` deliberately omits significance
+  testing.
+- **`nobs(multinom)` is NOT defined.** And `summary(fit)$n` is the
+  NEURAL-NETWORK LAYER SIZES (e.g. `c(2, 0, 3)` for 2-input /
+  0-hidden / 3-output), not the sample size. The sample count
+  comes from `nrow(fit$fitted.values)`.
+- **Reference outcome** = `fit$lev[1L]` (first level of the
+  response factor). Stashed in `info$extras$reference_outcome`
+  so a renderer can footnote "vs. setosa" or similar. The
+  reference outcome appears nowhere in `coefs`.
+- **Per-outcome reference rows for factor predictors.** Each
+  outcome block carries its own factor ref row so a renderer can
+  present a self-contained block per outcome without cross-outcome
+  lookups. For a 3-outcome model with a 2-level factor predictor,
+  this produces 2 outcome blocks × (1 non-ref + 1 ref) = 4 rows.
+- **Family:** `list(family = "multinomial", link = "logit")`.
+- **Title prefix:** `"Multinomial logistic regression"`.
+
+Phase 5c (the long tail) will cover `robustlmm::rlmer` (robust
+linear mixed-effects), `MCMCglmm` (Bayesian hierarchical), and
+potentially `fixest::feols` (high-dimensional fixed effects).
 
 ---
 

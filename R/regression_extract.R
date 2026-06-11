@@ -663,6 +663,18 @@ detect_factor_term_meta <- function(fit) {
     # fixed effects, so the generic path is wrong here.
     return(names(nlme::fixef(fit)))
   }
+  if (inherits(fit, "multinom")) {
+    # nnet::multinom stores coef as a matrix with one row per non-
+    # reference outcome and columns = predictor names (incl. Intercept).
+    # The UNIQUE predictor names are colnames(coef(fit)).
+    return(colnames(stats::coef(fit)))
+  }
+  if (inherits(fit, "clm")) {
+    # ordinal::clm: coef(fit) returns thresholds AND predictors mixed
+    # together (1|2, 2|3, ..., tempwarm, contactyes). fit$beta is the
+    # predictor coefficients only.
+    return(names(fit$beta))
+  }
   if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
     draws_vars <- posterior::variables(posterior::as_draws_array(fit))
     b_names <- grep("^b_", draws_vars, value = TRUE)
