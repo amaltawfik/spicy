@@ -59,6 +59,7 @@ Suggests:
     AER (>= 1.2),
     pscl (>= 1.5),
     quantreg (>= 5.86),
+    rms (>= 6.7),
     posterior (>= 1.5.0),
     rstanarm (>= 2.21),
     brms (>= 2.20),
