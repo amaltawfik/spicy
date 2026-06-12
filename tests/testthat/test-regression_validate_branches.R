@@ -36,15 +36,17 @@ test_that("validate_models_input — glm is now accepted (Phase 3)", {
   expect_true(inherits(out[[1L]], "glm"))
 })
 
-test_that("validate_models_input — merMod-like class errors with 0.16+ roadmap", {
-  # Construct a minimal object inheriting from merMod without needing lme4
-  fake <- structure(list(), class = c("lmerMod", "merMod"))
+test_that("validate_models_input — class without `as_regression_frame` method errors", {
+  # A genuinely unsupported class (no method registered for any class
+  # in its inheritance chain).
+  fake <- structure(list(), class = "rlmer_robustlmm")
   err <- tryCatch(
     spicy:::validate_models_input(fake),
     error = function(e) e
   )
   expect_s3_class(err, "spicy_unsupported")
-  expect_match(conditionMessage(err), "0\\.16")
+  expect_match(conditionMessage(err),
+               "no `as_regression_frame\\(\\)` method registered")
 })
 
 test_that("validate_models_input — other class errors with 'open an issue' hint", {
@@ -59,10 +61,11 @@ test_that("validate_models_input — other class errors with 'open an issue' hin
 
 test_that("validate_models_input — multi-position aggregate-fail lists ALL bad positions", {
   fit_ok <- lm(mpg ~ wt, data = mtcars)
-  # merMod-like is still on the unsupported list (0.16+), so use it
-  # to exercise the multi-position aggregate failure path now that
-  # glm is accepted in Phase 3.
-  fit_bad <- structure(list(), class = c("lmerMod", "merMod"))
+  # A genuinely unsupported class (none of its class vector entries
+  # have an as_regression_frame method registered). Phase 1-6 added
+  # methods for ~35 classes; only off-roadmap fits should reach this
+  # branch.
+  fit_bad <- structure(list(), class = "rlmer_robustlmm")
   err <- tryCatch(
     spicy:::validate_models_input(list(fit_ok, fit_bad, fit_bad)),
     error = function(e) e

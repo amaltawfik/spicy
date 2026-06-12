@@ -295,25 +295,29 @@ as_regression_frame.glm <- function(fit, ...) {
   # attach_nested_stats_to_frames() injects these into fs BEFORE
   # compaction, so they need to be carried through to the legacy-
   # shaped data.frame consumed by the body builder until C4).
+  # The schema since Phase 1 uses new field names (r_squared,
+  # adj_r_squared, log_lik, ...) but this function normalises BOTH
+  # legacy (`r2`, `adj_r2`, ...) and new-schema field names to the
+  # single legacy shape the body builder consumes.
   out <- list(
     model_id             = model_id,
     outcome              = outcome,
-    nobs                 = fs$nobs,
-    weighted_nobs        = fs$weighted_nobs        %||% NA_real_,
-    r2                   = fs$r2                   %||% NA_real_,
-    adj_r2               = fs$adj_r2               %||% NA_real_,
-    omega2               = fs$omega2               %||% NA_real_,
-    pseudo_r2_mcfadden   = fs$pseudo_r2_mcfadden   %||% NA_real_,
-    pseudo_r2_nagelkerke = fs$pseudo_r2_nagelkerke %||% NA_real_,
-    pseudo_r2_tjur       = fs$pseudo_r2_tjur       %||% NA_real_,
-    sigma                = fs$sigma                %||% NA_real_,
-    rmse                 = fs$rmse                 %||% NA_real_,
-    f2                   = fs$f2                   %||% NA_real_,
-    AIC                  = fs$AIC                  %||% NA_real_,
-    AICc                 = fs$AICc                 %||% NA_real_,
-    BIC                  = fs$BIC                  %||% NA_real_,
-    deviance             = fs$deviance             %||% NA_real_,
-    df_residual          = fs$df_residual          %||% NA_real_
+    nobs                 = .scalar_or_na(fs$nobs),
+    weighted_nobs        = .scalar_or_na(fs$weighted_nobs),
+    r2                   = .scalar_or_na(fs$r2  %||% fs$r_squared),
+    adj_r2               = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),
+    omega2               = .scalar_or_na(fs$omega2),
+    pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
+    pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
+    pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
+    sigma                = .scalar_or_na(fs$sigma),
+    rmse                 = .scalar_or_na(fs$rmse),
+    f2                   = .scalar_or_na(fs$f2),
+    AIC                  = .scalar_or_na(fs$AIC %||% fs$aic),
+    AICc                 = .scalar_or_na(fs$AICc),
+    BIC                  = .scalar_or_na(fs$BIC %||% fs$bic),
+    deviance             = .scalar_or_na(fs$deviance),
+    df_residual          = .scalar_or_na(fs$df_residual)
   )
   # Nested-LRT change tokens (present only when attach_nested_stats_*
   # ran for this model). Included only when present in `fs` -- this
@@ -327,6 +331,21 @@ as_regression_frame.glm <- function(fit, ...) {
     if (!is.null(fs[[k]])) out[[k]] <- fs[[k]]
   }
   out
+}
+
+
+# Coerce a fit-stats slot to a length-1 numeric scalar. Returns NA_real_
+# when the input is NULL, empty (length 0), or non-numeric. Returns
+# the first element when length > 1 (defensive; shouldn't happen in
+# well-formed schemas but protects the as.data.frame() row-build from
+# crashing with "different number of rows"). Used by
+# .compact_fit_stats_for_legacy() to normalise the per-class
+# variations (e.g. estimatr's stats::sigma(lm_robust) returns
+# numeric(0)).
+.scalar_or_na <- function(x) {
+  if (is.null(x) || length(x) == 0L) return(NA_real_)
+  if (!is.numeric(x) && !is.logical(x)) return(NA_real_)
+  as.numeric(x[1L])
 }
 
 

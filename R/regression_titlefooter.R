@@ -107,9 +107,14 @@ capitalize_first <- function(s) {
 # every builder has a _from_frames sibling.
 build_regression_type_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  # Phase 7b: preserve the engine-supplied acronym casing. The legacy
+  # tolower() clobbered "(GAM)" / "(M-estimator)" / "(OLS)" that
+  # per-class methods set deliberately. For sentence-leading positions
+  # we apply capitalize_first(); for mid-sentence positions (after
+  # "Model 1:") we only lowercase the FIRST character so the title
+  # reads naturally without losing acronyms further in.
   types <- vapply(frames, function(f) {
-    tp <- f$info$extras$title_prefix %||% "Regression"
-    tolower(tp)
+    f$info$extras$title_prefix %||% "Regression"
   }, character(1))
   if (length(types) == 1L) {
     return(paste0(capitalize_first(types[1]), "."))
@@ -118,21 +123,53 @@ build_regression_type_footer_block_from_frames <- function(frames) {
     return(paste0(capitalize_first(types[1]), " models."))
   }
   per <- vapply(seq_along(types), function(i) {
-    sprintf("Model %d: %s", i, types[i])
+    sprintf("Model %d: %s", i, lowercase_first(types[i]))
   }, character(1))
   paste0(paste(per, collapse = "; "), ".")
 }
 
 
+# Lowercase only the first character of a string (the inverse of
+# capitalize_first()). Used to make a title read naturally in
+# mid-sentence position ("Model 1: linear regression") while
+# preserving any acronyms further in the string.
+lowercase_first <- function(s) {
+  if (!length(s) || !nzchar(s)) return(s)
+  paste0(tolower(substr(s, 1L, 1L)), substring(s, 2L))
+}
+
+
 # Frame-aware sibling of format_vcov_label(). Reads from
-#   frame$info$vcov_kind          (was extract$vcov_type)
+#   frame$info$vcov_label          (Phase 1+: the engine-/class-specific
+#                                   already-formatted label, e.g.
+#                                   "Wald (model-based)", "Robust (HC2)",
+#                                   "Bayesian (REML-implied)", ...)
+#   frame$info$vcov_kind           (legacy: vcov-token from the
+#                                   lm/glm path -- "classical" / "HC*"
+#                                   / "CR*" / "bootstrap" / etc.)
 #   frame$info$extras$cluster_name (was extract$cluster_name)
 #   frame$info$class               (was extract$is_glm; derived)
-# instead of the legacy extract fields. Logic identical.
+#
+# Routing: lm / glm go through the legacy classical/HC*/CR* derivation
+# below (so historical snapshots stay byte-stable). All other classes
+# use the engine-supplied `vcov_label` verbatim (which the Phase 1+
+# methods set thoughtfully -- e.g. "Wald asymptotic (z)" for coxph,
+# "Robust (HC2)" / "Cluster-robust (CR2)" for estimatr).
 format_vcov_label_from_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+
+  # For non-lm/glm classes, the engine-supplied label is authoritative.
+  if (!cls %in% c("lm", "glm")) {
+    custom_label <- frame$info$vcov_label
+    if (!is.null(custom_label) && is.character(custom_label) &&
+        length(custom_label) == 1L && nzchar(custom_label)) {
+      return(custom_label)
+    }
+  }
+
   vt <- frame$info$vcov_kind %||% "classical"
   cn <- frame$info$extras$cluster_name %||% NA_character_
-  is_glm <- identical(frame$info$class, "glm")
+  is_glm <- identical(cls, "glm")
   if (vt == "classical") {
     return(if (is_glm) "classical (MLE inverse Hessian)" else "classical (OLS)")
   }

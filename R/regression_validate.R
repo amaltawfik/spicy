@@ -189,7 +189,10 @@ validate_models_input <- function(models) {
       c(
         "Some `models` are not supported by `table_regression()`.",
         bad,
-        "i" = "Supported classes: `lm` and `glm`."
+        "i" = paste0(
+          "Run `methods('as_regression_frame')` to see all currently ",
+          "supported model classes."
+        )
       ),
       class = "spicy_unsupported"
     )
@@ -200,29 +203,20 @@ validate_models_input <- function(models) {
 
 # Per-fit class classifier: NULL if OK, message string otherwise.
 # Used by validate_models_input() to build the aggregate-fail message.
-# As of spicy 0.13: `lm` and `glm` are supported. Mixed-effects
-# models are deferred to 0.16+. Other classes route to issue tracker.
+#
+# A class is "supported" if either (a) it is `lm` or `glm` (the
+# historical core) or (b) an `as_regression_frame` S3 method is
+# registered for one of its classes. The method registry expands as
+# new model classes ship; new methods become user-visible automatically
+# without touching this gate.
 classify_unsupported_lm_class <- function(fit, position = NULL) {
   pos_prefix <- if (!is.null(position)) sprintf("Position %d: ", position) else ""
 
-  # `glm` inherits from `lm`, but the converse is not true.
-  # Order matters: catch mixed-effects classes BEFORE the lm fallback,
-  # since `lmerMod` etc. don't inherit from lm but are explicitly out
-  # of scope for now.
-  if (inherits(fit, c("lmerMod", "glmerMod", "merMod"))) {
-    return(paste0(
-      pos_prefix,
-      sprintf(
-        "`%s` mixed-effects model \u2014 supported in spicy 0.16+.",
-        class(fit)[1]
-      )
-    ))
-  }
   # Common user mistake: passing raw data instead of a fit (Q10).
   if (is.data.frame(fit)) {
     return(paste0(
       pos_prefix,
-      "data.frame supplied where an `lm` or `glm` fit is expected. ",
+      "data.frame supplied where a model fit is expected. ",
       "Fit a model first: ",
       "`fit <- lm(y ~ x, data = your_data); table_regression(fit)`."
     ))
@@ -231,18 +225,34 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
     return(paste0(
       pos_prefix,
       "NULL element \u2014 the list of models contains a NULL slot. ",
-      "Drop the NULL or replace it with an `lm()` / `glm()` fit."
+      "Drop the NULL or replace it with a model fit."
     ))
   }
-  if (!inherits(fit, "lm")) {       # `glm` inherits from `lm`, so this catches both glm and lm
-    return(paste0(
-      pos_prefix,
-      sprintf("`%s` \u2014 not on the roadmap. ", class(fit)[1]),
-      "If support would be useful, please open an issue: ",
-      "https://github.com/amaltawfik/spicy/issues"
-    ))
+  # Accept any class that has a registered as_regression_frame method.
+  if (.has_as_regression_frame_method(fit)) return(NULL)
+  paste0(
+    pos_prefix,
+    sprintf("`%s` \u2014 no `as_regression_frame()` method registered. ",
+            class(fit)[1L]),
+    "If support would be useful, please open an issue: ",
+    "https://github.com/amaltawfik/spicy/issues"
+  )
+}
+
+
+# Return TRUE if any class of `fit` has an `as_regression_frame` S3
+# method registered in this package. Walks class(fit) in dispatch
+# order; the default method is excluded so unregistered classes still
+# error.
+.has_as_regression_frame_method <- function(fit) {
+  cls <- class(fit)
+  for (cl in cls) {
+    if (!is.null(utils::getS3method("as_regression_frame", cl,
+                                     optional = TRUE))) {
+      return(TRUE)
+    }
   }
-  NULL
+  FALSE
 }
 
 
@@ -1166,17 +1176,36 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
   )
 }
 
-# Detect interactions and transforms in a fitted lm.
+# Detect interactions and transforms in a fitted model.
 # Used by Q15 caveat emission (Step 25) and by the rendering layer
-# to tag affected rows when needed.
+# to tag affected rows when needed. Falls back to the model formula's
+# RHS for fits that do not register a `terms()` method (e.g. nls,
+# flexsurvreg, sampleSelection's selection). When no term labels are
+# extractable, returns has_problem = FALSE.
 detect_non_additive_terms <- function(fit) {
-  trms <- attr(stats::terms(fit), "term.labels")
+  trms <- tryCatch(attr(stats::terms(fit), "term.labels"),
+                   error = function(e) NULL)
+  if (is.null(trms)) {
+    # Fallback path: build a terms object from formula(fit)'s RHS.
+    # For multi-equation fits (sampleSelection) and parameter-based
+    # fits (nls), this may still error; in that case skip the check.
+    trms <- tryCatch({
+      f <- stats::formula(fit)
+      if (is.list(f) && length(f) > 0L) f <- f[[1L]]
+      attr(stats::terms(f), "term.labels")
+    }, error = function(e) NULL)
+  }
+  if (is.null(trms)) {
+    return(list(has_problem = FALSE,
+                interactions = character(0),
+                transforms   = character(0)))
+  }
   interactions <- trms[grepl(":", trms, fixed = TRUE)]
-  transforms <- trms[grepl("(", trms, fixed = TRUE)]
+  transforms   <- trms[grepl("(", trms, fixed = TRUE)]
   list(
-    has_problem = length(interactions) > 0L || length(transforms) > 0L,
+    has_problem  = length(interactions) > 0L || length(transforms) > 0L,
     interactions = interactions,
-    transforms = transforms
+    transforms   = transforms
   )
 }
 

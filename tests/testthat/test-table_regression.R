@@ -200,10 +200,12 @@ test_that("table_regression — NULL models errors with spicy_invalid_input", {
   )
 })
 
-test_that("table_regression — merMod-like errors with spicy_unsupported (mixed-effects on roadmap for 0.16+)", {
-  # As of spicy 0.13, lm + glm are supported (Phase 3); mixed-
-  # effects models remain rejected with a roadmap pointer.
-  fake <- structure(list(), class = c("lmerMod", "merMod"))
+test_that("table_regression — class without as_regression_frame method errors with spicy_unsupported", {
+  # Phase 1-6 added methods for ~35 classes including mixed-effects,
+  # survival, ordinal, multinomial, robust, fixed-effects, GAM, rms,
+  # Bayesian etc. Genuinely-unsupported off-roadmap classes still
+  # error through the validate_models_input() gate.
+  fake <- structure(list(), class = "rlmer_robustlmm")
   expect_error(
     table_regression(fake),
     class = "spicy_unsupported"
