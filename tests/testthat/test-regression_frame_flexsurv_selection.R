@@ -180,3 +180,27 @@ test_that("selection: estimation_method surfaced in extras", {
   expect_true(fr$info$extras$estimation_method %in%
               c("Maximum likelihood", "Heckman two-step"))
 })
+
+
+# ---- 7. Phase 7c5: term + label prefixed with block name -----------
+
+test_that("selection: term is prefixed with the block name (uniqueness)", {
+  fit <- .fit_selection_heckman()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_true(any(grepl("^selection: ", fr$coefs$term)))
+  expect_true(any(grepl("^outcome: ",   fr$coefs$term)))
+  # Term-uniqueness within the model (otherwise the body builder
+  # collapses the two (Intercept) rows into one).
+  expect_identical(length(unique(fr$coefs$term)), nrow(fr$coefs))
+})
+
+test_that("table_regression() body shows separate selection vs outcome rows", {
+  fit <- .fit_selection_heckman()
+  combined <- paste(capture.output(print(table_regression(fit))),
+                    collapse = "\n")
+  expect_match(combined, "selection: (Intercept)", fixed = TRUE)
+  expect_match(combined, "outcome: (Intercept)",   fixed = TRUE)
+  # `educ` appears in BOTH equations -- the body should show both rows.
+  expect_match(combined, "selection: educ", fixed = TRUE)
+  expect_match(combined, "outcome: educ",   fixed = TRUE)
+})

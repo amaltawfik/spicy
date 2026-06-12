@@ -371,10 +371,18 @@ as_regression_frame.selection <- function(fit,
   ci_lower <- est - z_crit * se
   ci_upper <- est + z_crit * se
 
+  # Phase 7c5: prefix the term + label with the block name ("selection"
+  # or "outcome") so the body renders each row distinctly. Without the
+  # prefix, the (Intercept) from the selection equation and the
+  # (Intercept) from the outcome equation collide on `term` and the
+  # body builder collapses them into a single row. parent_var stays
+  # bare so the body groups predictor-by-predictor; the indented label
+  # carries the block prefix (visual: "selection: (Intercept)" /
+  # "outcome: (Intercept)" under an "(Intercept):" section header).
   data.frame(
-    term             = nm,
+    term             = paste0(outcome_label, ": ", nm),
     parent_var       = nm,
-    label            = nm,
+    label            = paste0(outcome_label, ": ", nm),
     factor_level_pos = rep(NA_integer_, length(nm)),
     is_ref           = rep(FALSE, length(nm)),
     estimate_type    = rep("B", length(nm)),
