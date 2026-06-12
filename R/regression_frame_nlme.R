@@ -415,8 +415,70 @@ as_regression_frame.gls <- function(fit,
     )
   }
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
+
+  # Phase 7c7a: extend with Wald SE + 95% CI via nlme::intervals().
+  # intervals() returns CIs on the SD scale (the natural log-SD
+  # parametrisation backtransformed); we square to convert to variance
+  # scale, and Delta-method for SE (SE(sd^2) = 2*sd*SE(sd)).
+  vc_df <- .lme_attach_wald_se_ci(vc_df, fit)
+
   icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Attach Wald SE + 95% CI on variance scale via nlme::intervals().
+.lme_attach_wald_se_ci <- function(vc_df, fit) {
+  na_block <- function(df) {
+    df$std_error <- NA_real_
+    df$ci_lower  <- NA_real_
+    df$ci_upper  <- NA_real_
+    df$ci_method <- NA_character_
+    df
+  }
+  if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
+
+  ci_obj <- tryCatch(
+    nlme::intervals(fit, which = "var-cov"),
+    error = function(e) NULL
+  )
+  if (is.null(ci_obj)) return(na_block(vc_df))                         # nocov
+
+  vc_df$std_error <- NA_real_
+  vc_df$ci_lower  <- NA_real_
+  vc_df$ci_upper  <- NA_real_
+  vc_df$ci_method <- NA_character_
+
+  z <- stats::qnorm(0.975)
+  for (i in seq_len(nrow(vc_df))) {
+    g <- vc_df$group[i]
+    t <- vc_df$term[i]
+    if (identical(g, "Residual")) {
+      # intervals()$sigma is a named numeric vector on SD scale.
+      sigma_ci <- ci_obj$sigma
+      if (is.null(sigma_ci) || length(sigma_ci) != 3L) next            # nocov
+      sd_est   <- unname(sigma_ci["est."])
+      sd_lower <- unname(sigma_ci["lower"])
+      sd_upper <- unname(sigma_ci["upper"])
+    } else {
+      # intervals()$reStruct is a list keyed by grouping factor.
+      group_ci <- ci_obj$reStruct[[g]]
+      if (is.null(group_ci)) next                                      # nocov
+      # Row names look like "sd((Intercept))", "sd(age)", ...
+      target <- paste0("sd(", t, ")")
+      row_idx <- match(target, rownames(group_ci))
+      if (is.na(row_idx)) next                                         # nocov
+      sd_est   <- group_ci[row_idx, "est."]
+      sd_lower <- group_ci[row_idx, "lower"]
+      sd_upper <- group_ci[row_idx, "upper"]
+    }
+    se_sd <- (sd_upper - sd_lower) / (2 * z)
+    vc_df$std_error[i] <- 2 * sd_est * se_sd
+    vc_df$ci_lower[i]  <- max(0, sd_lower)^2
+    vc_df$ci_upper[i]  <- sd_upper^2
+    vc_df$ci_method[i] <- "wald"
+  }
+  vc_df
 }
 
 

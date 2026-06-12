@@ -475,9 +475,106 @@ as_regression_frame.glmerMod <- function(fit,
 
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
+  # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale via
+  # merDeriv. Falls back to NA when (a) merDeriv is not installed, (b)
+  # the fit is singular (merDeriv crashes on var ~= 0), or (c) merDeriv
+  # errors for any other reason. The body renderer treats NAs as em-dash.
+  vc_df <- .merMod_attach_wald_se_ci(vc_df, fit)
+
   icc <- .merMod_icc(vc_df)
 
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Attach Wald SE + 95% CI columns to the variance-components data.frame
+# via merDeriv. Always returns a data.frame with the columns
+# `std_error`, `ci_lower`, `ci_upper`, `ci_method`; NAs when the SE
+# could not be computed.
+.merMod_attach_wald_se_ci <- function(vc_df, fit) {
+  na_block <- function(df) {
+    df$std_error <- NA_real_
+    df$ci_lower  <- NA_real_
+    df$ci_upper  <- NA_real_
+    df$ci_method <- NA_character_
+    df
+  }
+  if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
+  if (!spicy_pkg_available("merDeriv")) return(na_block(vc_df))
+  if (isTRUE(lme4::isSingular(fit))) return(na_block(vc_df))
+
+  # merDeriv::vcov.lmerMod with ranpar = "var" returns the asymptotic
+  # covariance matrix of the FULL parameter vector (fixed effects +
+  # variance components + residual variance) on the variance scale.
+  # The diagonal gives variance-of-estimator; sqrt() gives SE.
+  v <- tryCatch({
+    if (inherits(fit, "glmerMod")) {
+      merDeriv::vcov.glmerMod(fit, full = TRUE, ranpar = "var")
+    } else {
+      merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")
+    }
+  }, error = function(e) NULL)
+  if (is.null(v)) return(na_block(vc_df))
+
+  # merDeriv returns a Matrix package object (dgeMatrix); coerce to a
+  # plain matrix so base::diag() dispatches correctly.
+  v <- as.matrix(v)
+  se_full <- sqrt(diag(v))
+  n_fixed <- length(lme4::fixef(fit))
+  re_se   <- se_full[-seq_len(n_fixed)]
+
+  # The ordering of the RE block in merDeriv with ranpar = "var" is:
+  #   for each grouping factor: variance(term_1), cov(term_1, term_2),
+  #   variance(term_2), cov(term_1, term_3), cov(term_2, term_3),
+  #   variance(term_3), ... -- i.e. lower-triangle by row including
+  #   diagonals (variances). The residual variance is the last entry.
+  # vc_df currently holds ONLY the variances (one row per term per
+  # group) + a Residual row at the end. So we extract the SE from the
+  # diagonal positions only, matching vc_df row by row.
+  diag_positions <- .merMod_re_diag_positions(fit)
+  if (length(diag_positions) != nrow(vc_df) ||
+      max(diag_positions) > length(re_se)) {
+    return(na_block(vc_df))                                            # nocov
+  }
+  se_diag <- re_se[diag_positions]
+
+  z <- stats::qnorm(0.975)
+  vc_df$std_error <- as.numeric(se_diag)
+  vc_df$ci_lower  <- pmax(0, vc_df$variance - z * se_diag)
+  vc_df$ci_upper  <- vc_df$variance + z * se_diag
+  vc_df$ci_method <- "wald"
+  vc_df
+}
+
+
+# Compute the indices of the DIAGONAL entries (= variances) in the
+# random-effects block of merDeriv's full vcov, in the same row order
+# as vc_df (per group: variance(term_1), variance(term_2), ..., then
+# residual variance at the end).
+#
+# For a fit with grouping factor G_1, G_2, ... and within each group
+# n_g random terms, merDeriv concatenates the lower triangles
+# (including diagonals) of each group's variance/covariance block, and
+# appends the residual variance at the very end.
+.merMod_re_diag_positions <- function(fit) {
+  vc <- lme4::VarCorr(fit)
+  pos <- integer(0)
+  cursor <- 0L
+  for (group in names(vc)) {
+    n <- nrow(vc[[group]])
+    block_size <- n * (n + 1L) / 2L
+    # Within a block of size block_size, the diagonal entries occupy
+    # positions 1, 1 + 2, 1 + 2 + 3, ..., i.e. cumulative sums of 1:n.
+    diag_in_block <- cumsum(seq_len(n))
+    pos <- c(pos, cursor + diag_in_block)
+    cursor <- cursor + block_size
+  }
+  # Residual variance follows the last group block.
+  sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
+  if (is.finite(sigma_val)) {
+    pos <- c(pos, cursor + 1L)
+  }
+  pos
 }
 
 

@@ -363,7 +363,70 @@ as_regression_frame.glmmTMB <- function(fit,
 
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
+  # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale.
+  # glmmTMB's confint(method = "Wald") returns intervals on the SD
+  # scale; we square to convert to variance scale and Delta-method for
+  # SE.
+  vc_df <- .glmmTMB_attach_wald_se_ci(vc_df, fit)
+
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Attach Wald SE + 95% CI on variance scale via glmmTMB's native
+# confint(method = "Wald"). The confint returns CIs on the SD scale,
+# which we square to obtain variance-scale CIs; SE on the variance
+# scale is obtained via the Delta-method (SE(sd^2) = 2 * sd * SE(sd)).
+.glmmTMB_attach_wald_se_ci <- function(vc_df, fit) {
+  na_block <- function(df) {
+    df$std_error <- NA_real_
+    df$ci_lower  <- NA_real_
+    df$ci_upper  <- NA_real_
+    df$ci_method <- NA_character_
+    df
+  }
+  if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
+  if (!spicy_pkg_available("glmmTMB")) return(na_block(vc_df))         # nocov
+
+  ci_sd <- tryCatch(
+    confint(fit, method = "Wald", parm = "theta_"),
+    error = function(e) NULL
+  )
+  if (is.null(ci_sd) || nrow(ci_sd) == 0L) return(na_block(vc_df))     # nocov
+  ci_sd <- as.matrix(ci_sd)
+
+  vc_df$std_error <- NA_real_
+  vc_df$ci_lower  <- NA_real_
+  vc_df$ci_upper  <- NA_real_
+  vc_df$ci_method <- NA_character_
+
+  # confint rownames look like:
+  #   "Std.Dev.(Intercept)|Subject"  (variance term in group)
+  #   "Cor.Days.(Intercept)|Subject" (correlation -- not in vc_df rows)
+  # We need to match rownames to vc_df rows where group != "Residual"
+  # and term matches the parenthesised content.
+  z <- stats::qnorm(0.975)
+  for (i in seq_len(nrow(vc_df))) {
+    g <- vc_df$group[i]
+    t <- vc_df$term[i]
+    if (identical(g, "Residual")) next  # glmmTMB confint doesn't include residual
+    pattern <- paste0("^Std.Dev.", gsub("([()])", "\\\\\\1", t),
+                      "\\|", g, "$")
+    idx <- grep(pattern, rownames(ci_sd))
+    if (length(idx) != 1L) next                                        # nocov
+    sd_est   <- ci_sd[idx, "Estimate"]
+    sd_lower <- ci_sd[idx, 1L]
+    sd_upper <- ci_sd[idx, 2L]
+    # Delta-method: SE(sigma^2) = 2 * sigma * SE(sigma)
+    # SE(sigma) from CI: (upper - lower) / (2 * z)
+    se_sd <- (sd_upper - sd_lower) / (2 * z)
+    vc_df$std_error[i] <- 2 * sd_est * se_sd
+    # Variance-scale CI from squaring SD-scale CI (monotonic for sd>=0)
+    vc_df$ci_lower[i]  <- max(0, sd_lower)^2
+    vc_df$ci_upper[i]  <- sd_upper^2
+    vc_df$ci_method[i] <- "wald"
+  }
+  vc_df
 }
