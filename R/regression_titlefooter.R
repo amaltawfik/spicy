@@ -72,6 +72,7 @@ build_regression_footer_from_frames <- function(
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
+    build_random_effects_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
     build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
@@ -380,6 +381,112 @@ format_p_threshold <- function(p) {
 
 # Frame-aware sibling of build_singular_footer_block().
 # Reads frame$info$extras$has_singular instead of extract$has_singular.
+# Phase 7c1: random-effects footer block for mixed-effects fits.
+# Reads from frame$info$random_effects$variance_components (data.frame
+# with group / term / variance / sd / corr columns) and
+# frame$info$random_effects$icc (scalar). Skipped silently when no
+# mixed-effects component is present (variance_components is empty).
+#
+# Single-model output:
+#   "Random effects: 18 Subjects; intercept variance = 1296.87,
+#    residual variance = 954.53; ICC = 0.58."
+# Multi-model: one line per affected model, prefixed "Model k:".
+build_random_effects_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+
+  per_model <- lapply(seq_along(frames), function(i) {
+    f <- frames[[i]]
+    txt <- .format_random_effects_for_frame(f)
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) return(NULL)
+
+  if (length(frames) == 1L) {
+    return(per_model[[1L]]$text)
+  }
+  lines <- vapply(per_model, function(pm) {
+    sprintf("Model %d: %s", pm$idx, pm$text)
+  }, character(1))
+  paste(lines, collapse = "\n")
+}
+
+
+# Format the per-frame random-effects sentence. Returns NULL when the
+# frame has no random-effects content (lm / glm / coxph / etc.).
+.format_random_effects_for_frame <- function(frame) {
+  re <- frame$info$random_effects
+  if (is.null(re)) return(NULL)
+  vc <- re$variance_components
+  if (is.null(vc) || !is.data.frame(vc) || nrow(vc) == 0L) return(NULL)
+
+  # Identify the (single) primary grouping factor row(s) vs the residual row.
+  is_resid <- !is.na(vc$group) & vc$group == "Residual"
+  group_rows <- vc[!is_resid, , drop = FALSE]
+  resid_rows <- vc[is_resid,  , drop = FALSE]
+
+  # Sample-size sentence: "18 Subjects" (or "5 Months and 18 Subjects" for
+  # multiple grouping factors). Derived from frame$info$n_groups since
+  # this is more reliable than the var-components nrow.
+  ng <- frame$info$n_groups
+  n_groups_part <- if (!is.null(ng) && length(ng) > 0L) {
+    parts <- vapply(seq_along(ng), function(k) {
+      sprintf("%d %s%s", ng[[k]], names(ng)[k],
+              if (ng[[k]] > 1L) "s" else "")
+    }, character(1))
+    paste(parts, collapse = " and ")
+  } else NA_character_
+
+  # Variance components sentence: list each non-residual row + residual.
+  comp_parts <- character(0)
+  if (nrow(group_rows) > 0L) {
+    for (i in seq_len(nrow(group_rows))) {
+      term_label <- if (!is.na(group_rows$term[i]) && nzchar(group_rows$term[i])) {
+        tolower(group_rows$term[i])
+      } else NA_character_
+      v <- .fmt_var(group_rows$variance[i])
+      if (is.na(term_label) || term_label == "(intercept)") {
+        comp_parts <- c(comp_parts, paste0("intercept variance = ", v))
+      } else {
+        comp_parts <- c(comp_parts,
+                        sprintf("%s slope variance = %s", term_label, v))
+      }
+    }
+  }
+  if (nrow(resid_rows) > 0L && is.finite(resid_rows$variance[1L])) {
+    comp_parts <- c(comp_parts,
+                    paste0("residual variance = ",
+                           .fmt_var(resid_rows$variance[1L])))
+  }
+  components_part <- if (length(comp_parts) > 0L) {
+    paste(comp_parts, collapse = ", ")
+  } else NA_character_
+
+  # ICC sentence.
+  icc_val <- re$icc
+  icc_part <- if (!is.null(icc_val) && is.finite(icc_val)) {
+    sprintf("ICC = %.2f", icc_val)
+  } else NA_character_
+
+  # Assemble. Skip parts that are NA (e.g. icc on non-Gaussian glmer).
+  segments <- c(n_groups_part, components_part, icc_part)
+  segments <- segments[!is.na(segments)]
+  if (length(segments) == 0L) return(NULL)
+  paste0("Random effects: ", paste(segments, collapse = "; "), ".")
+}
+
+
+# Format a variance estimate for the random-effects sentence. Switches
+# to scientific notation when the value is very small (< 0.001) to
+# avoid printing "0.00" for boundary-singular fits where the variance
+# is near zero but informatively non-zero.
+.fmt_var <- function(x) {
+  if (!is.finite(x)) return("NA")
+  if (x < 0.001 && x > 0) return(formatC(x, format = "e", digits = 2))
+  sprintf("%.2f", x)
+}
+
+
 build_singular_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
   flags <- vapply(frames, function(f) {
