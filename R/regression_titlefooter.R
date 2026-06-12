@@ -74,6 +74,7 @@ build_regression_footer_from_frames <- function(
     build_vcov_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(frames),
     build_survival_footer_block_from_frames(frames),
+    build_ordinal_thresholds_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
     build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
@@ -382,6 +383,47 @@ format_p_threshold <- function(p) {
 
 # Frame-aware sibling of build_singular_footer_block().
 # Reads frame$info$extras$has_singular instead of extract$has_singular.
+# Phase 7c3: ordinal-thresholds footer block for cumulative-link
+# proportional-odds fits (polr, clm). Surfaces the (k - 1) cut-points
+# from info$extras$thresholds (a data.frame with term / estimate /
+# std_error / statistic / p_value).
+#
+# Single-model output:
+#   "Thresholds: 1|2 = -1.34, 2|3 = 1.25, 3|4 = 3.47, 4|5 = 5.01."
+#
+# Multi-model: "Model k:" prefix only when more than one frame
+# contributes content.
+build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+
+  per_model <- lapply(seq_along(frames), function(i) {
+    f <- frames[[i]]
+    txt <- .format_ordinal_thresholds_for_frame(f)
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) return(NULL)
+
+  if (length(per_model) == 1L) return(per_model[[1L]]$text)
+  lines <- vapply(per_model, function(pm) {
+    sprintf("Model %d: %s", pm$idx, pm$text)
+  }, character(1))
+  paste(lines, collapse = "\n")
+}
+
+
+.format_ordinal_thresholds_for_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+  if (!cls %in% c("polr", "clm")) return(NULL)
+  th <- frame$info$extras$thresholds
+  if (is.null(th) || !is.data.frame(th) || nrow(th) == 0L) return(NULL)
+  parts <- vapply(seq_len(nrow(th)), function(i) {
+    sprintf("%s = %.2f", th$term[i], th$estimate[i])
+  }, character(1))
+  paste0("Thresholds: ", paste(parts, collapse = ", "), ".")
+}
+
+
 # Phase 7c2: survival-specific footer block for coxph / cph / survreg /
 # flexsurvreg. Surfaces events count + concordance C (Cox) or
 # distribution + scale (parametric AFT).
