@@ -73,6 +73,7 @@ build_regression_footer_from_frames <- function(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(frames),
+    build_survival_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
     build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
@@ -381,6 +382,127 @@ format_p_threshold <- function(p) {
 
 # Frame-aware sibling of build_singular_footer_block().
 # Reads frame$info$extras$has_singular instead of extract$has_singular.
+# Phase 7c2: survival-specific footer block for coxph / cph / survreg /
+# flexsurvreg. Surfaces events count + concordance C (Cox) or
+# distribution + scale (parametric AFT).
+#
+# Single-model output examples:
+#   coxph / cph: "Events: 165 of 228; Concordance C = 0.60 (SE = 0.03)."
+#   survreg:    "Distribution: Weibull; scale = 0.75."
+#   flexsurv:   "Distribution: Weibull; shape = 1.33, scale = 531.05."
+build_survival_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+
+  per_model <- lapply(seq_along(frames), function(i) {
+    f <- frames[[i]]
+    txt <- .format_survival_for_frame(f)
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) return(NULL)
+
+  # Prefix with "Model k:" only when MORE THAN ONE frame contributes
+  # content; a single contributing model gets the line bare (no
+  # misleading "Model 1:" when its peers are silent on this block).
+  if (length(per_model) == 1L) return(per_model[[1L]]$text)
+  lines <- vapply(per_model, function(pm) {
+    sprintf("Model %d: %s", pm$idx, pm$text)
+  }, character(1))
+  paste(lines, collapse = "\n")
+}
+
+
+.format_survival_for_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+  if (cls %in% c("coxph", "cph")) {
+    .format_coxph_survival(frame)
+  } else if (cls == "survreg") {
+    .format_survreg_survival(frame)
+  } else if (cls == "flexsurvreg") {
+    .format_flexsurv_survival(frame)
+  } else {
+    NULL
+  }
+}
+
+
+.format_coxph_survival <- function(frame) {
+  ev    <- frame$info$extras$n_events
+  n_obs <- frame$info$n_obs
+  conc  <- frame$info$extras$concordance
+  parts <- character(0)
+  if (!is.null(ev) && is.finite(ev) && !is.null(n_obs)) {
+    parts <- c(parts, sprintf("Events: %d of %d", as.integer(ev),
+                              as.integer(n_obs)))
+  }
+  if (!is.null(conc) && is.list(conc) &&
+      !is.null(conc$c) && is.finite(conc$c)) {
+    if (!is.null(conc$se) && is.finite(conc$se)) {
+      parts <- c(parts, sprintf("Concordance C = %.2f (SE = %.2f)",
+                                conc$c, conc$se))
+    } else {
+      parts <- c(parts, sprintf("Concordance C = %.2f", conc$c))    # nocov
+    }
+  }
+  if (length(parts) == 0L) return(NULL)                              # nocov
+  paste0(paste(parts, collapse = "; "), ".")
+}
+
+
+.format_survreg_survival <- function(frame) {
+  dist  <- frame$info$extras$distribution
+  scale <- frame$info$extras$scale_parameter
+  parts <- character(0)
+  if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
+    parts <- c(parts, sprintf("Distribution: %s",
+                              .surv_title_dist(dist)))
+  }
+  if (!is.null(scale) && is.finite(scale)) {
+    parts <- c(parts, sprintf("scale = %.2f", scale))
+  }
+  if (length(parts) == 0L) return(NULL)                              # nocov
+  paste0(paste(parts, collapse = "; "), ".")
+}
+
+
+.format_flexsurv_survival <- function(frame) {
+  dist <- frame$info$extras$distribution
+  aux  <- frame$info$extras$aux_parameters
+  parts <- character(0)
+  if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
+    parts <- c(parts, sprintf("Distribution: %s",
+                              .surv_title_dist(dist)))
+  }
+  if (!is.null(aux) && is.numeric(aux) && length(aux) > 0L) {
+    aux_str <- paste(sprintf("%s = %.2f", names(aux), aux),
+                     collapse = ", ")
+    parts <- c(parts, aux_str)
+  }
+  if (length(parts) == 0L) return(NULL)                              # nocov
+  paste0(paste(parts, collapse = "; "), ".")
+}
+
+
+.surv_title_dist <- function(dist) {
+  switch(dist,
+    weibull       = "Weibull",
+    weibullPH     = "Weibull (PH)",
+    lognormal     = "Log-normal",
+    lnorm         = "Log-normal",
+    gompertz      = "Gompertz",
+    gamma         = "Gamma",
+    exponential   = "Exponential",
+    exp           = "Exponential",
+    llogis        = "Log-logistic",
+    loglogistic   = "Log-logistic",
+    gengamma      = "Generalised gamma",
+    genf          = "Generalised F",
+    gaussian      = "Gaussian",
+    paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
+  )
+}
+
+
 # Phase 7c1: random-effects footer block for mixed-effects fits.
 # Reads from frame$info$random_effects$variance_components (data.frame
 # with group / term / variance / sd / corr columns) and
@@ -402,9 +524,9 @@ build_random_effects_footer_block_from_frames <- function(frames) {
   per_model <- Filter(Negate(is.null), per_model)
   if (length(per_model) == 0L) return(NULL)
 
-  if (length(frames) == 1L) {
-    return(per_model[[1L]]$text)
-  }
+  # Prefix with "Model k:" only when more than one frame contributes
+  # content (parity with the survival footer's convention).
+  if (length(per_model) == 1L) return(per_model[[1L]]$text)
   lines <- vapply(per_model, function(pm) {
     sprintf("Model %d: %s", pm$idx, pm$text)
   }, character(1))

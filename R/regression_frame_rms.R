@@ -382,7 +382,14 @@ as_regression_frame.Glm <- function(fit,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     n_groups              = NULL,
-    rms_stats             = if (!is.null(fit$stats)) as.list(fit$stats) else NULL
+    rms_stats             = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
+    # Phase 7c2: for cph, expose events count alongside the subject
+    # count for the survival footer block. Mirrors survival::coxph
+    # info$extras$n_events.
+    n_events              = if (rms_class == "cph" && !is.null(fit$stats) &&
+                                "Events" %in% names(fit$stats)) {
+                              as.integer(fit$stats[["Events"]])
+                            } else NA_integer_
   )
 
   list(
