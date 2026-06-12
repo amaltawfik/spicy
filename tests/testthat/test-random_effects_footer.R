@@ -58,6 +58,71 @@ test_that("random effects footer fires for nlme::lme fits", {
 })
 
 
+# ---- Phase 7c6: REML / ML estimator label -------------------------------
+
+test_that("random effects footer annotates lmer (REML default) with '(REML)'", {
+  fit <- .fit_lmer_re()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "18 Subjects (REML)", fixed = TRUE)
+})
+
+test_that("random effects footer annotates lmer (REML=FALSE) with '(ML)'", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject),
+                    data = lme4::sleepstudy, REML = FALSE)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "18 Subjects (ML)", fixed = TRUE)
+})
+
+test_that("random effects footer annotates glmer with '(ML)' (REML undefined for GLMM)", {
+  skip_if_not_installed("lme4")
+  d <- mtcars; d$cyl <- factor(d$cyl)
+  suppressMessages(suppressWarnings(
+    fit <- lme4::glmer(am ~ mpg + (1 | cyl), data = d, family = binomial)
+  ))
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "(ML)", fixed = TRUE)
+  expect_false(grepl("(REML)", out, fixed = TRUE))
+})
+
+test_that("random effects footer annotates lme (REML default) with '(REML)'", {
+  fit <- .fit_lme_re()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "27 Subjects (REML)", fixed = TRUE)
+})
+
+test_that("random effects footer annotates lme (method='ML') with '(ML)'", {
+  skip_if_not_installed("nlme")
+  fit <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
+                   random = ~ 1 | Subject, method = "ML")
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "27 Subjects (ML)", fixed = TRUE)
+})
+
+test_that("random effects footer annotates glmmTMB (default ML) with '(ML)'", {
+  skip_if_not_installed("glmmTMB")
+  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
+                           data = lme4::sleepstudy)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "18 Subjects (ML)", fixed = TRUE)
+})
+
+test_that("random effects footer annotates glmmTMB (REML=TRUE) with '(REML)'", {
+  skip_if_not_installed("glmmTMB")
+  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
+                           data = lme4::sleepstudy, REML = TRUE)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
+  expect_match(out, "18 Subjects (REML)", fixed = TRUE)
+})
+
+
 # ---- 2. NOT fired for non-mixed classes ---------------------------------
 
 test_that("random effects footer is NULL for non-mixed-effects fits (lm)", {

@@ -415,9 +415,22 @@ as_regression_frame.glmerMod <- function(fit,
 #     grouping factors, random slopes, or glmer where residual variance
 #     is fixed).
 .merMod_random_effects <- function(fit) {
+  # lme4 estimates lmer by REML (default) or ML; glmer is always
+  # Laplace / AGQ likelihood (REML is not defined for GLMM in the
+  # standard sense). The method label feeds the footer's clarifying
+  # "(REML)" / "(ML)" annotation.
+  method <- if (inherits(fit, "glmerMod")) {
+    "ML"
+  } else {
+    tryCatch(
+      if (isTRUE(lme4::isREML(fit))) "REML" else "ML",
+      error = function(e) NA_character_
+    )
+  }
   vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
   if (is.null(vc)) {
-    return(list(variance_components = data.frame(), icc = NA_real_))
+    return(list(variance_components = data.frame(), icc = NA_real_,
+                method = method))                                       # nocov
   }
 
   rows <- list()
@@ -464,7 +477,7 @@ as_regression_frame.glmerMod <- function(fit,
 
   icc <- .merMod_icc(vc_df)
 
-  list(variance_components = vc_df, icc = icc)
+  list(variance_components = vc_df, icc = icc, method = method)
 }
 
 

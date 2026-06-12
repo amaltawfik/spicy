@@ -591,14 +591,25 @@ build_random_effects_footer_block_from_frames <- function(frames) {
 
   # Sample-size sentence: "18 Subjects" (or "5 Months and 18 Subjects" for
   # multiple grouping factors). Derived from frame$info$n_groups since
-  # this is more reliable than the var-components nrow.
+  # this is more reliable than the var-components nrow. Phase 7c6:
+  # append "(REML)" or "(ML)" when the per-class method has set
+  # re$method -- clarifies the estimator without implying inference
+  # (variance-component p-values are non-standard at the boundary;
+  # see Self & Liang 1987 + Brauer & Curtin 2018).
   ng <- frame$info$n_groups
   n_groups_part <- if (!is.null(ng) && length(ng) > 0L) {
     parts <- vapply(seq_along(ng), function(k) {
       sprintf("%d %s%s", ng[[k]], names(ng)[k],
               if (ng[[k]] > 1L) "s" else "")
     }, character(1))
-    paste(parts, collapse = " and ")
+    base <- paste(parts, collapse = " and ")
+    method_tag <- re$method
+    if (!is.null(method_tag) && is.character(method_tag) &&
+        length(method_tag) == 1L && !is.na(method_tag) && nzchar(method_tag)) {
+      paste0(base, " (", method_tag, ")")
+    } else {
+      base
+    }
   } else NA_character_
 
   # Variance components sentence: list each non-residual row + residual.

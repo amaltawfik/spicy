@@ -309,10 +309,15 @@ as_regression_frame.glmmTMB <- function(fit,
 
 # Extract conditional-component random-effects metadata.
 .glmmTMB_random_effects <- function(fit, is_gaussian_identity) {
+  # glmmTMB estimates by ML by default; REML is opt-in via the REML
+  # argument. The method label feeds the footer's "(REML)" / "(ML)"
+  # clarification.
+  method <- if (isTRUE(fit$modelInfo$REML)) "REML" else "ML"
   vc_all <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
   vc <- vc_all$cond
   if (is.null(vc)) {
-    return(list(variance_components = data.frame(), icc = NA_real_))
+    return(list(variance_components = data.frame(), icc = NA_real_,
+                method = method))                                       # nocov
   }
 
   rows <- list()
@@ -360,5 +365,5 @@ as_regression_frame.glmmTMB <- function(fit,
 
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
-  list(variance_components = vc_df, icc = icc)
+  list(variance_components = vc_df, icc = icc, method = method)
 }

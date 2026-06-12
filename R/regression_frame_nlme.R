@@ -385,9 +385,14 @@ as_regression_frame.gls <- function(fit,
 # returns a CHARACTER matrix with columns "Variance" / "StdDev" and
 # rows labelled with the random-effect term names + "Residual".
 .lme_random_effects <- function(fit) {
+  # nlme::lme exposes the estimator via fit$method: "REML" (default)
+  # or "ML". Feeds the footer's "(REML)" / "(ML)" clarification.
+  method <- if (!is.null(fit$method) &&
+                fit$method %in% c("REML", "ML")) fit$method else NA_character_
   vc <- tryCatch(nlme::VarCorr(fit), error = function(e) NULL)
   if (is.null(vc)) {
-    return(list(variance_components = data.frame(), icc = NA_real_))
+    return(list(variance_components = data.frame(), icc = NA_real_,
+                method = method))                                       # nocov
   }
   raw <- unclass(vc)
   rn <- rownames(raw)
@@ -411,7 +416,7 @@ as_regression_frame.gls <- function(fit,
   }
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
   icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
-  list(variance_components = vc_df, icc = icc)
+  list(variance_components = vc_df, icc = icc, method = method)
 }
 
 
