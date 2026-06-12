@@ -107,11 +107,14 @@ test_that("multinom: outcome_level populated on EVERY coefs row", {
 test_that("multinom: each outcome block includes (Intercept) + predictors", {
   fit <- .fit_multinom_iris()
   fr <- as_regression_frame(fit, model_id = "M1")
+  # Phase 7c4: term is prefixed with the outcome ("versicolor: (Intercept)")
+  # to keep each row uniquely identifiable through the body builder's
+  # per-model term-pivot.
   for (out in c("versicolor", "virginica")) {
     block <- fr$coefs[fr$coefs$outcome_level == out & !fr$coefs$is_ref, ]
-    expect_true("(Intercept)"   %in% block$term, info = out)
-    expect_true("Sepal.Length"  %in% block$term, info = out)
-    expect_true("Sepal.Width"   %in% block$term, info = out)
+    expect_true(paste0(out, ": (Intercept)")  %in% block$term, info = out)
+    expect_true(paste0(out, ": Sepal.Length") %in% block$term, info = out)
+    expect_true(paste0(out, ": Sepal.Width")  %in% block$term, info = out)
   }
 })
 
@@ -124,8 +127,10 @@ test_that("multinom: coefs estimates match stats::coef(fit) matrix entries", {
   cm <- stats::coef(fit)
   for (out in rownames(cm)) {
     for (term in colnames(cm)) {
+      # Phase 7c4: term is prefixed with the outcome.
+      prefixed_term <- paste0(out, ": ", term)
       row <- fr$coefs[fr$coefs$outcome_level == out &
-                       fr$coefs$term == term & !fr$coefs$is_ref, ]
+                       fr$coefs$term == prefixed_term & !fr$coefs$is_ref, ]
       expect_equal(row$estimate, unname(cm[out, term]),
                    tolerance = 1e-10,
                    info = paste(out, "::", term))
@@ -139,8 +144,9 @@ test_that("multinom: SE matches summary(fit)$standard.errors matrix entries", {
   sm <- summary(fit)$standard.errors
   for (out in rownames(sm)) {
     for (term in colnames(sm)) {
+      prefixed_term <- paste0(out, ": ", term)
       row <- fr$coefs[fr$coefs$outcome_level == out &
-                       fr$coefs$term == term & !fr$coefs$is_ref, ]
+                       fr$coefs$term == prefixed_term & !fr$coefs$is_ref, ]
       expect_equal(row$std_error, unname(sm[out, term]),
                    tolerance = 1e-10,
                    info = paste(out, "::", term))
@@ -212,7 +218,11 @@ test_that("multinom coefs match parameters::model_parameters() (oracle)", {
   for (i in seq_len(nrow(non_ref))) {
     spicy_row <- non_ref[i, ]
     # parameters reports per-outcome coefs; match on (Parameter, Response).
-    oracle_row <- oracle[oracle$Parameter == spicy_row$term &
+    # Phase 7c4: spicy's term is "<outcome>: <predictor>"; strip the
+    # prefix to compare against parameters' bare Parameter column.
+    bare_term <- sub(paste0("^", spicy_row$outcome_level, ": "), "",
+                     spicy_row$term)
+    oracle_row <- oracle[oracle$Parameter == bare_term &
                          oracle$Response == spicy_row$outcome_level, ]
     if (nrow(oracle_row) == 0L) next
     expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,

@@ -123,10 +123,18 @@ as_regression_frame.multinom <- function(fit,
     p_value <- 2 * stats::pnorm(-abs(stat))
     ci_lower <- est - z_crit * se
     ci_upper <- est + z_crit * se
+    # Phase 7c4: prefix the term with the outcome so it uniquely
+    # identifies each (outcome, predictor) pair. The downstream body
+    # builder uses `term` as the per-model pivot key; without the
+    # prefix, all 2-outcome rows for "(Intercept)" would collapse to
+    # a single rendered row. The displayed `label` carries the same
+    # prefix so the rendered text shows e.g.
+    # "versicolor: (Intercept)" / "virginica: (Intercept)" under the
+    # predictor section header.
     block <- data.frame(
-      term             = pred_names,
+      term             = paste0(out, ": ", pred_names),
       parent_var       = parent_var_vec,
-      label            = label_vec,
+      label            = paste0(out, ": ", label_vec),
       factor_level_pos = as.integer(pos_vec),
       is_ref           = rep(FALSE, length(pred_names)),
       estimate_type    = rep("B", length(pred_names)),
@@ -163,9 +171,9 @@ as_regression_frame.multinom <- function(fit,
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
+      term             = paste0(outcome, ": ", term_name),
       parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      label            = paste0(outcome, ": ", ref_lvl),
       factor_level_pos = as.integer(ref_pos),
       is_ref           = TRUE,
       estimate_type    = "B",

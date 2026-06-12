@@ -89,10 +89,17 @@ as_regression_frame.mlogit <- function(fit,
   ci_upper <- est + z_crit * se
 
   # Parse "<term>:<alternative>" into term + outcome_level. Plain
-  # (alternative-invariant) coefs get outcome_level = NA.
+  # (alternative-invariant) coefs get outcome_level = NA. Phase 7c4:
+  # for alternative-specific rows, prefix the label with the
+  # alternative so the rendered body shows which alternative each
+  # row is for (e.g. "boat: (Intercept)"). Invariant rows keep the
+  # bare label. mlogit's original coef names already encode the
+  # alternative in the term ("(Intercept):boat"), so term-uniqueness
+  # is preserved without further surgery here.
   parsed <- .mlogit_parse_terms(nm)
   parent_var    <- ifelse(is.na(parsed$alt), nm, parsed$term)
-  label         <- parsed$term
+  label         <- ifelse(is.na(parsed$alt), parsed$term,
+                          paste0(parsed$alt, ": ", parsed$term))
 
   data.frame(
     term             = nm,
