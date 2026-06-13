@@ -173,16 +173,24 @@ as_regression_frame.glmerMod <- function(fit,
     ci_lower <- est - t_crit * se
     ci_upper <- est + t_crit * se
   } else {
-    # lmer without lmerTest: Wald with df.residual().
-    dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
-    df      <- rep(as.numeric(dfr), length(est))
-    stat    <- est / se
-    p_value <- 2 * stats::pt(-abs(stat), df = df)
-    test_type_col <- rep("t", length(est))
-    t_crit <- stats::qt(0.5 + ci_level / 2, df = df)
-    ci_lower <- est - t_crit * se
-    ci_upper <- est + t_crit * se
+    # Phase 7c8a: lmer without lmerTest -> Wald-z (df = Inf).
+    # The previous fallback used naive t with df.residual(fit), which
+    # double-counts the within-cluster correlation and is wrong by
+    # every modern reference (Bates 2006; Bolker FAQ; Pinheiro & Bates
+    # 2000 § 2.4.2). Wald-z is the consensus fallback when proper
+    # Satterthwaite / Kenward-Roger df aren't available -- it matches
+    # SAS PROC MIXED (ddfm=z), Stata xtmixed (large-sample default),
+    # parameters::model_parameters(ci_method="wald"), and
+    # broom.mixed::tidy(effects="fixed"). For small samples
+    # (n_groups < ~30) we recommend lmerTest -- see the inform message
+    # the dispatcher emits the first time this branch fires.
+    df            <- rep(Inf, length(est))
+    stat          <- est / se
+    p_value       <- 2 * stats::pnorm(-abs(stat))
+    test_type_col <- rep("z", length(est))
+    z_crit        <- stats::qnorm(0.5 + ci_level / 2)
+    ci_lower      <- est - z_crit * se
+    ci_upper      <- est + z_crit * se
   }
 
   # Factor metadata: reuse the lm/glm helper. detect_factor_term_meta()

@@ -672,6 +672,39 @@ Satterthwaite p-values apply to the **fixed effects** of an
 automatically when the fit object inherits from `lmerModLmerTest`);
 they do not apply to variance components.
 
+### Fixed-effect p-values and CIs across classes
+
+The footer carries a one-line annotation naming the inference
+method used for the fixed-effect p-value and CI columns. The
+mapping is:
+
+* `lmerModLmerTest` (= `lmerTest::lmer()`, or `lme4::lmer()`
+  after `library(lmerTest)`): Satterthwaite t-test. p and CI use
+  `summary(fit)$coefficients[, c("df", "Pr(>|t|)")]` from
+  lmerTest. This is the recommended default whenever the
+  number of groups is below ~30 (Luke 2017).
+* `lmerMod` without lmerTest loaded: Wald-z, large-sample
+  approximation. df is reported as ∞ in the broom-canonical
+  frame; p-values come from `pnorm`. This matches
+  `parameters::model_parameters(ci_method = "wald")`, SAS
+  PROC MIXED with `ddfm = z`, and Stata `xtmixed`'s default.
+  The footer suggests loading lmerTest for small samples.
+* `glmerMod`: Wald-z asymptotic from `summary(fit)$coefficients[,
+  "Pr(>|z|)"]`. No t-distribution applies to GLMMs in general
+  (the link-scale residual variance is fixed for binomial /
+  Poisson families).
+* `glmmTMB`: Wald-z asymptotic from `summary(fit)$coefficients[,
+  "Pr(>|z|)"]`. Same logic as `glmerMod`.
+* `lme` (nlme): t-test with **containment degrees of freedom**.
+  p and df come from `summary(fit)$tTable`. Pinheiro & Bates
+  (2000) §2.4.2 — between-group covariates get df = n_groups −
+  rank, within-group covariates get the residual df.
+
+The footer line lets the reader see at a glance what's being
+reported. The behavioural choice is stable across classes:
+spicy uses each engine's own inference path, falling back to
+Wald-z only when no better df strategy is available.
+
 ### Hiding parts of the panel
 
 Three arguments control panel rendering:
@@ -868,6 +901,12 @@ Long, J. S., and Freese, J. (2014). *Regression Models for
 Categorical Dependent Variables Using Stata* (3rd ed.). Stata
 Press.
 
+Luke, S. G. (2017). Evaluating significance in linear mixed-
+effects models in R. *Behavior Research Methods*, 49(4), 1494–
+1502. (Empirical comparison of Wald-z, Wald-t, Kenward-Roger,
+and Satterthwaite; recommends Satterthwaite or KR for samples
+with few groups.)
+
 McFadden, D. (1974). Conditional logit analysis of qualitative
 choice behavior. In P. Zarembka (Ed.), *Frontiers in
 Econometrics* (pp. 105–142). Academic Press.
@@ -889,6 +928,10 @@ the coefficient of determination. *Biometrika*, 78(3), 691–692.
 Olejnik, S., and Algina, J. (2003). Generalized eta and omega
 squared statistics: Measures of effect size for some common
 research designs. *Psychological Methods*, 8(4), 434–447.
+
+Pinheiro, J. C., and Bates, D. M. (2000). *Mixed-Effects Models
+in S and S-PLUS*. Springer. §2.4.2 on containment degrees of
+freedom for the nlme implementation.
 
 Pustejovsky, J. E., and Tipton, E. (2018). Small-sample methods
 for cluster-robust variance estimation and hypothesis testing in

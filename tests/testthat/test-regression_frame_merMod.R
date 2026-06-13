@@ -130,11 +130,17 @@ test_that("lmer: lmerTest in NAMESPACE -> ci_method = 'satterthwaite' with finit
   expect_true(all(fr$coefs$test_type == "t"))
 })
 
-test_that("lmer: without lmerTest -> ci_method = 'wald'", {
+test_that("lmer: without lmerTest -> ci_method = 'wald', test_type = 'z', df = Inf", {
+  # Phase 7c8a: changed from naive-t (df.residual) to Wald-z (df = Inf).
+  # Naive-t double-counts the within-cluster correlation and is
+  # methodologically wrong; Wald-z matches parameters::model_parameters
+  # (ci_method = "wald"), SAS PROC MIXED (ddfm=z), and Stata xtmixed
+  # (large-sample default).
   fit <- .fit_lmer_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$ci_method, "wald")
-  expect_true(all(fr$coefs$test_type == "t"))
+  expect_true(all(fr$coefs$test_type == "z"))
+  expect_true(all(!is.finite(fr$coefs$df)))
 })
 
 

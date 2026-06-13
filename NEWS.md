@@ -6,6 +6,19 @@
   legacy alias for `"right"` from spicy < 0.11.0). Use one of
   `"decimal"` (default), `"center"`, or `"right"`.
 
+* `table_regression(fit)` with a bare `lme4::lmer()` fit (i.e.
+  `lmerTest` not loaded) now uses **Wald-z** for fixed-effect
+  p-values and CIs, with `df = ∞` in the broom-canonical frame.
+  Previous behaviour used a naive t-test with `df.residual(fit)`,
+  which is methodologically wrong (Bates 2006; Bolker FAQ —
+  it double-counts the within-cluster correlation). The new
+  default matches `parameters::model_parameters(ci_method = "wald")`,
+  SAS PROC MIXED with `ddfm = z`, and Stata `xtmixed`. Numeric
+  impact: p-values shift slightly (z vs t with the old df), CIs
+  shift slightly (z-quantile vs t-quantile). Load `lmerTest`
+  before fitting to keep Satterthwaite t-tests (already the
+  recommended default).
+
 ## New features
 
 * `table_regression()` now supports mixed-effects fits from
@@ -25,6 +38,14 @@
   `glmmTMB::confint(method = "Wald")`, or `nlme::intervals()`.
   See `vignette("table-regression")` (Mixed-effects models
   section) for the methodological rationale.
+
+* `table_regression()` footer now carries a one-line
+  **p-values** annotation for mixed-effects fits naming the
+  inference method used (Satterthwaite for `lmerModLmerTest`,
+  Wald-z for `glmerMod` / `glmmTMB` / `lmerMod` without
+  lmerTest, containment df for `nlme::lme`). Each per-class
+  branch tells the reader which engine produced the p-values
+  and CIs so the table is self-documenting.
 
 ## Minor improvements
 

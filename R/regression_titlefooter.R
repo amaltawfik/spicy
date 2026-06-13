@@ -75,6 +75,7 @@ build_regression_footer_from_frames <- function(
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
+    build_mixed_inference_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(frames,
                                                    show_re = show_re,
                                                    re_scale = re_scale,
@@ -587,6 +588,65 @@ build_random_effects_footer_block_from_frames <- function(
     sprintf("Model %d: %s", pm$idx, pm$text)
   }, character(1))
   paste(lines, collapse = "\n")
+}
+
+
+# Phase 7c8a: per-frame fixed-effect inference annotation for mixed-
+# effects fits. Returns NULL for non-mixed classes; otherwise a single
+# line stating the distribution + df strategy + source package, so a
+# publication-quality reader can tell at a glance whether the
+# p-values / CIs are Satterthwaite (the recommended default for
+# lmer when sample sizes are small), Wald-z (large-sample
+# approximation), or nlme's containment df.
+#
+# Single-model output (no prefix):
+#   "p-values: Satterthwaite t-test (lmerTest)."
+# Multi-model: prefixed "Model k: ...".
+build_mixed_inference_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+
+  per_model <- lapply(seq_along(frames), function(i) {
+    f <- frames[[i]]
+    txt <- .mixed_inference_label_for_frame(f)
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) return(NULL)
+
+  if (length(per_model) == 1L) return(per_model[[1L]]$text)
+  lines <- vapply(per_model, function(pm) {
+    sprintf("Model %d: %s", pm$idx, pm$text)
+  }, character(1))
+  paste(lines, collapse = "\n")
+}
+
+
+# Pick the right one-line annotation for a single frame. NULL when
+# the frame is not a mixed-effects fit.
+#
+# Dispatch on (class, ci_method) instead of just class: lmer fits
+# are normalised to class == "lmerMod" regardless of whether
+# lmerTest decorated the fit, so we read ci_method to tell apart
+# Satterthwaite ("satterthwaite") from Wald-z fallback ("wald").
+.mixed_inference_label_for_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+  ci  <- frame$info$ci_method %||% ""
+  if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
+    return("p-values: Satterthwaite t-test (lmerTest).")
+  }
+  switch(
+    cls,
+    "lmerMod" =
+      paste0("p-values: Wald-z, large-sample approximation. ",
+             "Load `lmerTest` for Satterthwaite t-tests."),
+    "glmerMod" =
+      "p-values: Wald-z asymptotic (lme4).",
+    "glmmTMB" =
+      "p-values: Wald-z asymptotic (glmmTMB).",
+    "lme" =
+      "p-values: t-test with containment df (nlme).",
+    NULL
+  )
 }
 
 
