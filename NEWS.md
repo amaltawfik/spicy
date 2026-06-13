@@ -6,6 +6,26 @@
   legacy alias for `"right"` from spicy < 0.11.0). Use one of
   `"decimal"` (default), `"center"`, or `"right"`.
 
+## New features
+
+* `table_regression()` now supports mixed-effects fits from
+  `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
+  `nlme::lme()`. The fixed-effects block renders identically to
+  `lm` / `glm`; a structured **Random effects panel** is added
+  below the fit-statistics footer with one row per variance
+  component, one ρ row per correlation between random terms,
+  ICC when defined, and a `N (group)` row per grouping factor.
+  Three new arguments control the panel:
+  * `show_re` (TRUE / FALSE) — suppress the panel entirely.
+  * `re_scale` (`"sd"` / `"variance"`) — display σ
+    (Gelman 2005, default) or σ².
+  * `re_columns` — subset of `c("est", "se", "ci")` chosen
+    from `est` (mandatory) + `se` + `ci`.
+  Wald SE and 95 % CI come from `merDeriv` (lme4),
+  `glmmTMB::confint(method = "Wald")`, or `nlme::intervals()`.
+  See `vignette("table-regression")` (Mixed-effects models
+  section) for the methodological rationale.
+
 ## Minor improvements
 
 * `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:

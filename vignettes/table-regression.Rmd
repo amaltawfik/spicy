@@ -49,9 +49,11 @@ long broom-canonical frame (`broom::tidy()`) and to a
 one-row-per-model glance summary (`broom::glance()`).
 
 `lm` and `glm` are both supported. The *Generalised linear
-models* section covers the glm-specific argument semantics;
-everything else applies to both. Mixed-effects models are on the
-roadmap.
+models* section covers the glm-specific argument semantics; the
+*Mixed-effects models* section covers the random-effects panel
+that mixed-effects fits add below the fit-statistics footer
+(`lmer`, `glmer`, `glmmTMB`, `lme`). Everything else applies to
+all four families.
 
 ## Basic usage
 
@@ -567,6 +569,130 @@ Satterthwaite-corrected AME path. Following the *transparency
 over rejection* rule, spicy accepts the fit and emits a
 `spicy_caveat` suggesting a refit with `lm()`.
 
+## Mixed-effects models
+
+`table_regression()` supports four mixed-effects classes:
+
+* `lme4::lmer()` and `lme4::glmer()`
+* `glmmTMB::glmmTMB()`
+* `nlme::lme()`
+
+The fixed-effects section of the table follows the same
+conventions as `lm` / `glm`. Below the fit-statistics footer
+(`n`, `AIC`, `BIC`, ...), a **Random effects panel** reports
+the variance components, the model's intra-class correlation
+(ICC) when defined, and the sample size at each grouping level:
+
+```{r mixed-basic, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("merDeriv", quietly = TRUE)}
+library(lme4)
+fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+table_regression(fit)
+```
+
+The panel header carries the estimator label — `(REML)` for
+restricted maximum likelihood (the `lmer` / `lme` default) or
+`(ML)` for full ML (`glmer`, `glmmTMB` default, and
+`lmer(..., REML = FALSE)`). The label is informational: it tells
+the reader which likelihood the variance estimates are anchored
+to, without implying that REML and ML estimates are
+interchangeable for inference.
+
+### Display scale: σ vs σ²
+
+By default the panel reports the random-effect **standard
+deviation** σ rather than the variance σ². Following Gelman
+(2005, p. 5), the SD scale is "*directly interpretable as the
+size of the variation across groups*" and lives on the same
+scale as the response variable, which is what readers usually
+want to compare to fixed-effect coefficients. Set
+`re_scale = "variance"` to switch back to σ²:
+
+```{r mixed-scale, eval = FALSE}
+table_regression(fit, re_scale = "variance")
+```
+
+The conversion is internally consistent: SE and CI are
+transported between scales by the Delta method
+(`SE(σ) = SE(σ²) / (2σ)`, `CI(σ) = √CI(σ²)`), so the panel
+values agree with `arm::sigma.hat()` (SD) and with
+`VarCorr(fit)` (variance) up to rounding.
+
+### Standard errors and confidence intervals
+
+Each variance row of the panel carries a Wald SE and 95 % CI
+(`est ± z · SE`, clamped at 0 for variances). The source
+depends on the class:
+
+* `lmer` / `glmer`: Hessian-based SE via `merDeriv` (Wang and
+  Merkle 2018). Requires the optional `merDeriv` package
+  (declared in `Suggests`); the column reads NA gracefully
+  when the package is missing or when the fit is singular
+  (`lme4::isSingular(fit) == TRUE`).
+* `glmmTMB`: native Wald CI from `confint(fit, method = "Wald")`,
+  with SE backed out by Delta method on σ.
+* `nlme::lme`: native Wald CI from `nlme::intervals(fit)`.
+
+For **correlations** between random terms (ρ rows in the
+panel), only the point estimate is shown — SE / CI for
+correlations need a full Delta method on the Cholesky
+factorisation, deferred to a future release.
+
+A methodological note. Wald CIs on variance components are
+known to be optimistic near the boundary σ = 0 (Self and
+Liang 1987 chi-bar-squared mixture; Bolker FAQ 2024). When
+robustness is critical, the recommended fallback is the
+profile-likelihood CI directly on the fit:
+
+```{r mixed-profile, eval = FALSE}
+confint(fit, method = "profile", parm = "theta_")  # lmer
+confint(fit, method = "profile")                   # glmmTMB
+nlme::intervals(fit)                                # lme (Wald-equivalent)
+```
+
+Profile CIs are not exposed as a `table_regression()` option
+because they are 10–100× slower than Wald on random-slope
+models (≈ 45 s on `sleepstudy` random slope vs ≈ 100 ms for
+Wald), which is incompatible with the function's "fast enough
+for a knit" goal. The panel reports the SE so the reader can
+form their own boundary-safe judgment; the `re_columns`
+argument (below) lets you drop SE and CI from the rendered
+output entirely if your reporting standard prefers
+**estimation without inference** on variance components
+(Gelman 2005; Bates et al. 2015).
+
+p-values are not reported for variance components. The null
+σ² = 0 sits on the boundary of the parameter space, so the
+standard Wald χ²₁ statistic has a chi-bar-squared limiting
+distribution (Self and Liang 1987; Stram and Lee 1994). LRT-
+based tests on a chi-bar-squared scale (`lmerTest::ranova()`)
+remain the recommended path when the question is genuinely
+"do we need this random term?". Note that `lmerTest`'s
+Satterthwaite p-values apply to the **fixed effects** of an
+`lmer` fit (and `table_regression()` will pick them up
+automatically when the fit object inherits from `lmerModLmerTest`);
+they do not apply to variance components.
+
+### Hiding parts of the panel
+
+Three arguments control panel rendering:
+
+* `show_re = FALSE` suppresses the panel entirely. Useful when
+  the random structure is documented in the manuscript text
+  and the table only needs the fixed-effects block.
+* `re_scale = "variance"` switches to σ² (see *Display scale*
+  above).
+* `re_columns` is a character subset of `c("est", "se", "ci")`.
+  `"est"` is mandatory. Drop SE and CI when reporting a
+  minimal table (`re_columns = "est"`) or drop only CI when
+  following a journal style that uses parenthesised SE
+  alone (`re_columns = c("est", "se")`).
+
+```{r mixed-cols, eval = FALSE}
+table_regression(fit, re_columns = "est")               # σ only
+table_regression(fit, re_columns = c("est", "se"))      # σ (SE)
+table_regression(fit, show_re = FALSE)                  # fixed effects only
+```
+
 ## Significance stars
 
 Stars are off by default. APA 7 §6.46 explicitly discourages
@@ -699,9 +825,19 @@ American Psychological Association (2020).
 *Publication Manual of the American Psychological Association*
 (7th ed.). Section 6.46.
 
+Bates, D., Mächler, M., Bolker, B., and Walker, S. (2015).
+Fitting linear mixed-effects models using lme4.
+*Journal of Statistical Software*, 67(1), 1–48.
+
+Bolker, B. (2024). GLMM FAQ. <https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html>.
+Random-effects p-values and CI section.
+
 Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003).
 *Applied Multiple Regression / Correlation Analysis for the
 Behavioral Sciences* (3rd ed.). Lawrence Erlbaum.
+
+Gelman, A. (2005). Analysis of variance — why it is more
+important than ever. *The Annals of Statistics*, 33(1), 1–53.
 
 Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. *Statistics in Medicine*, 27(15), 2865–2873.
@@ -762,11 +898,20 @@ Statistics*, 36(4), 672–683.
 Rothman, K. J. (1990). No adjustments are needed for multiple
 comparisons. *Epidemiology*, 1(1), 43–46.
 
+Self, S. G., and Liang, K.-Y. (1987). Asymptotic properties of
+maximum likelihood estimators and likelihood ratio tests under
+non-standard conditions. *Journal of the American Statistical
+Association*, 82(398), 605–610.
+
 Smithson, M. (2003). *Confidence Intervals*. Sage.
 
 Steiger, J. H. (2004). Beyond the F test: Effect size confidence
 intervals and tests of close fit in the analysis of variance and
 contrast analysis. *Psychological Methods*, 9(2), 164–182.
+
+Stram, D. O., and Lee, J. W. (1994). Variance components testing
+in the longitudinal mixed effects model. *Biometrics*, 50(4),
+1171–1177.
 
 Tjur, T. (2009). Coefficients of determination in logistic
 regression models — A new proposal: The coefficient of
@@ -775,6 +920,11 @@ discrimination. *The American Statistician*, 63(4), 366–372.
 Venables, W. N., and Ripley, B. D. (2002). *Modern Applied
 Statistics with S* (4th ed.). Springer. Section 7.2 on profile
 likelihood.
+
+Wang, T., and Merkle, E. C. (2018). merDeriv: Derivative
+computations for linear mixed effects models with application
+to robust standard errors. *Journal of Statistical Software*,
+87(Code Snippet 1), 1–16.
 
 Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019).
 Moving to a world beyond "p < 0.05". *The American Statistician*,

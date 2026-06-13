@@ -503,6 +503,46 @@
 #'   (native primitives handle the mixed-precision case), and
 #'   trivially decimal-aligns in `"merged"` mode (the fit-stat
 #'   values move out of the B column into the merged cell).
+#' @param show_re Logical. `TRUE` (default) prints the
+#'   random-effects panel below the fit-statistics footer for
+#'   mixed-effects fits (`lmer`, `glmer`, `glmmTMB`, `lme`).
+#'   `FALSE` suppresses the panel entirely. No effect on fits
+#'   without random effects (`lm`, `glm`, `coxph`, ...). The
+#'   panel header carries the estimator label (`(REML)` or
+#'   `(ML)`); see the *Mixed-effects models* section of
+#'   `vignette("table-regression")` for the methodological
+#'   rationale (Gelman 2005; Bates et al. 2015; Bolker FAQ).
+#' @param re_scale One of `"sd"` (default) or `"variance"`.
+#'   Controls the display scale of the random-effects panel:
+#'   \itemize{
+#'     \item `"sd"`: report the random-effect standard
+#'       deviation \eqn{\sigma} (Gelman 2005, *Technometrics*:
+#'       "*directly interpretable as the size of the variation
+#'       across groups*"). Standard error and CI converted via
+#'       the Delta method:
+#'       \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)};
+#'       \eqn{CI(\sigma) = \sqrt{CI(\sigma^2)}}.
+#'     \item `"variance"`: report \eqn{\sigma^2} (the canonical
+#'       internal scale; SE and CI come straight from the
+#'       Hessian / `nlme::intervals()` / `glmmTMB::confint()`
+#'       without rescaling).
+#'   }
+#'   Correlation rows (\eqn{\rho}) are unitless and pass through
+#'   either way.
+#' @param re_columns Character vector. Subset of
+#'   `c("est", "se", "ci")` controlling which columns of the
+#'   random-effects panel are rendered. `"est"` is mandatory.
+#'   Useful for slimming output (`re_columns = "est"`) or
+#'   for journals that want only standard errors
+#'   (`re_columns = c("est", "se")`).
+#'
+#'   Note. Standard errors and CIs are Wald (`est ± z * SE`,
+#'   clamped at 0 for variances). Wald can be optimistic near
+#'   the variance boundary (Self & Liang 1987 chi-bar-squared);
+#'   profile-likelihood intervals are available directly on the
+#'   fitted model (`confint(fit, method = "profile")` for
+#'   `lmer`) when robustness is critical. See the
+#'   *Mixed-effects models* section of `vignette("table-regression")`.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
