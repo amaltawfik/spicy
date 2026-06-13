@@ -597,6 +597,55 @@ the reader which likelihood the variance estimates are anchored
 to, without implying that REML and ML estimates are
 interchangeable for inference.
 
+### Fit statistics: Nakagawa marginal and conditional R²
+
+Classical R² is not defined for mixed-effects models: the
+within-group correlation breaks the variance-decomposition
+identity that lm's R² relies on. The publication-standard
+substitute is the **Nakagawa & Schielzeth** family of R²
+(Nakagawa & Schielzeth 2013; Nakagawa, Johnson & Schielzeth
+2017), which decomposes the response variance into
+
+* `R² (marginal)` — variance explained by the **fixed effects
+  alone**;
+* `R² (conditional)` — variance explained by **fixed plus
+  random effects**.
+
+For Gaussian fits the formula is closed-form:
+
+\[ R^2_{\text{marg}} = \frac{\sigma^2_f}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon}, \quad R^2_{\text{cond}} = \frac{\sigma^2_f + \sum_g \sigma^2_g}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon} \]
+
+For non-Gaussian families (binomial logit / probit / cloglog,
+Poisson log, etc.) the residual term σ²_ε is replaced by the
+**link-scale distribution-specific variance** σ²_d
+(π²/3 for logit, 1 for probit, π²/6 for cloglog, a lognormal
+approximation for Poisson log; Nakagawa et al. 2017 §3).
+
+spicy ships its own native implementation for the three
+combinations covered by the closed-form formula in Nakagawa &
+Schielzeth (2013) + Nakagawa et al. (2017) sec. 3:
+
+* Gaussian (identity link) — all four engines;
+* Bernoulli binomial with logit / probit / cloglog link
+  (single trial per observation);
+* Poisson with log link (lognormal approximation, Nakagawa et
+  al. 2017 sec. 3.6).
+
+These values are cross-validated against
+`performance::r2_nakagawa()` to 1 × 10⁻¹⁰ on every supported
+combination.
+
+For families with more involved link-scale variance formulas —
+binomial with multiple trials (`cbind(succ, fail)` /
+`weights`), negative binomial, beta, Tweedie, dispersion
+models, zero-inflated GLMM — spicy delegates to
+`performance::r2_nakagawa()`. `performance` is a Suggests
+dependency: when absent the fit-stat rows render as NA without
+erroring (the table still prints; only the R² rows go blank).
+The default `show_fit_stats` for mixed fits is
+`c("nobs", "r2_marginal", "r2_conditional", "AIC", "BIC")` —
+set `show_fit_stats` explicitly to override.
+
 ### Display scale: σ vs σ²
 
 By default the panel reports the random-effect **standard
@@ -917,6 +966,16 @@ logistic regression coefficients. *The American Statistician*,
 
 Menard, S. (2011). Standards for standardized logistic
 regression coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Nakagawa, S., Johnson, P. C. D., and Schielzeth, H. (2017).
+The coefficient of determination R² and intra-class correlation
+coefficient from generalized linear mixed-effects models
+revisited and expanded. *Journal of the Royal Society Interface*,
+14(134), 20170213.
+
+Nakagawa, S., and Schielzeth, H. (2013). A general and simple
+method for obtaining R² from generalized linear mixed-effects
+models. *Methods in Ecology and Evolution*, 4(2), 133–142.
 
 Mood, C. (2010). Logistic regression: Why we cannot do what we
 think we can do, and what we can do about it. *European

@@ -55,6 +55,11 @@
     "r2", "adj_r2", "omega2",
     # Pseudo-R\u00B2 family (glm only)
     "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
+    # Mixed-effects R\u00B2 (Nakagawa & Schielzeth 2013; Nakagawa,
+    # Johnson & Schielzeth 2017). marginal = variance explained by
+    # fixed effects alone; conditional = variance explained by
+    # fixed + random.
+    "r2_marginal", "r2_conditional",
     "sigma", "rmse",
     "f2",
     "AIC", "AICc", "BIC", "deviance",

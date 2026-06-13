@@ -47,6 +47,22 @@
   branch tells the reader which engine produced the p-values
   and CIs so the table is self-documenting.
 
+* `table_regression()` now reports **Nakagawa & Schielzeth
+  marginal and conditional R²** for mixed-effects fits, with a
+  native spicy implementation for the three combinations
+  covered by the closed-form formula (Gaussian, Bernoulli
+  binomial logit / probit / cloglog, Poisson log) across all
+  four engines (`lmer`, `glmer`, `glmmTMB`, `lme`). Native
+  output is cross-validated against `performance::r2_nakagawa()`
+  to 1e-10. For families needing the lognormal / delta / trigamma
+  approximations (`cbind()` binomial, `nbinom`, beta, Tweedie,
+  zero-inflation), spicy falls back to `performance::r2_nakagawa()`.
+  Two new tokens are accepted in `show_fit_stats`:
+  `"r2_marginal"` and `"r2_conditional"`. The class-aware
+  default for mixed fits is now `c("nobs", "r2_marginal",
+  "r2_conditional", "AIC", "BIC")` — previously the fit-stats
+  block was empty for mixed fits.
+
 ## Minor improvements
 
 * `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:

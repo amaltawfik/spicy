@@ -993,6 +993,14 @@ table_regression <- function(
     any_lm_only <- any(vapply(models, function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
     }, logical(1)))
+    # Phase 7c9a: mixed-effects class-aware default. lmer / glmer /
+    # glmmTMB / lme get nobs + Nakagawa marginal/conditional R^2 + AIC
+    # + BIC. classical R^2 is not defined, and the two R^2 of Nakagawa
+    # are the standard publication statistic for mixed models (Nakagawa
+    # & Schielzeth 2013; widely required by APA / journal templates).
+    any_mixed <- any(vapply(models, function(f) {
+      inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
+    }, logical(1)))
     show_fit_stats <- character(0)
     if (any_lm_only) {
       show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
@@ -1003,6 +1011,13 @@ table_regression <- function(
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
                             "AIC")
+    }
+    if (any_mixed) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm) "nobs",
+                            "r2_marginal",
+                            "r2_conditional",
+                            "AIC", "BIC")
     }
     show_fit_stats <- unique(show_fit_stats)
     if (isTRUE(nested) && length(models) >= 2L) {

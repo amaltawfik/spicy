@@ -310,6 +310,8 @@ as_regression_frame.glm <- function(fit, ...) {
     pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
     pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
+    r2_marginal          = .scalar_or_na(fs$r2_marginal),
+    r2_conditional       = .scalar_or_na(fs$r2_conditional),
     sigma                = .scalar_or_na(fs$sigma),
     rmse                 = .scalar_or_na(fs$rmse),
     f2                   = .scalar_or_na(fs$f2),

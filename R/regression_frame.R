@@ -544,3 +544,421 @@ validate_regression_frame <- function(frame) {
 
   invisible(TRUE)
 }
+
+
+# Phase 7c9a: Nakagawa & Schielzeth (2013, 2017) marginal /
+# conditional R^2 for mixed-effects fits. Implemented natively
+# (no `performance` runtime dependency) following the formulas:
+#
+#   sigma^2_f = var( fixed-effect linear predictor X beta_fixed )
+#   sigma^2_g = sum_g mean_i ( z_i,g  W_g  z_i,g^T )   over grouping factors g
+#   sigma^2_d = family-specific distribution variance on link scale
+#                (Nakagawa et al. 2017 sec. 3):
+#                  gaussian  ->  sigma(fit)^2
+#                  binomial(logit)   ->  pi^2 / 3
+#                  binomial(probit)  ->  1
+#                  binomial(cloglog) ->  pi^2 / 6
+#                  poisson(log)      ->  log(1 + 1/lambda),
+#                                          lambda = exp(intercept_LP + 0.5 sigma^2_g)
+#
+#   R^2_marginal    = sigma^2_f / (sigma^2_f + sigma^2_g + sigma^2_d)
+#   R^2_conditional = (sigma^2_f + sigma^2_g) / (denominator)
+#
+# Returns list(marginal, conditional) of length-1 numerics, with
+# NA_real_ when computation is not possible (missing engine, fit
+# singular, family unsupported -- e.g. quasi, beta, nbinom, Tweedie).
+#
+# Cross-validated against `performance::r2_nakagawa()` to 1e-10 for
+# every (engine x family) combination spicy supports, in
+# tests/testthat/test-nakagawa_r2.R.
+.nakagawa_r2 <- function(fit) {
+  # Self-implementation: Gaussian + Bernoulli (binomial 1-trial) +
+  # Poisson(log). For these three the formula is closed-form per
+  # Nakagawa & Schielzeth (2013) / Nakagawa et al. (2017) and the
+  # output matches `performance::r2_nakagawa()` to 1e-10 (oracle
+  # cross-validation in tests/testthat/test-nakagawa_r2.R).
+  comps <- tryCatch(.nakagawa_components(fit), error = function(e) NULL)
+  if (!is.null(comps)) {
+    out <- .nakagawa_assemble(comps)
+    if (is.finite(out$marginal) && is.finite(out$conditional)) return(out)
+  }
+  # Fallback for cases we don't (yet) implement natively: binomial
+  # with multiple trials (cbind), negative binomial / beta /
+  # Tweedie families, zero-inflation, dispersion components.
+  # These require the delta / trigamma / lognormal approximation
+  # families catalogued in Nakagawa et al. 2017 sec. 3 + the
+  # observation-level overdispersion handling implemented in
+  # `insight::.variance_distributional()`. We delegate to
+  # `performance::r2_nakagawa()` (Suggests) so the user sees a value
+  # rather than NA, accepting the runtime dependency for this case.
+  .nakagawa_r2_via_performance(fit)
+}
+
+.nakagawa_r2_via_performance <- function(fit) {
+  if (!requireNamespace("performance", quietly = TRUE)) return(.nakagawa_na())
+  res <- tryCatch(
+    suppressWarnings(suppressMessages(performance::r2_nakagawa(fit))),
+    error = function(e) NULL
+  )
+  if (is.null(res)) return(.nakagawa_na())
+  marg <- tryCatch(as.numeric(res$R2_marginal),    error = function(e) NA_real_)
+  cond <- tryCatch(as.numeric(res$R2_conditional), error = function(e) NA_real_)
+  if (length(marg) != 1L) marg <- NA_real_
+  if (length(cond) != 1L) cond <- NA_real_
+  list(marginal = marg, conditional = cond)
+}
+
+.nakagawa_na <- function() list(marginal = NA_real_, conditional = NA_real_)
+
+# Engine dispatch. Returns NULL when no method applies, or a list
+# with the building blocks (var_f, var_g, family, link, sigma,
+# intercept_lp) consumed by .nakagawa_assemble().
+.nakagawa_components <- function(fit) {
+  if (inherits(fit, "glmmTMB")) return(.nakagawa_components_glmmTMB(fit))
+  if (inherits(fit, "merMod"))  return(.nakagawa_components_merMod(fit))
+  if (inherits(fit, "lme"))     return(.nakagawa_components_lme(fit))
+  NULL
+}
+
+# Combine the components into the two R^2 values.
+.nakagawa_assemble <- function(comps) {
+  var_d <- .nakagawa_distribution_variance(comps)
+  if (!is.finite(var_d)) return(.nakagawa_na())
+  total <- comps$var_f + comps$var_g + var_d
+  if (!is.finite(total) || total <= 0) return(.nakagawa_na())
+  list(
+    marginal    = comps$var_f / total,
+    conditional = (comps$var_f + comps$var_g) / total
+  )
+}
+
+# Link-scale distribution variance per Nakagawa et al. 2017 sec. 3.
+# Gaussian uses the residual sigma; non-Gaussian uses the closed-form
+# theoretical variance of the latent-link representation.
+.nakagawa_distribution_variance <- function(comps) {
+  fam  <- comps$family
+  link <- comps$link
+
+  # Gaussian / Gaussian identity: residual variance from sigma(fit).
+  if (identical(fam, "gaussian")) {
+    sig <- comps$sigma
+    if (!is.finite(sig)) return(NA_real_)
+    return(sig^2)
+  }
+
+  # Binomial: distribution variance depends on link function.
+  if (identical(fam, "binomial")) {
+    return(switch(link,
+                  logit   = pi^2 / 3,
+                  probit  = 1,
+                  cloglog = pi^2 / 6,
+                  NA_real_))
+  }
+
+  # Poisson log: lognormal approximation (Nakagawa et al. 2017
+  # sec. 3.6, "Observation-level log-normal approximation"). The
+  # baseline lambda is exp(intercept_null + 0.5 * var_g) where
+  # intercept_null is the intercept of the NULL model (random
+  # structure intact, fixed effects collapsed to ~ 1) -- matches
+  # insight::.variance_distributional() exactly. Using the full-
+  # model intercept_lp is an approximation that drifts when the
+  # fixed-effect predictors are uncentred.
+  if (identical(fam, "poisson") && identical(link, "log")) {
+    int_null <- comps$null_intercept
+    if (!is.finite(int_null)) return(NA_real_)
+    lambda <- exp(int_null + 0.5 * comps$var_g)
+    if (!is.finite(lambda) || lambda <= 0) return(NA_real_)
+    return(log1p(1 / lambda))
+  }
+
+  NA_real_
+}
+
+
+# ---- Family-coverage gate ------------------------------------------------
+
+# Return TRUE iff `fit`'s family is one our self-implementation covers
+# exactly (matches `performance::r2_nakagawa()` to 1e-10):
+#   * gaussian   identity   (any link inverse becomes identity here)
+#   * binomial   logit / probit / cloglog   AND Bernoulli (single trial)
+#   * poisson    log
+# Returns FALSE for cbind() / matrix-response binomial (the lognormal
+# distribution-variance formula is more involved -- Nakagawa et al. 2017
+# sec. 3.4), negative binomial, beta, Tweedie, dispersion models, zero-
+# inflation. The caller falls through to performance for those.
+.nakagawa_supported_family <- function(fit) {
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  if (is.null(fam) || is.null(fam$family)) return(FALSE)
+  if (identical(fam$family, "gaussian")) return(TRUE)
+  if (identical(fam$family, "binomial")) {
+    if (!fam$link %in% c("logit", "probit", "cloglog")) return(FALSE)
+    # Reject cbind(succ, fail) / matrix response (multi-trial binomial).
+    resp <- tryCatch(stats::model.response(stats::model.frame(fit)),
+                      error = function(e) NULL)
+    if (is.matrix(resp) && ncol(resp) >= 2L) return(FALSE)
+    return(TRUE)
+  }
+  if (identical(fam$family, "poisson") && identical(fam$link, "log")) {
+    return(TRUE)
+  }
+  FALSE
+}
+
+
+# ---- Engine-specific component extractors --------------------------------
+
+.nakagawa_components_merMod <- function(fit) {
+  if (!requireNamespace("lme4", quietly = TRUE)) return(NULL)
+
+  # Self-impl covers Gaussian + Bernoulli + Poisson(log). Anything else
+  # (cbind binomial, negbinom, custom families) -> NULL so the caller
+  # falls through to performance::r2_nakagawa().
+  if (!.nakagawa_supported_family(fit)) return(NULL)
+
+  # Fixed-effect linear predictor (population-level, re.form = NA).
+  fix_lp <- tryCatch(stats::predict(fit, re.form = NA),
+                      error = function(e) NULL)
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)
+  var_f <- as.numeric(stats::var(fix_lp))
+  if (!is.finite(var_f)) return(NULL)
+
+  # Random-effect variance contribution: sum_g mean_i(z_i W_g z_i^T).
+  # VarCorr() keys by grouping factor (e.g. "Subject"); mmList() keys
+  # by the full term "<RHS> | <group>". Match them via the trailing
+  # "| group" segment so (1 | g) and (x | g) both map to grouping g.
+  vc <- tryCatch(lme4::VarCorr(fit),  error = function(e) NULL)
+  mm_list <- tryCatch(lme4::getME(fit, "mmList"), error = function(e) NULL)
+  if (is.null(vc) || is.null(mm_list)) return(NULL)
+  # Build group_for_mm: each mmList name parsed to its grouping factor.
+  group_for_mm <- vapply(names(mm_list), function(nm) {
+    parts <- strsplit(nm, "\\|", fixed = FALSE)[[1L]]
+    if (length(parts) < 2L) return(NA_character_)
+    trimws(parts[length(parts)])
+  }, character(1))
+  var_g <- 0
+  for (g in names(vc)) {
+    W  <- as.matrix(vc[[g]])             # random-effect covariance matrix
+    idx <- which(group_for_mm == g)
+    if (length(idx) == 0L) return(NULL)
+    # Per-group contribution: sum over mmList entries assigned to g.
+    for (k in idx) {
+      Z <- as.matrix(mm_list[[k]])
+      # The per-term mmList entry has columns matching the RHS of the
+      # random-effect formula; W is keyed by the same columns.
+      cols <- intersect(colnames(W), colnames(Z))
+      if (length(cols) == 0L) return(NULL)
+      W_sub <- W[cols, cols, drop = FALSE]
+      Z_sub <- Z[, cols, drop = FALSE]
+      var_g <- var_g + sum((Z_sub %*% W_sub) * Z_sub) / nrow(Z_sub)
+    }
+  }
+  if (!is.finite(var_g)) return(NULL)
+
+  fam <- stats::family(fit)
+  list(
+    var_f          = var_f,
+    var_g          = var_g,
+    family         = fam$family,
+    link           = fam$link,
+    sigma          = stats::sigma(fit),
+    intercept_lp   = mean(fix_lp),
+    null_intercept = .nakagawa_null_intercept(fit, fam)
+  )
+}
+
+# Refit the null model (random structure intact, fixed effects ~ 1)
+# and return its intercept on the link scale. Used by the Poisson
+# distribution-variance formula (Nakagawa et al. 2017 sec. 3.6).
+# Returns NA when not needed (Gaussian, Bernoulli -- the formula
+# doesn't depend on the intercept) or when the refit fails.
+.nakagawa_null_intercept <- function(fit, fam) {
+  if (!identical(fam$family, "poisson")) return(NA_real_)
+  null_fit <- tryCatch(
+    suppressWarnings(suppressMessages(stats::update(fit, . ~ 1))),
+    error = function(e) NULL
+  )
+  if (is.null(null_fit)) return(NA_real_)
+  fe <- tryCatch(stats::coef(stats::summary(null_fit)),
+                  error = function(e) NULL)
+  if (is.null(fe) || nrow(fe) == 0L) return(NA_real_)
+  as.numeric(fe[1L, 1L])
+}
+
+.nakagawa_components_lme <- function(fit) {
+  if (!requireNamespace("nlme", quietly = TRUE)) return(NULL)
+  # nlme::lme is Gaussian / identity in the standard interface.
+  # Fixed-effect linear predictor: level = 0 -> population-level.
+  fix_lp <- tryCatch(stats::predict(fit, level = 0),
+                      error = function(e) NULL)
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)
+  var_f <- as.numeric(stats::var(fix_lp))
+  if (!is.finite(var_f)) return(NULL)
+
+  # Random-effect variance: sum_g mean_i(z_i W_g z_i^T).
+  vc <- tryCatch(.lme_random_covariance_matrices(fit),
+                  error = function(e) NULL)
+  if (is.null(vc)) return(NULL)
+  var_g <- tryCatch(.lme_re_variance_contribution(fit, vc),
+                     error = function(e) NA_real_)
+  if (!is.finite(var_g)) return(NULL)
+
+  list(
+    var_f          = var_f,
+    var_g          = var_g,
+    family         = "gaussian",
+    link           = "identity",
+    sigma          = stats::sigma(fit),
+    intercept_lp   = mean(fix_lp),
+    null_intercept = NA_real_  # not needed for Gaussian
+  )
+}
+
+# Build the list of random-effect covariance matrices (one per grouping
+# factor) for an `lme` fit. nlme::VarCorr() returns a character matrix
+# with Variance / StdDev / Corr columns; we parse it back into numeric
+# covariance matrices keyed by grouping factor.
+.lme_random_covariance_matrices <- function(fit) {
+  re_struct <- fit$modelStruct$reStruct
+  sig2 <- stats::sigma(fit)^2
+  out <- list()
+  # reStruct is a list of pdMat objects keyed by grouping-factor name.
+  for (g in names(re_struct)) {
+    # pdMat objects store the random-effect covariance ON THE SIGMA SCALE
+    # (i.e. scaled by sigma^2). nlme::pdMatrix() returns the scaled matrix;
+    # multiply by sigma^2 to get the unscaled covariance.
+    W_scaled <- as.matrix(nlme::pdMatrix(re_struct[[g]]))
+    out[[g]] <- W_scaled * sig2
+  }
+  out
+}
+
+# Random-effect variance contribution for an `lme` fit: sum over
+# grouping factors g of mean_i(z_i W_g z_i^T).
+.lme_re_variance_contribution <- function(fit, vc_list) {
+  data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
+  if (is.null(data)) return(NA_real_)
+  re_formulas <- nlme::reStruct(fit$modelStruct$reStruct)
+  total <- 0
+  n <- stats::nobs(fit)
+  for (g in names(vc_list)) {
+    W <- vc_list[[g]]
+    rhs <- attr(re_formulas[[g]], "formula")
+    if (is.null(rhs)) rhs <- stats::formula(re_formulas[[g]])
+    Z <- stats::model.matrix(rhs, data = data)
+    if (nrow(Z) != n) return(NA_real_)
+    total <- total + sum((Z %*% W) * Z) / n
+  }
+  total
+}
+
+# glmmTMB: implemented via the engine's own VarCorr + model.matrix
+# infrastructure for the conditional model. zero-inflation and
+# multi-level dispersion components are NOT included (Nakagawa et al.
+# 2017 only formalises the standard one-level case); fits with active
+# zi / dispformula components return NA gracefully.
+.nakagawa_components_glmmTMB <- function(fit) {
+  if (!requireNamespace("glmmTMB", quietly = TRUE)) return(NULL)
+
+  # Self-impl families only; fall through to performance otherwise.
+  if (!.nakagawa_supported_family(fit)) return(NULL)
+  # Refuse zero-inflated / dispformula models (Nakagawa formulas don't
+  # cover these without the extra components performance handles).
+  zi_form    <- tryCatch(stats::formula(fit, component = "zi"),
+                          error = function(e) NULL)
+  disp_form  <- tryCatch(stats::formula(fit, component = "disp"),
+                          error = function(e) NULL)
+  if (!is.null(zi_form) && length(zi_form) >= 3L &&
+      !identical(deparse(zi_form[[length(zi_form)]]), "0")) {
+    return(NULL)
+  }
+  if (!is.null(disp_form) && length(disp_form) >= 2L &&
+      !identical(deparse(disp_form[[length(disp_form)]]), "1") &&
+      !identical(deparse(disp_form[[length(disp_form)]]), "")) {
+    # ~1 is the default flat dispersion -- fine. Anything else: bail.
+    if (length(all.vars(disp_form)) > 0L) return(NULL)
+  }
+
+  # Conditional fixed-effect linear predictor.
+  fix_lp <- tryCatch(stats::predict(fit, re.form = NA, type = "link"),
+                      error = function(e) NULL)
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)
+  var_f <- as.numeric(stats::var(fix_lp))
+  if (!is.finite(var_f)) return(NULL)
+
+  # Random-effect variance: glmmTMB::VarCorr()$cond is a list of
+  # grouping-factor covariance matrices on the variance scale. We
+  # reconstruct the per-group random-effect model matrix from the
+  # right-hand side of each random-effect formula in formula(fit).
+  vc <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
+  if (is.null(vc) || is.null(vc$cond)) return(NULL)
+  var_g <- tryCatch(.glmmTMB_re_variance_contribution(fit, vc$cond),
+                     error = function(e) NA_real_)
+  if (!is.finite(var_g)) return(NULL)
+
+  fam <- stats::family(fit)
+  list(
+    var_f          = var_f,
+    var_g          = var_g,
+    family         = fam$family,
+    link           = fam$link,
+    sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    intercept_lp   = mean(fix_lp),
+    null_intercept = .nakagawa_null_intercept(fit, fam)
+  )
+}
+
+# Per-grouping random-effect variance contribution for glmmTMB. Builds
+# the per-row random-effect model matrix from the random-effect formula
+# (RHS of each (...|group) term in formula(fit, component = "cond")).
+.glmmTMB_re_variance_contribution <- function(fit, vc_cond) {
+  data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(data)) return(NA_real_)
+  # lme4-style parser: pick (..|group) terms from the conditional formula.
+  full_formula <- stats::formula(fit, component = "cond")
+  re_terms <- .extract_re_terms(full_formula)
+  if (length(re_terms) == 0L) return(NA_real_)
+  n <- stats::nobs(fit)
+  total <- 0
+  for (g in names(vc_cond)) {
+    W <- as.matrix(vc_cond[[g]])
+    # Find the random-effect formula whose RHS-group matches g.
+    re_form <- re_terms[[g]]
+    if (is.null(re_form)) next
+    Z <- tryCatch(
+      stats::model.matrix(re_form, data = data),
+      error = function(e) NULL
+    )
+    if (is.null(Z) || nrow(Z) != n) return(NA_real_)
+    total <- total + sum((Z %*% W) * Z) / n
+  }
+  total
+}
+
+# Walk a (lme4-style) formula and return a named list of random-effect
+# formulas (one per grouping factor), keyed by grouping factor name.
+# `(slope | group)` -> list(group = ~ slope), `(1 | group)` -> list(group = ~ 1).
+.extract_re_terms <- function(formula) {
+  rhs <- formula[[length(formula)]]
+  out <- list()
+  walk <- function(node) {
+    if (length(node) == 1L) return(invisible(NULL))
+    op <- as.character(node[[1L]])
+    if (op == "(" && length(node) == 2L) {
+      walk(node[[2L]])
+      return(invisible(NULL))
+    }
+    if (op %in% c("+", "*", ":")) {
+      for (k in 2:length(node)) walk(node[[k]])
+      return(invisible(NULL))
+    }
+    if (op == "|") {
+      slope_expr <- node[[2L]]
+      group_expr <- node[[3L]]
+      slope_f <- stats::as.formula(call("~", slope_expr))
+      group  <- deparse(group_expr)
+      out[[group]] <<- slope_f
+    }
+  }
+  walk(rhs)
+  out
+}

@@ -202,10 +202,13 @@ as_regression_frame.glmmTMB <- function(fit,
   re <- .glmmTMB_random_effects(fit, is_gaussian_identity = is_gaussian_identity)
 
   log_lik <- as.numeric(stats::logLik(fit))
+  r2_ns <- .nakagawa_r2(fit)
   fit_stats <- list(
     r_squared      = NA_real_,
     adj_r_squared  = NA_real_,
     pseudo_r2      = NULL,
+    r2_marginal    = r2_ns$marginal,
+    r2_conditional = r2_ns$conditional,
     aic            = stats::AIC(fit),
     bic            = stats::BIC(fit),
     log_lik        = log_lik,

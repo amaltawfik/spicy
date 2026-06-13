@@ -366,10 +366,21 @@ as_regression_frame.gls <- function(fit,
 # Fit-stats common to lme and gls. r_squared / adj_r_squared are NA
 # (classical R^2 not defined for these models); pseudo_r2 is NULL.
 .nlme_fit_stats <- function(fit) {
+  # Phase 7c9a: lme fits get Nakagawa marginal / conditional R^2 via
+  # performance::r2_nakagawa(). gls fits don't have random effects, so
+  # the helper returns NA for both -- mirroring how lm's r_squared would
+  # not be reported as "marginal" / "conditional" either.
+  r2_ns <- if (inherits(fit, "lme")) {
+    .nakagawa_r2(fit)
+  } else {
+    list(marginal = NA_real_, conditional = NA_real_)
+  }
   list(
     r_squared      = NA_real_,
     adj_r_squared  = NA_real_,
     pseudo_r2      = NULL,
+    r2_marginal    = r2_ns$marginal,
+    r2_conditional = r2_ns$conditional,
     aic            = stats::AIC(fit),
     bic            = stats::BIC(fit),
     log_lik        = as.numeric(stats::logLik(fit)),

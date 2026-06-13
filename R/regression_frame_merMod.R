@@ -304,15 +304,19 @@ as_regression_frame.glmerMod <- function(fit,
   re <- .merMod_random_effects(fit)
 
   # Fit statistics. r_squared / adj_r_squared / pseudo_r2 are NA for
-  # mixed-effects models (classical R^2 is not defined; conditional /
-  # marginal R^2 require performance + MuMIn -- deferred). sigma is
+  # mixed-effects models (classical R^2 is not defined). Phase 7c9a:
+  # populate r2_marginal / r2_conditional via Nakagawa & Schielzeth
+  # (2013) when the `performance` package is available. sigma is
   # the residual SD from lme4::sigma() (Inf for poisson glmer because
   # the dispersion is fixed at 1; in practice sigma() returns NaN).
   log_lik <- as.numeric(stats::logLik(fit))
+  r2_ns <- .nakagawa_r2(fit)
   fit_stats <- list(
     r_squared      = NA_real_,
     adj_r_squared  = NA_real_,
     pseudo_r2      = NULL,
+    r2_marginal    = r2_ns$marginal,
+    r2_conditional = r2_ns$conditional,
     aic            = stats::AIC(fit),
     bic            = stats::BIC(fit),
     log_lik        = log_lik,
