@@ -633,6 +633,132 @@ build_random_effects_footer_block_from_frames <- function(frames) {
 }
 
 
+# Phase 7c7c: structured multi-line panel for the random-effects
+# footer block. Replaces the legacy one-line sentence when SE / CI
+# are populated. Format is sjPlot / MLwiN-inspired, on the SD scale
+# (per Gelman 2005), aligned with whitespace padding so each column
+# (label, estimate, SE, CI) lines up vertically.
+#
+# Layout (single grouping factor, random intercept + slope):
+#
+#   Random effects (REML):
+#     sigma Subject (Intercept)  37.12  (5.84)  [27.2, 51.1]
+#     sigma Subject Days          5.92  (1.25)  [ 4.3,  7.9]
+#     rho Subject                 0.07     —     —
+#     sigma (Residual)           30.99  (1.51)  [28.5, 33.7]
+#     ICC                         0.59
+#     N (Subject)                   18
+#
+# (Greek letters rendered as their unicode glyphs.)
+#
+# Returns NULL when no rows would render (graceful skip), so the
+# caller can fall back to the legacy sentence.
+.format_random_effects_panel <- function(frame, vc_var_scale) {
+  re <- frame$info$random_effects
+  # Convert to SD scale for display (Gelman: "more directly
+  # interpretable" since on the DV scale).
+  vc <- .re_components_on_scale(vc_var_scale, "sd")
+  if (nrow(vc) == 0L) return(NULL)                                     # nocov
+
+  is_corr <- if ("is_correlation" %in% colnames(vc)) {
+    vc$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc))
+  }
+  is_resid <- !is.na(vc$group) & vc$group == "Residual"
+
+  # Build per-row (label, value, se, ci) text tuples.
+  rows <- list()
+  for (i in seq_len(nrow(vc))) {
+    label <- .re_panel_label(vc$group[i], vc$term[i],
+                              is_corr[i], is_resid[i])
+    est   <- if (isTRUE(is_corr[i])) vc$corr[i] else vc$variance[i]
+    se    <- vc$std_error[i]
+    cilo  <- vc$ci_lower[i]
+    cihi  <- vc$ci_upper[i]
+    rows[[length(rows) + 1L]] <- list(
+      label = label,
+      val   = if (is.finite(est))  sprintf("%.2f", est) else "—",
+      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "—",
+      ci    = if (is.finite(cilo) && is.finite(cihi)) {
+        sprintf("[%.2f, %.2f]", cilo, cihi)
+      } else "—"
+    )
+  }
+
+  # ICC row (no SE/CI -- it's a derived quantity).
+  icc_val <- re$icc
+  if (!is.null(icc_val) && is.finite(icc_val)) {
+    rows[[length(rows) + 1L]] <- list(
+      label = "ICC",
+      val   = sprintf("%.2f", icc_val),
+      se    = "",
+      ci    = ""
+    )
+  }
+
+  # N (group) row -- integer counts.
+  ng <- frame$info$n_groups
+  if (!is.null(ng) && length(ng) > 0L) {
+    for (k in seq_along(ng)) {
+      rows[[length(rows) + 1L]] <- list(
+        label = sprintf("N (%s)", names(ng)[k]),
+        val   = sprintf("%d", as.integer(ng[[k]])),
+        se    = "",
+        ci    = ""
+      )
+    }
+  }
+
+  if (length(rows) == 0L) return(NULL)                                 # nocov
+
+  # Column widths for alignment.
+  labels <- vapply(rows, function(r) r$label, character(1))
+  vals   <- vapply(rows, function(r) r$val,   character(1))
+  ses    <- vapply(rows, function(r) r$se,    character(1))
+  cis    <- vapply(rows, function(r) r$ci,    character(1))
+  w_lab  <- max(nchar(labels))
+  w_val  <- max(nchar(vals))
+  w_se   <- max(nchar(ses))
+  w_ci   <- max(nchar(cis))
+
+  # Header line with method tag.
+  method_tag <- re$method
+  header <- if (!is.null(method_tag) && is.character(method_tag) &&
+                length(method_tag) == 1L && !is.na(method_tag) &&
+                nzchar(method_tag)) {
+    sprintf("Random effects (%s):", method_tag)
+  } else {
+    "Random effects:"
+  }
+
+  body_lines <- vapply(seq_along(rows), function(i) {
+    sprintf("  %-*s  %*s  %-*s  %-*s",
+            w_lab, labels[i],
+            w_val, vals[i],
+            w_se,  ses[i],
+            w_ci,  cis[i])
+  }, character(1))
+  # Trim trailing whitespace for ICC / N rows (which have empty se / ci).
+  body_lines <- sub("\\s+$", "", body_lines)
+
+  paste(c(header, body_lines), collapse = "\n")
+}
+
+
+# Label for a single row of the random-effects panel.
+.re_panel_label <- function(group, term, is_correlation, is_residual) {
+  if (isTRUE(is_residual)) return("σ (Residual)")
+  if (isTRUE(is_correlation)) {
+    return(sprintf("ρ %s (%s)", group, term))
+  }
+  if (is.na(term) || !nzchar(term) || term == "(Intercept)") {
+    return(sprintf("σ %s (Intercept)", group))
+  }
+  sprintf("σ %s %s", group, term)
+}
+
+
 # Format the per-frame random-effects sentence. Returns NULL when the
 # frame has no random-effects content (lm / glm / coxph / etc.).
 .format_random_effects_for_frame <- function(frame) {
@@ -640,6 +766,17 @@ build_random_effects_footer_block_from_frames <- function(frames) {
   if (is.null(re)) return(NULL)
   vc <- re$variance_components
   if (is.null(vc) || !is.data.frame(vc) || nrow(vc) == 0L) return(NULL)
+
+  # Phase 7c7c: when SE / CI are populated (Phase 7c7a+b), render a
+  # multi-line aligned panel instead of the legacy one-line sentence.
+  # The panel matches sjPlot / MLwiN-style publication layout per
+  # Gelman 2005 (SD scale) + Bates' guidance on profile-CI absence
+  # of p-values for variance components.
+  has_se <- "std_error" %in% colnames(vc) && any(is.finite(vc$std_error))
+  if (isTRUE(has_se)) {
+    panel <- .format_random_effects_panel(frame, vc)
+    if (!is.null(panel)) return(panel)
+  }
 
   # Identify the (single) primary grouping factor row(s) vs the residual row.
   is_resid <- !is.na(vc$group) & vc$group == "Residual"
@@ -670,9 +807,19 @@ build_random_effects_footer_block_from_frames <- function(frames) {
   } else NA_character_
 
   # Variance components sentence: list each non-residual row + residual.
+  # Phase 7c7b: skip correlation rows (is_correlation == TRUE); the
+  # rho is unitless and doesn't fit the "X variance = Y" sentence
+  # shape. The full panel rendering (Phase 7c7c) surfaces rho on its
+  # own row when present.
   comp_parts <- character(0)
   if (nrow(group_rows) > 0L) {
+    is_corr <- if ("is_correlation" %in% colnames(group_rows)) {
+      group_rows$is_correlation %in% TRUE
+    } else {
+      rep(FALSE, nrow(group_rows))
+    }
     for (i in seq_len(nrow(group_rows))) {
+      if (isTRUE(is_corr[i])) next
       term_label <- if (!is.na(group_rows$term[i]) && nzchar(group_rows$term[i])) {
         tolower(group_rows$term[i])
       } else NA_character_

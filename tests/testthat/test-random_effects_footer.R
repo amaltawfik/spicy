@@ -33,11 +33,12 @@ test_that("random effects footer fires for lmer fits", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
-  expect_match(out, "^Random effects:")
-  expect_match(out, "18 Subjects", fixed = TRUE)
-  expect_match(out, "intercept variance", fixed = TRUE)
-  expect_match(out, "residual variance", fixed = TRUE)
-  expect_match(out, "ICC", fixed = TRUE)
+  # Phase 7c7c: structured panel format (when SE/CI populated).
+  expect_match(out, "Random effects",          fixed = TRUE)
+  expect_match(out, "σ Subject (Intercept)",   fixed = TRUE)
+  expect_match(out, "σ (Residual)",            fixed = TRUE)
+  expect_match(out, "N (Subject)",             fixed = TRUE)
+  expect_match(out, "ICC",                     fixed = TRUE)
 })
 
 test_that("random effects footer fires for glmmTMB Gaussian-identity fits", {
@@ -45,26 +46,30 @@ test_that("random effects footer fires for glmmTMB Gaussian-identity fits", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
-  expect_match(out, "^Random effects:")
-  expect_match(out, "18 Subjects", fixed = TRUE)
+  expect_match(out, "Random effects", fixed = TRUE)
+  expect_match(out, "N (Subject)",    fixed = TRUE)
 })
 
 test_that("random effects footer fires for nlme::lme fits", {
   fit <- .fit_lme_re()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "^Random effects:")
-  expect_match(out, "27 Subjects", fixed = TRUE)
+  expect_match(out, "Random effects", fixed = TRUE)
+  expect_match(out, "N (Subject)",    fixed = TRUE)
+  # Subject count = 27 appears as integer in the N row.
+  expect_match(out, "27",             fixed = TRUE)
 })
 
 
 # ---- Phase 7c6: REML / ML estimator label -------------------------------
+# Phase 7c7c: estimator label now in the panel header, not the N-groups
+# sentence.
 
 test_that("random effects footer annotates lmer (REML default) with '(REML)'", {
   fit <- .fit_lmer_re()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "18 Subjects (REML)", fixed = TRUE)
+  expect_match(out, "Random effects (REML):", fixed = TRUE)
 })
 
 test_that("random effects footer annotates lmer (REML=FALSE) with '(ML)'", {
@@ -73,7 +78,7 @@ test_that("random effects footer annotates lmer (REML=FALSE) with '(ML)'", {
                     data = lme4::sleepstudy, REML = FALSE)
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "18 Subjects (ML)", fixed = TRUE)
+  expect_match(out, "Random effects (ML):", fixed = TRUE)
 })
 
 test_that("random effects footer annotates glmer with '(ML)' (REML undefined for GLMM)", {
@@ -92,7 +97,7 @@ test_that("random effects footer annotates lme (REML default) with '(REML)'", {
   fit <- .fit_lme_re()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "27 Subjects (REML)", fixed = TRUE)
+  expect_match(out, "Random effects (REML):", fixed = TRUE)
 })
 
 test_that("random effects footer annotates lme (method='ML') with '(ML)'", {
@@ -101,7 +106,7 @@ test_that("random effects footer annotates lme (method='ML') with '(ML)'", {
                    random = ~ 1 | Subject, method = "ML")
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "27 Subjects (ML)", fixed = TRUE)
+  expect_match(out, "Random effects (ML):", fixed = TRUE)
 })
 
 test_that("random effects footer annotates glmmTMB (default ML) with '(ML)'", {
@@ -110,7 +115,7 @@ test_that("random effects footer annotates glmmTMB (default ML) with '(ML)'", {
                            data = lme4::sleepstudy)
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "18 Subjects (ML)", fixed = TRUE)
+  expect_match(out, "Random effects (ML):", fixed = TRUE)
 })
 
 test_that("random effects footer annotates glmmTMB (REML=TRUE) with '(REML)'", {
@@ -119,7 +124,7 @@ test_that("random effects footer annotates glmmTMB (REML=TRUE) with '(REML)'", {
                            data = lme4::sleepstudy, REML = TRUE)
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "18 Subjects (REML)", fixed = TRUE)
+  expect_match(out, "Random effects (REML):", fixed = TRUE)
 })
 
 
@@ -139,19 +144,21 @@ test_that("random effects footer is NULL for an empty frames list", {
 
 # ---- 3. End-to-end integration via table_regression() -------------------
 
-test_that("table_regression() footer carries the Random effects line for lmer", {
+test_that("table_regression() footer carries the Random effects panel for lmer", {
   fit <- .fit_lmer_re()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "Random effects:", fixed = TRUE)
-  expect_match(combined, "18 Subjects", fixed = TRUE)
+  # Phase 7c7c: structured panel format
+  expect_match(combined, "Random effects",     fixed = TRUE)
+  expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
+  expect_match(combined, "N (Subject)",        fixed = TRUE)
 })
 
 test_that("table_regression() footer does NOT carry Random effects for lm", {
   fit <- .fit_lm_no_re()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_false(grepl("Random effects:", combined, fixed = TRUE))
+  expect_false(grepl("Random effects", combined, fixed = TRUE))
 })
 
 
