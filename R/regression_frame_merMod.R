@@ -475,6 +475,12 @@ as_regression_frame.glmerMod <- function(fit,
 
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
+  # Phase 7c7b: append correlation rows from VarCorr's correlation
+  # attribute. Estimates only; SE/CI for the correlation parameter
+  # require a multivariate Delta-method from the cov / variance
+  # parameters and remain NA in this sub-phase (improvement deferred).
+  vc_df <- .merMod_append_correlation_rows(vc_df, fit)
+
   # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale via
   # merDeriv. Falls back to NA when (a) merDeriv is not installed, (b)
   # the fit is singular (merDeriv crashes on var ~= 0), or (c) merDeriv
@@ -484,6 +490,46 @@ as_regression_frame.glmerMod <- function(fit,
   icc <- .merMod_icc(vc_df)
 
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Phase 7c7b: append correlation rows extracted from VarCorr's
+# correlation attribute. One row per off-diagonal pair within each
+# group's random-effects covariance block. Stores the point estimate;
+# SE / CI for ρ require the multivariate Delta-method from the
+# variance + covariance SE matrix and remain NA in this sub-phase.
+.merMod_append_correlation_rows <- function(vc_df, fit) {
+  if (!"is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation <- FALSE
+  }
+  vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
+  if (is.null(vc)) return(vc_df)                                       # nocov
+
+  rows_extra <- list()
+  for (group in names(vc)) {
+    g_vc <- vc[[group]]
+    corr_mat <- attr(g_vc, "correlation")
+    if (is.null(corr_mat) || nrow(corr_mat) < 2L) next
+    nms <- rownames(corr_mat)
+    for (i in seq_len(nrow(corr_mat) - 1L)) {
+      for (j in seq(from = i + 1L, to = ncol(corr_mat))) {
+        rows_extra[[length(rows_extra) + 1L]] <- data.frame(
+          group          = group,
+          term           = paste(nms[i], nms[j], sep = ", "),
+          variance       = NA_real_,
+          sd             = NA_real_,
+          corr           = corr_mat[i, j],
+          is_correlation = TRUE,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+  if (length(rows_extra) == 0L) return(vc_df)
+  extra_df <- do.call(rbind, rows_extra)
+  is_resid <- vc_df$group == "Residual"
+  rbind(vc_df[!is_resid, , drop = FALSE], extra_df,
+        vc_df[is_resid,  , drop = FALSE])
 }
 
 
@@ -523,26 +569,40 @@ as_regression_frame.glmerMod <- function(fit,
   n_fixed <- length(lme4::fixef(fit))
   re_se   <- se_full[-seq_len(n_fixed)]
 
+  # Identify the variance rows (one per term per group + residual);
+  # correlation rows added by Phase 7c7b live INSIDE vc_df but their
+  # SE / CI are not from merDeriv (the full Delta-method on rho is
+  # deferred). Compute SE only for the variance rows; correlation rows
+  # stay at NA.
+  is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc_df))
+  }
+  var_rows <- which(!is_corr)
+
   # The ordering of the RE block in merDeriv with ranpar = "var" is:
   #   for each grouping factor: variance(term_1), cov(term_1, term_2),
   #   variance(term_2), cov(term_1, term_3), cov(term_2, term_3),
   #   variance(term_3), ... -- i.e. lower-triangle by row including
-  #   diagonals (variances). The residual variance is the last entry.
-  # vc_df currently holds ONLY the variances (one row per term per
-  # group) + a Residual row at the end. So we extract the SE from the
-  # diagonal positions only, matching vc_df row by row.
+  #   diagonals. We extract the SE from the diagonal positions only,
+  #   matching the variance rows of vc_df.
   diag_positions <- .merMod_re_diag_positions(fit)
-  if (length(diag_positions) != nrow(vc_df) ||
+  if (length(diag_positions) != length(var_rows) ||
       max(diag_positions) > length(re_se)) {
     return(na_block(vc_df))                                            # nocov
   }
   se_diag <- re_se[diag_positions]
 
   z <- stats::qnorm(0.975)
-  vc_df$std_error <- as.numeric(se_diag)
-  vc_df$ci_lower  <- pmax(0, vc_df$variance - z * se_diag)
-  vc_df$ci_upper  <- vc_df$variance + z * se_diag
-  vc_df$ci_method <- "wald"
+  vc_df$std_error <- NA_real_
+  vc_df$ci_lower  <- NA_real_
+  vc_df$ci_upper  <- NA_real_
+  vc_df$ci_method <- NA_character_
+  vc_df$std_error[var_rows] <- as.numeric(se_diag)
+  vc_df$ci_lower[var_rows]  <- pmax(0, vc_df$variance[var_rows] - z * se_diag)
+  vc_df$ci_upper[var_rows]  <- vc_df$variance[var_rows] + z * se_diag
+  vc_df$ci_method[var_rows] <- "wald"
   vc_df
 }
 

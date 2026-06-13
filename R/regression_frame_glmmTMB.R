@@ -363,6 +363,10 @@ as_regression_frame.glmmTMB <- function(fit,
 
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
+  # Phase 7c7b: append correlation rows. glmmTMB's confint output
+  # exposes them under rownames like "Cor.Days.(Intercept)|Subject".
+  vc_df <- .glmmTMB_append_correlation_rows(vc_df, fit)
+
   # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale.
   # glmmTMB's confint(method = "Wald") returns intervals on the SD
   # scale; we square to convert to variance scale and Delta-method for
@@ -372,6 +376,47 @@ as_regression_frame.glmmTMB <- function(fit,
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Phase 7c7b: append correlation rows from glmmTMB's confint output.
+# Rows like "Cor.Days.(Intercept)|Subject" become correlation rows
+# tagged with `is_correlation = TRUE`.
+.glmmTMB_append_correlation_rows <- function(vc_df, fit) {
+  if (!"is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation <- FALSE
+  }
+  ci_sd <- tryCatch(
+    confint(fit, method = "Wald", parm = "theta_"),
+    error = function(e) NULL
+  )
+  if (is.null(ci_sd) || nrow(ci_sd) == 0L) return(vc_df)
+  ci_sd <- as.matrix(ci_sd)
+  cor_rows <- grep("^Cor\\.", rownames(ci_sd), value = TRUE)
+  if (length(cor_rows) == 0L) return(vc_df)
+
+  rows_extra <- list()
+  for (rn in cor_rows) {
+    # Format: "Cor.<term1>.<term2>|<group>"
+    # Parse: extract everything between "Cor." and "|", which becomes "<t1>.<t2>"
+    bare <- sub("^Cor\\.", "", rn)
+    parts <- strsplit(bare, "\\|", fixed = FALSE)[[1L]]
+    pair <- parts[1L]
+    group <- parts[2L]
+    rows_extra[[length(rows_extra) + 1L]] <- data.frame(
+      group          = group,
+      term           = pair,
+      variance       = NA_real_,
+      sd             = NA_real_,
+      corr           = ci_sd[rn, "Estimate"],
+      is_correlation = TRUE,
+      stringsAsFactors = FALSE
+    )
+  }
+  extra_df <- do.call(rbind, rows_extra)
+  is_resid <- vc_df$group == "Residual"
+  rbind(vc_df[!is_resid, , drop = FALSE], extra_df,
+        vc_df[is_resid,  , drop = FALSE])
 }
 
 
@@ -408,9 +453,32 @@ as_regression_frame.glmmTMB <- function(fit,
   # We need to match rownames to vc_df rows where group != "Residual"
   # and term matches the parenthesised content.
   z <- stats::qnorm(0.975)
+  is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc_df))
+  }
   for (i in seq_len(nrow(vc_df))) {
     g <- vc_df$group[i]
     t <- vc_df$term[i]
+
+    if (isTRUE(is_corr[i])) {
+      # Correlation row: confint exposes "Cor.<t>|<g>" with CI on rho
+      # in (-1, 1). Wald-symmetric on rho scale.
+      pattern_cor <- paste0("^Cor.", gsub("([()])", "\\\\\\1", t),
+                            "\\|", g, "$")
+      idx <- grep(pattern_cor, rownames(ci_sd))
+      if (length(idx) != 1L) next                                      # nocov
+      cor_est   <- ci_sd[idx, "Estimate"]
+      cor_lower <- ci_sd[idx, 1L]
+      cor_upper <- ci_sd[idx, 2L]
+      vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
+      vc_df$ci_lower[i]  <- cor_lower
+      vc_df$ci_upper[i]  <- cor_upper
+      vc_df$ci_method[i] <- "wald"
+      next
+    }
+
     if (identical(g, "Residual")) next  # glmmTMB confint doesn't include residual
     pattern <- paste0("^Std.Dev.", gsub("([()])", "\\\\\\1", t),
                       "\\|", g, "$")

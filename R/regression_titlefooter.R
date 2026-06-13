@@ -576,6 +576,63 @@ build_random_effects_footer_block_from_frames <- function(frames) {
 }
 
 
+# Phase 7c7b: convert a variance_components data.frame between the
+# variance scale (canonical storage in info$random_effects, where SE
+# and CI live on sigma^2) and the SD scale (the publication-friendly
+# default per Gelman, ARM). Returns a NEW data.frame with the requested
+# scale applied to the `variance` / `sd` / `std_error` / `ci_lower` /
+# `ci_upper` columns.
+#
+# Delta-method derivations:
+#   * SD <- sqrt(variance) (monotonic, fine for boundary at 0)
+#   * SE(sigma)  = SE(sigma^2) / (2 * sigma)
+#   * CI(sigma)  = sqrt(CI(sigma^2))  -- monotonic on sigma^2 >= 0
+#   * For correlation rows (is_correlation == TRUE), no scale change
+#     applies: ρ is unitless, so the values pass through unchanged.
+.re_components_on_scale <- function(vc_df, target_scale = c("sd", "variance")) {
+  target_scale <- match.arg(target_scale)
+  if (!is.data.frame(vc_df) || nrow(vc_df) == 0L) return(vc_df)
+  if (identical(target_scale, "variance")) return(vc_df)
+
+  out <- vc_df
+  is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
+    isTRUE(vc_df$is_correlation) | vc_df$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc_df))
+  }
+  # For non-correlation rows: convert variance -> sd via sqrt + Delta-method.
+  for (i in seq_len(nrow(vc_df))) {
+    if (isTRUE(is_corr[i])) next  # correlation row, leave as-is
+
+    var_est <- vc_df$variance[i]
+    if (is.finite(var_est) && var_est >= 0) {
+      out$variance[i] <- sqrt(var_est)  # column repurposed as "estimate"
+      out$sd[i]       <- sqrt(var_est)
+    } else {
+      out$variance[i] <- NA_real_                                       # nocov
+      out$sd[i]       <- NA_real_                                       # nocov
+    }
+
+    if ("std_error" %in% colnames(vc_df)) {
+      se_var <- vc_df$std_error[i]
+      sd_val <- out$sd[i]
+      if (is.finite(se_var) && is.finite(sd_val) && sd_val > 0) {
+        out$std_error[i] <- se_var / (2 * sd_val)
+      } else {
+        out$std_error[i] <- NA_real_
+      }
+    }
+    for (col in c("ci_lower", "ci_upper")) {
+      if (col %in% colnames(vc_df)) {
+        v <- vc_df[[col]][i]
+        out[[col]][i] <- if (is.finite(v) && v >= 0) sqrt(v) else NA_real_
+      }
+    }
+  }
+  out
+}
+
+
 # Format the per-frame random-effects sentence. Returns NULL when the
 # frame has no random-effects content (lm / glm / coxph / etc.).
 .format_random_effects_for_frame <- function(frame) {

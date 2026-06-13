@@ -416,6 +416,11 @@ as_regression_frame.gls <- function(fit,
   }
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
+  # Phase 7c7b: append correlation rows (off-diagonal entries from
+  # the random-effects covariance matrix). lme's intervals() exposes
+  # them under names like "cor((Intercept),age)" inside reStruct.
+  vc_df <- .lme_append_correlation_rows(vc_df, fit, group_nm)
+
   # Phase 7c7a: extend with Wald SE + 95% CI via nlme::intervals().
   # intervals() returns CIs on the SD scale (the natural log-SD
   # parametrisation backtransformed); we square to convert to variance
@@ -424,6 +429,51 @@ as_regression_frame.gls <- function(fit,
 
   icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
   list(variance_components = vc_df, icc = icc, method = method)
+}
+
+
+# Phase 7c7b: append correlation rows from the random-effects
+# covariance structure. For lme fits with `random = ~ X | group`, the
+# intercept-slope correlation appears in intervals()$reStruct under
+# rownames like "cor((Intercept),age)". The schema marker
+# `is_correlation = TRUE` distinguishes correlation rows from variance
+# rows for downstream renderers.
+.lme_append_correlation_rows <- function(vc_df, fit, group_nm) {
+  # Ensure schema columns even if no correlations are appended.
+  if (!"is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation <- FALSE
+  }
+  ci_obj <- tryCatch(
+    nlme::intervals(fit, which = "var-cov"),
+    error = function(e) NULL
+  )
+  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) return(vc_df)
+  group_ci <- ci_obj$reStruct[[group_nm]]
+  if (is.null(group_ci)) return(vc_df)                                  # nocov
+
+  cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
+  if (length(cor_rows) == 0L) return(vc_df)
+
+  rows_extra <- list()
+  for (rn in cor_rows) {
+    est <- group_ci[rn, "est."]
+    pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
+    rows_extra[[length(rows_extra) + 1L]] <- data.frame(
+      group          = group_nm,
+      term           = pair,
+      variance       = NA_real_,
+      sd             = NA_real_,
+      corr           = est,
+      is_correlation = TRUE,
+      stringsAsFactors = FALSE
+    )
+  }
+  extra_df <- do.call(rbind, rows_extra)
+  # Insert correlation rows BEFORE the residual (so the residual stays
+  # at the bottom of the group's section).
+  is_resid <- vc_df$group == "Residual"
+  rbind(vc_df[!is_resid, , drop = FALSE], extra_df,
+        vc_df[is_resid,  , drop = FALSE])
 }
 
 
@@ -450,21 +500,42 @@ as_regression_frame.gls <- function(fit,
   vc_df$ci_method <- NA_character_
 
   z <- stats::qnorm(0.975)
+  is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc_df))
+  }
   for (i in seq_len(nrow(vc_df))) {
     g <- vc_df$group[i]
     t <- vc_df$term[i]
+
+    if (isTRUE(is_corr[i])) {
+      # Correlation row: intervals reStruct exposes "cor(<pair>)" rows
+      # on the natural rho scale (not transformed). Wald CI symmetric.
+      group_ci <- ci_obj$reStruct[[g]]
+      if (is.null(group_ci)) next                                      # nocov
+      target <- paste0("cor(", t, ")")
+      row_idx <- match(target, rownames(group_ci))
+      if (is.na(row_idx)) next                                         # nocov
+      cor_est   <- group_ci[row_idx, "est."]
+      cor_lower <- group_ci[row_idx, "lower"]
+      cor_upper <- group_ci[row_idx, "upper"]
+      vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
+      vc_df$ci_lower[i]  <- cor_lower
+      vc_df$ci_upper[i]  <- cor_upper
+      vc_df$ci_method[i] <- "wald"
+      next
+    }
+
     if (identical(g, "Residual")) {
-      # intervals()$sigma is a named numeric vector on SD scale.
       sigma_ci <- ci_obj$sigma
       if (is.null(sigma_ci) || length(sigma_ci) != 3L) next            # nocov
       sd_est   <- unname(sigma_ci["est."])
       sd_lower <- unname(sigma_ci["lower"])
       sd_upper <- unname(sigma_ci["upper"])
     } else {
-      # intervals()$reStruct is a list keyed by grouping factor.
       group_ci <- ci_obj$reStruct[[g]]
       if (is.null(group_ci)) next                                      # nocov
-      # Row names look like "sd((Intercept))", "sd(age)", ...
       target <- paste0("sd(", t, ")")
       row_idx <- match(target, rownames(group_ci))
       if (is.na(row_idx)) next                                         # nocov

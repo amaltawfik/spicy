@@ -111,10 +111,12 @@ test_that("lmer (random slope): SE/CI populated for intercept + slope + residual
   fit <- .fit_lmer_slope()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
-  # 2 group rows (Intercept var + Days var) + 1 residual = 3 rows
-  expect_identical(nrow(vc), 3L)
-  expect_true(all(is.finite(vc$std_error)))
-  expect_true(all(vc$ci_lower >= 0))  # variance >= 0 enforced
+  # Phase 7c7b: 2 group variance rows + 1 correlation row + 1 residual = 4
+  expect_identical(nrow(vc), 4L)
+  var_rows <- vc[!(vc$is_correlation %in% TRUE), ]
+  expect_identical(nrow(var_rows), 3L)
+  expect_true(all(is.finite(var_rows$std_error)))
+  expect_true(all(var_rows$ci_lower >= 0))  # variance >= 0 enforced
 })
 
 test_that("lmer Wald CI brackets the point estimate", {
@@ -190,7 +192,8 @@ test_that("lme (random slope): SE/CI populated for both group rows + residual", 
   fit <- .fit_lme_slope()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
-  expect_identical(nrow(vc), 3L)
+  # Phase 7c7b: 2 group variance rows + 1 correlation row + 1 residual = 4
+  expect_identical(nrow(vc), 4L)
   expect_true(all(is.finite(vc$std_error)))
 })
 
