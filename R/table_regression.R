@@ -814,6 +814,9 @@ table_regression <- function(
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
+  show_re = TRUE,
+  re_scale = c("sd", "variance"),
+  re_columns = c("est", "se", "ci"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -1289,6 +1292,11 @@ table_regression <- function(
   # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
   # kept in the codebase for C5 cleanup so we can revert quickly if a
   # corner case slips through the byte-equivalence gates.
+  # Phase 7c7d: validate + thread random-effects display args through
+  # the footer dispatcher.
+  re_scale_val <- match.arg(re_scale)
+  re_columns_val <- .validate_re_columns(re_columns)
+
   footer_main <- build_regression_footer_from_frames(
     frames,
     standardized = standardized,
@@ -1296,7 +1304,10 @@ table_regression <- function(
     stars = stars,
     nested = nested,
     show_columns = show_columns,
-    reference_style = reference_style
+    reference_style = reference_style,
+    show_re = isTRUE(show_re),
+    re_scale = re_scale_val,
+    re_columns = re_columns_val
   )
 
   # "none" + flat: silent information loss flag. Inform-level

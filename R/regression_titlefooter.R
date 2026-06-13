@@ -68,11 +68,17 @@ build_regression_footer_from_frames <- function(
     stars = FALSE,
     nested = FALSE,
     show_columns = character(0),
-    reference_style = "row") {
+    reference_style = "row",
+    show_re = TRUE,
+    re_scale = "sd",
+    re_columns = c("est", "se", "ci")) {
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
-    build_random_effects_footer_block_from_frames(frames),
+    build_random_effects_footer_block_from_frames(frames,
+                                                   show_re = show_re,
+                                                   re_scale = re_scale,
+                                                   re_columns = re_columns),
     build_survival_footer_block_from_frames(frames),
     build_ordinal_thresholds_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
@@ -555,12 +561,20 @@ build_survival_footer_block_from_frames <- function(frames) {
 #   "Random effects: 18 Subjects; intercept variance = 1296.87,
 #    residual variance = 954.53; ICC = 0.58."
 # Multi-model: one line per affected model, prefixed "Model k:".
-build_random_effects_footer_block_from_frames <- function(frames) {
+build_random_effects_footer_block_from_frames <- function(
+    frames,
+    show_re = TRUE,
+    re_scale = "sd",
+    re_columns = c("est", "se", "ci")) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  # Phase 7c7d: user-disabled panel returns NULL early -- the random-
+  # effects block is fully suppressed from the footer.
+  if (!isTRUE(show_re)) return(NULL)
 
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
-    txt <- .format_random_effects_for_frame(f)
+    txt <- .format_random_effects_for_frame(f, re_scale = re_scale,
+                                              re_columns = re_columns)
     if (is.null(txt)) NULL else list(idx = i, text = txt)
   })
   per_model <- Filter(Negate(is.null), per_model)
@@ -653,12 +667,17 @@ build_random_effects_footer_block_from_frames <- function(frames) {
 #
 # Returns NULL when no rows would render (graceful skip), so the
 # caller can fall back to the legacy sentence.
-.format_random_effects_panel <- function(frame, vc_var_scale) {
+.format_random_effects_panel <- function(
+    frame,
+    vc_var_scale,
+    re_scale = "sd",
+    re_columns = c("est", "se", "ci")) {
   re <- frame$info$random_effects
-  # Convert to SD scale for display (Gelman: "more directly
-  # interpretable" since on the DV scale).
-  vc <- .re_components_on_scale(vc_var_scale, "sd")
+  # Phase 7c7d: convert to the user-requested display scale.
+  vc <- .re_components_on_scale(vc_var_scale, re_scale)
   if (nrow(vc) == 0L) return(NULL)                                     # nocov
+  show_se <- "se" %in% re_columns
+  show_ci <- "ci" %in% re_columns
 
   is_corr <- if ("is_correlation" %in% colnames(vc)) {
     vc$is_correlation %in% TRUE
@@ -732,12 +751,16 @@ build_random_effects_footer_block_from_frames <- function(frames) {
     "Random effects:"
   }
 
+  # Phase 7c7d: drop SE / CI columns from the rendered rows when the
+  # user opted out via re_columns. Estimate is always present.
   body_lines <- vapply(seq_along(rows), function(i) {
-    sprintf("  %-*s  %*s  %-*s  %-*s",
-            w_lab, labels[i],
-            w_val, vals[i],
-            w_se,  ses[i],
-            w_ci,  cis[i])
+    parts <- c(
+      sprintf("  %-*s", w_lab, labels[i]),
+      sprintf("%*s",    w_val, vals[i])
+    )
+    if (isTRUE(show_se)) parts <- c(parts, sprintf("%-*s", w_se, ses[i]))
+    if (isTRUE(show_ci)) parts <- c(parts, sprintf("%-*s", w_ci, cis[i]))
+    paste(parts, collapse = "  ")
   }, character(1))
   # Trim trailing whitespace for ICC / N rows (which have empty se / ci).
   body_lines <- sub("\\s+$", "", body_lines)
@@ -761,7 +784,10 @@ build_random_effects_footer_block_from_frames <- function(frames) {
 
 # Format the per-frame random-effects sentence. Returns NULL when the
 # frame has no random-effects content (lm / glm / coxph / etc.).
-.format_random_effects_for_frame <- function(frame) {
+.format_random_effects_for_frame <- function(
+    frame,
+    re_scale = "sd",
+    re_columns = c("est", "se", "ci")) {
   re <- frame$info$random_effects
   if (is.null(re)) return(NULL)
   vc <- re$variance_components
@@ -774,7 +800,9 @@ build_random_effects_footer_block_from_frames <- function(frames) {
   # of p-values for variance components.
   has_se <- "std_error" %in% colnames(vc) && any(is.finite(vc$std_error))
   if (isTRUE(has_se)) {
-    panel <- .format_random_effects_panel(frame, vc)
+    panel <- .format_random_effects_panel(frame, vc,
+                                            re_scale = re_scale,
+                                            re_columns = re_columns)
     if (!is.null(panel)) return(panel)
   }
 

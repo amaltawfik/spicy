@@ -768,6 +768,23 @@ validate_token_vector <- function(x, valid, arg) {
 # `reference_style` \u2014 match.arg() raises a clear base-R error on
 # invalid values. No spicy-specific helper needed.
 
+# Phase 7c7d: validate the `re_columns` argument of table_regression().
+# Accepts a character vector with elements from c("est", "se", "ci");
+# duplicates and unknown tokens error early. "est" is always required
+# (the table without an estimate column is meaningless).
+.validate_re_columns <- function(x) {
+  valid <- c("est", "se", "ci")
+  validate_token_vector(x, valid, arg = "re_columns")
+  if (!"est" %in% x) {
+    spicy_abort(
+      "`re_columns` must include \"est\" (the random-effect estimate).",
+      class = "spicy_invalid_input"
+    )
+  }
+  x
+}
+
+
 # Step 15: digit args (non-negative integer scalar). Reused for
 # `digits`, `p_digits`, `effect_size_digits`, `fit_digits`, `ic_digits`.
 validate_digit_arg <- function(x, name) {
