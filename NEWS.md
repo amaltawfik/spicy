@@ -19,77 +19,70 @@
   before fitting to keep Satterthwaite t-tests (already the
   recommended default).
 
-## New features
+## Mixed-effects support (new)
 
-* `table_regression()` now supports mixed-effects fits from
-  `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
-  `nlme::lme()`. The fixed-effects block renders identically to
-  `lm` / `glm`; a structured **Random effects panel** is added
-  below the fit-statistics footer with one row per variance
-  component, one ρ row per correlation between random terms,
-  ICC when defined, and a `N (group)` row per grouping factor.
-  Three new arguments control the panel:
-  * `show_re` (TRUE / FALSE) — suppress the panel entirely.
-  * `re_scale` (`"sd"` / `"variance"`) — display σ
-    (Gelman 2005, default) or σ².
-  * `re_columns` — subset of `c("est", "se", "ci")` chosen
-    from `est` (mandatory) + `se` + `ci`.
-  Wald SE and 95 % CI come from `merDeriv` (lme4),
-  `glmmTMB::confint(method = "Wald")`, or `nlme::intervals()`.
-  See `vignette("table-regression")` (Mixed-effects models
-  section) for the methodological rationale.
+`table_regression()` now accepts mixed-effects fits from
+`lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
+`nlme::lme()` alongside `lm` / `glm`. The fixed-effects block
+renders identically; a structured **Random effects panel** and
+two new fit-stats rows turn the output into a publication-ready
+mixed-model table. See `vignette("table-regression")`
+(*Mixed-effects models* section) for the full methodological
+walk-through; the new public surface is:
 
-* `table_regression()` footer now carries a one-line
-  **p-values** annotation for mixed-effects fits naming the
-  inference method used (Satterthwaite for `lmerModLmerTest`,
-  Wald-z for `glmerMod` / `glmmTMB` / `lmerMod` without
-  lmerTest, containment df for `nlme::lme`). Each per-class
-  branch tells the reader which engine produced the p-values
-  and CIs so the table is self-documenting.
+* **Random effects panel** (Bates et al. 2015; Gelman 2005).
+  One σ row per variance component with Wald SE + 95 % CI
+  (`merDeriv` for `lme4`; `glmmTMB::confint(method = "Wald")`
+  for `glmmTMB`; `nlme::intervals()` for `lme`), one ρ row per
+  correlation between random terms, an ICC row when defined,
+  and an `N (group)` row per grouping factor. Three new args:
+  * `show_re = TRUE` / `FALSE` — suppress the panel entirely.
+  * `re_scale = "sd"` (default, Gelman 2005) / `"variance"` —
+    display σ or σ²; Delta-method SE / CI conversion.
+  * `re_columns` — subset of `c("est", "se", "ci")`; `"est"`
+    mandatory. Drop SE and CI for a minimal table.
 
-* `table_regression()` now reports **Nakagawa & Schielzeth
-  marginal and conditional R²** for mixed-effects fits, with a
-  native spicy implementation for the three combinations
-  covered by the closed-form formula (Gaussian, Bernoulli
-  binomial logit / probit / cloglog, Poisson log) across all
-  four engines (`lmer`, `glmer`, `glmmTMB`, `lme`). Native
-  output is cross-validated against `performance::r2_nakagawa()`
-  to 1e-10. For families needing the lognormal / delta / trigamma
-  approximations (`cbind()` binomial, `nbinom`, beta, Tweedie,
-  zero-inflation), spicy falls back to `performance::r2_nakagawa()`.
-  Two new tokens are accepted in `show_fit_stats`:
-  `"r2_marginal"` and `"r2_conditional"`. The class-aware
-  default for mixed fits is now `c("nobs", "r2_marginal",
-  "r2_conditional", "AIC", "BIC")` — previously the fit-stats
-  block was empty for mixed fits.
+* **Nakagawa & Schielzeth marginal / conditional R²**
+  (Nakagawa & Schielzeth 2013; Nakagawa et al. 2017). Native
+  spicy implementation for the closed-form cases (Gaussian,
+  Bernoulli binomial logit / probit / cloglog, Poisson log),
+  cross-validated against `performance::r2_nakagawa()` to
+  1e-10. For families needing the lognormal / delta / trigamma
+  approximations (`cbind()` binomial, negative binomial, beta,
+  Tweedie, zero-inflation), spicy falls back to `performance`.
+  Two new `show_fit_stats` tokens: `"r2_marginal"`,
+  `"r2_conditional"`. The class-aware default for mixed fits
+  is now `c("nobs", "r2_marginal", "r2_conditional", "AIC",
+  "BIC")` (was empty).
 
-* `table_regression(list(m1, m2, ...), nested = TRUE)` now
-  supports **mixed-effects fits**. `lmer` / `glmer` / `glmmTMB` /
-  `nlme::lme` pairs route to a new `compute_one_pair_mixed()`
-  that uses `anova(prev, curr)` to derive the **likelihood-ratio
-  test** statistic (Δχ²), Δdeviance, ΔAIC, ΔBIC, and the LRT
-  p-value. The change-token vocabulary picks the mixed defaults
-  automatically (`c("aic_change", "bic_change", "lrt_change",
-  "p_change")`). Variance-explained change tokens (Δr², Δf², etc.)
-  are NA for mixed pairs — the F-test framework that grounds them
-  doesn't apply. For lmer REML pairs, lme4's `anova()` auto-refits
-  with ML before the LRT (suppressed message). Previously
-  `nested = TRUE` on mixed-effects fits errored
-  (`compute_one_pair_lm` doesn't know about lmer).
+* **`glmer` panel parity with `lmer`**. Non-Gaussian fits drop
+  the misleading "residual variance = 1.00" row (`lme4::sigma()`
+  returns a fixed dispersion, not an estimated parameter), and
+  the ICC switches to the **adjusted ICC** with the link-scale
+  distribution variance per Nakagawa et al. 2017 (π²/3 logit,
+  1 probit, π²/6 cloglog, lognormal Poisson). Matches
+  `performance::icc(fit)$ICC_adjusted` to 1e-6 on Bernoulli +
+  Poisson.
 
-* `table_regression()` random-effects panel now renders for
-  **glmer** (binomial logit / probit / cloglog, Poisson log) on
-  par with the lmer panel: per-component σ rows with Wald SE
-  (from `merDeriv`) + 95 % CI, an adjusted ICC row (using the
-  link-scale distribution variance per Nakagawa et al. 2017 —
-  π²/3 for logit, 1 for probit, π²/6 for cloglog, lognormal for
-  Poisson log), and the N (group) row. Previously glmer fell
-  back to the legacy one-line sentence with a misleading
-  "residual variance = 1.00" row (lme4 reports the fixed
-  binomial / Poisson dispersion as σ even though it is not an
-  estimated parameter). The Residual row is now suppressed for
-  non-Gaussian fits; the table self-documents the inference
-  path via the existing "p-values:" footer line.
+* **Per-class p-values footer**. A one-line annotation below
+  `Std. errors:` names the inference method used for each
+  mixed-effects frame:
+  Satterthwaite t-test (`lmerModLmerTest`); Wald-z, large-
+  sample approximation (bare `lmerMod`); Wald-z asymptotic
+  (`glmerMod` / `glmmTMB`); t-test with containment df (`lme`).
+  Identical per-model lines are consolidated into one when the
+  whole list shares the same method.
+
+* **`nested = TRUE` for mixed-effects**. Pairs of mixed fits
+  route to `compute_one_pair_mixed()`, which uses
+  `anova(prev, curr)` to derive the likelihood-ratio change
+  rows (`ΔAIC`, `ΔBIC`, `Δχ²`, p-change) for hierarchical
+  mixed-model selection. Default change tokens for all-mixed
+  lists: `c("aic_change", "bic_change", "lrt_change",
+  "p_change")` (Pinheiro & Bates 2000 §2.4.1). Variance-
+  explained change tokens (`Δr²`, `Δf²`) are NA — the F-test
+  framework doesn't apply. lme4's `anova()` auto-refits REML
+  fits with ML before the LRT (message suppressed).
 
 ## Minor improvements
 

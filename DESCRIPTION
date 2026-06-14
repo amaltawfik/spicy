@@ -9,7 +9,9 @@ Description: Provides tabulation, descriptive-summary, and
     measures (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's
     Tau-b, Somers' D, and others); categorical and continuous
     summary tables; regression coefficient tables for one or more
-    'lm' or 'glm' fits side by side; and outcome-by-group
+    'lm', 'glm', and mixed-effects fits ('lme4', 'glmmTMB', 'nlme')
+    side by side, with random-effects panel and Nakagawa-Schielzeth
+    marginal / conditional R-squared; and outcome-by-group
     comparison tables from linear models with optional additive
     covariate adjustment. All table outputs follow APA conventions
     and expose 'broom'-compatible 'tidy()' / 'glance()' methods
