@@ -470,19 +470,30 @@ as_regression_frame.glmerMod <- function(fit,
     # Residual sigma is attached at the top level by lme4 VarCorr.
   }
 
-  # Residual variance row (for lmer; glmer's family fixes it). sigma()
-  # may return NaN for glmer families with fixed dispersion -- skip in
-  # that case.
-  sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
-  if (is.finite(sigma_val)) {
-    rows[[length(rows) + 1L]] <- data.frame(
-      group     = "Residual",
-      term      = "",
-      variance  = sigma_val^2,
-      sd        = sigma_val,
-      corr      = NA_real_,
-      stringsAsFactors = FALSE
-    )
+  # Residual variance row -- ONLY for Gaussian (lmer + glmer with
+  # gaussian family). For binomial / poisson / etc. lme4::sigma()
+  # returns 1.0 by convention (fixed dispersion); reporting that as
+  # "residual variance = 1.00" is misleading for the reader and
+  # ICC degrades to the wrong value. The link-scale distribution
+  # variance (pi^2/3 for logit, etc.) is the publication-standard
+  # substitute for non-Gaussian families and is handled in
+  # `.merMod_icc()`; it does not appear as a "Residual" row of the
+  # variance-components table because it is not an estimated
+  # parameter with its own SE.
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+  if (is_gaussian) {
+    sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
+    if (is.finite(sigma_val)) {
+      rows[[length(rows) + 1L]] <- data.frame(
+        group     = "Residual",
+        term      = "",
+        variance  = sigma_val^2,
+        sd        = sigma_val,
+        corr      = NA_real_,
+        stringsAsFactors = FALSE
+      )
+    }
   }
 
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
@@ -499,7 +510,7 @@ as_regression_frame.glmerMod <- function(fit,
   # errors for any other reason. The body renderer treats NAs as em-dash.
   vc_df <- .merMod_attach_wald_se_ci(vc_df, fit)
 
-  icc <- .merMod_icc(vc_df)
+  icc <- .merMod_icc(vc_df, fit = fit)
 
   list(variance_components = vc_df, icc = icc, method = method)
 }
@@ -641,35 +652,94 @@ as_regression_frame.glmerMod <- function(fit,
     pos <- c(pos, cursor + diag_in_block)
     cursor <- cursor + block_size
   }
-  # Residual variance follows the last group block.
-  sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
-  if (is.finite(sigma_val)) {
-    pos <- c(pos, cursor + 1L)
+  # Residual variance follows the last group block -- ONLY for Gaussian.
+  # merDeriv's full vcov for glmer (binomial / poisson) excludes the
+  # residual since the dispersion is fixed; asking for a position there
+  # would walk off the end of the vector. Phase 7c10.
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+  if (is_gaussian) {
+    sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
+    if (is.finite(sigma_val)) {
+      pos <- c(pos, cursor + 1L)
+    }
   }
   pos
 }
 
 
 # ICC for a single random intercept: var_random / (var_random + var_residual).
-# Returns NA when the structure is more complex (multiple grouping factors,
-# random slopes, no residual variance) so downstream renderers can em-dash.
-.merMod_icc <- function(vc_df) {
+# For non-Gaussian fits (binomial / poisson) the residual is replaced by
+# the link-scale distribution variance (Nakagawa et al. 2017 -- adjusted
+# ICC):
+#   logit   -> pi^2 / 3
+#   probit  -> 1
+#   cloglog -> pi^2 / 6
+#   poisson(log) -> log(1 + 1/lambda),
+#                   lambda = exp(intercept_null + 0.5 * var_random)
+# Returns NA when the structure is more complex (multiple grouping
+# factors, random slopes, unsupported family/link) so downstream
+# renderers can em-dash.
+.merMod_icc <- function(vc_df, fit = NULL) {
   if (nrow(vc_df) == 0L) return(NA_real_)
+  # Phase 7c10: ignore correlation rows when counting variance rows.
+  if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df <- vc_df[!(vc_df$is_correlation %in% TRUE), , drop = FALSE]
+  }
   groups <- setdiff(unique(vc_df$group), "Residual")
-  resid_row <- vc_df[vc_df$group == "Residual", , drop = FALSE]
-  if (length(groups) != 1L || nrow(resid_row) != 1L) {
-    return(NA_real_)
-  }
+  if (length(groups) != 1L) return(NA_real_)
   group_rows <- vc_df[vc_df$group == groups[1L], , drop = FALSE]
-  if (nrow(group_rows) != 1L) {
-    return(NA_real_)
-  }
+  if (nrow(group_rows) != 1L) return(NA_real_)
   var_r <- group_rows$variance[1L]
-  var_e <- resid_row$variance[1L]
-  if (!is.finite(var_r) || !is.finite(var_e) || var_r + var_e <= 0) {
-    return(NA_real_)
+  if (!is.finite(var_r)) return(NA_real_)
+
+  resid_row <- vc_df[vc_df$group == "Residual", , drop = FALSE]
+  var_e <- if (nrow(resid_row) == 1L) {
+    resid_row$variance[1L]
+  } else {
+    # Non-Gaussian: link-scale distribution variance.
+    .merMod_link_distribution_variance(fit, var_r)
   }
+  if (!is.finite(var_e) || var_r + var_e <= 0) return(NA_real_)
   var_r / (var_r + var_e)
+}
+
+
+# Phase 7c10: link-scale distribution variance for non-Gaussian merMod
+# fits, used as the "residual" term in the adjusted ICC formula
+# (Nakagawa et al. 2017). Returns NA when the family/link pair is not
+# covered by the closed-form formulas.
+.merMod_link_distribution_variance <- function(fit, var_random) {
+  if (is.null(fit)) return(NA_real_)
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  if (is.null(fam)) return(NA_real_)
+  if (identical(fam$family, "binomial")) {
+    # cbind(succ, fail) / matrix-response binomial: the closed-form
+    # pi^2/3 only applies to single-trial Bernoulli. For trial-weighted
+    # binomial the distribution variance depends on the per-row trial
+    # counts (Nakagawa et al. 2017 sec. 3.4) -- defer rather than print
+    # a misleading value.
+    resp <- tryCatch(stats::model.response(stats::model.frame(fit)),
+                      error = function(e) NULL)
+    if (is.matrix(resp) && ncol(resp) >= 2L) return(NA_real_)
+    return(switch(fam$link,
+                  logit   = pi^2 / 3,
+                  probit  = 1,
+                  cloglog = pi^2 / 6,
+                  NA_real_))
+  }
+  if (identical(fam$family, "poisson") && identical(fam$link, "log")) {
+    # Lognormal approximation. Delegate to the shared null-model
+    # helper in regression_frame.R so the ICC and R^2 paths use the
+    # exact same intercept_null + var_g_null (cross-validation against
+    # insight::.variance_distributional() is tight: 1e-10).
+    null <- .nakagawa_null_params(fit, fam)
+    if (!is.finite(null$intercept) || !is.finite(null$var_g)) return(NA_real_)
+    lambda <- exp(null$intercept + 0.5 * null$var_g)
+    if (!is.finite(lambda) || lambda <= 0) return(NA_real_)
+    return(log1p(1 / lambda))
+  }
+  NA_real_
 }
 
 

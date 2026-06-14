@@ -657,16 +657,18 @@ validate_regression_frame <- function(frame) {
 
   # Poisson log: lognormal approximation (Nakagawa et al. 2017
   # sec. 3.6, "Observation-level log-normal approximation"). The
-  # baseline lambda is exp(intercept_null + 0.5 * var_g) where
-  # intercept_null is the intercept of the NULL model (random
-  # structure intact, fixed effects collapsed to ~ 1) -- matches
-  # insight::.variance_distributional() exactly. Using the full-
-  # model intercept_lp is an approximation that drifts when the
-  # fixed-effect predictors are uncentred.
+  # baseline lambda is exp(intercept_null + 0.5 * var_g_null) where
+  # the intercept AND the random-effect variance come from the NULL
+  # model (random structure intact, fixed effects collapsed to ~ 1).
+  # Using var_g of the FULL model would underestimate var_g_null,
+  # because removing the fixed-effect predictors shifts unexplained
+  # variance into the random-effect component. insight uses var_g_null;
+  # we match it to keep the cross-validation tolerance at 1e-10.
   if (identical(fam, "poisson") && identical(link, "log")) {
     int_null <- comps$null_intercept
-    if (!is.finite(int_null)) return(NA_real_)
-    lambda <- exp(int_null + 0.5 * comps$var_g)
+    var_g_null <- comps$null_var_g
+    if (!is.finite(int_null) || !is.finite(var_g_null)) return(NA_real_)
+    lambda <- exp(int_null + 0.5 * var_g_null)
     if (!is.finite(lambda) || lambda <= 0) return(NA_real_)
     return(log1p(1 / lambda))
   }
@@ -755,6 +757,7 @@ validate_regression_frame <- function(frame) {
   if (!is.finite(var_g)) return(NULL)
 
   fam <- stats::family(fit)
+  null <- .nakagawa_null_params(fit, fam)
   list(
     var_f          = var_f,
     var_g          = var_g,
@@ -762,26 +765,73 @@ validate_regression_frame <- function(frame) {
     link           = fam$link,
     sigma          = stats::sigma(fit),
     intercept_lp   = mean(fix_lp),
-    null_intercept = .nakagawa_null_intercept(fit, fam)
+    null_intercept = null$intercept,
+    null_var_g     = null$var_g
   )
 }
 
 # Refit the null model (random structure intact, fixed effects ~ 1)
-# and return its intercept on the link scale. Used by the Poisson
-# distribution-variance formula (Nakagawa et al. 2017 sec. 3.6).
-# Returns NA when not needed (Gaussian, Bernoulli -- the formula
-# doesn't depend on the intercept) or when the refit fails.
-.nakagawa_null_intercept <- function(fit, fam) {
-  if (!identical(fam$family, "poisson")) return(NA_real_)
-  null_fit <- tryCatch(
-    suppressWarnings(suppressMessages(stats::update(fit, . ~ 1))),
+# and return its intercept + random-effect variance on the link scale.
+# Used by the Poisson distribution-variance formula (Nakagawa et al.
+# 2017 sec. 3.6, "Observation-level log-normal approximation"). Returns
+# a list of NAs when not needed (Gaussian, Bernoulli -- the formula
+# doesn't depend on the null model) or when the refit fails.
+#
+# Note. `update(fit, . ~ 1)` strips the random part for lme4 fits
+# ("No random effects terms specified" error). Rebuild the formula as
+# `~ 1 + (re | g)` preserving the original random structure.
+.nakagawa_null_params <- function(fit, fam) {
+  na_pair <- list(intercept = NA_real_, var_g = NA_real_)
+  if (!identical(fam$family, "poisson")) return(na_pair)
+  bars <- tryCatch(
+    suppressWarnings(lme4::findbars(stats::formula(fit))),
     error = function(e) NULL
   )
-  if (is.null(null_fit)) return(NA_real_)
-  fe <- tryCatch(stats::coef(stats::summary(null_fit)),
-                  error = function(e) NULL)
-  if (is.null(fe) || nrow(fe) == 0L) return(NA_real_)
-  as.numeric(fe[1L, 1L])
+  if (is.null(bars) || length(bars) == 0L) return(na_pair)
+  null_rhs <- paste0("1 + ",
+                     paste(vapply(bars, function(b) {
+                       paste0("(", deparse(b), ")")
+                     }, character(1)), collapse = " + "))
+  null_formula <- stats::reformulate(
+    null_rhs,
+    response = as.character(stats::formula(fit)[[2L]])
+  )
+  null_fit <- tryCatch(
+    suppressWarnings(suppressMessages(stats::update(fit, null_formula))),
+    error = function(e) NULL
+  )
+  if (is.null(null_fit)) return(na_pair)
+  fe <- tryCatch(lme4::fixef(null_fit), error = function(e) NULL)
+  if (is.null(fe) || length(fe) == 0L) return(na_pair)
+  int <- as.numeric(fe[1L])
+  # Random-effect variance of the null model: same Z W Z' / n formula
+  # used for the full model. For the common `(1 | g)` structure this
+  # collapses to the single intercept variance from VarCorr.
+  vc_null <- tryCatch(lme4::VarCorr(null_fit), error = function(e) NULL)
+  if (is.null(vc_null)) return(list(intercept = int, var_g = NA_real_))
+  mm_null <- tryCatch(lme4::getME(null_fit, "mmList"),
+                       error = function(e) NULL)
+  if (is.null(mm_null)) return(list(intercept = int, var_g = NA_real_))
+  group_for_mm <- vapply(names(mm_null), function(nm) {
+    parts <- strsplit(nm, "\\|", fixed = FALSE)[[1L]]
+    if (length(parts) < 2L) return(NA_character_)
+    trimws(parts[length(parts)])
+  }, character(1))
+  var_g_null <- 0
+  for (g in names(vc_null)) {
+    W <- as.matrix(vc_null[[g]])
+    idx <- which(group_for_mm == g)
+    if (length(idx) == 0L) next
+    for (k in idx) {
+      Z <- as.matrix(mm_null[[k]])
+      cols <- intersect(colnames(W), colnames(Z))
+      if (length(cols) == 0L) next
+      W_sub <- W[cols, cols, drop = FALSE]
+      Z_sub <- Z[, cols, drop = FALSE]
+      var_g_null <- var_g_null + sum((Z_sub %*% W_sub) * Z_sub) / nrow(Z_sub)
+    }
+  }
+  list(intercept = int, var_g = var_g_null)
 }
 
 .nakagawa_components_lme <- function(fit) {
@@ -809,7 +859,8 @@ validate_regression_frame <- function(frame) {
     link           = "identity",
     sigma          = stats::sigma(fit),
     intercept_lp   = mean(fix_lp),
-    null_intercept = NA_real_  # not needed for Gaussian
+    null_intercept = NA_real_,
+    null_var_g     = NA_real_   # not needed for Gaussian
   )
 }
 
@@ -896,6 +947,7 @@ validate_regression_frame <- function(frame) {
   if (!is.finite(var_g)) return(NULL)
 
   fam <- stats::family(fit)
+  null <- .nakagawa_null_params(fit, fam)
   list(
     var_f          = var_f,
     var_g          = var_g,
@@ -903,7 +955,8 @@ validate_regression_frame <- function(frame) {
     link           = fam$link,
     sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     intercept_lp   = mean(fix_lp),
-    null_intercept = .nakagawa_null_intercept(fit, fam)
+    null_intercept = null$intercept,
+    null_var_g     = null$var_g
   )
 }
 

@@ -63,6 +63,20 @@
   "r2_conditional", "AIC", "BIC")` — previously the fit-stats
   block was empty for mixed fits.
 
+* `table_regression()` random-effects panel now renders for
+  **glmer** (binomial logit / probit / cloglog, Poisson log) on
+  par with the lmer panel: per-component σ rows with Wald SE
+  (from `merDeriv`) + 95 % CI, an adjusted ICC row (using the
+  link-scale distribution variance per Nakagawa et al. 2017 —
+  π²/3 for logit, 1 for probit, π²/6 for cloglog, lognormal for
+  Poisson log), and the N (group) row. Previously glmer fell
+  back to the legacy one-line sentence with a misleading
+  "residual variance = 1.00" row (lme4 reports the fixed
+  binomial / Poisson dispersion as σ even though it is not an
+  estimated parameter). The Residual row is now suppressed for
+  non-Gaussian fits; the table self-documents the inference
+  path via the existing "p-values:" footer line.
+
 ## Minor improvements
 
 * `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
