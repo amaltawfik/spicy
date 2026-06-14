@@ -269,11 +269,16 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 
 Default change tokens auto-injected: `c("r2_change", "f_change",
 "p_change")` for `lm` (APA hierarchical-regression standard),
-`c("lrt_change", "p_change")` for `glm` (Hosmer & Lemeshow §3.5).
-Customise via `show_fit_stats`; the order of tokens controls the
-order of the rows. Other change tokens are available:
-`"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
-`"aic_change"` / `"aicc_change"` / `"bic_change"`.
+`c("lrt_change", "p_change")` for `glm` (Hosmer & Lemeshow §3.5),
+`c("aic_change", "bic_change", "lrt_change", "p_change")` for
+mixed-effects fits (`lmer` / `glmer` / `glmmTMB` / `nlme::lme` —
+Pinheiro & Bates 2000 §2.4.1). Customise via `show_fit_stats`;
+the order of tokens controls the order of the rows. Other change
+tokens are available: `"adj_r2_change"`, `"f2_change"`,
+`"deviance_change"`, `"aic_change"` / `"aicc_change"` /
+`"bic_change"`. Variance-explained change tokens (Δr², Δf²) are
+NA for mixed-effects pairs — the F-test framework that grounds
+them doesn't apply.
 
 Validation is strict: identical `nobs` AND identical response
 across all models, otherwise a `spicy_invalid_input` error
@@ -753,6 +758,72 @@ The footer line lets the reader see at a glance what's being
 reported. The behavioural choice is stable across classes:
 spicy uses each engine's own inference path, falling back to
 Wald-z only when no better df strategy is available.
+
+### glmer (logistic / Poisson) and the adjusted ICC
+
+`glmer` fits render the same panel as `lmer` — σ rows with Wald
+SE and 95 % CI from `merDeriv`, an ICC row, and the N (group)
+row. Two things differ from the lmer case:
+
+* No "σ (Residual)" row. `lme4::sigma()` returns the fixed
+  dispersion parameter (1 for `binomial` and `poisson`) by
+  convention, but this is not an estimated parameter with its
+  own SE — reporting it as a residual variance is misleading.
+  spicy suppresses the row for non-Gaussian fits.
+* The ICC uses the **link-scale distribution variance** in the
+  denominator (Nakagawa, Johnson & Schielzeth 2017 — adjusted
+  ICC):
+
+  | Family · link    | distribution variance σ²_d |
+  |------------------|----------------------------|
+  | binomial logit   | π²/3 ≈ 3.29                |
+  | binomial probit  | 1                          |
+  | binomial cloglog | π²/6 ≈ 1.64                |
+  | poisson  log     | log(1 + 1/λ), λ = exp(β₀_null + 0.5 σ²_g_null) |
+
+  with `ICC = σ²_g / (σ²_g + σ²_d)`. The value matches
+  `performance::icc(fit)$ICC_adjusted` to 1 × 10⁻⁶.
+
+For binomial fits with the `cbind(succ, fail)` (multi-trial)
+form, the closed-form σ²_d formula above does not apply directly
+— spicy returns `NA` for the ICC row rather than emit a
+misleading value. The Nakagawa marginal / conditional R² rows
+still render via the `performance` fallback.
+
+### Hierarchical / nested mixed-effects
+
+`table_regression(list(m1, m2, m3), nested = TRUE)` also works
+on mixed-effects fits. The change rows are populated from
+`anova(m1, m2)` (likelihood-ratio test):
+
+* `ΔAIC` — `AIC(m2) − AIC(m1)`, negative when m2 fits better
+* `ΔBIC` — `BIC(m2) − BIC(m1)`
+* `Δχ²` — likelihood-ratio statistic
+* `p (change)` — LRT p-value
+
+```{r mixed-nested, eval = requireNamespace("lme4", quietly = TRUE)}
+m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject), data = lme4::sleepstudy, REML = FALSE)
+table_regression(list(m1, m2, m3), nested = TRUE)
+```
+
+Variance-explained change tokens (`Δr²`, `Δf²`) are NA — the
+F-test framework that grounds them doesn't apply to mixed
+models. `ΔR² (marginal)` and `ΔR² (conditional)` are not
+reported either: the row-by-row difference would be conceptually
+mixing two quantities (a marginal and a conditional gain), so
+the reader can compute it from the absolute R² rows directly if
+needed.
+
+Methodological caveat. `lme4::anova()` auto-refits REML fits
+with ML before the LRT (spicy suppresses the message). The LRT
+is a **fixed-effect-only** comparison: testing additional random
+terms with naive χ² is conservative — the formally correct test
+is the chi-bar-squared mixture (Self & Liang 1987), best run
+directly via `lmerTest::ranova()`. spicy surfaces fixed-effect
+nesting comparisons; random-structure model selection lives
+outside the table footer.
 
 ### Hiding parts of the panel
 

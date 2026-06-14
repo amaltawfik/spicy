@@ -137,6 +137,25 @@ test_that("footer returns NULL for an empty frame list", {
 
 # ---- 7. Multi-model: per-model prefix -----------------------------------
 
+test_that("footer consolidates identical per-model lines (no 'Model k:' prefix)", {
+  # When every model in the list produces the SAME annotation, the
+  # builder collapses to a single line -- the per-model "Model k:"
+  # prefix would just be three identical copies of the same sentence
+  # and is purely noise.
+  skip_if_not_installed("lme4")
+  fit1 <- lme4::lmer(Reaction ~ 1    + (1 | Subject),
+                      data = lme4::sleepstudy)
+  fit2 <- lme4::lmer(Reaction ~ Days + (1 | Subject),
+                      data = lme4::sleepstudy)
+  fr1 <- as_regression_frame(fit1, model_id = "M1")
+  fr2 <- as_regression_frame(fit2, model_id = "M2")
+  out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr1, fr2))
+  expect_false(grepl("Model 1:", out, fixed = TRUE))
+  expect_false(grepl("Model 2:", out, fixed = TRUE))
+  expect_match(out, "p-values:", fixed = TRUE)
+  expect_match(out, "Wald-z",    fixed = TRUE)
+})
+
 test_that("footer prefixes per model in multi-model lists", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("nlme")

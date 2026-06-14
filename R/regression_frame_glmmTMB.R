@@ -390,7 +390,7 @@ as_regression_frame.glmmTMB <- function(fit,
     vc_df$is_correlation <- FALSE
   }
   ci_sd <- tryCatch(
-    confint(fit, method = "Wald", parm = "theta_"),
+    stats::confint(fit, method = "Wald", parm = "theta_"),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) return(vc_df)
@@ -439,7 +439,7 @@ as_regression_frame.glmmTMB <- function(fit,
   if (!spicy_pkg_available("glmmTMB")) return(na_block(vc_df))         # nocov
 
   ci_sd <- tryCatch(
-    confint(fit, method = "Wald", parm = "theta_"),
+    stats::confint(fit, method = "Wald", parm = "theta_"),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) return(na_block(vc_df))     # nocov

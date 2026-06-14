@@ -228,7 +228,7 @@ build_abbreviations_footer_block_from_frames <- function(show_columns,
   }
 
   if (!identical(standardized, "none")) {
-    defs <- c(defs, "β = standardised coefficient")
+    defs <- c(defs, "\u03B2 = standardised coefficient")
   }
 
   if (is.list(frames) && length(frames) > 0L) {
@@ -254,16 +254,16 @@ build_abbreviations_footer_block_from_frames <- function(show_columns,
   }
 
   if (any(c("partial_f2", "partial_f2_ci") %in% show_columns)) {
-    defs <- c(defs, "f² = Cohen's partial f²")
+    defs <- c(defs, "f\u00B2 = Cohen's partial f\u00B2")
   }
   if (any(c("partial_eta2", "partial_eta2_ci") %in% show_columns)) {
-    defs <- c(defs, "η² = partial eta-squared")
+    defs <- c(defs, "\u03B7\u00B2 = partial eta-squared")
   }
   if (any(c("partial_omega2", "partial_omega2_ci") %in% show_columns)) {
-    defs <- c(defs, "ω² = bias-corrected partial omega-squared")
+    defs <- c(defs, "\u03C9\u00B2 = bias-corrected partial omega-squared")
   }
   if ("partial_chi2" %in% show_columns) {
-    defs <- c(defs, "χ² = partial likelihood-ratio chi-squared")
+    defs <- c(defs, "\u03C7\u00B2 = partial likelihood-ratio chi-squared")
   }
 
   if (length(defs) == 0L) return(NULL)
@@ -296,7 +296,7 @@ build_ame_satterthwaite_footer_block_from_frames <- function(frames, show_column
   } else if (any_glm) {
     paste0(
       "via `clubSandwich::coef_test()` on the dominant underlying ",
-      "coefficient (response-scale AME is non-linear in β)."
+      "coefficient (response-scale AME is non-linear in \u03B2)."
     )
   } else {
     "via `clubSandwich::linear_contrast()`."
@@ -614,6 +614,12 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   if (length(per_model) == 0L) return(NULL)
 
   if (length(per_model) == 1L) return(per_model[[1L]]$text)
+  # Consolidate when every model produced the SAME annotation -- avoids
+  # printing three identical "p-values: Wald-z, ..." lines when the
+  # whole list is, say, lme4::lmer without lmerTest. Mirrors the
+  # consolidation done by build_regression_type_footer_block_from_frames().
+  texts <- vapply(per_model, function(pm) pm$text, character(1))
+  if (length(unique(texts)) == 1L) return(texts[1L])
   lines <- vapply(per_model, function(pm) {
     sprintf("Model %d: %s", pm$idx, pm$text)
   }, character(1))
@@ -662,7 +668,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 #   * SE(sigma)  = SE(sigma^2) / (2 * sigma)
 #   * CI(sigma)  = sqrt(CI(sigma^2))  -- monotonic on sigma^2 >= 0
 #   * For correlation rows (is_correlation == TRUE), no scale change
-#     applies: ρ is unitless, so the values pass through unchanged.
+#     applies: \u03C1 is unitless, so the values pass through unchanged.
 .re_components_on_scale <- function(vc_df, target_scale = c("sd", "variance")) {
   target_scale <- match.arg(target_scale)
   if (!is.data.frame(vc_df) || nrow(vc_df) == 0L) return(vc_df)
@@ -718,7 +724,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 #   Random effects (REML):
 #     sigma Subject (Intercept)  37.12  (5.84)  [27.2, 51.1]
 #     sigma Subject Days          5.92  (1.25)  [ 4.3,  7.9]
-#     rho Subject                 0.07     —     —
+#     rho Subject                 0.07     \u2014     \u2014
 #     sigma (Residual)           30.99  (1.51)  [28.5, 33.7]
 #     ICC                         0.59
 #     N (Subject)                   18
@@ -757,11 +763,11 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     cihi  <- vc$ci_upper[i]
     rows[[length(rows) + 1L]] <- list(
       label = label,
-      val   = if (is.finite(est))  sprintf("%.2f", est) else "—",
-      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "—",
+      val   = if (is.finite(est))  sprintf("%.2f", est) else "\u2014",
+      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "\u2014",
       ci    = if (is.finite(cilo) && is.finite(cihi)) {
         sprintf("[%.2f, %.2f]", cilo, cihi)
-      } else "—"
+      } else "\u2014"
     )
   }
 
@@ -831,14 +837,14 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 
 # Label for a single row of the random-effects panel.
 .re_panel_label <- function(group, term, is_correlation, is_residual) {
-  if (isTRUE(is_residual)) return("σ (Residual)")
+  if (isTRUE(is_residual)) return("\u03C3 (Residual)")
   if (isTRUE(is_correlation)) {
-    return(sprintf("ρ %s (%s)", group, term))
+    return(sprintf("\u03C1 %s (%s)", group, term))
   }
   if (is.na(term) || !nzchar(term) || term == "(Intercept)") {
-    return(sprintf("σ %s (Intercept)", group))
+    return(sprintf("\u03C3 %s (Intercept)", group))
   }
-  sprintf("σ %s %s", group, term)
+  sprintf("\u03C3 %s %s", group, term)
 }
 
 

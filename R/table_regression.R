@@ -797,6 +797,37 @@
 #' # ---- Tidy long format for downstream pipelines -------------------
 #' broom::tidy(table_regression(fit))
 #'
+#' # ---- Mixed-effects models ----------------------------------------
+#' # Linear mixed-effects (lme4). The footer adds a random-effects
+#' # panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
+#' # marginal / conditional R^2 fit-stats, and a per-class p-value
+#' # annotation line.
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
+#'                      data = lme4::sleepstudy)
+#'   table_regression(fit)
+#'
+#'   # Switch to the variance scale (sigma^2 instead of sigma).
+#'   table_regression(fit, re_scale = "variance")
+#'
+#'   # Minimal random-effects display: estimates only, no SE / CI.
+#'   table_regression(fit, re_columns = "est")
+#'
+#'   # Suppress the random-effects panel entirely.
+#'   table_regression(fit, show_re = FALSE)
+#' }
+#'
+#' # Hierarchical mixed-effects comparison (nested LRT).
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   table_regression(list(m1, m2, m3), nested = TRUE)
+#' }
+#'
 #' \dontrun{
 #' # ---- Rich-format outputs (require optional Suggests packages) ----
 #' table_regression(fit, output = "gt")
