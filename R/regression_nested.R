@@ -43,11 +43,16 @@ compute_nested_comparisons <- function(fits) {
     return(empty_nested_comparisons())
   }
   result <- vector("list", length(fits) - 1L)
+  mixed_classes <- c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
+  is_mixed <- function(fit) inherits(fit, mixed_classes)
   for (k in seq_len(length(fits) - 1L)) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
-    pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
-    stats <- if (pair_glm) {
+    pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
+    pair_glm   <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
+    stats <- if (pair_mixed) {
+      compute_one_pair_mixed(fit_prev, fit_curr)
+    } else if (pair_glm) {
       compute_one_pair_glm(fit_prev, fit_curr)
     } else {
       compute_one_pair_lm(fit_prev, fit_curr)
@@ -210,6 +215,88 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
 }
 
 
+# ---- Per-pair mixed-effects computation ---------------------------------
+
+# Phase 7c11: nested-comparison stats for a pair of mixed-effects fits
+# (lmer / glmer / glmmTMB / lme). Uses `anova(fit_prev, fit_curr)` which
+# returns one row per model with AIC / BIC / logLik / Chisq / Df / p.
+#
+# Variance-explained tokens (r2_change, adj_r2_change, f_change,
+# f2_change) are NA -- classical R^2 is undefined for mixed-effects;
+# the Nakagawa marginal/conditional R^2 difference is meaningful but
+# the F-test framework that f_change / f2_change describe does not
+# apply. lrt_change / aic_change / bic_change / deviance_change /
+# p_change are all populated from anova().
+#
+# Methodological note. lme4::anova() automatically refits REML fits
+# with ML before the LRT (a one-line message that we suppress). The
+# LRT is therefore a fixed-effect-only test; testing additional
+# random terms with naive chi^2 is conservative -- a chi-bar-squared
+# (Self & Liang 1987) correction is the formally correct test but
+# is not exposed here. AICc is set to NA (lme4 does not ship an
+# AICc method; computing it from k + n is ambiguous because the
+# "effective" parameter count for a mixed-effects model is itself
+# debated -- see Vaida & Blanchard 2005).
+compute_one_pair_mixed <- function(fit_prev, fit_curr) {
+  na <- list(
+    r2_change = NA_real_, adj_r2_change = NA_real_,
+    f_change = NA_real_, f2_change = NA_real_,
+    lrt_change = NA_real_,
+    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
+    deviance_change = NA_real_, p_change = NA_real_
+  )
+
+  av <- tryCatch(
+    suppressWarnings(suppressMessages(stats::anova(fit_prev, fit_curr))),
+    error = function(e) NULL
+  )
+  if (is.null(av) || nrow(av) < 2L) return(na)
+
+  # Column names depend on engine + version. lme4 + glmmTMB return
+  # ("npar", "AIC", "BIC", "logLik", "deviance"/"-2*log(L)", "Chisq",
+  # "Df"/"Chi Df", "Pr(>Chisq)"). nlme returns ("Model", "df", "AIC",
+  # "BIC", "logLik", "Test", "L.Ratio", "p-value"). We look up
+  # defensively so the same function handles all engines.
+  cols <- names(av)
+  chi_col <- intersect(c("Chisq", "L.Ratio"), cols)
+  p_col   <- intersect(c("Pr(>Chisq)", "p-value", "Pr(>Chi)"), cols)
+  aic_col <- intersect(c("AIC"), cols)
+  bic_col <- intersect(c("BIC"), cols)
+  dev_col <- intersect(c("-2*log(L)", "deviance", "Deviance"), cols)
+
+  chi_stat <- if (length(chi_col)) av[[chi_col[1L]]][2L] else NA_real_
+  p_val    <- if (length(p_col))   av[[p_col[1L]]][2L]   else NA_real_
+
+  aic_p <- if (length(aic_col)) av[[aic_col[1L]]][1L] else stats::AIC(fit_prev)
+  aic_c <- if (length(aic_col)) av[[aic_col[1L]]][2L] else stats::AIC(fit_curr)
+  bic_p <- if (length(bic_col)) av[[bic_col[1L]]][1L] else stats::BIC(fit_prev)
+  bic_c <- if (length(bic_col)) av[[bic_col[1L]]][2L] else stats::BIC(fit_curr)
+
+  # Deviance change: prefer the explicit column when present; otherwise
+  # derive from logLik so we stay engine-agnostic.
+  dev_change <- if (length(dev_col)) {
+    av[[dev_col[1L]]][1L] - av[[dev_col[1L]]][2L]
+  } else {
+    ll_p <- as.numeric(stats::logLik(fit_prev))
+    ll_c <- as.numeric(stats::logLik(fit_curr))
+    -2 * (ll_p - ll_c)
+  }
+
+  list(
+    r2_change       = NA_real_,
+    adj_r2_change   = NA_real_,
+    f_change        = NA_real_,
+    f2_change       = NA_real_,
+    lrt_change      = as.numeric(chi_stat),
+    aic_change      = aic_c - aic_p,
+    aicc_change     = NA_real_,
+    bic_change      = bic_c - bic_p,
+    deviance_change = as.numeric(dev_change),
+    p_change        = as.numeric(p_val)
+  )
+}
+
+
 # Frame-aware sibling of attach_nested_stats_to_extracts(). Injects the
 # same change tokens (r2_change, adj_r2_change, f_change, ..., p_change)
 # into each `frames[[i]]$info$fit_stats` list. After this call, the
@@ -245,8 +332,17 @@ attach_nested_stats_to_frames <- function(frames, fits) {
 # Class-aware default change-token vector. Plugged into `show_fit_stats`
 # AFTER `r2` / `adj_r2` when the user did not supply `show_fit_stats`.
 default_nested_tokens <- function(models) {
-  all_glm <- all(vapply(models, inherits, logical(1), "glm"))
-  if (all_glm) {
+  mixed_classes <- c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
+  all_mixed <- all(vapply(models, inherits, logical(1), mixed_classes))
+  all_glm   <- all(vapply(models, inherits, logical(1), "glm"))
+  if (all_mixed) {
+    # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained
+    # change is reported via the absolute Nakagawa R^2 rows; the
+    # delta-R^2 token is not enabled by default because there is no
+    # consensus formula across families (the "marginal vs conditional"
+    # split makes a single Delta column ambiguous).
+    c("aic_change", "bic_change", "lrt_change", "p_change")
+  } else if (all_glm) {
     c("lrt_change", "p_change")
   } else {
     c("r2_change", "f_change", "p_change")

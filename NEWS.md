@@ -63,6 +63,20 @@
   "r2_conditional", "AIC", "BIC")` — previously the fit-stats
   block was empty for mixed fits.
 
+* `table_regression(list(m1, m2, ...), nested = TRUE)` now
+  supports **mixed-effects fits**. `lmer` / `glmer` / `glmmTMB` /
+  `nlme::lme` pairs route to a new `compute_one_pair_mixed()`
+  that uses `anova(prev, curr)` to derive the **likelihood-ratio
+  test** statistic (Δχ²), Δdeviance, ΔAIC, ΔBIC, and the LRT
+  p-value. The change-token vocabulary picks the mixed defaults
+  automatically (`c("aic_change", "bic_change", "lrt_change",
+  "p_change")`). Variance-explained change tokens (Δr², Δf², etc.)
+  are NA for mixed pairs — the F-test framework that grounds them
+  doesn't apply. For lmer REML pairs, lme4's `anova()` auto-refits
+  with ML before the LRT (suppressed message). Previously
+  `nested = TRUE` on mixed-effects fits errored
+  (`compute_one_pair_lm` doesn't know about lmer).
+
 * `table_regression()` random-effects panel now renders for
   **glmer** (binomial logit / probit / cloglog, Poisson log) on
   par with the lmer panel: per-component σ rows with Wald SE
