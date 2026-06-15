@@ -8,7 +8,7 @@ mt$cyl <- factor(mt$cyl)
 # tidy.spicy_regression_table
 # ============================================================================
 
-test_that("tidy — returns broom-canonical column names", {
+test_that("tidy – returns broom-canonical column names", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   td <- broom::tidy(out)
@@ -20,25 +20,25 @@ test_that("tidy — returns broom-canonical column names", {
   expect_true(all(expected %in% names(td)))
 })
 
-test_that("tidy — drops reference rows (no estimable values)", {
+test_that("tidy – drops reference rows (no estimable values)", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   td <- broom::tidy(out)
-  # cyl4 is the reference level — should not appear in tidy
+  # cyl4 is the reference level – should not appear in tidy
   expect_false(any(td$term == "cyl4"))
   # But cyl6 and cyl8 should
   expect_true("cyl6" %in% td$term)
   expect_true("cyl8" %in% td$term)
 })
 
-test_that("tidy — drops singular coefs (NA estimates)", {
+test_that("tidy – drops singular coefs (NA estimates)", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   td <- broom::tidy(out)
   expect_false(any(is.na(td$estimate)))
 })
 
-test_that("tidy — multi-model: model_id distinguishes rows", {
+test_that("tidy – multi-model: model_id distinguishes rows", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(Crude = m1, Adjusted = m2))
@@ -50,7 +50,7 @@ test_that("tidy — multi-model: model_id distinguishes rows", {
   expect_setequal(wt_rows$model_id, c("Crude", "Adjusted"))
 })
 
-test_that("tidy — estimate values match the underlying lm fit", {
+test_that("tidy – estimate values match the underlying lm fit", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   td <- broom::tidy(out)
@@ -61,7 +61,7 @@ test_that("tidy — estimate values match the underlying lm fit", {
   }
 })
 
-test_that("tidy — partial_eta2 rows have NA std.error and finite estimate", {
+test_that("tidy – partial_eta2 rows have NA std.error and finite estimate", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, show_columns = c("b", "partial_eta2"))
   td <- broom::tidy(out)
@@ -71,7 +71,7 @@ test_that("tidy — partial_eta2 rows have NA std.error and finite estimate", {
   expect_true(all(is.finite(pe$estimate)))
 })
 
-test_that("tidy — empty input → empty broom-shaped tibble", {
+test_that("tidy – empty input → empty broom-shaped tibble", {
   # Construct a manually-empty spicy_regression_table
   empty <- structure(
     data.frame(Variable = character(0), stringsAsFactors = FALSE),
@@ -90,14 +90,14 @@ test_that("tidy — empty input → empty broom-shaped tibble", {
 # glance.spicy_regression_table
 # ============================================================================
 
-test_that("glance — returns one row per model", {
+test_that("glance – returns one row per model", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   g <- broom::glance(out)
   expect_equal(nrow(g), 1L)
 })
 
-test_that("glance — multi-model: one row per (model_id, outcome)", {
+test_that("glance – multi-model: one row per (model_id, outcome)", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
@@ -105,7 +105,7 @@ test_that("glance — multi-model: one row per (model_id, outcome)", {
   expect_equal(nrow(g), 2L)
 })
 
-test_that("glance — broom-canonical column names", {
+test_that("glance – broom-canonical column names", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   g <- broom::glance(out)
@@ -114,7 +114,7 @@ test_that("glance — broom-canonical column names", {
   expect_true(all(expected %in% names(g)))
 })
 
-test_that("glance — r.squared / adj.r.squared match summary(fit)", {
+test_that("glance – r.squared / adj.r.squared match summary(fit)", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   g <- broom::glance(out)
@@ -123,7 +123,7 @@ test_that("glance — r.squared / adj.r.squared match summary(fit)", {
   expect_equal(g$adj.r.squared[1], sm$adj.r.squared, tolerance = 1e-12)
 })
 
-test_that("glance — df.residual is numeric (not integer) — Satterthwaite-safe", {
+test_that("glance – df.residual is numeric (not integer) – Satterthwaite-safe", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   g <- broom::glance(out)
@@ -135,7 +135,7 @@ test_that("glance — df.residual is numeric (not integer) — Satterthwaite-saf
 # as.data.frame / as_tibble
 # ============================================================================
 
-test_that("as.data.frame — strips spicy classes, keeps title/note", {
+test_that("as.data.frame – strips spicy classes, keeps title/note", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
@@ -146,7 +146,7 @@ test_that("as.data.frame — strips spicy classes, keeps title/note", {
   expect_match(attr(df, "note"), "^Note\\.")
 })
 
-test_that("as.data.frame — same row content as default output", {
+test_that("as.data.frame – same row content as default output", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
@@ -155,7 +155,7 @@ test_that("as.data.frame — same row content as default output", {
   expect_equal(df$B, out$B)
 })
 
-test_that("as.data.frame — strips internal spicy_long / spicy_fit_stats attrs", {
+test_that("as.data.frame – strips internal spicy_long / spicy_fit_stats attrs", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
@@ -164,7 +164,7 @@ test_that("as.data.frame — strips internal spicy_long / spicy_fit_stats attrs"
   expect_null(attr(df, "col_spec"))
 })
 
-test_that("as_tibble — returns tbl_df", {
+test_that("as_tibble – returns tbl_df", {
   skip_if_not_installed("tibble")
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)

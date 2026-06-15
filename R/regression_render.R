@@ -1,4 +1,4 @@
-# Rendering layer for table_regression() \u2014 Layer 3.
+# Rendering layer for table_regression() \u2013 Layer 3.
 #
 # Per dev/table_regression_design.md Layer 3:
 #   "Pivot wide on (term, statistic) \u2192 m1, m2, m3...
@@ -77,7 +77,7 @@ render_regression_table <- function(
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
 
-  # Smart default \u2014 when the user did NOT supply any spanner-label
+  # Smart default \u2013 when the user did NOT supply any spanner-label
   # source (neither `model_labels` nor `names(models)`), AND no
   # explicit Outcome-row override (`outcome_labels = NULL`), AND the
   # models have all-distinct response variables, lift the auto-
@@ -90,10 +90,10 @@ render_regression_table <- function(
   # Falls back to "Model 1, ..." (and keeps the Outcome row) when:
   #   * DVs are not all distinct (duplicates would yield an
   #     ambiguous spanner like "mpg / mpg / hp");
-  #   * DVs are identical (no extra information to show \u2014 DV is in
+  #   * DVs are identical (no extra information to show \u2013 DV is in
   #     the title);
   #   * the user supplied `outcome_labels = c(...)` (explicit row
-  #     labels \u2014 left as a row override, since `model_labels` is the
+  #     labels \u2013 left as a row override, since `model_labels` is the
   #     dedicated spanner knob);
   #   * `outcome_labels = FALSE` (user explicitly suppressed DV
   #     display entirely).
@@ -222,12 +222,12 @@ render_regression_table <- function(
 
   body <- do.call(rbind, rows)
 
-  # Prepend outcome row when applicable (Q11b \u2014 multi-DV display).
+  # Prepend outcome row when applicable (Q11b \u2013 multi-DV display).
   #
   # Two vectors per model:
-  #   * `model_outcomes`        \u2014 variable name from formula(fit)[[2]],
+  #   * `model_outcomes`        \u2013 variable name from formula(fit)[[2]],
   #                               used for the identical-DV decision
-  #   * `model_outcome_labels`  \u2014 display string: attr("label") if
+  #   * `model_outcome_labels`  \u2013 display string: attr("label") if
   #                               set on the response (labelled,
   #                               haven, SPSS), else the variable name
   #
@@ -423,7 +423,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
   }
   ci_hdr <- paste0(ci_pct, "% CI")
   base <- list(
-    # B-coefficient family \u2014 atomic, one cell = one component.
+    # B-coefficient family \u2013 atomic, one cell = one component.
     b      = list(estimate_type = "B",
                   fields = "estimate",
                   header_short = "B"),
@@ -442,7 +442,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     beta   = list(estimate_type = "beta",
                   fields = "estimate",
                   header_short = "\u03B2"),
-    # AME family \u2014 split (was bundled "value [CI]" in <= 0.11).
+    # AME family \u2013 split (was bundled "value [CI]" in <= 0.11).
     # Convention: only the estimate column itself ("AME") carries the
     # estimate-type label; SE / CI / p sub-columns are LEFT NAKED
     # ("SE", "95% CI", "p"). Adjacency to the "AME" anchor disambiguates
@@ -467,7 +467,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     ame_p  = list(estimate_type = "AME",
                   fields = "p_value",
                   header_short = "p"),
-    # Partial-variance-explained \u2014 split (was bundled too).
+    # Partial-variance-explained \u2013 split (was bundled too).
     partial_f2        = list(estimate_type = "partial_f2",
                               fields = "estimate",
                               header_short = "f\u00B2"),
@@ -486,7 +486,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     partial_omega2_ci = list(estimate_type = "partial_omega2",
                               fields = c("ci_low", "ci_high"),
                               header_short = paste0("\u03C9\u00B2 ", ci_hdr)),
-    # Partial chi-square (glm) \u2014 kept BUNDLED as "value (df)".
+    # Partial chi-square (glm) \u2013 kept BUNDLED as "value (df)".
     # That's the universal reporting convention "chi2(df) = value".
     partial_chi2      = list(estimate_type = "partial_chi2",
                               fields = c("estimate", "df"),
@@ -581,7 +581,7 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     # this row is its reference level here -- em-dash conveys
     # "reference, no estimate by design".
     if (isTRUE(long_row$is_reference[1L])) {
-      cells[[cs$col_name]] <- "\u2014"   # em-dash
+      cells[[cs$col_name]] <- "\u2013"   # em-dash
       next
     }
     cells[[cs$col_name]] <- format_cell_value(
@@ -609,7 +609,7 @@ format_cell_value <- function(long_row, cs, stars_map,
                      "partial_chi2")
   digits_to_use <- if (is_es) effect_size_digits else digits
 
-  # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2014
+  # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2013
   # SAS PROC LOGISTIC TYPE3 / car::Anova(type = 3) convention. Df sits
   # in parens to disambiguate factor terms (k-1 df) from numeric terms
   # (1 df) without burning an extra column.
@@ -617,7 +617,7 @@ format_cell_value <- function(long_row, cs, stars_map,
       identical(cs$fields, c("estimate", "df"))) {
     est <- long_row$estimate[1]
     df_val <- long_row$df[1]
-    if (is.na(est)) return("\u2014")
+    if (is.na(est)) return("\u2013")
     val_str <- format_number(est, digits_to_use, decimal_mark)
     df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
     return(paste0(val_str, df_str))
@@ -629,7 +629,7 @@ format_cell_value <- function(long_row, cs, stars_map,
       identical(cs$fields, c("ci_low", "ci_high"))) {
     lo <- long_row$ci_low[1]
     hi <- long_row$ci_high[1]
-    if (is.na(lo) || is.na(hi)) return("\u2014")
+    if (is.na(lo) || is.na(hi)) return("\u2013")
     ci_sep <- ci_bracket_separator(decimal_mark)
     return(paste0("[",
                   format_number(lo, digits_to_use, decimal_mark), ci_sep,
@@ -640,7 +640,7 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Single-field cells
   field <- cs$fields
   val <- long_row[[field]][1]
-  if (is.na(val)) return("\u2014")
+  if (is.na(val)) return("\u2013")
 
   if (field == "p_value") {
     out <- format_p_value(val, decimal_mark = decimal_mark, digits = p_digits)
@@ -746,12 +746,12 @@ resolve_label <- function(term, labels) {
 
 # Smart auto + explicit + suppress logic per Q11b.
 #
-# `model_outcomes` \u2014 variable names from formula(fit)[[2]] per model;
+# `model_outcomes` \u2013 variable names from formula(fit)[[2]] per model;
 #                    used ONLY for the "are DVs identical?" decision.
-# `model_outcome_labels` \u2014 auto-display strings: attr("label") if set,
+# `model_outcome_labels` \u2013 auto-display strings: attr("label") if set,
 #                    else the variable name; used as the default
 #                    auto-shown labels when outcome_labels = NULL.
-# `outcome_labels` \u2014 user-supplied: NULL (auto), FALSE (suppress),
+# `outcome_labels` \u2013 user-supplied: NULL (auto), FALSE (suppress),
 #                    or a character vector of length n_models
 #                    (explicit override).
 #
@@ -909,7 +909,7 @@ format_fit_stat_value <- function(token, val,
                              "aic_change", "aicc_change", "bic_change",
                              "deviance_change", "p_change")
   if (is.null(val) || is.na(val)) {
-    return(if (is_change) "\u2014" else "")
+    return(if (is_change) "\u2013" else "")
   }
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
@@ -967,7 +967,7 @@ build_factor_header_row <- function(factor_term, col_spec, labels,
     factor_term
   }
   header <- paste0(display, ":")
-  # Q5 \u2014 annotation mode bakes "[ref: <level>]" into the factor
+  # Q5 \u2013 annotation mode bakes "[ref: <level>]" into the factor
   # header so the reference level remains readable even though the
   # ref ROW was dropped during alignment.
   if (identical(reference_style, "annotation") &&

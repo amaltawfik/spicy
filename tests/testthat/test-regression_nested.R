@@ -200,7 +200,7 @@ test_that("table_regression - nested = TRUE first model has em-dash in change co
   dr2 <- body[trimws(body$Variable) == "ΔR²", , drop = FALSE]
   m1_col <- names(body)[2L]
   m2_col <- names(body)[5L]
-  expect_equal(trimws(dr2[[m1_col]]), "—")
+  expect_equal(trimws(dr2[[m1_col]]), "–")
   expect_match(trimws(dr2[[m2_col]]), "^[+-]")
 })
 

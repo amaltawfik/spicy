@@ -1,4 +1,4 @@
-# Tests for the AME-Satterthwaite path (Q14b — first in R for lm under
+# Tests for the AME-Satterthwaite path (Q14b – first in R for lm under
 # CR* variance). Path A in regression_ame.R: builds the closed-form
 # linear contrast representing each AME and inverts it through
 # clubSandwich::linear_contrast() with Satterthwaite-corrected df.
@@ -24,7 +24,7 @@ mk_clustered_data <- function(seed = 1L, n = 200L, n_clusters = 10L) {
 # Closed-form contrast builders
 # ============================================================================
 
-test_that("build_numeric_ame_contrast — colMeans(model.matrix at v+1 minus at v)", {
+test_that("build_numeric_ame_contrast – colMeans(model.matrix at v+1 minus at v)", {
   fit <- lm(y ~ x + g, data = mk_clustered_data())
   cv <- spicy:::build_numeric_ame_contrast(fit, "x")
   # Length matches the design matrix
@@ -37,7 +37,7 @@ test_that("build_numeric_ame_contrast — colMeans(model.matrix at v+1 minus at 
   }
 })
 
-test_that("build_factor_ame_contrast — average of (lvl - ref) design rows", {
+test_that("build_factor_ame_contrast – average of (lvl - ref) design rows", {
   fit <- lm(y ~ x + g, data = mk_clustered_data())
   cv <- spicy:::build_factor_ame_contrast(fit, "g", "b", "a")
   # For an additive linear model with reference coding, the AME of
@@ -46,14 +46,14 @@ test_that("build_factor_ame_contrast — average of (lvl - ref) design rows", {
   expect_equal(unname(cv[["x"]]), 0, tolerance = 1e-12)
 })
 
-test_that("build_ame_contrasts_for_predictor — numeric: 1 contrast", {
+test_that("build_ame_contrasts_for_predictor – numeric: 1 contrast", {
   fit <- lm(y ~ x + g, data = mk_clustered_data())
   out <- spicy:::build_ame_contrasts_for_predictor(fit, "x")
   expect_equal(length(out), 1L)
   expect_equal(out[[1]]$term_id, "x")
 })
 
-test_that("build_ame_contrasts_for_predictor — factor: k-1 contrasts", {
+test_that("build_ame_contrasts_for_predictor – factor: k-1 contrasts", {
   fit <- lm(y ~ x + g, data = mk_clustered_data())
   out <- spicy:::build_ame_contrasts_for_predictor(fit, "g")
   # 10 levels → 9 non-reference contrasts
@@ -64,10 +64,10 @@ test_that("build_ame_contrasts_for_predictor — factor: k-1 contrasts", {
 
 
 # ============================================================================
-# extract_ame_satterthwaite — end-to-end
+# extract_ame_satterthwaite – end-to-end
 # ============================================================================
 
-test_that("extract_ame_satterthwaite — produces one row per non-reference contrast", {
+test_that("extract_ame_satterthwaite – produces one row per non-reference contrast", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
@@ -81,7 +81,7 @@ test_that("extract_ame_satterthwaite — produces one row per non-reference cont
   expect_true(all(rows$test_type == "t"))
 })
 
-test_that("extract_ame_satterthwaite — t-stat = est/se, p from t-dist + df_Satt", {
+test_that("extract_ame_satterthwaite – t-stat = est/se, p from t-dist + df_Satt", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
@@ -100,7 +100,7 @@ test_that("extract_ame_satterthwaite — t-stat = est/se, p from t-dist + df_Sat
   }
 })
 
-test_that("extract_ame_satterthwaite — matches direct clubSandwich call (oracle)", {
+test_that("extract_ame_satterthwaite – matches direct clubSandwich call (oracle)", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
@@ -129,10 +129,10 @@ test_that("extract_ame_satterthwaite — matches direct clubSandwich call (oracl
   expect_equal(ours$ci_high,  oracle$CI_U, tolerance = 1e-12)
 })
 
-test_that("extract_ame_satterthwaite — empty when formula has no main-effect predictors", {
+test_that("extract_ame_satterthwaite – empty when formula has no main-effect predictors", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
-  # Pure interaction term only — no main effects to compute AME for
+  # Pure interaction term only – no main effects to compute AME for
   fit <- lm(y ~ x:g, data = df)
   rows <- spicy:::extract_ame_satterthwaite(
     fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
@@ -141,7 +141,7 @@ test_that("extract_ame_satterthwaite — empty when formula has no main-effect p
   expect_equal(nrow(rows), 0L)
 })
 
-test_that("extract_ame_satterthwaite — errors with classed condition on function-call predictors", {
+test_that("extract_ame_satterthwaite – errors with classed condition on function-call predictors", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ poly(x, 2), data = df)
@@ -160,10 +160,10 @@ test_that("extract_ame_satterthwaite — errors with classed condition on functi
 
 
 # ============================================================================
-# extract_ame_rows — Path A vs Path B dispatcher
+# extract_ame_rows – Path A vs Path B dispatcher
 # ============================================================================
 
-test_that("extract_ame_rows — Path A taken when use_ame_satterthwaite = TRUE", {
+test_that("extract_ame_rows – Path A taken when use_ame_satterthwaite = TRUE", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
@@ -180,7 +180,7 @@ test_that("extract_ame_rows — Path A taken when use_ame_satterthwaite = TRUE",
   expect_true(all(is.finite(rows$df)))
 })
 
-test_that("extract_ame_rows — Path A failure on poly() falls back to Path B", {
+test_that("extract_ame_rows – Path A failure on poly() falls back to Path B", {
   skip_if_no_clubsandwich()
   skip_if_not_installed("marginaleffects")
   df <- mk_clustered_data()
@@ -195,7 +195,7 @@ test_that("extract_ame_rows — Path A failure on poly() falls back to Path B", 
   expect_true(nrow(rows) > 0L)
 })
 
-test_that("extract_ame_marginaleffects — bare factor variable matches model.frame name directly", {
+test_that("extract_ame_marginaleffects – bare factor variable matches model.frame name directly", {
   # Sanity: when the predictor IS already a factor in the data,
   # var_name from marginaleffects matches the model.frame column
   # name exactly and the grep fallback is not exercised.
@@ -213,7 +213,7 @@ test_that("extract_ame_marginaleffects — bare factor variable matches model.fr
   expect_true(any(rows$term == "wt"))
 })
 
-test_that("extract_ame_marginaleffects — handles inline factor(x) transform (Path B)", {
+test_that("extract_ame_marginaleffects – handles inline factor(x) transform (Path B)", {
   # Edge case: when the formula uses an inline `factor()` transform,
   # marginaleffects strips the wrapper and reports the bare variable
   # name ("cyl") rather than "factor(cyl)". Path B must resolve the
@@ -232,7 +232,7 @@ test_that("extract_ame_marginaleffects — handles inline factor(x) transform (P
   expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
 })
 
-test_that("extract_ame_rows — fallback wording differs by cause (Q14b)", {
+test_that("extract_ame_rows – fallback wording differs by cause (Q14b)", {
   skip_if_no_clubsandwich()
   skip_if_not_installed("marginaleffects")
   df <- mk_clustered_data()
@@ -255,7 +255,7 @@ test_that("extract_ame_rows — fallback wording differs by cause (Q14b)", {
   expect_match(w1, "function-call predictor")
 })
 
-test_that("extract_ame_rows — unexpected internal failure uses 'open an issue' wording", {
+test_that("extract_ame_rows – unexpected internal failure uses 'open an issue' wording", {
   # Cause 2: any non-spicy_ame_satt_unsupported_formula error
   # exits via the catch-all branch. We mock extract_ame_satterthwaite
   # to throw a plain error and verify the fallback message routes
@@ -285,7 +285,7 @@ test_that("extract_ame_rows — unexpected internal failure uses 'open an issue'
   expect_match(w, "open an issue")
 })
 
-test_that("extract_ame_marginaleffects — avg_slopes failure emits spicy_fallback warning", {
+test_that("extract_ame_marginaleffects – avg_slopes failure emits spicy_fallback warning", {
   # Force an avg_slopes failure by passing a malformed vcov matrix
   # (wrong dimensions / wrong row names). The function catches the
   # error, warns spicy_fallback, and returns empty_coefs_long().
@@ -308,10 +308,10 @@ test_that("extract_ame_marginaleffects — avg_slopes failure emits spicy_fallba
 
 
 # ============================================================================
-# Integration — table_regression() with the affirmative footer
+# Integration – table_regression() with the affirmative footer
 # ============================================================================
 
-test_that("table_regression — CR2 + AME triggers the Satterthwaite footer", {
+test_that("table_regression – CR2 + AME triggers the Satterthwaite footer", {
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)

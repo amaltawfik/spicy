@@ -142,5 +142,5 @@ test_that("lme4 correlation row (SE NA) renders em-dash", {
   # lme4's correlation row has NA SE / CI (full Delta-method deferred)
   # so the ρ row's SE should render as em-dash.
   expect_match(combined, "ρ Subject", fixed = TRUE)
-  expect_match(combined, "—",         fixed = TRUE)
+  expect_match(combined, "–",         fixed = TRUE)
 })

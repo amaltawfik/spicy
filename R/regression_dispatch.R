@@ -1732,7 +1732,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # the structured body's col_meta, populated by render_regression_table().
   if (nrow(body) > 0L && n_cols >= 2L) {
     body_rows_idx <- seq.int(body_first_row, body_end_row)
-    em_dash <- "\u2014"  # U+2014
+    em_dash <- "\u2013"  # U+2014
     for (j in 2:n_cols) {
       col_name <- names(body)[j]
       meta <- col_meta[[col_name]]

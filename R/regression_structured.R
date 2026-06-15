@@ -707,7 +707,7 @@ build_structured_body <- function(aligned,
 # their formatters via pre-formatted strings (flextable, console).
 .cell_to_string <- function(val, row_idx, col_meta_entry,
                               reference_rows, decimal_mark = ".") {
-  if (row_idx %in% reference_rows) return("\u2014")
+  if (row_idx %in% reference_rows) return("\u2013")
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) return("")
   if (!is.null(cfmt$threshold) && is.finite(val) &&
@@ -743,7 +743,7 @@ build_structured_body <- function(aligned,
 .pad_for_decimal_align <- function(body, struct) {
   decimal_mark <- struct$format_spec$decimal_mark
   fig_space <- "\u2007"   # U+2007 figure space (digit-width)
-  em_dash <- "\u2014"      # U+2014 em dash
+  em_dash <- "\u2013"      # U+2014 em dash
 
   for (j in seq_along(body)) {
     if (j == 1L) next       # Variable column stays as-is

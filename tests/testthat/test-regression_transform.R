@@ -8,7 +8,7 @@ mt$cyl <- factor(mt$cyl)
 
 
 # ============================================================================
-# apply_p_adjust_to_frame_coefs — direct unit tests on the helper
+# apply_p_adjust_to_frame_coefs – direct unit tests on the helper
 # ============================================================================
 
 mk_frame_coefs <- function(formula, model_id = "M1", data = mt, ...) {
@@ -16,13 +16,13 @@ mk_frame_coefs <- function(formula, model_id = "M1", data = mt, ...) {
   spicy:::as_regression_frame(fit, model_id = model_id, ...)$coefs
 }
 
-test_that("apply_p_adjust_to_frame_coefs — 'none' returns input unchanged", {
+test_that("apply_p_adjust_to_frame_coefs – 'none' returns input unchanged", {
   coefs <- mk_frame_coefs(mpg ~ wt + cyl + am)
   out <- spicy:::apply_p_adjust_to_frame_coefs(coefs, "none")
   expect_identical(out, coefs)
 })
 
-test_that("apply_p_adjust_to_frame_coefs — empty / NULL inputs return unchanged", {
+test_that("apply_p_adjust_to_frame_coefs – empty / NULL inputs return unchanged", {
   empty <- mk_frame_coefs(mpg ~ wt + cyl + am)[0, ]
   expect_identical(
     spicy:::apply_p_adjust_to_frame_coefs(empty, "holm"),
@@ -31,7 +31,7 @@ test_that("apply_p_adjust_to_frame_coefs — empty / NULL inputs return unchange
   expect_null(spicy:::apply_p_adjust_to_frame_coefs(NULL, "holm"))
 })
 
-test_that("apply_p_adjust_to_frame_coefs — bonferroni multiplies p by family size", {
+test_that("apply_p_adjust_to_frame_coefs – bonferroni multiplies p by family size", {
   raw <- mk_frame_coefs(mpg ~ wt + cyl + am)
   out <- spicy:::apply_p_adjust_to_frame_coefs(raw, "bonferroni")
 
@@ -52,7 +52,7 @@ test_that("apply_p_adjust_to_frame_coefs — bonferroni multiplies p by family s
                raw$p_value[raw$is_ref])
 })
 
-test_that("apply_p_adjust_to_frame_coefs — holm respects monotonicity within family", {
+test_that("apply_p_adjust_to_frame_coefs – holm respects monotonicity within family", {
   raw <- mk_frame_coefs(mpg ~ wt + cyl + am + hp + disp, data = mtcars)
   out <- spicy:::apply_p_adjust_to_frame_coefs(raw, "holm")
   fam <- out$estimate_type == "B" &
@@ -62,7 +62,7 @@ test_that("apply_p_adjust_to_frame_coefs — holm respects monotonicity within f
   expect_true(all(diff(adj_sorted) >= 0))
 })
 
-test_that("apply_p_adjust_to_frame_coefs — adjusts B and AME independently", {
+test_that("apply_p_adjust_to_frame_coefs – adjusts B and AME independently", {
   skip_if_not_installed("marginaleffects")
   raw <- mk_frame_coefs(mpg ~ wt + cyl + am,
                         show_columns = c("b", "se", "p", "ame"))
@@ -91,7 +91,7 @@ test_that("apply_p_adjust_to_frame_coefs — adjusts B and AME independently", {
 
 
 # ============================================================================
-# apply_keep_drop_filter — direct unit tests
+# apply_keep_drop_filter – direct unit tests
 # Phase 0c C5: aligned object now produced by align_frames(); the
 # filter consumes the same aligned shape (legacy column names preserved
 # inside the aligned object as an internal contract).
@@ -105,27 +105,27 @@ mk_aligned_for_filter <- function() {
   spicy:::align_frames(fr, model_ids = "M1")
 }
 
-test_that("apply_keep_drop_filter — NULL/NULL returns input unchanged", {
+test_that("apply_keep_drop_filter – NULL/NULL returns input unchanged", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned)
   expect_identical(out$coefs_aligned, aligned$coefs_aligned)
   expect_identical(out$term_order, aligned$term_order)
 })
 
-test_that("apply_keep_drop_filter — keep regex whitelists matching terms", {
+test_that("apply_keep_drop_filter – keep regex whitelists matching terms", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = "^wt$")
   expect_setequal(unique(out$coefs_aligned$term), "wt")
   expect_equal(out$term_order, "wt")
 })
 
-test_that("apply_keep_drop_filter — keep with multiple patterns combines OR", {
+test_that("apply_keep_drop_filter – keep with multiple patterns combines OR", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = c("^wt$", "^hp$"))
   expect_setequal(unique(out$coefs_aligned$term), c("wt", "hp"))
 })
 
-test_that("apply_keep_drop_filter — keep '^cyl' grabs the whole factor group", {
+test_that("apply_keep_drop_filter – keep '^cyl' grabs the whole factor group", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = "^cyl")
   surviving <- unique(out$coefs_aligned$term)
@@ -133,7 +133,7 @@ test_that("apply_keep_drop_filter — keep '^cyl' grabs the whole factor group",
   expect_false("wt" %in% surviving)
 })
 
-test_that("apply_keep_drop_filter — drop regex removes matching terms", {
+test_that("apply_keep_drop_filter – drop regex removes matching terms", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, drop = "^cyl")
   surviving <- unique(out$coefs_aligned$term)
@@ -142,7 +142,7 @@ test_that("apply_keep_drop_filter — drop regex removes matching terms", {
   expect_true("(Intercept)" %in% surviving)
 })
 
-test_that("apply_keep_drop_filter — drop '(Intercept)' hides the intercept", {
+test_that("apply_keep_drop_filter – drop '(Intercept)' hides the intercept", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(
     aligned, drop = "^\\(Intercept\\)$"
@@ -150,7 +150,7 @@ test_that("apply_keep_drop_filter — drop '(Intercept)' hides the intercept", {
   expect_false("(Intercept)" %in% out$coefs_aligned$term)
 })
 
-test_that("apply_keep_drop_filter — factor_ref_levels cleaned when factor fully dropped", {
+test_that("apply_keep_drop_filter – factor_ref_levels cleaned when factor fully dropped", {
   aligned <- mk_aligned_for_filter()
   expect_true("cyl" %in% names(aligned$factor_ref_levels))
   out <- spicy:::apply_keep_drop_filter(aligned, drop = "^cyl")
@@ -159,12 +159,12 @@ test_that("apply_keep_drop_filter — factor_ref_levels cleaned when factor full
 
 
 # ============================================================================
-# table_regression — end-to-end with p_adjust + keep + drop
-# (Unchanged — these tests exercise the full pipeline regardless of
+# table_regression – end-to-end with p_adjust + keep + drop
+# (Unchanged – these tests exercise the full pipeline regardless of
 # whether the internal path is legacy or frame-based.)
 # ============================================================================
 
-test_that("table_regression — p_adjust = 'bonferroni' multiplies p, footer notes it", {
+test_that("table_regression – p_adjust = 'bonferroni' multiplies p, footer notes it", {
   fit <- lm(mpg ~ wt + cyl + am + hp, data = mtcars)
   raw <- table_regression(fit)
   adj <- table_regression(fit, p_adjust = "bonferroni")
@@ -181,7 +181,7 @@ test_that("table_regression — p_adjust = 'bonferroni' multiplies p, footer not
   expect_match(attr(adj, "note"), "bonferroni")
 })
 
-test_that("table_regression — invalid p_adjust errors spicy_invalid_input", {
+test_that("table_regression – invalid p_adjust errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, p_adjust = "foo"),
@@ -193,7 +193,7 @@ test_that("table_regression — invalid p_adjust errors spicy_invalid_input", {
   )
 })
 
-test_that("table_regression — keep filter shows only matching coefs", {
+test_that("table_regression – keep filter shows only matching coefs", {
   fit <- lm(mpg ~ wt + cyl + am + hp, data = mt)
   out <- table_regression(fit, keep = "^wt$")
   surviving_terms <- broom::tidy(out)$term
@@ -201,7 +201,7 @@ test_that("table_regression — keep filter shows only matching coefs", {
   expect_false(any(grepl("cyl|am|hp", out$Variable)))
 })
 
-test_that("table_regression — drop filter hides matching coefs", {
+test_that("table_regression – drop filter hides matching coefs", {
   fit <- lm(mpg ~ wt + cyl + am + hp, data = mt)
   out <- table_regression(fit, drop = "^cyl")
   expect_false(any(grepl("^  [468]$", out$Variable)))
@@ -210,7 +210,7 @@ test_that("table_regression — drop filter hides matching coefs", {
   expect_true("am" %in% out$Variable)
 })
 
-test_that("table_regression — keep and drop are mutually exclusive", {
+test_that("table_regression – keep and drop are mutually exclusive", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
     table_regression(fit, keep = "wt", drop = "cyl"),
@@ -218,7 +218,7 @@ test_that("table_regression — keep and drop are mutually exclusive", {
   )
 })
 
-test_that("table_regression — p_adjust runs BEFORE keep filter (full family)", {
+test_that("table_regression – p_adjust runs BEFORE keep filter (full family)", {
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- table_regression(fit, p_adjust = "bonferroni", keep = "^wt$")
   td <- broom::tidy(out)
@@ -232,7 +232,7 @@ test_that("table_regression — p_adjust runs BEFORE keep filter (full family)",
                tolerance = 1e-12)
 })
 
-test_that("table_regression — keep / drop validation: empty / NA / non-character", {
+test_that("table_regression – keep / drop validation: empty / NA / non-character", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(table_regression(fit, keep = character(0)),
                class = "spicy_invalid_input")

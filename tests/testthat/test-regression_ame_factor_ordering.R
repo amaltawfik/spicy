@@ -168,7 +168,7 @@ test_that("ref-row em-dashes follow estimate_type semantics (plain factor: B + A
   # Every data column of the ref-row contains an em-dash, because
   # `Female` is the reference for both B and AME blocks.
   data_cells <- as.character(ref_row[, -1L])
-  expect_true(all(grepl("—", data_cells)))
+  expect_true(all(grepl("–", data_cells)))
 })
 
 
@@ -232,8 +232,8 @@ test_that("ref-row em-dashes follow estimate_type semantics (ordered factor: AME
   expect_equal(length(cells), 4L)
   expect_true(trimws(cells[1]) == "")   # B blank
   expect_true(trimws(cells[2]) == "")   # p of B blank
-  expect_match(cells[3], "—")            # AME em-dash
-  expect_match(cells[4], "—")            # p of AME em-dash
+  expect_match(cells[3], "–")            # AME em-dash
+  expect_match(cells[4], "–")            # p of AME em-dash
 })
 
 
@@ -257,7 +257,7 @@ test_that("multi-model: ref-row of a factor missing from a model is BLANK in tha
   expect_equal(nrow(ref_row), 1L)
   # M1 columns: em-dash (factor present, reference level).
   m1_cells <- as.character(ref_row[grepl("^M1", names(ref_row))])
-  expect_true(all(grepl("—", m1_cells)))
+  expect_true(all(grepl("–", m1_cells)))
   # M2 columns: blank (factor absent from M2). The cells contain
   # only whitespace -- trimws() yields an empty string.
   m2_cells <- as.character(ref_row[grepl("^M2", names(ref_row))])

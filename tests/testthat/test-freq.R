@@ -280,7 +280,7 @@ test_that("freq() rejects non-numeric weights with a clear type error", {
 })
 
 test_that("freq() accepts logical weights via implicit coercion", {
-  # TRUE = 1, FALSE = 0 — common shorthand for "include / exclude"
+  # TRUE = 1, FALSE = 0 – common shorthand for "include / exclude"
   # weighting in survey contexts. Locks in the supported type set.
   res <- freq(
     c("A", "B", "C"),
@@ -509,7 +509,7 @@ test_that("freq() rejects pathological sort values with the friendly message", {
 })
 
 test_that("freq() validates logical arguments up front", {
-  # Reuses validate_varlist_logical() — same error message format
+  # Reuses validate_varlist_logical() – same error message format
   # as varlist() / code_book(), so users get a consistent diagnostic
   # across the package.
   expect_error(freq(c(1, 2), valid = "yes"), "`valid` must be TRUE or FALSE", fixed = TRUE)
@@ -763,7 +763,7 @@ test_that("freq() factor_levels = 'all' interacts cleanly with sort and cum", {
 
 test_that("freq() factor_levels = 'all' interacts with na_val", {
   # na_val recodes some values as NA, but the original levels stay
-  # in the factor's `levels` attribute — so factor_levels = "all"
+  # in the factor's `levels` attribute – so factor_levels = "all"
   # still shows them with n = 0 alongside the new NA row.
   skip_if_not_installed("labelled")
   x <- labelled::labelled(
@@ -780,7 +780,7 @@ test_that("freq() factor_levels = 'all' interacts with na_val", {
 })
 
 test_that("freq() factor_levels = 'all' is a no-op for plain character vectors", {
-  # Numeric / character / logical have no declared levels — the
+  # Numeric / character / logical have no declared levels – the
   # argument has nothing to do, output identical to "observed".
   res_obs <- freq(c("a", "b", "a"), factor_levels = "observed", styled = FALSE)
   res_all <- freq(c("a", "b", "a"), factor_levels = "all", styled = FALSE)

@@ -1,4 +1,4 @@
-# Integration tests for table_regression() — Phase 1 end-to-end.
+# Integration tests for table_regression() – Phase 1 end-to-end.
 
 mt <- mtcars
 mt$cyl <- factor(mt$cyl)
@@ -7,7 +7,7 @@ mt$cyl <- factor(mt$cyl)
 # default output
 # ============================================================================
 
-test_that("table_regression — default output: spicy_regression_table class + attrs", {
+test_that("table_regression – default output: spicy_regression_table class + attrs", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   expect_s3_class(out, "spicy_regression_table")
@@ -17,7 +17,7 @@ test_that("table_regression — default output: spicy_regression_table class + a
   expect_match(attr(out, "note"), "^Note\\. ")
 })
 
-test_that("table_regression — single fit and 1-list of fits behave the same", {
+test_that("table_regression – single fit and 1-list of fits behave the same", {
   fit <- lm(mpg ~ wt, data = mt)
   o1 <- table_regression(fit)
   o2 <- table_regression(list(fit))
@@ -25,14 +25,14 @@ test_that("table_regression — single fit and 1-list of fits behave the same", 
   expect_equal(unname(unlist(o1$Variable)), unname(unlist(o2$Variable)))
 })
 
-test_that("table_regression — factor with reference: ref row em-dashed", {
+test_that("table_regression – factor with reference: ref row em-dashed", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   ref_idx <- grep("\\(ref\\.\\)", out$Variable)
   expect_equal(length(ref_idx), 1L)
   stat_cols <- setdiff(names(out), "Variable")
   # trim padding from default decimal alignment before comparison
-  expect_true(all(trimws(unlist(out[ref_idx, stat_cols])) == "—"))
+  expect_true(all(trimws(unlist(out[ref_idx, stat_cols])) == "–"))
 })
 
 
@@ -40,13 +40,13 @@ test_that("table_regression — factor with reference: ref row em-dashed", {
 # show_columns + standardized
 # ============================================================================
 
-test_that("table_regression — standardized != 'none' auto-injects 'beta'", {
+test_that("table_regression – standardized != 'none' auto-injects 'beta'", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, standardized = "refit")
   expect_true("β" %in% names(out))
 })
 
-test_that("table_regression — 'beta' without standardized errors with spicy_invalid_input", {
+test_that("table_regression – 'beta' without standardized errors with spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = c("b", "beta")),
@@ -54,7 +54,7 @@ test_that("table_regression — 'beta' without standardized errors with spicy_in
   )
 })
 
-test_that("table_regression — partial_eta2 + partial_eta2_ci render as atomic columns", {
+test_that("table_regression – partial_eta2 + partial_eta2_ci render as atomic columns", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit,
                           show_columns = c("b", "partial_eta2",
@@ -71,14 +71,14 @@ test_that("table_regression — partial_eta2 + partial_eta2_ci render as atomic 
 # stars (Q12)
 # ============================================================================
 
-test_that("table_regression — stars = TRUE applied to B (no β requested)", {
+test_that("table_regression – stars = TRUE applied to B (no β requested)", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, stars = TRUE)
   wt_row <- out[out$Variable == "wt", , drop = FALSE]
   expect_match(wt_row$B, "\\*\\*\\*$")
 })
 
-test_that("table_regression — stars on B when both B and β are shown", {
+test_that("table_regression – stars on B when both B and β are shown", {
   # Convention aligned with SPSS, Stata `esttab`, SAS, and the R
   # ecosystem (modelsummary, gtsummary, parameters): stars are
   # anchored on the raw coefficient B. β is a deterministic
@@ -98,7 +98,7 @@ test_that("table_regression — stars on B when both B and β are shown", {
 # Multi-model + nested
 # ============================================================================
 
-test_that("table_regression — two models: per-model column groups", {
+test_that("table_regression – two models: per-model column groups", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
@@ -106,7 +106,7 @@ test_that("table_regression — two models: per-model column groups", {
   expect_true(any(grepl("Model 2: B$", names(out))))
 })
 
-test_that("table_regression — names(list) used as model labels", {
+test_that("table_regression – names(list) used as model labels", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(Crude = m1, Adjusted = m2))
@@ -114,7 +114,7 @@ test_that("table_regression — names(list) used as model labels", {
   expect_true(any(grepl("^Adjusted: B$", names(out))))
 })
 
-test_that("table_regression — nested = TRUE injects change-stat rows + Hierarchical title", {
+test_that("table_regression – nested = TRUE injects change-stat rows + Hierarchical title", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
@@ -129,7 +129,7 @@ test_that("table_regression — nested = TRUE injects change-stat rows + Hierarc
 
 
 # ============================================================================
-# Output dispatch — non-default formats
+# Output dispatch – non-default formats
 # ============================================================================
 
 test_that("output = 'data.frame' returns plain data.frame", {
@@ -193,14 +193,14 @@ test_that("output = 'tinytable' returns a tinytable object when installed", {
 # Validation guarantees
 # ============================================================================
 
-test_that("table_regression — NULL models errors with spicy_invalid_input", {
+test_that("table_regression – NULL models errors with spicy_invalid_input", {
   expect_error(
     table_regression(NULL),
     class = "spicy_invalid_input"
   )
 })
 
-test_that("table_regression — class without as_regression_frame method errors with spicy_unsupported", {
+test_that("table_regression – class without as_regression_frame method errors with spicy_unsupported", {
   # Phase 1-6 added methods for ~35 classes including mixed-effects,
   # survival, ordinal, multinomial, robust, fixed-effects, GAM, rms,
   # Bayesian etc. Genuinely-unsupported off-roadmap classes still
@@ -212,7 +212,7 @@ test_that("table_regression — class without as_regression_frame method errors 
   )
 })
 
-test_that("table_regression — binomial glm fits cleanly (Phase 3)", {
+test_that("table_regression – binomial glm fits cleanly (Phase 3)", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit)
   expect_s3_class(out, "spicy_regression_table")
@@ -229,7 +229,7 @@ test_that("table_regression — binomial glm fits cleanly (Phase 3)", {
 # Print method
 # ============================================================================
 
-test_that("print.spicy_regression_table — invisible return + non-empty stdout", {
+test_that("print.spicy_regression_table – invisible return + non-empty stdout", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   txt <- capture.output(p <- print(out))
@@ -240,10 +240,10 @@ test_that("print.spicy_regression_table — invisible return + non-empty stdout"
 
 
 # ============================================================================
-# Polish round 2 — Q1/Q2 conflict warnings, stars validation, AME naming
+# Polish round 2 – Q1/Q2 conflict warnings, stars validation, AME naming
 # ============================================================================
 
-test_that("AME — binary numeric var keeps the var name (not '<var>1')", {
+test_that("AME – binary numeric var keeps the var name (not '<var>1')", {
   # mtcars$am is 0/1 INTEGER (not factor). marginaleffects returns
   # the contrast string "1 - 0" for binary numerics; we must not
   # mistake that for a factor and concatenate `am1`. The AME row
@@ -255,7 +255,7 @@ test_that("AME — binary numeric var keeps the var name (not '<var>1')", {
   expect_false("am1" %in% ame$term)
 })
 
-test_that("AME — true factor still gets <var><level> naming", {
+test_that("AME – true factor still gets <var><level> naming", {
   # Sanity: factor predictors must still produce <var><level> AME
   # rows so they align with the B coef rows (cyl6, cyl8).
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -264,7 +264,7 @@ test_that("AME — true factor still gets <var><level> naming", {
   expect_true(all(c("cyl6", "cyl8") %in% ame_terms))
 })
 
-test_that("Q1 — names(list) + model_labels conflict warns spicy_ignored_arg", {
+test_that("Q1 – names(list) + model_labels conflict warns spicy_ignored_arg", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_warning(
@@ -273,7 +273,7 @@ test_that("Q1 — names(list) + model_labels conflict warns spicy_ignored_arg", 
   )
 })
 
-test_that("Q1 — names(list) alone (no explicit model_labels): no warning", {
+test_that("Q1 – names(list) alone (no explicit model_labels): no warning", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_no_warning(
@@ -282,7 +282,7 @@ test_that("Q1 — names(list) alone (no explicit model_labels): no warning", {
   )
 })
 
-test_that("Q2 — show_intercept=FALSE + non-default intercept_position warns", {
+test_that("Q2 – show_intercept=FALSE + non-default intercept_position warns", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_warning(
     table_regression(fit, show_intercept = FALSE,
@@ -291,7 +291,7 @@ test_that("Q2 — show_intercept=FALSE + non-default intercept_position warns", 
   )
 })
 
-test_that("Q2 — show_intercept=FALSE + default intercept_position: no warning", {
+test_that("Q2 – show_intercept=FALSE + default intercept_position: no warning", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_no_warning(
     table_regression(fit, show_intercept = FALSE),
@@ -299,7 +299,7 @@ test_that("Q2 — show_intercept=FALSE + default intercept_position: no warning"
   )
 })
 
-test_that("stars validation — empty numeric errors spicy_invalid_input", {
+test_that("stars validation – empty numeric errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit,
@@ -308,7 +308,7 @@ test_that("stars validation — empty numeric errors spicy_invalid_input", {
   )
 })
 
-test_that("stars validation — out-of-range threshold errors", {
+test_that("stars validation – out-of-range threshold errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, stars = c("*" = 0, "**" = -0.01)),
@@ -320,7 +320,7 @@ test_that("stars validation — out-of-range threshold errors", {
   )
 })
 
-test_that("stars validation — empty / unnamed name errors", {
+test_that("stars validation – empty / unnamed name errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, stars = c(0.05, 0.01)),       # no names
@@ -335,10 +335,10 @@ test_that("stars validation — empty / unnamed name errors", {
 
 
 # ============================================================================
-# Polish round 3 — full Q21 validation cascade wired into orchestrator
+# Polish round 3 – full Q21 validation cascade wired into orchestrator
 # ============================================================================
 
-test_that("vcov — unknown type errors spicy_invalid_input", {
+test_that("vcov – unknown type errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, vcov = "HC99"),
@@ -346,7 +346,7 @@ test_that("vcov — unknown type errors spicy_invalid_input", {
   )
 })
 
-test_that("vcov — CR* without cluster errors spicy_invalid_input", {
+test_that("vcov – CR* without cluster errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, vcov = "CR2"),
@@ -354,7 +354,7 @@ test_that("vcov — CR* without cluster errors spicy_invalid_input", {
   )
 })
 
-test_that("vcov — list length mismatch errors spicy_invalid_input", {
+test_that("vcov – list length mismatch errors spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -363,7 +363,7 @@ test_that("vcov — list length mismatch errors spicy_invalid_input", {
   )
 })
 
-test_that("ci_level — out of range errors spicy_invalid_input", {
+test_that("ci_level – out of range errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, ci_level = 1.5),
@@ -375,7 +375,7 @@ test_that("ci_level — out of range errors spicy_invalid_input", {
   )
 })
 
-test_that("show_columns — unknown token errors spicy_invalid_input", {
+test_that("show_columns – unknown token errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = c("b", "BOGUS")),
@@ -383,7 +383,7 @@ test_that("show_columns — unknown token errors spicy_invalid_input", {
   )
 })
 
-test_that("show_columns — empty errors spicy_invalid_input", {
+test_that("show_columns – empty errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = character(0)),
@@ -391,7 +391,7 @@ test_that("show_columns — empty errors spicy_invalid_input", {
   )
 })
 
-test_that("show_fit_stats — unknown token errors spicy_invalid_input", {
+test_that("show_fit_stats – unknown token errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_fit_stats = c("nobs", "nope")),
@@ -399,7 +399,7 @@ test_that("show_fit_stats — unknown token errors spicy_invalid_input", {
   )
 })
 
-test_that("show_fit_stats — change tokens accepted under nested = TRUE", {
+test_that("show_fit_stats – change tokens accepted under nested = TRUE", {
   # Since 0.12 the `nested_stats` argument was removed: change tokens
   # (`r2_change`, `f_change`, `p_change`, ...) are regular
   # `show_fit_stats` entries. An unknown token raises the same
@@ -413,7 +413,7 @@ test_that("show_fit_stats — change tokens accepted under nested = TRUE", {
   )
 })
 
-test_that("digit args — non-positive integer errors spicy_invalid_input", {
+test_that("digit args – non-positive integer errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, digits = -1L),
@@ -425,7 +425,7 @@ test_that("digit args — non-positive integer errors spicy_invalid_input", {
   )
 })
 
-test_that("decimal_mark — multi-character errors spicy_invalid_input", {
+test_that("decimal_mark – multi-character errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, decimal_mark = "..."),
@@ -433,7 +433,7 @@ test_that("decimal_mark — multi-character errors spicy_invalid_input", {
   )
 })
 
-test_that("reference_label — empty string errors spicy_invalid_input", {
+test_that("reference_label – empty string errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
     table_regression(fit, reference_label = ""),
@@ -441,7 +441,7 @@ test_that("reference_label — empty string errors spicy_invalid_input", {
   )
 })
 
-test_that("model_labels — length mismatch errors spicy_invalid_input", {
+test_that("model_labels – length mismatch errors spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -450,7 +450,7 @@ test_that("model_labels — length mismatch errors spicy_invalid_input", {
   )
 })
 
-test_that("outcome_labels — length mismatch errors spicy_invalid_input", {
+test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -459,7 +459,7 @@ test_that("outcome_labels — length mismatch errors spicy_invalid_input", {
   )
 })
 
-test_that("labels — unknown predictor key errors spicy_invalid_input", {
+test_that("labels – unknown predictor key errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit,
@@ -468,7 +468,7 @@ test_that("labels — unknown predictor key errors spicy_invalid_input", {
   )
 })
 
-test_that("nested = TRUE — different nobs errors spicy_invalid_input", {
+test_that("nested = TRUE – different nobs errors spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   # Drop one row to force nobs mismatch
   m2 <- lm(mpg ~ wt + cyl, data = mt[-1, ])
@@ -478,7 +478,7 @@ test_that("nested = TRUE — different nobs errors spicy_invalid_input", {
   )
 })
 
-test_that("nested = TRUE — different DV errors spicy_invalid_input", {
+test_that("nested = TRUE – different DV errors spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(hp ~ wt + cyl, data = mt)
   expect_error(
@@ -498,11 +498,11 @@ test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
 
 
 # ============================================================================
-# Polish round 4 — show_fit_stats footer block, labels for coef-style
+# Polish round 4 – show_fit_stats footer block, labels for coef-style
 # names, align argument
 # ============================================================================
 
-test_that("show_fit_stats — default tokens (n / R² / Adj.R²) appear in body", {
+test_that("show_fit_stats – default tokens (n / R² / Adj.R²) appear in body", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   expect_true("n" %in% out$Variable)
@@ -510,7 +510,7 @@ test_that("show_fit_stats — default tokens (n / R² / Adj.R²) appear in body"
   expect_true("Adj.R²" %in% out$Variable)
 })
 
-test_that("show_fit_stats — custom tokens (omega2, sigma, AIC) appear", {
+test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit,
                           show_fit_stats = c("nobs", "omega2",
@@ -520,13 +520,13 @@ test_that("show_fit_stats — custom tokens (omega2, sigma, AIC) appear", {
   expect_true("AIC" %in% out$Variable)
 })
 
-test_that("show_fit_stats — empty character drops the footer block", {
+test_that("show_fit_stats – empty character drops the footer block", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, show_fit_stats = character(0))
   expect_false(any(c("n", "R²", "Adj.R²") %in% out$Variable))
 })
 
-test_that("show_fit_stats — multi-model: each model contributes its values", {
+test_that("show_fit_stats – multi-model: each model contributes its values", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2),
@@ -551,7 +551,7 @@ test_that("group_sep_rows attribute marks the body / fit-stats divider", {
   expect_equal(out$Variable[sep], "n")
 })
 
-test_that("labels — coef-style key (cyl6) renames the contrast row", {
+test_that("labels – coef-style key (cyl6) renames the contrast row", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit,
                           labels = c("cyl6" = "6 cylinders",
@@ -563,7 +563,7 @@ test_that("labels — coef-style key (cyl6) renames the contrast row", {
   expect_true("cyl:" %in% out$Variable)
 })
 
-test_that("labels — mixed term + coef-style keys both honoured", {
+test_that("labels – mixed term + coef-style keys both honoured", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit,
                           labels = c("cyl" = "Cylinders",
@@ -574,7 +574,7 @@ test_that("labels — mixed term + coef-style keys both honoured", {
   expect_true(any(grepl("Six$", out$Variable)))
 })
 
-test_that("align — 'decimal' is default; padding applied to numeric cols", {
+test_that("align – 'decimal' is default; padding applied to numeric cols", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   expect_equal(attr(out, "align"), "decimal")
@@ -584,7 +584,7 @@ test_that("align — 'decimal' is default; padding applied to numeric cols", {
   expect_true(any(grepl("^[ ].*", b_col) | grepl(".*[ ]$", b_col)))
 })
 
-test_that("align — 'right' / 'center' are accepted (no decimal pad)", {
+test_that("align – 'right' / 'center' are accepted (no decimal pad)", {
   fit <- lm(mpg ~ wt, data = mt)
   for (a in c("center", "right")) {
     out <- table_regression(fit, align = a)
@@ -592,7 +592,7 @@ test_that("align — 'right' / 'center' are accepted (no decimal pad)", {
   }
 })
 
-test_that("print — align = 'center' propagates to align_center_cols", {
+test_that("print – align = 'center' propagates to align_center_cols", {
   # Exercises the data_col_idx branch in print.spicy_regression_table
   # when align is "center" (vs "decimal" / "right").
   fit <- lm(mpg ~ wt, data = mt)
@@ -653,7 +653,7 @@ test_that("outcome auto-row identical-DV check uses variable name (not label)", 
   expect_false("Outcome" %in% out$Variable)
 })
 
-test_that("cluster_name — `df$col` extracted to 'col' for the footer", {
+test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
   skip_if_not_installed("clubSandwich")
   set.seed(1)
   df <- data.frame(
@@ -666,7 +666,7 @@ test_that("cluster_name — `df$col` extracted to 'col' for the footer", {
   expect_no_match(attr(out, "note"), "cluster vector supplied")
 })
 
-test_that("cluster_name — bare symbol extracted as variable name", {
+test_that("cluster_name – bare symbol extracted as variable name", {
   skip_if_not_installed("clubSandwich")
   set.seed(2)
   df <- data.frame(
@@ -679,7 +679,7 @@ test_that("cluster_name — bare symbol extracted as variable name", {
   expect_match(attr(out, "note"), "clusters by region_vec")
 })
 
-test_that("cluster_name — list(...) with named elements per model", {
+test_that("cluster_name – list(...) with named elements per model", {
   skip_if_not_installed("clubSandwich")
   set.seed(3)
   df <- data.frame(
@@ -699,7 +699,7 @@ test_that("cluster_name — list(...) with named elements per model", {
   expect_match(note, "clusters by clinic")
 })
 
-test_that("extract_arg_column_name — handles all recognised forms", {
+test_that("extract_arg_column_name – handles all recognised forms", {
   expect_equal(spicy:::extract_arg_column_name(quote(df$col)), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(df[["col"]])), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(mycluster)), "mycluster")
@@ -709,10 +709,10 @@ test_that("extract_arg_column_name — handles all recognised forms", {
 
 
 # ============================================================================
-# Polish round 5 — outcome_labels (Q11b) and reference_style annotation (Q5)
+# Polish round 5 – outcome_labels (Q11b) and reference_style annotation (Q5)
 # ============================================================================
 
-test_that("outcome_labels — single model: row never shown (DV is in title)", {
+test_that("outcome_labels – single model: row never shown (DV is in title)", {
   fit <- lm(mpg ~ wt, data = mt)
   out_null <- table_regression(fit, outcome_labels = NULL)
   out_chr  <- table_regression(fit, outcome_labels = "Custom")
@@ -722,14 +722,14 @@ test_that("outcome_labels — single model: row never shown (DV is in title)", {
   expect_false("Outcome" %in% out_F$Variable)
 })
 
-test_that("outcome_labels — multi-model identical DVs: NULL hides the row", {
+test_that("outcome_labels – multi-model identical DVs: NULL hides the row", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
   expect_false("Outcome" %in% out$Variable)
 })
 
-test_that("outcome_labels — multi-model differing DVs: NULL lifts DVs into spanner", {
+test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spanner", {
   # When `outcome_labels = NULL` (default) and DVs differ, the
   # smart default moves the auto-detected DV names into the
   # multi-model spanner and suppresses the body Outcome row.
@@ -741,7 +741,7 @@ test_that("outcome_labels — multi-model differing DVs: NULL lifts DVs into spa
   expect_equal(names(spans), c("mpg", "hp"))
 })
 
-test_that("outcome_labels — explicit labels take precedence", {
+test_that("outcome_labels – explicit labels take precedence", {
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp),
@@ -751,14 +751,14 @@ test_that("outcome_labels — explicit labels take precedence", {
   expect_true(any(grepl("Horsepower",   outcome_row[, "Model 2: B"])))
 })
 
-test_that("outcome_labels — FALSE suppresses the row even with differing DVs", {
+test_that("outcome_labels – FALSE suppresses the row even with differing DVs", {
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp), outcome_labels = FALSE)
   expect_false("Outcome" %in% out$Variable)
 })
 
-test_that("reference_style = 'annotation' — factor header annotated [ref: <level>]", {
+test_that("reference_style = 'annotation' – factor header annotated [ref: <level>]", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, reference_style = "annotation")
   # Header now reads "cyl: [ref: 4]" (or whichever the ref level is)
@@ -767,7 +767,7 @@ test_that("reference_style = 'annotation' — factor header annotated [ref: <lev
   expect_false(any(grepl("\\(ref\\.\\)", out$Variable)))
 })
 
-test_that("reference_style = 'row' (default) — no factor header annotation", {
+test_that("reference_style = 'row' (default) – no factor header annotation", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)   # default = "row"
   expect_true("cyl:" %in% out$Variable)
@@ -775,7 +775,7 @@ test_that("reference_style = 'row' (default) — no factor header annotation", {
   expect_true(any(grepl("\\(ref\\.\\)", out$Variable)))
 })
 
-test_that("reference_style = 'annotation' — works with multiple factors", {
+test_that("reference_style = 'annotation' – works with multiple factors", {
   mt2 <- mt
   mt2$gear <- factor(mt2$gear)
   fit <- lm(mpg ~ wt + cyl + gear, data = mt2)
@@ -786,13 +786,13 @@ test_that("reference_style = 'annotation' — works with multiple factors", {
 
 
 # ============================================================================
-# Polish round 6 — no-intercept formula edge case (y ~ 0 + x)
+# Polish round 6 – no-intercept formula edge case (y ~ 0 + x)
 # ============================================================================
 
-test_that("no-intercept formula — first level of factor is a real coef, no phantom ref row", {
+test_that("no-intercept formula – first level of factor is a real coef, no phantom ref row", {
   fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
   out <- table_regression(fit)
-  # No "(ref.)" suffix anywhere — all 3 cyl levels are fitted coefs
+  # No "(ref.)" suffix anywhere – all 3 cyl levels are fitted coefs
   expect_false(any(grepl("\\(ref\\.\\)", out$Variable)))
   # cyl4 / cyl6 / cyl8 all displayed (indented under "cyl:")
   expect_true(any(grepl("^  4$", out$Variable)))
@@ -802,7 +802,7 @@ test_that("no-intercept formula — first level of factor is a real coef, no pha
   expect_false(any(grepl("^cyl4$", out$Variable)))
 })
 
-test_that("no-intercept formula — tidy returns all factor coefs", {
+test_that("no-intercept formula – tidy returns all factor coefs", {
   fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
   td <- broom::tidy(table_regression(fit))
   # Expect 4 B rows (wt, cyl4, cyl6, cyl8)
@@ -815,7 +815,7 @@ test_that("no-intercept formula — tidy returns all factor coefs", {
   expect_false(any(td$is_intercept))
 })
 
-test_that("no-intercept formula — alt syntax 'y ~ x - 1' is equivalent", {
+test_that("no-intercept formula – alt syntax 'y ~ x - 1' is equivalent", {
   fit_a <- lm(mpg ~ 0 + wt, data = mt)
   fit_b <- lm(mpg ~ wt - 1, data = mt)
   out_a <- table_regression(fit_a)
@@ -823,10 +823,10 @@ test_that("no-intercept formula — alt syntax 'y ~ x - 1' is equivalent", {
   expect_equal(out_a$B, out_b$B)
 })
 
-test_that("no-intercept formula — works with multi-model nested lookalike", {
+test_that("no-intercept formula – works with multi-model nested lookalike", {
   m_with_int <- lm(mpg ~ wt + cyl, data = mt)
   m_no_int   <- lm(mpg ~ 0 + wt + cyl, data = mt)
-  # Side-by-side display (NOT nested — these aren't nested in the
+  # Side-by-side display (NOT nested – these aren't nested in the
   # likelihood sense). Validate that the rendering does not crash.
   out <- table_regression(list(m_with_int, m_no_int))
   expect_s3_class(out, "spicy_regression_table")
@@ -836,7 +836,7 @@ test_that("no-intercept formula — works with multi-model nested lookalike", {
 
 
 # ============================================================================
-# Snapshot tests — golden output for the most common rendering paths
+# Snapshot tests – golden output for the most common rendering paths
 # ============================================================================
 
 # Snapshot helper: capture the printed output and normalise trailing
@@ -851,20 +851,20 @@ capture_norm <- function(out) {
   paste(txt, collapse = "\n")
 }
 
-test_that("snapshot — single lm default rendering", {
+test_that("snapshot – single lm default rendering", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   expect_snapshot(cat(capture_norm(out)))
 })
 
-test_that("snapshot — multi-model with nested = TRUE comparison footer", {
+test_that("snapshot – multi-model with nested = TRUE comparison footer", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
   expect_snapshot(cat(capture_norm(out)))
 })
 
-test_that("snapshot — standardized + stars + reference annotation", {
+test_that("snapshot – standardized + stars + reference annotation", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, standardized = "refit", stars = TRUE,
                           reference_style = "annotation")
@@ -876,13 +876,13 @@ test_that("snapshot — standardized + stars + reference annotation", {
 # Multi-model column spanners (model name above each model's sub-columns)
 # ============================================================================
 
-test_that("spanner — single model: no spanner attribute", {
+test_that("spanner – single model: no spanner attribute", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   expect_null(attr(out, "spanners"))
 })
 
-test_that("spanner — multi-model named list: names become spanner labels", {
+test_that("spanner – multi-model named list: names become spanner labels", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
@@ -895,7 +895,7 @@ test_that("spanner — multi-model named list: names become spanner labels", {
   expect_equal(spans[["Step 2"]], 5:7)
 })
 
-test_that("spanner — multi-model unnamed + same DV: 'Model N' labels", {
+test_that("spanner – multi-model unnamed + same DV: 'Model N' labels", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
@@ -903,7 +903,7 @@ test_that("spanner — multi-model unnamed + same DV: 'Model N' labels", {
   expect_equal(names(spans), c("Model 1", "Model 2"))
 })
 
-test_that("spanner — multi-model unnamed + distinct DVs: DV smart default", {
+test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
@@ -913,7 +913,7 @@ test_that("spanner — multi-model unnamed + distinct DVs: DV smart default", {
   expect_false("Outcome" %in% out$Variable)
 })
 
-test_that("spanner — explicit model_labels override DV smart default", {
+test_that("spanner – explicit model_labels override DV smart default", {
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp),
@@ -922,7 +922,7 @@ test_that("spanner — explicit model_labels override DV smart default", {
   expect_equal(names(spans), c("Fuel", "Power"))
 })
 
-test_that("spanner — explicit outcome_labels keep the row; spanner stays generic", {
+test_that("spanner – explicit outcome_labels keep the row; spanner stays generic", {
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp  <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp),
@@ -932,7 +932,7 @@ test_that("spanner — explicit outcome_labels keep the row; spanner stays gener
   expect_true("Outcome" %in% out$Variable)
 })
 
-test_that("spanner — multi-model print strips 'Label: ' prefix from headers", {
+test_that("spanner – multi-model print strips 'Label: ' prefix from headers", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list("A" = m1, "B" = m2))
@@ -946,7 +946,7 @@ test_that("spanner — multi-model print strips 'Label: ' prefix from headers", 
   expect_false(grepl("A: B", joined, fixed = TRUE))
 })
 
-test_that("spanner — .validate_spanners catches malformed input", {
+test_that("spanner – .validate_spanners catches malformed input", {
   df <- data.frame(a = 1, b = 2, c = 3, d = 4)
   expect_error(
     build_ascii_table(df, spanners = list(2:3)),     # unnamed
@@ -966,7 +966,7 @@ test_that("spanner — .validate_spanners catches malformed input", {
   )
 })
 
-test_that("spanner — gt output applies tab_spanner + cols_label", {
+test_that("spanner – gt output applies tab_spanner + cols_label", {
   skip_if_not_installed("gt")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -980,7 +980,7 @@ test_that("spanner — gt output applies tab_spanner + cols_label", {
   expect_false(grepl(">A: B<", html, fixed = TRUE))
 })
 
-test_that("spanner — flextable output adds a header row with spanners", {
+test_that("spanner – flextable output adds a header row with spanners", {
   skip_if_not_installed("flextable")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -995,7 +995,7 @@ test_that("spanner — flextable output adds a header row with spanners", {
   expect_true(any(unlist(hdr[1, ]) == "B"))
 })
 
-test_that("ordered factor — grouped under header, poly-order, auto footer note", {
+test_that("ordered factor – grouped under header, poly-order, auto footer note", {
   set.seed(1)
   df <- data.frame(
     y   = rnorm(200),
@@ -1025,7 +1025,7 @@ test_that("ordered factor — grouped under header, poly-order, auto footer note
   expect_match(note, ".Q = quadratic", fixed = TRUE)
 })
 
-test_that("ordered factor — fitting with factor(ordered = FALSE) restores treatment layout", {
+test_that("ordered factor – fitting with factor(ordered = FALSE) restores treatment layout", {
   set.seed(1)
   df <- data.frame(
     y   = rnorm(200),
@@ -1058,7 +1058,7 @@ test_that("default show_columns context-aware: single keeps CI, multi drops it",
 })
 
 
-test_that("outcome_labels — NULL hides the row even when DVs differ + names supplied", {
+test_that("outcome_labels – NULL hides the row even when DVs differ + names supplied", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(hp  ~ wt, data = mt)
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
@@ -1070,7 +1070,7 @@ test_that("outcome_labels — NULL hides the row even when DVs differ + names su
 })
 
 
-test_that("spanner — tinytable output uses group_tt for column groups", {
+test_that("spanner – tinytable output uses group_tt for column groups", {
   skip_if_not_installed("tinytable")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)

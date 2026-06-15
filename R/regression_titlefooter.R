@@ -724,7 +724,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 #   Random effects (REML):
 #     sigma Subject (Intercept)  37.12  (5.84)  [27.2, 51.1]
 #     sigma Subject Days          5.92  (1.25)  [ 4.3,  7.9]
-#     rho Subject                 0.07     \u2014     \u2014
+#     rho Subject                 0.07     \u2013     \u2013
 #     sigma (Residual)           30.99  (1.51)  [28.5, 33.7]
 #     ICC                         0.59
 #     N (Subject)                   18
@@ -763,11 +763,11 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     cihi  <- vc$ci_upper[i]
     rows[[length(rows) + 1L]] <- list(
       label = label,
-      val   = if (is.finite(est))  sprintf("%.2f", est) else "\u2014",
-      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "\u2014",
+      val   = if (is.finite(est))  sprintf("%.2f", est) else "\u2013",
+      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "\u2013",
       ci    = if (is.finite(cilo) && is.finite(cihi)) {
         sprintf("[%.2f, %.2f]", cilo, cihi)
-      } else "\u2014"
+      } else "\u2013"
     )
   }
 
@@ -968,12 +968,12 @@ build_singular_footer_block_from_frames <- function(frames) {
   if (!any(flags)) return(NULL)
   affected <- which(flags)
   if (length(frames) == 1L) {
-    return("Rank-deficient model: dropped coefficient(s) shown as \u2014.")
+    return("Rank-deficient model: dropped coefficient(s) shown as \u2013.")
   }
   paste0(
     "Rank-deficient model(s) ",
     paste(sprintf("Model %d", affected), collapse = ", "),
-    ": dropped coefficient(s) shown as \u2014."
+    ": dropped coefficient(s) shown as \u2013."
   )
 }
 
@@ -990,22 +990,22 @@ build_exponentiate_footer_block_from_frames <- function(frames) {
   hdrs <- unique(vapply(frames[applied],
                         function(f) f$info$extras$exp_header,
                         character(1)))
+  # The SE column is reported on the exp() scale via the Delta
+  # method (SE_exp = exp(B) * SE_link). That mechanic is documented
+  # in the `?table_regression` help; the footer keeps a one-line
+  # "what the column shows" rather than a "how it was computed"
+  # methods sentence that would otherwise clutter the table note.
   if (length(hdrs) == 1L) {
     hdr <- hdrs[1L]
     return(sprintf(
-      paste0(
-        "Coefficients exponentiated and displayed as %s; CI bounds ",
-        "exponentiated; SE delta-method approximation: ",
-        "SE_%s = %s \u00D7 SE_link."
-      ),
-      hdr, hdr, hdr
+      "Coefficients exponentiated and displayed as %s; CI bounds exponentiated.",
+      hdr
     ))
   }
   paste0(
     "Coefficients exponentiated and displayed as ",
     paste(hdrs, collapse = " / "),
-    " (per family); CI bounds exponentiated; SE delta-method ",
-    "approximation: SE_exp = exp(B) \u00D7 SE_link."
+    " (per family); CI bounds exponentiated."
   )
 }
 

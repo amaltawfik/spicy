@@ -14,3 +14,7 @@ cobertura.xml
 # Transient R plot device output (when Rscript runs plotting code
 # without an explicit pdf()/png() device).
 Rplots.pdf
+
+# testthat scratch (auto-regenerated per run)
+tests/testthat/_problems/
+tests/testthat/testthat-problems.rds

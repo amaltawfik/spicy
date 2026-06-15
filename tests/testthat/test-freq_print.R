@@ -41,7 +41,7 @@ test_that("print.spicy_freq_table handles weighted tables", {
     poids = c(1.2, 0.8, 1.5, 1.0, 0.7)
   )
 
-  # Weighted frequency table — keep the styled invisible return so that
+  # Weighted frequency table – keep the styled invisible return so that
   # the metadata attributes needed by print.spicy_freq_table are present.
   capture.output(ftab <- freq(df, sexe, weights = poids))
 

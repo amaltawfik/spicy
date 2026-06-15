@@ -19,10 +19,10 @@ mk_frame <- function(formula, model_id, data = mt) {
 
 
 # ============================================================================
-# align_frames() — single model
+# align_frames() – single model
 # ============================================================================
 
-test_that("align_frames — single model: order_idx assigned, term_order populated", {
+test_that("align_frames – single model: order_idx assigned, term_order populated", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1")
   expect_equal(aligned$n_models, 1L)
@@ -33,10 +33,10 @@ test_that("align_frames — single model: order_idx assigned, term_order populat
 
 
 # ============================================================================
-# align_frames() — two models, identical formulas
+# align_frames() – two models, identical formulas
 # ============================================================================
 
-test_that("align_frames — two identical models: same term_order, 2x rows per term", {
+test_that("align_frames – two identical models: same term_order, 2x rows per term", {
   fr <- list(
     mk_frame(mpg ~ wt + cyl, "M1"),
     mk_frame(mpg ~ wt + cyl, "M2")
@@ -49,10 +49,10 @@ test_that("align_frames — two identical models: same term_order, 2x rows per t
 
 
 # ============================================================================
-# align_frames() — model 2 adds a new term: appended at end of term_order
+# align_frames() – model 2 adds a new term: appended at end of term_order
 # ============================================================================
 
-test_that("align_frames — extra term in model 2 appended to term_order", {
+test_that("align_frames – extra term in model 2 appended to term_order", {
   fr <- list(
     mk_frame(mpg ~ wt + cyl, "M1"),
     mk_frame(mpg ~ wt + cyl + am, "M2")
@@ -68,16 +68,16 @@ test_that("align_frames — extra term in model 2 appended to term_order", {
 
 
 # ============================================================================
-# align_frames() — intercept positioning
+# align_frames() – intercept positioning
 # ============================================================================
 
-test_that("align_frames — intercept_position = 'last' moves intercept to end", {
+test_that("align_frames – intercept_position = 'last' moves intercept to end", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1", intercept_position = "last")
   expect_equal(tail(aligned$term_order, 1L), "(Intercept)")
 })
 
-test_that("align_frames — show_intercept = FALSE drops intercept rows", {
+test_that("align_frames – show_intercept = FALSE drops intercept rows", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1", show_intercept = FALSE)
   expect_false("(Intercept)" %in% aligned$coefs_aligned$term)
@@ -86,7 +86,7 @@ test_that("align_frames — show_intercept = FALSE drops intercept rows", {
 
 
 # ============================================================================
-# align_frames() — group_factor_levels
+# align_frames() – group_factor_levels
 # ============================================================================
 
 test_that("align_frames keeps factor coefs contiguous (always grouped)", {
@@ -102,7 +102,7 @@ test_that("align_frames keeps factor coefs contiguous (always grouped)", {
 })
 
 
-test_that("align_frames — factor reference row precedes non-ref levels in group", {
+test_that("align_frames – factor reference row precedes non-ref levels in group", {
   fr <- list(mk_frame(mpg ~ wt + cyl + am, "M1"))
   aligned <- .align(fr, "M1")
   cyl_rows <- aligned$coefs_aligned[
@@ -114,16 +114,16 @@ test_that("align_frames — factor reference row precedes non-ref levels in grou
 
 
 # ============================================================================
-# align_frames() — reference_style
+# align_frames() – reference_style
 # ============================================================================
 
-test_that("align_frames — reference_style = 'annotation' drops is_reference rows", {
+test_that("align_frames – reference_style = 'annotation' drops is_reference rows", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1", reference_style = "annotation")
   expect_false(any(aligned$coefs_aligned$is_reference))
 })
 
-test_that("align_frames — reference_style = 'row' keeps ref rows", {
+test_that("align_frames – reference_style = 'row' keeps ref rows", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1", reference_style = "row")
   expect_true(any(aligned$coefs_aligned$is_reference))
@@ -131,10 +131,10 @@ test_that("align_frames — reference_style = 'row' keeps ref rows", {
 
 
 # ============================================================================
-# align_frames() — factor_ref_levels map
+# align_frames() – factor_ref_levels map
 # ============================================================================
 
-test_that("align_frames — captures factor_ref_levels even when refs dropped", {
+test_that("align_frames – captures factor_ref_levels even when refs dropped", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1", reference_style = "annotation")
   # The ref level map is keyed by the factor's variable name.
@@ -143,7 +143,7 @@ test_that("align_frames — captures factor_ref_levels even when refs dropped", 
 })
 
 
-test_that("align_frames — multiple factors give one ref entry per factor", {
+test_that("align_frames – multiple factors give one ref entry per factor", {
   # Coerce `am` to factor so it joins `cyl` in the ref-level map.
   # (In mtcars `am` is numeric 0/1 by default.)
   d <- mt; d$am <- factor(d$am)
@@ -154,10 +154,10 @@ test_that("align_frames — multiple factors give one ref entry per factor", {
 
 
 # ============================================================================
-# align_frames() — empty / degenerate inputs
+# align_frames() – empty / degenerate inputs
 # ============================================================================
 
-test_that("align_frames — empty extracts list returns empty aligned shape", {
+test_that("align_frames – empty extracts list returns empty aligned shape", {
   out <- spicy:::align_frames(list(), model_ids = character(0))
   expect_equal(out$n_models, 0L)
   expect_equal(nrow(out$coefs_aligned), 0L)
@@ -167,10 +167,10 @@ test_that("align_frames — empty extracts list returns empty aligned shape", {
 
 
 # ============================================================================
-# align_frames() — outcome_labels_auto + exp_headers_auto
+# align_frames() – outcome_labels_auto + exp_headers_auto
 # ============================================================================
 
-test_that("align_frames — outcome_labels_auto: falls back to outcome when no labelled attr", {
+test_that("align_frames – outcome_labels_auto: falls back to outcome when no labelled attr", {
   fr <- list(
     mk_frame(mpg ~ wt, "M1"),
     mk_frame(hp ~ wt, "M2")
@@ -179,7 +179,7 @@ test_that("align_frames — outcome_labels_auto: falls back to outcome when no l
   expect_identical(unname(aligned$outcome_labels_auto), c("mpg", "hp"))
 })
 
-test_that("align_frames — outcome_labels_auto reads attr('label') when set", {
+test_that("align_frames – outcome_labels_auto reads attr('label') when set", {
   d <- mt
   attr(d$mpg, "label") <- "Fuel efficiency (mpg)"
   fr <- list(mk_frame(mpg ~ wt, "M1", data = d))
@@ -189,11 +189,11 @@ test_that("align_frames — outcome_labels_auto reads attr('label') when set", {
 
 
 # ============================================================================
-# pivot_aligned_wide() — kept as-is; it consumes the aligned object shape
+# pivot_aligned_wide() – kept as-is; it consumes the aligned object shape
 # (legacy-shape internal contract; renamed in Phase 0d if ever scoped).
 # ============================================================================
 
-test_that("pivot_aligned_wide — single model, wide format", {
+test_that("pivot_aligned_wide – single model, wide format", {
   fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
   aligned <- .align(fr, "M1")
   wide <- spicy:::pivot_aligned_wide(
@@ -209,7 +209,7 @@ test_that("pivot_aligned_wide — single model, wide format", {
 })
 
 
-test_that("pivot_aligned_wide — two models, side-by-side columns", {
+test_that("pivot_aligned_wide – two models, side-by-side columns", {
   fr <- list(
     mk_frame(mpg ~ wt, "M1"),
     mk_frame(mpg ~ wt + cyl, "M2")
