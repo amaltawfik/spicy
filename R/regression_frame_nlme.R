@@ -37,12 +37,12 @@ as_regression_frame.lme <- function(fit,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      show_columns = character(0),
+                                     exponentiate = FALSE,
                                      model_id = "M1",
                                      ...) {
   .check_nlme_available()
 
   coefs <- .lme_coefs(fit, ci_level = ci_level)
-  # Phase 7c15: inject AME rows when the user requested any AME token.
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .lme_info(fit,
                      vcov_kind  = vcov,
@@ -50,8 +50,12 @@ as_regression_frame.lme <- function(fit,
                      ci_level   = ci_level,
                      ci_method  = ci_method,
                      model_id   = model_id)
+  # Phase 7c16: exp() on the B / beta rows for non-identity links.
+  # nlme::lme is Gaussian-identity by spec, so this is currently a
+  # no-op -- kept for parity with the other mixed paths.
+  out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = coefs, info = info)
+  frame <- list(coefs = out$coefs, info = out$info)
   attr(frame, "spicy_frame_version") <- spicy_frame_version()
   attr(frame, "fit") <- fit
   frame

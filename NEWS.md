@@ -73,6 +73,19 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **`exponentiate = TRUE` for mixed-effects**. The exp() transform
+  is now applied to B / beta rows for any mixed-effects fit with a
+  non-identity link: `glmer` binomial logit / probit / cloglog
+  (column header rebranded to `OR` / `(probit)` / `HR`),
+  `glmer` Poisson log (`IRR`), `glmmTMB` same families, etc. CI
+  bounds exponentiated; SE follows the Delta method
+  (`SE_exp = exp(B) * SE_link`); the z-statistic and p-value are
+  invariant. AME rows are NOT re-exponentiated -- they are already
+  on the response scale by construction. The "no effect on
+  identity-link fits" warning now triggers on the link instead of
+  the class, so `glmer` / `glmmTMB` non-identity fits no longer
+  emit a spurious warning.
+
 * **Average Marginal Effects (AME) for mixed-effects**. The
   `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
   `show_columns` are now wired for all four mixed-effects

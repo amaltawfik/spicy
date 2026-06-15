@@ -39,12 +39,12 @@ as_regression_frame.lmerMod <- function(fit,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          show_columns = character(0),
+                                         exponentiate = FALSE,
                                          model_id = "M1",
                                          ...) {
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = FALSE)
-  # Phase 7c15: inject AME rows when the user requested any AME token.
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
@@ -53,8 +53,14 @@ as_regression_frame.lmerMod <- function(fit,
                         ci_method  = ci_method,
                         is_glm     = FALSE,
                         model_id   = model_id)
+  # Phase 7c16: exp() transform for non-identity links. lmer is
+  # Gaussian-identity by construction, so this is a no-op for the
+  # eligibility check below -- kept on the path for parity with the
+  # glmer / glmmTMB / lme methods (any future Gaussian-non-identity
+  # extension would slot in via the same call).
+  out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = coefs, info = info)
+  frame <- list(coefs = out$coefs, info = out$info)
   attr(frame, "spicy_frame_version") <- spicy_frame_version()
   attr(frame, "fit") <- fit
   frame
@@ -92,14 +98,12 @@ as_regression_frame.glmerMod <- function(fit,
                                           ci_level = 0.95,
                                           ci_method = NULL,
                                           show_columns = character(0),
+                                          exponentiate = FALSE,
                                           model_id = "M1",
                                           ...) {
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = TRUE)
-  # Phase 7c15: inject AME rows when the user requested any AME token.
-  # Response-scale AME for glmer is the canonical user-substantive
-  # quantity (probability points for logit, count units for log link).
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
@@ -108,11 +112,44 @@ as_regression_frame.glmerMod <- function(fit,
                         ci_method  = ci_method,
                         is_glm     = TRUE,
                         model_id   = model_id)
+  # Phase 7c16: exp() on the B / beta rows for non-identity links
+  # (e.g. binomial logit -> OR, poisson log -> IRR). Delta-method on
+  # SE; CI bounds exponentiated. AME rows pass through unchanged.
+  out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = coefs, info = info)
+  frame <- list(coefs = out$coefs, info = out$info)
   attr(frame, "spicy_frame_version") <- spicy_frame_version()
   attr(frame, "fit") <- fit
   frame
+}
+
+
+# Phase 7c16: shared exp() transform helper for the mixed-effects
+# frames. When `exponentiate = TRUE` and the fit's link is not the
+# identity (i.e. Gaussian-identity returns the coefs unchanged), apply
+# exp() to B / beta rows via apply_exponentiate_to_frame_coefs(), and
+# set info$extras$exp_applied + info$extras$exp_header so the title-
+# layer footer dispatcher emits the "Coefficients exponentiated and
+# displayed as <OR / IRR / HR / RR / MR / exp(B)>" note without any
+# class-specific branching.
+#
+# A no-op (identity passes through) when:
+#   * exponentiate is FALSE / NA;
+#   * the family is gaussian (identity link) -- spec calls for a
+#     `spicy_ignored_arg` warning but we leave the warning to the
+#     orchestrator (table_regression.R) which can see all the fits
+#     together and emit one consolidated message instead of N copies.
+.apply_exp_to_mixed_frame <- function(coefs, info, fit, exponentiate) {
+  if (!isTRUE(exponentiate)) return(list(coefs = coefs, info = info))
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  if (is.null(fam)) return(list(coefs = coefs, info = info))
+  if (identical(fam$link, "identity")) {
+    return(list(coefs = coefs, info = info))
+  }
+  coefs <- apply_exponentiate_to_frame_coefs(coefs)
+  info$extras$exp_applied <- TRUE
+  info$extras$exp_header  <- spicy_glm_exp_header(fam$family, fam$link)
+  list(coefs = coefs, info = info)
 }
 
 

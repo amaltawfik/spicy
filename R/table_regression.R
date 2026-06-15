@@ -1111,21 +1111,25 @@ table_regression <- function(
     }
   }
 
-  # exponentiate: warn if requested but no glm-with-non-identity-link
-  # is present -- the transform would be a no-op everywhere.
+  # exponentiate: warn only when NO fit in the list has a non-identity
+  # link. The transform applies wherever `family(fit)$link != "identity"`,
+  # including glmer / glmmTMB binomial / poisson -- not just classical
+  # glm. Phase 7c16: extended the check from `inherits(f, "glm")` to a
+  # link-based check that covers any fit class with a `family()` method.
   if (isTRUE(exponentiate)) {
-    has_non_identity_glm <- any(vapply(models, function(f) {
-      if (!inherits(f, "glm")) return(FALSE)
-      !identical(stats::family(f)$link, "identity")
+    has_non_identity <- any(vapply(models, function(f) {
+      fam <- tryCatch(stats::family(f), error = function(e) NULL)
+      if (is.null(fam) || is.null(fam$link)) return(FALSE)
+      !identical(fam$link, "identity")
     }, logical(1)))
-    if (!has_non_identity_glm) {
+    if (!has_non_identity) {
       spicy_warn(
         c(
-          "`exponentiate = TRUE` has no effect on `lm()` or identity-link `glm()` fits.",
+          "`exponentiate = TRUE` has no effect on identity-link fits.",
           "i" = paste0(
-            "exp() is only applied to glm fits whose link is non-",
-            "identity (logit, probit, log, cloglog, inverse). Drop ",
-            "the argument or remove the check."
+            "exp() is only applied to fits whose link is non-identity ",
+            "(logit, probit, log, cloglog, inverse). Drop the argument ",
+            "or remove the check."
           )
         ),
         class = "spicy_ignored_arg"
