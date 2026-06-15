@@ -73,6 +73,19 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **Random-effect correlation rows now carry Wald SE + 95 % CI**
+  for all four mixed-effects engines. lme4 (`lmer` / `glmer`)
+  uses the multivariate Delta method on the 3 x 3 sub-vcov from
+  `merDeriv::vcov()` -- the gradient of
+  ρ = cov / √(σ²_i · σ²_j) evaluated at the point estimate,
+  quadratic-formed with the joint variance-covariance of
+  (σ²_i, cov, σ²_j). CI is clamped to [-1, 1] at the boundary.
+  glmmTMB and nlme::lme already populated ρ SE / CI natively
+  via `confint(method = "Wald")` and `nlme::intervals()`
+  respectively. The panel ρ row now reads
+  `ρ Subject ((Intercept), Days)  0.07  (0.33)  [-0.57, 0.70]`
+  -- on par with Stata `mixed` and SAS `PROC MIXED`.
+
 * **`exponentiate = TRUE` for mixed-effects**. The exp() transform
   is now applied to B / beta rows for any mixed-effects fit with a
   non-identity link: `glmer` binomial logit / probit / cloglog

@@ -1,0 +1,185 @@
+# ---------------------------------------------------------------------------
+# Phase 7c17 tests: Wald SE + 95% CI for the random-effect correlation rows
+# (rho) of the random-effects panel via the multivariate Delta-method on
+# the merDeriv vcov for lme4 (lmer / glmer). glmmTMB and nlme::lme already
+# populated rho SE/CI via their native engines (confint(method="Wald"),
+# nlme::intervals()); the regression guards verify that path still works.
+#
+# Matches Stata `mixed` / SAS `PROC MIXED` panels which report
+# `corr(_cons, slope) Subject | SE | 95% CI`.
+# ---------------------------------------------------------------------------
+
+
+# ---- Fixtures -------------------------------------------------------------
+
+.fit_lmer_slope_corr <- function() {
+  skip_if_not_installed("lme4")
+  lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
+}
+
+.fit_glmer_slope_corr <- function() {
+  skip_if_not_installed("lme4")
+  set.seed(42)
+  n <- 1000
+  g <- factor(rep(1:30, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(30)
+  b1 <- rnorm(30, 0, 0.5)
+  y <- rbinom(n, 1, plogis(0.5 + b0[g] + (0.8 + b1[g]) * x))
+  lme4::glmer(y ~ x + (x | g), family = binomial)
+}
+
+.fit_glmmTMB_slope_corr <- function() {
+  skip_if_not_installed("glmmTMB")
+  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
+                    data = lme4::sleepstudy)
+}
+
+.fit_lme_slope_corr <- function() {
+  skip_if_not_installed("nlme")
+  nlme::lme(distance ~ age, data = nlme::Orthodont,
+             random = ~ age | Subject)
+}
+
+
+# ---- 1. lmer: correlation row has finite SE + CI from Delta method ------
+
+test_that("lmer (Days | Subject): rho row has finite Wald SE + CI", {
+  skip_if_not_installed("merDeriv")
+  fit <- .fit_lmer_slope_corr()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  rho_rows <- vc[vc$is_correlation %in% TRUE, ]
+  expect_identical(nrow(rho_rows), 1L)
+  expect_true(is.finite(rho_rows$std_error))
+  expect_true(is.finite(rho_rows$ci_lower))
+  expect_true(is.finite(rho_rows$ci_upper))
+  expect_identical(rho_rows$ci_method, "wald")
+})
+
+test_that("lmer rho CI is clamped to [-1, 1] (boundary)", {
+  skip_if_not_installed("merDeriv")
+  fit <- .fit_lmer_slope_corr()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  rho <- fr$info$random_effects$variance_components
+  rho <- rho[rho$is_correlation %in% TRUE, ]
+  expect_true(rho$ci_lower >= -1)
+  expect_true(rho$ci_upper <=  1)
+})
+
+
+# ---- 2. lmer SE matches a hand-coded Delta-method computation -----------
+
+test_that("lmer rho SE matches the manual Delta-method formula to 1e-10", {
+  skip_if_not_installed("merDeriv")
+  fit <- .fit_lmer_slope_corr()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  rho_row <- fr$info$random_effects$variance_components
+  rho_row <- rho_row[rho_row$is_correlation %in% TRUE, ]
+
+  # Reference computation: pull the 3x3 vcov sub-matrix from merDeriv
+  # directly and apply the Delta-method formula in-line.
+  g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
+  var_int   <- g_vc[1L, 1L]
+  var_slope <- g_vc[2L, 2L]
+  cov_ij    <- g_vc[1L, 2L]
+  rho_est   <- cov_ij / sqrt(var_int * var_slope)
+
+  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
+  n_fix <- length(lme4::fixef(fit))
+  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
+  grad <- c(
+    -rho_est / (2 * var_int),
+    1 / sqrt(var_int * var_slope),
+    -rho_est / (2 * var_slope)
+  )
+  expected_se <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
+
+  expect_equal(rho_row$std_error, expected_se, tolerance = 1e-10)
+})
+
+
+# ---- 3. glmer: rho row has finite SE + CI (no residual -> same path) ----
+
+test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
+  skip_if_not_installed("merDeriv")
+  fit <- .fit_glmer_slope_corr()
+  skip_if(lme4::isSingular(fit), "skip when glmer fit is singular")
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  rho_rows <- vc[vc$is_correlation %in% TRUE, ]
+  expect_identical(nrow(rho_rows), 1L)
+  expect_true(is.finite(rho_rows$std_error))
+  expect_true(is.finite(rho_rows$ci_lower))
+  expect_true(is.finite(rho_rows$ci_upper))
+  expect_identical(rho_rows$ci_method, "wald")
+})
+
+
+# ---- 4. Engine parity: glmmTMB and lme still populate rho SE/CI --------
+
+test_that("glmmTMB (Days | Subject): rho row has finite SE + CI", {
+  fit <- .fit_glmmTMB_slope_corr()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  rho_rows <- vc[vc$is_correlation %in% TRUE, ]
+  expect_true(nrow(rho_rows) >= 1L)
+  expect_true(all(is.finite(rho_rows$std_error)))
+})
+
+test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
+  fit <- .fit_lme_slope_corr()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  rho_rows <- vc[vc$is_correlation %in% TRUE, ]
+  expect_true(nrow(rho_rows) >= 1L)
+  expect_true(all(is.finite(rho_rows$std_error)))
+})
+
+
+# ---- 5. End-to-end rendering: rho row prints with bracketed CI ----------
+
+test_that("table_regression(lmer slope) prints rho row with SE + CI brackets", {
+  skip_if_not_installed("merDeriv")
+  fit <- .fit_lmer_slope_corr()
+  out <- capture.output(print(table_regression(fit)))
+  combined <- paste(out, collapse = "\n")
+  # rho row must include parenthesised SE and bracketed CI (no em-dash).
+  rho_line <- grep("ρ Subject", strsplit(combined, "\n")[[1L]], value = TRUE)
+  expect_length(rho_line, 1L)
+  expect_match(rho_line, "\\([0-9]+\\.[0-9]+\\)")  # (SE)
+  expect_match(rho_line, "\\[")                    # [CI ...
+})
+
+
+# ---- 6. Single-term random structure: no rho row (regression guard) ----
+
+test_that("lmer (1 | Subject) has NO rho row in variance_components", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  expect_false(any(vc$is_correlation %in% TRUE))
+})
+
+
+# ---- 7. Singular fit: rho SE/CI stays NA (regression guard) -------------
+
+test_that("lme4::isSingular fits leave rho row at NA (no Delta on singular)", {
+  skip_if_not_installed("lme4")
+  set.seed(2)
+  n <- 60
+  g <- factor(rep(1:5, length.out = n))
+  x <- rnorm(n)
+  y <- 1 + 0.5 * x + rnorm(n)
+  fit <- suppressMessages(suppressWarnings(
+    lme4::lmer(y ~ x + (x | g))
+  ))
+  skip_if(!lme4::isSingular(fit), "fit happened to be non-singular")
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+  rho_rows <- vc[vc$is_correlation %in% TRUE, ]
+  if (nrow(rho_rows) > 0L) {
+    expect_true(all(is.na(rho_rows$std_error)))
+  }
+})

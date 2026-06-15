@@ -132,15 +132,20 @@ test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
 })
 
 
-# ---- 8. NA values render as em-dash -----------------------------------
+# ---- 8. Correlation row now renders SE + CI (Phase 7c17) -------------
 
-test_that("lme4 correlation row (SE NA) renders em-dash", {
+test_that("lme4 correlation row prints rho with SE + CI (Phase 7c17)", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_panel()
   out <- capture.output(print(table_regression(fit)))
-  combined <- paste(out, collapse = "\n")
-  # lme4's correlation row has NA SE / CI (full Delta-method deferred)
-  # so the ρ row's SE should render as em-dash.
-  expect_match(combined, "ρ Subject", fixed = TRUE)
-  expect_match(combined, "–",         fixed = TRUE)
+  rho_line <- grep("ρ Subject", strsplit(paste(out, collapse = "\n"),
+                                            "\n")[[1L]],
+                    value = TRUE)
+  expect_length(rho_line, 1L)
+  # Phase 7c17: multivariate Delta-method on merDeriv vcov now
+  # populates SE + CI on the rho row, matching Stata `mixed` and
+  # SAS PROC MIXED. The em-dash fallback was the Phase 7c7b
+  # placeholder.
+  expect_match(rho_line, "\\([0-9]+\\.[0-9]+\\)")  # (SE)
+  expect_match(rho_line, "\\[")                    # [CI ...
 })

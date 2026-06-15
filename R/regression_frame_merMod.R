@@ -563,9 +563,10 @@ as_regression_frame.glmerMod <- function(fit,
 
 # Phase 7c7b: append correlation rows extracted from VarCorr's
 # correlation attribute. One row per off-diagonal pair within each
-# group's random-effects covariance block. Stores the point estimate;
-# SE / CI for ρ require the multivariate Delta-method from the
-# variance + covariance SE matrix and remain NA in this sub-phase.
+# group's random-effects covariance block. Stores the point
+# estimate; the Wald SE + 95% CI are attached downstream by
+# `.merMod_attach_wald_se_ci()` via the Phase 7c17 multivariate
+# Delta-method on the 3 x 3 sub-vcov from merDeriv.
 .merMod_append_correlation_rows <- function(vc_df, fit) {
   if (!"is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation <- FALSE
@@ -671,6 +672,85 @@ as_regression_frame.glmerMod <- function(fit,
   vc_df$ci_lower[var_rows]  <- pmax(0, vc_df$variance[var_rows] - z * se_diag)
   vc_df$ci_upper[var_rows]  <- vc_df$variance[var_rows] + z * se_diag
   vc_df$ci_method[var_rows] <- "wald"
+
+  # Phase 7c17: Wald SE + 95% CI for the correlation rows via the
+  # multivariate Delta method on the 3 x 3 sub-vcov of
+  # (var(term_i), cov(term_i, term_j), var(term_j)) from merDeriv's
+  # full vcov on the variance scale. Matches the Stata `mixed` and
+  # SAS PROC MIXED panels which report SE and CI for `corr(_cons, slope)`.
+  #
+  # Gradient of rho = cov / sqrt(var_i * var_j):
+  #   d rho / d var_i = -rho / (2 * var_i)
+  #   d rho / d cov   = 1 / sqrt(var_i * var_j)
+  #   d rho / d var_j = -rho / (2 * var_j)
+  #
+  # Var(rho) = grad^T  Sigma_3  grad
+  # CI       = rho +/- z * SE,  clamped to [-1, 1] (boundary).
+  #
+  # The block-position formula for the lower-triangle vec layout that
+  # merDeriv uses (within each grouping block of size n = nrow(g_vc)):
+  #   var(term_k)             at  k * (k + 1) / 2
+  #   cov(term_i, term_j)     at  j * (j - 1) / 2 + i      (i < j)
+  corr_rows <- which(is_corr)
+  if (length(corr_rows) > 0L) {
+    vc_list <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
+    if (!is.null(vc_list)) {
+      # Absolute starting offset of each group's block in the RE block
+      # of merDeriv's vcov (which sits AFTER the n_fixed fixed-effect
+      # parameters in v).
+      group_offsets <- list()
+      cursor <- 0L
+      for (g in names(vc_list)) {
+        group_offsets[[g]] <- cursor
+        n_g <- nrow(vc_list[[g]])
+        cursor <- cursor + n_g * (n_g + 1L) / 2L
+      }
+
+      for (k in corr_rows) {
+        g_name <- vc_df$group[k]
+        pair_str <- vc_df$term[k]
+        parts <- strsplit(pair_str, ", ", fixed = TRUE)[[1L]]
+        if (length(parts) != 2L) next
+        if (!g_name %in% names(vc_list)) next
+        g_vc <- as.matrix(vc_list[[g_name]])
+        g_nms <- rownames(g_vc)
+        i_idx <- match(parts[1L], g_nms)
+        j_idx <- match(parts[2L], g_nms)
+        if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) next
+
+        var_i_pos <- i_idx * (i_idx + 1L) / 2L
+        var_j_pos <- j_idx * (j_idx + 1L) / 2L
+        cov_pos   <- j_idx * (j_idx - 1L) / 2L + i_idx
+        block_off <- group_offsets[[g_name]]
+        full_pos  <- n_fixed + block_off + c(var_i_pos, cov_pos, var_j_pos)
+        if (max(full_pos) > nrow(v)) next                                # nocov
+
+        Sigma_3 <- v[full_pos, full_pos, drop = FALSE]
+        var_i   <- g_vc[i_idx, i_idx]
+        var_j   <- g_vc[j_idx, j_idx]
+        cov_ij  <- g_vc[i_idx, j_idx]
+        if (!is.finite(var_i) || !is.finite(var_j) ||
+            var_i <= 0 || var_j <= 0) next
+        rho <- cov_ij / sqrt(var_i * var_j)
+        if (!is.finite(rho)) next
+
+        grad <- c(
+          -rho / (2 * var_i),
+          1 / sqrt(var_i * var_j),
+          -rho / (2 * var_j)
+        )
+        var_rho <- as.numeric(t(grad) %*% Sigma_3 %*% grad)
+        if (!is.finite(var_rho) || var_rho < 0) next
+        se_rho <- sqrt(var_rho)
+
+        vc_df$std_error[k] <- se_rho
+        vc_df$ci_lower[k]  <- max(-1, rho - z * se_rho)
+        vc_df$ci_upper[k]  <- min( 1, rho + z * se_rho)
+        vc_df$ci_method[k] <- "wald"
+      }
+    }
+  }
+
   vc_df
 }
 
