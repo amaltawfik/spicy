@@ -257,3 +257,163 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   }
   do.call(rbind, rows)
 }
+
+
+# ---- Phase 7c18: Type-3 Wald chi^2 for mixed-effects fits ---------------
+#
+# For each non-intercept term (numeric or factor), compute the joint
+# Wald chi^2 test H0: beta[term] = 0 against H1: beta[term] != 0 in the
+# fixed-effect coefficient vector. The statistic is
+#
+#     chi^2(k) = beta_hat[term]' * V[term, term]^{-1} * beta_hat[term]
+#
+# where k is the number of coefficients spanned by the term (1 for a
+# numeric / Boolean, k-1 for a k-level factor) and V is the model-based
+# vcov. This is the "Type 3 Tests of Fixed Effects" line every SAS
+# PROC MIXED / SPSS GENLINMIXED / Stata `mixed, testparm` output ships
+# by default.
+#
+# Engine support:
+#   * lmer / glmer / glmmTMB: standard `model.matrix(fit)` + `vcov(fit)`.
+#     The fixed-effect coefficient vector aligns 1-to-1 with
+#     model.matrix columns via attr(., "assign").
+#   * nlme::lme: model.matrix uses nlme::getData(fit), in the same
+#     column order as fixef(fit).
+#
+# Returns a frame-schema data.frame ready to rbind onto coefs (same
+# columns as the AME helper's output) with estimate_type = "partial_chi2".
+.compute_partial_chi2_rows_for_mixed <- function(fit) {
+  fixed_form <- tryCatch(
+    if (inherits(fit, "glmmTMB")) {
+      stats::formula(fit, fixed.only = TRUE, component = "cond")
+    } else if (inherits(fit, c("lmerMod", "glmerMod"))) {
+      stats::formula(lme4::nobars(stats::formula(fit)))
+    } else {
+      stats::formula(fit)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(fixed_form)) return(NULL)
+
+  bhat <- tryCatch(
+    if (inherits(fit, "glmmTMB")) {
+      # glmmTMB::fixef returns a list with $cond / $zi / $disp slots;
+      # the $cond element is the named numeric for the conditional model.
+      cond <- glmmTMB::fixef(fit)$cond
+      setNames(as.numeric(cond), names(cond))
+    } else if (inherits(fit, c("lmerMod", "glmerMod"))) {
+      lme4::fixef(fit)
+    } else {
+      nlme::fixef(fit)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(bhat) || length(bhat) == 0L) return(NULL)
+
+  V <- tryCatch({
+    v <- stats::vcov(fit)
+    # glmmTMB::vcov returns an S3 object of class c("vcov.glmmTMB",
+    # "matrix") -- the $cond slot is accessible via `$cond` /
+    # `[["cond"]]`. lme4 / nlme return a plain matrix-like object.
+    if (inherits(fit, "glmmTMB")) {
+      v_cond <- tryCatch(v$cond, error = function(e) NULL)
+      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)
+      if (!is.null(v_cond)) v <- v_cond
+    }
+    as.matrix(v)
+  }, error = function(e) NULL)
+  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)
+
+  data <- tryCatch(
+    if (inherits(fit, c("lme", "gls"))) {
+      nlme::getData(fit)
+    } else {
+      stats::model.frame(fit)
+    },
+    error = function(e) NULL
+  )
+  mm <- tryCatch(
+    stats::model.matrix(fixed_form, data = data),
+    error = function(e) NULL
+  )
+  if (is.null(mm) || ncol(mm) != length(bhat)) return(NULL)
+
+  assign_idx <- attr(mm, "assign")
+  term_labels <- attr(stats::terms(fixed_form), "term.labels")
+  if (is.null(assign_idx) || is.null(term_labels) ||
+      length(term_labels) == 0L) return(NULL)
+
+  factor_meta <- tryCatch(detect_factor_term_meta(fit),
+                           error = function(e) list())
+
+  unique_terms <- unique(assign_idx[assign_idx != 0L])
+  chi2_cache <- list()
+  for (k in unique_terms) {
+    cols <- which(assign_idx == k)
+    b_sub <- bhat[cols]
+    V_sub <- V[cols, cols, drop = FALSE]
+    chi2_val <- tryCatch({
+      Vinv <- solve(V_sub)
+      as.numeric(t(b_sub) %*% Vinv %*% b_sub)
+    }, error = function(e) NA_real_)
+    df_val <- length(cols)
+    if (!is.finite(chi2_val) || chi2_val < 0) {
+      chi2_cache[[as.character(k)]] <- NULL
+      next
+    }
+    chi2_cache[[as.character(k)]] <- list(
+      chi2 = chi2_val,
+      df   = df_val,
+      p_value = stats::pchisq(chi2_val, df = df_val, lower.tail = FALSE)
+    )
+  }
+
+  rows <- list()
+  for (i in seq_along(bhat)) {
+    term_idx <- assign_idx[i]
+    if (term_idx == 0L) next
+    eff <- chi2_cache[[as.character(term_idx)]]
+    if (is.null(eff)) next
+
+    nm <- names(bhat)[i]
+    fmeta <- factor_meta[[nm]]
+    parent_var <- fmeta$factor_term  %||% nm
+    label      <- fmeta$factor_level %||% nm
+    pos        <- fmeta$factor_level_pos %||% NA_integer_
+
+    rows[[length(rows) + 1L]] <- data.frame(
+      term             = nm,
+      parent_var       = parent_var,
+      label            = label,
+      factor_level_pos = as.integer(pos),
+      is_ref           = FALSE,
+      estimate_type    = "partial_chi2",
+      estimate         = eff$chi2,
+      std_error        = NA_real_,
+      df               = as.numeric(eff$df),
+      statistic        = eff$chi2,
+      p_value          = eff$p_value,
+      ci_lower         = NA_real_,
+      ci_upper         = NA_real_,
+      test_type        = "X2",
+      stringsAsFactors = FALSE
+    )
+  }
+  if (length(rows) == 0L) return(NULL)
+  do.call(rbind, rows)
+}
+
+
+# Append Wald chi^2 partial-effect rows to a frame's coefs when
+# `partial_chi2` is in show_columns. No-op otherwise. Mirrors the
+# AME-attach helper in regression_ame.R.
+.attach_partial_chi2_to_frame_coefs <- function(coefs, fit, show_columns) {
+  if (!"partial_chi2" %in% show_columns) return(coefs)
+  rows <- .compute_partial_chi2_rows_for_mixed(fit)
+  if (is.null(rows) || nrow(rows) == 0L) return(coefs)
+  for (col in setdiff(colnames(coefs), colnames(rows))) {
+    rows[[col]] <- coefs[[col]][NA_integer_]
+  }
+  rows <- rows[, colnames(coefs), drop = FALSE]
+  rbind(coefs, rows)
+}

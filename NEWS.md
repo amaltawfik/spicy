@@ -73,6 +73,20 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **Type-3 Wald χ² tests for fixed effects on mixed-effects fits**
+  via the `"partial_chi2"` token of `show_columns`. For each
+  non-intercept term, the joint test
+  H₀: β[term] = 0 is computed via
+  χ²(k) = β̂[term]ᵀ V[term, term]⁻¹ β̂[term], where k is the
+  number of coefficients spanned by the term (1 for a numeric, k−1
+  for a k-level factor). Matches the SAS `PROC MIXED` /
+  SPSS `GENLINMIXED` "Type 3 Tests of Fixed Effects" /
+  Stata `mixed, testparm` lines. Rendered as `value (df)` in the
+  χ² column, e.g. `167.67 (1)` for a numeric and `0.34 (2)` for a
+  3-level factor (one display per non-reference level). All four
+  mixed-effects engines covered (lmer / glmer / glmmTMB / lme);
+  no new dependency (computed natively from `fixef()` + `vcov()`).
+
 * **Random-effect correlation rows now carry Wald SE + 95 % CI**
   for all four mixed-effects engines. lme4 (`lmer` / `glmer`)
   uses the multivariate Delta method on the 3 x 3 sub-vcov from
