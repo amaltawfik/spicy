@@ -73,6 +73,21 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **Average Marginal Effects (AME) for mixed-effects**. The
+  `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
+  `show_columns` are now wired for all four mixed-effects
+  engines, delegated to `marginaleffects::avg_slopes(fit, df = Inf)`
+  with response-scale Wald-z asymptotic inference. The AME
+  column is the publication-substantive quantity for `glmer`
+  binomial logit (probability points) and `glmer` Poisson log
+  (count units) -- where the log-odds / log-rate coefficient on
+  the link scale is hard to interpret. AME rows align with the
+  B-rows under the same factor header (e.g. `cat: A (ref.) / B /
+  C`); ordered factors and inline `factor()` calls are handled
+  via fallback metadata reconstruction. `marginaleffects` is a
+  Suggests dependency; without it the AME columns render as NA
+  without erroring.
+
 * **`nested = TRUE` for mixed-effects**. Pairs of mixed fits
   route to `compute_one_pair_mixed()`, which uses
   `anova(prev, curr)` to derive the likelihood-ratio change

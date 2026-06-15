@@ -38,11 +38,14 @@ as_regression_frame.lmerMod <- function(fit,
                                          vcov_label = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
+                                         show_columns = character(0),
                                          model_id = "M1",
                                          ...) {
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = FALSE)
+  # Phase 7c15: inject AME rows when the user requested any AME token.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,
@@ -88,11 +91,16 @@ as_regression_frame.glmerMod <- function(fit,
                                           vcov_label = NULL,
                                           ci_level = 0.95,
                                           ci_method = NULL,
+                                          show_columns = character(0),
                                           model_id = "M1",
                                           ...) {
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = TRUE)
+  # Phase 7c15: inject AME rows when the user requested any AME token.
+  # Response-scale AME for glmer is the canonical user-substantive
+  # quantity (probability points for logit, count units for log link).
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,

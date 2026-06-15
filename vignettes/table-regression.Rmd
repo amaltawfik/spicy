@@ -825,6 +825,47 @@ directly via `lmerTest::ranova()`. spicy surfaces fixed-effect
 nesting comparisons; random-structure model selection lives
 outside the table footer.
 
+### Average marginal effects (AME)
+
+The `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
+`show_columns` are wired for mixed-effects fits, delegated to
+`marginaleffects::avg_slopes(fit, df = Inf)`. The AME column is
+the publication-substantive quantity when the link is non-linear:
+
+* `glmer` binomial logit: AME is on the **probability scale**
+  (percentage points), not the log-odds scale. For the typical
+  "what does a one-unit change in `x` do to the predicted
+  probability?" reading, the AME column is what you want.
+* `glmer` Poisson log: AME is on the **count scale** (units of
+  the outcome), not log-rate.
+* `lmer` / `lme` / `glmmTMB` Gaussian: AME = B coefficient
+  (identity link); the column is filled but redundant.
+
+```{r mixed-ame, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("marginaleffects", quietly = TRUE)}
+set.seed(1)
+n <- 500
+g <- factor(rep(1:25, length.out = n))
+x <- rnorm(n)
+cat <- factor(sample(c("A", "B", "C"), n, replace = TRUE))
+y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + (cat == "B") * 0.3 +
+                           (cat == "C") * -0.5 + rnorm(25)[g]))
+fit <- lme4::glmer(y ~ x + cat + (1 | g), family = binomial)
+table_regression(fit, show_columns = c("b", "se", "p", "ame", "ame_p"))
+```
+
+Factor predictors are handled level-by-level: AME rows align
+under the same factor header (`cat: A (ref.) / B / C`), each
+level sharing a row with its B coefficient. Inline `factor()`
+calls and ordered factors are reconstructed from the
+model-frame column when the coef-name lookup misses (same
+fallback logic used for `lm` / `glm`).
+
+Inference is Wald-z asymptotic (`df = Inf`) with the model-based
+vcov -- matching the inference path of the B-row p-values in the
+same table. `marginaleffects` is a Suggests dependency; when
+unavailable, the AME columns appear in the header but render as
+NA without erroring (the rest of the table is unaffected).
+
 ### Hiding parts of the panel
 
 Three arguments control panel rendering:
