@@ -546,6 +546,224 @@ validate_regression_frame <- function(frame) {
 }
 
 
+# Phase 7c19: LR test vs no-random-effects model.
+#
+# Stata `mixed` / `melogit` / `mepoisson` print a single line at the
+# bottom of the output:
+#
+#   LR test vs. linear regression: chibar2(01) = 121.07
+#                                Prob >= chibar2 = 0.0000
+#
+# It answers the publication-substantive question "are the random
+# effects needed at all?" The statistic is
+#
+#   LRT = 2 * ( logLik(fit_full) - logLik(fit_null) )
+#
+# where fit_null is an `lm` / `glm` / `gls` fit on the same data
+# without any random effects. The p-value uses the chi-bar-squared
+# correction (Self & Liang 1987; Stata's mixed convention):
+#
+#   p_chibar2 = 0.5 * P( chi^2_q > LRT )
+#
+# where q = number of free parameters in the random structure
+# (variances + covariances per grouping factor). The factor 0.5
+# accounts for the point mass at the boundary 0; the simpler
+# convention covers the common case "single test of all random
+# effects together" without invoking the multi-component Stram-Lee
+# (1994) mixture.
+#
+# Returns a list(chi2, df, p_chibar2, family_label) or NULL when
+# computation isn't possible (refit error, lme4 unavailable, etc.).
+#
+# lme4 / glmmTMB / nlme::lme are handled via engine dispatch. lmer
+# REML fits are refit with ML before the LRT (anova-style auto-
+# refit; the message is suppressed).
+.compute_null_model_lrt <- function(fit) {
+  res <- tryCatch({
+    if (inherits(fit, "glmmTMB"))            .null_lrt_glmmTMB(fit)
+    else if (inherits(fit, "merMod"))         .null_lrt_merMod(fit)
+    else if (inherits(fit, "lme"))            .null_lrt_lme(fit)
+    else                                       NULL
+  }, error = function(e) NULL)
+  if (is.null(res)) return(NULL)
+  if (!is.finite(res$chi2) || !is.finite(res$df) || res$df <= 0L) {
+    return(NULL)
+  }
+  res$p_chibar2 <- 0.5 * stats::pchisq(res$chi2, df = res$df,
+                                          lower.tail = FALSE)
+  res
+}
+
+
+# Count the number of free parameters in lme4's random structure:
+# per grouping factor, n * (n + 1) / 2 (lower triangle of the
+# variance / covariance block).
+.merMod_n_re_params <- function(fit) {
+  vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
+  if (is.null(vc)) return(NA_integer_)
+  total <- 0L
+  for (g in names(vc)) {
+    n <- nrow(as.matrix(vc[[g]]))
+    total <- total + n * (n + 1L) / 2L
+  }
+  total
+}
+
+
+.null_lrt_merMod <- function(fit) {
+  if (!requireNamespace("lme4", quietly = TRUE)) return(NULL)
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+
+  no_re_formula <- suppressWarnings(
+    lme4::nobars(stats::formula(fit, fixed.only = TRUE))
+  )
+  data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(data)) return(NULL)
+
+  # Full fit on ML scale (lmer REML must be refit with ML for the
+  # LRT vs lm; glmer / lmer-ML already on ML scale).
+  fit_full_ml <- if (inherits(fit, "lmerMod") &&
+                       isTRUE(lme4::isREML(fit))) {
+    tryCatch(suppressMessages(lme4::refitML(fit)), error = function(e) NULL)
+  } else {
+    fit
+  }
+  if (is.null(fit_full_ml)) return(NULL)
+
+  fit_null <- tryCatch(
+    if (is_gaussian) {
+      stats::lm(no_re_formula, data = data)
+    } else {
+      stats::glm(no_re_formula, data = data, family = fam)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(fit_null)) return(NULL)
+
+  ll_full <- as.numeric(stats::logLik(fit_full_ml))
+  ll_null <- as.numeric(stats::logLik(fit_null))
+  chi2 <- 2 * (ll_full - ll_null)
+  df_q <- .merMod_n_re_params(fit)
+  if (is.na(df_q)) return(NULL)
+
+  list(
+    chi2          = chi2,
+    df            = as.integer(df_q),
+    family_label  = if (is_gaussian) "linear regression" else
+                       sprintf("%s regression",
+                               .merMod_glm_family_title_safe(fit, fam))
+  )
+}
+
+
+# Pretty family label for the LRT footer line. Falls back to the
+# bare family name when the title-case helper isn't available.
+.merMod_glm_family_title_safe <- function(fit, fam) {
+  if (exists(".merMod_glm_family_title", mode = "function",
+              inherits = TRUE)) {
+    out <- tryCatch(.merMod_glm_family_title(fit), error = function(e) NA_character_)
+    if (!is.na(out) && nzchar(out)) {
+      return(tolower(out))
+    }
+  }
+  fam$family %||% "regression"
+}
+
+
+.null_lrt_glmmTMB <- function(fit) {
+  if (!requireNamespace("glmmTMB", quietly = TRUE)) return(NULL)
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+
+  no_re_formula <- suppressWarnings(
+    lme4::nobars(stats::formula(fit, fixed.only = TRUE, component = "cond"))
+  )
+  data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(data)) return(NULL)
+
+  fit_null <- tryCatch(
+    if (is_gaussian) {
+      stats::lm(no_re_formula, data = data)
+    } else {
+      stats::glm(no_re_formula, data = data, family = fam)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(fit_null)) return(NULL)
+
+  ll_full <- as.numeric(stats::logLik(fit))
+  ll_null <- as.numeric(stats::logLik(fit_null))
+  chi2 <- 2 * (ll_full - ll_null)
+
+  # Count random params in glmmTMB: VarCorr()$cond is a list of
+  # per-grouping covariance matrices.
+  vc <- tryCatch(glmmTMB::VarCorr(fit)$cond, error = function(e) NULL)
+  if (is.null(vc)) return(NULL)
+  df_q <- sum(vapply(vc, function(m) {
+    n <- nrow(as.matrix(m))
+    as.integer(n * (n + 1L) / 2L)
+  }, integer(1)))
+  if (df_q <= 0L) return(NULL)
+
+  list(
+    chi2 = chi2,
+    df   = df_q,
+    family_label = if (is_gaussian) "linear regression" else
+                      sprintf("%s regression", fam$family)
+  )
+}
+
+
+.null_lrt_lme <- function(fit) {
+  if (!requireNamespace("nlme", quietly = TRUE)) return(NULL)
+  no_re_formula <- stats::formula(fit)
+  data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
+  if (is.null(data)) return(NULL)
+
+  # nlme::lme is Gaussian by spec; refit as lm for the LRT.
+  # An lme REML fit must be refit with method = "ML" for the LRT vs
+  # lm to be valid. stats::update(fit, method = "ML") fails when nlme
+  # isn't attached to the search path (the captured call is `lme(...)`
+  # without namespace qualification); manually requalify to nlme::lme
+  # before eval so the helper works in package-internal contexts.
+  fit_full_ml <- if (identical(fit$method, "REML")) {
+    call_copy <- fit$call
+    call_copy[[1L]] <- quote(nlme::lme)
+    call_copy$method <- "ML"
+    tryCatch(eval(call_copy, envir = parent.frame()),
+              error = function(e) NULL)
+  } else {
+    fit
+  }
+  if (is.null(fit_full_ml)) return(NULL)
+
+  fit_null <- tryCatch(stats::lm(no_re_formula, data = data),
+                        error = function(e) NULL)
+  if (is.null(fit_null)) return(NULL)
+
+  ll_full <- as.numeric(stats::logLik(fit_full_ml))
+  ll_null <- as.numeric(stats::logLik(fit_null))
+  chi2 <- 2 * (ll_full - ll_null)
+
+  # Count random params in lme: reStruct holds per-grouping pdMat.
+  re_struct <- tryCatch(fit$modelStruct$reStruct, error = function(e) NULL)
+  if (is.null(re_struct)) return(NULL)
+  df_q <- 0L
+  for (g in names(re_struct)) {
+    n <- nrow(as.matrix(nlme::pdMatrix(re_struct[[g]])))
+    df_q <- df_q + as.integer(n * (n + 1L) / 2L)
+  }
+  if (df_q <= 0L) return(NULL)
+
+  list(
+    chi2 = chi2,
+    df   = df_q,
+    family_label = "linear regression"
+  )
+}
+
+
 # Phase 7c9a: Nakagawa & Schielzeth (2013, 2017) marginal /
 # conditional R^2 for mixed-effects fits. Implemented natively
 # (no `performance` runtime dependency) following the formulas:

@@ -73,6 +73,21 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **LR test vs no-random-effects model** under the random-effects
+  panel. Matches the single line every Stata `mixed` /
+  `melogit` / `mepoisson` output ships at the bottom:
+  `LR test vs linear regression: χ̄²(q) = 121.07, p < .001`.
+  Computed via 2·(logLik(fit_full_ML) − logLik(fit_null)), where
+  fit_null is an `lm` / `glm` fit on the same data without any
+  random effects, and the p-value uses Stata's chi-bar-squared
+  convention p = 0.5 · pchisq(χ², q, lower.tail = FALSE) where q
+  is the number of free random parameters per grouping factor
+  (sum of n·(n+1)/2 over groupings). REML fits are auto-refit
+  with ML before the LRT (lme4) / `method = "ML"` (nlme); the
+  refit message is suppressed. Covered for all four engines:
+  lmer / glmer / glmmTMB / nlme::lme. `show_re = FALSE`
+  suppresses the line along with the panel.
+
 * **Type-3 Wald χ² tests for fixed effects on mixed-effects fits**
   via the `"partial_chi2"` token of `show_columns`. For each
   non-intercept term, the joint test

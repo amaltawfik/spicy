@@ -384,7 +384,9 @@ as_regression_frame.glmmTMB <- function(fit,
 
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
-  list(variance_components = vc_df, icc = icc, method = method)
+  null_lrt <- .compute_null_model_lrt(fit)
+  list(variance_components = vc_df, icc = icc, method = method,
+       null_lrt = null_lrt)
 }
 
 

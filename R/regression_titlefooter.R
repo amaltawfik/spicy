@@ -831,7 +831,34 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   # Trim trailing whitespace for ICC / N rows (which have empty se / ci).
   body_lines <- sub("\\s+$", "", body_lines)
 
-  paste(c(header, body_lines), collapse = "\n")
+  # Phase 7c19: LR test vs no-random-effects model. Stata `mixed`
+  # prints this single line at the bottom of every output (when
+  # available) to answer the publication-substantive question
+  # "are the random effects needed at all?". The p-value uses the
+  # chi-bar-squared correction (Self & Liang 1987;
+  # p = 0.5 * pchisq(chi2, q, lower.tail = FALSE) where q is the
+  # number of free random parameters).
+  lrt <- re$null_lrt
+  lrt_line <- NULL
+  if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
+    p_str <- format_p_value_for_panel(lrt$p_chibar2)
+    lrt_line <- sprintf(
+      "LR test vs %s: χ̄²(%d) = %.2f, p %s",
+      lrt$family_label %||% "no-random model",
+      as.integer(lrt$df), lrt$chi2, p_str
+    )
+  }
+
+  paste(c(header, body_lines, lrt_line), collapse = "\n")
+}
+
+
+# Internal: APA-ish p-value formatter for the LR test line. Returns
+# strings like "< .001" or "= .034" so the line reads naturally.
+format_p_value_for_panel <- function(p) {
+  if (!is.finite(p)) return("= NA")
+  if (p < 0.001) return("< .001")
+  sprintf("= %.3f", p)
 }
 
 

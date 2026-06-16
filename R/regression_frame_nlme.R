@@ -447,7 +447,9 @@ as_regression_frame.gls <- function(fit,
   vc_df <- .lme_attach_wald_se_ci(vc_df, fit)
 
   icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
-  list(variance_components = vc_df, icc = icc, method = method)
+  null_lrt <- .compute_null_model_lrt(fit)
+  list(variance_components = vc_df, icc = icc, method = method,
+       null_lrt = null_lrt)
 }
 
 

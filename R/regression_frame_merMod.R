@@ -559,7 +559,9 @@ as_regression_frame.glmerMod <- function(fit,
 
   icc <- .merMod_icc(vc_df, fit = fit)
 
-  list(variance_components = vc_df, icc = icc, method = method)
+  null_lrt <- .compute_null_model_lrt(fit)
+  list(variance_components = vc_df, icc = icc, method = method,
+       null_lrt = null_lrt)
 }
 
 
