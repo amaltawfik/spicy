@@ -994,14 +994,41 @@ build_singular_footer_block_from_frames <- function(frames) {
   }, logical(1))
   if (!any(flags)) return(NULL)
   affected <- which(flags)
+  is_mixed <- vapply(frames[affected], .is_mixed_frame, logical(1))
   if (length(frames) == 1L) {
-    return("Rank-deficient model: dropped coefficient(s) shown as \u2013.")
+    return(.singular_msg_for_frame(frames[[affected]], is_mixed[1L]))
   }
-  paste0(
-    "Rank-deficient model(s) ",
-    paste(sprintf("Model %d", affected), collapse = ", "),
-    ": dropped coefficient(s) shown as \u2013."
-  )
+  per <- vapply(seq_along(affected), function(k) {
+    sprintf("Model %d: %s", affected[k],
+            .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k]))
+  }, character(1))
+  paste(per, collapse = "\n")
+}
+
+# Phase 7c21: distinguish the two singular regimes:
+#   * lm / glm: rank-deficient fixed-effect design -- dropped coefs
+#     render as -. ASCII em-dash in the renderer.
+#   * lmer / glmer / glmmTMB / lme: variance components on the
+#     boundary 0 (lme4::isSingular). Random-effect SE / CI are
+#     suppressed in `.merMod_attach_wald_se_ci()` to avoid
+#     reporting unreliable values; the footer now tells the
+#     reader why.
+.singular_msg_for_frame <- function(frame, is_mixed) {
+  if (isTRUE(is_mixed)) {
+    return(paste0(
+      "Singular fit: random-effect variance component(s) at the ",
+      "boundary 0. Wald SE and CI on the variance components are ",
+      "unreliable at the boundary and have been omitted (Self & ",
+      "Liang 1987; Bolker FAQ); consider simplifying the random ",
+      "structure or refitting on the affected grouping factor."
+    ))
+  }
+  "Rank-deficient model: dropped coefficient(s) shown as \u2013."
+}
+
+.is_mixed_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+  cls %in% c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
 }
 
 

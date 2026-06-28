@@ -73,6 +73,20 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **Class-aware singular-fit footer message** for mixed-effects.
+  When `lme4::isSingular(fit) == TRUE` (random-effect variance at
+  boundary 0), the footer now prints
+  *"Singular fit: random-effect variance component(s) at the
+  boundary 0. Wald SE and CI on the variance components are
+  unreliable at the boundary and have been omitted (Self & Liang
+  1987; Bolker FAQ); consider simplifying the random structure or
+  refitting on the affected grouping factor."* instead of the
+  generic lm-path "Rank-deficient model: dropped coefficient(s)
+  shown as –." (which described the wrong failure mode). lm /
+  glm rank-deficient fits keep their original wording. Closes a
+  silent UX gap where the user previously saw em-dashed SE / CI
+  rows with no explanation.
+
 * **Standardized betas for mixed-effects fits** via the
   `standardized = "refit"` arg (Cohen et al. 2003 / Gelman 2008
   gold standard). z-scores the numeric columns of the model frame
