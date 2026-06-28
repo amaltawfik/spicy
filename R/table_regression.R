@@ -987,6 +987,23 @@ table_regression <- function(
                   length(models) >= 2L
     show_columns <- if (is_multi) "all_b_compact" else "all_b"
   }
+  # Phase 7c23 (item d): explicit `"all_b"` / `"all_ame"` group tokens
+  # auto-compact in multi-model layouts -- parity with the lm default
+  # which already auto-switches NULL -> "all_b_compact" in the branch
+  # above. Without this, a user passing `show_columns = "all_ame"` to
+  # a 5-model side-by-side table got 4 cells per model (AME + SE + CI
+  # + p) for 20 columns total, while the lm equivalent `"all_b"` would
+  # auto-drop CI for the same multi-model context.
+  is_multi <- is.list(models) && !inherits(models, "lm") &&
+                length(models) >= 2L
+  if (is_multi) {
+    if ("all_b"   %in% show_columns) {
+      show_columns <- sub("^all_b$",   "all_b_compact",   show_columns)
+    }
+    if ("all_ame" %in% show_columns) {
+      show_columns <- sub("^all_ame$", "all_ame_compact", show_columns)
+    }
+  }
   # Expand group tokens (`"all_b"`, `"all_ame"`, ...) to atomic
   # tokens before validation; also raises an actionable migration
   # error if a legacy uppercase token (`"B"`, `"AME"`, ...) slips
@@ -997,6 +1014,12 @@ table_regression <- function(
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
   validate_show_fit_stats(show_fit_stats)
+  # Phase 7c23 (item a): coerce `FALSE` to `character(0)` so the
+  # downstream class-aware default branch (line ~ 996) treats the
+  # explicit "suppress" as "no tokens to inject", instead of leaving
+  # FALSE in the path and tripping `inherits(show_fit_stats, "character")`
+  # checks further down.
+  if (isFALSE(show_fit_stats)) show_fit_stats <- character(0)
   # Q3 -- auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the
   # reject-beta-without-method branch fires before the orchestrator

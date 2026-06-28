@@ -6,6 +6,15 @@
   legacy alias for `"right"` from spicy < 0.11.0). Use one of
   `"decimal"` (default), `"center"`, or `"right"`.
 
+* `table_regression(list(m1, ...), show_columns = "all_b")` and
+  `show_columns = "all_ame"` now auto-compact in multi-model
+  layouts (drop the CI column), matching the existing behaviour
+  of the `NULL` default (which already auto-switches to
+  `"all_b_compact"` for side-by-side tables). Pass the atomic
+  tokens explicitly (`c("b", "se", "ci", "p")` /
+  `c("ame", "ame_se", "ame_ci", "ame_p")`) to keep CIs in a
+  multi-model layout.
+
 * `table_regression(fit)` with a bare `lme4::lmer()` fit (i.e.
   `lmerTest` not loaded) now uses **Wald-z** for fixed-effect
   p-values and CIs, with `df = ∞` in the broom-canonical frame.
@@ -183,6 +192,14 @@ walk-through; the new public surface is:
   fits with ML before the LRT (message suppressed).
 
 ## Minor improvements
+
+* `table_regression(..., show_fit_stats = FALSE)` is now an
+  explicit "suppress the fit-stats block" alias (parity with
+  `show_re = FALSE` / `outcome_labels = FALSE`). The previous
+  `character(0)` synonym still works. `NULL` keeps the
+  class-aware default (lm -> nobs+r2+adj_r2, glm -> nobs+
+  pseudo_r2_mcfadden+pseudo_r2_nagelkerke+AIC, mixed-effects ->
+  nobs+r2_marginal+r2_conditional+AIC+BIC).
 
 * `table_regression()` footer trims the AME-Satterthwaite note --
   the Pustejovsky & Tipton 2018 reference and the
