@@ -17,59 +17,67 @@
 
 ## New features
 
-* `table_regression()`: added support for mixed-effects fits from
-  `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
-  `nlme::lme()`. See `vignette("table-regression")`,
-  *Mixed-effects models*, for the walk-through.
+### Massively expanded model support
 
-* `table_regression()`: added a structured **random-effects
-  panel** for mixed-effects fits -- σ (or σ² via `re_scale =
-  "variance"`), Wald SE and 95 % CI, correlation rows with SE /
-  CI (Delta method), ICC, and N per group. Toggle with
-  `show_re = FALSE`, trim with `re_columns`.
+`table_regression()` previously accepted only `lm` and `glm` fits.
+This release adds first-class support for ~ 30 additional model
+classes. Frames pass through the same APA-aligned renderer,
+broom-canonical `tidy()` / `glance()` methods, and footer
+infrastructure. Engine-specific polish (panels, family-specific
+labels) is layered on top for mixed-effects and Bayesian.
 
-* `table_regression()`: added Nakagawa & Schielzeth marginal /
-  conditional R² for mixed-effects fits (new `"r2_marginal"` /
-  `"r2_conditional"` tokens, default fit-stats for mixed).
+* **Mixed-effects regression** (the headline feature): `lme4::lmer()`,
+  `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`. Publication-
+  ready random-effects panel with σ + Wald SE + 95 % CI, ρ rows
+  with SE + CI (Delta method), ICC, N per group, Nakagawa
+  marginal / conditional R², Type-3 Wald χ², adjusted ICC for
+  GLMM, per-class p-values footer, LR test vs no-random
+  (chi-bar-squared), AME (response-scale), `exponentiate = TRUE`
+  for OR / IRR / HR, `standardized = "refit"`, `nested = TRUE`
+  with ΔAIC / ΔBIC / Δχ² LRT rows. See `vignette("table-regression")`,
+  *Mixed-effects models*, for the walk-through and methodological
+  rationale.
 
-* `table_regression()`: added Type-3 Wald χ² joint test per term
-  for mixed-effects fits (`"partial_chi2"` token) -- SAS
-  `PROC MIXED` / SPSS `GENLINMIXED` convention.
+* **Bayesian regression**: `rstanarm::stanreg`, `brms::brmsfit`.
+  Estimate = posterior median, `std_error` = posterior SD,
+  `ci_lower` / `ci_upper` = equal-tailed posterior quantiles
+  (rendered as `95% CrI`, not `95% CI`). New `pd` column
+  (probability of direction, BARG convention).
+  `p_value = NA` for every Bayesian row.
 
-* `table_regression()`: added Average Marginal Effects for
-  mixed-effects fits (`"ame"` / `"ame_se"` / `"ame_ci"` /
-  `"ame_p"` tokens) via `marginaleffects::avg_slopes()` --
-  probability points for `glmer` logit, count units for Poisson.
+* **Survey-weighted regression**: `survey::svyglm`. Honours the
+  user's `vcov` (`"linearized"` from the survey design, plus the
+  `HC*` / `CR*` family for additional robustness).
 
-* `table_regression()`: `exponentiate = TRUE` now works on
-  `glmer` and `glmmTMB` fits with non-identity links -- OR
-  (logit), IRR (Poisson log), HR (cloglog), etc.
+* **Survival models**: `survival::coxph`, `survival::survreg`,
+  `rms::cph`, `flexsurv::flexsurvreg`. Wald-z inference, family-
+  aware footer ("Cox proportional hazards", "Weibull AFT", etc.),
+  baseline-hazard hint when relevant.
 
-* `table_regression()`: `standardized = "refit"` now works on
-  mixed-effects fits (Cohen et al. 2003 / Gelman 2008).
+* **Categorical-outcome models**: `nnet::multinom`,
+  `mlogit::mlogit`, `MASS::polr`, `ordinal::clm`. Per-outcome /
+  per-cumulative-cutoff coefficient blocks; outcome-prefixed
+  term labels.
 
-* `table_regression()`: `nested = TRUE` now works on
-  mixed-effects pairs -- ΔAIC, ΔBIC, Δχ² LRT, p-change rows.
+* **Heteroskedasticity / cluster-robust regressions**:
+  `estimatr::lm_robust`, `estimatr::iv_robust`. Native HC / CR
+  vcov pass-through (no double-application).
 
-* `table_regression()`: fixed-effect p-values and CIs for
-  mixed-effects fits use Satterthwaite t-test
-  (`lmerModLmerTest`), Wald-z (`glmerMod` / `glmmTMB` / bare
-  `lmerMod`), or containment df t-test (`lme`); the footer names
-  the method per frame.
+* **Fixed-effects econometrics**: `fixest::feols`, `fixest::feglm`,
+  `fixest::fepois`. Cluster-robust SE pass-through; one-way and
+  multi-way FE.
 
-* `table_regression()`: added the LR test vs no-random-effects
-  model at the bottom of the mixed-effects panel
-  (`LR test vs linear regression: χ̄²(q) = ..., p < ...`,
-  chi-bar-squared correction).
+* **Beta / Tobit / count-with-zeros**: `betareg::betareg`,
+  `AER::tobit`, `pscl::hurdle`, `pscl::zeroinfl` (count +
+  zero-inflation components rendered as separate blocks).
 
-* `table_regression()`: ICC for `glmer` (binomial / Poisson)
-  now uses the adjusted-ICC formula with link-scale distribution
-  variance (Nakagawa et al. 2017).
+* **Robust / quantile / GAM / nonlinear**: `MASS::rlm`,
+  `MASS::glm.nb`, `quantreg::rq`, `AER::ivreg`, `mgcv::gam` /
+  `mgcv::bam` (parametric coefs only — smooth terms summarised
+  separately), `stats::nls`.
 
-* `table_regression()`: singular mixed-effects fits now emit a
-  class-aware footer message about variance components at the
-  boundary 0, replacing the misleading "Rank-deficient model"
-  wording.
+* **Other classical extensions**: `rms::ols`, `rms::lrm`,
+  `rms::Glm`, `sampleSelection::selection`.
 
 ## Minor improvements
 
