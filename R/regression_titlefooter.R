@@ -71,7 +71,8 @@ build_regression_footer_from_frames <- function(
     reference_style = "row",
     show_re = TRUE,
     re_scale = "sd",
-    re_columns = c("est", "se", "ci")) {
+    re_columns = c("est", "se", "ci"),
+    displayed_parent_vars = NULL) {
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
@@ -90,7 +91,8 @@ build_regression_footer_from_frames <- function(
     build_p_adjust_footer_block_from_frames(frames, p_adjust),
     build_stars_footer_block(stars),
     build_singular_footer_block_from_frames(frames),
-    build_polynomial_contrasts_footer_block_from_frames(frames),
+    build_polynomial_contrasts_footer_block_from_frames(
+      frames, displayed_parent_vars = displayed_parent_vars),
     build_reference_categories_footer_block_from_frames(frames,
                                                         reference_style),
     build_nested_footer_block(nested)
@@ -288,23 +290,21 @@ build_ame_satterthwaite_footer_block_from_frames <- function(frames, show_column
   any_glm <- any(vapply(frames,
                         function(f) identical(f$info$class, "glm"),
                         logical(1)))
-  mechanism <- if (any_lm && any_glm) {
-    paste0(
-      "via `clubSandwich` (closed-form `linear_contrast()` for `lm`; ",
-      "dominant-coef `coef_test()` approximation for `glm`)."
-    )
+  # Phase 7c22: trim the methodological detail. The Pustejovsky &
+  # Tipton 2018 reference and the clubSandwich function name belong in
+  # the help page (`?table_regression`), not in every table footer
+  # (APA Manual 7 sec. 7.10: keep table notes brief; methodological
+  # references go in the surrounding text). The footer keeps the
+  # actionable summary "t-test with Satterthwaite df", with a one-word
+  # qualifier when the lm / glm paths diverge.
+  qualifier <- if (any_lm && any_glm) {
+    " (closed-form for lm; dominant-coefficient approximation for glm)"
   } else if (any_glm) {
-    paste0(
-      "via `clubSandwich::coef_test()` on the dominant underlying ",
-      "coefficient (response-scale AME is non-linear in \u03B2)."
-    )
+    " (dominant-coefficient approximation)"
   } else {
-    "via `clubSandwich::linear_contrast()`."
+    ""
   }
-  paste0(
-    "AME inference: t-distribution with Satterthwaite-corrected df ",
-    "(Pustejovsky & Tipton 2018) ", mechanism
-  )
+  paste0("AME inference: t-test with Satterthwaite df", qualifier, ".")
 }
 
 
@@ -1104,7 +1104,9 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
 #                                        check on "." or "^" still
 #                                        correctly identifies poly rows.
 #   coefs$factor_term  -> coefs$parent_var
-build_polynomial_contrasts_footer_block_from_frames <- function(frames) {
+build_polynomial_contrasts_footer_block_from_frames <- function(
+    frames,
+    displayed_parent_vars = NULL) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
   poly_vars <- character(0)
   poly_suffixes <- character(0)
@@ -1122,6 +1124,14 @@ build_polynomial_contrasts_footer_block_from_frames <- function(frames) {
     }
   }
   if (length(poly_vars) == 0L) return(NULL)
+  # Phase 7c22 (item f): only emit the polynomial-trends note when the
+  # ordered factor SURVIVES the keep / drop display filter. Without
+  # the filter, the note would describe a variable that the reader
+  # doesn't actually see in the table.
+  if (!is.null(displayed_parent_vars)) {
+    poly_vars <- intersect(poly_vars, displayed_parent_vars)
+    if (length(poly_vars) == 0L) return(NULL)
+  }
   inform_polynomial_pedagogy()
 
   vars_str <- paste0("`", poly_vars, "`", collapse = ", ")

@@ -322,6 +322,10 @@ test_that("table_regression – CR2 + AME triggers the Satterthwaite footer", {
     show_columns = c("b", "se", "p", "ame", "ame_p")
   )
   note <- attr(out, "note")
-  expect_match(note, "AME inference: t-distribution with Satterthwaite-corrected df")
-  expect_match(note, "clubSandwich::linear_contrast")
+  # Phase 7c22 (item e): footer trimmed -- "t-test with Satterthwaite
+  # df" (no Pustejovsky & Tipton ref, no clubSandwich function name).
+  expect_match(note, "AME inference: t-test with Satterthwaite df",
+                fixed = TRUE)
+  expect_false(grepl("Pustejovsky", note,            fixed = TRUE))
+  expect_false(grepl("clubSandwich::linear_contrast", note, fixed = TRUE))
 })

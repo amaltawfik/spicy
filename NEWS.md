@@ -184,6 +184,28 @@ walk-through; the new public surface is:
 
 ## Minor improvements
 
+* `table_regression()` footer trims the AME-Satterthwaite note --
+  the Pustejovsky & Tipton 2018 reference and the
+  `clubSandwich::linear_contrast()` function name are now in the
+  help page only (APA Manual 7 §7.10: keep table notes brief).
+  The footer now reads `"AME inference: t-test with Satterthwaite
+  df."` (with a one-word qualifier when the lm / glm paths
+  diverge).
+
+* `table_regression()` polynomial-trends footer note now respects
+  the `keep` / `drop` display filter. When an ordered factor is
+  excluded from the rendered coefficient block, the
+  `"Ordered factor X: polynomial trends (.L = linear, .Q =
+  quadratic)."` legend no longer appears -- it would otherwise
+  describe a variable the reader cannot see.
+
+* `table_regression()` `"deviance"` fit statistic now uses the
+  `ic_digits` precision bucket (default 1L), matching the
+  AIC / BIC / AICc convention. Deviance is on the same likelihood
+  scale; the previous `digits` (default 2L) over-specified the
+  precision for values typically in the hundreds. Same change
+  applied to `"deviance_change"`.
+
 * `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
   `flextable` and `word` outputs now use a single font throughout
   (was a `Consolas` override on numeric cells), matching

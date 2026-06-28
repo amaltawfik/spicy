@@ -736,10 +736,12 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
   out <- table_regression(fit, vcov = "CR2", cluster = d$clinic,
                            show_columns = c("b", "ame"))
   note <- attr(out, "note")
-  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
-  expect_match(note, "coef_test", fixed = TRUE)
-  # Should NOT mention linear_contrast (that's lm-only path)
-  expect_false(grepl("linear_contrast", note, fixed = TRUE))
+  # Phase 7c22 (item e): footer trimmed -- "t-test with Satterthwaite
+  # df (dominant-coefficient approximation)" for the glm path.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
+  expect_match(note, "dominant-coefficient approximation", fixed = TRUE)
+  expect_false(grepl("clubSandwich::",   note, fixed = TRUE))
+  expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
 
 test_that("glm AME with factor predictor: each level gets its own AME row", {
@@ -965,7 +967,8 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   )
   note <- attr(out, "note")
   expect_match(note, "cluster-robust [(]CR2[)]", perl = TRUE)
-  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
+  # Phase 7c22 (item e): trimmed wording.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
   # Change rows live in the body now
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
@@ -2248,9 +2251,13 @@ test_that("AME-Satterthwaite footer: mixed lm + glm uses compound wording", {
     show_columns = c("b", "ame", "ame_p", "p")
   )
   note <- attr(out, "note")
-  expect_match(note, "linear_contrast", fixed = TRUE)
-  expect_match(note, "coef_test", fixed = TRUE)
-  expect_match(note, "closed-form", fixed = TRUE)
+  # Phase 7c22 (item e): footer trimmed for the lm+glm mixed case.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
+  expect_match(note, "closed-form for lm", fixed = TRUE)
+  expect_match(note, "dominant-coefficient approximation for glm",
+                fixed = TRUE)
+  expect_false(grepl("clubSandwich",     note, fixed = TRUE))
+  expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
 
 

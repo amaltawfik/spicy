@@ -1387,6 +1387,16 @@ table_regression <- function(
   re_scale_val <- match.arg(re_scale)
   re_columns_val <- .validate_re_columns(re_columns)
 
+  # Phase 7c22 (item f): pass the surviving parent_vars (post keep /
+  # drop filter) so the polynomial-trends footer note suppresses when
+  # the ordered factor isn't actually displayed in the table.
+  # `aligned$coefs_aligned` has `factor_term` (parent name for factor
+  # rows, NA for non-factor rows) instead of the frame's `parent_var`
+  # column. Coalesce to recover the parent-var view of the display.
+  ca <- aligned$coefs_aligned
+  displayed_parent_vars <- unique(ifelse(is.na(ca$factor_term),
+                                            ca$term, ca$factor_term))
+
   footer_main <- build_regression_footer_from_frames(
     frames,
     standardized = standardized,
@@ -1397,7 +1407,8 @@ table_regression <- function(
     reference_style = reference_style,
     show_re = isTRUE(show_re),
     re_scale = re_scale_val,
-    re_columns = re_columns_val
+    re_columns = re_columns_val,
+    displayed_parent_vars = displayed_parent_vars
   )
 
   # "none" + flat: silent information loss flag. Inform-level

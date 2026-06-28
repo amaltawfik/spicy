@@ -933,7 +933,12 @@ format_fit_stat_value <- function(token, val,
     AIC                   = ic_digits,
     AICc                  = ic_digits,
     BIC                   = ic_digits,
-    deviance              = digits,
+    # Phase 7c22 (item b): deviance is on the same likelihood scale as
+    # AIC / BIC / AICc (large values, IC family). The default
+    # `ic_digits = 1L` matches Stata `estat ic` and SAS PROC LOGISTIC
+    # convention; the previous `digits` (= 2L by default) over-
+    # specified the precision for values typically in the hundreds.
+    deviance              = ic_digits,
     # Change tokens: precision matches the absolute version
     r2_change             = fit_digits,
     adj_r2_change         = fit_digits,
@@ -943,7 +948,7 @@ format_fit_stat_value <- function(token, val,
     aic_change            = ic_digits,
     aicc_change           = ic_digits,
     bic_change            = ic_digits,
-    deviance_change       = digits,
+    deviance_change       = ic_digits,
     digits
   )
   if (is_change) {
