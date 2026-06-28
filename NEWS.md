@@ -73,6 +73,20 @@ walk-through; the new public surface is:
   Identical per-model lines are consolidated into one when the
   whole list shares the same method.
 
+* **Standardized betas for mixed-effects fits** via the
+  `standardized = "refit"` arg (Cohen et al. 2003 / Gelman 2008
+  gold standard). z-scores the numeric columns of the model frame
+  and refits the model with the same engine + random structure;
+  the β column lands alongside the unstandardised B column.
+  Gaussian fits (lmer / lme / glmmTMB Gaussian) standardise both
+  response and predictors; non-Gaussian fits (glmer / glmmTMB
+  binomial / Poisson) standardise predictors only (response is
+  bounded). The other lm methods (`"posthoc"` / `"basic"` /
+  `"smart"`) fall back to refit with a `spicy_fallback` warning
+  -- the algebraic rescalings don't transfer cleanly to mixed-
+  effects because sd(Y) decomposition into between- vs within-
+  cluster variance is ambiguous.
+
 * **LR test vs no-random-effects model** under the random-effects
   panel. Matches the single line every Stata `mixed` /
   `melogit` / `mepoisson` output ships at the bottom:

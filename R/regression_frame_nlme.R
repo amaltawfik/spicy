@@ -37,6 +37,7 @@ as_regression_frame.lme <- function(fit,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      show_columns = character(0),
+                                     standardized = "none",
                                      exponentiate = FALSE,
                                      model_id = "M1",
                                      ...) {
@@ -45,6 +46,7 @@ as_regression_frame.lme <- function(fit,
   coefs <- .lme_coefs(fit, ci_level = ci_level)
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
+  coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .lme_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,

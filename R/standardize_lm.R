@@ -415,3 +415,182 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   })
   do.call(rbind, rows)
 }
+
+
+# ---- Phase 7c20: standardised betas for mixed-effects fits --------------
+#
+# Refit method only (the gold standard of Cohen et al. 2003 + Gelman 2008
+# for mixed-effects too): z-score the numeric columns of the model frame,
+# rebuild the same fit with the original engine + random structure, then
+# extract fixed-effect coefficients in the frame schema with
+# estimate_type = "beta".
+#
+# The posthoc / basic / smart algebraic rescalings used by the lm path
+# don't transfer cleanly to mixed-effects because sd(Y) is a marginal
+# quantity whose decomposition into between- vs within-cluster variance
+# is ambiguous; refit avoids the ambiguity by re-estimating the model
+# on the standardised data, leaving the random structure to absorb its
+# share of variance.
+#
+# Returns a list(coefs_beta = data.frame, used_method = "refit") or NULL
+# when the refit fails (e.g. formula contains an inline function call
+# that can't re-evaluate on z-scored data).
+.compute_beta_rows_for_mixed <- function(fit, ci_level = 0.95) {
+  # Pull the model frame and z-score numeric columns. Factor / character
+  # / logical columns are kept as-is (their dummies stay 0/1 in the
+  # design matrix, matching the lm path's convention).
+  data <- tryCatch(
+    if (inherits(fit, c("lme", "gls"))) {
+      nlme::getData(fit)
+    } else {
+      stats::model.frame(fit)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(data)) return(NULL)
+
+  # Identify the response variable -- non-Gaussian families (binomial,
+  # poisson, ...) require y bounded / integer-valued, so we standardise
+  # PREDICTORS ONLY for them. Gaussian / identity-link standardises
+  # both response and predictors (Cohen et al. 2003 / Gelman 2008).
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  is_gaussian <- is.null(fam) || identical(fam$family, "gaussian")
+  response_var <- tryCatch(
+    as.character(stats::formula(fit)[[2L]]),
+    error = function(e) NA_character_
+  )[1L]
+
+  for (nm in names(data)) {
+    if (!is.numeric(data[[nm]]) || startsWith(nm, "(")) next
+    if (!is_gaussian && identical(nm, response_var)) next  # skip y on glmm
+    sd_x <- stats::sd(data[[nm]], na.rm = TRUE)
+    if (is.finite(sd_x) && sd_x > 0) {
+      data[[nm]] <- as.numeric(scale(data[[nm]]))
+    }
+  }
+
+  # Engine-specific refit, manually requalified so the call works in
+  # any context (the captured `getCall(fit)` would fail to resolve
+  # `lmer` / `glmer` / `glmmTMB` / `lme` when those packages aren't
+  # attached). lme4 fits are S4 -- use stats::getCall(), not `fit$call`.
+  fit_std <- tryCatch({
+    call_copy <- stats::getCall(fit)
+    if (is.null(call_copy)) return(NULL)
+    if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
+      call_copy[[1L]] <- quote(lme4::lmer)
+    } else if (inherits(fit, "glmerMod")) {
+      call_copy[[1L]] <- quote(lme4::glmer)
+    } else if (inherits(fit, "glmmTMB")) {
+      call_copy[[1L]] <- quote(glmmTMB::glmmTMB)
+    } else if (inherits(fit, "lme")) {
+      call_copy[[1L]] <- quote(nlme::lme)
+    } else {
+      return(NULL)
+    }
+    call_copy$data <- data
+    suppressMessages(suppressWarnings(eval(call_copy, envir = parent.frame())))
+  }, error = function(e) NULL)
+  if (is.null(fit_std)) return(NULL)
+
+  # Extract fixef + vcov from the refitted model (engine-aware), then
+  # build frame-schema rows with estimate_type = "beta". Inference is
+  # invariant under linear transformation so the z / p of the beta rows
+  # equal those of the corresponding B rows on the original fit.
+  bhat <- tryCatch(
+    if (inherits(fit_std, "glmmTMB")) {
+      cond <- glmmTMB::fixef(fit_std)$cond
+      setNames(as.numeric(cond), names(cond))
+    } else if (inherits(fit_std, c("lmerMod", "glmerMod"))) {
+      lme4::fixef(fit_std)
+    } else {
+      nlme::fixef(fit_std)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(bhat) || length(bhat) == 0L) return(NULL)
+
+  V <- tryCatch({
+    v <- stats::vcov(fit_std)
+    if (inherits(fit_std, "glmmTMB")) {
+      v_cond <- tryCatch(v$cond, error = function(e) NULL)
+      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]],
+                                                error = function(e) NULL)
+      if (!is.null(v_cond)) v <- v_cond
+    }
+    as.matrix(v)
+  }, error = function(e) NULL)
+  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)
+
+  se <- sqrt(diag(V))
+  z_crit <- stats::qnorm(0.5 + ci_level / 2)
+  factor_meta <- tryCatch(detect_factor_term_meta(fit),
+                           error = function(e) list())
+
+  nm <- names(bhat)
+  rows <- lapply(seq_along(bhat), function(i) {
+    fmeta <- factor_meta[[nm[i]]]
+    parent_var <- fmeta$factor_term  %||% nm[i]
+    label      <- fmeta$factor_level %||% nm[i]
+    pos        <- fmeta$factor_level_pos %||% NA_integer_
+
+    stat <- bhat[i] / se[i]
+    p    <- 2 * stats::pnorm(-abs(stat))
+
+    data.frame(
+      term             = nm[i],
+      parent_var       = parent_var,
+      label            = label,
+      factor_level_pos = as.integer(pos),
+      is_ref           = FALSE,
+      estimate_type    = "beta",
+      estimate         = as.numeric(bhat[i]),
+      std_error        = as.numeric(se[i]),
+      df               = Inf,
+      statistic        = as.numeric(stat),
+      p_value          = as.numeric(p),
+      ci_lower         = as.numeric(bhat[i] - z_crit * se[i]),
+      ci_upper         = as.numeric(bhat[i] + z_crit * se[i]),
+      test_type        = "z",
+      stringsAsFactors = FALSE
+    )
+  })
+  list(coefs_beta = do.call(rbind, rows), used_method = "refit")
+}
+
+
+# Attach standardised beta rows to a frame's coefs when `standardized
+# != "none"`. No-op otherwise (no token requested OR no compatible
+# engine). All four mixed-effects methods (lmer / glmer / glmmTMB /
+# lme) currently support only the "refit" method; other choices fall
+# back to refit with a spicy_fallback warning.
+.attach_beta_to_frame_coefs <- function(coefs, fit, standardized,
+                                          ci_level = 0.95) {
+  if (identical(standardized, "none") || is.null(standardized)) {
+    return(coefs)
+  }
+  if (!identical(standardized, "refit")) {
+    spicy_warn(
+      c(
+        sprintf(
+          paste0("`standardized = \"%s\"` is not yet implemented for ",
+                  "mixed-effects fits; falling back to \"refit\"."),
+          standardized
+        ),
+        "i" = paste0(
+          "Refit is the Cohen et al. 2003 / Gelman 2008 gold standard ",
+          "and avoids the ambiguous sd(Y) decomposition that the ",
+          "algebraic methods rely on."
+        )
+      ),
+      class = "spicy_fallback"
+    )
+  }
+  res <- .compute_beta_rows_for_mixed(fit, ci_level = ci_level)
+  if (is.null(res)) return(coefs)
+  beta_rows <- res$coefs_beta
+  for (col in setdiff(colnames(coefs), colnames(beta_rows))) {
+    beta_rows[[col]] <- coefs[[col]][NA_integer_]
+  }
+  beta_rows <- beta_rows[, colnames(coefs), drop = FALSE]
+  rbind(coefs, beta_rows)
+}

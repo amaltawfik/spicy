@@ -39,6 +39,7 @@ as_regression_frame.lmerMod <- function(fit,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          show_columns = character(0),
+                                         standardized = "none",
                                          exponentiate = FALSE,
                                          model_id = "M1",
                                          ...) {
@@ -47,6 +48,7 @@ as_regression_frame.lmerMod <- function(fit,
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = FALSE)
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
+  coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,
@@ -99,6 +101,7 @@ as_regression_frame.glmerMod <- function(fit,
                                           ci_level = 0.95,
                                           ci_method = NULL,
                                           show_columns = character(0),
+                                          standardized = "none",
                                           exponentiate = FALSE,
                                           model_id = "M1",
                                           ...) {
@@ -107,6 +110,7 @@ as_regression_frame.glmerMod <- function(fit,
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = TRUE)
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
+  coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .merMod_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,
