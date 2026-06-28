@@ -41,9 +41,8 @@ labels) is layered on top for mixed-effects and Bayesian.
 * **Bayesian regression**: `rstanarm::stanreg`, `brms::brmsfit`.
   Estimate = posterior median, `std_error` = posterior SD,
   `ci_lower` / `ci_upper` = equal-tailed posterior quantiles
-  (rendered as `95% CrI`, not `95% CI`). New `pd` column
-  (probability of direction, BARG convention).
-  `p_value = NA` for every Bayesian row.
+  (rendered as `95% CrI`, not `95% CI`). `p.value = NA` for every
+  Bayesian row (no frequentist p-value is reported).
 
 * **Survey-weighted regression**: `survey::svyglm`. Honours the
   user's `vcov` (`"linearized"` from the survey design, plus the

@@ -618,7 +618,7 @@ internal model_id key.
 \code{vcov} selects the variance-covariance estimator:
 
 \itemize{
-\item \code{"classical"} -- OLS (lm) / MLE inverse Hessian (glm).
+\item \code{"classical"} -- OLS (lm) / Fisher information (glm).
 \item \code{"HC0"} to \code{"HC5"} -- heteroskedasticity-consistent
 (via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}).
 \item \code{"CR0"} to \code{"CR3"} -- cluster-robust with

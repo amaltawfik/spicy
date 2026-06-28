@@ -695,10 +695,16 @@ as_regression_frame.glmerMod <- function(fit,
   # Var(rho) = grad^T  Sigma_3  grad
   # CI       = rho +/- z * SE,  clamped to [-1, 1] (boundary).
   #
-  # The block-position formula for the lower-triangle vec layout that
-  # merDeriv uses (within each grouping block of size n = nrow(g_vc)):
-  #   var(term_k)             at  k * (k + 1) / 2
-  #   cov(term_i, term_j)     at  j * (j - 1) / 2 + i      (i < j)
+  # The block-position formula for the COLUMN-MAJOR vech layout that
+  # merDeriv uses (within each grouping block of size n = nrow(g_vc)).
+  # merDeriv concatenates each group's variance/covariance block by
+  # walking lme4's Lambdat/Lind (column by column of the lower
+  # triangle), so the element at (row >= col) sits at
+  #   .vech_colmajor_pos(n, row, col).
+  # Diagonal var(term_k) = pos(k, k); off-diagonal cov(term_i, term_j)
+  # for i < j = pos(j, i) (lower triangle: row = j, col = i).
+  # NB: a ROW-MAJOR formula coincides with this only for n <= 2, which
+  # is why the n >= 3 mislocation slipped past the random-slope tests.
   corr_rows <- which(is_corr)
   if (length(corr_rows) > 0L) {
     vc_list <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
@@ -726,9 +732,10 @@ as_regression_frame.glmerMod <- function(fit,
         j_idx <- match(parts[2L], g_nms)
         if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) next
 
-        var_i_pos <- i_idx * (i_idx + 1L) / 2L
-        var_j_pos <- j_idx * (j_idx + 1L) / 2L
-        cov_pos   <- j_idx * (j_idx - 1L) / 2L + i_idx
+        n_g_block <- nrow(g_vc)
+        var_i_pos <- .vech_colmajor_pos(n_g_block, i_idx, i_idx)
+        var_j_pos <- .vech_colmajor_pos(n_g_block, j_idx, j_idx)
+        cov_pos   <- .vech_colmajor_pos(n_g_block, j_idx, i_idx)  # i < j
         block_off <- group_offsets[[g_name]]
         full_pos  <- n_fixed + block_off + c(var_i_pos, cov_pos, var_j_pos)
         if (max(full_pos) > nrow(v)) next                                # nocov
@@ -763,15 +770,34 @@ as_regression_frame.glmerMod <- function(fit,
 }
 
 
+# Position of element (row, col), row >= col, in the COLUMN-MAJOR vech
+# (lower-triangle, column-by-column) of an n x n symmetric block --
+# the layout merDeriv uses for each grouping factor's random-effects
+# variance/covariance block. Column c contributes (n - c + 1) entries;
+# within column c the element at row r sits at offset (r - c + 1).
+#
+#   pos(n, r, c) = sum_{j=1}^{c-1}(n - j + 1) + (r - c + 1)
+#                = (c-1)*n - (c-1)*(c-2)/2 + (r - c + 1)
+#
+# Verified against merDeriv::vcov.lmerMod(full = TRUE, ranpar = "var")
+# colnames for a 3-term random block (cov_g.(Intercept), cov_g.x1,
+# cov_g.x2 land at positions 1, 4, 6 -- not the row-major 1, 3, 6).
+.vech_colmajor_pos <- function(n, row, col) {
+  as.integer((col - 1L) * n - (col - 1L) * (col - 2L) / 2L +
+               (row - col + 1L))
+}
+
+
 # Compute the indices of the DIAGONAL entries (= variances) in the
 # random-effects block of merDeriv's full vcov, in the same row order
 # as vc_df (per group: variance(term_1), variance(term_2), ..., then
 # residual variance at the end).
 #
 # For a fit with grouping factor G_1, G_2, ... and within each group
-# n_g random terms, merDeriv concatenates the lower triangles
-# (including diagonals) of each group's variance/covariance block, and
-# appends the residual variance at the very end.
+# n_g random terms, merDeriv concatenates the COLUMN-MAJOR vech (lower
+# triangle, column by column, including diagonals) of each group's
+# variance/covariance block, and appends the residual variance at the
+# very end.
 .merMod_re_diag_positions <- function(fit) {
   vc <- lme4::VarCorr(fit)
   pos <- integer(0)
@@ -779,9 +805,12 @@ as_regression_frame.glmerMod <- function(fit,
   for (group in names(vc)) {
     n <- nrow(vc[[group]])
     block_size <- n * (n + 1L) / 2L
-    # Within a block of size block_size, the diagonal entries occupy
-    # positions 1, 1 + 2, 1 + 2 + 3, ..., i.e. cumulative sums of 1:n.
-    diag_in_block <- cumsum(seq_len(n))
+    # Diagonal var(term_k) sits at the column-major vech position
+    # pos(n, k, k). For n = 3 these are 1, 4, 6 (NOT the row-major
+    # 1, 3, 6, which would mislabel cov(term_3, term_1) as var(term_2)).
+    diag_in_block <- vapply(seq_len(n),
+                            function(k) .vech_colmajor_pos(n, k, k),
+                            integer(1))
     pos <- c(pos, cursor + diag_in_block)
     cursor <- cursor + block_size
   }

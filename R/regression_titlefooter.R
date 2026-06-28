@@ -851,7 +851,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
     p_str <- format_p_value_for_panel(lrt$p_chibar2)
     lrt_line <- sprintf(
-      "LR test vs %s: χ̄²(%d) = %.2f, p %s",
+      "LR test vs %s: \u03C7\u0304\u00B2(%d) = %.2f, p %s",
       lrt$family_label %||% "no-random model",
       as.integer(lrt$df), lrt$chi2, p_str
     )

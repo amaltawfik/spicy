@@ -280,6 +280,32 @@ test_that("self-impl matches oracle for Poisson(log) glmer", {
                tolerance = 1e-10)
 })
 
+test_that("self-impl matches oracle for RANDOM-SLOPE Poisson(log) glmer", {
+  # Phase 7c25 regression guard: the Poisson lognormal baseline lambda
+  # must use the NULL model's random-INTERCEPT variance, not the full
+  # design-averaged Z W Z' / n accumulation (which over-counts the slope
+  # variance + intercept-slope covariance for (x | g) structures). The
+  # (1 | g) test above can't catch this -- both forms coincide there.
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("performance")
+  set.seed(7)
+  n <- 600; g <- factor(rep(1:30, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(30, 0, 0.5); b1 <- rnorm(30, 0, 0.3)
+  y <- rpois(n, exp(0.8 + 0.3 * x + b0[g] + b1[g] * x))
+  fit <- suppressWarnings(lme4::glmer(
+    y ~ x + (x | g), family = poisson,
+    control = lme4::glmerControl(check.conv.singular = "ignore")
+  ))
+  skip_if(lme4::isSingular(fit), "fit was singular this round")
+  out <- spicy:::.nakagawa_r2(fit)
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(out$marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-8)
+  expect_equal(out$conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-8)
+})
+
 test_that(".nakagawa_supported_family rejects binomial cbind", {
   skip_if_not_installed("lme4")
   fit <- .fit_glmer_ns()

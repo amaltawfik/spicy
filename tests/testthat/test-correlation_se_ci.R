@@ -99,6 +99,87 @@ test_that("lmer rho SE matches the manual Delta-method formula to 1e-10", {
 })
 
 
+# ---- 2b. THREE-term random block: column-major vech positions ----------
+# Regression guard for the Phase 7c25 fix. merDeriv lays the random
+# block out COLUMN-MAJOR (vech); the original row-major position
+# formulas coincided with column-major only for n <= 2, so a 3-term
+# random block (n = 3) silently pulled SEs from the wrong vcov cells
+# (cov(term_3, term_1) mislabelled as var(term_2), etc.). Cross-
+# validate every variance-row SE against merDeriv-by-name and every
+# correlation-row SE against a numDeriv gradient on the 6x6 sub-vcov.
+
+test_that("lmer 3-term random block: variance + correlation SE are correct (column-major)", {
+  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
+  set.seed(123)
+  n <- 600
+  g <- factor(rep(1:30, length.out = n))
+  x1 <- rnorm(n); x2 <- rnorm(n)
+  b0 <- rnorm(30, 0, 2); b1 <- rnorm(30, 0, 1.5); b2 <- rnorm(30, 0, 1)
+  y <- 1 + 0.5 * x1 - 0.3 * x2 + b0[g] + b1[g] * x1 + b2[g] * x2 + rnorm(n)
+  fit <- lme4::lmer(
+    y ~ x1 + x2 + (1 + x1 + x2 | g),
+    control = lme4::lmerControl(check.conv.singular = "ignore")
+  )
+  skip_if(lme4::isSingular(fit), "fit was singular this round")
+
+  g_vc <- as.matrix(lme4::VarCorr(fit)$g)
+  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
+  n_fix <- length(lme4::fixef(fit))
+  re_block <- v[(n_fix + 1L):nrow(v), (n_fix + 1L):nrow(v), drop = FALSE]
+
+  fr <- as_regression_frame(fit, model_id = "M1")
+  vc <- fr$info$random_effects$variance_components
+
+  # Variance rows: SE must equal sqrt(diag(merDeriv vcov)) at the
+  # column-major diagonal positions (1, 4, 6 for n = 3), which are the
+  # entries merDeriv names cov_g.(Intercept) / cov_g.x1 / cov_g.x2.
+  diag_names <- c("cov_g.(Intercept)", "cov_g.x1", "cov_g.x2")
+  truth_var_se <- sqrt(diag(re_block))[match(diag_names, colnames(re_block))]
+  var_rows <- vc[!(vc$is_correlation %in% TRUE) & vc$group == "g", ]
+  expect_equal(var_rows$std_error, unname(truth_var_se), tolerance = 1e-8)
+
+  # Correlation rows: SE must equal a numDeriv gradient of
+  # rho = cov / sqrt(var_i var_j) quadratic-formed with the 6x6
+  # sub-vcov of the column-major vech.
+  vech <- c(g_vc[1, 1], g_vc[2, 1], g_vc[3, 1],
+            g_vc[2, 2], g_vc[3, 2], g_vc[3, 3])
+  re_cov6 <- re_block[1:6, 1:6, drop = FALSE]
+  rho_fun <- function(vv, i, j) {
+    m <- matrix(0, 3, 3)
+    m[1, 1] <- vv[1]; m[2, 1] <- m[1, 2] <- vv[2]; m[3, 1] <- m[1, 3] <- vv[3]
+    m[2, 2] <- vv[4]; m[3, 2] <- m[2, 3] <- vv[5]; m[3, 3] <- vv[6]
+    m[i, j] / sqrt(m[i, i] * m[j, j])
+  }
+  corr <- vc[vc$is_correlation %in% TRUE, ]
+  expect_identical(nrow(corr), 3L)
+  for (k in seq_len(nrow(corr))) {
+    pair <- strsplit(corr$term[k], ", ", fixed = TRUE)[[1L]]
+    i <- match(pair[1L], rownames(g_vc))
+    j <- match(pair[2L], rownames(g_vc))
+    gr <- numDeriv::grad(function(vv) rho_fun(vv, i, j), vech)
+    truth <- sqrt(as.numeric(t(gr) %*% re_cov6 %*% gr))
+    expect_equal(corr$std_error[k], truth, tolerance = 1e-6,
+                 info = paste("corr SE mismatch:", corr$term[k]))
+  }
+})
+
+test_that(".vech_colmajor_pos returns column-major lower-triangle positions", {
+  # n = 3 block: diagonal at 1, 4, 6; off-diag cov(2,1)=2, cov(3,1)=3,
+  # cov(3,2)=5 -- the layout merDeriv uses.
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 1L, 1L), 1L)
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 2L, 2L), 4L)
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 3L, 3L), 6L)
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 2L, 1L), 2L)
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 3L, 1L), 3L)
+  expect_identical(spicy:::.vech_colmajor_pos(3L, 3L, 2L), 5L)
+  # n = 2 coincides with row-major (why the bug hid): diag at 1, 3.
+  expect_identical(spicy:::.vech_colmajor_pos(2L, 1L, 1L), 1L)
+  expect_identical(spicy:::.vech_colmajor_pos(2L, 2L, 2L), 3L)
+  expect_identical(spicy:::.vech_colmajor_pos(2L, 2L, 1L), 2L)
+})
+
+
 # ---- 3. glmer: rho row has finite SE + CI (no residual -> same path) ----
 
 test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {

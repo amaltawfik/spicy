@@ -1022,32 +1022,26 @@ validate_regression_frame <- function(frame) {
   fe <- tryCatch(lme4::fixef(null_fit), error = function(e) NULL)
   if (is.null(fe) || length(fe) == 0L) return(na_pair)
   int <- as.numeric(fe[1L])
-  # Random-effect variance of the null model: same Z W Z' / n formula
-  # used for the full model. For the common `(1 | g)` structure this
-  # collapses to the single intercept variance from VarCorr.
+  # Random-effect variance of the null model for the Poisson lognormal
+  # baseline lambda = exp(intercept_null + 0.5 * var_g_null). Nakagawa
+  # et al. (2017) / insight use the null model's random-INTERCEPT
+  # variance -- the (Intercept),(Intercept) diagonal of each grouping
+  # factor's VarCorr block, summed across grouping factors -- NOT the
+  # full design-averaged Z W Z' / n accumulation used for var_g of the
+  # FULL model. The two coincide for a plain (1 | g) structure (where
+  # the only random term IS the intercept) but diverge for random-slope
+  # structures: the ZWZ'/n form over-counts by folding in the slope
+  # variance and intercept-slope covariance, inflating lambda and
+  # corrupting the distribution variance. Verified to reproduce
+  # performance::r2_nakagawa() to ~1e-16 on (x | g) Poisson fits.
   vc_null <- tryCatch(lme4::VarCorr(null_fit), error = function(e) NULL)
   if (is.null(vc_null)) return(list(intercept = int, var_g = NA_real_))
-  mm_null <- tryCatch(lme4::getME(null_fit, "mmList"),
-                       error = function(e) NULL)
-  if (is.null(mm_null)) return(list(intercept = int, var_g = NA_real_))
-  group_for_mm <- vapply(names(mm_null), function(nm) {
-    parts <- strsplit(nm, "\\|", fixed = FALSE)[[1L]]
-    if (length(parts) < 2L) return(NA_character_)
-    trimws(parts[length(parts)])
-  }, character(1))
   var_g_null <- 0
   for (g in names(vc_null)) {
     W <- as.matrix(vc_null[[g]])
-    idx <- which(group_for_mm == g)
-    if (length(idx) == 0L) next
-    for (k in idx) {
-      Z <- as.matrix(mm_null[[k]])
-      cols <- intersect(colnames(W), colnames(Z))
-      if (length(cols) == 0L) next
-      W_sub <- W[cols, cols, drop = FALSE]
-      Z_sub <- Z[, cols, drop = FALSE]
-      var_g_null <- var_g_null + sum((Z_sub %*% W_sub) * Z_sub) / nrow(Z_sub)
-    }
+    int_col <- match("(Intercept)", colnames(W))
+    if (is.na(int_col)) next  # no random intercept for this grouping
+    var_g_null <- var_g_null + W[int_col, int_col]
   }
   list(intercept = int, var_g = var_g_null)
 }
