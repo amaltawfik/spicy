@@ -59,6 +59,7 @@ Suggests:
     mgcv (>= 1.9),
     nlme (>= 3.1-160),
     nnet,
+    numDeriv,
     ordinal (>= 2022.11),
     AER (>= 1.2),
     betareg (>= 3.1),
