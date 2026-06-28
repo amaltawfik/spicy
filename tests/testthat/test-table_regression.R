@@ -520,9 +520,9 @@ test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
   expect_true("AIC" %in% out$Variable)
 })
 
-test_that("show_fit_stats – empty character drops the footer block", {
+test_that("show_fit_stats = FALSE drops the footer block", {
   fit <- lm(mpg ~ wt, data = mt)
-  out <- table_regression(fit, show_fit_stats = character(0))
+  out <- table_regression(fit, show_fit_stats = FALSE)
   expect_false(any(c("n", "R²", "Adj.R²") %in% out$Variable))
 })
 

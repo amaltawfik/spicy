@@ -22,15 +22,6 @@ test_that("show_fit_stats = FALSE suppresses the fit-stats block", {
   expect_false(grepl("R²",          combined, fixed = TRUE))
 })
 
-test_that("show_fit_stats = FALSE matches show_fit_stats = character(0)", {
-  fit <- lm(mpg ~ wt, data = mtcars)
-  out_false  <- capture.output(print(
-    table_regression(fit, show_fit_stats = FALSE)))
-  out_empty  <- capture.output(print(
-    table_regression(fit, show_fit_stats = character(0))))
-  expect_identical(out_false, out_empty)
-})
-
 test_that("show_fit_stats = NULL keeps the class-aware default (auto)", {
   fit <- lm(mpg ~ wt, data = mtcars)
   out <- capture.output(print(table_regression(fit, show_fit_stats = NULL)))

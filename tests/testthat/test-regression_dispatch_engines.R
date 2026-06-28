@@ -409,7 +409,7 @@ test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
 test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present", {
   m1 <- lm(mpg ~ wt, data = mt)
   r <- table_regression(m1, show_columns = c("b", "ci", "p"),
-                          show_fit_stats = character(0))
+                          show_fit_stats = FALSE)
   specs <- spicy:::.fit_stat_merge_ranges(
     as.data.frame(r), attr(r, "spanners"), attr(r, "group_sep_rows")
   )

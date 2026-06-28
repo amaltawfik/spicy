@@ -2,231 +2,98 @@
 
 ## Breaking changes
 
-* `align = "auto"` removed from all `table_*` functions (was a
-  legacy alias for `"right"` from spicy < 0.11.0). Use one of
+* `align = "auto"` removed from all `table_*` functions. Use
   `"decimal"` (default), `"center"`, or `"right"`.
 
-* `table_regression(list(m1, ...), show_columns = "all_b")` and
-  `show_columns = "all_ame"` now auto-compact in multi-model
-  layouts (drop the CI column), matching the existing behaviour
-  of the `NULL` default (which already auto-switches to
-  `"all_b_compact"` for side-by-side tables). Pass the atomic
-  tokens explicitly (`c("b", "se", "ci", "p")` /
-  `c("ame", "ame_se", "ame_ci", "ame_p")`) to keep CIs in a
-  multi-model layout.
+* `table_regression(show_fit_stats = character(0))` now errors --
+  use `FALSE` to suppress the fit-stats block.
 
-* `table_regression(fit)` with a bare `lme4::lmer()` fit (i.e.
-  `lmerTest` not loaded) now uses **Wald-z** for fixed-effect
-  p-values and CIs, with `df = ∞` in the broom-canonical frame.
-  Previous behaviour used a naive t-test with `df.residual(fit)`,
-  which is methodologically wrong (Bates 2006; Bolker FAQ —
-  it double-counts the within-cluster correlation). The new
-  default matches `parameters::model_parameters(ci_method = "wald")`,
-  SAS PROC MIXED with `ddfm = z`, and Stata `xtmixed`. Numeric
-  impact: p-values shift slightly (z vs t with the old df), CIs
-  shift slightly (z-quantile vs t-quantile). Load `lmerTest`
-  before fitting to keep Satterthwaite t-tests (already the
-  recommended default).
+* `table_regression()` glm footer: `"classical (MLE inverse Hessian)"`
+  renamed to `"classical (Fisher information)"`.
 
-## Mixed-effects support (new)
+* `table_regression(list(...), show_columns = "all_b" | "all_ame")`
+  auto-compacts in multi-model layouts (drops the CI column),
+  matching the `NULL` default. Use atomic tokens to keep CIs.
 
-`table_regression()` now accepts mixed-effects fits from
-`lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
-`nlme::lme()` alongside `lm` / `glm`. The fixed-effects block
-renders identically; a structured **Random effects panel** and
-two new fit-stats rows turn the output into a publication-ready
-mixed-model table. See `vignette("table-regression")`
-(*Mixed-effects models* section) for the full methodological
-walk-through; the new public surface is:
+## New features
 
-* **Random effects panel** (Bates et al. 2015; Gelman 2005).
-  One σ row per variance component with Wald SE + 95 % CI
-  (`merDeriv` for `lme4`; `glmmTMB::confint(method = "Wald")`
-  for `glmmTMB`; `nlme::intervals()` for `lme`), one ρ row per
-  correlation between random terms, an ICC row when defined,
-  and an `N (group)` row per grouping factor. Three new args:
-  * `show_re = TRUE` / `FALSE` — suppress the panel entirely.
-  * `re_scale = "sd"` (default, Gelman 2005) / `"variance"` —
-    display σ or σ²; Delta-method SE / CI conversion.
-  * `re_columns` — subset of `c("est", "se", "ci")`; `"est"`
-    mandatory. Drop SE and CI for a minimal table.
+* `table_regression()`: added support for mixed-effects fits from
+  `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
+  `nlme::lme()`. See `vignette("table-regression")`,
+  *Mixed-effects models*, for the walk-through.
 
-* **Nakagawa & Schielzeth marginal / conditional R²**
-  (Nakagawa & Schielzeth 2013; Nakagawa et al. 2017). Native
-  spicy implementation for the closed-form cases (Gaussian,
-  Bernoulli binomial logit / probit / cloglog, Poisson log),
-  cross-validated against `performance::r2_nakagawa()` to
-  1e-10. For families needing the lognormal / delta / trigamma
-  approximations (`cbind()` binomial, negative binomial, beta,
-  Tweedie, zero-inflation), spicy falls back to `performance`.
-  Two new `show_fit_stats` tokens: `"r2_marginal"`,
-  `"r2_conditional"`. The class-aware default for mixed fits
-  is now `c("nobs", "r2_marginal", "r2_conditional", "AIC",
-  "BIC")` (was empty).
+* `table_regression()`: added a structured **random-effects
+  panel** for mixed-effects fits -- σ (or σ² via `re_scale =
+  "variance"`), Wald SE and 95 % CI, correlation rows with SE /
+  CI (Delta method), ICC, and N per group. Toggle with
+  `show_re = FALSE`, trim with `re_columns`.
 
-* **`glmer` panel parity with `lmer`**. Non-Gaussian fits drop
-  the misleading "residual variance = 1.00" row (`lme4::sigma()`
-  returns a fixed dispersion, not an estimated parameter), and
-  the ICC switches to the **adjusted ICC** with the link-scale
-  distribution variance per Nakagawa et al. 2017 (π²/3 logit,
-  1 probit, π²/6 cloglog, lognormal Poisson). Matches
-  `performance::icc(fit)$ICC_adjusted` to 1e-6 on Bernoulli +
-  Poisson.
+* `table_regression()`: added Nakagawa & Schielzeth marginal /
+  conditional R² for mixed-effects fits (new `"r2_marginal"` /
+  `"r2_conditional"` tokens, default fit-stats for mixed).
 
-* **Per-class p-values footer**. A one-line annotation below
-  `Std. errors:` names the inference method used for each
-  mixed-effects frame:
-  Satterthwaite t-test (`lmerModLmerTest`); Wald-z, large-
-  sample approximation (bare `lmerMod`); Wald-z asymptotic
-  (`glmerMod` / `glmmTMB`); t-test with containment df (`lme`).
-  Identical per-model lines are consolidated into one when the
-  whole list shares the same method.
+* `table_regression()`: added Type-3 Wald χ² joint test per term
+  for mixed-effects fits (`"partial_chi2"` token) -- SAS
+  `PROC MIXED` / SPSS `GENLINMIXED` convention.
 
-* **Class-aware singular-fit footer message** for mixed-effects.
-  When `lme4::isSingular(fit) == TRUE` (random-effect variance at
-  boundary 0), the footer now prints
-  *"Singular fit: random-effect variance component(s) at the
-  boundary 0. Wald SE and CI on the variance components are
-  unreliable at the boundary and have been omitted (Self & Liang
-  1987; Bolker FAQ); consider simplifying the random structure or
-  refitting on the affected grouping factor."* instead of the
-  generic lm-path "Rank-deficient model: dropped coefficient(s)
-  shown as –." (which described the wrong failure mode). lm /
-  glm rank-deficient fits keep their original wording. Closes a
-  silent UX gap where the user previously saw em-dashed SE / CI
-  rows with no explanation.
+* `table_regression()`: added Average Marginal Effects for
+  mixed-effects fits (`"ame"` / `"ame_se"` / `"ame_ci"` /
+  `"ame_p"` tokens) via `marginaleffects::avg_slopes()` --
+  probability points for `glmer` logit, count units for Poisson.
 
-* **Standardized betas for mixed-effects fits** via the
-  `standardized = "refit"` arg (Cohen et al. 2003 / Gelman 2008
-  gold standard). z-scores the numeric columns of the model frame
-  and refits the model with the same engine + random structure;
-  the β column lands alongside the unstandardised B column.
-  Gaussian fits (lmer / lme / glmmTMB Gaussian) standardise both
-  response and predictors; non-Gaussian fits (glmer / glmmTMB
-  binomial / Poisson) standardise predictors only (response is
-  bounded). The other lm methods (`"posthoc"` / `"basic"` /
-  `"smart"`) fall back to refit with a `spicy_fallback` warning
-  -- the algebraic rescalings don't transfer cleanly to mixed-
-  effects because sd(Y) decomposition into between- vs within-
-  cluster variance is ambiguous.
+* `table_regression()`: `exponentiate = TRUE` now works on
+  `glmer` and `glmmTMB` fits with non-identity links -- OR
+  (logit), IRR (Poisson log), HR (cloglog), etc.
 
-* **LR test vs no-random-effects model** under the random-effects
-  panel. Matches the single line every Stata `mixed` /
-  `melogit` / `mepoisson` output ships at the bottom:
-  `LR test vs linear regression: χ̄²(q) = 121.07, p < .001`.
-  Computed via 2·(logLik(fit_full_ML) − logLik(fit_null)), where
-  fit_null is an `lm` / `glm` fit on the same data without any
-  random effects, and the p-value uses Stata's chi-bar-squared
-  convention p = 0.5 · pchisq(χ², q, lower.tail = FALSE) where q
-  is the number of free random parameters per grouping factor
-  (sum of n·(n+1)/2 over groupings). REML fits are auto-refit
-  with ML before the LRT (lme4) / `method = "ML"` (nlme); the
-  refit message is suppressed. Covered for all four engines:
-  lmer / glmer / glmmTMB / nlme::lme. `show_re = FALSE`
-  suppresses the line along with the panel.
+* `table_regression()`: `standardized = "refit"` now works on
+  mixed-effects fits (Cohen et al. 2003 / Gelman 2008).
 
-* **Type-3 Wald χ² tests for fixed effects on mixed-effects fits**
-  via the `"partial_chi2"` token of `show_columns`. For each
-  non-intercept term, the joint test
-  H₀: β[term] = 0 is computed via
-  χ²(k) = β̂[term]ᵀ V[term, term]⁻¹ β̂[term], where k is the
-  number of coefficients spanned by the term (1 for a numeric, k−1
-  for a k-level factor). Matches the SAS `PROC MIXED` /
-  SPSS `GENLINMIXED` "Type 3 Tests of Fixed Effects" /
-  Stata `mixed, testparm` lines. Rendered as `value (df)` in the
-  χ² column, e.g. `167.67 (1)` for a numeric and `0.34 (2)` for a
-  3-level factor (one display per non-reference level). All four
-  mixed-effects engines covered (lmer / glmer / glmmTMB / lme);
-  no new dependency (computed natively from `fixef()` + `vcov()`).
+* `table_regression()`: `nested = TRUE` now works on
+  mixed-effects pairs -- ΔAIC, ΔBIC, Δχ² LRT, p-change rows.
 
-* **Random-effect correlation rows now carry Wald SE + 95 % CI**
-  for all four mixed-effects engines. lme4 (`lmer` / `glmer`)
-  uses the multivariate Delta method on the 3 x 3 sub-vcov from
-  `merDeriv::vcov()` -- the gradient of
-  ρ = cov / √(σ²_i · σ²_j) evaluated at the point estimate,
-  quadratic-formed with the joint variance-covariance of
-  (σ²_i, cov, σ²_j). CI is clamped to [-1, 1] at the boundary.
-  glmmTMB and nlme::lme already populated ρ SE / CI natively
-  via `confint(method = "Wald")` and `nlme::intervals()`
-  respectively. The panel ρ row now reads
-  `ρ Subject ((Intercept), Days)  0.07  (0.33)  [-0.57, 0.70]`
-  -- on par with Stata `mixed` and SAS `PROC MIXED`.
+* `table_regression()`: fixed-effect p-values and CIs for
+  mixed-effects fits use Satterthwaite t-test
+  (`lmerModLmerTest`), Wald-z (`glmerMod` / `glmmTMB` / bare
+  `lmerMod`), or containment df t-test (`lme`); the footer names
+  the method per frame.
 
-* **`exponentiate = TRUE` for mixed-effects**. The exp() transform
-  is now applied to B / beta rows for any mixed-effects fit with a
-  non-identity link: `glmer` binomial logit / probit / cloglog
-  (column header rebranded to `OR` / `(probit)` / `HR`),
-  `glmer` Poisson log (`IRR`), `glmmTMB` same families, etc. CI
-  bounds exponentiated; SE follows the Delta method
-  (`SE_exp = exp(B) * SE_link`); the z-statistic and p-value are
-  invariant. AME rows are NOT re-exponentiated -- they are already
-  on the response scale by construction. The "no effect on
-  identity-link fits" warning now triggers on the link instead of
-  the class, so `glmer` / `glmmTMB` non-identity fits no longer
-  emit a spurious warning.
+* `table_regression()`: added the LR test vs no-random-effects
+  model at the bottom of the mixed-effects panel
+  (`LR test vs linear regression: χ̄²(q) = ..., p < ...`,
+  chi-bar-squared correction).
 
-* **Average Marginal Effects (AME) for mixed-effects**. The
-  `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
-  `show_columns` are now wired for all four mixed-effects
-  engines, delegated to `marginaleffects::avg_slopes(fit, df = Inf)`
-  with response-scale Wald-z asymptotic inference. The AME
-  column is the publication-substantive quantity for `glmer`
-  binomial logit (probability points) and `glmer` Poisson log
-  (count units) -- where the log-odds / log-rate coefficient on
-  the link scale is hard to interpret. AME rows align with the
-  B-rows under the same factor header (e.g. `cat: A (ref.) / B /
-  C`); ordered factors and inline `factor()` calls are handled
-  via fallback metadata reconstruction. `marginaleffects` is a
-  Suggests dependency; without it the AME columns render as NA
-  without erroring.
+* `table_regression()`: ICC for `glmer` (binomial / Poisson)
+  now uses the adjusted-ICC formula with link-scale distribution
+  variance (Nakagawa et al. 2017).
 
-* **`nested = TRUE` for mixed-effects**. Pairs of mixed fits
-  route to `compute_one_pair_mixed()`, which uses
-  `anova(prev, curr)` to derive the likelihood-ratio change
-  rows (`ΔAIC`, `ΔBIC`, `Δχ²`, p-change) for hierarchical
-  mixed-model selection. Default change tokens for all-mixed
-  lists: `c("aic_change", "bic_change", "lrt_change",
-  "p_change")` (Pinheiro & Bates 2000 §2.4.1). Variance-
-  explained change tokens (`Δr²`, `Δf²`) are NA — the F-test
-  framework doesn't apply. lme4's `anova()` auto-refits REML
-  fits with ML before the LRT (message suppressed).
+* `table_regression()`: singular mixed-effects fits now emit a
+  class-aware footer message about variance components at the
+  boundary 0, replacing the misleading "Rank-deficient model"
+  wording.
 
 ## Minor improvements
 
-* `table_regression(..., show_fit_stats = FALSE)` is now an
-  explicit "suppress the fit-stats block" alias (parity with
-  `show_re = FALSE` / `outcome_labels = FALSE`). The previous
-  `character(0)` synonym still works. `NULL` keeps the
-  class-aware default (lm -> nobs+r2+adj_r2, glm -> nobs+
-  pseudo_r2_mcfadden+pseudo_r2_nagelkerke+AIC, mixed-effects ->
-  nobs+r2_marginal+r2_conditional+AIC+BIC).
+* `show_fit_stats = FALSE` suppresses the fit-stats block (parity
+  with `show_re = FALSE` and `outcome_labels = FALSE`).
 
-* `table_regression()` footer trims the AME-Satterthwaite note --
-  the Pustejovsky & Tipton 2018 reference and the
-  `clubSandwich::linear_contrast()` function name are now in the
-  help page only (APA Manual 7 §7.10: keep table notes brief).
-  The footer now reads `"AME inference: t-test with Satterthwaite
-  df."` (with a one-word qualifier when the lm / glm paths
-  diverge).
+* AME-Satterthwaite footer trimmed to `"AME inference: t-test
+  with Satterthwaite df."` (methodological references moved to
+  `?table_regression`).
 
-* `table_regression()` polynomial-trends footer note now respects
-  the `keep` / `drop` display filter. When an ordered factor is
-  excluded from the rendered coefficient block, the
-  `"Ordered factor X: polynomial trends (.L = linear, .Q =
-  quadratic)."` legend no longer appears -- it would otherwise
-  describe a variable the reader cannot see.
+* Polynomial-trends footer note now respects `keep` / `drop` --
+  no longer fires when the ordered factor is filtered out of
+  the display.
 
-* `table_regression()` `"deviance"` fit statistic now uses the
-  `ic_digits` precision bucket (default 1L), matching the
-  AIC / BIC / AICc convention. Deviance is on the same likelihood
-  scale; the previous `digits` (default 2L) over-specified the
-  precision for values typically in the hundreds. Same change
-  applied to `"deviance_change"`.
+* Decimal-align en-dash placeholder cells (factor reference rows,
+  "not applicable") in `gt` / `flextable` / `tinytable` / Word /
+  Excel outputs.
 
-* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
-  `flextable` and `word` outputs now use a single font throughout
-  (was a `Consolas` override on numeric cells), matching
-  `table_regression()`.
+* `"deviance"` fit-stat precision now matches AIC / BIC / AICc
+  (1 decimal by default, was 2).
+
+* `table_continuous_lm()` / `table_continuous()` /
+  `table_categorical()`: `flextable` / `word` outputs use a
+  single font throughout.
 
 ## Bug fixes
 

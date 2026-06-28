@@ -128,7 +128,7 @@
 #' `vcov` selects the variance-covariance estimator:
 #'
 #' \itemize{
-#'   \item `"classical"` -- OLS (lm) / MLE inverse Hessian (glm).
+#'   \item `"classical"` -- OLS (lm) / Fisher information (glm).
 #'   \item `"HC0"` to `"HC5"` -- heteroskedasticity-consistent
 #'     (via [sandwich::vcovHC()]).
 #'   \item `"CR0"` to `"CR3"` -- cluster-robust with

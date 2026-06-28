@@ -63,11 +63,16 @@ test_that("glm: hierarchical title is grammatically lower-cased", {
   )
 })
 
-test_that("glm: classical-vcov footer label says 'MLE inverse Hessian'", {
+test_that("glm: classical-vcov footer label says 'Fisher information'", {
+  # Phase 7c24 (item c): renamed from "MLE inverse Hessian" to the
+  # standard publication name "Fisher information" -- parallels
+  # "classical (OLS)" for lm by naming the mechanism that produces
+  # the SE (Wooldridge / Greene; Stata's "OIM" / SAS's
+  # "Standard Error" are the other common conventions).
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit)
   expect_match(attr(out, "note"),
-               "Std\\. errors: classical \\(MLE inverse Hessian\\)")
+               "Std\\. errors: classical \\(Fisher information\\)")
 })
 
 
@@ -946,10 +951,10 @@ test_that("E2E: mixed lm + glm side-by-side renders without error", {
   expect_s3_class(out, "spicy_regression_table")
   # Title falls back to plain "Regression comparison" (mixed families)
   expect_match(attr(out, "title"), "^Regression comparison$")
-  # vcov footer per-model: OLS / MLE
+  # vcov footer per-model: OLS / Fisher information (Phase 7c24)
   note <- attr(out, "note")
-  expect_match(note, "OLS", fixed = TRUE)
-  expect_match(note, "MLE inverse Hessian", fixed = TRUE)
+  expect_match(note, "OLS",                fixed = TRUE)
+  expect_match(note, "Fisher information", fixed = TRUE)
 })
 
 test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {

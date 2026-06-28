@@ -183,7 +183,15 @@ format_vcov_label_from_frame <- function(frame) {
   cn <- frame$info$extras$cluster_name %||% NA_character_
   is_glm <- identical(cls, "glm")
   if (vt == "classical") {
-    return(if (is_glm) "classical (MLE inverse Hessian)" else "classical (OLS)")
+    # Phase 7c23 (item c): "Fisher information" is the standard
+    # publication-grade name for the glm vcov (the inverse of the
+    # expected information matrix; for canonical links equals the
+    # inverse Hessian at the MLE). The previous "MLE inverse Hessian"
+    # was technically correct but unconventional next to Stata's
+    # "OIM" / SAS PROC LOGISTIC's bare "Standard Error" labels.
+    # Parallels "classical (OLS)" for lm: both name the underlying
+    # mechanism that produces the SE.
+    return(if (is_glm) "classical (Fisher information)" else "classical (OLS)")
   }
   if (startsWith(vt, "HC")) {
     return(sprintf("heteroskedasticity-robust (%s)", vt))

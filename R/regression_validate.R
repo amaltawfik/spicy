@@ -663,14 +663,12 @@ validate_class_appropriate_tokens <- function(models,
 # escape hatch because a table with zero data columns is
 # nonsensical.
 validate_show_fit_stats <- function(show_fit_stats) {
-  # Phase 7c23 (item a): accept `FALSE` as an explicit "suppress
-  # fit-stats block" alias, mirroring the `show_re = FALSE` /
-  # `outcome_labels = FALSE` convention used elsewhere in the API.
-  # `NULL` is still the "class-aware default" sentinel; the empty
-  # character vector `character(0)` keeps working as a synonym for
-  # `FALSE` for back-compat.
-  if (is.null(show_fit_stats) || isFALSE(show_fit_stats) ||
-      length(show_fit_stats) == 0L) {
+  # Phase 7c23 (item a): the explicit "suppress fit-stats" alias is
+  # `FALSE` (parity with `show_re = FALSE` / `outcome_labels = FALSE`).
+  # `NULL` is the "class-aware default" sentinel. The previous
+  # `character(0)` synonym was removed (no back-compat carried at the
+  # pre-1.0 stage per the "hard errors over silent changes" policy).
+  if (is.null(show_fit_stats) || isFALSE(show_fit_stats)) {
     return(invisible(NULL))
   }
   validate_token_vector(
