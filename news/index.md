@@ -4,18 +4,136 @@
 
 ### Breaking changes
 
-- `align = "auto"` removed from all `table_*` functions (was a legacy
-  alias for `"right"` from spicy \< 0.11.0). Use one of `"decimal"`
+- `align = "auto"` removed from all `table_*` functions. Use `"decimal"`
   (default), `"center"`, or `"right"`.
+
+- `table_regression(show_fit_stats = character(0))` now errors – use
+  `FALSE` to suppress the fit-stats block.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  glm footer: `"classical (MLE inverse Hessian)"` renamed to
+  `"classical (Fisher information)"`.
+
+- `table_regression(list(...), show_columns = "all_b" | "all_ame")`
+  auto-compacts in multi-model layouts (drops the CI column), matching
+  the `NULL` default. Use atomic tokens to keep CIs.
+
+### New features
+
+#### Massively expanded model support
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+previously accepted only `lm` and `glm` fits. This release adds
+first-class support for ~ 30 additional model classes. Frames pass
+through the same APA-aligned renderer, broom-canonical `tidy()` /
+`glance()` methods, and footer infrastructure. Engine-specific polish
+(panels, family-specific labels) is layered on top for mixed-effects and
+Bayesian.
+
+- **Mixed-effects regression** (the headline feature):
+  [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html),
+  [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html),
+  [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html),
+  [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html). Publication-
+  ready random-effects panel with σ + Wald SE + 95 % CI, ρ rows with
+  SE + CI (Delta method), ICC, N per group, Nakagawa marginal /
+  conditional R², Type-3 Wald χ², adjusted ICC for GLMM, per-class
+  p-values footer, LR test vs no-random (chi-bar-squared), AME
+  (response-scale), `exponentiate = TRUE` for OR / IRR / HR,
+  `standardized = "refit"`, `nested = TRUE` with ΔAIC / ΔBIC / Δχ² LRT
+  rows. See
+  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md),
+  *Mixed-effects models*, for the walk-through and methodological
+  rationale.
+
+- **Bayesian regression**: `rstanarm::stanreg`,
+  [`brms::brmsfit`](https://paulbuerkner.com/brms/reference/brmsfit-class.html).
+  Estimate = posterior median, `std_error` = posterior SD, `ci_lower` /
+  `ci_upper` = equal-tailed posterior quantiles (rendered as `95% CrI`,
+  not `95% CI`). `p.value = NA` for every Bayesian row (no frequentist
+  p-value is reported).
+
+- **Survey-weighted regression**:
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html).
+  Honours the user’s `vcov` (`"linearized"` from the survey design, plus
+  the `HC*` / `CR*` family for additional robustness).
+
+- **Survival models**:
+  [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html),
+  [`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html),
+  [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html),
+  [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
+  Wald-z inference, family- aware footer (“Cox proportional hazards”,
+  “Weibull AFT”, etc.), baseline-hazard hint when relevant.
+
+- **Categorical-outcome models**:
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  [`mlogit::mlogit`](https://rdrr.io/pkg/mlogit/man/mlogit.html),
+  [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html).
+  Per-outcome / per-cumulative-cutoff coefficient blocks;
+  outcome-prefixed term labels.
+
+- **Heteroskedasticity / cluster-robust regressions**:
+  [`estimatr::lm_robust`](https://declaredesign.org/r/estimatr/reference/lm_robust.html),
+  [`estimatr::iv_robust`](https://declaredesign.org/r/estimatr/reference/iv_robust.html).
+  Native HC / CR vcov pass-through (no double-application).
+
+- **Fixed-effects econometrics**:
+  [`fixest::feols`](https://lrberge.github.io/fixest/reference/feols.html),
+  [`fixest::feglm`](https://lrberge.github.io/fixest/reference/feglm.html),
+  [`fixest::fepois`](https://lrberge.github.io/fixest/reference/feglm.html).
+  Cluster-robust SE pass-through; one-way and multi-way FE.
+
+- **Beta / Tobit / count-with-zeros**:
+  [`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html),
+  [`AER::tobit`](https://rdrr.io/pkg/AER/man/tobit.html),
+  [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html),
+  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)
+  (count + zero-inflation components rendered as separate blocks).
+
+- **Robust / quantile / GAM / nonlinear**:
+  [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html),
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
+  [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html),
+  [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html),
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) /
+  [`mgcv::bam`](https://rdrr.io/pkg/mgcv/man/bam.html) (parametric coefs
+  only — smooth terms summarised separately),
+  [`stats::nls`](https://rdrr.io/r/stats/nls.html).
+
+- **Other classical extensions**:
+  [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html),
+  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html),
+  [`rms::Glm`](https://rdrr.io/pkg/rms/man/Glm.html),
+  [`sampleSelection::selection`](https://rdrr.io/pkg/sampleSelection/man/selection.html).
 
 ### Minor improvements
 
-- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+- `show_fit_stats = FALSE` suppresses the fit-stats block (parity with
+  `show_re = FALSE` and `outcome_labels = FALSE`).
+
+- AME-Satterthwaite footer trimmed to
+  `"AME inference: t-test with Satterthwaite df."` (methodological
+  references moved to
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
+
+- Polynomial-trends footer note now respects `keep` / `drop` – no longer
+  fires when the ordered factor is filtered out of the display.
+
+- Decimal-align en-dash placeholder cells (factor reference rows, “not
+  applicable”) in `gt` / `flextable` / `tinytable` / Word / Excel
+  outputs.
+
+- `"deviance"` fit-stat precision now matches AIC / BIC / AICc (1
+  decimal by default, was 2).
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  /
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  /
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
-  `flextable` and `word` outputs now use a single font throughout (was a
-  `Consolas` override on numeric cells), matching
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+  `flextable` / `word` outputs use a single font throughout.
 
 ### Bug fixes
 

@@ -111,6 +111,9 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  reference_label <span class="op">=</span> <span class="st">"(ref.)"</span>,</span>
 <span>  show_fit_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fit_stats_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first_col"</span>, <span class="st">"merged"</span><span class="op">)</span>,</span>
+<span>  show_re <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  re_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sd"</span>, <span class="st">"variance"</span><span class="op">)</span>,</span>
+<span>  re_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
 <span>  model_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  outcome_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -372,6 +375,51 @@ values plus any fit-stat value(s) in <code>"first_col"</code> mode
 (native primitives handle the mixed-precision case), and
 trivially decimal-aligns in <code>"merged"</code> mode (the fit-stat
 values move out of the B column into the merged cell).</p></dd>
+
+
+<dt id="arg-show-re">show_re<a class="anchor" aria-label="anchor" href="#arg-show-re"></a></dt>
+<dd><p>Logical. <code>TRUE</code> (default) prints the
+random-effects panel below the fit-statistics footer for
+mixed-effects fits (<code>lmer</code>, <code>glmer</code>, <code>glmmTMB</code>, <code>lme</code>).
+<code>FALSE</code> suppresses the panel entirely. No effect on fits
+without random effects (<code>lm</code>, <code>glm</code>, <code>coxph</code>, ...). The
+panel header carries the estimator label (<code>(REML)</code> or
+<code>(ML)</code>); see the <em>Mixed-effects models</em> section of
+<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> for the methodological
+rationale (Gelman 2005; Bates et al. 2015; Bolker FAQ).</p></dd>
+
+
+<dt id="arg-re-scale">re_scale<a class="anchor" aria-label="anchor" href="#arg-re-scale"></a></dt>
+<dd><p>One of <code>"sd"</code> (default) or <code>"variance"</code>.
+Controls the display scale of the random-effects panel:</p><ul><li><p><code>"sd"</code>: report the random-effect standard
+deviation \(\sigma\) (Gelman 2005, <em>Technometrics</em>:
+"<em>directly interpretable as the size of the variation
+across groups</em>"). Standard error and CI converted via
+the Delta method:
+\(SE(\sigma) = SE(\sigma^2) / (2\sigma)\);
+\(CI(\sigma) = \sqrt{CI(\sigma^2)}\).</p></li>
+<li><p><code>"variance"</code>: report \(\sigma^2\) (the canonical
+internal scale; SE and CI come straight from the
+Hessian / <code><a href="https://rdrr.io/pkg/nlme/man/intervals.html" class="external-link">nlme::intervals()</a></code> / <code>glmmTMB::confint()</code>
+without rescaling).</p></li>
+</ul><p>Correlation rows (\(\rho\)) are unitless and pass through
+either way.</p></dd>
+
+
+<dt id="arg-re-columns">re_columns<a class="anchor" aria-label="anchor" href="#arg-re-columns"></a></dt>
+<dd><p>Character vector. Subset of
+<code>c("est", "se", "ci")</code> controlling which columns of the
+random-effects panel are rendered. <code>"est"</code> is mandatory.
+Useful for slimming output (<code>re_columns = "est"</code>) or
+for journals that want only standard errors
+(<code>re_columns = c("est", "se")</code>).</p>
+<p>Note. Standard errors and CIs are Wald (<code>est ± z * SE</code>,
+clamped at 0 for variances). Wald can be optimistic near
+the variance boundary (Self &amp; Liang 1987 chi-bar-squared);
+profile-likelihood intervals are available directly on the
+fitted model (<code>confint(fit, method = "profile")</code> for
+<code>lmer</code>) when robustness is critical. See the
+<em>Mixed-effects models</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>
@@ -692,7 +740,7 @@ internal model_id key.</p>
     <div class="section level2">
     <h2 id="inference-and-standard-errors">Inference and standard errors<a class="anchor" aria-label="anchor" href="#inference-and-standard-errors"></a></h2>
     <p><code>vcov</code> selects the variance-covariance estimator:</p>
-<ul><li><p><code>"classical"</code> – OLS (lm) / MLE inverse Hessian (glm).</p></li>
+<ul><li><p><code>"classical"</code> – OLS (lm) / Fisher information (glm).</p></li>
 <li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
 (via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
 <li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
@@ -915,10 +963,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
@@ -939,10 +987,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  -0.10  1.66  [61.95, 68.45]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05   0.04  0.03  [-0.01,  0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —      —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –      –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86   0.25  0.91  [ 2.08,  5.63]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —      —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –      –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                        </span>
@@ -967,10 +1015,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  &lt;.001                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05   .130   0.05  [-0.01, 0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —       —          —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –       –          –         –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  &lt;.001   3.86  [ 2.08, 5.63]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —       —          —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –       –          –         –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72   .121  -1.72  [-3.89, 0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                        </span>
@@ -991,10 +1039,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130   0.05  0.03 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —       —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –       –     –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001   3.86  0.91 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —       —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –       –     –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121  -1.72  1.11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                              </span>
@@ -1006,10 +1054,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> [-0.01, 0.11]   .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       –         –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> [ 2.08, 5.63]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       —         —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       –         –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span> [-3.89, 0.45]   .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>                      </span>
@@ -1033,10 +1081,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.76  [60.63, 69.78]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.04  [-0.05,  0.15]   .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.85  [ 1.66,  6.05]   .007 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.52  [-5.70,  2.27]   .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
@@ -1053,10 +1101,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.76  [60.63, 69.78]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.04  [-0.05,  0.15]   .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.85  [ 1.66,  6.05]   .007 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.52  [-5.70,  2.27]   .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
@@ -1073,10 +1121,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.54  [61.91, 68.49]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.10]   .107 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.87  [ 2.05,  5.67]  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —          —          —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.25  [-4.31,  0.88]   .183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span>
@@ -1112,18 +1160,18 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   66.85  1.59  &lt;.001    64.90   1.65  &lt;.001    65.20   1.66 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.04  0.03   .160     0.05   0.03   .143     0.05   0.03 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>                           —      —     —         —      —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>                           –      –     –         –      –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>                          3.87   0.91  &lt;.001     3.86   0.91 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>                                                  —      —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>                                                  –      –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>                                                -1.72   1.11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                  1175                   1175           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.02        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.00                  0.02                   0.02        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>     —                   +0.02                  +0.00        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>     —                  +18.26                  +2.41        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     —                    &lt;.001                   .121       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.02                  +0.00        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>     –                  +18.26                  +2.41        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     –                    &lt;.001                   .121       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    Step  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
@@ -1132,10 +1180,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .130 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>       </span>
@@ -1165,10 +1213,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  &lt;.001    65.20  1.61  &lt;.001    65.20  1.76 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .130     0.05  0.03   .127     0.05  0.04 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     —     —     —         —     —     —         —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –         –     –     –         –     –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  &lt;.001     3.86  0.91  &lt;.001     3.86  0.85 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     —     —     —         —     —     —         —     —   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –     –         –     –     –         –     –   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11   .121    -1.72  1.11   .123    -1.72  1.52 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span> 1175                  1175                  1175          </span>
@@ -1182,10 +1230,10 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .285 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>  .007 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  —    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>       </span>
@@ -1209,6 +1257,114 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> M1       wellbeing_… smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>       0.454</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># ---- Mixed-effects models ----------------------------------------</span></span></span>
+<span class="r-in"><span><span class="co"># Linear mixed-effects (lme4). The footer adds a random-effects</span></span></span>
+<span class="r-in"><span><span class="co"># panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa</span></span></span>
+<span class="r-in"><span><span class="co"># marginal / conditional R^2 fit-stats, and a per-class p-value</span></span></span>
+<span class="r-in"><span><span class="co"># annotation line.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Switch to the variance scale (sigma^2 instead of sigma).</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, re_scale <span class="op">=</span> <span class="st">"variance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Minimal random-effects display: estimates only, no SE / CI.</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, re_columns <span class="op">=</span> <span class="st">"est"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Suppress the random-effects panel entirely.</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, show_re <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Registered S3 method overwritten by 'merDeriv':</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   method        from        </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   bread.lmerMod clubSandwich</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span>    B      SE        95% CI         p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)      <span style="color: #9E9E9E;">│</span>  251.41  6.82  [238.03, 264.78]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Days             <span style="color: #9E9E9E;">│</span>   10.47  1.55  [  7.44,  13.50]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                <span style="color: #9E9E9E;">│</span>  180                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (marginal)    <span style="color: #9E9E9E;">│</span>    0.28                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (conditional) <span style="color: #9E9E9E;">│</span>    0.80                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  AIC              <span style="color: #9E9E9E;">│</span> 1755.6                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  BIC              <span style="color: #9E9E9E;">│</span> 1774.8                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: Wald (model-based).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Hierarchical mixed-effects comparison (nested LRT).</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="fl">1</span>     <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>  <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>  <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Hierarchical linear mixed-effects regression: Reaction</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           Model 1                Model 2            Model 3     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                    ────────────────────  ─────────────────────  ────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)      <span style="color: #9E9E9E;">│</span>  298.51  8.79  &lt;.001   251.41   9.51  &lt;.001   251.41   6.63 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Days             <span style="color: #9E9E9E;">│</span>                         10.47   0.80  &lt;.001    10.47   1.50 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                <span style="color: #9E9E9E;">│</span>  180                   180                    180           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (marginal)    <span style="color: #9E9E9E;">│</span>    0.00                  0.29                   0.29        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (conditional) <span style="color: #9E9E9E;">│</span>    0.38                  0.70                   0.79        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  AIC              <span style="color: #9E9E9E;">│</span> 1916.5                1802.1                 1763.9         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  BIC              <span style="color: #9E9E9E;">│</span> 1926.1                1814.9                 1783.1         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔAIC             <span style="color: #9E9E9E;">│</span>     –                 -114.5                  -38.1         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔBIC             <span style="color: #9E9E9E;">│</span>     –                 -111.3                  -31.8         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²              <span style="color: #9E9E9E;">│</span>     –                 +116.46                 +42.14        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)       <span style="color: #9E9E9E;">│</span>     –                    &lt;.001                  &lt;.001       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     Model </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                    ───── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span>   p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼───────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)      <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Days             <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (marginal)    <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (conditional) <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  AIC              <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  BIC              <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔAIC             <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔBIC             <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²              <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)       <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: Wald (model-based).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 1: Random effects (ML):</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ Subject (Intercept)  34.59  (6.72)  [16.91, 45.90]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ (Residual)          44.26  (2.46)  [39.14, 48.84]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  ICC                     0.38</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  N (Subject)               18</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">LR test vs linear regression: χ̄²(1) = 50.51, p &lt; .001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 2: Random effects (ML):</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ Subject (Intercept)  36.01  (6.45)  [19.67, 46.98]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ (Residual)          30.90  (1.72)  [27.33, 34.09]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  ICC                     0.58</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  N (Subject)               18</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">LR test vs linear regression: χ̄²(1) = 106.21, p &lt; .001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 3: Random effects (ML):</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ Subject (Intercept)         23.78  (5.58)  [6.75, 32.94]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ Subject Days                 5.72  (1.19)  [2.47, 7.70]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  ρ Subject ((Intercept), Days)   0.08  (0.32)  [-0.55, 0.72]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  σ (Residual)                  25.59  (1.51)  [22.44, 28.39]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  N (Subject)                       18</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">LR test vs linear regression: χ̄²(3) = 148.35, p &lt; .001</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># ---- Rich-format outputs (require optional Suggests packages) ----</span></span></span>

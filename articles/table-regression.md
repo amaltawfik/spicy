@@ -25,8 +25,10 @@ to a one-row-per-model glance summary
 ([`broom::glance()`](https://generics.r-lib.org/reference/glance.html)).
 
 `lm` and `glm` are both supported. The *Generalised linear models*
-section covers the glm-specific argument semantics; everything else
-applies to both. Mixed-effects models are on the roadmap.
+section covers the glm-specific argument semantics; the *Mixed-effects
+models* section covers the random-effects panel that mixed-effects fits
+add below the fit-statistics footer (`lmer`, `glmer`, `glmmTMB`, `lme`).
+Everything else applies to all four families.
 
 ## Basic usage
 
@@ -45,10 +47,10 @@ table_regression(fit)
 #>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -118,10 +120,10 @@ table_regression(fit, standardized = "refit")
 #>  (Intercept)     │   65.20  -0.10  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05   0.04  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                             
-#>    Female (ref.) │     —      —     —          —          —    
+#>    Female (ref.) │     –      –     –          –          –    
 #>    Male          │    3.86   0.25  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                             
-#>    No (ref.)     │     —      —     —          —          —    
+#>    No (ref.)     │     –      –     –          –          –    
 #>    Yes           │   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
@@ -173,10 +175,10 @@ table_regression(
 #>  (Intercept)     │   64.49  <.001                                         
 #>  age             │    0.03   .344  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] 
 #>  sex:            │                                                        
-#>    Female (ref.) │     —     —                                            
+#>    Female (ref.) │     –     –                                            
 #>    Male          │    3.57  <.001  0.02  [0.01, 0.03]  0.02  [0.01, 0.03] 
 #>  smoking:        │                                                        
-#>    No (ref.)     │     —     —                                            
+#>    No (ref.)     │     –     –                                            
 #>    Yes           │    0.68   .496  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] 
 #>  education:      │                                                        
 #>    .L            │   13.94  <.001  0.21  [0.17, 0.25]  0.21  [0.17, 0.25] 
@@ -195,8 +197,9 @@ table_regression(
 Methodology notes:
 
 - The partial F-test is computed on a Type-II ANOVA reference
-  (`car::Anova`), which respects the principle of marginality and is the
-  SAS / SPSS default for unbalanced designs.
+  ([`car::Anova`](https://rdrr.io/pkg/car/man/Anova.html)), which
+  respects the principle of marginality and is the SAS / SPSS default
+  for unbalanced designs.
 - The `ω²` point estimate is bias-corrected via the Olejnik and
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
@@ -240,10 +243,10 @@ table_regression(
 #>  (Intercept)     │   65.20                              
 #>  age             │    0.05   0.05  [-0.01, 0.11]   .130 
 #>  sex:            │                                      
-#>    Female (ref.) │     —      —          —         —    
+#>    Female (ref.) │     –      –          –         –    
 #>    Male          │    3.86   3.86  [ 2.08, 5.63]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —      —          —         —    
+#>    No (ref.)     │     –      –          –         –    
 #>    Yes           │   -1.72  -1.72  [-3.89, 0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -302,10 +305,10 @@ table_regression(list(m_wellbeing, m_bmi))
 #>  (Intercept)     │   65.20  1.66  <.001    23.98  0.40  <.001 
 #>  age             │    0.05  0.03   .130     0.04  0.01  <.001 
 #>  sex:            │                                            
-#>    Female (ref.) │     —     —     —         —     —     —    
+#>    Female (ref.) │     –     –     –         –     –     –    
 #>    Male          │    3.86  0.91  <.001     0.51  0.22   .018 
 #>  smoking:        │                                            
-#>    No (ref.)     │     —     —     —         —     —     —    
+#>    No (ref.)     │     –     –     –         –     –     –    
 #>    Yes           │   -1.72  1.11   .121    -0.06  0.26   .822 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1163                 
@@ -358,19 +361,19 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  (Intercept)     │   64.70  1.66  <.001    65.00   1.67  <.001    80.57   3.37 
 #>  age             │    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 
 #>  sex:            │                                                             
-#>    Female (ref.) │     —     —     —         —      —     —         —      —   
+#>    Female (ref.) │     –     –     –         –      –     –         –      –   
 #>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.90 
 #>  smoking:        │                                                             
-#>    No (ref.)     │                           —      —     —         —      —   
+#>    No (ref.)     │                           –      –     –         –      –   
 #>    Yes           │                         -1.68   1.11   .132    -1.71   1.10 
 #>  bmi             │                                                -0.65   0.12 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1163                  1163                   1163           
 #>  R²              │    0.02                  0.02                   0.04        
 #>  Adj.R²          │    0.02                  0.02                   0.04        
-#>  ΔR²             │     —                   +0.00                  +0.02        
-#>  F-change        │     —                   +2.28                 +28.13        
-#>  p (change)      │     —                     .132                  <.001       
+#>  ΔR²             │     –                   +0.00                  +0.02        
+#>  F-change        │     –                   +2.28                 +28.13        
+#>  p (change)      │     –                     .132                  <.001       
 #> 
 #>                    Model 
 #>                    ───── 
@@ -379,10 +382,10 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  (Intercept)     │ <.001 
 #>  age             │  .019 
 #>  sex:            │       
-#>    Female (ref.) │  —    
+#>    Female (ref.) │  –    
 #>    Male          │ <.001 
 #>  smoking:        │       
-#>    No (ref.)     │  —    
+#>    No (ref.)     │  –    
 #>    Yes           │  .119 
 #>  bmi             │ <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
@@ -400,10 +403,16 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 Default change tokens auto-injected:
 `c("r2_change", "f_change", "p_change")` for `lm` (APA
 hierarchical-regression standard), `c("lrt_change", "p_change")` for
-`glm` (Hosmer & Lemeshow §3.5). Customise via `show_fit_stats`; the
-order of tokens controls the order of the rows. Other change tokens are
-available: `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
-`"aic_change"` / `"aicc_change"` / `"bic_change"`.
+`glm` (Hosmer & Lemeshow §3.5),
+`c("aic_change", "bic_change", "lrt_change", "p_change")` for
+mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
+[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) — Pinheiro & Bates
+2000 §2.4.1). Customise via `show_fit_stats`; the order of tokens
+controls the order of the rows. Other change tokens are available:
+`"adj_r2_change"`, `"f2_change"`, `"deviance_change"`, `"aic_change"` /
+`"aicc_change"` / `"bic_change"`. Variance-explained change tokens (Δr²,
+Δf²) are NA for mixed-effects pairs — the F-test framework that grounds
+them doesn’t apply.
 
 Validation is strict: identical `nobs` AND identical response across all
 models, otherwise a `spicy_invalid_input` error explains the
@@ -436,10 +445,10 @@ table_regression(fit, vcov = "HC3")
 #>  (Intercept)     │   65.20  1.61  [62.05, 68.35]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .127 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.91  [ 2.07,  5.64]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.11  [-3.91,  0.47]   .123 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -487,9 +496,10 @@ table_regression(
   cluster = ~region,
   show_columns = c("b", "se", "ci", "p", "ame", "ame_p")
 )
-#> Registered S3 method overwritten by 'clubSandwich':
-#>   method    from    
-#>   bread.mlm sandwich
+#> Registered S3 methods overwritten by 'clubSandwich':
+#>   method        from    
+#>   bread.lmerMod merDeriv
+#>   bread.mlm     sandwich
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p     AME     p   
@@ -497,10 +507,10 @@ table_regression(
 #>  (Intercept)     │   65.00  1.74  [60.49, 69.51]  <.001               
 #>  age             │    0.05  0.04  [-0.05,  0.15]   .247   0.05   .247 
 #>  sex:            │                                                    
-#>    Female (ref.) │     —     —          —          —       —     —    
+#>    Female (ref.) │     –     –          –          –       –     –    
 #>    Male          │    3.88  0.85  [ 1.68,  6.07]   .006   3.88   .006 
 #>  smoking:        │                                                    
-#>    No (ref.)     │     —     —          —          —       —     —    
+#>    No (ref.)     │     –     –          –          –       –     –    
 #>    Yes           │   -1.68  1.55  [-5.72,  2.37]   .331  -1.68   .331 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1163                                               
@@ -510,7 +520,7 @@ table_regression(
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
 #> AME = average marginal effect.
-#> AME inference: t-distribution with Satterthwaite-corrected df (Pustejovsky & Tipton 2018) via `clubSandwich::linear_contrast()`.
+#> AME inference: t-test with Satterthwaite df.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -548,10 +558,10 @@ table_regression(fit, p_adjust = "bonferroni")
 #>  (Intercept)     │   64.49  1.48  [61.58, 67.40]  <.001 
 #>  age             │    0.03  0.03  [-0.03,  0.08]  1.000 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.57  0.81  [ 1.99,  5.15]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │    0.68  0.99  [-1.27,  2.63]  1.000 
 #>  education:      │                                      
 #>    .L            │   13.94  0.79  [12.38, 15.49]  <.001 
@@ -616,7 +626,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #>  Variable    │    B      SE      95% CI        p   
 #> ─────────────┼─────────────────────────────────────
 #>  smoking:    │                                     
-#>    No (ref.) │     —     —          —         —    
+#>    No (ref.) │     –     –          –         –    
 #>    Yes       │    0.79  1.00  [-1.17, 2.75]   .428 
 #>  bmi         │    0.10  0.12  [-0.14, 0.33]   .418 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -626,7 +636,6 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 ``` r
@@ -639,10 +648,10 @@ table_regression(fit, drop = "^education")
 #>  (Intercept)     │   62.12  3.23  [55.78, 68.45]  <.001 
 #>  age             │    0.02  0.03  [-0.03,  0.08]   .407 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.50  0.81  [ 1.91,  5.10]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │    0.79  1.00  [-1.17,  2.75]   .428 
 #>  bmi             │    0.10  0.12  [-0.14,  0.33]   .418 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -652,7 +661,6 @@ table_regression(fit, drop = "^education")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
 Together with `p_adjust`, this is the article-ready workflow: adjust on
@@ -694,11 +702,11 @@ table_regression(fit)
 #> ──────────────────────────┼──────────────────────────────────────
 #>  (Intercept)              │   -1.11  0.29  [-1.67, -0.55]  <.001 
 #>  sex:                     │                                      
-#>    Female (ref.)          │     —     —          —          —    
+#>    Female (ref.)          │     –     –          –          –    
 #>    Male                   │   -0.04  0.14  [-0.32,  0.25]   .800 
 #>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                      
-#>    Lower secondary (ref.) │     —     —          —          —    
+#>    Lower secondary (ref.) │     –     –          –          –    
 #>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
 #>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -708,7 +716,7 @@ table_regression(fit)
 #>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 ```
 
 ### Response-scale display: `exponentiate = TRUE`
@@ -732,11 +740,11 @@ table_regression(fit, exponentiate = TRUE)
 #> ──────────────────────────┼────────────────────────────────────
 #>  (Intercept)              │    0.33  0.09  [0.19, 0.58]  <.001 
 #>  sex:                     │                                    
-#>    Female (ref.)          │     —     —         —         —    
+#>    Female (ref.)          │     –     –         –         –    
 #>    Male                   │    0.96  0.14  [0.73, 1.28]   .800 
 #>  age                      │    1.01  0.00  [1.00, 1.02]   .214 
 #>  education:               │                                    
-#>    Lower secondary (ref.) │     —     —         —         —    
+#>    Lower secondary (ref.) │     –     –         –         –    
 #>    Upper secondary        │    0.62  0.11  [0.44, 0.87]   .005 
 #>    Tertiary               │    0.40  0.08  [0.27, 0.59]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -746,9 +754,9 @@ table_regression(fit, exponentiate = TRUE)
 #>  AIC                      │ 1200.9                             
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 #> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated; SE delta-method approximation: SE_OR = OR × SE_link.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 ```
 
 ### Term-level partial chi-square
@@ -770,7 +778,7 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  (Intercept)              │   -1.13             <.001 
 #>  age                      │    0.01   1.55 (1)   .213 
 #>  education:               │                           
-#>    Lower secondary (ref.) │     —                —    
+#>    Lower secondary (ref.) │     –                –    
 #>    Upper secondary        │   -0.48  21.70 (2)   .005 
 #>    Tertiary               │   -0.91  21.70 (2)  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -780,7 +788,7 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  AIC                      │ 1198.9                    
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 #> χ² = partial likelihood-ratio chi-squared.
 ```
 
@@ -807,13 +815,13 @@ table_regression(fit, standardized = "pseudo")
 #> 
 #>  Variable                 │    B       β     SE       95% CI        p   
 #> ──────────────────────────┼─────────────────────────────────────────────
-#>  (Intercept)              │   -1.11    —    0.29  [-1.67, -0.55]  <.001 
+#>  (Intercept)              │   -1.11    –    0.29  [-1.67, -0.55]  <.001 
 #>  sex:                     │                                             
-#>    Female (ref.)          │     —      —     —          —          —    
+#>    Female (ref.)          │     –      –     –          –          –    
 #>    Male                   │   -0.04  -0.02  0.14  [-0.32,  0.25]   .800 
 #>  age                      │    0.01   0.05  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                             
-#>    Lower secondary (ref.) │     —      —     —          —          —    
+#>    Lower secondary (ref.) │     –      –     –          –          –    
 #>    Upper secondary        │   -0.48  -0.26  0.17  [-0.82, -0.14]   .005 
 #>    Tertiary               │   -0.91  -0.49  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -823,7 +831,7 @@ table_regression(fit, standardized = "pseudo")
 #>  AIC                      │ 1200.9                                      
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 #> β = standardised coefficient.
 ```
 
@@ -849,11 +857,11 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #> ──────────────────────────┼──────────────────────────────────────────────
 #>  (Intercept)              │   -1.11  <.001                               
 #>  sex:                     │                                              
-#>    Female (ref.)          │     —     —       —          —          —    
+#>    Female (ref.)          │     –     –       –          –          –    
 #>    Male                   │   -0.04   .800  -0.01  [-0.05,  0.04]   .800 
 #>  age                      │    0.01   .214   0.00  [-0.00,  0.00]   .214 
 #>  education:               │                                              
-#>    Lower secondary (ref.) │     —     —       —          —          —    
+#>    Lower secondary (ref.) │     –     –       –          –          –    
 #>    Upper secondary        │   -0.48   .005  -0.09  [-0.16, -0.02]   .007 
 #>    Tertiary               │   -0.91  <.001  -0.15  [-0.22, -0.09]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -863,7 +871,7 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>  AIC                      │ 1200.9                                       
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 #> AME = average marginal effect.
 ```
 
@@ -893,11 +901,11 @@ table_regression(fit, ci_method = "profile")
 #> ──────────────────────────┼──────────────────────────────────────
 #>  (Intercept)              │   -1.11  0.29  [-1.68, -0.55]  <.001 
 #>  sex:                     │                                      
-#>    Female (ref.)          │     —     —          —          —    
+#>    Female (ref.)          │     –     –          –          –    
 #>    Male                   │   -0.04  0.14  [-0.32,  0.25]   .800 
 #>  age                      │    0.01  0.00  [-0.00,  0.02]   .214 
 #>  education:               │                                      
-#>    Lower secondary (ref.) │     —     —          —          —    
+#>    Lower secondary (ref.) │     –     –          –          –    
 #>    Upper secondary        │   -0.48  0.17  [-0.82, -0.14]   .005 
 #>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -907,7 +915,7 @@ table_regression(fit, ci_method = "profile")
 #>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 ```
 
 ### Hierarchical glm (LRT)
@@ -933,7 +941,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> ──────────────────────────┼─────────────────────────────────────────────
 #>  (Intercept)              │   -1.29  0.10  <.001    -1.54   0.26  <.001 
 #>  sex:                     │                                             
-#>    Female (ref.)          │     —     —     —         —      —     —    
+#>    Female (ref.)          │     –     –     –         –      –     –    
 #>    Male                   │   -0.05  0.14   .713    -0.05   0.14   .722 
 #>  age                      │                          0.01   0.00   .294 
 #>  education:               │                                             
@@ -945,8 +953,8 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R² (McFadden)            │    0.00                  0.00               
 #>  R² (Nagelkerke)          │    0.00                  0.00               
 #>  AIC                      │ 1217.6                1218.5                
-#>  Δχ²                      │     —                   +1.10               
-#>  p (change)               │     —                     .294              
+#>  Δχ²                      │     –                   +1.10               
+#>  p (change)               │     –                     .294              
 #> 
 #>                                    Model 3        
 #>                             ───────────────────── 
@@ -954,11 +962,11 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> ──────────────────────────┼───────────────────────
 #>  (Intercept)              │   -1.11   0.29  <.001 
 #>  sex:                     │                       
-#>    Female (ref.)          │     —      —     —    
+#>    Female (ref.)          │     –      –     –    
 #>    Male                   │   -0.04   0.14   .800 
 #>  age                      │    0.01   0.00   .214 
 #>  education:               │                       
-#>    Lower secondary (ref.) │     —      —     —    
+#>    Lower secondary (ref.) │     –      –     –    
 #>    Upper secondary        │   -0.48   0.17   .005 
 #>    Tertiary               │   -0.91   0.20  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -970,7 +978,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  p (change)               │    <.001              
 #> 
 #> Note. Logistic regression models.
-#> Std. errors: classical (MLE inverse Hessian).
+#> Std. errors: classical (Fisher information).
 ```
 
 ### Gaussian glm caveat
@@ -982,6 +990,431 @@ explained effect-size family (`partial_f2 / η² / ω²`) and the
 Satterthwaite-corrected AME path. Following the *transparency over
 rejection* rule, spicy accepts the fit and emits a `spicy_caveat`
 suggesting a refit with [`lm()`](https://rdrr.io/r/stats/lm.html).
+
+## Mixed-effects models
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+supports four mixed-effects classes:
+
+- [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) and
+  [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html)
+- [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+- [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html)
+
+The fixed-effects section of the table follows the same conventions as
+`lm` / `glm`. Below the fit-statistics footer (`n`, `AIC`, `BIC`, …), a
+**Random effects panel** reports the variance components, the model’s
+intra-class correlation (ICC) when defined, and the sample size at each
+grouping level:
+
+``` r
+
+library(lme4)
+#> Loading required package: Matrix
+fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+table_regression(fit)
+#> Linear mixed-effects regression: Reaction
+#> 
+#>  Variable         │    B      SE        95% CI         p   
+#> ──────────────────┼────────────────────────────────────────
+#>  (Intercept)      │  251.41  6.82  [238.03, 264.78]  <.001 
+#>  Days             │   10.47  1.55  [  7.44,  13.50]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │  180                                   
+#>  R² (marginal)    │    0.28                                
+#>  R² (conditional) │    0.80                                
+#>  AIC              │ 1755.6                                 
+#>  BIC              │ 1774.8                                 
+#> 
+#> Note. Linear mixed-effects regression.
+#> Std. errors: Wald (model-based).
+#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Random effects (REML):
+#>   σ Subject (Intercept)         24.74  (5.84)  [6.79, 34.32]
+#>   σ Subject Days                 5.92  (1.25)  [2.47, 8.00]
+#>   ρ Subject ((Intercept), Days)   0.07  (0.33)  [-0.57, 0.70]
+#>   σ (Residual)                  25.59  (1.51)  [22.44, 28.39]
+#>   N (Subject)                       18
+#> LR test vs linear regression: χ̄²(3) = 148.35, p < .001
+```
+
+The panel header carries the estimator label — `(REML)` for restricted
+maximum likelihood (the `lmer` / `lme` default) or `(ML)` for full ML
+(`glmer`, `glmmTMB` default, and `lmer(..., REML = FALSE)`). The label
+is informational: it tells the reader which likelihood the variance
+estimates are anchored to, without implying that REML and ML estimates
+are interchangeable for inference.
+
+### Fit statistics: Nakagawa marginal and conditional R²
+
+Classical R² is not defined for mixed-effects models: the within-group
+correlation breaks the variance-decomposition identity that lm’s R²
+relies on. The publication-standard substitute is the **Nakagawa &
+Schielzeth** family of R² (Nakagawa & Schielzeth 2013; Nakagawa, Johnson
+& Schielzeth 2017), which decomposes the response variance into
+
+- `R² (marginal)` — variance explained by the **fixed effects alone**;
+- `R² (conditional)` — variance explained by **fixed plus random
+  effects**.
+
+For Gaussian fits the formula is closed-form:
+
+\\ R^2\_{\text{marg}} = \frac{\sigma^2_f}{\sigma^2_f + \sum_g
+\sigma^2_g + \sigma^2\_\epsilon}, \quad R^2\_{\text{cond}} =
+\frac{\sigma^2_f + \sum_g \sigma^2_g}{\sigma^2_f + \sum_g \sigma^2_g +
+\sigma^2\_\epsilon} \\
+
+For non-Gaussian families (binomial logit / probit / cloglog, Poisson
+log, etc.) the residual term σ²_ε is replaced by the **link-scale
+distribution-specific variance** σ²_d (π²/3 for logit, 1 for probit,
+π²/6 for cloglog, a lognormal approximation for Poisson log; Nakagawa et
+al. 2017 §3).
+
+spicy ships its own native implementation for the three combinations
+covered by the closed-form formula in Nakagawa & Schielzeth (2013) +
+Nakagawa et al. (2017) sec. 3:
+
+- Gaussian (identity link) — all four engines;
+- Bernoulli binomial with logit / probit / cloglog link (single trial
+  per observation);
+- Poisson with log link (lognormal approximation, Nakagawa et al. 2017
+  sec. 3.6).
+
+These values are cross-validated against
+[`performance::r2_nakagawa()`](https://easystats.github.io/performance/reference/r2_nakagawa.html)
+to 1 × 10⁻¹⁰ on every supported combination.
+
+For families with more involved link-scale variance formulas — binomial
+with multiple trials (`cbind(succ, fail)` / `weights`), negative
+binomial, beta, Tweedie, dispersion models, zero-inflated GLMM — spicy
+delegates to
+[`performance::r2_nakagawa()`](https://easystats.github.io/performance/reference/r2_nakagawa.html).
+`performance` is a Suggests dependency: when absent the fit-stat rows
+render as NA without erroring (the table still prints; only the R² rows
+go blank). The default `show_fit_stats` for mixed fits is
+`c("nobs", "r2_marginal", "r2_conditional", "AIC", "BIC")` — set
+`show_fit_stats` explicitly to override.
+
+### Display scale: σ vs σ²
+
+By default the panel reports the random-effect **standard deviation** σ
+rather than the variance σ². Following Gelman (2005, p. 5), the SD scale
+is “*directly interpretable as the size of the variation across groups*”
+and lives on the same scale as the response variable, which is what
+readers usually want to compare to fixed-effect coefficients. Set
+`re_scale = "variance"` to switch back to σ²:
+
+``` r
+
+table_regression(fit, re_scale = "variance")
+```
+
+The conversion is internally consistent: SE and CI are transported
+between scales by the Delta method (`SE(σ) = SE(σ²) / (2σ)`,
+`CI(σ) = √CI(σ²)`), so the panel values agree with `arm::sigma.hat()`
+(SD) and with `VarCorr(fit)` (variance) up to rounding.
+
+### Standard errors and confidence intervals
+
+Each variance row of the panel carries a Wald SE and 95 % CI
+(`est ± z · SE`, clamped at 0 for variances). The source depends on the
+class:
+
+- `lmer` / `glmer`: Hessian-based SE via `merDeriv` (Wang and Merkle
+  2018). Requires the optional `merDeriv` package (declared in
+  `Suggests`); the column reads NA gracefully when the package is
+  missing or when the fit is singular (`lme4::isSingular(fit) == TRUE`).
+- `glmmTMB`: native Wald CI from `confint(fit, method = "Wald")`, with
+  SE backed out by Delta method on σ.
+- [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html): native Wald CI
+  from `nlme::intervals(fit)`.
+
+For **correlations** between random terms (ρ rows in the panel), only
+the point estimate is shown — SE / CI for correlations need a full Delta
+method on the Cholesky factorisation, deferred to a future release.
+
+A methodological note. Wald CIs on variance components are known to be
+optimistic near the boundary σ = 0 (Self and Liang 1987 chi-bar-squared
+mixture; Bolker FAQ 2024). When robustness is critical, the recommended
+fallback is the profile-likelihood CI directly on the fit:
+
+``` r
+
+confint(fit, method = "profile", parm = "theta_")  # lmer
+confint(fit, method = "profile")                   # glmmTMB
+nlme::intervals(fit)                                # lme (Wald-equivalent)
+```
+
+Profile CIs are not exposed as a
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+option because they are 10–100× slower than Wald on random-slope models
+(≈ 45 s on `sleepstudy` random slope vs ≈ 100 ms for Wald), which is
+incompatible with the function’s “fast enough for a knit” goal. The
+panel reports the SE so the reader can form their own boundary-safe
+judgment; the `re_columns` argument (below) lets you drop SE and CI from
+the rendered output entirely if your reporting standard prefers
+**estimation without inference** on variance components (Gelman 2005;
+Bates et al. 2015).
+
+p-values are not reported for variance components. The null σ² = 0 sits
+on the boundary of the parameter space, so the standard Wald χ²₁
+statistic has a chi-bar-squared limiting distribution (Self and Liang
+1987; Stram and Lee 1994). LRT- based tests on a chi-bar-squared scale
+([`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html))
+remain the recommended path when the question is genuinely “do we need
+this random term?”. Note that `lmerTest`’s Satterthwaite p-values apply
+to the **fixed effects** of an `lmer` fit (and
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+will pick them up automatically when the fit object inherits from
+`lmerModLmerTest`); they do not apply to variance components.
+
+### Fixed-effect p-values and CIs across classes
+
+The footer carries a one-line annotation naming the inference method
+used for the fixed-effect p-value and CI columns. The mapping is:
+
+- `lmerModLmerTest` (=
+  [`lmerTest::lmer()`](https://rdrr.io/pkg/lmerTest/man/lmer.html), or
+  [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) after
+  [`library(lmerTest)`](https://github.com/runehaubo/lmerTestR)):
+  Satterthwaite t-test. p and CI use
+  `summary(fit)$coefficients[, c("df", "Pr(>|t|)")]` from lmerTest. This
+  is the recommended default whenever the number of groups is below ~30
+  (Luke 2017).
+- `lmerMod` without lmerTest loaded: Wald-z, large-sample approximation.
+  df is reported as ∞ in the broom-canonical frame; p-values come from
+  `pnorm`. This matches
+  `parameters::model_parameters(ci_method = "wald")`, SAS PROC MIXED
+  with `ddfm = z`, and Stata `xtmixed`’s default. The footer suggests
+  loading lmerTest for small samples.
+- `glmerMod`: Wald-z asymptotic from
+  `summary(fit)$coefficients[, "Pr(>|z|)"]`. No t-distribution applies
+  to GLMMs in general (the link-scale residual variance is fixed for
+  binomial / Poisson families).
+- `glmmTMB`: Wald-z asymptotic from
+  `summary(fit)$coefficients[, "Pr(>|z|)"]`. Same logic as `glmerMod`.
+- `lme` (nlme): t-test with **containment degrees of freedom**. p and df
+  come from `summary(fit)$tTable`. Pinheiro & Bates
+  2000. §2.4.2 — between-group covariates get df = n_groups − rank,
+        within-group covariates get the residual df.
+
+The footer line lets the reader see at a glance what’s being reported.
+The behavioural choice is stable across classes: spicy uses each
+engine’s own inference path, falling back to Wald-z only when no better
+df strategy is available.
+
+### glmer (logistic / Poisson) and the adjusted ICC
+
+`glmer` fits render the same panel as `lmer` — σ rows with Wald SE and
+95 % CI from `merDeriv`, an ICC row, and the N (group) row. Two things
+differ from the lmer case:
+
+- No “σ (Residual)” row.
+  [`lme4::sigma()`](https://rdrr.io/pkg/lme4/man/sigma.html) returns the
+  fixed dispersion parameter (1 for `binomial` and `poisson`) by
+  convention, but this is not an estimated parameter with its own SE —
+  reporting it as a residual variance is misleading. spicy suppresses
+  the row for non-Gaussian fits.
+
+- The ICC uses the **link-scale distribution variance** in the
+  denominator (Nakagawa, Johnson & Schielzeth 2017 — adjusted ICC):
+
+  | Family · link    | distribution variance σ²_d                     |
+  |------------------|------------------------------------------------|
+  | binomial logit   | π²/3 ≈ 3.29                                    |
+  | binomial probit  | 1                                              |
+  | binomial cloglog | π²/6 ≈ 1.64                                    |
+  | poisson log      | log(1 + 1/λ), λ = exp(β₀_null + 0.5 σ²_g_null) |
+
+  with `ICC = σ²_g / (σ²_g + σ²_d)`. The value matches
+  `performance::icc(fit)$ICC_adjusted` to 1 × 10⁻⁶.
+
+For binomial fits with the `cbind(succ, fail)` (multi-trial) form, the
+closed-form σ²_d formula above does not apply directly — spicy returns
+`NA` for the ICC row rather than emit a misleading value. The Nakagawa
+marginal / conditional R² rows still render via the `performance`
+fallback.
+
+### Hierarchical / nested mixed-effects
+
+`table_regression(list(m1, m2, m3), nested = TRUE)` also works on
+mixed-effects fits. The change rows are populated from `anova(m1, m2)`
+(likelihood-ratio test):
+
+- `ΔAIC` — `AIC(m2) − AIC(m1)`, negative when m2 fits better
+- `ΔBIC` — `BIC(m2) − BIC(m1)`
+- `Δχ²` — likelihood-ratio statistic
+- `p (change)` — LRT p-value
+
+``` r
+
+m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject), data = lme4::sleepstudy, REML = FALSE)
+table_regression(list(m1, m2, m3), nested = TRUE)
+#> Hierarchical linear mixed-effects regression: Reaction
+#> 
+#>                           Model 1                Model 2            Model 3     
+#>                     ────────────────────  ─────────────────────  ────────────── 
+#>  Variable         │    B      SE     p       B       SE     p       B       SE  
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)      │  298.51  8.79  <.001   251.41   9.51  <.001   251.41   6.63 
+#>  Days             │                         10.47   0.80  <.001    10.47   1.50 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │  180                   180                    180           
+#>  R² (marginal)    │    0.00                  0.29                   0.29        
+#>  R² (conditional) │    0.38                  0.70                   0.79        
+#>  AIC              │ 1916.5                1802.1                 1763.9         
+#>  BIC              │ 1926.1                1814.9                 1783.1         
+#>  ΔAIC             │     –                 -114.5                  -38.1         
+#>  ΔBIC             │     –                 -111.3                  -31.8         
+#>  Δχ²              │     –                 +116.46                 +42.14        
+#>  p (change)       │     –                    <.001                  <.001       
+#> 
+#>                     Model 
+#>                     ───── 
+#>  Variable         │   p   
+#> ──────────────────┼───────
+#>  (Intercept)      │ <.001 
+#>  Days             │ <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n                │       
+#>  R² (marginal)    │       
+#>  R² (conditional) │       
+#>  AIC              │       
+#>  BIC              │       
+#>  ΔAIC             │       
+#>  ΔBIC             │       
+#>  Δχ²              │       
+#>  p (change)       │       
+#> 
+#> Note. Linear mixed-effects regression models.
+#> Std. errors: Wald (model-based).
+#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Model 1: Random effects (ML):
+#>   σ Subject (Intercept)  34.59  (6.72)  [16.91, 45.90]
+#>   σ (Residual)          44.26  (2.46)  [39.14, 48.84]
+#>   ICC                     0.38
+#>   N (Subject)               18
+#> LR test vs linear regression: χ̄²(1) = 50.51, p < .001
+#> Model 2: Random effects (ML):
+#>   σ Subject (Intercept)  36.01  (6.45)  [19.67, 46.98]
+#>   σ (Residual)          30.90  (1.72)  [27.33, 34.09]
+#>   ICC                     0.58
+#>   N (Subject)               18
+#> LR test vs linear regression: χ̄²(1) = 106.21, p < .001
+#> Model 3: Random effects (ML):
+#>   σ Subject (Intercept)         23.78  (5.58)  [6.75, 32.94]
+#>   σ Subject Days                 5.72  (1.19)  [2.47, 7.70]
+#>   ρ Subject ((Intercept), Days)   0.08  (0.32)  [-0.55, 0.72]
+#>   σ (Residual)                  25.59  (1.51)  [22.44, 28.39]
+#>   N (Subject)                       18
+#> LR test vs linear regression: χ̄²(3) = 148.35, p < .001
+```
+
+Variance-explained change tokens (`Δr²`, `Δf²`) are NA — the F-test
+framework that grounds them doesn’t apply to mixed models.
+`ΔR² (marginal)` and `ΔR² (conditional)` are not reported either: the
+row-by-row difference would be conceptually mixing two quantities (a
+marginal and a conditional gain), so the reader can compute it from the
+absolute R² rows directly if needed.
+
+Methodological caveat. `lme4::anova()` auto-refits REML fits with ML
+before the LRT (spicy suppresses the message). The LRT is a
+**fixed-effect-only** comparison: testing additional random terms with
+naive χ² is conservative — the formally correct test is the
+chi-bar-squared mixture (Self & Liang 1987), best run directly via
+[`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html).
+spicy surfaces fixed-effect nesting comparisons; random-structure model
+selection lives outside the table footer.
+
+### Average marginal effects (AME)
+
+The `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
+`show_columns` are wired for mixed-effects fits, delegated to
+`marginaleffects::avg_slopes(fit, df = Inf)`. The AME column is the
+publication-substantive quantity when the link is non-linear:
+
+- `glmer` binomial logit: AME is on the **probability scale**
+  (percentage points), not the log-odds scale. For the typical “what
+  does a one-unit change in `x` do to the predicted probability?”
+  reading, the AME column is what you want.
+- `glmer` Poisson log: AME is on the **count scale** (units of the
+  outcome), not log-rate.
+- `lmer` / `lme` / `glmmTMB` Gaussian: AME = B coefficient (identity
+  link); the column is filled but redundant.
+
+``` r
+
+set.seed(1)
+n <- 500
+g <- factor(rep(1:25, length.out = n))
+x <- rnorm(n)
+cat <- factor(sample(c("A", "B", "C"), n, replace = TRUE))
+y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + (cat == "B") * 0.3 +
+                           (cat == "C") * -0.5 + rnorm(25)[g]))
+fit <- lme4::glmer(y ~ x + cat + (1 | g), family = binomial)
+table_regression(fit, show_columns = c("b", "se", "p", "ame", "ame_p"))
+#> Logistic mixed-effects regression: y
+#> 
+#>  Variable         │   B      SE     p     AME     p   
+#> ──────────────────┼───────────────────────────────────
+#>  (Intercept)      │   0.25  0.34   .470               
+#>  x                │   0.85  0.12  <.001   0.15  <.001 
+#>  cat:             │                                   
+#>    A (ref.)       │    –     –     –                  
+#>    B              │   0.46  0.28   .107   0.08   .106 
+#>    C              │  -0.30  0.27   .264  -0.05   .262 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │ 500                               
+#>  R² (marginal)    │   0.14                            
+#>  R² (conditional) │   0.46                            
+#>  AIC              │ 562.4                             
+#>  BIC              │ 583.5                             
+#> 
+#> Note. Logistic mixed-effects regression.
+#> Std. errors: Wald asymptotic (z).
+#> p-values: Wald-z asymptotic (lme4).
+#> Random effects (ML):
+#>   σ g (Intercept)  1.40  (0.23)  [0.84, 1.79]
+#>   ICC              0.37
+#>   N (g)              25
+#> LR test vs logistic regression: χ̄²(1) = 84.11, p < .001
+#> AME = average marginal effect.
+```
+
+Factor predictors are handled level-by-level: AME rows align under the
+same factor header (`cat: A (ref.) / B / C`), each level sharing a row
+with its B coefficient. Inline
+[`factor()`](https://rdrr.io/r/base/factor.html) calls and ordered
+factors are reconstructed from the model-frame column when the coef-name
+lookup misses (same fallback logic used for `lm` / `glm`).
+
+Inference is Wald-z asymptotic (`df = Inf`) with the model-based vcov –
+matching the inference path of the B-row p-values in the same table.
+`marginaleffects` is a Suggests dependency; when unavailable, the AME
+columns appear in the header but render as NA without erroring (the rest
+of the table is unaffected).
+
+### Hiding parts of the panel
+
+Three arguments control panel rendering:
+
+- `show_re = FALSE` suppresses the panel entirely. Useful when the
+  random structure is documented in the manuscript text and the table
+  only needs the fixed-effects block.
+- `re_scale = "variance"` switches to σ² (see *Display scale* above).
+- `re_columns` is a character subset of `c("est", "se", "ci")`. `"est"`
+  is mandatory. Drop SE and CI when reporting a minimal table
+  (`re_columns = "est"`) or drop only CI when following a journal style
+  that uses parenthesised SE alone (`re_columns = c("est", "se")`).
+
+``` r
+
+table_regression(fit, re_columns = "est")               # σ only
+table_regression(fit, re_columns = c("est", "se"))      # σ (SE)
+table_regression(fit, show_re = FALSE)                  # fixed effects only
+```
 
 ## Significance stars
 
@@ -1003,10 +1436,10 @@ table_regression(fit, stars = TRUE)
 #>  (Intercept)     │   65.20***  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05     0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                         
-#>    Female (ref.) │     —        —          —          —    
+#>    Female (ref.) │     –        –          –          –    
 #>    Male          │    3.86***  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                         
-#>    No (ref.)     │     —        —          —          —    
+#>    No (ref.)     │     –        –          –          –    
 #>    Yes           │   -1.72     1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                    
@@ -1086,10 +1519,10 @@ out <- table_regression(
 str(out)
 #> 'data.frame':    11 obs. of  5 variables:
 #>  $ Variable: chr  "(Intercept)" "age" "sex:" "  Female (ref.)" ...
-#>  $ B       : chr  "  65.20" "   0.05" "       " "    —  " ...
-#>  $ SE      : chr  "1.66" "0.03" "    " " —  " ...
-#>  $ 95% CI  : chr  "[61.95, 68.45]" "[-0.01,  0.11]" "              " "      —       " ...
-#>  $ p       : chr  "<.001" " .130" "     " " —   " ...
+#>  $ B       : chr  "  65.20" "   0.05" "       " "    –  " ...
+#>  $ SE      : chr  "1.66" "0.03" "    " " –  " ...
+#>  $ 95% CI  : chr  "[61.95, 68.45]" "[-0.01,  0.11]" "              " "      –       " ...
+#>  $ p       : chr  "<.001" " .130" "     " " –   " ...
 #>  - attr(*, "title")= chr "Linear regression: wellbeing_score"
 #>  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."
 #>  - attr(*, "col_spec")=List of 4
@@ -1337,9 +1770,20 @@ Interpreting Interactions*. Sage.
 American Psychological Association (2020). *Publication Manual of the
 American Psychological Association* (7th ed.). Section 6.46.
 
+Bates, D., Mächler, M., Bolker, B., and Walker, S. (2015). Fitting
+linear mixed-effects models using lme4. *Journal of Statistical
+Software*, 67(1), 1–48.
+
+Bolker, B. (2024). GLMM FAQ.
+<https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html>.
+Random-effects p-values and CI section.
+
 Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003). *Applied
 Multiple Regression / Correlation Analysis for the Behavioral Sciences*
 (3rd ed.). Lawrence Erlbaum.
+
+Gelman, A. (2005). Analysis of variance — why it is more important than
+ever. *The Annals of Statistics*, 33(1), 1–53.
 
 Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 deviations. *Statistics in Medicine*, 27(15), 2865–2873.
@@ -1369,6 +1813,11 @@ Statistician*, 54(3), 217–224.
 Long, J. S., and Freese, J. (2014). *Regression Models for Categorical
 Dependent Variables Using Stata* (3rd ed.). Stata Press.
 
+Luke, S. G. (2017). Evaluating significance in linear mixed- effects
+models in R. *Behavior Research Methods*, 49(4), 1494– 1502. (Empirical
+comparison of Wald-z, Wald-t, Kenward-Roger, and Satterthwaite;
+recommends Satterthwaite or KR for samples with few groups.)
+
 McFadden, D. (1974). Conditional logit analysis of qualitative choice
 behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*
 (pp. 105–142). Academic Press.
@@ -1378,6 +1827,15 @@ regression coefficients. *The American Statistician*, 58(3), 218–223.
 
 Menard, S. (2011). Standards for standardized logistic regression
 coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Nakagawa, S., Johnson, P. C. D., and Schielzeth, H. (2017). The
+coefficient of determination R² and intra-class correlation coefficient
+from generalized linear mixed-effects models revisited and expanded.
+*Journal of the Royal Society Interface*, 14(134), 20170213.
+
+Nakagawa, S., and Schielzeth, H. (2013). A general and simple method for
+obtaining R² from generalized linear mixed-effects models. *Methods in
+Ecology and Evolution*, 4(2), 133–142.
 
 Mood, C. (2010). Logistic regression: Why we cannot do what we think we
 can do, and what we can do about it. *European Sociological Review*,
@@ -1390,6 +1848,10 @@ Olejnik, S., and Algina, J. (2003). Generalized eta and omega squared
 statistics: Measures of effect size for some common research designs.
 *Psychological Methods*, 8(4), 434–447.
 
+Pinheiro, J. C., and Bates, D. M. (2000). *Mixed-Effects Models in S and
+S-PLUS*. Springer. §2.4.2 on containment degrees of freedom for the nlme
+implementation.
+
 Pustejovsky, J. E., and Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed
 effects models. *Journal of Business & Economic Statistics*, 36(4),
@@ -1398,11 +1860,19 @@ effects models. *Journal of Business & Economic Statistics*, 36(4),
 Rothman, K. J. (1990). No adjustments are needed for multiple
 comparisons. *Epidemiology*, 1(1), 43–46.
 
+Self, S. G., and Liang, K.-Y. (1987). Asymptotic properties of maximum
+likelihood estimators and likelihood ratio tests under non-standard
+conditions. *Journal of the American Statistical Association*, 82(398),
+605–610.
+
 Smithson, M. (2003). *Confidence Intervals*. Sage.
 
 Steiger, J. H. (2004). Beyond the F test: Effect size confidence
 intervals and tests of close fit in the analysis of variance and
 contrast analysis. *Psychological Methods*, 9(2), 164–182.
+
+Stram, D. O., and Lee, J. W. (1994). Variance components testing in the
+longitudinal mixed effects model. *Biometrics*, 50(4), 1171–1177.
 
 Tjur, T. (2009). Coefficients of determination in logistic regression
 models — A new proposal: The coefficient of discrimination. *The
@@ -1410,6 +1880,10 @@ American Statistician*, 63(4), 366–372.
 
 Venables, W. N., and Ripley, B. D. (2002). *Modern Applied Statistics
 with S* (4th ed.). Springer. Section 7.2 on profile likelihood.
+
+Wang, T., and Merkle, E. C. (2018). merDeriv: Derivative computations
+for linear mixed effects models with application to robust standard
+errors. *Journal of Statistical Software*, 87(Code Snippet 1), 1–16.
 
 Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019). Moving to a
 world beyond “p \< 0.05”. *The American Statistician*, 73(sup1), 1–19.

@@ -188,13 +188,13 @@ table_regression(
 | (Intercept)                |   64.18 | 1.69 | 60.87  | 67.49 | \<.001 |
 | Age (years)                |    0.04 | 0.03 | -0.02  |  0.10 |  .171  |
 | Sex:                       |         |      |        |       |        |
-| Female (ref.)              | —       | —    | —      | —     | —      |
+| Female (ref.)              |    –    | –    |  –     |  –    | –      |
 | Male                       |    3.88 | 0.90 |  2.11  |  5.65 | \<.001 |
 | Smoking status:            |         |      |        |       |        |
-| No (ref.)                  | —       | —    | —      | —     | —      |
+| No (ref.)                  |    –    | –    |  –     |  –    | –      |
 | Yes                        |   -1.73 | 1.10 | -3.90  |  0.43 |  .117  |
 | Regular physical activity: |         |      |        |       |        |
-| No (ref.)                  | —       | —    | —      | —     | —      |
+| No (ref.)                  |    –    | –    |  –     |  –    | –      |
 | Yes                        |    2.70 | 0.91 |  0.93  |  4.48 |  .003  |
 | n                          | 1175    |      |        |       |        |
 | R²                         |    0.03 |      |        |       |        |
@@ -377,10 +377,9 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Logistic regression. Std. errors: classical (MLE inverse
-Hessian). AME = average marginal effect; OR = odds ratio. Coefficients
-exponentiated and displayed as OR; CI bounds exponentiated; SE
-delta-method approximation: SE_OR = OR × SE_link.
+*Note.* Logistic regression. Std. errors: classical (Fisher
+information). AME = average marginal effect; OR = odds ratio.
+Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 
 Average marginal effects (`ame`) are useful next to the odds ratio
 because they report a probability-scale change for each predictor — the

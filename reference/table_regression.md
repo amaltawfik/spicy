@@ -32,6 +32,9 @@ table_regression(
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
+  show_re = TRUE,
+  re_scale = c("sd", "variance"),
+  re_columns = c("est", "se", "ci"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -302,6 +305,52 @@ table_regression(
   value(s) in `"first_col"` mode (native primitives handle the
   mixed-precision case), and trivially decimal-aligns in `"merged"` mode
   (the fit-stat values move out of the B column into the merged cell).
+
+- show_re:
+
+  Logical. `TRUE` (default) prints the random-effects panel below the
+  fit-statistics footer for mixed-effects fits (`lmer`, `glmer`,
+  `glmmTMB`, `lme`). `FALSE` suppresses the panel entirely. No effect on
+  fits without random effects (`lm`, `glm`, `coxph`, ...). The panel
+  header carries the estimator label (`(REML)` or `(ML)`); see the
+  *Mixed-effects models* section of
+  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  for the methodological rationale (Gelman 2005; Bates et al. 2015;
+  Bolker FAQ).
+
+- re_scale:
+
+  One of `"sd"` (default) or `"variance"`. Controls the display scale of
+  the random-effects panel:
+
+  - `"sd"`: report the random-effect standard deviation \\\sigma\\
+    (Gelman 2005, *Technometrics*: "*directly interpretable as the size
+    of the variation across groups*"). Standard error and CI converted
+    via the Delta method: \\SE(\sigma) = SE(\sigma^2) / (2\sigma)\\;
+    \\CI(\sigma) = \sqrt{CI(\sigma^2)}\\.
+
+  - `"variance"`: report \\\sigma^2\\ (the canonical internal scale; SE
+    and CI come straight from the Hessian /
+    [`nlme::intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html) /
+    `glmmTMB::confint()` without rescaling).
+
+  Correlation rows (\\\rho\\) are unitless and pass through either way.
+
+- re_columns:
+
+  Character vector. Subset of `c("est", "se", "ci")` controlling which
+  columns of the random-effects panel are rendered. `"est"` is
+  mandatory. Useful for slimming output (`re_columns = "est"`) or for
+  journals that want only standard errors
+  (`re_columns = c("est", "se")`).
+
+  Note. Standard errors and CIs are Wald (`est ± z * SE`, clamped at 0
+  for variances). Wald can be optimistic near the variance boundary
+  (Self & Liang 1987 chi-bar-squared); profile-likelihood intervals are
+  available directly on the fitted model
+  (`confint(fit, method = "profile")` for `lmer`) when robustness is
+  critical. See the *Mixed-effects models* section of
+  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
 - model_labels:
 
@@ -626,7 +675,7 @@ model_id key.
 
 `vcov` selects the variance-covariance estimator:
 
-- `"classical"` – OLS (lm) / MLE inverse Hessian (glm).
+- `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
   [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)).
@@ -887,10 +936,10 @@ table_regression(fit)
 #>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -911,10 +960,10 @@ table_regression(fit, standardized = "refit")
 #>  (Intercept)     │   65.20  -0.10  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05   0.04  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                             
-#>    Female (ref.) │     —      —     —          —          —    
+#>    Female (ref.) │     –      –     –          –          –    
 #>    Male          │    3.86   0.25  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                             
-#>    No (ref.)     │     —      —     —          —          —    
+#>    No (ref.)     │     –      –     –          –          –    
 #>    Yes           │   -1.72  -0.11  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
@@ -939,10 +988,10 @@ table_regression(
 #>  (Intercept)     │   65.20  <.001                              
 #>  age             │    0.05   .130   0.05  [-0.01, 0.11]   .130 
 #>  sex:            │                                             
-#>    Female (ref.) │     —     —       —          —         —    
+#>    Female (ref.) │     –     –       –          –         –    
 #>    Male          │    3.86  <.001   3.86  [ 2.08, 5.63]  <.001 
 #>  smoking:        │                                             
-#>    No (ref.)     │     —     —       —          —         —    
+#>    No (ref.)     │     –     –       –          –         –    
 #>    Yes           │   -1.72   .121  -1.72  [-3.89, 0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
@@ -963,10 +1012,10 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001              
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .130   0.05  0.03 
 #>  sex:            │                                                   
-#>    Female (ref.) │     —     —          —          —       —     —   
+#>    Female (ref.) │     –     –          –          –       –     –   
 #>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001   3.86  0.91 
 #>  smoking:        │                                                   
-#>    No (ref.)     │     —     —          —          —       —     —   
+#>    No (ref.)     │     –     –          –          –       –     –   
 #>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121  -1.72  1.11 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                              
@@ -978,10 +1027,10 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  (Intercept)     │                      
 #>  age             │ [-0.01, 0.11]   .130 
 #>  sex:            │                      
-#>    Female (ref.) │       —         —    
+#>    Female (ref.) │       –         –    
 #>    Male          │ [ 2.08, 5.63]  <.001 
 #>  smoking:        │                      
-#>    No (ref.)     │       —         —    
+#>    No (ref.)     │       –         –    
 #>    Yes           │ [-3.89, 0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │                      
@@ -1005,10 +1054,10 @@ table_regression(fit, vcov = "CR2", cluster = ~region)
 #>  (Intercept)     │   65.20  1.76  [60.63, 69.78]  <.001 
 #>  age             │    0.05  0.04  [-0.05,  0.15]   .285 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.85  [ 1.66,  6.05]   .007 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.52  [-5.70,  2.27]   .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -1025,10 +1074,10 @@ table_regression(fit, vcov = "CR2", cluster = "region")
 #>  (Intercept)     │   65.20  1.76  [60.63, 69.78]  <.001 
 #>  age             │    0.05  0.04  [-0.05,  0.15]   .285 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.85  [ 1.66,  6.05]   .007 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.52  [-5.70,  2.27]   .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -1045,10 +1094,10 @@ table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 #>  (Intercept)     │   65.20  1.54  [61.91, 68.49]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.10]   .107 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.87  [ 2.05,  5.67]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.25  [-4.31,  0.88]   .183 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -1084,18 +1133,18 @@ table_regression(
 #>  (Intercept)     │   66.85  1.59  <.001    64.90   1.65  <.001    65.20   1.66 
 #>  age             │    0.04  0.03   .160     0.05   0.03   .143     0.05   0.03 
 #>  sex:            │                                                             
-#>    Female (ref.) │                           —      —     —         —      —   
+#>    Female (ref.) │                           –      –     –         –      –   
 #>    Male          │                          3.87   0.91  <.001     3.86   0.91 
 #>  smoking:        │                                                             
-#>    No (ref.)     │                                                  —      —   
+#>    No (ref.)     │                                                  –      –   
 #>    Yes           │                                                -1.72   1.11 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1175                   1175           
 #>  R²              │    0.00                  0.02                   0.02        
 #>  Adj.R²          │    0.00                  0.02                   0.02        
-#>  ΔR²             │     —                   +0.02                  +0.00        
-#>  F-change        │     —                  +18.26                  +2.41        
-#>  p (change)      │     —                    <.001                   .121       
+#>  ΔR²             │     –                   +0.02                  +0.00        
+#>  F-change        │     –                  +18.26                  +2.41        
+#>  p (change)      │     –                    <.001                   .121       
 #> 
 #>                    Step  
 #>                    ───── 
@@ -1104,10 +1153,10 @@ table_regression(
 #>  (Intercept)     │ <.001 
 #>  age             │  .130 
 #>  sex:            │       
-#>    Female (ref.) │  —    
+#>    Female (ref.) │  –    
 #>    Male          │ <.001 
 #>  smoking:        │       
-#>    No (ref.)     │  —    
+#>    No (ref.)     │  –    
 #>    Yes           │  .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
 #>  n               │       
@@ -1137,10 +1186,10 @@ table_regression(
 #>  (Intercept)     │   65.20  1.66  <.001    65.20  1.61  <.001    65.20  1.76 
 #>  age             │    0.05  0.03   .130     0.05  0.03   .127     0.05  0.04 
 #>  sex:            │                                                           
-#>    Female (ref.) │     —     —     —         —     —     —         —     —   
+#>    Female (ref.) │     –     –     –         –     –     –         –     –   
 #>    Male          │    3.86  0.91  <.001     3.86  0.91  <.001     3.86  0.85 
 #>  smoking:        │                                                           
-#>    No (ref.)     │     —     —     —         —     —     —         —     —   
+#>    No (ref.)     │     –     –     –         –     –     –         –     –   
 #>    Yes           │   -1.72  1.11   .121    -1.72  1.11   .123    -1.72  1.52 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1175                  1175          
@@ -1154,10 +1203,10 @@ table_regression(
 #>  (Intercept)     │ <.001 
 #>  age             │  .285 
 #>  sex:            │       
-#>    Female (ref.) │  —    
+#>    Female (ref.) │  –    
 #>    Male          │  .007 
 #>  smoking:        │       
-#>    No (ref.)     │  —    
+#>    No (ref.)     │  –    
 #>    Yes           │  .313 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
 #>  n               │       
@@ -1181,6 +1230,114 @@ broom::tidy(table_regression(fit))
 #> 4 M1       wellbeing_… smok… B              -1.72      1.11    -3.89       0.454
 #> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
 #> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+
+# ---- Mixed-effects models ----------------------------------------
+# Linear mixed-effects (lme4). The footer adds a random-effects
+# panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
+# marginal / conditional R^2 fit-stats, and a per-class p-value
+# annotation line.
+if (requireNamespace("lme4", quietly = TRUE)) {
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
+                     data = lme4::sleepstudy)
+  table_regression(fit)
+
+  # Switch to the variance scale (sigma^2 instead of sigma).
+  table_regression(fit, re_scale = "variance")
+
+  # Minimal random-effects display: estimates only, no SE / CI.
+  table_regression(fit, re_columns = "est")
+
+  # Suppress the random-effects panel entirely.
+  table_regression(fit, show_re = FALSE)
+}
+#> Registered S3 method overwritten by 'merDeriv':
+#>   method        from        
+#>   bread.lmerMod clubSandwich
+#> Linear mixed-effects regression: Reaction
+#> 
+#>  Variable         │    B      SE        95% CI         p   
+#> ──────────────────┼────────────────────────────────────────
+#>  (Intercept)      │  251.41  6.82  [238.03, 264.78]  <.001 
+#>  Days             │   10.47  1.55  [  7.44,  13.50]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │  180                                   
+#>  R² (marginal)    │    0.28                                
+#>  R² (conditional) │    0.80                                
+#>  AIC              │ 1755.6                                 
+#>  BIC              │ 1774.8                                 
+#> 
+#> Note. Linear mixed-effects regression.
+#> Std. errors: Wald (model-based).
+#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+
+# Hierarchical mixed-effects comparison (nested LRT).
+if (requireNamespace("lme4", quietly = TRUE)) {
+  m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject),
+                    data = lme4::sleepstudy, REML = FALSE)
+  m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject),
+                    data = lme4::sleepstudy, REML = FALSE)
+  m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
+                    data = lme4::sleepstudy, REML = FALSE)
+  table_regression(list(m1, m2, m3), nested = TRUE)
+}
+#> Hierarchical linear mixed-effects regression: Reaction
+#> 
+#>                           Model 1                Model 2            Model 3     
+#>                     ────────────────────  ─────────────────────  ────────────── 
+#>  Variable         │    B      SE     p       B       SE     p       B       SE  
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)      │  298.51  8.79  <.001   251.41   9.51  <.001   251.41   6.63 
+#>  Days             │                         10.47   0.80  <.001    10.47   1.50 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │  180                   180                    180           
+#>  R² (marginal)    │    0.00                  0.29                   0.29        
+#>  R² (conditional) │    0.38                  0.70                   0.79        
+#>  AIC              │ 1916.5                1802.1                 1763.9         
+#>  BIC              │ 1926.1                1814.9                 1783.1         
+#>  ΔAIC             │     –                 -114.5                  -38.1         
+#>  ΔBIC             │     –                 -111.3                  -31.8         
+#>  Δχ²              │     –                 +116.46                 +42.14        
+#>  p (change)       │     –                    <.001                  <.001       
+#> 
+#>                     Model 
+#>                     ───── 
+#>  Variable         │   p   
+#> ──────────────────┼───────
+#>  (Intercept)      │ <.001 
+#>  Days             │ <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  n                │       
+#>  R² (marginal)    │       
+#>  R² (conditional) │       
+#>  AIC              │       
+#>  BIC              │       
+#>  ΔAIC             │       
+#>  ΔBIC             │       
+#>  Δχ²              │       
+#>  p (change)       │       
+#> 
+#> Note. Linear mixed-effects regression models.
+#> Std. errors: Wald (model-based).
+#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Model 1: Random effects (ML):
+#>   σ Subject (Intercept)  34.59  (6.72)  [16.91, 45.90]
+#>   σ (Residual)          44.26  (2.46)  [39.14, 48.84]
+#>   ICC                     0.38
+#>   N (Subject)               18
+#> LR test vs linear regression: χ̄²(1) = 50.51, p < .001
+#> Model 2: Random effects (ML):
+#>   σ Subject (Intercept)  36.01  (6.45)  [19.67, 46.98]
+#>   σ (Residual)          30.90  (1.72)  [27.33, 34.09]
+#>   ICC                     0.58
+#>   N (Subject)               18
+#> LR test vs linear regression: χ̄²(1) = 106.21, p < .001
+#> Model 3: Random effects (ML):
+#>   σ Subject (Intercept)         23.78  (5.58)  [6.75, 32.94]
+#>   σ Subject Days                 5.72  (1.19)  [2.47, 7.70]
+#>   ρ Subject ((Intercept), Days)   0.08  (0.32)  [-0.55, 0.72]
+#>   σ (Residual)                  25.59  (1.51)  [22.44, 28.39]
+#>   N (Subject)                       18
+#> LR test vs linear regression: χ̄²(3) = 148.35, p < .001
 
 if (FALSE) { # \dontrun{
 # ---- Rich-format outputs (require optional Suggests packages) ----
