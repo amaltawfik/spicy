@@ -132,11 +132,25 @@ test_that("glm_coefs_inference_table keeps the intercept when intercept_to_na=FA
 
 test_that("compute_menard_sd_y_star returns NA for an unsupported binomial link", {
   # cauchit is a valid binomial link but is outside the Menard var_link
-  # switch (logit/probit/cloglog/log), so var_link is NA and the helper
-  # short-circuits to NA_real_ (line 319).
+  # switch (logit/probit/cloglog), so var_link is NA and the helper
+  # short-circuits to NA_real_.
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial(link = "cauchit"))
   sd_y_star <- spicy:::compute_menard_sd_y_star(fit)
   expect_true(is.na(sd_y_star))
+})
+
+test_that("compute_menard_sd_y_star returns NA for log-binomial (no latent threshold)", {
+  # The log link (relative-risk model) models log(p) = X'beta multiplicatively
+  # and has no latent-threshold interpretation, so the Menard / Long & Freese
+  # latent-variable SD is undefined -> NA (use standardized = "refit" instead).
+  set.seed(1)
+  x <- rnorm(400)
+  y <- rbinom(400, 1, pmin(exp(-1.5 + 0.3 * x), 0.99))
+  fit <- suppressWarnings(
+    glm(y ~ x, family = binomial(link = "log"), start = c(-1.5, 0)))
+  skip_if(!fit$converged)
+  expect_identical(family(fit)$link, "log")
+  expect_true(is.na(spicy:::compute_menard_sd_y_star(fit)))
 })
 
 test_that("pseudo standardisation on an unsupported binomial link returns all-NA beta", {

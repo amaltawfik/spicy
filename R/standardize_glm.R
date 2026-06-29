@@ -337,7 +337,13 @@ compute_menard_sd_y_star <- function(fit) {
     "logit"   = pi^2 / 3,
     "probit"  = 1,
     "cloglog" = pi^2 / 6,
-    "log"     = pi^2 / 3,  # log-binomial: treat as logit-equivalent
+    # The log link (log-binomial / relative-risk model) has NO latent-
+    # threshold interpretation -- it models log(p) = X'beta multiplicatively,
+    # not Y = 1{Y* > 0} with a latent residual distribution. The Menard /
+    # Long & Freese latent-variable standardisation is therefore undefined
+    # here; return NA so the caller emits the "outside scope" caveat (use
+    # standardized = "refit" for a log-binomial fit). Was wrongly pi^2/3.
+    "log"     = NA_real_,
     NA_real_
   )
   if (!is.finite(var_link)) return(NA_real_)
