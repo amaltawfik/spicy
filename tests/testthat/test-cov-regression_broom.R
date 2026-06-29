@@ -41,6 +41,29 @@ test_that("glance – zero-row fit-stats attr → empty broom-shaped tibble", {
   empty <- empty_glance_table(zero)
   g <- broom::glance(empty)
   expect_equal(nrow(g), 0L)
+  # Same guard branch as the NULL case: a present-but-empty fit_stats
+  # data.frame must still yield the broom-canonical schema, NOT a
+  # pass-through of `zero`'s own (snake_case, non-canonical) columns.
+  expect_named(
+    g,
+    c("model_id", "outcome", "nobs", "weighted_nobs",
+      "r.squared", "adj.r.squared", "omega2", "sigma",
+      "rmse", "f2", "AIC", "AICc", "BIC", "deviance",
+      "df.residual")
+  )
+  # `zero` carried snake_case names (r2, adj_r2, df_residual); the
+  # canonical schema must replace them, never leak them through.
+  expect_false(any(c("r2", "adj_r2", "df_residual") %in% names(g)))
+  # Broom-canonical column types, matching the NULL-attr branch.
+  expect_type(g$model_id, "character")
+  expect_type(g$outcome, "character")
+  expect_type(g$nobs, "integer")
+  expect_type(g$weighted_nobs, "double")
+  expect_type(g$r.squared, "double")
+  expect_type(g$df.residual, "double")
+  # Reached the empty-attr branch via nrow(fs) == 0, not is.null(fs).
+  expect_false(is.null(attr(empty, "spicy_fit_stats")))
+  expect_equal(nrow(attr(empty, "spicy_fit_stats")), 0L)
 })
 
 test_that("glance – empty result column types are broom-canonical", {

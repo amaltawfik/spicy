@@ -176,20 +176,52 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   col_spec <- spicy:::build_column_spec(
     c("b"), c("M1", "M2"), setNames(c("Model 1", "Model 2"), c("M1", "M2"))
   )
-  # outcome_labels = FALSE -> suppressed.
+  # outcome_labels = FALSE -> suppressed (line 771).
   expect_null(spicy:::build_outcome_row(
     model_outcomes = c("mpg", "hp"), outcome_labels = FALSE,
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec
   ))
-  # NULL (auto) -> hidden because the spanner already shows the model.
+  # NULL (auto) -> hidden because the spanner already shows the model
+  # (line 782).
   expect_null(spicy:::build_outcome_row(
     model_outcomes = c("mpg", "hp"), outcome_labels = NULL,
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec
   ))
+
+  # SINGLE model -> the DV is shown in the table title, never as an
+  # Outcome row, so the n_models <= 1L guard (line 774) returns NULL
+  # *even when an explicit outcome label is supplied*. This is the case
+  # the test name promises; the assertions above both pass length-2
+  # model_ids and so never reach line 774. Using an explicit non-NULL,
+  # non-FALSE label isolates the single-model guard: it is the ONLY
+  # reason NULL can come back here (FALSE-suppress at 771 and
+  # NULL-auto-hide at 782 are both bypassed).
+  col_spec_m1 <- spicy:::build_column_spec(
+    c("b"), c("M1"), setNames("Model 1", "M1")
+  )
+  expect_null(spicy:::build_outcome_row(
+    model_outcomes = "mpg", outcome_labels = "MPG",
+    model_ids = "M1",
+    label_map = setNames("Model 1", "M1"),
+    col_spec = col_spec_m1
+  ))
+  # Sanity: with TWO models the very same explicit label *does* produce
+  # a row (proving the NULL above is the single-model guard, not some
+  # other suppression). The label lands in M1's first column.
+  two_model <- spicy:::build_outcome_row(
+    model_outcomes = c("mpg", "hp"), outcome_labels = c("MPG", "Horsepower"),
+    model_ids = c("M1", "M2"),
+    label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
+    col_spec = col_spec
+  )
+  expect_false(is.null(two_model))
+  expect_identical(two_model$Variable, "Outcome")
+  expect_true(any(vapply(two_model, function(x) identical(x, "MPG"),
+                         logical(1))))
 })
 
 

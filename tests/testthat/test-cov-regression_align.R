@@ -35,7 +35,21 @@ test_that("align_frames – present test_type is preserved (contrast to the NA a
   fr <- list(mk_frame_cov(mpg ~ wt, "M1"))
   aligned <- spicy:::align_frames(fr, model_ids = "M1")
   non_ref <- aligned$coefs_aligned[!aligned$coefs_aligned$is_reference, ]
+
+  # Guard against a vacuous test: there must be non-reference rows to check.
+  expect_gt(nrow(non_ref), 0L)
+
+  # Original (preserved): at least one value survives non-NA.
   expect_true(any(!is.na(non_ref$test_type)))
+
+  # Strengthened: the if-branch preserves the ACTUAL character values, so for
+  # an lm frame every non-reference coefficient row must read exactly "t"
+  # (the lm contract). A regression that NA-filled them (the else-arm) or
+  # substituted any other non-NA string ("z", "F", "") would now fail.
+  expect_type(non_ref$test_type, "character")
+  expect_false(anyNA(non_ref$test_type))
+  expect_true(all(non_ref$test_type == "t"))
+  expect_identical(unique(non_ref$test_type), "t")
 })
 
 

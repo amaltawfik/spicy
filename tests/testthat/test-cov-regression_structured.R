@@ -51,7 +51,9 @@ test_that(".validate_structured warns on a non-numeric, non-all-NA column", {
 
 test_that(".validate_structured skips a body column with no col_meta entry", {
   # `Extra` has no col_meta -> the `is.null(meta) next` guard fires and
-  # the column is not p-range-checked; clean input stays silent.
+  # the column is not p-range-checked. Crucially Extra = 2.0 is OUTSIDE
+  # [0, 1]: had the guard NOT skipped it, the apa p-range check would
+  # have warned. `B` (an in-range apa column) carries the only col_meta.
   s <- list(
     body = data.frame(Variable = "a", B = 0.5, Extra = 2.0),
     reference_rows = integer(0), factor_header_rows = integer(0),
@@ -63,6 +65,20 @@ test_that(".validate_structured skips a body column with no col_meta entry", {
     format_spec = list(decimal_mark = ".")
   )
   expect_silent(spicy:::.validate_structured(s))
+  # The validator passes its input straight back, unmodified and invisibly.
+  ret <- withVisible(spicy:::.validate_structured(s))
+  expect_false(ret$visible)
+  expect_identical(ret$value, s)
+
+  # POSITIVE CONTROL: give `Extra` the SAME apa col_meta as `B`. Now the
+  # p-range loop reaches it and its 2.0 value trips the [0, 1] check.
+  # This proves the clean-case silence above came from the col_meta skip
+  # branch -- not from a loop that never ran or that always stays silent.
+  s_meta <- s
+  s_meta$col_meta$Extra <- list(precision = 3L, p_style = "apa",
+                                token = "p", threshold = 0.001)
+  expect_warning(spicy:::.validate_structured(s_meta),
+                 "Column Extra: 1 p-value\\(s\\) outside \\[0, 1\\]")
 })
 
 test_that(".validate_structured warns on a negative precision", {

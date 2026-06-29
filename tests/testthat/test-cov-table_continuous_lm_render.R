@@ -113,6 +113,67 @@ test_that("export_continuous_lm_table tinytable falls back to per-column default
   )
 
   expect_true(inherits(tt, "tinytable"))
+
+  # The class check alone does not prove the default-alignment else-arm
+  # actually placed each column. Render to HTML (a deterministic text
+  # output -- no getOption("width")/locale/quote-style dependence) and
+  # recover the resolved per-column body alignment from the emitted CSS.
+  # tinytable assigns each styled cell a random css_id, so we map every
+  # body cell (row index i >= 1) at column j to its css_id, then read the
+  # text-align off that id's CSS rule.
+  html <- tinytable::save_tt(tt, output = "html")
+
+  body_align <- function(html, j) {
+    block_re <- r"{positions:\s*\[(.*?)\],\s*css_id:\s*'([^']+)'}"
+    blocks <- regmatches(html, gregexpr(block_re, html, perl = TRUE))[[1]]
+    pair_re <- r"{i:\s*'([0-9-]+)'\s*,\s*j:\s*([0-9]+)}"
+    hit_ids <- character(0)
+    for (b in blocks) {
+      css_id <- regmatches(
+        b, regexec(r"{css_id:\s*'([^']+)'}", b, perl = TRUE)
+      )[[1]][2]
+      pairs <- regmatches(b, gregexpr(pair_re, b, perl = TRUE))[[1]]
+      for (p in pairs) {
+        pm <- regmatches(p, regexec(pair_re, p, perl = TRUE))[[1]]
+        ii <- as.integer(pm[2])
+        jj <- as.integer(pm[3])
+        if (!is.na(ii) && ii >= 1L && jj == j) {
+          hit_ids <- c(hit_ids, css_id)
+        }
+      }
+    }
+    aligns <- character(0)
+    for (id in unique(hit_ids)) {
+      rule <- regmatches(
+        html,
+        regexpr(paste0(r"{\.}", id, r"{[^{]*\{[^}]*\}}"), html, perl = TRUE)
+      )
+      if (length(rule) && grepl("text-align", rule)) {
+        aligns <- c(
+          aligns,
+          regmatches(
+            rule, regexec(r"{text-align:\s*([a-z]+)}", rule, perl = TRUE)
+          )[[1]][2]
+        )
+      }
+    }
+    unique(aligns)
+  }
+
+  # Column order: 1 Variable, 2 M (A), 3 p, 4 n, 5 Weighted n.
+  # Else-arm contract: column 1 left, n / Weighted n / p right-aligned,
+  # every remaining numeric column centred.
+  expect_identical(body_align(html, 1L), "left") # label column
+  expect_identical(body_align(html, 2L), "center") # generic numeric -> centre
+  expect_identical(body_align(html, 3L), "right") # p -> right
+  expect_identical(body_align(html, 4L), "right") # n -> right
+  expect_identical(body_align(html, 5L), "right") # Weighted n -> right
+
+  # Guard against a regression that would centre the count/p columns:
+  # none of n / Weighted n / p may be centred, and the generic numeric
+  # column must not be right-aligned.
+  expect_false(any(c("center") %in% body_align(html, 4L)))
+  expect_false(any(c("right") %in% body_align(html, 2L)))
 })
 
 # ---- gt exporter: no-CI branch ---------------------------------------------

@@ -133,6 +133,40 @@ test_that("one-way gt output honours align = 'center' and 'right'", {
                                output = "gt", align = "right")
   expect_s3_class(g_center, "gt_tbl")
   expect_s3_class(g_right, "gt_tbl")
+
+  # gt stores per-column horizontal alignment in its internal `_boxhead`
+  # table (var -> column_align). Verify the center vs right branches in
+  # the one-way gt path (R/table_categorical.R lines ~1282-1290) actually
+  # produce *different* alignments on the numeric columns, so the test is
+  # not a no-op that would pass under a broken alignment branch.
+  align_for <- function(g) {
+    bh <- g[["_boxhead"]]
+    stats::setNames(as.character(bh$column_align), as.character(bh$var))
+  }
+  ac <- align_for(g_center)
+  ar <- align_for(g_right)
+
+  # The numeric columns ("n" and "pct") must both be present in each fit.
+  expect_true(all(c("n", "pct") %in% names(ac)))
+  expect_true(all(c("n", "pct") %in% names(ar)))
+
+  # center branch: numeric columns are centered.
+  expect_equal(unname(ac[["n"]]), "center")
+  expect_equal(unname(ac[["pct"]]), "center")
+
+  # right branch: numeric columns are right-aligned.
+  expect_equal(unname(ar[["n"]]), "right")
+  expect_equal(unname(ar[["pct"]]), "right")
+
+  # The two branches genuinely differ on the numeric columns (guards
+  # against a no-op alignment change still passing).
+  expect_false(identical(ac[["n"]], ar[["n"]]))
+  expect_false(identical(ac[["pct"]], ar[["pct"]]))
+
+  # Invariant across both branches: the "Variable" label column is always
+  # left-aligned regardless of `align`.
+  expect_equal(unname(ac[["Variable"]]), "left")
+  expect_equal(unname(ar[["Variable"]]), "left")
 })
 
 # ---- flextable output with word_path also writes a docx -------------------

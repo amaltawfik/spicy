@@ -46,6 +46,34 @@ test_that("polr cloglog fit reports the cloglog link and title", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "cloglog")
   expect_match(fr$info$extras$title_prefix, "Cumulative cloglog", fixed = TRUE)
+  # Consistency with the sibling probit test: the constructed frame must
+  # pass the schema validator (the gap the audit flagged).
+  expect_invisible(spicy:::validate_regression_frame(fr))
+  # Family is a cumulative-link model and the title carries the full
+  # proportional-odds suffix (not just the link token).
+  expect_identical(fr$info$family$family, "cumulative")
+  expect_identical(fr$info$extras$title_prefix,
+                   "Cumulative cloglog regression (proportional odds)")
+  # cloglog is a non-canonical link but exponentiation is still offered
+  # (hazard-ratio interpretation), shared by all cumulative-link fits.
+  expect_true(isTRUE(fr$info$supports$exponentiate))
+  # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
+  # thresholds, named for the adjacent-level cutpoints.
+  expect_identical(fr$info$extras$response_levels,
+                   c("Low", "Medium", "High"))
+  expect_identical(nrow(fr$info$extras$thresholds),
+                   length(fit$lev) - 1L)
+  expect_identical(fr$info$extras$thresholds$term,
+                   c("Low|Medium", "Medium|High"))
+  # The three factor predictors (Infl, Type, Cont) each contribute one
+  # synthesised reference row; structural content, not just a count.
+  expect_identical(sum(fr$coefs$is_ref), 3L)
+  expect_identical(fr$coefs$term[fr$coefs$is_ref],
+                   c("InflLow", "TypeTower", "ContLow"))
+  # Reference rows carry NA estimates and z-asymptotic test type for the
+  # estimated rows.
+  expect_true(all(is.na(fr$coefs$estimate[fr$coefs$is_ref])))
+  expect_true(all(fr$coefs$test_type[!fr$coefs$is_ref] == "z"))
 })
 
 test_that("polr loglog fit reports the loglog link and title", {
@@ -53,6 +81,30 @@ test_that("polr loglog fit reports the loglog link and title", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "loglog")
   expect_match(fr$info$extras$title_prefix, "Cumulative loglog", fixed = TRUE)
+  # Consistency with the sibling probit test: the constructed frame must
+  # pass the schema validator (the gap the audit flagged).
+  expect_invisible(spicy:::validate_regression_frame(fr))
+  # Family is a cumulative-link model and the title carries the full
+  # proportional-odds suffix (not just the link token).
+  expect_identical(fr$info$family$family, "cumulative")
+  expect_identical(fr$info$extras$title_prefix,
+                   "Cumulative loglog regression (proportional odds)")
+  expect_true(isTRUE(fr$info$supports$exponentiate))
+  # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
+  # thresholds, named for the adjacent-level cutpoints.
+  expect_identical(fr$info$extras$response_levels,
+                   c("Low", "Medium", "High"))
+  expect_identical(nrow(fr$info$extras$thresholds),
+                   length(fit$lev) - 1L)
+  expect_identical(fr$info$extras$thresholds$term,
+                   c("Low|Medium", "Medium|High"))
+  # The three factor predictors (Infl, Type, Cont) each contribute one
+  # synthesised reference row; structural content, not just a count.
+  expect_identical(sum(fr$coefs$is_ref), 3L)
+  expect_identical(fr$coefs$term[fr$coefs$is_ref],
+                   c("InflLow", "TypeTower", "ContLow"))
+  expect_true(all(is.na(fr$coefs$estimate[fr$coefs$is_ref])))
+  expect_true(all(fr$coefs$test_type[!fr$coefs$is_ref] == "z"))
 })
 
 test_that("polr cauchit fit reports the cauchit link and title", {

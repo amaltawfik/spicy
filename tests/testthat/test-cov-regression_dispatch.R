@@ -121,6 +121,21 @@ test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
   # Non-interactive: falls through to gt's own print (NextMethod()).
   out <- capture.output(res <- print(g))
   expect_true(length(out) > 0L)
+
+  # --- NextMethod() path actually ran (not the interactive browsable arm) ---
+  # print.spicy_gt strips the "spicy_gt" subclass BEFORE NextMethod(), so the
+  # value returned by gt's own print method must no longer carry it. (The
+  # interactive arm would instead return invisible(NULL); a non-NULL,
+  # non-spicy_gt result pins the NextMethod branch.)
+  expect_false(is.null(res))
+  expect_false(inherits(res, "spicy_gt"))
+
+  # The captured output is gt's rendered HTML table (NextMethod = gt's print),
+  # so it contains an actual <table> element and a model coefficient label --
+  # proof the gt render ran rather than the method merely not erroring.
+  joined <- paste(out, collapse = "\n")
+  expect_match(joined, "<table", fixed = TRUE)
+  expect_match(joined, "Intercept", fixed = TRUE)
 })
 
 test_that("print.spicy_gt interactive branch renders browsable HTML with the note", {
@@ -185,8 +200,28 @@ test_that("print.spicy_flextable non-interactive delegates to NextMethod()", {
   skip_if_not_installed("flextable")
   fit <- lm(mpg ~ wt + cyl, data = mt)
   ft <- table_regression(fit, output = "flextable", note = "Note. n.")
+  expect_false(interactive())
   out <- capture.output(res <- print(ft))
   expect_true(length(out) > 0L)
+
+  # --- NextMethod() path actually ran (not the interactive browsable arm) ---
+  # In a non-interactive console, flextable's own print method emits a textual
+  # summary and returns invisible(NULL) -- distinct from the interactive arm,
+  # which prints browsable HTML. A NULL result, with the spicy_flextable
+  # subclass already stripped by the method, pins the NextMethod branch.
+  expect_null(res)
+  expect_false(inherits(res, "spicy_flextable"))
+
+  # The captured output is flextable's console summary (NextMethod = flextable's
+  # print): it names the col_keys and the header / body row counts, and shows
+  # the underlying data sample including a model coefficient label. These pin
+  # that flextable's print -- not a no-op -- produced the output.
+  joined <- paste(out, collapse = "\n")
+  expect_match(joined, "flextable object", fixed = TRUE)
+  expect_match(joined, "col_keys", fixed = TRUE)
+  expect_match(joined, "header has", fixed = TRUE)
+  expect_match(joined, "body has", fixed = TRUE)
+  expect_match(joined, "Intercept", fixed = TRUE)
 })
 
 test_that("print.spicy_flextable interactive branch renders browsable HTML with the note", {
@@ -223,6 +258,32 @@ test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
                          note = "Custom footer, no prefix.")
   expect_s3_class(ft, "flextable")
   expect_identical(attr(ft, "spicy_note"), "Custom footer, no prefix.")
+
+  # --- Distinguishing output of the non-italic single-chunk arm -------------
+  # flextable stashes the footer paragraph as a per-cell data.frame of text
+  # "chunks" at $footer$content$data[[1, 1]], each row carrying its own `txt`
+  # and `italic` formatting flags. The "Note."-prefixed arm splits the note
+  # into TWO chunks (italic "Note." + regular remainder); the custom-note arm
+  # (lines 1448-1452) emits exactly ONE chunk in regular (non-italic) type.
+  foot_cell <- ft$footer$content$data[[1, 1]]
+  # Exactly one footer chunk -> the single-chunk arm, not the 2-chunk split.
+  expect_identical(nrow(foot_cell), 1L)
+  # That chunk carries the full custom note verbatim (no "Note." prefix split).
+  expect_identical(foot_cell$txt, "Custom footer, no prefix.")
+  # And it is NOT italicised -- i.e. the leading text was never treated as a
+  # "Note." label, confirming the non-italic arm was taken.
+  expect_false(foot_cell$italic)
+
+  # Contrast: a "Note."-prefixed note takes the OTHER arm and italicises only
+  # the leading "Note." chunk, leaving the remainder in regular type. This pins
+  # that the non-italic outcome above is specific to the no-prefix branch.
+  ft_prefixed <- table_regression(fit, output = "flextable",
+                                  note = "Note. has a prefix.")
+  prefixed_cell <- ft_prefixed$footer$content$data[[1, 1]]
+  expect_identical(nrow(prefixed_cell), 2L)
+  expect_identical(prefixed_cell$txt[[1L]], "Note.")
+  expect_true(prefixed_cell$italic[[1L]])    # "Note." italicised
+  expect_false(prefixed_cell$italic[[2L]])   # remainder in regular type
 })
 
 
