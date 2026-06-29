@@ -211,6 +211,11 @@ group_factor_terms <- function(term_order, coefs_long) {
 
 # ---- pivot_aligned_wide() ------------------------------------------------
 
+# Internal wide-format builder: reshapes a long aligned-coefs object into
+# one row per term with per-model value columns. Intentionally retained
+# (with its own unit tests) but NOT yet wired to a public output -- it is
+# the foundation for a future side-by-side wide export. Kept rather than
+# deleted so the tested shaping logic is ready when a consumer is added.
 pivot_aligned_wide <- function(
     aligned,
     value_fields = c("estimate", "se", "ci_low", "ci_high",

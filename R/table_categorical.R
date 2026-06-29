@@ -1665,10 +1665,6 @@ table_categorical <- function(
     }
   }
 
-  if (show_assoc && is.null(measure_col)) {
-    measure_col <- "Cramer's V"
-  }
-
   # Collapse the per-variable measure vector into the column header
   # the printed / wide outputs will use:
   #   * one measure used everywhere -> that measure's pretty label
