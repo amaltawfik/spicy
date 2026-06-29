@@ -535,7 +535,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
                 !is.null(cluster) &&
                 spicy_pkg_available("clubSandwich")
   df_satt_map <- if (use_satt) {
-    compute_satt_df_per_coef_glm(fit, vc, cluster)
+    compute_satt_df_per_coef(fit, vc, cluster)
   } else {
     NULL
   }
@@ -664,7 +664,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # Map coef name -> Satterthwaite df via clubSandwich::coef_test on the
 # original glm. Returns NULL on failure (e.g., clubSandwich missing,
 # coef_test errored). Caller falls back to z-asymptotic.
-compute_satt_df_per_coef_glm <- function(fit, vc, cluster) {
+compute_satt_df_per_coef <- function(fit, vc, cluster) {
   ct <- tryCatch(
     clubSandwich::coef_test(
       fit,

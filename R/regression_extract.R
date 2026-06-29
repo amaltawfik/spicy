@@ -278,21 +278,17 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
       )
     } else {
-      # Class-aware inference: glm uses z-asymptotic Wald (matches
-      # summary.glm / Stata logit / SPSS LOGISTIC); lm uses t with
-      # df.residual or Satterthwaite df under CR* (lm_compute.R).
-      inf_fn <- if (inherits(fit, "glm")) {
-        compute_glm_coef_inference
-      } else {
-        compute_coef_inference
-      }
-      inf <- inf_fn(
+      # Inference reference distribution follows the ESTIMATOR, not the class:
+      # glm uses z-asymptotic Wald (matches summary.glm / Stata logit / SPSS
+      # LOGISTIC); lm uses t with df.residual (or Satterthwaite df under CR*).
+      inf <- compute_coef_inference(
         fit = fit,
         coef_idx = i,
         vc = vc,
         vcov_type = vcov_type,
         cluster = cluster,
-        ci_level = ci_level
+        ci_level = ci_level,
+        test = if (inherits(fit, "glm")) "z" else "t"
       )
       ci_low_i <- inf$ci_lower
       ci_high_i <- inf$ci_upper

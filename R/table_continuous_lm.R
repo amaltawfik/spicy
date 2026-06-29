@@ -1672,7 +1672,7 @@ fit_categorical_predictor_lm_rows <- function(
     x_coef_idx <- seq_along(cf)[-1]
     # nocov end
   }
-  wald <- compute_lm_wald_test(
+  wald <- compute_wald_test(
     fit,
     coef_idx_set = x_coef_idx,
     vc = vc,

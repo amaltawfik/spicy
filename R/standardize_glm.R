@@ -30,7 +30,7 @@
 # Inference under all algebraic methods is exact: the t (z) statistic
 # and p-value are invariant under linear rescaling. CIs are recomputed
 # from the scaled SE using the same critical value as the unscaled
-# inference (z for glm -- df = Inf -- matching `compute_glm_coef_inference`).
+# inference (z for glm -- df = Inf -- matching `compute_coef_inference`).
 
 
 # ---- Public-internal dispatch --------------------------------------------
@@ -212,7 +212,7 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   # Default: z-asymptotic (df = Inf) -- matches glm convention.
   #
   # CR* + cluster: Satterthwaite-corrected df via clubSandwich,
-  # parallelling `compute_glm_coef_inference()` for the B row. Without
+  # parallelling `compute_coef_inference()` for the B row. Without
   # this, the beta row would silently revert to z while the B row uses
   # Satterthwaite, producing inconsistent CIs / p-values for what is
   # mathematically the same test (linear rescaling preserves the
@@ -222,7 +222,7 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
                 !is.null(cluster) &&
                 spicy_pkg_available("clubSandwich")
   if (use_satt) {
-    df_satt_map <- compute_satt_df_per_coef_glm(fit, vc, cluster)
+    df_satt_map <- compute_satt_df_per_coef(fit, vc, cluster)
     if (!is.null(df_satt_map)) {
       hits <- match(names(b), names(df_satt_map))
       df_vec[!is.na(hits)] <- df_satt_map[hits[!is.na(hits)]]
@@ -362,8 +362,8 @@ glm_coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
            ci_upper = NA_real_, statistic = NA_real_, df = NA_real_,
            p.value = NA_real_)
     } else {
-      compute_glm_coef_inference(fit_std, i, vc_std, vcov_type,
-                                  cluster, ci_level)
+      compute_coef_inference(fit_std, i, vc_std, vcov_type,
+                             cluster, ci_level, test = "z")
     }
   })
 

@@ -124,7 +124,7 @@ test_that("compute_partial_chi2_for_term: NULL for a term not in the model", {
 
 # ---- CR* Satterthwaite normal-approx fallback (non-finite df) --------------
 
-test_that("compute_glm_coef_inference: CR2 with non-finite Satterthwaite df falls back to z critical value", {
+test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite df falls back to z critical value", {
   # The CR* Satterthwaite branch computes a t critical value when
   # df_Satt is finite and positive, and otherwise falls back to the
   # normal-approximation (z) critical value qnorm(1 - alpha/2).
@@ -155,9 +155,9 @@ test_that("compute_glm_coef_inference: CR2 with non-finite Satterthwaite df fall
   )
   expect_false(is.finite(ct$df_Satt[2L]))
 
-  res <- spicy:::compute_glm_coef_inference(
+  res <- spicy:::compute_coef_inference(
     fit = fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
-    cluster = d$cluster, ci_level = 0.95
+    cluster = d$cluster, ci_level = 0.95, test = "z"
   )
 
   # We entered the CR* Satterthwaite return block (test_type 't', not 'z')...

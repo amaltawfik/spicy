@@ -1159,9 +1159,9 @@ test_that("AUDIT: B-row Satterthwaite under CR* (direct unit test)", {
                   clinic = rep(letters[1:20], each = 10))
   fit <- glm(y ~ x, data = d, family = binomial)
   vc <- compute_model_vcov(fit, type = "CR2", cluster = d$clinic)
-  inf <- spicy:::compute_glm_coef_inference(
+  inf <- spicy:::compute_coef_inference(
     fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
-    cluster = d$clinic, ci_level = 0.95
+    cluster = d$clinic, ci_level = 0.95, test = "z"
   )
   expect_equal(inf$test_type, "t")
   expect_true(is.finite(inf$df) && inf$df < n)  # Satterthwaite df is small
@@ -1251,7 +1251,7 @@ test_that("AUDIT B3: pseudo_r2_* preserve offset in null model refit", {
 })
 
 test_that("AUDIT B4: glm + bootstrap vcov refits as glm (not lm)", {
-  # Bug: compute_lm_vcov_bootstrap hard-coded stats::lm() in the refit
+  # Bug: compute_resample_vcov_bootstrap hard-coded stats::lm() in the refit
   # closure, so for a glm fit the bootstrap variance was computed for
   # a misspecified linear model on the (often binary) response. SEs
   # were underestimated by an order of magnitude.

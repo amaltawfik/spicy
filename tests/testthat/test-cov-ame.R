@@ -5,7 +5,7 @@
 #   * the bootstrap/jackknife `df = Inf` regime in the marginaleffects path
 #   * the `avg_slopes()` failure fallbacks (lm / glm / mixed-frame)
 #   * the inline-`factor()` grep fallbacks (glm + mixed-frame)
-#   * the `compute_satt_df_per_coef_glm()` NULL-on-failure guard
+#   * the `compute_satt_df_per_coef()` NULL-on-failure guard
 #   * the `.compute_ame_rows_for_frame()` / `.attach_ame_to_frame_coefs()`
 #     no-op and schema-padding guards
 #
@@ -144,16 +144,16 @@ test_that("extract_ame_glm resolves inline factor(x) to the model-frame column",
 })
 
 
-# ---- compute_satt_df_per_coef_glm: NULL on failure ---------------------
+# ---- compute_satt_df_per_coef: NULL on failure ---------------------
 
-test_that("compute_satt_df_per_coef_glm returns NULL when coef_test errors", {
+test_that("compute_satt_df_per_coef returns NULL when coef_test errors", {
   # A malformed vcov makes clubSandwich::coef_test() error; the helper
   # catches it and returns NULL so the caller can fall back to z.
   skip_if_no_cs()
   fit <- glm(vs ~ wt, data = mtcars, family = binomial)
   bad_vc <- matrix(NA_real_, 3L, 3L,
                    dimnames = list(c("a", "b", "c"), c("a", "b", "c")))
-  res <- spicy:::compute_satt_df_per_coef_glm(
+  res <- spicy:::compute_satt_df_per_coef(
     fit, vc = bad_vc, cluster = mtcars$cyl
   )
   expect_null(res)

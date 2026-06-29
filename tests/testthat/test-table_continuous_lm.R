@@ -2002,11 +2002,11 @@ test_that("wide raw column names match wide display when ci_level is custom", {
 
 # ---- categorical Wald F: tryCatch around solve(vc_sub, beta_sub) ----
 
-test_that("compute_lm_wald_test degrades to NA on a singular submatrix", {
+test_that("compute_wald_test degrades to NA on a singular submatrix", {
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- stats::vcov(fit)
   vc[, ] <- 0
-  result <- spicy:::compute_lm_wald_test(
+  result <- spicy:::compute_wald_test(
     fit,
     coef_idx_set = 2:3,
     vc = vc,
@@ -2553,13 +2553,13 @@ test_that("boot_n validates as a positive integer >= 50", {
 
 # ---- additional coverage: SE helpers and edge cases ----
 
-test_that("compute_lm_vcov_bootstrap reproducibility and weighted refit", {
+test_that("compute_resample_vcov_bootstrap reproducibility and weighted refit", {
   set.seed(20260418)
   fit <- stats::lm(extra ~ group, data = sleep)
   set.seed(20260418)
-  vc1 <- spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 100)
+  vc1 <- spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 100)
   set.seed(20260418)
-  vc2 <- spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 100)
+  vc2 <- spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 100)
   expect_equal(vc1, vc2)
   expect_true(is.matrix(vc1))
   expect_equal(dim(vc1), c(2L, 2L))
@@ -2568,14 +2568,14 @@ test_that("compute_lm_vcov_bootstrap reproducibility and weighted refit", {
   w <- stats::runif(nrow(sleep), 0.5, 1.5)
   fit_w <- stats::lm(extra ~ group, data = sleep, weights = w)
   set.seed(20260418)
-  vc_w <- spicy:::compute_lm_vcov_bootstrap(fit_w, boot_n = 100, weights = w)
+  vc_w <- spicy:::compute_resample_vcov_bootstrap(fit_w, boot_n = 100, weights = w)
   expect_true(is.matrix(vc_w))
   expect_equal(dim(vc_w), c(2L, 2L))
 })
 
-test_that("compute_lm_vcov_jackknife reproduces the leave-one-out variance", {
+test_that("compute_resample_vcov_jackknife reproduces the leave-one-out variance", {
   fit <- stats::lm(extra ~ group, data = sleep)
-  vc <- spicy:::compute_lm_vcov_jackknife(fit)
+  vc <- spicy:::compute_resample_vcov_jackknife(fit)
   expect_true(is.matrix(vc))
   expect_equal(dim(vc), c(2L, 2L))
   # Closed-form jackknife for the slope
@@ -2695,16 +2695,16 @@ test_that("get_test_header_lm covers all test_type branches", {
   expect_null(spicy:::get_test_header_lm(out_kgt2, FALSE, TRUE))
 })
 
-test_that("compute_lm_vcov_bootstrap warns on too few valid replicates", {
+test_that("compute_resample_vcov_bootstrap warns on too few valid replicates", {
   # Fit before mocking so the original fit succeeds; the mock then
-  # blocks every refit inside compute_lm_vcov_bootstrap.
+  # blocks every refit inside compute_resample_vcov_bootstrap.
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     lm = function(...) stop("synthetic refit failure"),
     .package = "stats"
   )
   msg <- tryCatch(
-    spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 100),
+    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 100),
     warning = function(w) conditionMessage(w)
   )
   expect_true(is.character(msg))
@@ -2715,10 +2715,10 @@ test_that("compute_lm_vcov_bootstrap warns on too few valid replicates", {
 
 # ---- coverage: more SE error paths and helper branches ----
 
-test_that("compute_lm_vcov_bootstrap cluster path produces a finite vcov", {
+test_that("compute_resample_vcov_bootstrap cluster path produces a finite vcov", {
   set.seed(20260418)
   fit <- stats::lm(extra ~ group, data = sleep)
-  vc <- spicy:::compute_lm_vcov_bootstrap(
+  vc <- spicy:::compute_resample_vcov_bootstrap(
     fit,
     cluster = sleep$ID,
     boot_n = 100
@@ -2728,23 +2728,23 @@ test_that("compute_lm_vcov_bootstrap cluster path produces a finite vcov", {
   expect_true(all(is.finite(vc)))
 })
 
-test_that("compute_lm_vcov_jackknife cluster path matches leave-one-out", {
+test_that("compute_resample_vcov_jackknife cluster path matches leave-one-out", {
   fit <- stats::lm(extra ~ group, data = sleep)
-  vc_obs <- spicy:::compute_lm_vcov_jackknife(fit)
-  vc_cl <- spicy:::compute_lm_vcov_jackknife(fit, cluster = sleep$ID)
+  vc_obs <- spicy:::compute_resample_vcov_jackknife(fit)
+  vc_cl <- spicy:::compute_resample_vcov_jackknife(fit, cluster = sleep$ID)
   expect_true(is.matrix(vc_obs))
   expect_true(is.matrix(vc_cl))
   expect_false(isTRUE(all.equal(vc_obs, vc_cl)))
 })
 
-test_that("compute_lm_vcov_jackknife falls back when too few replicates", {
+test_that("compute_resample_vcov_jackknife falls back when too few replicates", {
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     lm = function(...) stop("synthetic refit failure"),
     .package = "stats"
   )
   msg <- tryCatch(
-    spicy:::compute_lm_vcov_jackknife(fit),
+    spicy:::compute_resample_vcov_jackknife(fit),
     warning = function(w) conditionMessage(w)
   )
   expect_match(msg, "fewer than 2 valid")
@@ -2793,14 +2793,14 @@ test_that("compute_coef_inference falls back when clubSandwich coef_test errors"
   expect_true(is.finite(out$se))
 })
 
-test_that("compute_lm_wald_test falls back when clubSandwich Wald_test errors", {
+test_that("compute_wald_test falls back when clubSandwich Wald_test errors", {
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = iris$Species)
   testthat::local_mocked_bindings(
     Wald_test = function(...) stop("synthetic Wald_test failure"),
     .package = "clubSandwich"
   )
-  out <- spicy:::compute_lm_wald_test(
+  out <- spicy:::compute_wald_test(
     fit,
     coef_idx_set = 2:3,
     vc = vc,
@@ -2811,9 +2811,9 @@ test_that("compute_lm_wald_test falls back when clubSandwich Wald_test errors", 
   expect_true(is.finite(out$statistic))
 })
 
-test_that("compute_lm_wald_test handles q == 0", {
+test_that("compute_wald_test handles q == 0", {
   fit <- stats::lm(extra ~ group, data = sleep)
-  out <- spicy:::compute_lm_wald_test(
+  out <- spicy:::compute_wald_test(
     fit,
     coef_idx_set = integer(0),
     vc = stats::vcov(fit),
@@ -3158,7 +3158,7 @@ test_that("compute_model_vcov simulates clubSandwich missing for CR types", {
 
 # ---- coverage: bootstrap warnings ----
 
-test_that("compute_lm_vcov_bootstrap warns when fewer than 10 valid replicates", {
+test_that("compute_resample_vcov_bootstrap warns when fewer than 10 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   # Force every refit to fail by mocking lm so 0 replicates succeed.
   testthat::local_mocked_bindings(
@@ -3166,14 +3166,14 @@ test_that("compute_lm_vcov_bootstrap warns when fewer than 10 valid replicates",
     .package = "stats"
   )
   msg <- tryCatch(
-    spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 20L),
+    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 20L),
     warning = function(w) conditionMessage(w)
   )
   expect_match(msg, "only 0 / 20 replicates were valid")
   expect_match(msg, "unreliable")
 })
 
-test_that("compute_lm_vcov_bootstrap warns when over half of replicates fail", {
+test_that("compute_resample_vcov_bootstrap warns when over half of replicates fail", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   real_lm <- stats::lm
   call_count <- 0L
@@ -3191,7 +3191,7 @@ test_that("compute_lm_vcov_bootstrap warns when over half of replicates fail", {
   )
   withr::with_seed(123, {
     msg <- tryCatch(
-      spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 60L),
+      spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 60L),
       warning = function(w) conditionMessage(w)
     )
   })
@@ -3566,23 +3566,23 @@ test_that("compute_model_vcov CR fallback returns the classical vcov after warni
   expect_equal(vc, stats::vcov(fit))
 })
 
-test_that("compute_lm_vcov_bootstrap fallback returns the classical vcov when 0 valid replicates", {
+test_that("compute_resample_vcov_bootstrap fallback returns the classical vcov when 0 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
     lm = function(...) stop("synthetic lm failure"),
     .package = "stats"
   )
-  vc <- suppressWarnings(spicy:::compute_lm_vcov_bootstrap(fit, boot_n = 5L))
+  vc <- suppressWarnings(spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 5L))
   expect_equal(vc, stats::vcov(fit))
 })
 
-test_that("compute_lm_vcov_jackknife fallback returns the classical vcov when 0 valid replicates", {
+test_that("compute_resample_vcov_jackknife fallback returns the classical vcov when 0 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
     lm = function(...) stop("synthetic lm failure"),
     .package = "stats"
   )
-  vc <- suppressWarnings(spicy:::compute_lm_vcov_jackknife(fit))
+  vc <- suppressWarnings(spicy:::compute_resample_vcov_jackknife(fit))
   expect_equal(vc, stats::vcov(fit))
 })
 
@@ -3651,14 +3651,14 @@ test_that("compute_coef_inference uses qnorm CI when df.residual <= 0 (classical
   expect_equal(out$df, 0)
 })
 
-test_that("compute_lm_wald_test: clubSandwich constrain_zero failure falls through to classical Wald", {
+test_that("compute_wald_test: clubSandwich constrain_zero failure falls through to classical Wald", {
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = iris$Species)
   testthat::local_mocked_bindings(
     constrain_zero = function(...) stop("synthetic constrain_zero failure"),
     .package = "clubSandwich"
   )
-  out <- spicy:::compute_lm_wald_test(
+  out <- spicy:::compute_wald_test(
     fit,
     coef_idx_set = 2:3,
     vc = vc,

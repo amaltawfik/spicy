@@ -728,7 +728,7 @@
 #' [build_ascii_table()] for the low-level renderer.
 #' Inferential infrastructure (internal):
 #' `compute_model_vcov()`, `compute_coef_inference()`,
-#' `compute_lm_wald_test()`.
+#' `compute_wald_test()`.
 #' broom integration:
 #' [broom::tidy()], [broom::glance()].
 #'

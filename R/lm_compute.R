@@ -16,7 +16,7 @@ compute_model_vcov <- function(
   }
 
   if (identical(type, "bootstrap")) {
-    return(compute_lm_vcov_bootstrap(
+    return(compute_resample_vcov_bootstrap(
       fit,
       cluster = cluster,
       weights = weights,
@@ -25,7 +25,7 @@ compute_model_vcov <- function(
   }
 
   if (identical(type, "jackknife")) {
-    return(compute_lm_vcov_jackknife(
+    return(compute_resample_vcov_jackknife(
       fit,
       cluster = cluster,
       weights = weights
@@ -99,7 +99,7 @@ compute_model_vcov <- function(
 # replicate, and returns the empirical covariance of the bootstrapped
 # coefficients. References: Davison & Hinkley (1997); Cameron, Gelbach
 # & Miller (2008) for the cluster bootstrap.
-compute_lm_vcov_bootstrap <- function(
+compute_resample_vcov_bootstrap <- function(
   fit,
   cluster = NULL,
   weights = NULL,
@@ -219,7 +219,7 @@ compute_lm_vcov_bootstrap <- function(
 # variance-covariance matrix of the coefficient vector. References:
 # Quenouille (1956) and Tukey (1958) for the original jackknife;
 # MacKinnon & White (1985) for the linear-regression form.
-compute_lm_vcov_jackknife <- function(
+compute_resample_vcov_jackknife <- function(
   fit,
   cluster = NULL,
   weights = NULL
@@ -237,7 +237,7 @@ compute_lm_vcov_jackknife <- function(
   }
 
   # Class-aware refit: glm fits must be re-fit with stats::glm and the
-  # original family / link (see `compute_lm_vcov_bootstrap` for the
+  # original family / link (see `compute_resample_vcov_bootstrap` for the
   # same rationale).
   is_glm <- inherits(fit, "glm")
   fam <- if (is_glm) stats::family(fit) else NULL
@@ -302,18 +302,24 @@ compute_lm_vcov_jackknife <- function(
   scale * crossprod(centered)
 }
 
-# Internal: single-coefficient inference (estimate, SE, t, df, p, CI).
-# For classical / HC* mode, uses df.residual(fit) and the supplied vcov.
-# For CR* mode, uses clubSandwich::coef_test() with Satterthwaite df.
-# Falls back to df.residual + supplied vcov if coef_test fails.
+# Internal: single-coefficient inference (estimate, SE, statistic, df, p, CI).
+# Class-generic. The reference distribution of the classical / HC* default path
+# is chosen by `test`, NOT by the fit class: `test = "t"` uses df.residual(fit)
+# (or `df_resid` when supplied) -- the OLS / lmer convention; `test = "z"` uses
+# df = Inf -- the ML convention (glm, cox, ordinal, glmmTMB). Resampling
+# (bootstrap / jackknife) is always asymptotic z; CR* is always clubSandwich
+# Satterthwaite t (falling back to z when coef_test fails).
 compute_coef_inference <- function(
   fit,
   coef_idx,
   vc,
   vcov_type,
   cluster = NULL,
-  ci_level = 0.95
+  ci_level = 0.95,
+  test = c("t", "z"),
+  df_resid = NULL
 ) {
+  test <- match.arg(test)
   cf <- stats::coef(fit)
   estimate <- unname(cf[coef_idx])
 
@@ -373,25 +379,37 @@ compute_coef_inference <- function(
     }
   }
 
-  # Classical / HC* / CR fallback path
+  # Classical / HC* / CR-fallback default path: t (df.residual or `df_resid`)
+  # for `test = "t"`, z (df = Inf) for `test = "z"`. The axis is the estimator's
+  # reference distribution, not the fit class.
   se_est <- sqrt(diag(vc))[coef_idx]
-  df <- stats::df.residual(fit)
   stat <- estimate / se_est
-  crit <- if (is.finite(df) && df > 0) {
-    stats::qt(1 - (1 - ci_level) / 2, df = df)
+  if (identical(test, "z")) {
+    df <- Inf
+    crit <- stats::qnorm(1 - (1 - ci_level) / 2)
+    pval <- 2 * stats::pnorm(abs(stat), lower.tail = FALSE)
+    test_type <- "z"
   } else {
-    stats::qnorm(1 - (1 - ci_level) / 2)
+    df <- if (!is.null(df_resid)) df_resid else stats::df.residual(fit)
+    if (is.finite(df) && df > 0) {
+      crit <- stats::qt(1 - (1 - ci_level) / 2, df = df)
+      pval <- 2 * stats::pt(abs(stat), df = df, lower.tail = FALSE)
+      test_type <- "t"
+    } else {
+      crit <- stats::qnorm(1 - (1 - ci_level) / 2)
+      pval <- 2 * stats::pnorm(abs(stat), lower.tail = FALSE)
+      test_type <- "z"
+    }
   }
-  pval <- 2 * stats::pt(abs(stat), df = df, lower.tail = FALSE)
   list(
     estimate = estimate,
     se = unname(se_est),
     statistic = unname(stat),
-    df = as.double(unname(df)),
+    df = as.double(df),
     p.value = unname(pval),
     ci_lower = estimate - crit * unname(se_est),
     ci_upper = estimate + crit * unname(se_est),
-    test_type = "t"
+    test_type = test_type
   )
 }
 
@@ -400,7 +418,7 @@ compute_coef_inference <- function(
 # clubSandwich::Wald_test() with the HTZ (Hotelling-T-squared with
 # Satterthwaite df) method; for classical / HC* uses the Wald F with
 # df.residual.
-compute_lm_wald_test <- function(
+compute_wald_test <- function(
   fit,
   coef_idx_set,
   vc,
