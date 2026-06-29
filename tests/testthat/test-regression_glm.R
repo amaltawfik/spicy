@@ -1158,7 +1158,7 @@ test_that("AUDIT: B-row Satterthwaite under CR* (direct unit test)", {
   d <- data.frame(y = rbinom(n, 1, 0.5), x = rnorm(n),
                   clinic = rep(letters[1:20], each = 10))
   fit <- glm(y ~ x, data = d, family = binomial)
-  vc <- compute_lm_vcov(fit, type = "CR2", cluster = d$clinic)
+  vc <- compute_model_vcov(fit, type = "CR2", cluster = d$clinic)
   inf <- spicy:::compute_glm_coef_inference(
     fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
     cluster = d$clinic, ci_level = 0.95
@@ -1257,7 +1257,7 @@ test_that("AUDIT B4: glm + bootstrap vcov refits as glm (not lm)", {
   # were underestimated by an order of magnitude.
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   set.seed(42)
-  vc_boot <- spicy:::compute_lm_vcov(fit, type = "bootstrap", boot_n = 100L)
+  vc_boot <- spicy:::compute_model_vcov(fit, type = "bootstrap", boot_n = 100L)
   # SE order of magnitude under the FIX should be roughly comparable
   # to (or larger than, for small n with binary data) the classical
   # MLE SE. Under the BUG, bootstrap SEs were ~30x smaller.
@@ -1275,7 +1275,7 @@ test_that("AUDIT B4: glm + jackknife vcov refits as glm (not lm)", {
   set.seed(42)
   d <- data.frame(y = rbinom(50, 1, 0.5), x = rnorm(50))
   fit <- glm(y ~ x, data = d, family = binomial)
-  vc_jk <- spicy:::compute_lm_vcov(fit, type = "jackknife")
+  vc_jk <- spicy:::compute_model_vcov(fit, type = "jackknife")
   # SE on x should be on the same order of magnitude as classical
   # (jackknife is conservative; ratio should be in [0.5, 5] under
   # the FIX, was ~0.05 under the BUG).

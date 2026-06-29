@@ -59,7 +59,7 @@ extract_lm_phase1 <- function(
   weights <- stats::weights(fit)
 
   # ---- vcov computation (reuse R/lm_compute.R) ----------------------------
-  vc <- compute_lm_vcov(
+  vc <- compute_model_vcov(
     fit,
     type = vcov_type,
     cluster = cluster,
@@ -285,7 +285,7 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       inf_fn <- if (inherits(fit, "glm")) {
         compute_glm_coef_inference
       } else {
-        compute_lm_coef_inference
+        compute_coef_inference
       }
       inf <- inf_fn(
         fit = fit,

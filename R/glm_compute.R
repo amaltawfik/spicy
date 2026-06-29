@@ -105,7 +105,7 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 
 # ---- Per-coefficient inference (z-asymptotic) ----------------------------
 
-# glm coef inference -- mirrors compute_lm_coef_inference() in
+# glm coef inference -- mirrors compute_coef_inference() in
 # lm_compute.R but with z-asymptotic CIs and df = Inf, matching
 # `summary.glm()` and the conventional output of Stata `logit`,
 # SPSS `LOGISTIC REGRESSION`, and SAS `PROC LOGISTIC`.

@@ -97,7 +97,7 @@ test_that("coefs_inference_table NAs the intercept when intercept_to_na=TRUE", {
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- lm(mpg ~ wt, data = mf)
-  vc <- spicy:::compute_lm_vcov(fit_std, type = "classical",
+  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
                                 cluster = NULL, weights = NULL, boot_n = 0L)
 
   out <- spicy:::coefs_inference_table(
@@ -126,7 +126,7 @@ test_that("coefs_inference_table keeps the intercept when intercept_to_na=FALSE"
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- lm(mpg ~ wt, data = mf)
-  vc <- spicy:::compute_lm_vcov(fit_std, type = "classical",
+  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
                                 cluster = NULL, weights = NULL, boot_n = 0L)
 
   out <- spicy:::coefs_inference_table(

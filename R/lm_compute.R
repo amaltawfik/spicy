@@ -4,7 +4,7 @@
 # bootstrap / jackknife), single-coef and Wald inference, model
 # stats, and noncentral effect-size CIs.
 
-compute_lm_vcov <- function(
+compute_model_vcov <- function(
   fit,
   type = "classical",
   cluster = NULL,
@@ -306,7 +306,7 @@ compute_lm_vcov_jackknife <- function(
 # For classical / HC* mode, uses df.residual(fit) and the supplied vcov.
 # For CR* mode, uses clubSandwich::coef_test() with Satterthwaite df.
 # Falls back to df.residual + supplied vcov if coef_test fails.
-compute_lm_coef_inference <- function(
+compute_coef_inference <- function(
   fit,
   coef_idx,
   vc,

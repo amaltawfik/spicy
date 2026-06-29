@@ -124,7 +124,7 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
     ))
   }
 
-  vc_std <- compute_lm_vcov(
+  vc_std <- compute_model_vcov(
     fit_std,
     type = vcov_type,
     cluster = cluster,
@@ -156,7 +156,7 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   factor_treatment <- match.arg(factor_treatment)
 
   b <- stats::coef(fit)
-  vc <- compute_lm_vcov(
+  vc <- compute_model_vcov(
     fit, type = vcov_type, cluster = cluster,
     weights = weights, boot_n = boot_n
   )

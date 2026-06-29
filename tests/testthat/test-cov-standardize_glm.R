@@ -85,7 +85,7 @@ test_that("glm_coefs_inference_table NAs the intercept when intercept_to_na=TRUE
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- glm(am ~ mpg, data = mf, family = binomial)
-  vc <- spicy:::compute_lm_vcov(fit_std, type = "classical",
+  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
                                 cluster = NULL, weights = NULL, boot_n = 0L)
 
   out <- spicy:::glm_coefs_inference_table(
@@ -117,7 +117,7 @@ test_that("glm_coefs_inference_table keeps the intercept when intercept_to_na=FA
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- glm(am ~ mpg, data = mf, family = binomial)
-  vc <- spicy:::compute_lm_vcov(fit_std, type = "classical",
+  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
                                 cluster = NULL, weights = NULL, boot_n = 0L)
 
   out <- spicy:::glm_coefs_inference_table(

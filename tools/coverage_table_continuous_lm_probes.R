@@ -300,14 +300,14 @@ detect_weights_column_name(rlang::quo("w"), data.frame(y = 1:3, w = 1:3))
 
 fit <- lm(mpg ~ wt, data = mtcars)
 compute_lm_model_stats(fit)
-compute_lm_vcov(fit, "classical")
-compute_lm_vcov(fit, "HC0")
-compute_lm_vcov(fit, "HC1")
-compute_lm_vcov(fit, "HC2")
-compute_lm_vcov(fit, "HC3")
-compute_lm_vcov(fit, "HC4")
-compute_lm_vcov(fit, "HC4m")
-compute_lm_vcov(fit, "HC5")
+compute_model_vcov(fit, "classical")
+compute_model_vcov(fit, "HC0")
+compute_model_vcov(fit, "HC1")
+compute_model_vcov(fit, "HC2")
+compute_model_vcov(fit, "HC3")
+compute_model_vcov(fit, "HC4")
+compute_model_vcov(fit, "HC4m")
+compute_model_vcov(fit, "HC5")
 
 local({
   testthat::local_mocked_bindings(

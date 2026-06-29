@@ -956,7 +956,7 @@ Underlying machinery:
 \code{\link[=spicy_print_table]{spicy_print_table()}} for ASCII rendering;
 \code{\link[=build_ascii_table]{build_ascii_table()}} for the low-level renderer.
 Inferential infrastructure (internal):
-\code{compute_lm_vcov()}, \code{compute_lm_coef_inference()},
+\code{compute_model_vcov()}, \code{compute_coef_inference()},
 \code{compute_lm_wald_test()}.
 broom integration:
 \code{\link[broom:tidy]{broom::tidy()}}, \code{\link[broom:glance]{broom::glance()}}.

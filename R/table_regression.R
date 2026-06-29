@@ -727,7 +727,7 @@
 #' [spicy_print_table()] for ASCII rendering;
 #' [build_ascii_table()] for the low-level renderer.
 #' Inferential infrastructure (internal):
-#' `compute_lm_vcov()`, `compute_lm_coef_inference()`,
+#' `compute_model_vcov()`, `compute_coef_inference()`,
 #' `compute_lm_wald_test()`.
 #' broom integration:
 #' [broom::tidy()], [broom::glance()].

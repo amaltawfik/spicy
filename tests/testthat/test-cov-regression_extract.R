@@ -31,7 +31,7 @@ test_that("profile CI on an intercept-only glm falls back to Wald with a warning
   # non-matrix, emits a `spicy_fallback` warning, and reverts to Wald CI.
   skip_if_not_installed("MASS")
   fit <- glm(am ~ 1, data = mtcars, family = binomial)
-  vc <- spicy:::compute_lm_vcov(
+  vc <- spicy:::compute_model_vcov(
     fit, type = "classical", cluster = NULL, weights = NULL, boot_n = 1000L
   )
 

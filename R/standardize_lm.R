@@ -114,7 +114,7 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
   }
 
   # Apply user's vcov to the refitted model and run per-coef inference
-  vc_std <- compute_lm_vcov(
+  vc_std <- compute_model_vcov(
     fit_std,
     type = vcov_type,
     cluster = cluster,
@@ -215,7 +215,7 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
   factor_treatment <- match.arg(factor_treatment)
 
   b <- stats::coef(fit)
-  vc <- compute_lm_vcov(
+  vc <- compute_model_vcov(
     fit,
     type = vcov_type,
     cluster = cluster,
@@ -309,7 +309,7 @@ coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
            ci_upper = NA_real_, statistic = NA_real_, df = NA_real_,
            p.value = NA_real_)
     } else {
-      compute_lm_coef_inference(fit_std, i, vc_std, vcov_type,
+      compute_coef_inference(fit_std, i, vc_std, vcov_type,
                                  cluster, ci_level)
     }
   })

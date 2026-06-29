@@ -1491,7 +1491,7 @@ fit_numeric_predictor_lm_rows <- function(
     stats::lm(formula, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(
+  vc <- compute_model_vcov(
     fit,
     vcov_type,
     cluster = cluster,
@@ -1511,7 +1511,7 @@ fit_numeric_predictor_lm_rows <- function(
   # intercept). When covariates are present they come AFTER x in the
   # design matrix because `reformulate(c("x", cov_names))` orders
   # terms left-to-right, so position 2 still picks out x.
-  inf <- compute_lm_coef_inference(
+  inf <- compute_coef_inference(
     fit,
     coef_idx = 2L,
     vc = vc,
@@ -1597,7 +1597,7 @@ fit_categorical_predictor_lm_rows <- function(
     stats::lm(formula, data = model_df, weights = weights)
   }
 
-  vc <- compute_lm_vcov(
+  vc <- compute_model_vcov(
     fit,
     vcov_type,
     cluster = cluster,
@@ -1732,7 +1732,7 @@ fit_categorical_predictor_lm_rows <- function(
     for (i in seq_len(nlevels(x) - 1L)) {
       coef_idx <- i + 1L
       row_idx <- i + 1L
-      inf <- compute_lm_coef_inference(
+      inf <- compute_coef_inference(
         fit,
         coef_idx = coef_idx,
         vc = vc,

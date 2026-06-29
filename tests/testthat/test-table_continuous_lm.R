@@ -789,14 +789,14 @@ test_that("table_continuous_lm internal covariance helper covers fallback branch
   fit_singular <- lm(mpg ~ wt + I(2 * wt), data = mtcars)
 
   expect_error(
-    spicy:::compute_lm_vcov(fit, "bogus"),
+    spicy:::compute_model_vcov(fit, "bogus"),
     "Unknown `vcov` type"
   )
 
   # sandwich::vcovHC handles rank-deficient fits gracefully by
   # returning the (rank x rank) matrix for the identifiable
   # coefficients, without raising a warning.
-  vc <- spicy:::compute_lm_vcov(fit_singular, "HC3")
+  vc <- spicy:::compute_model_vcov(fit_singular, "HC3")
   expect_true(is.matrix(vc))
   expect_equal(dim(vc), c(fit_singular$rank, fit_singular$rank))
   expect_false(anyNA(vc))
@@ -2586,22 +2586,22 @@ test_that("compute_lm_vcov_jackknife reproduces the leave-one-out variance", {
   expect_equal(vc[2, 2], jack_var, tolerance = 1e-8)
 })
 
-test_that("compute_lm_vcov dispatches by type and validates unknowns", {
+test_that("compute_model_vcov dispatches by type and validates unknowns", {
   fit <- stats::lm(extra ~ group, data = sleep)
   expect_equal(
-    spicy:::compute_lm_vcov(fit, "classical"),
+    spicy:::compute_model_vcov(fit, "classical"),
     stats::vcov(fit)
   )
-  vc_boot <- spicy:::compute_lm_vcov(fit, "bootstrap", boot_n = 100)
+  vc_boot <- spicy:::compute_model_vcov(fit, "bootstrap", boot_n = 100)
   expect_true(is.matrix(vc_boot))
-  vc_jack <- spicy:::compute_lm_vcov(fit, "jackknife")
+  vc_jack <- spicy:::compute_model_vcov(fit, "jackknife")
   expect_true(is.matrix(vc_jack))
   expect_error(
-    spicy:::compute_lm_vcov(fit, "BOGUS"),
+    spicy:::compute_model_vcov(fit, "BOGUS"),
     "Unknown `vcov` type"
   )
   expect_error(
-    spicy:::compute_lm_vcov(fit, "CR2"),
+    spicy:::compute_model_vcov(fit, "CR2"),
     "requires `cluster`"
   )
 })
@@ -2750,22 +2750,22 @@ test_that("compute_lm_vcov_jackknife falls back when too few replicates", {
   expect_match(msg, "fewer than 2 valid")
 })
 
-test_that("compute_lm_vcov errors for CR* without cluster and clubSandwich", {
+test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", {
   fit <- stats::lm(extra ~ group, data = sleep)
   expect_error(
-    spicy:::compute_lm_vcov(fit, type = "CR2"),
+    spicy:::compute_model_vcov(fit, type = "CR2"),
     "requires `cluster`"
   )
 })
 
-test_that("compute_lm_vcov CR fallback warns when clubSandwich errors", {
+test_that("compute_model_vcov CR fallback warns when clubSandwich errors", {
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
     .package = "clubSandwich"
   )
   msg <- tryCatch(
-    spicy:::compute_lm_vcov(fit, type = "CR2", cluster = sleep$ID),
+    spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID),
     warning = function(w) conditionMessage(w)
   )
   expect_true(is.character(msg))
@@ -2773,14 +2773,14 @@ test_that("compute_lm_vcov CR fallback warns when clubSandwich errors", {
   expect_match(msg, "synthetic CR failure")
 })
 
-test_that("compute_lm_coef_inference falls back when clubSandwich coef_test errors", {
+test_that("compute_coef_inference falls back when clubSandwich coef_test errors", {
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = sleep$ID)
   testthat::local_mocked_bindings(
     coef_test = function(...) stop("synthetic coef_test failure"),
     .package = "clubSandwich"
   )
-  out <- spicy:::compute_lm_coef_inference(
+  out <- spicy:::compute_coef_inference(
     fit,
     coef_idx = 2L,
     vc = vc,
@@ -3018,8 +3018,8 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
   expect_equal(spicy:::pick_es_value_lm(ms, "g"), 0.45)
 })
 
-test_that("compute_lm_vcov falls back to classical vcov when sandwich errors", {
-  # The defensive fallback in compute_lm_vcov (warn + return classical
+test_that("compute_model_vcov falls back to classical vcov when sandwich errors", {
+  # The defensive fallback in compute_model_vcov (warn + return classical
   # vcov) is reached only when sandwich::vcovHC() itself errors. We
   # mock a failure to verify the fallback path emits a clear sprintf
   # warning and returns a usable (possibly-NA) matrix.
@@ -3030,7 +3030,7 @@ test_that("compute_lm_vcov falls back to classical vcov when sandwich errors", {
 
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   msg <- tryCatch(
-    spicy:::compute_lm_vcov(fit, "HC4m"),
+    spicy:::compute_model_vcov(fit, "HC4m"),
     warning = function(w) conditionMessage(w)
   )
 
@@ -3041,11 +3041,11 @@ test_that("compute_lm_vcov falls back to classical vcov when sandwich errors", {
   expect_match(msg, "Falling back to the classical OLS variance")
 })
 
-test_that("compute_lm_vcov matches sandwich::vcovHC numerically", {
+test_that("compute_model_vcov matches sandwich::vcovHC numerically", {
   fit <- stats::lm(mpg ~ wt + cyl, data = mtcars)
   for (type in c("HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5")) {
     expect_equal(
-      spicy:::compute_lm_vcov(fit, type),
+      spicy:::compute_model_vcov(fit, type),
       sandwich::vcovHC(fit, type = type),
       info = paste0("vcov type = ", type)
     )
@@ -3128,17 +3128,17 @@ test_that("resolve_cluster_argument rejects non-atomic resolved value", {
   )
 })
 
-# ---- coverage: compute_lm_vcov dispatch ----
+# ---- coverage: compute_model_vcov dispatch ----
 
-test_that("compute_lm_vcov errors clearly on unknown vcov type", {
+test_that("compute_model_vcov errors clearly on unknown vcov type", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   expect_error(
-    spicy:::compute_lm_vcov(fit, type = "BOGUS"),
+    spicy:::compute_model_vcov(fit, type = "BOGUS"),
     "Unknown `vcov` type"
   )
 })
 
-test_that("compute_lm_vcov simulates clubSandwich missing for CR types", {
+test_that("compute_model_vcov simulates clubSandwich missing for CR types", {
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     requireNamespace = function(package, ...) {
@@ -3147,7 +3147,7 @@ test_that("compute_lm_vcov simulates clubSandwich missing for CR types", {
     .package = "base"
   )
   expect_error(
-    spicy:::compute_lm_vcov(
+    spicy:::compute_model_vcov(
       fit,
       type = "CR2",
       cluster = sleep$ID
@@ -3542,25 +3542,25 @@ test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)
   expect_equal(nrow(out), 3L)
 })
 
-test_that("compute_lm_vcov HC fallback returns the classical vcov after warning", {
+test_that("compute_model_vcov HC fallback returns the classical vcov after warning", {
   testthat::local_mocked_bindings(
     vcovHC = function(x, type, ...) stop("synthetic test failure"),
     .package = "sandwich"
   )
   fit <- stats::lm(mpg ~ wt, data = mtcars)
-  vc <- suppressWarnings(spicy:::compute_lm_vcov(fit, "HC4m"))
+  vc <- suppressWarnings(spicy:::compute_model_vcov(fit, "HC4m"))
   expect_true(is.matrix(vc))
   expect_equal(vc, stats::vcov(fit))
 })
 
-test_that("compute_lm_vcov CR fallback returns the classical vcov after warning", {
+test_that("compute_model_vcov CR fallback returns the classical vcov after warning", {
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
     .package = "clubSandwich"
   )
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- suppressWarnings(
-    spicy:::compute_lm_vcov(fit, type = "CR2", cluster = sleep$ID)
+    spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID)
   )
   expect_true(is.matrix(vc))
   expect_equal(vc, stats::vcov(fit))
@@ -3611,7 +3611,7 @@ test_that("compute_lm_omega2 returns NA when sum of weights is non-positive", {
   )
 })
 
-test_that("compute_lm_coef_inference uses qnorm CI when df is not finite (CR path)", {
+test_that("compute_coef_inference uses qnorm CI when df is not finite (CR path)", {
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = sleep$ID)
   testthat::local_mocked_bindings(
@@ -3628,7 +3628,7 @@ test_that("compute_lm_coef_inference uses qnorm CI when df is not finite (CR pat
     },
     .package = "clubSandwich"
   )
-  out <- spicy:::compute_lm_coef_inference(
+  out <- spicy:::compute_coef_inference(
     fit,
     coef_idx = 2L,
     vc = vc,
@@ -3639,10 +3639,10 @@ test_that("compute_lm_coef_inference uses qnorm CI when df is not finite (CR pat
   expect_true(is.finite(out$ci_lower))
 })
 
-test_that("compute_lm_coef_inference uses qnorm CI when df.residual <= 0 (classical fallback)", {
+test_that("compute_coef_inference uses qnorm CI when df.residual <= 0 (classical fallback)", {
   # Perfect-fit lm: df.residual = 0 -> qnorm critical value branch
   fit <- stats::lm(c(1, 2, 3) ~ factor(c("a", "b", "c")))
-  out <- spicy:::compute_lm_coef_inference(
+  out <- spicy:::compute_coef_inference(
     fit,
     coef_idx = 2L,
     vc = stats::vcov(fit),
