@@ -100,6 +100,9 @@
 <li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: requesting AME companion columns (<code>ame_ci</code>, <code>ame_p</code>, <code>ame_se</code>) without the bare <code>ame</code> token now populates those columns (was empty).</p></li>
 <li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: ordered factors with AME columns now show a reference row (e.g. <code>Lower secondary (ref.)</code>), matching the convention already used for plain factors. In multi-model layout, a factor’s reference row is now blank in models that do not include the factor (was em-dashed regardless).</p></li>
 <li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: <code>stars = TRUE</code> now anchors stars on B and on AME (when shown). Previously stars went on β instead of B when both were displayed.</p></li>
+<li><p><code>table_regression(standardize = TRUE)</code>: latent-variable (y<em>) standardized coefficients for log-link binomial models (log-binomial / relative-risk) now return <code>NA</code> with a caveat – a log link has no latent threshold, so the y</em> standardization is undefined (previously an unjustified value using the logistic latent variance π²/3 was reported).</p></li>
+<li><p><code>table_regression(list(...))</code>: stray zero-width-space characters no longer remain in multi-model <code>tinytable</code> column headers (the internal duplicate-name disambiguator is now fully stripped from the rendered table).</p></li>
+<li><p><code>table_regression(p_adjust = ...)</code>: the p-value adjustment footer now quotes the method name with double quotes on every platform (previously single quotes on Unix and double quotes on Windows).</p></li>
 </ul></div>
 </div>
     <div class="section level2">
