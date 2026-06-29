@@ -217,6 +217,10 @@ test_that("tinytable renders with a note div (with-note finalize path)", {
   tt <- table_regression(list(m1, m2), output = "tinytable")  # note present
   html <- tinytable::save_tt(tt, output = "html")
   expect_match(html, "spicy-tt-note", fixed = TRUE)
+  # Bug regression: the U+200B duplicate-spanner disambiguator must be
+  # stripped before output (it leaked when the strip token was the ASCII
+  # string "200B" instead of the U+200B character).
+  expect_false(grepl(intToUtf8(0x200B), html, fixed = TRUE))
 })
 
 test_that("tinytable renders without a note (no-note finalize path)", {
@@ -229,6 +233,8 @@ test_that("tinytable renders without a note (no-note finalize path)", {
   expect_false(grepl("spicy-tt-note", html, fixed = TRUE))
   # Table body still rendered.
   expect_match(html, "<table", fixed = TRUE)
+  # Bug regression: no U+200B disambiguator leaks into the no-note path.
+  expect_false(grepl(intToUtf8(0x200B), html, fixed = TRUE))
 })
 
 

@@ -568,7 +568,8 @@ output_tinytable <- function(rendered) {
       # many CIs (or other identically-labelled spanners) the user
       # requested. See the "tinytable's `group_tt(j = list)`..."
       # comment above for the rationale.
-      zwsp <- "200B"
+      # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
+      zwsp <- intToUtf8(0x200B)
       if (grepl(zwsp, x@table_string, fixed = TRUE)) {
         x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
       }
@@ -604,7 +605,8 @@ output_tinytable <- function(rendered) {
     # No note: still register a finalize ONLY to strip the U+200B
     # spanner-label disambiguator from the rendered output.
     tt <- tinytable::style_tt(tt, finalize = function(x) {
-      zwsp <- "200B"
+      # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
+      zwsp <- intToUtf8(0x200B)
       if (grepl(zwsp, x@table_string, fixed = TRUE)) {
         x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
       }
