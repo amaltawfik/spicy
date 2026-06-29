@@ -1097,9 +1097,12 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
     sprintf("m = (%s) coefficient(s) per model",
             paste(sizes, collapse = ", "))
   }
+  # encodeString(quote = '"') gives a platform-independent double-quoted
+  # method name; shQuote() would render '...' on Unix vs "..." on Windows,
+  # making the footer inconsistent across operating systems.
   sprintf(
     "P-values adjusted via stats::p.adjust(method = %s); %s.",
-    shQuote(p_adjust), size_part
+    encodeString(p_adjust, quote = "\""), size_part
   )
 }
 
