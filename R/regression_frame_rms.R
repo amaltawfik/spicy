@@ -367,7 +367,9 @@ as_regression_frame.Glm <- function(fit,
   classical_r2_ok <- rms_class == "ols"
 
   supports <- list(
-    ame                 = TRUE,
+    # AME is undefined for Cox PH (cph): hazard-scale effects with
+    # unreliable SEs; report hazard ratios (exponentiate) instead.
+    ame                 = rms_class != "cph",
     partial_effect_size = FALSE,
     classical_r2        = classical_r2_ok,
     nested_lrt          = TRUE,

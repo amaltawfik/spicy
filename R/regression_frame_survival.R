@@ -49,6 +49,7 @@ as_regression_frame.coxph <- function(fit,
                                        ci_level = 0.95,
                                        ci_method = NULL,
                                        model_id = "M1",
+                                       exponentiate = FALSE,
                                        ...) {
   .check_survival_available()
 
@@ -60,7 +61,8 @@ as_regression_frame.coxph <- function(fit,
                        ci_method  = ci_method,
                        model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
+  ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
+  frame <- list(coefs = ex$coefs, info = ex$info)
   attr(frame, "spicy_frame_version") <- spicy_frame_version()
   attr(frame, "fit") <- fit
   frame
@@ -78,6 +80,7 @@ as_regression_frame.survreg <- function(fit,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          model_id = "M1",
+                                         exponentiate = FALSE,
                                          ...) {
   .check_survival_available()
 
@@ -89,7 +92,8 @@ as_regression_frame.survreg <- function(fit,
                          ci_method  = ci_method,
                          model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
+  ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
+  frame <- list(coefs = ex$coefs, info = ex$info)
   attr(frame, "spicy_frame_version") <- spicy_frame_version()
   attr(frame, "fit") <- fit
   frame
@@ -97,6 +101,26 @@ as_regression_frame.survreg <- function(fit,
 
 
 # ---- Internal helpers -----------------------------------------------------
+
+# Apply exp() to a survival frame's B rows when exponentiate = TRUE.
+# Survival fits (coxph) have NO stats::family() method, so this reads the
+# link from the frame's own info$family / info$supports (set by
+# .coxph_info / .survreg_info) rather than stats::family(fit) the way
+# .apply_exp_to_mixed_frame() does. Header: Cox -> "HR" (hazard ratio);
+# log-scale survreg dists -> "TR" (time ratio). When the link is identity
+# (gaussian / logistic / t survreg) supports$exponentiate is FALSE and the
+# coefs pass through unchanged.
+.apply_exp_to_survival_frame <- function(coefs, info, exponentiate) {
+  if (!isTRUE(exponentiate) || !isTRUE(info$supports$exponentiate)) {
+    return(list(coefs = coefs, info = info))
+  }
+  coefs <- apply_exponentiate_to_frame_coefs(coefs)
+  hdr <- spicy_glm_exp_header(info$family$family, info$family$link)
+  if (identical(hdr, "exp(B)")) hdr <- "TR"  # log-scale survreg: time ratio
+  info$extras$exp_applied <- TRUE
+  info$extras$exp_header  <- hdr
+  list(coefs = coefs, info = info)
+}
 
 .check_survival_available <- function() {
   if (!spicy_pkg_available("survival")) {
@@ -297,7 +321,11 @@ as_regression_frame.survreg <- function(fit,
   )
 
   supports <- list(
-    ame                 = TRUE,
+    # AME is undefined for Cox PH: avg_slopes() effects are on an ambiguous
+    # survival/hazard scale and marginaleffects' default delta-method SEs
+    # ignore baseline-hazard uncertainty (anti-conservative). The canonical
+    # Cox effect measure is the hazard ratio (exponentiate).
+    ame                 = FALSE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,

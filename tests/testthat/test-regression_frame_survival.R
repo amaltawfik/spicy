@@ -162,7 +162,9 @@ test_that("coxph: supports flags are correct", {
   fit <- .fit_coxph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   sp <- fr$info$supports
-  expect_true(sp$ame)
+  # AME is undefined for Cox PH (ambiguous survival scale, unreliable SEs):
+  # report hazard ratios via exponentiate instead.
+  expect_false(sp$ame)
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_true(sp$nested_lrt)

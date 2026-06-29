@@ -1142,8 +1142,18 @@ table_regression <- function(
   if (isTRUE(exponentiate)) {
     has_non_identity <- any(vapply(models, function(f) {
       fam <- tryCatch(stats::family(f), error = function(e) NULL)
-      if (is.null(fam) || is.null(fam$link)) return(FALSE)
-      !identical(fam$link, "identity")
+      if (!is.null(fam) && !is.null(fam$link)) {
+        return(!identical(fam$link, "identity"))
+      }
+      # Classes with an exponentiable link but no stats::family() method:
+      # coxph / rms::cph model the log relative hazard (exp -> hazard ratio);
+      # survreg log-scale dists model log T (exp -> time ratio). Identity-
+      # scale survreg dists (gaussian / logistic / t) are not exponentiable.
+      if (inherits(f, c("coxph", "cph"))) return(TRUE)
+      if (inherits(f, "survreg")) {
+        return(!isTRUE(f$dist %in% c("gaussian", "logistic", "t")))
+      }
+      FALSE
     }, logical(1)))
     if (!has_non_identity) {
       spicy_warn(

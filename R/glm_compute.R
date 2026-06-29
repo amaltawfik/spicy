@@ -72,6 +72,9 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   if (identical(family_name, "Gamma") && identical(link_name, "log")) {
     return("MR")     # mean ratio
   }
+  if (identical(family_name, "cox") && identical(link_name, "log")) {
+    return("HR")     # hazard ratio (coxph / rms::cph)
+  }
   "exp(B)"
 }
 

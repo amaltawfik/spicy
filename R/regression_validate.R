@@ -646,6 +646,34 @@ validate_class_appropriate_tokens <- function(models,
       )
     }
   }
+
+  # AME is not defined for Cox proportional hazards models: avg_slopes() on a
+  # coxph / cph fit returns effects on an ambiguous survival/hazard scale, and
+  # marginaleffects itself warns its delta-method standard errors are
+  # unreliable for Cox. The canonical Cox report is the hazard ratio
+  # (exponentiate = TRUE). Reject only when ALL models are Cox; a mixed set
+  # em-dashes the Cox AME rows (the AME extraction skips Cox fits).
+  all_cox <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), c("coxph", "cph")))
+  if (all_cox) {
+    bad <- intersect(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+    if (length(bad) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for Cox models.",
+            paste(shQuote(bad), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Average marginal effects on a Cox proportional-hazards fit are ",
+            "on an ambiguous survival / hazard scale with unreliable standard ",
+            "errors. Report hazard ratios instead with `exponentiate = TRUE`."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
   invisible(NULL)
 }
 
