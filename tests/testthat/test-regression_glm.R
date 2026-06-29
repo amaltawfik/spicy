@@ -659,7 +659,7 @@ test_that("glm refit fallback: factor() in formula triggers spicy_fallback", {
   expect_true(fb_seen)
 })
 
-test_that("glm pseudo: log-binomial treated as logit-equivalent (var_link = pi^2/3)", {
+test_that("glm pseudo: log-binomial standardisation is NA (no latent threshold)", {
   d <- data.frame(y = c(0,1,1,0,1,1,0,0,1,1,0,1,1,0,1,0,1,1,0,1),
                   x = seq_len(20))
   fit <- tryCatch(
@@ -667,12 +667,15 @@ test_that("glm pseudo: log-binomial treated as logit-equivalent (var_link = pi^2
     error = function(e) NULL, warning = function(w) NULL
   )
   skip_if(is.null(fit), "log-binomial fit did not converge")
-  td <- broom::tidy(table_regression(fit, standardized = "pseudo"))
+  # The log link (relative-risk model) has no latent-threshold interpretation,
+  # so the Menard / Long & Freese latent-variable SD is undefined: a caveat
+  # fires and the standardised beta is NA (use standardized = "refit").
+  expect_warning(
+    td <- broom::tidy(table_regression(fit, standardized = "pseudo")),
+    class = "spicy_caveat"
+  )
   beta_x <- td$estimate[td$estimate_type == "beta" & td$term == "x"]
-  eta <- predict(fit, type = "link")
-  sd_y_star <- sqrt(var(eta) + pi^2 / 3)  # log-binomial: logit-equivalent
-  expected <- coef(fit)["x"] * sd(d$x) / sd_y_star
-  expect_equal(beta_x, unname(expected), tolerance = 1e-12)
+  expect_true(length(beta_x) == 0L || all(is.na(beta_x)))
 })
 
 
