@@ -41,10 +41,7 @@ as_regression_frame.rq <- function(fit,
                     model_id   = model_id,
                     se         = se)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -190,10 +187,8 @@ as_regression_frame.rq <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = sprintf("Quantile regression (\u03C4 = %.2f)", tau),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     tau                   = tau,
     se_method             = se
   )
@@ -244,10 +239,7 @@ as_regression_frame.ivreg <- function(fit,
                        ci_method  = ci_method,
                        model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -365,10 +357,8 @@ as_regression_frame.ivreg <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "IV regression (2SLS)",
-    family_info           = fam,
     exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    n_groups              = NULL
+    exp_header            = NA_character_
   )
 
   list(
@@ -428,7 +418,6 @@ as_regression_frame.tobit <- function(fit,
   frame$info$extras$title_prefix      <- "Tobit regression"
   frame$info$family$family            <- "gaussian"
   frame$info$family$link              <- "identity"
-  frame$info$extras$family_info       <- list(family = "gaussian", link = "identity")
   # tobit-specific: censoring boundaries. AER::tobit defaults to
   # left = 0, right = Inf. The values are NOT stored as slots on the
   # fit; they live in fit$call. Eval them in the call environment so

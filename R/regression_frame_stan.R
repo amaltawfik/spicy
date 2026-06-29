@@ -59,10 +59,7 @@ as_regression_frame.stanreg <- function(fit,
                       class_name = "stanreg",
                       title_class = .stanreg_title_prefix(fit))
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -110,10 +107,7 @@ as_regression_frame.brmsfit <- function(fit,
                       class_name = "brmsfit",
                       title_class = .brmsfit_title_prefix(fit))
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -393,7 +387,6 @@ as_regression_frame.brmsfit <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = title_prefix,
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     posterior_engine      = class_name

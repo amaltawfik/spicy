@@ -203,7 +203,6 @@ extract_lm_phase1 <- function(
     weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
     nobs = stats::nobs(fit),
     is_glm = is_glm,
-    family_info = family_info,
     title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Linear regression",
     exp_applied = exp_applied,
     exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_

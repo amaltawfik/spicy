@@ -55,10 +55,7 @@
     ),
     extras       = list()
   )
-  out <- list(coefs = coefs, info = info)
-  attr(out, "spicy_frame_version") <- spicy:::spicy_frame_version()
-  attr(out, "fit") <- list(dummy = TRUE)
-  out
+  spicy:::new_regression_frame(coefs, info, list(dummy = TRUE))
 }
 
 

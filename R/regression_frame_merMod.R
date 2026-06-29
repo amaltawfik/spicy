@@ -63,10 +63,7 @@ as_regression_frame.lmerMod <- function(fit,
   # extension would slot in via the same call).
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = out$coefs, info = out$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(out$coefs, out$info, fit)
 }
 
 
@@ -123,10 +120,7 @@ as_regression_frame.glmerMod <- function(fit,
   # SE; CI bounds exponentiated. AME rows pass through unchanged.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = out$coefs, info = out$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(out$coefs, out$info, fit)
 }
 
 
@@ -418,10 +412,8 @@ as_regression_frame.glmerMod <- function(fit,
     } else {
       "Linear mixed-effects regression"
     },
-    family_info           = fam,
     exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    n_groups              = n_groups
+    exp_header            = NA_character_
   )
 
   list(

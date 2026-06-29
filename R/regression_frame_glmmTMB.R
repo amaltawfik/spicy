@@ -64,10 +64,7 @@ as_regression_frame.glmmTMB <- function(fit,
   # Phase 7c16: exp() on the B / beta rows for non-identity links.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = out$coefs, info = out$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(out$coefs, out$info, fit)
 }
 
 
@@ -260,10 +257,8 @@ as_regression_frame.glmmTMB <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = .glmmTMB_title_prefix(fam, has_zi),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = n_groups,
     zi_coefs              = zi_coefs,
     disp_coefs            = disp_coefs,
     has_zi                = has_zi

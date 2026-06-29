@@ -30,6 +30,83 @@ spicy_frame_version <- function() {
 }
 
 
+# ---- Schema constructors --------------------------------------------------
+
+# Default capability flags: every capability is FALSE unless a method opts in.
+# new_regression_frame() merges a method's `info$supports` onto this, so a
+# method need only set the flags it supports and any newly-added flag (e.g.
+# robust_vcov) defaults safely across all ~30 classes. This list is ALSO the
+# single source of truth for the supports field set the validator requires.
+default_supports <- function() {
+  list(
+    ame                 = FALSE,
+    partial_effect_size = FALSE,
+    classical_r2        = FALSE,
+    nested_lrt          = FALSE,
+    exponentiate        = FALSE,
+    standardise_refit   = FALSE,
+    robust_vcov         = FALSE
+  )
+}
+
+# Default `info$extras` skeleton: the keys common to (nearly) every frame.
+# Method-specific extras (smooth_terms, random-effect engine, zero-inflation
+# component, ...) are merged on top by new_regression_frame().
+default_extras <- function() {
+  list(
+    cluster_name          = NULL,
+    use_ame_satterthwaite = FALSE,
+    has_singular          = FALSE,
+    singular_terms        = character(0),
+    has_weights           = FALSE,
+    weighted_n            = NA_real_,
+    title_prefix          = NULL,
+    exp_applied           = FALSE,
+    exp_header            = NA_character_
+  )
+}
+
+# Low-level constructor for the `spicy_regression_frame` S3 object: the single
+# place that assembles a {coefs, info} frame, normalises info$supports /
+# info$extras against their defaults, sets the object class, and attaches the
+# two schema attributes (spicy_frame_version, fit). Every as_regression_frame.*
+# method ends with a call to this, so the object's structure + schema contract
+# live in exactly one location. Pairs with validate_regression_frame() per the
+# standard new_<class>() / validate_<class>() constructor convention.
+new_regression_frame <- function(coefs, info, fit) {
+  info$supports <- modifyList(default_supports(), info$supports %||% list())
+  info$extras   <- modifyList(default_extras(),   info$extras   %||% list())
+  structure(
+    list(coefs = coefs, info = info),
+    class               = "spicy_regression_frame",
+    spicy_frame_version = spicy_frame_version(),
+    fit                 = fit
+  )
+}
+
+#' @export
+print.spicy_regression_frame <- function(x, ...) {
+  info <- x$info
+  fam  <- info$family
+  cat(sprintf(
+    "<spicy_regression_frame> %s  (n = %s)\n",
+    info$class %||% "?", format(info$n_obs %||% NA)
+  ))
+  cat(sprintf(
+    "  coefs: %d rows x %d cols | family: %s / %s | ci: %s\n",
+    nrow(x$coefs), ncol(x$coefs),
+    fam$family %||% "?", fam$link %||% "?", info$ci_method %||% "?"
+  ))
+  on_flags <- names(Filter(isTRUE, info$supports))
+  cat(sprintf("  supports: %s\n",
+              if (length(on_flags)) paste(on_flags, collapse = ", ") else "(none)"))
+  invisible(x)
+}
+
+# Type predicate for the frame object.
+is_regression_frame <- function(x) inherits(x, "spicy_regression_frame")
+
+
 # ---- The generic ----------------------------------------------------------
 
 # as_regression_frame(fit, ...) -> list(coefs = tibble, info = list)
@@ -159,6 +236,13 @@ as_regression_frame.default <- function(fit, ...) {
 # @keywords internal
 # @noRd
 validate_regression_frame <- function(frame) {
+  # ---- Type ---------------------------------------------------------------
+  if (!inherits(frame, "spicy_regression_frame")) {
+    spicy_abort(
+      "Invalid regression frame: not a <spicy_regression_frame> object.",
+      class = "spicy_invalid_frame"
+    )
+  }
   # ---- Top-level structure ------------------------------------------------
   if (!is.list(frame) || is.null(names(frame))) {
     spicy_abort(
@@ -480,10 +564,10 @@ validate_regression_frame <- function(frame) {
       class = "spicy_invalid_frame"
     )
   }
-  required_supports <- c(
-    "ame", "partial_effect_size", "classical_r2",
-    "nested_lrt", "exponentiate", "standardise_refit"
-  )
+  # Single source of truth: the supports field set IS whatever
+  # default_supports() declares (so adding a flag there auto-updates the
+  # validator + every method via new_regression_frame()'s normalisation).
+  required_supports <- names(default_supports())
   missing_supports <- setdiff(required_supports, names(sp))
   if (length(missing_supports) > 0L) {
     spicy_abort(

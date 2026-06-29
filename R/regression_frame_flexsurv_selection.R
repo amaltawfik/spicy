@@ -41,10 +41,7 @@ as_regression_frame.flexsurvreg <- function(fit,
                           ci_method  = ci_method,
                           model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -225,10 +222,8 @@ as_regression_frame.flexsurvreg <- function(fit,
     weighted_n            = NA_real_,
     title_prefix          = paste0(.flexsurv_dist_title(dist_clean),
                                     " parametric survival regression"),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     distribution          = dist_clean,
     aux_parameters        = aux_coefs
   )
@@ -302,10 +297,7 @@ as_regression_frame.selection <- function(fit,
                             ci_method  = ci_method,
                             model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -470,10 +462,8 @@ as_regression_frame.selection <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Heckman selection model",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     selection_sigma       = as.numeric(sigma_val),
     selection_rho         = as.numeric(rho_val),
     estimation_method     = method_label

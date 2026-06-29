@@ -45,10 +45,7 @@ as_regression_frame.nls <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -146,10 +143,8 @@ as_regression_frame.nls <- function(fit,
                             length(stats::weights(fit)) > 0L,
     weighted_n            = NA_real_,
     title_prefix          = "Non-linear least squares regression",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     nls_formula           = formula_string,
     parameter_names       = names(stats::coef(fit))
   )

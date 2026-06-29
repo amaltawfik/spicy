@@ -39,20 +39,17 @@
     vcov_label   = "OLS",
     ci_level     = 0.95,
     ci_method    = "wald",
-    supports     = list(
+    supports     = modifyList(default_supports(), list(
       ame                 = TRUE,
       partial_effect_size = TRUE,
       classical_r2        = TRUE,
       nested_lrt          = TRUE,
       exponentiate        = FALSE,
       standardise_refit   = TRUE
-    ),
+    )),
     extras       = list()
   )
-  out <- list(coefs = coefs, info = info)
-  attr(out, "spicy_frame_version") <- spicy_frame_version()
-  attr(out, "fit") <- list(dummy = TRUE)   # sentinel, type not checked
-  out
+  new_regression_frame(coefs, info, list(dummy = TRUE))
 }
 
 
@@ -390,10 +387,7 @@ test_that("validate_regression_frame() requires fit_stats with nobs", {
 })
 
 test_that("validate_regression_frame() catches missing supports fields", {
-  required_supports <- c(
-    "ame", "partial_effect_size", "classical_r2",
-    "nested_lrt", "exponentiate", "standardise_refit"
-  )
+  required_supports <- names(default_supports())
   for (field in required_supports) {
     frame <- .make_valid_frame()
     frame$info$supports[[field]] <- NULL

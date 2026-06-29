@@ -52,10 +52,7 @@ as_regression_frame.polr <- function(fit,
                       ci_method  = ci_method,
                       model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -81,10 +78,7 @@ as_regression_frame.clm <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -223,10 +217,8 @@ as_regression_frame.clm <- function(fit,
     weighted_n            = NA_real_,
     title_prefix          = paste0(.polr_link_title(link),
                                     " regression (proportional odds)"),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     response_levels       = as.character(fit$lev %||% character(0)),
     thresholds            = thresholds
   )
@@ -410,10 +402,8 @@ as_regression_frame.clm <- function(fit,
     weighted_n            = NA_real_,
     title_prefix          = paste0(.clm_link_title(link),
                                     " regression (proportional odds)"),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     response_levels       = as.character(fit$y.levels %||% character(0)),
     thresholds            = thresholds
   )

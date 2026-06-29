@@ -54,10 +54,7 @@ as_regression_frame.hurdle <- function(fit,
                       model_id   = model_id,
                       is_hurdle  = TRUE)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -84,10 +81,7 @@ as_regression_frame.zeroinfl <- function(fit,
                       model_id   = model_id,
                       is_hurdle  = FALSE)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -267,10 +261,8 @@ as_regression_frame.zeroinfl <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = title_prefix,
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     has_zi                = TRUE,
     zi_coefs              = zero_coefs,
     zero_dist             = zero_dist,

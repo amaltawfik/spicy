@@ -42,10 +42,7 @@ as_regression_frame.svyglm <- function(fit,
                         ci_method  = ci_method,
                         model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -246,7 +243,6 @@ as_regression_frame.svyglm <- function(fit,
     has_weights           = TRUE,
     weighted_n            = .svyglm_weighted_n(fit),
     title_prefix          = title_prefix,
-    family_info           = family_info,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     design_class          = .svyglm_design_class(fit)

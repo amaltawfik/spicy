@@ -58,10 +58,7 @@ as_regression_frame.lme <- function(fit,
   # no-op -- kept for parity with the other mixed paths.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  frame <- list(coefs = out$coefs, info = out$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(out$coefs, out$info, fit)
 }
 
 
@@ -87,10 +84,7 @@ as_regression_frame.gls <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -288,10 +282,8 @@ as_regression_frame.gls <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Linear mixed-effects regression (nlme)",
-    family_info           = list(family = "gaussian", link = "identity"),
     exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    n_groups              = n_groups
+    exp_header            = NA_character_
   )
 
   list(
@@ -348,10 +340,8 @@ as_regression_frame.gls <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Generalised least squares (nlme)",
-    family_info           = list(family = "gaussian", link = "identity"),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     correlation_structure = corr_label
   )
 

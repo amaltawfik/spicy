@@ -43,10 +43,7 @@ as_regression_frame.mlogit <- function(fit,
                         ci_method  = ci_method,
                         model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -177,10 +174,8 @@ as_regression_frame.mlogit <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Discrete-choice multinomial logit (mlogit)",
-    family_info           = fam,
     exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    n_groups              = NULL
+    exp_header            = NA_character_
   )
 
   list(
@@ -229,10 +224,7 @@ as_regression_frame.betareg <- function(fit,
                          ci_method  = ci_method,
                          model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -382,10 +374,8 @@ as_regression_frame.betareg <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Beta regression",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     # The single dispersion phi only exists for constant precision
     # (y ~ x); with a precision sub-model (y ~ x | z) there is no scalar phi
     # -- precision_coefs carries the full breakdown. Keep precision_phi a

@@ -59,10 +59,7 @@ as_regression_frame.fixest <- function(fit,
                         model_id   = model_id,
                         is_glm     = is_glm)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -250,10 +247,8 @@ as_regression_frame.fixest <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = .fixest_title_prefix(fam, is_glm),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = n_groups,
     fixef_sizes           = fixef_sizes,
     vcov_type             = vt,
     # fenegbin dispersion: theta is stored as a length-1 (named ".theta")

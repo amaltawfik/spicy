@@ -56,10 +56,7 @@ as_regression_frame.ols <- function(fit,
                      model_id   = model_id,
                      rms_class  = "ols")
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -86,10 +83,7 @@ as_regression_frame.lrm <- function(fit,
                      model_id   = model_id,
                      rms_class  = "lrm")
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -116,10 +110,7 @@ as_regression_frame.cph <- function(fit,
                      model_id   = model_id,
                      rms_class  = "cph")
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -146,10 +137,7 @@ as_regression_frame.Glm <- function(fit,
                      model_id   = model_id,
                      rms_class  = "Glm")
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -385,10 +373,8 @@ as_regression_frame.Glm <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = .rms_title_prefix(rms_class, fam),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     rms_stats             = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
     # Phase 7c2: for cph, expose events count alongside the subject
     # count for the survival footer block. Mirrors survival::coxph

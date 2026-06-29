@@ -90,10 +90,7 @@ as_regression_frame.iv_robust <- function(fit,
                           ci_method  = ci_method,
                           model_id   = model_id,
                           is_iv      = is_iv)
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -247,10 +244,8 @@ as_regression_frame.iv_robust <- function(fit,
     } else {
       "Linear regression (robust SE)"
     },
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     se_type               = se_type,
     clustered             = clustered
   )

@@ -53,10 +53,7 @@ as_regression_frame.multinom <- function(fit,
                           ci_method  = ci_method,
                           model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -255,10 +252,8 @@ as_regression_frame.multinom <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Multinomial logistic regression",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     response_levels       = as.character(fit$lev %||% character(0)),
     reference_outcome     = ref_outcome
   )

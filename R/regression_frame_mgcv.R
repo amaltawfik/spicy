@@ -57,10 +57,7 @@ as_regression_frame.gam <- function(fit,
                      is_gaussian_identity = is_gaussian_identity,
                      fam        = fam)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -258,10 +255,8 @@ as_regression_frame.gam <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = .gam_title_prefix(fam, is_gaussian_identity),
-    family_info           = fam_list,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     smooth_terms          = smooth_terms,
     n_smooth_terms        = nrow(smooth_terms)
   )

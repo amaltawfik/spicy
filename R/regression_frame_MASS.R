@@ -43,7 +43,6 @@ as_regression_frame.negbin <- function(fit,
   # Overlay negbin-specific bits.
   frame$info$class                    <- "negbin"
   frame$info$family$family            <- "negbin"
-  frame$info$extras$family_info$family <- "negbin"
   frame$info$extras$title_prefix      <- "Negative-binomial regression"
   frame$info$extras$theta             <- as.numeric(fit$theta %||% NA_real_)
   frame$info$extras$se_theta          <- as.numeric(fit$SE.theta %||% NA_real_)
@@ -75,10 +74,7 @@ as_regression_frame.rlm <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -210,10 +206,8 @@ as_regression_frame.rlm <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Robust linear regression (M-estimator)",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     psi_function          = psi_label,
     scale                 = as.numeric(fit$s %||% NA_real_)
   )

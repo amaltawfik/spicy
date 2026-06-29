@@ -101,10 +101,7 @@ as_regression_frame.glm <- function(fit, ...) {
                        ci_level   = ci_level,
                        ci_method  = ci_method)
 
-  frame <- list(coefs = coefs, info = info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(coefs, info, fit)
 }
 
 
@@ -260,7 +257,6 @@ as_regression_frame.glm <- function(fit, ...) {
     weighted_n            = legacy$weighted_n %||% NA_real_,
     title_prefix          = legacy$title_prefix %||%
       (if (is_glm) "Generalized linear regression" else "Linear regression"),
-    family_info           = legacy$family_info,
     exp_applied           = isTRUE(legacy$exp_applied),
     exp_header            = legacy$exp_header %||% NA_character_
   )

@@ -62,10 +62,7 @@ as_regression_frame.coxph <- function(fit,
                        model_id   = model_id)
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
-  frame <- list(coefs = ex$coefs, info = ex$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(ex$coefs, ex$info, fit)
 }
 
 
@@ -93,10 +90,7 @@ as_regression_frame.survreg <- function(fit,
                          model_id   = model_id)
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
-  frame <- list(coefs = ex$coefs, info = ex$info)
-  attr(frame, "spicy_frame_version") <- spicy_frame_version()
-  attr(frame, "fit") <- fit
-  frame
+  new_regression_frame(ex$coefs, ex$info, fit)
 }
 
 
@@ -341,10 +335,8 @@ as_regression_frame.survreg <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = "Cox proportional hazards regression",
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     n_events              = as.integer(fit$nevent %||% NA_integer_),
     concordance           = if (!is.null(concordance)) {
       list(c = unname(concordance["C"]),
@@ -426,10 +418,8 @@ as_regression_frame.survreg <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = paste0(.survreg_dist_title(dist), " AFT regression"),
-    family_info           = fam,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    n_groups              = NULL,
     scale_parameter       = as.numeric(fit$scale %||% NA_real_),
     distribution          = dist
   )
