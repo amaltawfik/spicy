@@ -51,7 +51,8 @@ labels) is layered on top for mixed-effects and Bayesian.
 * **Survival models**: `survival::coxph`, `survival::survreg`,
   `rms::cph`, `flexsurv::flexsurvreg`. Wald-z inference, family-
   aware footer ("Cox proportional hazards", "Weibull AFT", etc.),
-  baseline-hazard hint when relevant.
+  baseline-hazard hint when relevant. `exponentiate = TRUE` reports
+  hazard ratios (Cox) or time ratios (log-scale AFT).
 
 * **Categorical-outcome models**: `nnet::multinom`,
   `mlogit::mlogit`, `MASS::polr`, `ordinal::clm`. Per-outcome /
