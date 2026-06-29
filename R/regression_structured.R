@@ -707,7 +707,7 @@ build_structured_body <- function(aligned,
 # their formatters via pre-formatted strings (flextable, console).
 .cell_to_string <- function(val, row_idx, col_meta_entry,
                               reference_rows, decimal_mark = ".") {
-  if (row_idx %in% reference_rows) return("\u2014")
+  if (row_idx %in% reference_rows) return("\u2013")
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) return("")
   if (!is.null(cfmt$threshold) && is.finite(val) &&
@@ -743,7 +743,10 @@ build_structured_body <- function(aligned,
 .pad_for_decimal_align <- function(body, struct) {
   decimal_mark <- struct$format_spec$decimal_mark
   fig_space <- "\u2007"   # U+2007 figure space (digit-width)
-  em_dash <- "\u2014"      # U+2014 em dash
+  na_dash   <- "\u2013"   # U+2013 en dash (Phase 7c14 typography:
+                            # was em dash before; en dash is the
+                            # Chicago / NEJM / JAMA tabular "not
+                            # applicable" glyph).
 
   for (j in seq_along(body)) {
     if (j == 1L) next       # Variable column stays as-is
@@ -753,7 +756,7 @@ build_structured_body <- function(aligned,
     rhs <- character(length(col_vals))
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || identical(v, em_dash)) {
+      if (is.na(v) || !nzchar(v) || identical(v, na_dash)) {
         lhs[i] <- ""; rhs[i] <- ""
         next
       }
@@ -768,14 +771,32 @@ build_structured_body <- function(aligned,
       }
     }
     # Max widths only consider cells that actually have either side --
-    # blank / em-dash cells contribute nothing and stay un-padded.
+    # blank cells contribute nothing and stay un-padded.
     max_lhs <- max(nchar(lhs))
     max_rhs <- max(nchar(rhs))
     if (max_lhs == 0L && max_rhs == 0L) next
 
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || identical(v, em_dash)) next
+      if (is.na(v) || !nzchar(v)) next
+      # Phase 7c24 (item g): en-dash cells (factor reference rows /
+      # "not applicable" placeholders) used to skip the padding
+      # entirely, so gt centred them in the column instead of
+      # aligning to the decimal-mark anchor used by the numeric
+      # cells. Treat the en-dash as a 1-glyph "integer" token: pad
+      # LHS to (max_lhs - 1) figure-spaces, the dash itself takes
+      # the units position, a digit-width space stands in for the
+      # decimal mark, and the RHS is padded to max_rhs figure-spaces.
+      # The dash now sits visually at the units column, aligned with
+      # the leftmost digit of the longest numeric value -- the
+      # publication-grade decimal alignment Stata / SAS use for
+      # missing cells.
+      if (identical(v, na_dash)) {
+        pad_lhs <- strrep(fig_space, max(0L, max_lhs - 1L))
+        pad_rhs <- strrep(fig_space, max_rhs)
+        col_vals[i] <- paste0(pad_lhs, na_dash, fig_space, pad_rhs)
+        next
+      }
       pos <- regexpr(decimal_mark, v, fixed = TRUE)
       pad_lhs <- strrep(fig_space, max_lhs - nchar(lhs[i]))
       pad_rhs <- strrep(fig_space, max_rhs - nchar(rhs[i]))

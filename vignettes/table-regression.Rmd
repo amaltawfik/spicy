@@ -49,9 +49,11 @@ long broom-canonical frame (`broom::tidy()`) and to a
 one-row-per-model glance summary (`broom::glance()`).
 
 `lm` and `glm` are both supported. The *Generalised linear
-models* section covers the glm-specific argument semantics;
-everything else applies to both. Mixed-effects models are on the
-roadmap.
+models* section covers the glm-specific argument semantics; the
+*Mixed-effects models* section covers the random-effects panel
+that mixed-effects fits add below the fit-statistics footer
+(`lmer`, `glmer`, `glmmTMB`, `lme`). Everything else applies to
+all four families.
 
 ## Basic usage
 
@@ -267,11 +269,16 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 
 Default change tokens auto-injected: `c("r2_change", "f_change",
 "p_change")` for `lm` (APA hierarchical-regression standard),
-`c("lrt_change", "p_change")` for `glm` (Hosmer & Lemeshow §3.5).
-Customise via `show_fit_stats`; the order of tokens controls the
-order of the rows. Other change tokens are available:
-`"adj_r2_change"`, `"f2_change"`, `"deviance_change"`,
-`"aic_change"` / `"aicc_change"` / `"bic_change"`.
+`c("lrt_change", "p_change")` for `glm` (Hosmer & Lemeshow §3.5),
+`c("aic_change", "bic_change", "lrt_change", "p_change")` for
+mixed-effects fits (`lmer` / `glmer` / `glmmTMB` / `nlme::lme` —
+Pinheiro & Bates 2000 §2.4.1). Customise via `show_fit_stats`;
+the order of tokens controls the order of the rows. Other change
+tokens are available: `"adj_r2_change"`, `"f2_change"`,
+`"deviance_change"`, `"aic_change"` / `"aicc_change"` /
+`"bic_change"`. Variance-explained change tokens (Δr², Δf²) are
+NA for mixed-effects pairs — the F-test framework that grounds
+them doesn't apply.
 
 Validation is strict: identical `nobs` AND identical response
 across all models, otherwise a `spicy_invalid_input` error
@@ -567,6 +574,319 @@ Satterthwaite-corrected AME path. Following the *transparency
 over rejection* rule, spicy accepts the fit and emits a
 `spicy_caveat` suggesting a refit with `lm()`.
 
+## Mixed-effects models
+
+`table_regression()` supports four mixed-effects classes:
+
+* `lme4::lmer()` and `lme4::glmer()`
+* `glmmTMB::glmmTMB()`
+* `nlme::lme()`
+
+The fixed-effects section of the table follows the same
+conventions as `lm` / `glm`. Below the fit-statistics footer
+(`n`, `AIC`, `BIC`, ...), a **Random effects panel** reports
+the variance components, the model's intra-class correlation
+(ICC) when defined, and the sample size at each grouping level:
+
+```{r mixed-basic, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("merDeriv", quietly = TRUE)}
+library(lme4)
+fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+table_regression(fit)
+```
+
+The panel header carries the estimator label — `(REML)` for
+restricted maximum likelihood (the `lmer` / `lme` default) or
+`(ML)` for full ML (`glmer`, `glmmTMB` default, and
+`lmer(..., REML = FALSE)`). The label is informational: it tells
+the reader which likelihood the variance estimates are anchored
+to, without implying that REML and ML estimates are
+interchangeable for inference.
+
+### Fit statistics: Nakagawa marginal and conditional R²
+
+Classical R² is not defined for mixed-effects models: the
+within-group correlation breaks the variance-decomposition
+identity that lm's R² relies on. The publication-standard
+substitute is the **Nakagawa & Schielzeth** family of R²
+(Nakagawa & Schielzeth 2013; Nakagawa, Johnson & Schielzeth
+2017), which decomposes the response variance into
+
+* `R² (marginal)` — variance explained by the **fixed effects
+  alone**;
+* `R² (conditional)` — variance explained by **fixed plus
+  random effects**.
+
+For Gaussian fits the formula is closed-form:
+
+\[ R^2_{\text{marg}} = \frac{\sigma^2_f}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon}, \quad R^2_{\text{cond}} = \frac{\sigma^2_f + \sum_g \sigma^2_g}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon} \]
+
+For non-Gaussian families (binomial logit / probit / cloglog,
+Poisson log, etc.) the residual term σ²_ε is replaced by the
+**link-scale distribution-specific variance** σ²_d
+(π²/3 for logit, 1 for probit, π²/6 for cloglog, a lognormal
+approximation for Poisson log; Nakagawa et al. 2017 §3).
+
+spicy ships its own native implementation for the three
+combinations covered by the closed-form formula in Nakagawa &
+Schielzeth (2013) + Nakagawa et al. (2017) sec. 3:
+
+* Gaussian (identity link) — all four engines;
+* Bernoulli binomial with logit / probit / cloglog link
+  (single trial per observation);
+* Poisson with log link (lognormal approximation, Nakagawa et
+  al. 2017 sec. 3.6).
+
+These values are cross-validated against
+`performance::r2_nakagawa()` to 1 × 10⁻¹⁰ on every supported
+combination.
+
+For families with more involved link-scale variance formulas —
+binomial with multiple trials (`cbind(succ, fail)` /
+`weights`), negative binomial, beta, Tweedie, dispersion
+models, zero-inflated GLMM — spicy delegates to
+`performance::r2_nakagawa()`. `performance` is a Suggests
+dependency: when absent the fit-stat rows render as NA without
+erroring (the table still prints; only the R² rows go blank).
+The default `show_fit_stats` for mixed fits is
+`c("nobs", "r2_marginal", "r2_conditional", "AIC", "BIC")` —
+set `show_fit_stats` explicitly to override.
+
+### Display scale: σ vs σ²
+
+By default the panel reports the random-effect **standard
+deviation** σ rather than the variance σ². Following Gelman
+(2005, p. 5), the SD scale is "*directly interpretable as the
+size of the variation across groups*" and lives on the same
+scale as the response variable, which is what readers usually
+want to compare to fixed-effect coefficients. Set
+`re_scale = "variance"` to switch back to σ²:
+
+```{r mixed-scale, eval = FALSE}
+table_regression(fit, re_scale = "variance")
+```
+
+The conversion is internally consistent: SE and CI are
+transported between scales by the Delta method
+(`SE(σ) = SE(σ²) / (2σ)`, `CI(σ) = √CI(σ²)`), so the panel
+values agree with `arm::sigma.hat()` (SD) and with
+`VarCorr(fit)` (variance) up to rounding.
+
+### Standard errors and confidence intervals
+
+Each variance row of the panel carries a Wald SE and 95 % CI
+(`est ± z · SE`, clamped at 0 for variances). The source
+depends on the class:
+
+* `lmer` / `glmer`: Hessian-based SE via `merDeriv` (Wang and
+  Merkle 2018). Requires the optional `merDeriv` package
+  (declared in `Suggests`); the column reads NA gracefully
+  when the package is missing or when the fit is singular
+  (`lme4::isSingular(fit) == TRUE`).
+* `glmmTMB`: native Wald CI from `confint(fit, method = "Wald")`,
+  with SE backed out by Delta method on σ.
+* `nlme::lme`: native Wald CI from `nlme::intervals(fit)`.
+
+For **correlations** between random terms (ρ rows in the
+panel), only the point estimate is shown — SE / CI for
+correlations need a full Delta method on the Cholesky
+factorisation, deferred to a future release.
+
+A methodological note. Wald CIs on variance components are
+known to be optimistic near the boundary σ = 0 (Self and
+Liang 1987 chi-bar-squared mixture; Bolker FAQ 2024). When
+robustness is critical, the recommended fallback is the
+profile-likelihood CI directly on the fit:
+
+```{r mixed-profile, eval = FALSE}
+confint(fit, method = "profile", parm = "theta_")  # lmer
+confint(fit, method = "profile")                   # glmmTMB
+nlme::intervals(fit)                                # lme (Wald-equivalent)
+```
+
+Profile CIs are not exposed as a `table_regression()` option
+because they are 10–100× slower than Wald on random-slope
+models (≈ 45 s on `sleepstudy` random slope vs ≈ 100 ms for
+Wald), which is incompatible with the function's "fast enough
+for a knit" goal. The panel reports the SE so the reader can
+form their own boundary-safe judgment; the `re_columns`
+argument (below) lets you drop SE and CI from the rendered
+output entirely if your reporting standard prefers
+**estimation without inference** on variance components
+(Gelman 2005; Bates et al. 2015).
+
+p-values are not reported for variance components. The null
+σ² = 0 sits on the boundary of the parameter space, so the
+standard Wald χ²₁ statistic has a chi-bar-squared limiting
+distribution (Self and Liang 1987; Stram and Lee 1994). LRT-
+based tests on a chi-bar-squared scale (`lmerTest::ranova()`)
+remain the recommended path when the question is genuinely
+"do we need this random term?". Note that `lmerTest`'s
+Satterthwaite p-values apply to the **fixed effects** of an
+`lmer` fit (and `table_regression()` will pick them up
+automatically when the fit object inherits from `lmerModLmerTest`);
+they do not apply to variance components.
+
+### Fixed-effect p-values and CIs across classes
+
+The footer carries a one-line annotation naming the inference
+method used for the fixed-effect p-value and CI columns. The
+mapping is:
+
+* `lmerModLmerTest` (= `lmerTest::lmer()`, or `lme4::lmer()`
+  after `library(lmerTest)`): Satterthwaite t-test. p and CI use
+  `summary(fit)$coefficients[, c("df", "Pr(>|t|)")]` from
+  lmerTest. This is the recommended default whenever the
+  number of groups is below ~30 (Luke 2017).
+* `lmerMod` without lmerTest loaded: Wald-z, large-sample
+  approximation. df is reported as ∞ in the broom-canonical
+  frame; p-values come from `pnorm`. This matches
+  `parameters::model_parameters(ci_method = "wald")`, SAS
+  PROC MIXED with `ddfm = z`, and Stata `xtmixed`'s default.
+  The footer suggests loading lmerTest for small samples.
+* `glmerMod`: Wald-z asymptotic from `summary(fit)$coefficients[,
+  "Pr(>|z|)"]`. No t-distribution applies to GLMMs in general
+  (the link-scale residual variance is fixed for binomial /
+  Poisson families).
+* `glmmTMB`: Wald-z asymptotic from `summary(fit)$coefficients[,
+  "Pr(>|z|)"]`. Same logic as `glmerMod`.
+* `lme` (nlme): t-test with **containment degrees of freedom**.
+  p and df come from `summary(fit)$tTable`. Pinheiro & Bates
+  (2000) §2.4.2 — between-group covariates get df = n_groups −
+  rank, within-group covariates get the residual df.
+
+The footer line lets the reader see at a glance what's being
+reported. The behavioural choice is stable across classes:
+spicy uses each engine's own inference path, falling back to
+Wald-z only when no better df strategy is available.
+
+### glmer (logistic / Poisson) and the adjusted ICC
+
+`glmer` fits render the same panel as `lmer` — σ rows with Wald
+SE and 95 % CI from `merDeriv`, an ICC row, and the N (group)
+row. Two things differ from the lmer case:
+
+* No "σ (Residual)" row. `lme4::sigma()` returns the fixed
+  dispersion parameter (1 for `binomial` and `poisson`) by
+  convention, but this is not an estimated parameter with its
+  own SE — reporting it as a residual variance is misleading.
+  spicy suppresses the row for non-Gaussian fits.
+* The ICC uses the **link-scale distribution variance** in the
+  denominator (Nakagawa, Johnson & Schielzeth 2017 — adjusted
+  ICC):
+
+  | Family · link    | distribution variance σ²_d |
+  |------------------|----------------------------|
+  | binomial logit   | π²/3 ≈ 3.29                |
+  | binomial probit  | 1                          |
+  | binomial cloglog | π²/6 ≈ 1.64                |
+  | poisson  log     | log(1 + 1/λ), λ = exp(β₀_null + 0.5 σ²_g_null) |
+
+  with `ICC = σ²_g / (σ²_g + σ²_d)`. The value matches
+  `performance::icc(fit)$ICC_adjusted` to 1 × 10⁻⁶.
+
+For binomial fits with the `cbind(succ, fail)` (multi-trial)
+form, the closed-form σ²_d formula above does not apply directly
+— spicy returns `NA` for the ICC row rather than emit a
+misleading value. The Nakagawa marginal / conditional R² rows
+still render via the `performance` fallback.
+
+### Hierarchical / nested mixed-effects
+
+`table_regression(list(m1, m2, m3), nested = TRUE)` also works
+on mixed-effects fits. The change rows are populated from
+`anova(m1, m2)` (likelihood-ratio test):
+
+* `ΔAIC` — `AIC(m2) − AIC(m1)`, negative when m2 fits better
+* `ΔBIC` — `BIC(m2) − BIC(m1)`
+* `Δχ²` — likelihood-ratio statistic
+* `p (change)` — LRT p-value
+
+```{r mixed-nested, eval = requireNamespace("lme4", quietly = TRUE)}
+m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject), data = lme4::sleepstudy, REML = FALSE)
+m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject), data = lme4::sleepstudy, REML = FALSE)
+table_regression(list(m1, m2, m3), nested = TRUE)
+```
+
+Variance-explained change tokens (`Δr²`, `Δf²`) are NA — the
+F-test framework that grounds them doesn't apply to mixed
+models. `ΔR² (marginal)` and `ΔR² (conditional)` are not
+reported either: the row-by-row difference would be conceptually
+mixing two quantities (a marginal and a conditional gain), so
+the reader can compute it from the absolute R² rows directly if
+needed.
+
+Methodological caveat. `lme4::anova()` auto-refits REML fits
+with ML before the LRT (spicy suppresses the message). The LRT
+is a **fixed-effect-only** comparison: testing additional random
+terms with naive χ² is conservative — the formally correct test
+is the chi-bar-squared mixture (Self & Liang 1987), best run
+directly via `lmerTest::ranova()`. spicy surfaces fixed-effect
+nesting comparisons; random-structure model selection lives
+outside the table footer.
+
+### Average marginal effects (AME)
+
+The `"ame"` / `"ame_se"` / `"ame_ci"` / `"ame_p"` tokens of
+`show_columns` are wired for mixed-effects fits, delegated to
+`marginaleffects::avg_slopes(fit, df = Inf)`. The AME column is
+the publication-substantive quantity when the link is non-linear:
+
+* `glmer` binomial logit: AME is on the **probability scale**
+  (percentage points), not the log-odds scale. For the typical
+  "what does a one-unit change in `x` do to the predicted
+  probability?" reading, the AME column is what you want.
+* `glmer` Poisson log: AME is on the **count scale** (units of
+  the outcome), not log-rate.
+* `lmer` / `lme` / `glmmTMB` Gaussian: AME = B coefficient
+  (identity link); the column is filled but redundant.
+
+```{r mixed-ame, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("marginaleffects", quietly = TRUE)}
+set.seed(1)
+n <- 500
+g <- factor(rep(1:25, length.out = n))
+x <- rnorm(n)
+cat <- factor(sample(c("A", "B", "C"), n, replace = TRUE))
+y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + (cat == "B") * 0.3 +
+                           (cat == "C") * -0.5 + rnorm(25)[g]))
+fit <- lme4::glmer(y ~ x + cat + (1 | g), family = binomial)
+table_regression(fit, show_columns = c("b", "se", "p", "ame", "ame_p"))
+```
+
+Factor predictors are handled level-by-level: AME rows align
+under the same factor header (`cat: A (ref.) / B / C`), each
+level sharing a row with its B coefficient. Inline `factor()`
+calls and ordered factors are reconstructed from the
+model-frame column when the coef-name lookup misses (same
+fallback logic used for `lm` / `glm`).
+
+Inference is Wald-z asymptotic (`df = Inf`) with the model-based
+vcov -- matching the inference path of the B-row p-values in the
+same table. `marginaleffects` is a Suggests dependency; when
+unavailable, the AME columns appear in the header but render as
+NA without erroring (the rest of the table is unaffected).
+
+### Hiding parts of the panel
+
+Three arguments control panel rendering:
+
+* `show_re = FALSE` suppresses the panel entirely. Useful when
+  the random structure is documented in the manuscript text
+  and the table only needs the fixed-effects block.
+* `re_scale = "variance"` switches to σ² (see *Display scale*
+  above).
+* `re_columns` is a character subset of `c("est", "se", "ci")`.
+  `"est"` is mandatory. Drop SE and CI when reporting a
+  minimal table (`re_columns = "est"`) or drop only CI when
+  following a journal style that uses parenthesised SE
+  alone (`re_columns = c("est", "se")`).
+
+```{r mixed-cols, eval = FALSE}
+table_regression(fit, re_columns = "est")               # σ only
+table_regression(fit, re_columns = c("est", "se"))      # σ (SE)
+table_regression(fit, show_re = FALSE)                  # fixed effects only
+```
+
 ## Significance stars
 
 Stars are off by default. APA 7 §6.46 explicitly discourages
@@ -699,9 +1019,19 @@ American Psychological Association (2020).
 *Publication Manual of the American Psychological Association*
 (7th ed.). Section 6.46.
 
+Bates, D., Mächler, M., Bolker, B., and Walker, S. (2015).
+Fitting linear mixed-effects models using lme4.
+*Journal of Statistical Software*, 67(1), 1–48.
+
+Bolker, B. (2024). GLMM FAQ. <https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html>.
+Random-effects p-values and CI section.
+
 Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003).
 *Applied Multiple Regression / Correlation Analysis for the
 Behavioral Sciences* (3rd ed.). Lawrence Erlbaum.
+
+Gelman, A. (2005). Analysis of variance — why it is more
+important than ever. *The Annals of Statistics*, 33(1), 1–53.
 
 Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. *Statistics in Medicine*, 27(15), 2865–2873.
@@ -732,6 +1062,12 @@ Long, J. S., and Freese, J. (2014). *Regression Models for
 Categorical Dependent Variables Using Stata* (3rd ed.). Stata
 Press.
 
+Luke, S. G. (2017). Evaluating significance in linear mixed-
+effects models in R. *Behavior Research Methods*, 49(4), 1494–
+1502. (Empirical comparison of Wald-z, Wald-t, Kenward-Roger,
+and Satterthwaite; recommends Satterthwaite or KR for samples
+with few groups.)
+
 McFadden, D. (1974). Conditional logit analysis of qualitative
 choice behavior. In P. Zarembka (Ed.), *Frontiers in
 Econometrics* (pp. 105–142). Academic Press.
@@ -742,6 +1078,16 @@ logistic regression coefficients. *The American Statistician*,
 
 Menard, S. (2011). Standards for standardized logistic
 regression coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Nakagawa, S., Johnson, P. C. D., and Schielzeth, H. (2017).
+The coefficient of determination R² and intra-class correlation
+coefficient from generalized linear mixed-effects models
+revisited and expanded. *Journal of the Royal Society Interface*,
+14(134), 20170213.
+
+Nakagawa, S., and Schielzeth, H. (2013). A general and simple
+method for obtaining R² from generalized linear mixed-effects
+models. *Methods in Ecology and Evolution*, 4(2), 133–142.
 
 Mood, C. (2010). Logistic regression: Why we cannot do what we
 think we can do, and what we can do about it. *European
@@ -754,6 +1100,10 @@ Olejnik, S., and Algina, J. (2003). Generalized eta and omega
 squared statistics: Measures of effect size for some common
 research designs. *Psychological Methods*, 8(4), 434–447.
 
+Pinheiro, J. C., and Bates, D. M. (2000). *Mixed-Effects Models
+in S and S-PLUS*. Springer. §2.4.2 on containment degrees of
+freedom for the nlme implementation.
+
 Pustejovsky, J. E., and Tipton, E. (2018). Small-sample methods
 for cluster-robust variance estimation and hypothesis testing in
 fixed effects models. *Journal of Business & Economic
@@ -762,11 +1112,20 @@ Statistics*, 36(4), 672–683.
 Rothman, K. J. (1990). No adjustments are needed for multiple
 comparisons. *Epidemiology*, 1(1), 43–46.
 
+Self, S. G., and Liang, K.-Y. (1987). Asymptotic properties of
+maximum likelihood estimators and likelihood ratio tests under
+non-standard conditions. *Journal of the American Statistical
+Association*, 82(398), 605–610.
+
 Smithson, M. (2003). *Confidence Intervals*. Sage.
 
 Steiger, J. H. (2004). Beyond the F test: Effect size confidence
 intervals and tests of close fit in the analysis of variance and
 contrast analysis. *Psychological Methods*, 9(2), 164–182.
+
+Stram, D. O., and Lee, J. W. (1994). Variance components testing
+in the longitudinal mixed effects model. *Biometrics*, 50(4),
+1171–1177.
 
 Tjur, T. (2009). Coefficients of determination in logistic
 regression models — A new proposal: The coefficient of
@@ -775,6 +1134,11 @@ discrimination. *The American Statistician*, 63(4), 366–372.
 Venables, W. N., and Ripley, B. D. (2002). *Modern Applied
 Statistics with S* (4th ed.). Springer. Section 7.2 on profile
 likelihood.
+
+Wang, T., and Merkle, E. C. (2018). merDeriv: Derivative
+computations for linear mixed effects models with application
+to robust standard errors. *Journal of Statistical Software*,
+87(Code Snippet 1), 1–16.
 
 Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019).
 Moving to a world beyond "p < 0.05". *The American Statistician*,

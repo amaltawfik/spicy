@@ -318,6 +318,38 @@ apply_exponentiate_to_coefs <- function(coefs) {
 }
 
 
+# Phase 7c16: frame-schema sibling of apply_exponentiate_to_coefs().
+# The mixed-effects methods produce coefs in the frame schema
+# (`std_error`, `ci_lower`, `ci_upper`, `is_ref`, NO `is_singular`)
+# rather than the legacy long-format (`se`, `ci_low`, `ci_high`,
+# `is_reference`, `is_singular`); operate directly on the frame-schema
+# columns so we don't need a round-trip translation.
+#
+# AME rows pass through unchanged: marginaleffects already returns the
+# response-scale effect, so exponentiating again would be wrong (and
+# the "OR" / "IRR" / ... label only applies to B / beta rows).
+apply_exponentiate_to_frame_coefs <- function(coefs) {
+  if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
+  is_b_or_beta <- coefs$estimate_type %in% c("B", "beta")
+  is_eligible <- is_b_or_beta &
+                   !(coefs$is_ref %in% TRUE) &
+                   !is.na(coefs$estimate)
+  if (!any(is_eligible)) return(coefs)
+
+  rows <- which(is_eligible)
+  est_orig <- coefs$estimate[rows]
+  se_orig  <- coefs$std_error[rows]
+
+  exp_est <- exp(est_orig)
+  coefs$estimate[rows] <- exp_est
+  coefs$ci_lower[rows] <- exp(coefs$ci_lower[rows])
+  coefs$ci_upper[rows] <- exp(coefs$ci_upper[rows])
+  coefs$std_error[rows] <- exp_est * se_orig  # Delta-method.
+  # Statistic and p-value invariant under exp(): leave as-is.
+  coefs
+}
+
+
 # ---- Partial likelihood-ratio chi-square ---------------------------------
 
 # Term-level partial chi^2 via drop1(test = "LRT") -- the glm analog

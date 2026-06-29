@@ -9,7 +9,9 @@ Description: Provides tabulation, descriptive-summary, and
     measures (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's
     Tau-b, Somers' D, and others); categorical and continuous
     summary tables; regression coefficient tables for one or more
-    'lm' or 'glm' fits side by side; and outcome-by-group
+    'lm', 'glm', and mixed-effects fits ('lme4', 'glmmTMB', 'nlme')
+    side by side, with random-effects panel and Nakagawa-Schielzeth
+    marginal / conditional R-squared; and outcome-by-group
     comparison tables from linear models with optional additive
     covariate adjustment. All table outputs follow APA conventions
     and expose 'broom'-compatible 'tidy()' / 'glance()' methods
@@ -40,12 +42,37 @@ Suggests:
     DT,
     effectsize,
     emmeans,
+    estimatr (>= 1.0.0),
+    fixest (>= 0.11),
+    flexsurv (>= 2.2),
     flextable,
     gt,
     haven,
     htmltools,
+    glmmTMB (>= 1.1.7),
     knitr,
+    lme4 (>= 1.1-35),
+    lmerTest (>= 3.1-3),
+    merDeriv (>= 0.2.5),
     marginaleffects,
+    MASS,
+    mgcv (>= 1.9),
+    nlme (>= 3.1-160),
+    nnet,
+    numDeriv,
+    ordinal (>= 2022.11),
+    AER (>= 1.2),
+    betareg (>= 3.1),
+    mlogit (>= 1.1),
+    pscl (>= 1.5),
+    quantreg (>= 5.86),
+    rms (>= 6.7),
+    sampleSelection (>= 1.2),
+    posterior (>= 1.5.0),
+    rstanarm (>= 2.21),
+    brms (>= 2.20),
+    survey (>= 4.4),
+    survival (>= 3.5),
     officer,
     openxlsx2,
     parameters,

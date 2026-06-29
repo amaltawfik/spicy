@@ -1,4 +1,4 @@
-# Tests for `glm` support in table_regression() — Phase 3.
+# Tests for `glm` support in table_regression() – Phase 3.
 # Sections:
 #   * Step 1: foundation (z-asymptotic Wald, family-aware title,
 #             pseudo-R² family, gaussian glm caveat, class-aware
@@ -25,12 +25,12 @@ test_that("glm: binomial logit fits with z-asymptotic Wald inference", {
   out <- table_regression(fit)
   expect_s3_class(out, "spicy_regression_table")
   td <- broom::tidy(out)
-  # All test_type = "z", df = Inf — matches summary.glm / Stata
+  # All test_type = "z", df = Inf – matches summary.glm / Stata
   expect_true(all(td$test_type == "z"))
   expect_true(all(is.infinite(td$df)))
 })
 
-test_that("glm: family-aware title — logit / probit / poisson / Gamma", {
+test_that("glm: family-aware title – logit / probit / poisson / Gamma", {
   fit_logit <- glm(am ~ mpg, data = mt, family = binomial)
   expect_match(attr(table_regression(fit_logit), "title"),
                "^Logistic regression: am$")
@@ -46,23 +46,33 @@ test_that("glm: family-aware title — logit / probit / poisson / Gamma", {
 })
 
 test_that("glm: hierarchical title is grammatically lower-cased", {
-  # Direct unit-test of the title formatter — full nested computation
+  # Direct unit-test of the title formatter – full nested computation
   # for glm (LRT-based comparison) is part of Step 6.
-  ext <- list(
-    list(outcome = "am", title_prefix = "Logistic regression"),
-    list(outcome = "am", title_prefix = "Logistic regression")
+  # Build minimal frame-shaped objects (only the fields the title
+  # function reads). Phase 0c sub-step C5: migrated from
+  # build_regression_title() to build_regression_title_from_frames().
+  fr <- list(
+    list(info = list(dv = "am",
+                     extras = list(title_prefix = "Logistic regression"))),
+    list(info = list(dv = "am",
+                     extras = list(title_prefix = "Logistic regression")))
   )
   expect_equal(
-    spicy:::build_regression_title(ext, nested = TRUE),
+    spicy:::build_regression_title_from_frames(fr, nested = TRUE),
     "Hierarchical logistic regression: am"
   )
 })
 
-test_that("glm: classical-vcov footer label says 'MLE inverse Hessian'", {
+test_that("glm: classical-vcov footer label says 'Fisher information'", {
+  # Phase 7c24 (item c): renamed from "MLE inverse Hessian" to the
+  # standard publication name "Fisher information" -- parallels
+  # "classical (OLS)" for lm by naming the mechanism that produces
+  # the SE (Wooldridge / Greene; Stata's "OIM" / SAS's
+  # "Standard Error" are the other common conventions).
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit)
   expect_match(attr(out, "note"),
-               "Std\\. errors: classical \\(MLE inverse Hessian\\)")
+               "Std\\. errors: classical \\(Fisher information\\)")
 })
 
 
@@ -154,10 +164,10 @@ test_that("glm: non-gaussian does NOT emit the gaussian caveat", {
 
 
 # ============================================================================
-# Step 1: pseudo-R² helpers — direct unit tests
+# Step 1: pseudo-R² helpers – direct unit tests
 # ============================================================================
 
-test_that("compute_pseudo_r2_mcfadden — known-value cross-check", {
+test_that("compute_pseudo_r2_mcfadden – known-value cross-check", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   ll_full <- as.numeric(logLik(fit))
   null_fit <- update(fit, . ~ 1)
@@ -167,7 +177,7 @@ test_that("compute_pseudo_r2_mcfadden — known-value cross-check", {
                tolerance = 1e-12)
 })
 
-test_that("compute_pseudo_r2_nagelkerke — known-value cross-check", {
+test_that("compute_pseudo_r2_nagelkerke – known-value cross-check", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   n <- nobs(fit)
   ll_full <- as.numeric(logLik(fit))
@@ -178,7 +188,7 @@ test_that("compute_pseudo_r2_nagelkerke — known-value cross-check", {
                tolerance = 1e-12)
 })
 
-test_that("compute_pseudo_r2_tjur — only defined for binomial", {
+test_that("compute_pseudo_r2_tjur – only defined for binomial", {
   fit_bin <- glm(am ~ mpg, data = mt, family = binomial)
   expect_true(is.finite(spicy:::compute_pseudo_r2_tjur(fit_bin)))
   fit_pois <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
@@ -195,7 +205,7 @@ test_that("compute_pseudo_r2_*: quasi families return NA (no log-likelihood)", {
 
 
 # ============================================================================
-# Step 2: exponentiate — column header rebrand + delta-method SE
+# Step 2: exponentiate – column header rebrand + delta-method SE
 # ============================================================================
 
 test_that("exponentiate: logit ⇒ OR header + numeric identity", {
@@ -289,7 +299,13 @@ test_that("exponentiate: footer mentions the family-specific label", {
   out <- table_regression(fit, exponentiate = TRUE)
   expect_match(attr(out, "note"),
                "Coefficients exponentiated and displayed as OR")
-  expect_match(attr(out, "note"), "delta-method")
+  # Phase 7c14: the per-rendered-row delta-method "how it was
+  # computed" sentence ("SE_OR = OR x SE_link") was dropped from
+  # the footer -- redundant with the help text and noisy in a
+  # publication table. The footer now ends at "CI bounds
+  # exponentiated.".
+  expect_match(attr(out, "note"), "CI bounds exponentiated")
+  expect_false(grepl("delta-method", attr(out, "note"), fixed = TRUE))
 })
 
 test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifier", {
@@ -328,10 +344,10 @@ test_that("exponentiate: validation rejects non-logical scalar", {
 
 
 # ============================================================================
-# Step 2: apply_exponentiate_to_coefs — direct unit tests on the helper
+# Step 2: apply_exponentiate_to_coefs – direct unit tests on the helper
 # ============================================================================
 
-test_that("apply_exponentiate_to_coefs — empty / NULL no-ops", {
+test_that("apply_exponentiate_to_coefs – empty / NULL no-ops", {
   expect_null(spicy:::apply_exponentiate_to_coefs(NULL))
   expect_equal(
     nrow(spicy:::apply_exponentiate_to_coefs(spicy:::empty_coefs_long())),
@@ -339,7 +355,7 @@ test_that("apply_exponentiate_to_coefs — empty / NULL no-ops", {
   )
 })
 
-test_that("apply_exponentiate_to_coefs — only B / beta rows transformed", {
+test_that("apply_exponentiate_to_coefs – only B / beta rows transformed", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   ex <- spicy:::extract_lm_phase1(
     fit, model_id = "M1",
@@ -359,7 +375,7 @@ test_that("apply_exponentiate_to_coefs — only B / beta rows transformed", {
                tolerance = 1e-12)
 })
 
-test_that("apply_exponentiate_to_coefs — singular and reference rows untouched", {
+test_that("apply_exponentiate_to_coefs – singular and reference rows untouched", {
   # Construct a degenerate fit with both a singular coef and a
   # factor-with-reference to exercise both branches.
   mt2 <- mt
@@ -626,7 +642,7 @@ test_that("lm + standardized = 'pseudo' - rejected with hint to refit/posthoc", 
 })
 
 test_that("glm refit fallback: factor() in formula triggers spicy_fallback", {
-  # factor() in the formula prevents the refit on z-scored mf — should
+  # factor() in the formula prevents the refit on z-scored mf – should
   # emit spicy_fallback and use posthoc (X-only) algebraic scaling.
   fit <- glm(am ~ mpg + factor(cyl), data = mt, family = binomial)
   fb_seen <- FALSE
@@ -725,10 +741,12 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
   out <- table_regression(fit, vcov = "CR2", cluster = d$clinic,
                            show_columns = c("b", "ame"))
   note <- attr(out, "note")
-  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
-  expect_match(note, "coef_test", fixed = TRUE)
-  # Should NOT mention linear_contrast (that's lm-only path)
-  expect_false(grepl("linear_contrast", note, fixed = TRUE))
+  # Phase 7c22 (item e): footer trimmed -- "t-test with Satterthwaite
+  # df (dominant-coefficient approximation)" for the glm path.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
+  expect_match(note, "dominant-coefficient approximation", fixed = TRUE)
+  expect_false(grepl("clubSandwich::",   note, fixed = TRUE))
+  expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
 
 test_that("glm AME with factor predictor: each level gets its own AME row", {
@@ -878,7 +896,7 @@ test_that("ci_method = 'profile': asymmetric CI for sparse logistic", {
     half_low  <- row$estimate - row$conf.low
     half_high <- row$conf.high - row$estimate
     # Wald would give symmetric (half_low == half_high). Profile is
-    # asymmetric — the gap should be visibly different.
+    # asymmetric – the gap should be visibly different.
     expect_false(isTRUE(all.equal(half_low, half_high, tolerance = 1e-3)))
   }
 })
@@ -905,7 +923,7 @@ test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized",
   # B exponentiated → row for mpg has positive value (OR scale)
   b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
   expect_true(b_mpg > 0)  # OR is exp(-0.32) ≈ 0.72
-  # AME on response scale (probability units) — magnitude < |B|
+  # AME on response scale (probability units) – magnitude < |B|
   ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
   expect_true(abs(ame_mpg) < 0.1)
 })
@@ -933,10 +951,10 @@ test_that("E2E: mixed lm + glm side-by-side renders without error", {
   expect_s3_class(out, "spicy_regression_table")
   # Title falls back to plain "Regression comparison" (mixed families)
   expect_match(attr(out, "title"), "^Regression comparison$")
-  # vcov footer per-model: OLS / MLE
+  # vcov footer per-model: OLS / Fisher information (Phase 7c24)
   note <- attr(out, "note")
-  expect_match(note, "OLS", fixed = TRUE)
-  expect_match(note, "MLE inverse Hessian", fixed = TRUE)
+  expect_match(note, "OLS",                fixed = TRUE)
+  expect_match(note, "Fisher information", fixed = TRUE)
 })
 
 test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
@@ -954,7 +972,8 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   )
   note <- attr(out, "note")
   expect_match(note, "cluster-robust [(]CR2[)]", perl = TRUE)
-  expect_match(note, "Satterthwaite-corrected df", fixed = TRUE)
+  # Phase 7c22 (item e): trimmed wording.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
   # Change rows live in the body now
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
@@ -1009,7 +1028,7 @@ test_that("E2E: standardized refit + glm + multi-model rendering", {
 })
 
 test_that("E2E: full feature surface in a single call (acceptance)", {
-  # Single comprehensive call that should succeed — covers ALL Phase 3
+  # Single comprehensive call that should succeed – covers ALL Phase 3
   # additions: exponentiate, partial_chi2, AME, standardized=pseudo,
   # ci_method=profile, custom labels, p_adjust, fit-stats override.
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
@@ -1525,9 +1544,9 @@ test_that("AUDIT B5: 3-model with non-alphabetical names preserves input order",
 test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
   m1 <- lm(mpg ~ wt, data = mtcars)
   m2 <- lm(mpg ~ wt + cyl, data = mtcars)
-  ext1 <- spicy:::extract_lm_phase1(m1, model_id = "Z")
-  ext2 <- spicy:::extract_lm_phase1(m2, model_id = "A")
-  aligned <- spicy:::align_extracts(list(ext1, ext2))
+  fr1 <- spicy:::as_regression_frame(m1, model_id = "Z")
+  fr2 <- spicy:::as_regression_frame(m2, model_id = "A")
+  aligned <- spicy:::align_frames(list(fr1, fr2), model_ids = c("Z", "A"))
   wide <- spicy:::pivot_aligned_wide(aligned,
                                        model_labels = c("Z-label", "A-label"))
   cols <- names(wide)
@@ -1536,7 +1555,7 @@ test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
   expect_true(!is.na(z_est) && !is.na(a_est))
   expect_true(z_est < a_est)
   # Z's intercept value must be the lm(mpg ~ wt) intercept (37.29),
-  # NOT the lm(mpg ~ wt + cyl) intercept (39.69) — confirms the bug
+  # NOT the lm(mpg ~ wt + cyl) intercept (39.69) – confirms the bug
   # is fixed at the data level (input model_id Z paired with the
   # first input fit, alphabetical re-sort notwithstanding).
   int_row <- wide[wide$term == "(Intercept)" &
@@ -1583,7 +1602,7 @@ test_that("AUDIT B6: existing duplicate-name validator still fires cleanly", {
 
 test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header", {
   # Ordered factors under `contr.poly` (R default for `ordered()`)
-  # produce `<var>.L`, `<var>.Q`, `<var>.C`, ... — orthogonal trend
+  # produce `<var>.L`, `<var>.Q`, `<var>.C`, ... – orthogonal trend
   # coefficients, NOT per-level contrasts. They are grouped under
   # the factor name (like a treatment factor) but with the bare
   # poly suffix (`.L` / `.Q` / `.C` / `^k`) as the sub-row label,
@@ -1883,7 +1902,7 @@ test_that("AME caveat: NO caveat when ame + p + ame_p all present", {
 
 test_that("align_ci_strings: em-dash and blank cells centered in column", {
   values <- c("[61.78, 67.49]", "[-0.03, 0.08]", "[2.09, 5.22]",
-              "—", "", NA_character_)
+              "–", "", NA_character_)
   out <- spicy:::align_ci_strings(values)
   # All cells have the same total width
   expect_equal(length(unique(nchar(out))), 1L)
@@ -1899,8 +1918,8 @@ test_that("align_ci_strings: em-dash and blank cells centered in column", {
   expect_equal(length(unique(close_positions)), 1L)
   # em-dash cell: contains the em-dash glyph, surrounded by spaces
   em_cell <- out[4L]
-  expect_true(grepl("—", em_cell))
-  expect_match(em_cell, "^\\s+—\\s+$", perl = TRUE)
+  expect_true(grepl("–", em_cell))
+  expect_match(em_cell, "^\\s+–\\s+$", perl = TRUE)
   # blank / NA: full-width whitespace
   expect_match(out[5L], "^\\s+$", perl = TRUE)
   expect_match(out[6L], "^\\s+$", perl = TRUE)
@@ -1927,7 +1946,7 @@ test_that("partial_chi2 cell renders em-dash when estimate is NA (direct)", {
                                      effect_size_digits = 2L,
                                      decimal_mark = ".",
                                      show_columns = c("b", "partial_chi2"))
-  expect_equal(out, "—")
+  expect_equal(out, "–")
 })
 
 test_that("AME cell renders em-dash when estimate is NA (estimate-only token)", {
@@ -1944,7 +1963,7 @@ test_that("AME cell renders em-dash when estimate is NA (estimate-only token)", 
                        effect_size_digits = 2L,
                        decimal_mark = ".",
                        show_columns = c("b", "ame"))
-  expect_equal(out, "—")
+  expect_equal(out, "–")
 })
 
 
@@ -2237,9 +2256,13 @@ test_that("AME-Satterthwaite footer: mixed lm + glm uses compound wording", {
     show_columns = c("b", "ame", "ame_p", "p")
   )
   note <- attr(out, "note")
-  expect_match(note, "linear_contrast", fixed = TRUE)
-  expect_match(note, "coef_test", fixed = TRUE)
-  expect_match(note, "closed-form", fixed = TRUE)
+  # Phase 7c22 (item e): footer trimmed for the lm+glm mixed case.
+  expect_match(note, "Satterthwaite df", fixed = TRUE)
+  expect_match(note, "closed-form for lm", fixed = TRUE)
+  expect_match(note, "dominant-coefficient approximation for glm",
+                fixed = TRUE)
+  expect_false(grepl("clubSandwich",     note, fixed = TRUE))
+  expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
 
 

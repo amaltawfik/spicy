@@ -1,39 +1,26 @@
-# Per-model coefficient transforms applied between extraction and
-# alignment for table_regression(). Each helper takes a long-format
-# `coefs` data.frame (the `$coefs` field of an extract_lm_phase1()
-# output) and returns a modified one.
 
 
-# ---- p_adjust -------------------------------------------------------------
-
-# Apply a multiple-comparison adjustment to the p-values within a
-# single model's coefficient family.
+# Frame-aware sibling of apply_p_adjust(). Operates on the frame's
+# coefs tibble whose column naming differs from the legacy long coefs:
+#   is_intercept -> derived (term == "(Intercept)")
+#   is_reference -> is_ref
+# The estimate_type / p_value column names are identical in both
+# schemas, so the per-family adjustment loop is unchanged.
 #
-# The "family" is, per estimate_type, every row that:
-#   * is not the intercept,
-#   * is not a reference-level placeholder,
-#   * has a non-NA p-value (singular coefs are excluded).
-#
-# Adjustment is applied independently per estimate_type ("B", "beta",
-# "AME", "partial_*"), so the AME family is sized separately from
-# the B family -- both are legitimately their own multiple-testing
-# families.
-#
-# Returns the input data.frame with the `p_value` column updated
-# in place. When `method == "none"` the input is returned unchanged.
-apply_p_adjust <- function(coefs, method) {
+# Phase 0c sub-step C3: align_frames() now reads p-values from the
+# frame side, so the orchestrator must adjust the frame coefs (not
+# just the legacy extract coefs) for the displayed values to reflect
+# the chosen p_adjust method.
+apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   if (identical(method, "none") || is.null(method)) return(coefs)
   if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
 
-  family_mask <- !coefs$is_intercept &
-                   !coefs$is_reference &
+  family_mask <- coefs$term != "(Intercept)" &
+                   !coefs$is_ref &
                    !is.na(coefs$p_value)
 
   if (!any(family_mask)) return(coefs)
 
-  # Per-estimate_type adjustment: split the family into independent
-  # multiple-testing families (B, beta, AME, partial_f2, etc.) and
-  # adjust each. Mirrors the modelsummary / parameters convention.
   for (et in unique(coefs$estimate_type[family_mask])) {
     rows <- which(family_mask & coefs$estimate_type == et)
     if (length(rows) == 0L) next

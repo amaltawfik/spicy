@@ -672,3 +672,153 @@ compute_satt_df_per_coef_glm <- function(fit, vc, cluster) {
   }
   setNames(as.numeric(ct$df_Satt), rownames(ct))
 }
+
+
+# ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
+#
+# Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
+# `as_regression_frame()` pipeline directly -- they don't reuse the
+# legacy lm/glm extractor, so the existing `extract_ame_glm()` (which
+# returns rows in the legacy long format) doesn't slot in. This helper
+# computes AME rows in the **frame schema** so they can be rbind-ed
+# straight onto `frame$coefs`.
+#
+# Mechanics:
+#   * `marginaleffects::avg_slopes(fit, conf_level, df = Inf)` --
+#     response-scale AME with Wald-z asymptotic inference. Works for
+#     all four mixed-effects engines. We use df = Inf and the model-
+#     based vcov for parity with the fixed-effect p-values in the
+#     same row of the table.
+#   * For factor terms, we reconstruct a coef-style `term` id
+#     (e.g. `Subjectmale`) so the renderer's factor-grouping logic
+#     finds these rows alongside the B-rows.
+#   * `parent_var` / `label` / `factor_level_pos` are populated from
+#     `detect_factor_term_meta()` (B-row alignment), falling back to
+#     the model-frame columns when the factor metadata is missing
+#     (ordered factors / inline `factor()` calls).
+#
+# Returns a zero-row frame coefs subset on failure (missing
+# marginaleffects, `avg_slopes()` errors, fit class out of scope).
+.compute_ame_rows_for_frame <- function(fit, ci_level) {
+  if (!spicy_pkg_available("marginaleffects")) return(NULL)
+  ame_table <- tryCatch(
+    suppressWarnings(suppressMessages(
+      marginaleffects::avg_slopes(
+        fit,
+        conf_level = ci_level,
+        df         = Inf
+      )
+    )),
+    error = function(e) {
+      spicy_warn(
+        c(
+          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          "x" = paste0("Reason: ", conditionMessage(e)),
+          "i" = "AME column will be em-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      NULL
+    }
+  )
+  if (is.null(ame_table) || nrow(ame_table) == 0L) return(NULL)
+
+  factor_meta <- tryCatch(detect_factor_term_meta(fit),
+                           error = function(e) list())
+  # Engine-aware data-frame retrieval: stats::model.frame() returns
+  # the lmeStruct (not the data) for nlme::lme fits, so we use
+  # nlme::getData() instead. lme4 + glmmTMB + lm / glm all return a
+  # plain data.frame via stats::model.frame().
+  mf <- if (inherits(fit, c("lme", "gls"))) {
+    tryCatch(nlme::getData(fit), error = function(e) NULL)
+  } else {
+    tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  }
+  mf_names <- if (!is.null(mf)) names(mf) else character(0)
+
+  rows <- lapply(seq_len(nrow(ame_table)), function(i) {
+    var_name     <- ame_table$term[i]
+    contrast_str <- ame_table$contrast[i] %||% NA_character_
+
+    # marginaleffects strips inline transforms like `factor(cyl)` and
+    # reports the bare variable; resolve back to the model-frame
+    # column name so factor metadata maps correctly.
+    col_name <- if (var_name %in% mf_names) {
+      var_name
+    } else {
+      cand <- grep(paste0("(^|\\()", var_name, "(\\)|$)"),
+                   mf_names, value = TRUE)
+      if (length(cand) > 0L) cand[1L] else var_name
+    }
+    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+
+    # Reconstruct a coef-style term id for factor rows so the renderer
+    # groups them under the parent factor header. For numeric / logical
+    # predictors the term IS the variable name.
+    term_id <- if (is_factor_var && !is.na(contrast_str) &&
+                    grepl(" - ", contrast_str)) {
+      lvl <- sub(" - .*$", "", contrast_str)
+      paste0(col_name, lvl)
+    } else {
+      col_name
+    }
+
+    fmeta <- factor_meta[[term_id]]
+    # Fallbacks when the coef-name lookup misses (ordered factors,
+    # inline factor() calls): rebuild from the model-frame column.
+    lvl_str <- NA_character_
+    lvl_pos <- NA_integer_
+    if (is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)) {
+      lvl_str <- sub(" - .*$", "", contrast_str)
+      lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+    }
+
+    parent_var <- fmeta$factor_term  %||%
+      (if (is_factor_var) col_name else term_id)
+    label      <- fmeta$factor_level %||%
+      (if (!is.na(lvl_str)) lvl_str else term_id)
+    pos        <- fmeta$factor_level_pos %||% lvl_pos
+
+    data.frame(
+      term             = term_id,
+      parent_var       = parent_var,
+      label            = label,
+      factor_level_pos = as.integer(pos),
+      is_ref           = FALSE,
+      estimate_type    = "AME",
+      estimate         = as.numeric(ame_table$estimate[i]),
+      std_error        = as.numeric(ame_table$std.error[i]),
+      df               = Inf,
+      statistic        = as.numeric(ame_table$statistic[i]),
+      p_value          = as.numeric(ame_table$p.value[i]),
+      ci_lower         = as.numeric(ame_table$conf.low[i]),
+      ci_upper         = as.numeric(ame_table$conf.high[i]),
+      test_type        = "z",
+      stringsAsFactors = FALSE
+    )
+  })
+  out <- do.call(rbind, rows)
+  out
+}
+
+
+# Append AME rows to a frame's coefs when AME tokens are requested.
+# A no-op when (a) `show_columns` doesn't ask for AME, (b) the
+# marginaleffects package is unavailable, (c) `avg_slopes()` errors.
+# The returned coefs always has the same schema as the input.
+.attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns) {
+  ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
+  if (!any(ame_tokens %in% show_columns)) return(coefs)
+  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level)
+  if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
+  # Align columns: if coefs has extra columns (e.g. legacy carry-overs),
+  # rbind would fail. Restrict ame_rows to the intersection and pad
+  # missing columns with NA of the appropriate type.
+  shared <- intersect(colnames(coefs), colnames(ame_rows))
+  if (length(shared) == 0L) return(coefs)
+  for (col in setdiff(colnames(coefs), colnames(ame_rows))) {
+    ame_rows[[col]] <- coefs[[col]][NA_integer_]
+  }
+  ame_rows <- ame_rows[, colnames(coefs), drop = FALSE]
+  rbind(coefs, ame_rows)
+}

@@ -1,38 +1,59 @@
-# Multi-model alignment + wide pivot for table_regression() -- Layer 2.
-#
-# Per dev/table_regression_design.md Layer 2:
-#   "bind_rows() of the long tables, with `model_id`. Terms appearing
-#    in only one model -> NA cells in the others. Trivial with the
-#    long format."
-#
-# Two stages:
-#
-#   align_extracts(extracts, ...)
-#     Combine per-model `coefs` long tables into one aligned long
-#     frame, compute the canonical term display order (union of
-#     per-model coef sequences, with factor coefs grouped, intercept
-#     positioned, reference rows filtered per `reference_style`), and
-#     attach an `order_idx` column so the rendering layer can sort
-#     deterministically.
-#
-#   pivot_aligned_wide(aligned, value_fields, model_labels)
-#     Pivot to one row per (term, estimate_type) with per-model
-#     value columns named `<model_label>__<field>`. The double
-#     underscore is intentional -- unambiguous to split on for the
-#     rendering layer.
 
 
-# ---- align_extracts() ----------------------------------------------------
+# Frame-aware sibling of compute_canonical_term_order(). Reads
+# frames[[i]]$coefs$term instead of extracts[[i]]$coefs$term. The
+# `term` column name is identical in both schemas, so the body of
+# the loop is the same; only the input type differs.
+compute_canonical_term_order_from_frames <- function(frames) {
+  base <- character(0)
+  for (f in frames) {
+    new_terms <- setdiff(unique(f$coefs$term), base)
+    base <- c(base, new_terms)
+  }
+  base
+}
 
-align_extracts <- function(
-    extracts,
+
+# Frame-aware sibling of align_extracts(). Takes a list of frames plus
+# a parallel `model_ids` vector (frames do not carry model_id; it lives
+# in the orchestrator) and produces an aligned object SHAPE-IDENTICAL
+# to align_extracts()'s return value, so the downstream body builder
+# can consume it unchanged until C4 lands.
+#
+# Internal strategy:
+#   1. Build the long-format coefs data.frame by stacking each frame's
+#      coefs with the legacy column names. The Phase 0b sub-step 2
+#      reshape map applies in reverse:
+#        se               <- std_error
+#        ci_low           <- ci_lower
+#        ci_high          <- ci_upper
+#        is_reference     <- is_ref
+#        is_intercept     <- derived: term == "(Intercept)"
+#        is_singular      <- derived: term %in% info$extras$singular_terms
+#        factor_term      <- NA when parent_var == term, else parent_var
+#        factor_level     <- NA when label      == term, else label
+#        test_type        <- coefs$test_type (preserved per row)
+#        model_id         <- model_ids[i]   (injected)
+#        outcome          <- frames[[i]]$info$dv  (injected)
+#   2. Build the fit_stats data.frame by compacting each frame's
+#      fit_stats list via .compact_fit_stats_for_legacy().
+#   3. The remaining alignment logic (factor_ref_levels capture,
+#      compute_canonical_term_order, group_factor_terms,
+#      reference-style filter, order_idx assignment, outcome_labels
+#      and exp_headers vectors) is the same as align_extracts(), just
+#      reading from frames for the input-time vapply.
+#
+# Phase 0c sub-step C3.
+align_frames <- function(
+    frames,
+    model_ids,
     show_intercept = TRUE,
     intercept_position = c("first", "last"),
     reference_style = c("row", "annotation", "footer", "none")) {
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
 
-  if (length(extracts) == 0L) {
+  if (length(frames) == 0L) {
     return(list(
       coefs_aligned = empty_coefs_aligned(),
       fit_stats_aligned = empty_fit_stats_aligned(),
@@ -42,13 +63,51 @@ align_extracts <- function(
     ))
   }
 
-  coefs_long <- do.call(rbind, lapply(extracts, `[[`, "coefs"))
-  fit_stats <- do.call(rbind, lapply(extracts, `[[`, "fit_stats"))
+  # ---- Build legacy-shape long coefs from frames ------------------------
+  coefs_long <- do.call(rbind, lapply(seq_along(frames), function(i) {
+    cf <- frames[[i]]$coefs
+    singular_terms <- frames[[i]]$info$extras$singular_terms %||% character(0)
+    test_type_col <- if (!is.null(cf$test_type)) {
+      as.character(cf$test_type)
+    } else {
+      rep(NA_character_, nrow(cf))
+    }
+    data.frame(
+      model_id         = rep(model_ids[i], nrow(cf)),
+      outcome          = rep(frames[[i]]$info$dv, nrow(cf)),
+      term             = cf$term,
+      estimate_type    = cf$estimate_type,
+      estimate         = cf$estimate,
+      se               = cf$std_error,
+      ci_low           = cf$ci_lower,
+      ci_high          = cf$ci_upper,
+      statistic        = cf$statistic,
+      df               = cf$df,
+      p_value          = cf$p_value,
+      test_type        = test_type_col,
+      is_singular      = cf$term %in% singular_terms,
+      is_intercept     = cf$term == "(Intercept)",
+      is_reference     = cf$is_ref,
+      factor_term      = ifelse(cf$parent_var == cf$term,
+                                NA_character_, cf$parent_var),
+      factor_level     = ifelse(cf$label == cf$term,
+                                NA_character_, cf$label),
+      factor_level_pos = as.integer(cf$factor_level_pos),
+      stringsAsFactors = FALSE
+    )
+  }))
 
-  # Capture the reference level for each factor BEFORE the annotation
-  # branch potentially drops the ref rows. The map is keyed by the
-  # factor variable name (e.g., "cyl" -> "4"). Used by the renderer
-  # to annotate the factor header when reference_style = "annotation".
+  # ---- Build legacy-shape fit_stats from frames -------------------------
+  fit_stats <- do.call(rbind, lapply(seq_along(frames), function(i) {
+    as.data.frame(
+      .compact_fit_stats_for_legacy(frames[[i]]$info$fit_stats,
+                                    model_ids[i],
+                                    frames[[i]]$info$dv),
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  # ---- Everything below mirrors align_extracts() ------------------------
   ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
   factor_ref_levels <- if (nrow(ref_rows_all) == 0L) {
     setNames(character(0), character(0))
@@ -59,7 +118,7 @@ align_extracts <- function(
     setNames(lvl_map[keep], nms[keep])
   }
 
-  term_order <- compute_canonical_term_order(extracts)
+  term_order <- compute_canonical_term_order_from_frames(frames)
 
   if (!isTRUE(show_intercept)) {
     term_order <- term_order[term_order != "(Intercept)"]
@@ -69,20 +128,8 @@ align_extracts <- function(
     term_order <- c(setdiff(term_order, "(Intercept)"), "(Intercept)")
   }
 
-  # Always reorder so each factor's coefs stay contiguous and the
-  # reference row sits FIRST within its group. The position must be
-  # deterministic regardless of `factor_layout`: only the
-  # factor-HEADER row and the term-label formatting (indent + bare
-  # level vs `<var><level>`) depend on the layout. Otherwise the
-  # user would see a different ref-row position when toggling the
-  # layout -- the inconsistency surfaced in real-world testing.
   term_order <- group_factor_terms(term_order, coefs_long)
 
-  # Only `reference_style = "row"` keeps the reference dummy in the
-  # body. "annotation" / "footer" / "none" drop it -- each surfaces
-  # the reference information through its own channel (inline in
-  # the factor header / first dummy, in the footer note, or not at
-  # all, respectively).
   if (!identical(reference_style, "row")) {
     coefs_long <- coefs_long[!coefs_long$is_reference, , drop = FALSE]
     term_order <- intersect(term_order, unique(coefs_long$term))
@@ -94,22 +141,16 @@ align_extracts <- function(
                                   coefs_long$model_id), , drop = FALSE]
   rownames(coefs_long) <- NULL
 
-  # Per-model outcome auto-labels (attr("label") if set, else
-  # variable name). Propagated to the renderer for the multi-DV
-  # outcome row when `outcome_labels = NULL`.
-  outcome_labels_auto <- vapply(
-    extracts,
-    function(e) e$outcome_label %||% e$outcome,
-    character(1)
-  )
+  outcome_labels_auto <- vapply(frames, function(f) {
+    f$info$dv_label %||% f$info$dv
+  }, character(1))
 
-  # Per-model exponentiate headers ("OR" / "IRR" / "HR" / ...) when
-  # the user asked for `exponentiate = TRUE` AND the model is a
-  # non-identity-link glm. NA for models where exp() was not
-  # applied -- the renderer keeps the default "B" header for those.
-  model_ids <- vapply(extracts, function(e) e$model_id, character(1))
-  exp_headers_auto <- vapply(extracts, function(e) {
-    if (isTRUE(e$exp_applied)) e$exp_header else NA_character_
+  exp_headers_auto <- vapply(frames, function(f) {
+    if (isTRUE(f$info$extras$exp_applied)) {
+      f$info$extras$exp_header
+    } else {
+      NA_character_
+    }
   }, character(1))
   names(exp_headers_auto) <- model_ids
 
@@ -120,26 +161,9 @@ align_extracts <- function(
     factor_ref_levels = factor_ref_levels,
     outcome_labels_auto = outcome_labels_auto,
     exp_headers_auto = exp_headers_auto,
-    # Canonical model_id order (input order from `extracts`). The
-    # renderer must use this -- `unique(coefs$model_id)` returns the
-    # post-sort alphabetical order, which de-aligns labels and
-    # exp-headers (B5 audit fix).
     model_ids = model_ids,
-    n_models = length(extracts)
+    n_models = length(frames)
   )
-}
-
-
-# Canonical term ordering -- walk each model's term sequence and
-# append unseen terms at the end. Preserves model 1's order as the
-# anchor; later models contribute their additions.
-compute_canonical_term_order <- function(extracts) {
-  base <- character(0)
-  for (e in extracts) {
-    new_terms <- setdiff(unique(e$coefs$term), base)
-    base <- c(base, new_terms)
-  }
-  base
 }
 
 

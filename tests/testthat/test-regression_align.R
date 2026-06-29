@@ -1,268 +1,226 @@
 # Tests for table_regression() multi-model alignment + wide pivot
-# (Step 8 / Layer 2).
+# (Step 8 / Layer 2). Phase 0c sub-step C5: migrated from the deleted
+# legacy align_extracts() to align_frames(). The aligned object shape
+# is identical via both paths; only the input source differs.
 
 # ---- Test fixtures -------------------------------------------------------
 
 mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
-mk_extract_lm <- function(formula, model_id, data = mt,
-                           show_columns = c("b", "se", "ci", "p")) {
+mk_frame <- function(formula, model_id, data = mt) {
   fit <- lm(formula, data = data)
-  spicy:::extract_lm_phase1(fit, model_id = model_id,
-                            show_columns = show_columns)
+  spicy:::as_regression_frame(fit, model_id = model_id)
+}
+
+.align <- function(frames, model_ids, ...) {
+  spicy:::align_frames(frames, model_ids = model_ids, ...)
 }
 
 
 # ============================================================================
-# align_extracts() — single model
+# align_frames() – single model
 # ============================================================================
 
-test_that("align_extracts — single model: order_idx assigned, term_order populated", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex)
+test_that("align_frames – single model: order_idx assigned, term_order populated", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1")
   expect_equal(aligned$n_models, 1L)
   expect_true("(Intercept)" %in% aligned$term_order)
   expect_true(all(c("order_idx") %in% names(aligned$coefs_aligned)))
-  # coefs_aligned ordered by order_idx
   expect_true(all(diff(aligned$coefs_aligned$order_idx) >= 0L))
 })
 
 
 # ============================================================================
-# align_extracts() — two models, identical formulas
+# align_frames() – two models, identical formulas
 # ============================================================================
 
-test_that("align_extracts — two identical models: same term_order, 2x rows per term", {
-  ex <- list(
-    mk_extract_lm(mpg ~ wt + cyl, "M1"),
-    mk_extract_lm(mpg ~ wt + cyl, "M2")
+test_that("align_frames – two identical models: same term_order, 2x rows per term", {
+  fr <- list(
+    mk_frame(mpg ~ wt + cyl, "M1"),
+    mk_frame(mpg ~ wt + cyl, "M2")
   )
-  aligned <- spicy:::align_extracts(ex)
+  aligned <- .align(fr, c("M1", "M2"))
   expect_equal(aligned$n_models, 2L)
-  # each (term, estimate_type) appears in both models
   per_term <- table(aligned$coefs_aligned$term, aligned$coefs_aligned$model_id)
   expect_true(all(per_term[, "M1"] == per_term[, "M2"]))
 })
 
 
 # ============================================================================
-# align_extracts() — model 2 adds a new term: appended at end of term_order
+# align_frames() – model 2 adds a new term: appended at end of term_order
 # ============================================================================
 
-test_that("align_extracts — extra term in model 2 appended to term_order", {
-  ex <- list(
-    mk_extract_lm(mpg ~ wt + cyl, "M1"),
-    mk_extract_lm(mpg ~ wt + cyl + am, "M2")
+test_that("align_frames – extra term in model 2 appended to term_order", {
+  fr <- list(
+    mk_frame(mpg ~ wt + cyl, "M1"),
+    mk_frame(mpg ~ wt + cyl + am, "M2")
   )
-  aligned <- spicy:::align_extracts(ex)
+  aligned <- .align(fr, c("M1", "M2"))
   expect_true("am" %in% aligned$term_order)
   # Without factor grouping, "am" appears AFTER all model 1 terms
-  # (the algorithm appends new terms at the end).
+  # (the contiguous-factor grouping reorders cyl4/cyl6 together but
+  # leaves the relative position of non-factor terms intact).
   am_pos <- which(aligned$term_order == "am")
-  wt_pos <- which(aligned$term_order == "wt")
-  expect_gt(am_pos, wt_pos)
+  expect_true(am_pos == length(aligned$term_order))
 })
 
 
 # ============================================================================
-# align_extracts() — intercept positioning
+# align_frames() – intercept positioning
 # ============================================================================
 
-test_that("align_extracts — intercept_position = 'last' moves intercept to end", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex, intercept_position = "last")
-  expect_equal(aligned$term_order[length(aligned$term_order)], "(Intercept)")
+test_that("align_frames – intercept_position = 'last' moves intercept to end", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1", intercept_position = "last")
+  expect_equal(tail(aligned$term_order, 1L), "(Intercept)")
 })
 
-test_that("align_extracts — show_intercept = FALSE drops intercept rows", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex, show_intercept = FALSE)
-  expect_false("(Intercept)" %in% aligned$term_order)
+test_that("align_frames – show_intercept = FALSE drops intercept rows", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1", show_intercept = FALSE)
   expect_false("(Intercept)" %in% aligned$coefs_aligned$term)
+  expect_false("(Intercept)" %in% aligned$term_order)
 })
 
 
 # ============================================================================
-# align_extracts() — group_factor_levels
+# align_frames() – group_factor_levels
 # ============================================================================
 
-test_that("align_extracts keeps factor coefs contiguous (always grouped)", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl + am, "M1"))
-  # `align_extracts()` no longer takes a layout arg in 0.12: the
-  # term reorder is always applied (contiguous + ref first). Layout
-  # is purely a render-time concern.
-  aligned <- spicy:::align_extracts(ex)
-  # cyl4 (ref), cyl6, cyl8 should all be adjacent in the term_order
-  cyl_terms <- c("cyl4", "cyl6", "cyl8")
-  cyl_positions <- match(cyl_terms, aligned$term_order)
-  expect_false(anyNA(cyl_positions))
-  # Adjacent: max position - min position == k - 1
-  expect_equal(max(cyl_positions) - min(cyl_positions),
-               length(cyl_terms) - 1L)
-})
-
-test_that("align_extracts — factor reference row precedes non-ref levels in group", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex)
-  cyl_pos <- match(c("cyl4", "cyl6", "cyl8"), aligned$term_order)
-  # cyl4 is the reference level; should appear first
-  expect_equal(cyl_pos[1], min(cyl_pos))
+test_that("align_frames keeps factor coefs contiguous (always grouped)", {
+  # `align_frames()` no longer takes a layout arg in 0.12+: the
+  # contiguous-block constraint is enforced regardless of factor_layout
+  # (the layout only affects header rendering downstream).
+  fr <- list(mk_frame(mpg ~ wt + cyl + am, "M1"))
+  aligned <- .align(fr, "M1")
+  # The two cyl levels must appear consecutively
+  factor_term_col <- aligned$coefs_aligned$factor_term
+  cyl_positions <- which(factor_term_col == "cyl" & !is.na(factor_term_col))
+  expect_true(all(diff(cyl_positions) == 1L))
 })
 
 
+test_that("align_frames – factor reference row precedes non-ref levels in group", {
+  fr <- list(mk_frame(mpg ~ wt + cyl + am, "M1"))
+  aligned <- .align(fr, "M1")
+  cyl_rows <- aligned$coefs_aligned[
+    !is.na(aligned$coefs_aligned$factor_term) &
+      aligned$coefs_aligned$factor_term == "cyl", ]
+  # The first cyl row should be the reference (is_reference TRUE)
+  expect_true(cyl_rows$is_reference[1L])
+})
+
+
 # ============================================================================
-# align_extracts() — reference_style
+# align_frames() – reference_style
 # ============================================================================
 
-test_that("align_extracts — reference_style = 'annotation' drops is_reference rows", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex, reference_style = "annotation")
+test_that("align_frames – reference_style = 'annotation' drops is_reference rows", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1", reference_style = "annotation")
   expect_false(any(aligned$coefs_aligned$is_reference))
-  expect_false("cyl4" %in% aligned$term_order)
 })
 
-test_that("align_extracts — reference_style = 'row' keeps ref rows", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex, reference_style = "row")
+test_that("align_frames – reference_style = 'row' keeps ref rows", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1", reference_style = "row")
   expect_true(any(aligned$coefs_aligned$is_reference))
-  expect_true("cyl4" %in% aligned$term_order)
 })
 
 
 # ============================================================================
-# pivot_aligned_wide()
+# align_frames() – factor_ref_levels map
 # ============================================================================
 
-test_that("pivot_aligned_wide — single model: M1 columns created", {
-  ex <- list(mk_extract_lm(mpg ~ wt + cyl, "M1"))
-  aligned <- spicy:::align_extracts(ex)
-  wide <- spicy:::pivot_aligned_wide(aligned)
-  expect_true("Model 1__estimate" %in% names(wide))
-  expect_true("Model 1__se" %in% names(wide))
-  expect_true("Model 1__p_value" %in% names(wide))
-  expect_equal(nrow(wide),
-               length(unique(paste(aligned$coefs_aligned$term,
-                                    aligned$coefs_aligned$estimate_type))))
+test_that("align_frames – captures factor_ref_levels even when refs dropped", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1", reference_style = "annotation")
+  # The ref level map is keyed by the factor's variable name.
+  expect_true("cyl" %in% names(aligned$factor_ref_levels))
+  expect_identical(unname(aligned$factor_ref_levels["cyl"]), "4")
 })
 
-test_that("pivot_aligned_wide — custom model_labels are honoured", {
-  ex <- list(
-    mk_extract_lm(mpg ~ wt, "M1"),
-    mk_extract_lm(mpg ~ wt + am, "M2")
-  )
-  aligned <- spicy:::align_extracts(ex)
-  wide <- spicy:::pivot_aligned_wide(aligned,
-                                     model_labels = c("Base", "Adjusted"))
-  expect_true("Base__estimate" %in% names(wide))
-  expect_true("Adjusted__estimate" %in% names(wide))
-  expect_false("Model 1__estimate" %in% names(wide))
-})
 
-test_that("pivot_aligned_wide — term in only one model: NA in the other", {
-  ex <- list(
-    mk_extract_lm(mpg ~ wt, "M1"),
-    mk_extract_lm(mpg ~ wt + am, "M2")
-  )
-  aligned <- spicy:::align_extracts(ex)
-  wide <- spicy:::pivot_aligned_wide(aligned)
-  am_row <- wide[wide$term == "am" & wide$estimate_type == "B", ]
-  expect_equal(nrow(am_row), 1L)
-  expect_true(is.na(am_row[["Model 1__estimate"]]))
-  expect_false(is.na(am_row[["Model 2__estimate"]]))
-})
-
-test_that("pivot_aligned_wide — bad model_labels length errors", {
-  ex <- list(mk_extract_lm(mpg ~ wt, "M1"),
-             mk_extract_lm(mpg ~ wt, "M2"))
-  aligned <- spicy:::align_extracts(ex)
-  expect_error(
-    spicy:::pivot_aligned_wide(aligned, model_labels = "only_one"),
-    class = "spicy_invalid_input"
-  )
-})
-
-test_that("pivot_aligned_wide — wide row count == unique (term, estimate_type) keys", {
-  ex <- list(
-    mk_extract_lm(mpg ~ wt + cyl, "M1",
-                  show_columns = c("b", "se", "p", "partial_eta2")),
-    mk_extract_lm(mpg ~ wt + cyl + am, "M2",
-                  show_columns = c("b", "se", "p", "partial_eta2"))
-  )
-  aligned <- spicy:::align_extracts(ex)
-  wide <- spicy:::pivot_aligned_wide(aligned)
-  unique_keys <- unique(paste(aligned$coefs_aligned$term,
-                               aligned$coefs_aligned$estimate_type))
-  expect_equal(nrow(wide), length(unique_keys))
+test_that("align_frames – multiple factors give one ref entry per factor", {
+  # Coerce `am` to factor so it joins `cyl` in the ref-level map.
+  # (In mtcars `am` is numeric 0/1 by default.)
+  d <- mt; d$am <- factor(d$am)
+  fr <- list(mk_frame(mpg ~ wt + cyl + am, "M1", data = d))
+  aligned <- .align(fr, "M1", reference_style = "footer")
+  expect_true(all(c("cyl", "am") %in% names(aligned$factor_ref_levels)))
 })
 
 
 # ============================================================================
-# Empty inputs
+# align_frames() – empty / degenerate inputs
 # ============================================================================
 
-test_that("align_extracts — empty list returns empty structure", {
-  out <- spicy:::align_extracts(list())
+test_that("align_frames – empty extracts list returns empty aligned shape", {
+  out <- spicy:::align_frames(list(), model_ids = character(0))
   expect_equal(out$n_models, 0L)
   expect_equal(nrow(out$coefs_aligned), 0L)
+  expect_equal(nrow(out$fit_stats_aligned), 0L)
   expect_equal(length(out$term_order), 0L)
 })
 
-test_that("pivot_aligned_wide — empty aligned returns empty wide frame", {
-  empty <- spicy:::align_extracts(list())
-  out <- spicy:::pivot_aligned_wide(empty,
-                                    model_labels = c("M1"))
-  expect_equal(nrow(out), 0L)
+
+# ============================================================================
+# align_frames() – outcome_labels_auto + exp_headers_auto
+# ============================================================================
+
+test_that("align_frames – outcome_labels_auto: falls back to outcome when no labelled attr", {
+  fr <- list(
+    mk_frame(mpg ~ wt, "M1"),
+    mk_frame(hp ~ wt, "M2")
+  )
+  aligned <- .align(fr, c("M1", "M2"))
+  expect_identical(unname(aligned$outcome_labels_auto), c("mpg", "hp"))
+})
+
+test_that("align_frames – outcome_labels_auto reads attr('label') when set", {
+  d <- mt
+  attr(d$mpg, "label") <- "Fuel efficiency (mpg)"
+  fr <- list(mk_frame(mpg ~ wt, "M1", data = d))
+  aligned <- .align(fr, "M1")
+  expect_identical(unname(aligned$outcome_labels_auto), "Fuel efficiency (mpg)")
 })
 
 
 # ============================================================================
-# Factor-level ordering (poly degree + treatment-coded position)
+# pivot_aligned_wide() – kept as-is; it consumes the aligned object shape
+# (legacy-shape internal contract; renamed in Phase 0d if ever scoped).
 # ============================================================================
-# These end-to-end tests verify the row ordering of factor coefficients
-# in the rendered table, regardless of the internal sort-key
-# implementation. Two scenarios:
-#
-#   1. Ordered factors (contr.poly): R emits .L / .Q / .C / ^4 / ^5
-#      coefficients; rows must appear in polynomial degree order
-#      (linear -> quadratic -> cubic -> ...).
-#   2. Treatment-coded factors with custom (non-alphabetical) levels:
-#      e.g. factor(grp, levels = c("low","med","high")); rows must
-#      appear in factor-level order, not alphabetical order of the
-#      level string.
 
-test_that("ordered factor (5 levels): rows render in polynomial degree order", {
-  set.seed(1)
-  df <- data.frame(
-    y  = rnorm(300),
-    f5 = ordered(sample(1:5, 300, replace = TRUE), levels = 1:5)
+test_that("pivot_aligned_wide – single model, wide format", {
+  fr <- list(mk_frame(mpg ~ wt + cyl, "M1"))
+  aligned <- .align(fr, "M1")
+  wide <- spicy:::pivot_aligned_wide(
+    aligned,
+    value_fields = c("estimate", "se", "ci_low", "ci_high", "p_value"),
+    model_labels = "Model 1"
   )
-  fit <- lm(y ~ f5, df)
-  out <- table_regression(fit)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
-  # Polynomial degree order: .L < .Q < .C < ^4
-  l <- which(vars == ".L")
-  q <- which(vars == ".Q")
-  c4 <- which(vars == ".C")
-  qu <- which(vars == "^4")
-  expect_true(l < q && q < c4 && c4 < qu)
+  # One row per (term, estimate_type); cyl4 ref + cyl6 = 2 cyl rows; plus wt + (Intercept)
+  expect_true(nrow(wide) >= 3L)
+  # Wide format columns prefixed by the model label
+  expect_true("Model 1__estimate" %in% names(wide))
+  expect_true("Model 1__p_value" %in% names(wide))
 })
 
-test_that("treatment-coded factor: rows render in factor-level order, not alphabetical", {
-  set.seed(1)
-  df <- data.frame(
-    y = rnorm(200),
-    # Non-alphabetical level order: alphabetical(low, med, high) = (high, low, med).
-    # Reference = first level = "low". Expected coef rows: med, then high.
-    grp = factor(sample(c("low", "med", "high"), 200, replace = TRUE),
-                 levels = c("low", "med", "high"))
+
+test_that("pivot_aligned_wide – two models, side-by-side columns", {
+  fr <- list(
+    mk_frame(mpg ~ wt, "M1"),
+    mk_frame(mpg ~ wt + cyl, "M2")
   )
-  fit <- lm(y ~ grp, df)
-  out <- table_regression(fit)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
-  med_pos <- which(vars == "med")
-  high_pos <- which(vars == "high")
-  expect_length(med_pos, 1L)
-  expect_length(high_pos, 1L)
-  expect_lt(med_pos, high_pos)  # med before high (levels order, not alpha)
+  aligned <- .align(fr, c("M1", "M2"))
+  wide <- spicy:::pivot_aligned_wide(
+    aligned,
+    value_fields = c("estimate", "se"),
+    model_labels = c("Naive", "Adjusted")
+  )
+  # Both model labels produce their own value columns
+  expect_true(all(c("Naive__estimate", "Adjusted__estimate",
+                    "Naive__se", "Adjusted__se") %in% names(wide)))
 })

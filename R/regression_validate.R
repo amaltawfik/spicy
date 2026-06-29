@@ -13,12 +13,12 @@
 # Q9). Each step is a separate `validate_*()` helper, called in
 # deterministic order by table_regression() itself.
 #
-# Phase A \u2014 input class            (steps 1-3)
-# Phase B \u2014 multi-model alignment  (steps 4-8)
-# Phase C \u2014 vocabulary tokens      (steps 9-12)
-# Phase D \u2014 argument values        (steps 13-24)
-# Phase E \u2014 cross-arg semantic     (steps 25-26, warnings only)
-# Phase F \u2014 output-dependent       (steps 27-29)
+# Phase A \u2013 input class            (steps 1-3)
+# Phase B \u2013 multi-model alignment  (steps 4-8)
+# Phase C \u2013 vocabulary tokens      (steps 9-12)
+# Phase D \u2013 argument values        (steps 13-24)
+# Phase E \u2013 cross-arg semantic     (steps 25-26, warnings only)
+# Phase F \u2013 output-dependent       (steps 27-29)
 
 
 # ---- Token vocabularies (canonical) ---------------------------------------
@@ -38,13 +38,13 @@
     "b", "beta", "se", "ci", "t", "p",
     # Average marginal effects (AME)
     "ame", "ame_se", "ame_ci", "ame_p",
-    # Variance-explained partials (lm only) \u2014 split into
+    # Variance-explained partials (lm only) \u2013 split into
     # estimate-only + CI-only, matching the b / ci asymmetry-free
     # convention.
     "partial_f2",     "partial_f2_ci",
     "partial_eta2",   "partial_eta2_ci",
     "partial_omega2", "partial_omega2_ci",
-    # LRT-based partial chi-square (glm; analog of partial F) \u2014
+    # LRT-based partial chi-square (glm; analog of partial F) \u2013
     # kept BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
     "partial_chi2"
@@ -55,6 +55,11 @@
     "r2", "adj_r2", "omega2",
     # Pseudo-R\u00B2 family (glm only)
     "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
+    # Mixed-effects R\u00B2 (Nakagawa & Schielzeth 2013; Nakagawa,
+    # Johnson & Schielzeth 2017). marginal = variance explained by
+    # fixed effects alone; conditional = variance explained by
+    # fixed + random.
+    "r2_marginal", "r2_conditional",
     "sigma", "rmse",
     "f2",
     "AIC", "AICc", "BIC", "deviance",
@@ -71,7 +76,7 @@
 
 # Predefined group tokens for `show_columns`. Each group expands
 # to a fixed vector of atomic tokens. Inspired by Stata / SPSS /
-# SAS keyword presets \u2014 lets the user write
+# SAS keyword presets \u2013 lets the user write
 # `show_columns = c("all_b", "all_ame")` instead of enumerating 8
 # atomic tokens. The expansion runs once, before validation, so
 # downstream code only ever sees atomic tokens.
@@ -101,7 +106,7 @@
 )
 
 
-# ---- Phase A \u2014 input class ------------------------------------------------
+# ---- Phase A \u2013 input class ------------------------------------------------
 
 # Steps 1-3: validate `models` is lm OR list of lm; aggregate-fail on
 # any non-lm position.
@@ -146,7 +151,7 @@ validate_models_input <- function(models) {
   # Step 1c: when the list is named, names must be unique. Duplicate
   # names would silently collide in the long-format model_id key,
   # causing one fit to overwrite the other in extract / align /
-  # render \u2014 a silent data loss. Caught upfront with an actionable
+  # render \u2013 a silent data loss. Caught upfront with an actionable
   # message.
   #
   # Partial naming (some elements named, others not) is accepted
@@ -189,7 +194,10 @@ validate_models_input <- function(models) {
       c(
         "Some `models` are not supported by `table_regression()`.",
         bad,
-        "i" = "Supported classes: `lm` and `glm`."
+        "i" = paste0(
+          "Run `methods('as_regression_frame')` to see all currently ",
+          "supported model classes."
+        )
       ),
       class = "spicy_unsupported"
     )
@@ -200,29 +208,20 @@ validate_models_input <- function(models) {
 
 # Per-fit class classifier: NULL if OK, message string otherwise.
 # Used by validate_models_input() to build the aggregate-fail message.
-# As of spicy 0.13: `lm` and `glm` are supported. Mixed-effects
-# models are deferred to 0.16+. Other classes route to issue tracker.
+#
+# A class is "supported" if either (a) it is `lm` or `glm` (the
+# historical core) or (b) an `as_regression_frame` S3 method is
+# registered for one of its classes. The method registry expands as
+# new model classes ship; new methods become user-visible automatically
+# without touching this gate.
 classify_unsupported_lm_class <- function(fit, position = NULL) {
   pos_prefix <- if (!is.null(position)) sprintf("Position %d: ", position) else ""
 
-  # `glm` inherits from `lm`, but the converse is not true.
-  # Order matters: catch mixed-effects classes BEFORE the lm fallback,
-  # since `lmerMod` etc. don't inherit from lm but are explicitly out
-  # of scope for now.
-  if (inherits(fit, c("lmerMod", "glmerMod", "merMod"))) {
-    return(paste0(
-      pos_prefix,
-      sprintf(
-        "`%s` mixed-effects model \u2014 supported in spicy 0.16+.",
-        class(fit)[1]
-      )
-    ))
-  }
   # Common user mistake: passing raw data instead of a fit (Q10).
   if (is.data.frame(fit)) {
     return(paste0(
       pos_prefix,
-      "data.frame supplied where an `lm` or `glm` fit is expected. ",
+      "data.frame supplied where a model fit is expected. ",
       "Fit a model first: ",
       "`fit <- lm(y ~ x, data = your_data); table_regression(fit)`."
     ))
@@ -230,23 +229,39 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
   if (is.null(fit)) {
     return(paste0(
       pos_prefix,
-      "NULL element \u2014 the list of models contains a NULL slot. ",
-      "Drop the NULL or replace it with an `lm()` / `glm()` fit."
+      "NULL element \u2013 the list of models contains a NULL slot. ",
+      "Drop the NULL or replace it with a model fit."
     ))
   }
-  if (!inherits(fit, "lm")) {       # `glm` inherits from `lm`, so this catches both glm and lm
-    return(paste0(
-      pos_prefix,
-      sprintf("`%s` \u2014 not on the roadmap. ", class(fit)[1]),
-      "If support would be useful, please open an issue: ",
-      "https://github.com/amaltawfik/spicy/issues"
-    ))
-  }
-  NULL
+  # Accept any class that has a registered as_regression_frame method.
+  if (.has_as_regression_frame_method(fit)) return(NULL)
+  paste0(
+    pos_prefix,
+    sprintf("`%s` \u2013 no `as_regression_frame()` method registered. ",
+            class(fit)[1L]),
+    "If support would be useful, please open an issue: ",
+    "https://github.com/amaltawfik/spicy/issues"
+  )
 }
 
 
-# ---- Phase B \u2014 multi-model alignment --------------------------------------
+# Return TRUE if any class of `fit` has an `as_regression_frame` S3
+# method registered in this package. Walks class(fit) in dispatch
+# order; the default method is excluded so unregistered classes still
+# error.
+.has_as_regression_frame_method <- function(fit) {
+  cls <- class(fit)
+  for (cl in cls) {
+    if (!is.null(utils::getS3method("as_regression_frame", cl,
+                                     optional = TRUE))) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+
+# ---- Phase B \u2013 multi-model alignment --------------------------------------
 
 # Steps 4-5: nested = TRUE requires identical nobs and identical DV
 validate_nested_alignment <- function(models, nested) {
@@ -490,7 +505,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
 }
 
 
-# ---- Phase C \u2014 vocabulary token validation --------------------------------
+# ---- Phase C \u2013 vocabulary token validation --------------------------------
 
 # Step 9: show_columns (+ Step 12: beta requires standardized != "none")
 #
@@ -549,7 +564,7 @@ validate_class_appropriate_tokens <- function(models,
   all_lm  <- any_lm_only && !any_glm
 
   # Variance-explained partial tokens. Reject only when ALL models
-  # are glm \u2014 in mixed sets, the renderer em-dashes glm rows and
+  # are glm \u2013 in mixed sets, the renderer em-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
     bad <- intersect(show_columns,
@@ -608,7 +623,7 @@ validate_class_appropriate_tokens <- function(models,
           "Token \"partial_chi2\" in `show_columns` is for `glm` models only.",
           "i" = paste0(
             "For `lm`, use `\"partial_f2\"`, `\"partial_eta2\"`, or ",
-            "`\"partial_omega2\"` \u2014 the variance-explained analogs."
+            "`\"partial_omega2\"` \u2013 the variance-explained analogs."
           )
         ),
         class = "spicy_invalid_input"
@@ -648,7 +663,12 @@ validate_class_appropriate_tokens <- function(models,
 # escape hatch because a table with zero data columns is
 # nonsensical.
 validate_show_fit_stats <- function(show_fit_stats) {
-  if (is.null(show_fit_stats) || length(show_fit_stats) == 0L) {
+  # Phase 7c23 (item a): the explicit "suppress fit-stats" alias is
+  # `FALSE` (parity with `show_re = FALSE` / `outcome_labels = FALSE`).
+  # `NULL` is the "class-aware default" sentinel. The previous
+  # `character(0)` synonym was removed (no back-compat carried at the
+  # pre-1.0 stage per the "hard errors over silent changes" policy).
+  if (is.null(show_fit_stats) || isFALSE(show_fit_stats)) {
     return(invisible(NULL))
   }
   validate_token_vector(
@@ -751,12 +771,29 @@ validate_token_vector <- function(x, valid, arg) {
 }
 
 
-# ---- Phase D \u2014 argument value validation ----------------------------------
+# ---- Phase D \u2013 argument value validation ----------------------------------
 
 # Steps 13-14: enum args. table_regression() invokes match.arg() directly
 # on `standardized`, `intercept_position`, `align`, `output`,
-# `reference_style` \u2014 match.arg() raises a clear base-R error on
+# `reference_style` \u2013 match.arg() raises a clear base-R error on
 # invalid values. No spicy-specific helper needed.
+
+# Phase 7c7d: validate the `re_columns` argument of table_regression().
+# Accepts a character vector with elements from c("est", "se", "ci");
+# duplicates and unknown tokens error early. "est" is always required
+# (the table without an estimate column is meaningless).
+.validate_re_columns <- function(x) {
+  valid <- c("est", "se", "ci")
+  validate_token_vector(x, valid, arg = "re_columns")
+  if (!"est" %in% x) {
+    spicy_abort(
+      "`re_columns` must include \"est\" (the random-effect estimate).",
+      class = "spicy_invalid_input"
+    )
+  }
+  x
+}
+
 
 # Step 15: digit args (non-negative integer scalar). Reused for
 # `digits`, `p_digits`, `effect_size_digits`, `fit_digits`, `ic_digits`.
@@ -870,7 +907,7 @@ validate_p_adjust <- function(p_adjust) {
 
 # `keep` / `drop` validation. Each is NULL (no filter) or a non-empty
 # character vector with no NA / empty-string elements. They are
-# mutually exclusive \u2014 supplying both raises an error rather than
+# mutually exclusive \u2013 supplying both raises an error rather than
 # silently picking one.
 validate_keep_drop <- function(keep, drop) {
   for (pair in list(c("keep", "keep"), c("drop", "drop"))) {
@@ -1099,7 +1136,7 @@ validate_predictor_labels <- function(labels, models) {
 }
 
 
-# ---- Phase E \u2014 cross-arg semantic warnings (no errors) --------------------
+# ---- Phase E \u2013 cross-arg semantic warnings (no errors) --------------------
 
 # Step 25: standardized != "none" x non-additive terms -> spicy_caveat warning
 emit_standardized_caveat_if_needed <- function(models, standardized) {
@@ -1166,17 +1203,36 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
   )
 }
 
-# Detect interactions and transforms in a fitted lm.
+# Detect interactions and transforms in a fitted model.
 # Used by Q15 caveat emission (Step 25) and by the rendering layer
-# to tag affected rows when needed.
+# to tag affected rows when needed. Falls back to the model formula's
+# RHS for fits that do not register a `terms()` method (e.g. nls,
+# flexsurvreg, sampleSelection's selection). When no term labels are
+# extractable, returns has_problem = FALSE.
 detect_non_additive_terms <- function(fit) {
-  trms <- attr(stats::terms(fit), "term.labels")
+  trms <- tryCatch(attr(stats::terms(fit), "term.labels"),
+                   error = function(e) NULL)
+  if (is.null(trms)) {
+    # Fallback path: build a terms object from formula(fit)'s RHS.
+    # For multi-equation fits (sampleSelection) and parameter-based
+    # fits (nls), this may still error; in that case skip the check.
+    trms <- tryCatch({
+      f <- stats::formula(fit)
+      if (is.list(f) && length(f) > 0L) f <- f[[1L]]
+      attr(stats::terms(f), "term.labels")
+    }, error = function(e) NULL)
+  }
+  if (is.null(trms)) {
+    return(list(has_problem = FALSE,
+                interactions = character(0),
+                transforms   = character(0)))
+  }
   interactions <- trms[grepl(":", trms, fixed = TRUE)]
-  transforms <- trms[grepl("(", trms, fixed = TRUE)]
+  transforms   <- trms[grepl("(", trms, fixed = TRUE)]
   list(
-    has_problem = length(interactions) > 0L || length(transforms) > 0L,
+    has_problem  = length(interactions) > 0L || length(transforms) > 0L,
     interactions = interactions,
-    transforms = transforms
+    transforms   = transforms
   )
 }
 
@@ -1192,7 +1248,7 @@ detect_ame_satterthwaite_path <- function(vcov, show_columns) {
 }
 
 
-# ---- Phase F \u2014 output-dependent resource validation -----------------------
+# ---- Phase F \u2013 output-dependent resource validation -----------------------
 
 # Steps 27-29: file paths and package availability for the selected
 # output format. Fires only when the user picked the corresponding
@@ -1283,7 +1339,7 @@ validate_output_resources <- function(output, excel_path, word_path) {
       # nocov end
     }
     if (!clipr::clipr_available()) {
-      # nocov start \u2014 system clipboard is environment-dependent.
+      # nocov start \u2013 system clipboard is environment-dependent.
       spicy_abort(
         "Clipboard is not available on this system.",
         class = "spicy_unsupported"

@@ -8,24 +8,24 @@ mt$cyl <- factor(mt$cyl)
 
 
 # ============================================================================
-# validate_models_input — empty list, data.frame, glm, merMod, other class
+# validate_models_input – empty list, data.frame, glm, merMod, other class
 # ============================================================================
 
-test_that("validate_models_input — empty list errors spicy_invalid_input", {
+test_that("validate_models_input – empty list errors spicy_invalid_input", {
   expect_error(
     spicy:::validate_models_input(list()),
     class = "spicy_invalid_input"
   )
 })
 
-test_that("validate_models_input — data.frame errors spicy_unsupported with redirect to lm()", {
+test_that("validate_models_input – data.frame errors spicy_unsupported with redirect to lm()", {
   expect_error(
     spicy:::validate_models_input(mt),
     class = "spicy_unsupported"
   )
 })
 
-test_that("validate_models_input — glm is now accepted (Phase 3)", {
+test_that("validate_models_input – glm is now accepted (Phase 3)", {
   fit <- glm(am ~ mpg, data = mtcars, family = binomial)
   # As of spicy 0.13, glm fits flow through validate_models_input
   # without error and are wrapped in a 1-element list (Phase 3
@@ -36,18 +36,20 @@ test_that("validate_models_input — glm is now accepted (Phase 3)", {
   expect_true(inherits(out[[1L]], "glm"))
 })
 
-test_that("validate_models_input — merMod-like class errors with 0.16+ roadmap", {
-  # Construct a minimal object inheriting from merMod without needing lme4
-  fake <- structure(list(), class = c("lmerMod", "merMod"))
+test_that("validate_models_input – class without `as_regression_frame` method errors", {
+  # A genuinely unsupported class (no method registered for any class
+  # in its inheritance chain).
+  fake <- structure(list(), class = "rlmer_robustlmm")
   err <- tryCatch(
     spicy:::validate_models_input(fake),
     error = function(e) e
   )
   expect_s3_class(err, "spicy_unsupported")
-  expect_match(conditionMessage(err), "0\\.16")
+  expect_match(conditionMessage(err),
+               "no `as_regression_frame\\(\\)` method registered")
 })
 
-test_that("validate_models_input — other class errors with 'open an issue' hint", {
+test_that("validate_models_input – other class errors with 'open an issue' hint", {
   fake <- structure(list(), class = "weird_unknown_class")
   err <- tryCatch(
     spicy:::validate_models_input(fake),
@@ -57,12 +59,13 @@ test_that("validate_models_input — other class errors with 'open an issue' hin
   expect_match(conditionMessage(err), "open an issue")
 })
 
-test_that("validate_models_input — multi-position aggregate-fail lists ALL bad positions", {
+test_that("validate_models_input – multi-position aggregate-fail lists ALL bad positions", {
   fit_ok <- lm(mpg ~ wt, data = mtcars)
-  # merMod-like is still on the unsupported list (0.16+), so use it
-  # to exercise the multi-position aggregate failure path now that
-  # glm is accepted in Phase 3.
-  fit_bad <- structure(list(), class = c("lmerMod", "merMod"))
+  # A genuinely unsupported class (none of its class vector entries
+  # have an as_regression_frame method registered). Phase 1-6 added
+  # methods for ~35 classes; only off-roadmap fits should reach this
+  # branch.
+  fit_bad <- structure(list(), class = "rlmer_robustlmm")
   err <- tryCatch(
     spicy:::validate_models_input(list(fit_ok, fit_bad, fit_bad)),
     error = function(e) e
@@ -74,10 +77,10 @@ test_that("validate_models_input — multi-position aggregate-fail lists ALL bad
 
 
 # ============================================================================
-# validate_token_vector — duplicate detection
+# validate_token_vector – duplicate detection
 # ============================================================================
 
-test_that("validate_token_vector — duplicates error spicy_invalid_input", {
+test_that("validate_token_vector – duplicates error spicy_invalid_input", {
   expect_error(
     spicy:::validate_token_vector(
       c("B", "B", "p"),
@@ -88,7 +91,7 @@ test_that("validate_token_vector — duplicates error spicy_invalid_input", {
   )
 })
 
-test_that("validate_token_vector — non-character errors", {
+test_that("validate_token_vector – non-character errors", {
   expect_error(
     spicy:::validate_token_vector(
       1:3, valid = c("B"), arg = "show_columns"
@@ -99,10 +102,10 @@ test_that("validate_token_vector — non-character errors", {
 
 
 # ============================================================================
-# validate_boot_n / validate_logical_scalar / validate_ci_level — error branches
+# validate_boot_n / validate_logical_scalar / validate_ci_level – error branches
 # ============================================================================
 
-test_that("validate_boot_n — non-integer / negative errors", {
+test_that("validate_boot_n – non-integer / negative errors", {
   expect_error(
     spicy:::validate_boot_n("oops"),
     class = "spicy_invalid_input"
@@ -113,7 +116,7 @@ test_that("validate_boot_n — non-integer / negative errors", {
   )
 })
 
-test_that("validate_logical_scalar — vector / NA errors", {
+test_that("validate_logical_scalar – vector / NA errors", {
   expect_error(
     spicy:::validate_logical_scalar(c(TRUE, FALSE), "show_intercept"),
     class = "spicy_invalid_input"
@@ -126,10 +129,10 @@ test_that("validate_logical_scalar — vector / NA errors", {
 
 
 # ============================================================================
-# validate_vcov_cluster_lists — list-of-non-strings, length mismatch
+# validate_vcov_cluster_lists – list-of-non-strings, length mismatch
 # ============================================================================
 
-test_that("validate_vcov_cluster_lists — list element not a single string errors", {
+test_that("validate_vcov_cluster_lists – list element not a single string errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     spicy:::validate_vcov_cluster_lists(
@@ -139,7 +142,7 @@ test_that("validate_vcov_cluster_lists — list element not a single string erro
   )
 })
 
-test_that("validate_vcov_cluster_lists — cluster list length mismatch errors", {
+test_that("validate_vcov_cluster_lists – cluster list length mismatch errors", {
   fit1 <- lm(mpg ~ wt, data = mt)
   fit2 <- lm(mpg ~ cyl, data = mt)
   expect_error(
@@ -152,7 +155,7 @@ test_that("validate_vcov_cluster_lists — cluster list length mismatch errors",
   )
 })
 
-test_that("validate_vcov_cluster_lists — cluster vector length mismatch errors", {
+test_that("validate_vcov_cluster_lists – cluster vector length mismatch errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     spicy:::validate_vcov_cluster_lists(
@@ -164,10 +167,10 @@ test_that("validate_vcov_cluster_lists — cluster vector length mismatch errors
 
 
 # ============================================================================
-# detect_ame_satterthwaite_path — flag detection
+# detect_ame_satterthwaite_path – flag detection
 # ============================================================================
 
-test_that("detect_ame_satterthwaite_path — TRUE only when ame requested AND any vcov is CR*", {
+test_that("detect_ame_satterthwaite_path – TRUE only when ame requested AND any vcov is CR*", {
   expect_true(spicy:::detect_ame_satterthwaite_path("CR2", c("b", "ame")))
   expect_true(spicy:::detect_ame_satterthwaite_path(
     list("CR2", "classical"), c("b", "ame")
@@ -181,10 +184,10 @@ test_that("detect_ame_satterthwaite_path — TRUE only when ame requested AND an
 
 
 # ============================================================================
-# emit_standardized_caveat_if_needed — posthoc / basic / smart caveat text
+# emit_standardized_caveat_if_needed – posthoc / basic / smart caveat text
 # ============================================================================
 
-test_that("emit_standardized_caveat — posthoc / basic / smart use SD-of-product wording", {
+test_that("emit_standardized_caveat – posthoc / basic / smart use SD-of-product wording", {
   fit_int <- lm(mpg ~ wt * cyl, data = mt)
   for (method in c("posthoc", "basic", "smart")) {
     w <- tryCatch(
@@ -202,7 +205,7 @@ test_that("emit_standardized_caveat — posthoc / basic / smart use SD-of-produc
   }
 })
 
-test_that("emit_standardized_caveat — refit method uses 'after refit' wording", {
+test_that("emit_standardized_caveat – refit method uses 'after refit' wording", {
   fit_int <- lm(mpg ~ wt * cyl, data = mt)
   w <- tryCatch(
     withCallingHandlers(
@@ -214,7 +217,7 @@ test_that("emit_standardized_caveat — refit method uses 'after refit' wording"
   expect_match(w, "After refit on z-scored")
 })
 
-test_that("emit_standardized_caveat — silent when 'none' or no non-additive terms", {
+test_that("emit_standardized_caveat – silent when 'none' or no non-additive terms", {
   fit_add <- lm(mpg ~ wt + cyl, data = mt)
   expect_silent(spicy:::emit_standardized_caveat_if_needed(list(fit_add), "refit"))
   fit_int <- lm(mpg ~ wt * cyl, data = mt)
@@ -223,10 +226,10 @@ test_that("emit_standardized_caveat — silent when 'none' or no non-additive te
 
 
 # ============================================================================
-# validate_output_resources — clipboard branch + dir-not-exists branches
+# validate_output_resources – clipboard branch + dir-not-exists branches
 # ============================================================================
 
-test_that("validate_output_resources — excel without path errors", {
+test_that("validate_output_resources – excel without path errors", {
   expect_error(
     spicy:::validate_output_resources("excel", excel_path = NULL,
                                        word_path = NULL),
@@ -234,7 +237,7 @@ test_that("validate_output_resources — excel without path errors", {
   )
 })
 
-test_that("validate_output_resources — word without path errors", {
+test_that("validate_output_resources – word without path errors", {
   expect_error(
     spicy:::validate_output_resources("word", excel_path = NULL,
                                        word_path = NULL),
@@ -242,7 +245,7 @@ test_that("validate_output_resources — word without path errors", {
   )
 })
 
-test_that("validate_output_resources — non-existent directory errors", {
+test_that("validate_output_resources – non-existent directory errors", {
   expect_error(
     spicy:::validate_output_resources("excel",
                                        excel_path = "/no/such/dir/x.xlsx",
@@ -257,7 +260,7 @@ test_that("validate_output_resources — non-existent directory errors", {
   )
 })
 
-test_that("validate_output_resources — default / data.frame / long are no-ops", {
+test_that("validate_output_resources – default / data.frame / long are no-ops", {
   expect_silent(spicy:::validate_output_resources("default", NULL, NULL))
   expect_silent(spicy:::validate_output_resources("data.frame", NULL, NULL))
   expect_silent(spicy:::validate_output_resources("long", NULL, NULL))
@@ -265,10 +268,10 @@ test_that("validate_output_resources — default / data.frame / long are no-ops"
 
 
 # ============================================================================
-# detect_non_additive_terms — interaction + transform detection
+# detect_non_additive_terms – interaction + transform detection
 # ============================================================================
 
-test_that("detect_non_additive_terms — additive: has_problem = FALSE", {
+test_that("detect_non_additive_terms – additive: has_problem = FALSE", {
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- spicy:::detect_non_additive_terms(fit)
   expect_false(out$has_problem)
@@ -276,14 +279,14 @@ test_that("detect_non_additive_terms — additive: has_problem = FALSE", {
   expect_length(out$transforms, 0L)
 })
 
-test_that("detect_non_additive_terms — interaction: has_problem TRUE + listed", {
+test_that("detect_non_additive_terms – interaction: has_problem TRUE + listed", {
   fit <- lm(mpg ~ wt * cyl, data = mt)
   out <- spicy:::detect_non_additive_terms(fit)
   expect_true(out$has_problem)
   expect_true("wt:cyl" %in% out$interactions)
 })
 
-test_that("detect_non_additive_terms — transform: I() / poly() listed", {
+test_that("detect_non_additive_terms – transform: I() / poly() listed", {
   fit <- lm(mpg ~ I(wt^2) + poly(hp, 2), data = mtcars)
   out <- spicy:::detect_non_additive_terms(fit)
   expect_true(out$has_problem)

@@ -1726,13 +1726,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # cells become empty). This loop:
   #   * applies the per-column number format (".00" / "#.000" / "0"
   #     / etc.) so Excel renders each cell at the requested precision,
-  #   * overrides numeric cells with text on reference rows (em-dash)
+  #   * overrides numeric cells with text on reference rows (en-dash)
   #     and below-threshold p-cells ("<.001").
   # No string parsing -- precision / p_style / threshold come from
   # the structured body's col_meta, populated by render_regression_table().
   if (nrow(body) > 0L && n_cols >= 2L) {
     body_rows_idx <- seq.int(body_first_row, body_end_row)
-    em_dash <- "\u2014"  # U+2014
+    na_dash <- "\u2013"  # U+2013 en dash (Phase 7c14 typography)
     for (j in 2:n_cols) {
       col_name <- names(body)[j]
       meta <- col_meta[[col_name]]
@@ -1760,12 +1760,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           )
         }
       }
-      # Reference rows: overwrite numeric with em-dash text
+      # Reference rows: overwrite numeric with en-dash text
       if (length(reference_rows) > 0L) {
         for (i in reference_rows) {
           excel_row <- body_first_row + i - 1L
           wb <- openxlsx2::wb_add_data(
-            wb, sheet = excel_sheet, x = em_dash,
+            wb, sheet = excel_sheet, x = na_dash,
             start_row = excel_row, start_col = j
           )
         }

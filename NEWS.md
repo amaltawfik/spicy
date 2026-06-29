@@ -2,16 +2,105 @@
 
 ## Breaking changes
 
-* `align = "auto"` removed from all `table_*` functions (was a
-  legacy alias for `"right"` from spicy < 0.11.0). Use one of
+* `align = "auto"` removed from all `table_*` functions. Use
   `"decimal"` (default), `"center"`, or `"right"`.
+
+* `table_regression(show_fit_stats = character(0))` now errors --
+  use `FALSE` to suppress the fit-stats block.
+
+* `table_regression()` glm footer: `"classical (MLE inverse Hessian)"`
+  renamed to `"classical (Fisher information)"`.
+
+* `table_regression(list(...), show_columns = "all_b" | "all_ame")`
+  auto-compacts in multi-model layouts (drops the CI column),
+  matching the `NULL` default. Use atomic tokens to keep CIs.
+
+## New features
+
+### Massively expanded model support
+
+`table_regression()` previously accepted only `lm` and `glm` fits.
+This release adds first-class support for ~ 30 additional model
+classes. Frames pass through the same APA-aligned renderer,
+broom-canonical `tidy()` / `glance()` methods, and footer
+infrastructure. Engine-specific polish (panels, family-specific
+labels) is layered on top for mixed-effects and Bayesian.
+
+* **Mixed-effects regression** (the headline feature): `lme4::lmer()`,
+  `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`. Publication-
+  ready random-effects panel with σ + Wald SE + 95 % CI, ρ rows
+  with SE + CI (Delta method), ICC, N per group, Nakagawa
+  marginal / conditional R², Type-3 Wald χ², adjusted ICC for
+  GLMM, per-class p-values footer, LR test vs no-random
+  (chi-bar-squared), AME (response-scale), `exponentiate = TRUE`
+  for OR / IRR / HR, `standardized = "refit"`, `nested = TRUE`
+  with ΔAIC / ΔBIC / Δχ² LRT rows. See `vignette("table-regression")`,
+  *Mixed-effects models*, for the walk-through and methodological
+  rationale.
+
+* **Bayesian regression**: `rstanarm::stanreg`, `brms::brmsfit`.
+  Estimate = posterior median, `std_error` = posterior SD,
+  `ci_lower` / `ci_upper` = equal-tailed posterior quantiles
+  (rendered as `95% CrI`, not `95% CI`). `p.value = NA` for every
+  Bayesian row (no frequentist p-value is reported).
+
+* **Survey-weighted regression**: `survey::svyglm`. Honours the
+  user's `vcov` (`"linearized"` from the survey design, plus the
+  `HC*` / `CR*` family for additional robustness).
+
+* **Survival models**: `survival::coxph`, `survival::survreg`,
+  `rms::cph`, `flexsurv::flexsurvreg`. Wald-z inference, family-
+  aware footer ("Cox proportional hazards", "Weibull AFT", etc.),
+  baseline-hazard hint when relevant.
+
+* **Categorical-outcome models**: `nnet::multinom`,
+  `mlogit::mlogit`, `MASS::polr`, `ordinal::clm`. Per-outcome /
+  per-cumulative-cutoff coefficient blocks; outcome-prefixed
+  term labels.
+
+* **Heteroskedasticity / cluster-robust regressions**:
+  `estimatr::lm_robust`, `estimatr::iv_robust`. Native HC / CR
+  vcov pass-through (no double-application).
+
+* **Fixed-effects econometrics**: `fixest::feols`, `fixest::feglm`,
+  `fixest::fepois`. Cluster-robust SE pass-through; one-way and
+  multi-way FE.
+
+* **Beta / Tobit / count-with-zeros**: `betareg::betareg`,
+  `AER::tobit`, `pscl::hurdle`, `pscl::zeroinfl` (count +
+  zero-inflation components rendered as separate blocks).
+
+* **Robust / quantile / GAM / nonlinear**: `MASS::rlm`,
+  `MASS::glm.nb`, `quantreg::rq`, `AER::ivreg`, `mgcv::gam` /
+  `mgcv::bam` (parametric coefs only — smooth terms summarised
+  separately), `stats::nls`.
+
+* **Other classical extensions**: `rms::ols`, `rms::lrm`,
+  `rms::Glm`, `sampleSelection::selection`.
 
 ## Minor improvements
 
-* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
-  `flextable` and `word` outputs now use a single font throughout
-  (was a `Consolas` override on numeric cells), matching
-  `table_regression()`.
+* `show_fit_stats = FALSE` suppresses the fit-stats block (parity
+  with `show_re = FALSE` and `outcome_labels = FALSE`).
+
+* AME-Satterthwaite footer trimmed to `"AME inference: t-test
+  with Satterthwaite df."` (methodological references moved to
+  `?table_regression`).
+
+* Polynomial-trends footer note now respects `keep` / `drop` --
+  no longer fires when the ordered factor is filtered out of
+  the display.
+
+* Decimal-align en-dash placeholder cells (factor reference rows,
+  "not applicable") in `gt` / `flextable` / `tinytable` / Word /
+  Excel outputs.
+
+* `"deviance"` fit-stat precision now matches AIC / BIC / AICc
+  (1 decimal by default, was 2).
+
+* `table_continuous_lm()` / `table_continuous()` /
+  `table_categorical()`: `flextable` / `word` outputs use a
+  single font throughout.
 
 ## Bug fixes
 

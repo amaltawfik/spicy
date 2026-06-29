@@ -128,7 +128,7 @@
 #' `vcov` selects the variance-covariance estimator:
 #'
 #' \itemize{
-#'   \item `"classical"` -- OLS (lm) / MLE inverse Hessian (glm).
+#'   \item `"classical"` -- OLS (lm) / Fisher information (glm).
 #'   \item `"HC0"` to `"HC5"` -- heteroskedasticity-consistent
 #'     (via [sandwich::vcovHC()]).
 #'   \item `"CR0"` to `"CR3"` -- cluster-robust with
@@ -503,6 +503,46 @@
 #'   (native primitives handle the mixed-precision case), and
 #'   trivially decimal-aligns in `"merged"` mode (the fit-stat
 #'   values move out of the B column into the merged cell).
+#' @param show_re Logical. `TRUE` (default) prints the
+#'   random-effects panel below the fit-statistics footer for
+#'   mixed-effects fits (`lmer`, `glmer`, `glmmTMB`, `lme`).
+#'   `FALSE` suppresses the panel entirely. No effect on fits
+#'   without random effects (`lm`, `glm`, `coxph`, ...). The
+#'   panel header carries the estimator label (`(REML)` or
+#'   `(ML)`); see the *Mixed-effects models* section of
+#'   `vignette("table-regression")` for the methodological
+#'   rationale (Gelman 2005; Bates et al. 2015; Bolker FAQ).
+#' @param re_scale One of `"sd"` (default) or `"variance"`.
+#'   Controls the display scale of the random-effects panel:
+#'   \itemize{
+#'     \item `"sd"`: report the random-effect standard
+#'       deviation \eqn{\sigma} (Gelman 2005, *Technometrics*:
+#'       "*directly interpretable as the size of the variation
+#'       across groups*"). Standard error and CI converted via
+#'       the Delta method:
+#'       \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)};
+#'       \eqn{CI(\sigma) = \sqrt{CI(\sigma^2)}}.
+#'     \item `"variance"`: report \eqn{\sigma^2} (the canonical
+#'       internal scale; SE and CI come straight from the
+#'       Hessian / `nlme::intervals()` / `glmmTMB::confint()`
+#'       without rescaling).
+#'   }
+#'   Correlation rows (\eqn{\rho}) are unitless and pass through
+#'   either way.
+#' @param re_columns Character vector. Subset of
+#'   `c("est", "se", "ci")` controlling which columns of the
+#'   random-effects panel are rendered. `"est"` is mandatory.
+#'   Useful for slimming output (`re_columns = "est"`) or
+#'   for journals that want only standard errors
+#'   (`re_columns = c("est", "se")`).
+#'
+#'   Note. Standard errors and CIs are Wald (`est ± z * SE`,
+#'   clamped at 0 for variances). Wald can be optimistic near
+#'   the variance boundary (Self & Liang 1987 chi-bar-squared);
+#'   profile-likelihood intervals are available directly on the
+#'   fitted model (`confint(fit, method = "profile")` for
+#'   `lmer`) when robustness is critical. See the
+#'   *Mixed-effects models* section of `vignette("table-regression")`.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
@@ -757,6 +797,37 @@
 #' # ---- Tidy long format for downstream pipelines -------------------
 #' broom::tidy(table_regression(fit))
 #'
+#' # ---- Mixed-effects models ----------------------------------------
+#' # Linear mixed-effects (lme4). The footer adds a random-effects
+#' # panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
+#' # marginal / conditional R^2 fit-stats, and a per-class p-value
+#' # annotation line.
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
+#'                      data = lme4::sleepstudy)
+#'   table_regression(fit)
+#'
+#'   # Switch to the variance scale (sigma^2 instead of sigma).
+#'   table_regression(fit, re_scale = "variance")
+#'
+#'   # Minimal random-effects display: estimates only, no SE / CI.
+#'   table_regression(fit, re_columns = "est")
+#'
+#'   # Suppress the random-effects panel entirely.
+#'   table_regression(fit, show_re = FALSE)
+#' }
+#'
+#' # Hierarchical mixed-effects comparison (nested LRT).
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
+#'                     data = lme4::sleepstudy, REML = FALSE)
+#'   table_regression(list(m1, m2, m3), nested = TRUE)
+#' }
+#'
 #' \dontrun{
 #' # ---- Rich-format outputs (require optional Suggests packages) ----
 #' table_regression(fit, output = "gt")
@@ -814,6 +885,9 @@ table_regression <- function(
   reference_label = "(ref.)",
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
+  show_re = TRUE,
+  re_scale = c("sd", "variance"),
+  re_columns = c("est", "se", "ci"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -913,6 +987,23 @@ table_regression <- function(
                   length(models) >= 2L
     show_columns <- if (is_multi) "all_b_compact" else "all_b"
   }
+  # Phase 7c23 (item d): explicit `"all_b"` / `"all_ame"` group tokens
+  # auto-compact in multi-model layouts -- parity with the lm default
+  # which already auto-switches NULL -> "all_b_compact" in the branch
+  # above. Without this, a user passing `show_columns = "all_ame"` to
+  # a 5-model side-by-side table got 4 cells per model (AME + SE + CI
+  # + p) for 20 columns total, while the lm equivalent `"all_b"` would
+  # auto-drop CI for the same multi-model context.
+  is_multi <- is.list(models) && !inherits(models, "lm") &&
+                length(models) >= 2L
+  if (is_multi) {
+    if ("all_b"   %in% show_columns) {
+      show_columns <- sub("^all_b$",   "all_b_compact",   show_columns)
+    }
+    if ("all_ame" %in% show_columns) {
+      show_columns <- sub("^all_ame$", "all_ame_compact", show_columns)
+    }
+  }
   # Expand group tokens (`"all_b"`, `"all_ame"`, ...) to atomic
   # tokens before validation; also raises an actionable migration
   # error if a legacy uppercase token (`"B"`, `"AME"`, ...) slips
@@ -923,6 +1014,12 @@ table_regression <- function(
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
   validate_show_fit_stats(show_fit_stats)
+  # Phase 7c23 (item a): coerce `FALSE` to `character(0)` so the
+  # downstream class-aware default branch (line ~ 996) treats the
+  # explicit "suppress" as "no tokens to inject", instead of leaving
+  # FALSE in the path and tripping `inherits(show_fit_stats, "character")`
+  # checks further down.
+  if (isFALSE(show_fit_stats)) show_fit_stats <- character(0)
   # Q3 -- auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the
   # reject-beta-without-method branch fires before the orchestrator
@@ -950,6 +1047,14 @@ table_regression <- function(
     any_lm_only <- any(vapply(models, function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
     }, logical(1)))
+    # Phase 7c9a: mixed-effects class-aware default. lmer / glmer /
+    # glmmTMB / lme get nobs + Nakagawa marginal/conditional R^2 + AIC
+    # + BIC. classical R^2 is not defined, and the two R^2 of Nakagawa
+    # are the standard publication statistic for mixed models (Nakagawa
+    # & Schielzeth 2013; widely required by APA / journal templates).
+    any_mixed <- any(vapply(models, function(f) {
+      inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
+    }, logical(1)))
     show_fit_stats <- character(0)
     if (any_lm_only) {
       show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
@@ -960,6 +1065,13 @@ table_regression <- function(
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
                             "AIC")
+    }
+    if (any_mixed) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm) "nobs",
+                            "r2_marginal",
+                            "r2_conditional",
+                            "AIC", "BIC")
     }
     show_fit_stats <- unique(show_fit_stats)
     if (isTRUE(nested) && length(models) >= 2L) {
@@ -1022,21 +1134,25 @@ table_regression <- function(
     }
   }
 
-  # exponentiate: warn if requested but no glm-with-non-identity-link
-  # is present -- the transform would be a no-op everywhere.
+  # exponentiate: warn only when NO fit in the list has a non-identity
+  # link. The transform applies wherever `family(fit)$link != "identity"`,
+  # including glmer / glmmTMB binomial / poisson -- not just classical
+  # glm. Phase 7c16: extended the check from `inherits(f, "glm")` to a
+  # link-based check that covers any fit class with a `family()` method.
   if (isTRUE(exponentiate)) {
-    has_non_identity_glm <- any(vapply(models, function(f) {
-      if (!inherits(f, "glm")) return(FALSE)
-      !identical(stats::family(f)$link, "identity")
+    has_non_identity <- any(vapply(models, function(f) {
+      fam <- tryCatch(stats::family(f), error = function(e) NULL)
+      if (is.null(fam) || is.null(fam$link)) return(FALSE)
+      !identical(fam$link, "identity")
     }, logical(1)))
-    if (!has_non_identity_glm) {
+    if (!has_non_identity) {
       spicy_warn(
         c(
-          "`exponentiate = TRUE` has no effect on `lm()` or identity-link `glm()` fits.",
+          "`exponentiate = TRUE` has no effect on identity-link fits.",
           "i" = paste0(
-            "exp() is only applied to glm fits whose link is non-",
-            "identity (logit, probit, log, cloglog, inverse). Drop ",
-            "the argument or remove the check."
+            "exp() is only applied to fits whose link is non-identity ",
+            "(logit, probit, log, cloglog, inverse). Drop the argument ",
+            "or remove the check."
           )
         ),
         class = "spicy_ignored_arg"
@@ -1198,34 +1314,39 @@ table_regression <- function(
     vapply(seq_len(n_models), default_id, character(1))
   }
 
-  extracts <- vector("list", n_models)
+  # Phase 0c sub-step C5: orchestrator now builds ONLY the frames list.
+  # The legacy `extracts` list, the `.frame_to_legacy_extract()` adapter,
+  # the legacy `apply_p_adjust()` -- all gone. Every downstream renderer
+  # (title, footer, alignment, nested LRT) consumes frames directly.
+  frames <- vector("list", n_models)
   for (i in seq_len(n_models)) {
-    extracts[[i]] <- extract_lm_phase1(
+    frames[[i]] <- as_regression_frame(
       models[[i]],
-      model_id = model_ids[i],
-      vcov_type = vcov_list[[i]],
-      cluster = cluster_list[[i]],
-      boot_n = boot_n,
-      ci_level = ci_level,
-      ci_method = ci_method,
-      standardized = standardized,
-      exponentiate = exponentiate,
-      show_columns = show_columns,
-      show_fit_stats = show_fit_stats,
+      model_id              = model_ids[i],
+      vcov                  = vcov_list[[i]],
+      cluster               = cluster_list[[i]],
+      boot_n                = boot_n,
+      ci_level              = ci_level,
+      ci_method             = ci_method,
+      standardized          = standardized,
+      exponentiate          = exponentiate,
+      show_columns          = show_columns,
+      show_fit_stats        = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,
-      cluster_name = cluster_name_list[i]
+      cluster_name          = cluster_name_list[i]
     )
     # Attach precomputed non-additivity metadata so the standardized
-    # caveat footer (build_standardized_caveat_footer_block()) can
-    # decide without reaching back to the live fit.
-    extracts[[i]][["non_additive"]] <- detect_non_additive_terms(models[[i]])
+    # caveat footer (build_standardized_caveat_footer_block_from_frames())
+    # can decide without reaching back to the live fit.
+    frames[[i]]$info$extras$non_additive <-
+      detect_non_additive_terms(models[[i]])
 
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept
     # and reference rows excluded), not just the displayed subset.
     if (!identical(p_adjust, "none")) {
-      extracts[[i]]$coefs <- apply_p_adjust(extracts[[i]]$coefs,
-                                            p_adjust)
+      frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
+        frames[[i]]$coefs, p_adjust)
     }
   }
 
@@ -1233,17 +1354,23 @@ table_regression <- function(
   emit_standardized_caveat_if_needed(models, standardized)
 
   # Nested-comparison change stats (APA Table 7.13 in-table rows).
-  # Augments each `extracts[[i]]$fit_stats` row with `r2_change`,
+  # Augments each `frames[[i]]$info$fit_stats` list with `r2_change`,
   # `f_change`, `p_change`, etc. (NA for Model 1). MUST run BEFORE
-  # align_extracts() because align_extracts() rbinds the per-model
+  # align_frames() because align_frames() rbinds the per-model
   # fit_stats and the column schemas have to be uniform.
+  # Phase 0c sub-step C3: attach to frames; the legacy path
+  # (attach_nested_stats_to_extracts) is no longer called because
+  # align_frames() reads from frames directly.
   if (isTRUE(nested)) {
-    extracts <- attach_nested_stats_to_extracts(extracts, models)
+    frames <- attach_nested_stats_to_frames(frames, models)
   }
 
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
-  aligned <- align_extracts(
-    extracts,
+  # align_frames() consumes the frames list directly and produces the
+  # aligned long-format data structure consumed by the body builder.
+  aligned <- align_frames(
+    frames,
+    model_ids = model_ids,
     show_intercept = show_intercept,
     intercept_position = intercept_position,
     reference_style = reference_style
@@ -1263,20 +1390,48 @@ table_regression <- function(
   # "none" + flat informational message tied to reference_style; the
   # override / suppression happens last).
   title <- if (is.null(title)) {
-    build_regression_title(extracts, nested = nested)
+    # Phase 0c sub-step C1: title is now built from frames directly,
+    # bypassing the legacy-extract adapter for this code path. The
+    # other renderers (footer / body / alignment) continue to consume
+    # the legacy extract shape until sub-steps C2-C4 land.
+    build_regression_title_from_frames(frames, nested = nested)
   } else if (isFALSE(title)) {
     NULL
   } else {
     as.character(title)
   }
-  footer_main <- build_regression_footer(
-    extracts,
+  # Phase 0c sub-step C2.last: the footer dispatcher now reads from
+  # frames directly. Each builder calls its _from_frames sibling (added
+  # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
+  # kept in the codebase for C5 cleanup so we can revert quickly if a
+  # corner case slips through the byte-equivalence gates.
+  # Phase 7c7d: validate + thread random-effects display args through
+  # the footer dispatcher.
+  re_scale_val <- match.arg(re_scale)
+  re_columns_val <- .validate_re_columns(re_columns)
+
+  # Phase 7c22 (item f): pass the surviving parent_vars (post keep /
+  # drop filter) so the polynomial-trends footer note suppresses when
+  # the ordered factor isn't actually displayed in the table.
+  # `aligned$coefs_aligned` has `factor_term` (parent name for factor
+  # rows, NA for non-factor rows) instead of the frame's `parent_var`
+  # column. Coalesce to recover the parent-var view of the display.
+  ca <- aligned$coefs_aligned
+  displayed_parent_vars <- unique(ifelse(is.na(ca$factor_term),
+                                            ca$term, ca$factor_term))
+
+  footer_main <- build_regression_footer_from_frames(
+    frames,
     standardized = standardized,
     p_adjust = p_adjust,
     stars = stars,
     nested = nested,
     show_columns = show_columns,
-    reference_style = reference_style
+    reference_style = reference_style,
+    show_re = isTRUE(show_re),
+    re_scale = re_scale_val,
+    re_columns = re_columns_val,
+    displayed_parent_vars = displayed_parent_vars
   )
 
   # "none" + flat: silent information loss flag. Inform-level
@@ -1284,12 +1439,16 @@ table_regression <- function(
   # must be carried by the surrounding article / caption. Only
   # emitted when at least one factor was detected (otherwise
   # there's nothing to be silent about).
+  # Phase 0c sub-step C5: factor-detection scan now reads from frames
+  # directly. Frame coefs have parent_var = term for non-factor predictors
+  # (no NA fallback), so the "any factor" test is parent_var != term on
+  # any non-intercept row.
   if (identical(reference_style, "none") &&
         identical(factor_layout, "flat") &&
-        any(vapply(extracts, function(e) {
-          coefs <- e$coefs
+        any(vapply(frames, function(f) {
+          coefs <- f$coefs
           !is.null(coefs) && nrow(coefs) > 0L &&
-            any(!is.na(coefs$factor_term))
+            any(coefs$parent_var != coefs$term & coefs$term != "(Intercept)")
         }, logical(1)))) {
     spicy_inform(
       c(paste0("`reference_style = \"none\"` with `factor_layout = ",

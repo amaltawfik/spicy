@@ -61,7 +61,7 @@ test_that("output = 'clipboard' delegates to clipr::write_clip", {
 test_that("output = 'clipboard' errors with spicy_unsupported when system clipboard unavailable", {
   skip_if_not_installed("clipr")
   if (clipr::clipr_available()) {
-    skip("Clipboard IS available — cannot exercise the unavailable branch")
+    skip("Clipboard IS available – cannot exercise the unavailable branch")
   }
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
@@ -89,7 +89,7 @@ test_that("output = 'word' writes a docx file via flextable + officer", {
 
 
 # ============================================================================
-# output = "tinytable" — verify the engine is exercised
+# output = "tinytable" – verify the engine is exercised
 # ============================================================================
 
 test_that("output = 'tinytable' attaches caption + notes from title / footer", {
@@ -132,7 +132,7 @@ test_that("fit_stats_layout = 'merged' warns for engines without body-cell merge
 
 
 # ============================================================================
-# output = "gt" — verify caption + source_note attached
+# output = "gt" – verify caption + source_note attached
 # ============================================================================
 
 test_that("output = 'gt' attaches header title + source_note from footer", {
@@ -148,7 +148,7 @@ test_that("output = 'gt' attaches header title + source_note from footer", {
 
 
 # ============================================================================
-# output = "flextable" — verify caption + footer attached
+# output = "flextable" – verify caption + footer attached
 # ============================================================================
 
 test_that("output = 'flextable' attaches caption + footer lines", {
@@ -163,10 +163,10 @@ test_that("output = 'flextable' attaches caption + footer lines", {
 # Validation paths in dispatcher
 # ============================================================================
 
-test_that("dispatch_regression_output — unknown output rejected by match.arg", {
+test_that("dispatch_regression_output – unknown output rejected by match.arg", {
   fit <- lm(mpg ~ wt, data = mt)
-  ex <- spicy:::extract_lm_phase1(fit, model_id = "M1")
-  aligned <- spicy:::align_extracts(list(ex))
+  fr <- spicy:::as_regression_frame(fit, model_id = "M1")
+  aligned <- spicy:::align_frames(list(fr), model_ids = "M1")
   rendered <- spicy:::render_regression_table(aligned)
   # match.arg upstream of the switch fires first, so the error is the
   # base-R "should be one of ..." rather than the dispatcher's
@@ -388,7 +388,7 @@ test_that("output = 'tinytable' renders with APA borders", {
 # Those helpers parsed the renderer's character body back to numerics;
 # they are obsolete now that build_structured_body() produces CI-split
 # numerics natively. The CI-split structure is asserted via the
-# `structured` attr at the renderer level — see tests for
+# `structured` attr at the renderer level – see tests for
 # render_regression_table()'s `attr(rendered, "structured")$ci_pairs`
 # / `$body` numeric columns.)
 
@@ -409,7 +409,7 @@ test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
 test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present", {
   m1 <- lm(mpg ~ wt, data = mt)
   r <- table_regression(m1, show_columns = c("b", "ci", "p"),
-                          show_fit_stats = character(0))
+                          show_fit_stats = FALSE)
   specs <- spicy:::.fit_stat_merge_ranges(
     as.data.frame(r), attr(r, "spanners"), attr(r, "group_sep_rows")
   )
