@@ -972,7 +972,12 @@ get_test_header_lm <- function(block, show_statistic = TRUE, exact = TRUE) {
     }
     return("F")
   }
+  # nocov start: unreachable. Past line 938 `chosen` is a non-NA scalar
+  # drawn from single_coef (subset of {t, z}) or multi_coef (subset of
+  # {F, chi2}); every such value is returned by one of the identical()
+  # blocks above, so control never reaches this final fallthrough.
   chosen
+  # nocov end
 }
 
 format_effect_size_header_lm <- function(effect_size = "f2") {

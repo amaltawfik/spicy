@@ -125,7 +125,11 @@ compute_glm_coef_inference <- function(
       crit <- if (is.finite(df) && df > 0) {
         stats::qt(1 - (1 - ci_level) / 2, df = df)
       } else {
+        # nocov start: clubSandwich::coef_test() always returns a finite,
+        # positive Satterthwaite df for a converged cluster-robust fit, so
+        # the normal-approximation fallback is unreachable from a valid fit.
         stats::qnorm(1 - (1 - ci_level) / 2)
+        # nocov end
       }
       return(list(
         estimate = estimate,
@@ -198,7 +202,12 @@ compute_pseudo_r2_mcfadden <- function(fit) {
                        error = function(e) NA_real_)
   ll_null <- compute_intercept_only_loglik_glm(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0) {
+    # nocov start: a converged non-quasi glm always has a finite,
+    # non-zero null log-likelihood (the intercept-only model is
+    # never saturated for a non-degenerate response), so this guard
+    # is defensive only.
     return(NA_real_)
+    # nocov end
   }
   1 - (ll_full / ll_null)
 }
@@ -212,7 +221,13 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
   n <- stats::nobs(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || !is.finite(n) ||
         n <= 0) {
+    # nocov start: a converged non-quasi glm always has a finite
+    # log-likelihood and a positive nobs(), so this guard is
+    # defensive only. (The reachable Nagelkerke NA path is the
+    # upper <= 0 guard below, exercised by the low-variance Gamma
+    # test in test-cov-glm_compute.R.)
     return(NA_real_)
+    # nocov end
   }
   cox_snell <- 1 - exp((ll_null - ll_full) * 2 / n)
   upper <- 1 - exp(ll_null * 2 / n)
@@ -243,9 +258,9 @@ compute_pseudo_r2_nagelkerke <- function(fit) {
 # Falls back to NA on any failure.
 compute_intercept_only_loglik_glm <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(mf)) return(NA_real_)
+  if (is.null(mf)) return(NA_real_)  # nocov: a converged glm always carries a model.frame
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
-  if (is.null(y)) return(NA_real_)
+  if (is.null(y)) return(NA_real_)  # nocov: a glm model.frame always has a response column
   fam <- stats::family(fit)
   weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
   offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
@@ -258,7 +273,7 @@ compute_intercept_only_loglik_glm <- function(fit) {
     suppressWarnings(do.call(stats::glm, args)),
     error = function(e) NULL
   )
-  if (is.null(null_fit)) return(NA_real_)
+  if (is.null(null_fit)) return(NA_real_)  # nocov: intercept-only refit of a valid response always converges
   tryCatch(as.numeric(stats::logLik(null_fit)),
            error = function(e) NA_real_)
 }
@@ -271,6 +286,8 @@ compute_pseudo_r2_tjur <- function(fit) {
   if (is.factor(y)) y <- as.integer(y) - 1L
   if (!all(y %in% c(0, 1))) return(NA_real_)
   pi_hat <- stats::fitted(fit)
+  # nocov: once y is a 0/1 vector (guard above), fitted() and the
+  # response always have matching length for a converged glm.
   if (length(pi_hat) != length(y)) return(NA_real_)
   m1 <- mean(pi_hat[y == 1])
   m0 <- mean(pi_hat[y == 0])
@@ -382,6 +399,8 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
   # "Deviance" depending on dispersion handling. The chi-square value
   # is in whichever of these is present; we look for them in order.
   chi2_col <- intersect(c("LRT", "scaled dev.", "Deviance"), names(d1))
+  # nocov: drop1(test = "LRT") on a glm always returns a "Df" column and
+  # one of "LRT"/"scaled dev."/"Deviance"; an empty match is unreachable.
   if (length(chi2_col) == 0L || !"Df" %in% names(d1)) return(NULL)
   chi2 <- d1[[chi2_col[1L]]][2L]
   df1 <- d1[["Df"]][2L]

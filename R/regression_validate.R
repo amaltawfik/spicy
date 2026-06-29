@@ -1218,7 +1218,13 @@ detect_non_additive_terms <- function(fit) {
     # fits (nls), this may still error; in that case skip the check.
     trms <- tryCatch({
       f <- stats::formula(fit)
+      # nocov start: list-formula subset. Unreachable from supported
+      # fits: the classes whose terms() errors (e.g. nls) return a
+      # single formula, and the multi-equation fits whose formula() is
+      # a list (sampleSelection) error in formula() itself (caught by
+      # the surrounding tryCatch). No installed class hits both gates.
       if (is.list(f) && length(f) > 0L) f <- f[[1L]]
+      # nocov end
       attr(stats::terms(f), "term.labels")
     }, error = function(e) NULL)
   }

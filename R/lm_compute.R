@@ -613,9 +613,13 @@ compute_lm_omega2 <- function(fit, df_effect, df_resid) {
   ss_effect <- ss_total - ss_resid
   mse <- ss_resid / df_resid
   omega2 <- (ss_effect - df_effect * mse) / (ss_total + mse)
+  # nocov start: defensive. After the guards above ss_total is finite > 0,
+  # mse >= 0 finite and ss_effect finite, so the denominator (ss_total + mse)
+  # is > 0 and the ratio is always finite -- no valid `fit` can reach here.
   if (!is.finite(omega2)) {
     return(NA_real_)
   }
+  # nocov end
   max(0, omega2)
 }
 
@@ -724,9 +728,14 @@ find_ncp_f_lm <- function(f_obs, df1, df2, p) {
     f_hi <- pf_diff(hi)
     expand <- expand + 1L
   }
+  # nocov start: defensive. pf(f_obs, df1, df2, ncp) -> 0 (finite) as ncp
+  # grows for any finite f_obs >= 0, and 6 doublings widen `hi` by 64x, which
+  # always overshoots the root; f_hi can neither stay > 0 nor become
+  # non-finite, so this NA return is unreachable from a valid F-stat.
   if (!is.finite(f_hi) || f_hi > 0) {
     return(NA_real_)
   }
+  # nocov end
 
   tryCatch(
     stats::uniroot(

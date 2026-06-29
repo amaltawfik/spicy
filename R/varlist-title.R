@@ -97,7 +97,10 @@ varlist_call_name <- function(fun) {
 
   parts <- as.character(fun)
   if (length(parts) == 0L) {
+    # nocov start: as.character() of any call object is always length >= 1
+    # (at minimum the function name/operator), so this guard is never hit.
     return(NULL)
+    # nocov end
   }
 
   if (length(parts) >= 3L && parts[[1L]] %in% c("::", ":::")) {

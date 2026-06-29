@@ -204,7 +204,9 @@ as_regression_frame.Glm <- function(fit,
   } else {
     dfr <- tryCatch(fit$df.residual %||% stats::df.residual(fit),
                     error = function(e) Inf)
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+    # Defensive: a genuine rms::ols() fit always carries a finite
+    # df.residual, so this NULL/non-finite fallback is never reached.
+    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf  # nocov
     stat    <- est / se
     p_value <- 2 * stats::pt(-abs(stat), df = dfr)
     df <- rep(as.numeric(dfr), length(est))
@@ -288,7 +290,10 @@ as_regression_frame.Glm <- function(fit,
   }
   values <- fit$Design$values[[var_name]]
   if (is.character(values) || is.factor(values)) {
-    return(as.character(values))
+    # Defensive: rms always populates Design$parms for categorical
+    # predictors, so the parms branch above always returns first for a
+    # real factor; this Design$values fallback never fires on a genuine fit.
+    return(as.character(values))  # nocov
   }
   character(0)
 }
@@ -421,7 +426,9 @@ as_regression_frame.Glm <- function(fit,
     Glm = {
       fam <- tryCatch(stats::family(fit), error = function(e) NULL)
       if (!is.null(fam)) list(family = fam$family, link = fam$link)
-      else                list(family = "gaussian", link = "identity")
+      # Defensive: stats::family() always returns the stored family for a
+      # genuine rms::Glm() fit, so this gaussian fallback is never reached.
+      else                list(family = "gaussian", link = "identity")  # nocov
     }
   )
 }

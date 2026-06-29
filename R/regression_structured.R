@@ -229,8 +229,12 @@ build_structured_body <- function(aligned,
     empty_row = empty_row
   )
   if (!is.null(outcome_row)) {
+    # nocov start: .build_structured_outcome_row() currently always
+    # returns NULL (the multi-DV text-override system is not yet
+    # finalised), so this branch is forward-compat dead code.
     rows[[length(rows) + 1L]] <- outcome_row
     outcome_row_idx <- length(rows)
+    # nocov end
   }
 
   # --- Body rows (per term) ---
@@ -576,7 +580,10 @@ build_structured_body <- function(aligned,
       sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
       if (nrow(sub) == 0L) next
       val <- sub[[tk]][1L]
+      # nocov start: nrow(sub) >= 1 is guaranteed by the guard above, so
+      # sub[[tk]][1L] is always a scalar (NA at worst), never NULL.
       if (is.null(val)) val <- NA_real_
+      # nocov end
       row[[target_col]] <- as.numeric(val)
 
       col_overrides[[target_col]] <- list(
@@ -883,6 +890,10 @@ build_structured_body <- function(aligned,
     }
     if (length(matching) > 0L) out[[lbl]] <- matching
   }
+  # nocov start: every label in `labels` comes from a model that is also
+  # in `expanded`, so each label matches at least its own model and `out`
+  # can never be empty here for a consistent label_map. Defensive guard.
   if (length(out) == 0L) return(NULL)
+  # nocov end
   out
 }

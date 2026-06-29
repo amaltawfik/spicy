@@ -696,6 +696,11 @@ output_gt <- function(rendered) {
   # bare label (stripped of any "Model X: " prefix when present).
   # Col 1 ("Variable") also goes here so its label sits in the
   # spanner row, mirroring the flextable / tinytable convention.
+  # nocov start -- legacy fallback: build_col_spec() always populates
+  # `col_meta$display_label`, so the `strip_prefix(orig_names[j])` else
+  # arm below (and this helper's body) is never reached through
+  # table_regression(). Kept for structured bodies predating
+  # `display_label`.
   strip_prefix <- function(nm) {
     if (has_model_spanner) {
       for (lbl in names(spanners)) {
@@ -707,6 +712,7 @@ output_gt <- function(rendered) {
     }
     nm
   }
+  # nocov end
   for (j in seq_along(orig_names)) {
     if (j %in% ci_cols_set) next  # CI cols get their own spanner
     # Use `col_meta$display_label` for the spanner text (bare,
@@ -719,7 +725,7 @@ output_gt <- function(rendered) {
     } else if (!is.null(lbl) && nzchar(lbl)) {
       lbl
     } else {
-      strip_prefix(orig_names[j])
+      strip_prefix(orig_names[j])  # nocov -- legacy: display_label always set
     }
     tbl <- gt::tab_spanner(
       tbl, label = bare,
@@ -1185,6 +1191,10 @@ output_flextable <- function(rendered) {
   }
 
   # Helper to strip the "Model X: " prefix from a structured col name.
+  # nocov start -- legacy fallback: build_col_spec() always populates
+  # `col_meta$display_label`, so the `strip_model_prefix(orig_names[j])`
+  # else arm further below (and this helper's body) is never reached
+  # through table_regression(). Kept for bodies predating display_label.
   strip_model_prefix <- function(name) {
     if (!has_model_spanner) return(name)
     for (lbl in names(spanners)) {
@@ -1195,6 +1205,7 @@ output_flextable <- function(rendered) {
     }
     name
   }
+  # nocov end
 
   # Column-labels row (bottom-most header row) -- only LL/UL on the
   # CI cols, blank elsewhere. The "Variable" label moves up to the
@@ -1261,7 +1272,7 @@ output_flextable <- function(rendered) {
       sub_label_at_col[j] <- if (!is.null(lbl) && nzchar(lbl)) {
         lbl
       } else {
-        strip_model_prefix(orig_names[j])
+        strip_model_prefix(orig_names[j])  # nocov -- display_label always set
       }
     }
   }
@@ -1736,7 +1747,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     for (j in 2:n_cols) {
       col_name <- names(body)[j]
       meta <- col_meta[[col_name]]
+      # nocov start -- defensive: render_regression_table() emits a
+      # col_meta entry for every numeric body column, so a lookup miss
+      # cannot occur through table_regression().
       if (is.null(meta)) next
+      # nocov end
 
       # Default per-column numfmt
       default_fmt <- .excel_numfmt(meta$precision, meta$p_style)

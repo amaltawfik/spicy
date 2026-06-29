@@ -92,6 +92,8 @@ as_regression_frame.clm <- function(fit,
 
 .check_MASS_available <- function() {
   if (!spicy_pkg_available("MASS")) {
+    # nocov start: fires only when MASS is absent; MASS is required to
+    # produce a polr fit in the first place, so unreachable in tests.
     spicy_abort(
       c(
         "Cannot extract a regression frame from a polr fit without `MASS`.",
@@ -99,11 +101,14 @@ as_regression_frame.clm <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
 .check_ordinal_available <- function() {
   if (!spicy_pkg_available("ordinal")) {
+    # nocov start: fires only when ordinal is absent; ordinal is required
+    # to produce a clm fit in the first place, so unreachable in tests.
     spicy_abort(
       c(
         "Cannot extract a regression frame from a clm fit without `ordinal`.",
@@ -111,6 +116,7 @@ as_regression_frame.clm <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -250,6 +256,8 @@ as_regression_frame.clm <- function(fit,
 # under names matching fit$zeta.
 .polr_thresholds <- function(fit) {
   zeta <- fit$zeta %||% numeric(0)
+  # nocov: polr requires >= 3 response levels, so zeta always has >= 2
+  # thresholds; an empty zeta is structurally impossible for a valid fit.
   if (length(zeta) == 0L) return(data.frame())
   V <- as.matrix(stats::vcov(fit))
   zeta_names <- names(zeta)
@@ -275,7 +283,7 @@ as_regression_frame.clm <- function(fit,
     cloglog  = "cloglog",
     loglog   = "loglog",
     cauchit  = "cauchit",
-    method
+    method   # nocov: polr$method is always one of the 5 links above
   )
 }
 
@@ -286,6 +294,7 @@ as_regression_frame.clm <- function(fit,
     cloglog  = "Cumulative cloglog",
     loglog   = "Cumulative loglog",
     cauchit  = "Cumulative cauchit",
+    # nocov: polr$method is always one of the 5 links above.
     paste0("Cumulative ", method)
   )
 }
@@ -434,6 +443,8 @@ as_regression_frame.clm <- function(fit,
 # carries Wald z + p natively.
 .clm_thresholds <- function(fit) {
   alpha <- fit$alpha %||% numeric(0)
+  # nocov: clm always estimates >= 1 cumulative threshold (k - 1 for k
+  # response levels, k >= 2), so an empty alpha is impossible for a fit.
   if (length(alpha) == 0L) return(data.frame())
   alpha_names <- names(alpha)
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)

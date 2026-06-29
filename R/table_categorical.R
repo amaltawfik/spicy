@@ -899,7 +899,12 @@ table_categorical <- function(
       return("")
     }
     if (!is.na(op) && identical(op, "<")) {
+      # nocov start: `op = "<"` only arrives from parse_stats()'s note-text
+      # fallback, which fires solely when cross_tab() omits the numeric
+      # `p_value` attr (single-level table). In that degenerate case the
+      # note is NULL too, so the regex never yields `p_op = "<"`. Defensive.
       return(paste0("<", decimal_mark, strrep("0", p_digits - 1L), "1"))
+      # nocov end
     }
     format_p_value(p, decimal_mark, digits = p_digits)
   }
@@ -1009,7 +1014,7 @@ table_categorical <- function(
       for (lv in lv_use) {
         idx <- match(lv, vals)
         if (is.na(idx)) {
-          next
+          next # nocov: lv_use is built from raw_levels (a subset of `vals`), so match() is never NA here. Defensive.
         }
         rows[[rr]] <- data.frame(
           variable = labels[i],
@@ -1383,9 +1388,12 @@ table_categorical <- function(
     if (output == "flextable") {
       ft <- build_flextable_oneway(report_wide_char)
       if (!is.null(word_path) && nzchar(word_path)) {
+        # nocov start: officer-missing guard; officer is in Suggests and
+        # present in the test/CI environment, so the abort is unreachable here.
         if (!requireNamespace("officer", quietly = TRUE)) {
           spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
         }
+        # nocov end
         flextable::save_as_docx(ft, path = word_path)
       }
       return(ft)
@@ -1626,7 +1634,7 @@ table_categorical <- function(
       in_n <- match(lv, vals_n)
       in_p <- match(lv, vals_p)
       if (is.na(in_n) || is.na(in_p)) {
-        next
+        next # nocov: lv_use is derived from vals_n, and ct_n / ct_pct share the same x,g so they expose identical levels; neither match() is NA. Defensive.
       }
 
       for (gr in groups_use) {
@@ -2216,9 +2224,13 @@ table_categorical <- function(
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
     } else {
+      # nocov start: `align` is match.arg()-constrained to
+      # decimal/center/right, each matched by a branch above, so this
+      # "auto" legacy per-column else-arm is unreachable. Defensive.
       # "auto": legacy per-column rule.
       tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
       tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
+      # nocov end
     }
     # Left-align the Variable spanner label
     tbl <- gt::tab_style(
@@ -2405,9 +2417,12 @@ table_categorical <- function(
   if (output == "flextable") {
     ft <- build_flextable(merge_ci_inline(report_wide_char))
     if (!is.null(word_path) && nzchar(word_path)) {
+      # nocov start: officer-missing guard; officer is in Suggests and
+      # present in the test/CI environment, so the abort is unreachable here.
       if (!requireNamespace("officer", quietly = TRUE)) {
         spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
       }
+      # nocov end
       flextable::save_as_docx(ft, path = word_path)
     }
     return(ft)

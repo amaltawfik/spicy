@@ -1665,7 +1665,12 @@ fit_categorical_predictor_lm_rows <- function(
   x_coef_idx <- which(stats::model.matrix(fit) |>
     attr("assign") == which(attr(stats::terms(fit), "term.labels") == "x"))
   if (length(x_coef_idx) == 0L) {
+    # nocov start: defensive fallback. The model formula always includes
+    # the focal term "x" (see `rhs_terms`/`reformulate` above) and
+    # `nlevels(x) >= 2` is guaranteed by the early return, so "x" always
+    # owns at least one design-matrix column -- x_coef_idx is never empty.
     x_coef_idx <- seq_along(cf)[-1]
+    # nocov end
   }
   wald <- compute_lm_wald_test(
     fit,

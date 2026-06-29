@@ -50,6 +50,8 @@ as_regression_frame.rq <- function(fit,
 
 .check_quantreg_available <- function() {
   if (!spicy_pkg_available("quantreg")) {
+    # nocov start: defensive missing-Suggests guard; an rq fit cannot
+    # exist (let alone reach this method) unless quantreg is installed.
     spicy_abort(
       c(
         "Cannot extract a regression frame from an rq fit without `quantreg`.",
@@ -57,6 +59,7 @@ as_regression_frame.rq <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -227,6 +230,8 @@ as_regression_frame.ivreg <- function(fit,
 
 .check_AER_available <- function() {
   if (!spicy_pkg_available("AER")) {
+    # nocov start: defensive missing-Suggests guard; an ivreg/tobit fit
+    # cannot exist (let alone reach these methods) unless AER is installed.
     spicy_abort(
       c(
         "Cannot extract a regression frame from an AER fit without `AER`.",
@@ -234,6 +239,7 @@ as_regression_frame.ivreg <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -254,7 +260,11 @@ as_regression_frame.ivreg <- function(fit,
     p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
   }
   dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
+  # nocov start: defensive; df.residual(ivreg) always returns a finite
+  # n - p for a valid 2SLS fit, so this NULL/non-finite fallback is dead
+  # for real fits (only the errored tryCatch above could yield Inf).
   if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+  # nocov end
   df <- rep(as.numeric(dfr), length(est))
   t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
   ci_lower <- est - t_crit * se

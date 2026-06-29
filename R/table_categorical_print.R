@@ -175,9 +175,12 @@ as.data.frame.spicy_categorical_table <- function(
 #' @rdname as.data.frame.spicy_categorical_table
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_categorical_table <- function(x, ...) {
+  # nocov start: tibble is required to dispatch this as_tibble S3 method
+  # in the first place, so the missing-package guard is unreachable here.
   if (!requireNamespace("tibble", quietly = TRUE)) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
+  # nocov end
   tibble::as_tibble(unclass_spicy_categorical_table(x), ...)
 }
 
@@ -269,7 +272,7 @@ tidy.spicy_categorical_table <- function(x, ...) {
   if (requireNamespace("tibble", quietly = TRUE)) {
     return(tibble::as_tibble(result))
   }
-  result
+  result # nocov: tibble is a hard dep of the test/CI matrix, so this plain-data.frame fallback is never hit
 }
 
 #' @rdname tidy.spicy_categorical_table
@@ -386,5 +389,5 @@ glance.spicy_categorical_table <- function(x, ...) {
   if (requireNamespace("tibble", quietly = TRUE)) {
     return(tibble::as_tibble(result))
   }
-  result
+  result # nocov: tibble is a hard dep of the test/CI matrix, so this plain-data.frame fallback is never hit
 }

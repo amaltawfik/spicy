@@ -61,6 +61,8 @@ as_regression_frame.fixest <- function(fit,
 
 .check_fixest_available <- function() {
   if (!spicy_pkg_available("fixest")) {
+    # nocov start: defensive Suggests guard; fixest is installed in the
+    # test/CI environment, so the abort branch is never taken.
     spicy_abort(
       c(
         "Cannot extract a regression frame from a fixest fit without `fixest`.",
@@ -68,6 +70,7 @@ as_regression_frame.fixest <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -95,6 +98,9 @@ as_regression_frame.fixest <- function(fit,
     stat    <- unname(sm[nm, "t value"])
     p_value <- unname(sm[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
+    # nocov: defensive; df.residual.fixest always returns a finite numeric
+    # for a valid OLS feols, and the tryCatch above already maps any error
+    # to Inf, so this NULL/non-finite normaliser is never exercised.
     if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)

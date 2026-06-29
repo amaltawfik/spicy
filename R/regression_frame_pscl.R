@@ -95,6 +95,9 @@ as_regression_frame.zeroinfl <- function(fit,
 
 .check_pscl_available <- function() {
   if (!spicy_pkg_available("pscl")) {
+    # nocov start: .check_<pkg>_available() abort -- only fires when pscl
+    # is NOT installed, but the pscl methods (and their tests) require pscl
+    # to be loaded, so this branch is unreachable under test.
     spicy_abort(
       c(
         "Cannot extract a regression frame from a pscl fit without `pscl`.",
@@ -102,6 +105,7 @@ as_regression_frame.zeroinfl <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -244,7 +248,9 @@ as_regression_frame.zeroinfl <- function(fit,
   zero_coefs <- if (!is.null(smz)) {
     stats::coef(fit, model = "zero")
   } else {
-    NULL
+    NULL  # nocov: every valid hurdle/zeroinfl fit carries a zero/inflation
+           # component with at least an intercept, so summary()$coefficients$zero
+           # is never NULL for a real fit.
   }
 
   title_prefix <- if (is_hurdle) {

@@ -68,6 +68,9 @@ as_regression_frame.gam <- function(fit,
 
 .check_mgcv_available <- function() {
   if (!spicy_pkg_available("mgcv")) {
+    # nocov start
+    # Unreachable in tests: dispatching as_regression_frame.gam requires an
+    # existing mgcv gam/bam fit, which itself requires mgcv to be installed.
     spicy_abort(
       c(
         "Cannot extract a regression frame from a mgcv fit without `mgcv`.",
@@ -75,6 +78,7 @@ as_regression_frame.gam <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -97,7 +101,9 @@ as_regression_frame.gam <- function(fit,
     stat    <- unname(ptable[nm, "t value"])
     p_value <- unname(ptable[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+    # Defensive: df.residual() on a valid gaussian-identity gam always returns
+    # a finite scalar; this only guards an unexpected NULL/Inf and is unreachable.
+    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf  # nocov
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
     ci_lower <- est - t_crit * se

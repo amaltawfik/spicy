@@ -306,7 +306,11 @@ compute_menard_sd_y_star <- function(fit) {
     as.numeric(stats::predict(fit, type = "link")),
     error = function(e) NULL
   )
+  # nocov start: defensive. For a valid converged binomial glm, predict(type="link")
+  # cannot error (NULL arm) and the linear predictor is finite by construction even
+  # under perfect separation, so neither sub-condition is reachable from user input.
   if (is.null(eta_hat) || !all(is.finite(eta_hat))) return(NA_real_)
+  # nocov end
   var_eta <- stats::var(eta_hat)
   var_link <- switch(
     fam$link,

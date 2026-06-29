@@ -92,7 +92,10 @@ as_regression_frame.svyglm <- function(fit,
   # df: survey's t-Wald uses df.residual(). For a sufficiently large
   # design this is large; for highly-stratified designs it can be small.
   dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-  if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+  # nocov: df.residual() on a valid svyglm always returns a finite count
+  # (length(residuals) - rank via df.residual.default); this z-fallback
+  # assignment is a defensive guard for a degenerate fit we can't construct.
+  if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf # nocov
   df_vec <- rep(as.numeric(dfr), length(est))
 
   # Wald CI with t. Falls back to z if df is Inf.
