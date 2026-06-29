@@ -160,7 +160,22 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
     fit, type = vcov_type, cluster = cluster,
     weights = weights, boot_n = boot_n
   )
-  se_b <- sqrt(diag(vc))
+  se_b_raw <- sqrt(diag(vc))
+
+  # Align the standard errors to the full coefficient vector by NAME.
+  # `stats::coef(fit)` always returns the full length-p vector (with NA
+  # entries for aliased / perfectly-collinear terms), and the design
+  # matrix `model.matrix(fit)` is likewise full width p. The variance
+  # matrix, however, may DROP aliased rows/columns: classical
+  # `stats::vcov.glm()` pads them with NA (length p), but robust
+  # estimators (`sandwich::vcovHC`, `clubSandwich::vcovCR`, ...) return a
+  # reduced length-(p - k) matrix. Multiplying a length-(p - k) `se_b`
+  # against the length-p `scale_factor` would silently recycle and
+  # misalign every standardised SE. Reindex by name -> guaranteed length
+  # p, with NA for any coefficient the vcov omitted (which then flows
+  # through to an NA standardised SE for that aliased term only).
+  se_b <- se_b_raw[names(b)]
+  names(se_b) <- names(b)
 
   mm <- stats::model.matrix(fit)
   sd_x <- apply(mm, 2, stats::sd)
@@ -304,13 +319,18 @@ compute_menard_sd_y_star <- function(fit) {
   if (!identical(fam$family, "binomial")) return(NA_real_)
   eta_hat <- tryCatch(
     as.numeric(stats::predict(fit, type = "link")),
-    error = function(e) NULL
+    error = function(e) NULL   # nocov: predict(type="link") cannot error on
+                               # a converged binomial glm; defensive only.
   )
-  # nocov start: defensive. For a valid converged binomial glm, predict(type="link")
-  # cannot error (NULL arm) and the linear predictor is finite by construction even
-  # under perfect separation, so neither sub-condition is reachable from user input.
-  if (is.null(eta_hat) || !all(is.finite(eta_hat))) return(NA_real_)
-  # nocov end
+  # `predict(type = "link")` is padded back to the ORIGINAL data length
+  # when the fit used `na.action = na.exclude` (napredict() reinserts NA
+  # at the dropped rows). The latent-variable SD must be computed over
+  # the rows the model actually used, so strip those NA before taking the
+  # variance -- otherwise a perfectly valid binomial fit would yield
+  # SD(Y*) = NA and trigger the misleading "family outside scope" caveat.
+  if (is.null(eta_hat)) return(NA_real_)   # nocov: NULL arm unreachable (see above).
+  eta_hat <- eta_hat[is.finite(eta_hat)]
+  if (length(eta_hat) < 2L) return(NA_real_)
   var_eta <- stats::var(eta_hat)
   var_link <- switch(
     fam$link,

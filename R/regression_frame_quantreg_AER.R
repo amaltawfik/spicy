@@ -69,28 +69,51 @@ as_regression_frame.rq <- function(fit,
   est <- unname(cf)
   nm  <- names(cf)
 
-  sm <- summary(fit, se = se)$coefficients
+  # Pass alpha = 1 - ci_level so the rank-inversion CIs (when se = "rank",
+  # or quantreg's small-sample default) are computed at the requested
+  # confidence level rather than summary.rq's hard-coded default
+  # (alpha = 0.1, i.e. a 90% CI). alpha is silently ignored by the
+  # parametric SE methods ("iid"/"nid"/"ker"/"boot"), so this is safe.
+  sm <- summary(fit, se = se, alpha = 1 - ci_level)$coefficients
   # summary.rq returns a matrix with columns "Value Std. Error t value Pr(>|t|)"
-  # for parametric SE methods; the rank-inversion path returns CIs instead.
+  # for parametric SE methods; the rank-inversion path (se = "rank") returns
+  # columns "coefficients", "lower bd", "upper bd" instead -- genuine
+  # confidence bounds with no SE / t / p available.
+  is_rank_ci <- !is.null(sm) && all(c("lower bd", "upper bd") %in% colnames(sm)) &&
+    !all(c("Std. Error", "t value", "Pr(>|t|)") %in% colnames(sm))
+  rank_ci_lower <- NULL
+  rank_ci_upper <- NULL
   if (!is.null(sm) && all(c("Std. Error", "t value", "Pr(>|t|)") %in% colnames(sm))) {
     se_vec  <- unname(sm[nm, "Std. Error"])
     stat    <- unname(sm[nm, "t value"])
     p_value <- unname(sm[nm, "Pr(>|t|)"])
-  } else {                                                              # nocov start
-    # Rank-inversion CIs path -- compute SE from CI half-width / z_crit.
+  } else {
+    # Rank-inversion path: SE / t / p are undefined for this method, but the
+    # genuine confidence bounds ARE returned -- carry them through instead of
+    # discarding them.
     se_vec  <- rep(NA_real_, length(est))
     stat    <- rep(NA_real_, length(est))
     p_value <- rep(NA_real_, length(est))
-  }                                                                     # nocov end
+    if (isTRUE(is_rank_ci)) {
+      rank_ci_lower <- unname(sm[nm, "lower bd"])
+      rank_ci_upper <- unname(sm[nm, "upper bd"])
+    }
+  }
 
   # quantreg's df.residual(rq) returns numeric(0); n - p is the sensible
   # asymptotic-t df.
   n_obs <- as.integer(length(fit$residuals) %||% NA_integer_)
   df_val <- as.numeric(n_obs - length(cf))
   df <- rep(df_val, length(est))
-  t_crit <- stats::qt(0.5 + ci_level / 2, df = df_val)
-  ci_lower <- est - t_crit * se_vec
-  ci_upper <- est + t_crit * se_vec
+  if (isTRUE(is_rank_ci)) {
+    # Use quantreg's rank-inversion bounds directly (no SE to invert).
+    ci_lower <- rank_ci_lower
+    ci_upper <- rank_ci_upper
+  } else {
+    t_crit <- stats::qt(0.5 + ci_level / 2, df = df_val)
+    ci_lower <- est - t_crit * se_vec
+    ci_upper <- est + t_crit * se_vec
+  }
 
   factor_meta <- detect_factor_term_meta(fit)
   ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,

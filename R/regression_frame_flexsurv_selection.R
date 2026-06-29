@@ -76,7 +76,7 @@ as_regression_frame.flexsurvreg <- function(fit,
   cov_names <- setdiff(all_names, aux_names)
   if (length(cov_names) == 0L) {
     # No covariates -- intercept-only fit; coefs is empty by convention.
-    return(.empty_coefs_frame())                                       # nocov
+    return(.empty_coefs_frame())
   }
 
   est <- unname(res[cov_names, "est"])

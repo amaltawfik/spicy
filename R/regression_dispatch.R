@@ -1607,15 +1607,16 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     # nocov end
   }
   if (is.null(excel_path) || !nzchar(excel_path)) {
-    # nocov start -- defensive: validate_output_resources() (Phase F)
-    # rejects this upstream, so the dispatch path here is unreachable
-    # through table_regression(). Kept for direct callers of
-    # dispatch_regression_output() (e.g., bespoke pipelines).
+    # Reachable guard. validate_output_resources() (Phase F) only
+    # rejects is.null(excel_path); it does NOT reject an empty string
+    # on every platform. A direct caller of output_excel() /
+    # dispatch_regression_output() that passes excel_path = "" (e.g.
+    # paste0(dir, "/", fname) with an unset fname) reaches this abort
+    # via the !nzchar() half of the guard.
     spicy_abort(
       "`excel_path` must be supplied for output = \"excel\".",
       class = "spicy_invalid_input"
     )
-    # nocov end
   }
   # ---- Read structured (typed) body via render_regression_table() -------
   # The renderer builds a parallel structured view (numeric body, CI
@@ -2028,6 +2029,9 @@ output_clipboard <- function(rendered, clipboard_delim) {
   invisible(rendered)
   # nocov end
 }
+# nocov end -- closes the output_clipboard CI-unreachable block; the
+# pure clipboard_payload() builder below is NOT suppressed (it is
+# reachable on any user machine and directly unit-tested).
 
 # Build the TSV payload mirroring the Excel layout: title row,
 # spanner row, header, body, note rows. Cells are tab-separated.
@@ -2111,7 +2115,6 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   lines <- vapply(rows, paste, character(1), collapse = clipboard_delim)
   paste(lines, collapse = "\n")
 }
-# nocov end -- closes the `output_clipboard` function block
 
 # ---- word ----------------------------------------------------------------
 
@@ -2127,13 +2130,14 @@ output_word <- function(rendered, word_path, word_template = NULL) {
     # nocov end
   }
   if (is.null(word_path) || !nzchar(word_path)) {
-    # nocov start -- defensive duplicate of the Phase F
-    # validate_output_resources() check (see excel_path comment).
+    # Reachable guard (see the output_excel() excel_path comment).
+    # validate_output_resources() only rejects is.null(word_path), not
+    # an empty string; a direct caller passing word_path = "" reaches
+    # this abort via the !nzchar() half of the guard.
     spicy_abort(
       "`word_path` must be supplied for output = \"word\".",
       class = "spicy_invalid_input"
     )
-    # nocov end
   }
   ft <- output_flextable(rendered)
 

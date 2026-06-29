@@ -250,3 +250,69 @@ test_that("detect_non_additive_terms – nls fit falls back to formula() RHS", {
   expect_true(out$has_problem)
   expect_true("b:wt" %in% out$interactions)
 })
+
+test_that("detect_non_additive_terms - formula() fallback reaches is.list() FALSE arm", {
+  # A terms()-less fit whose formula() is an ordinary single formula (not a
+  # list) drives the fallback tryCatch: stats::terms(fit) errors, so
+  # f <- formula(fit) runs and the is.list(f) predicate is evaluated and is
+  # FALSE. An additive nls formula yields no interaction/transform terms.
+  nlsfit <- nls(mpg ~ a - d * wt, data = mtcars, start = list(a = 30, d = 5))
+  out <- spicy:::detect_non_additive_terms(nlsfit)
+  expect_false(is.list(stats::formula(nlsfit)))
+  expect_false(out$has_problem)
+  expect_identical(out$interactions, character(0))
+  expect_identical(out$transforms, character(0))
+})
+
+
+# ============================================================================
+# validate_output_resources - clipboard availability runtime check
+# ============================================================================
+
+test_that("validate_output_resources - aborts when system clipboard unavailable", {
+  skip_if_not_installed("clipr")
+
+  # clipr is installed, so the package-presence guard passes; the runtime
+  # availability check then fires. Mock clipr_available() -> FALSE to drive
+  # the headless/CRAN path deterministically regardless of host clipboard.
+  ns <- asNamespace("clipr")
+  old_available <- get("clipr_available", envir = ns)
+  unlockBinding("clipr_available", ns)
+  assign("clipr_available", function(...) FALSE, envir = ns)
+  on.exit({
+    unlockBinding("clipr_available", ns)
+    assign("clipr_available", old_available, envir = ns)
+    lockBinding("clipr_available", ns)
+  }, add = TRUE)
+  lockBinding("clipr_available", ns)
+
+  err <- tryCatch(
+    spicy:::validate_output_resources(
+      output = "clipboard", excel_path = NULL, word_path = NULL
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_unsupported")
+  expect_match(conditionMessage(err), "Clipboard is not available")
+})
+
+test_that("validate_output_resources - clipboard OK when available is a no-op", {
+  skip_if_not_installed("clipr")
+
+  ns <- asNamespace("clipr")
+  old_available <- get("clipr_available", envir = ns)
+  unlockBinding("clipr_available", ns)
+  assign("clipr_available", function(...) TRUE, envir = ns)
+  on.exit({
+    unlockBinding("clipr_available", ns)
+    assign("clipr_available", old_available, envir = ns)
+    lockBinding("clipr_available", ns)
+  }, add = TRUE)
+  lockBinding("clipr_available", ns)
+
+  expect_null(
+    spicy:::validate_output_resources(
+      output = "clipboard", excel_path = NULL, word_path = NULL
+    )
+  )
+})

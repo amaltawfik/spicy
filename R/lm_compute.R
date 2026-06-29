@@ -758,8 +758,14 @@ find_ncp_f_lm <- function(f_obs, df1, df2, p) {
 }
 
 compute_smd_ci_lm <- function(fit, ci_level, hedges_correct) {
-  d <- unname(stats::coef(fit)[2]) / summary(fit)$sigma
-  if (!is.finite(d)) {
+  sigma_hat <- summary(fit)$sigma
+  # A (near-)perfect fit leaves the residual SD ~ 0 (QR can leave ~1e-16 on
+  # some platforms), which would make d astronomical instead of undefined.
+  # Treat sigma below the machine-precision floor of the fitted-value scale
+  # as zero so the CI falls back to NA.
+  sigma_floor <- sqrt(.Machine$double.eps) * sqrt(mean(stats::fitted(fit)^2))
+  d <- unname(stats::coef(fit)[2]) / sigma_hat
+  if (!is.finite(d) || sigma_hat <= sigma_floor) {
     return(c(NA_real_, NA_real_))
   }
 

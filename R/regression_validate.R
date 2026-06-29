@@ -1218,13 +1218,15 @@ detect_non_additive_terms <- function(fit) {
     # fits (nls), this may still error; in that case skip the check.
     trms <- tryCatch({
       f <- stats::formula(fit)
-      # nocov start: list-formula subset. Unreachable from supported
-      # fits: the classes whose terms() errors (e.g. nls) return a
-      # single formula, and the multi-equation fits whose formula() is
-      # a list (sampleSelection) error in formula() itself (caught by
-      # the surrounding tryCatch). No installed class hits both gates.
-      if (is.list(f) && length(f) > 0L) f <- f[[1L]]
-      # nocov end
+      # The is.list() predicate below is reached (and FALSE) for every
+      # supported terms()-less fit, e.g. nls, whose formula() is a single
+      # formula. Only the inner subset body is narrowly nocov'd: the
+      # multi-equation fits whose formula() is list-valued (sampleSelection)
+      # error in formula() itself and are caught by the surrounding
+      # tryCatch, so no installed class reaches f <- f[[1L]].
+      if (is.list(f) && length(f) > 0L) {
+        f <- f[[1L]] # nocov
+      }
       attr(stats::terms(f), "term.labels")
     }, error = function(e) NULL)
   }
@@ -1345,12 +1347,10 @@ validate_output_resources <- function(output, excel_path, word_path) {
       # nocov end
     }
     if (!clipr::clipr_available()) {
-      # nocov start \u2013 system clipboard is environment-dependent.
       spicy_abort(
         "Clipboard is not available on this system.",
         class = "spicy_unsupported"
       )
-      # nocov end
     }
   }
 

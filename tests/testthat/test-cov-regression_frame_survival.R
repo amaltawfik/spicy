@@ -117,3 +117,54 @@ test_that(".survreg_dist_title title-cases an unrecognised distribution name", {
   expect_identical(spicy:::.survreg_dist_title("foobar"), "Foobar")
   expect_identical(spicy:::.survreg_dist_title("rayleigh"), "Rayleigh")
 })
+
+
+# ---- 4. survreg link / exponentiate convention by distribution -----------
+#
+# In survival::survreg.distributions only weibull / exponential / lognormal /
+# loglogistic carry trans = log (itrans = exp); they model log(T) and so are
+# "log-scale" AFT fits. The remaining built-in dists -- gaussian, logistic,
+# t -- model T directly (identity scale, no log transform). Therefore:
+#   * family$link must be "identity" for gaussian / logistic / t,
+#     and "log" for weibull / exponential / lognormal / loglogistic.
+#   * supports$exponentiate (exp(coef) = time ratio) is meaningful ONLY for
+#     the log-scale dists; it must be FALSE for gaussian / logistic / t.
+# Expected values below are derived from this convention, NOT from output.
+
+.cov_survreg_fit <- function(dist) {
+  skip_if_not_installed("survival")
+  survival::survreg(survival::Surv(time, status) ~ age,
+                    data = survival::lung, dist = dist)
+}
+
+test_that("survreg identity-scale dists report link = 'identity' (gaussian/logistic/t)", {
+  for (d in c("gaussian", "logistic", "t")) {
+    fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
+    expect_identical(fr$info$family$link, "identity",
+                     info = paste("dist =", d))
+  }
+})
+
+test_that("survreg log-scale dists report link = 'log' (weibull/exponential/lognormal/loglogistic)", {
+  for (d in c("weibull", "exponential", "lognormal", "loglogistic")) {
+    fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
+    expect_identical(fr$info$family$link, "log",
+                     info = paste("dist =", d))
+  }
+})
+
+test_that("survreg exponentiate is FALSE for identity-scale dists (gaussian/logistic/t)", {
+  for (d in c("gaussian", "logistic", "t")) {
+    fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
+    expect_false(fr$info$supports$exponentiate,
+                 info = paste("dist =", d))
+  }
+})
+
+test_that("survreg exponentiate is TRUE for log-scale dists (weibull/lognormal)", {
+  for (d in c("weibull", "lognormal", "loglogistic", "exponential")) {
+    fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
+    expect_true(fr$info$supports$exponentiate,
+                info = paste("dist =", d))
+  }
+})

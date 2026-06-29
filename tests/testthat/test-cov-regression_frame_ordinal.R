@@ -132,6 +132,76 @@ test_that("intercept-only clm yields an empty coefs frame (no predictors)", {
 })
 
 
+# ---- 3b. clm non-flexible threshold parameterizations: correct SEs -------
+#
+# Audit hypothesis (carried over from an older `ordinal` internal layout)
+# was that threshold = "equidistant" / "symmetric" would name fit$alpha
+# with full per-cutpoint tags ("1|2", "2|3", ...) while summary()/vcov()
+# used the REDUCED tags ("threshold.1", "spacing", ...), forcing
+# .clm_thresholds() into its else-branch and yielding NA SEs.
+#
+# On the installed `ordinal` (>= 2025.12.29) that premise is FALSE:
+# fit$alpha, summary(fit)$coefficients, and vcov(fit) all carry the SAME
+# reduced names, so the PRIMARY branch is taken and the reported threshold
+# SEs equal the model's own reported threshold SEs (read from summary).
+# These tests pin that correct behavior from first principles: the
+# extracted threshold SE for parameter p must equal sqrt(vcov(fit)[p, p])
+# and must equal summary(fit)$coefficients[p, "Std. Error"], with no NAs.
+
+test_that("clm equidistant thresholds get correct, non-NA SEs", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
+                      threshold = "equidistant")
+  th <- spicy:::.clm_thresholds(fit)
+  alpha_names <- names(fit$alpha)
+  # Equidistant uses the reduced (threshold.1, spacing) parameterization.
+  expect_identical(th$term, alpha_names)
+  expect_identical(th$term, c("threshold.1", "spacing"))
+  expect_false(any(is.na(th$std_error)))
+  expect_false(any(is.na(th$statistic)))
+  expect_false(any(is.na(th$p_value)))
+  # First-principles oracle 1: SE = sqrt of the diagonal of vcov().
+  V <- as.matrix(stats::vcov(fit))
+  expect_equal(th$std_error, unname(sqrt(diag(V)[alpha_names])))
+  # First-principles oracle 2: SE = the model's own reported threshold SE.
+  sm <- summary(fit)$coefficients
+  expect_equal(th$std_error, unname(sm[alpha_names, "Std. Error"]))
+  # statistic = estimate / SE; p = two-sided Wald-z.
+  expect_equal(th$statistic, th$estimate / th$std_error)
+  expect_equal(th$p_value, 2 * stats::pnorm(-abs(th$statistic)))
+})
+
+test_that("clm symmetric thresholds get correct, non-NA SEs", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
+                      threshold = "symmetric")
+  th <- spicy:::.clm_thresholds(fit)
+  alpha_names <- names(fit$alpha)
+  # Symmetric uses the reduced (central.1, central.2, spacing.1) layout.
+  expect_identical(th$term, alpha_names)
+  expect_identical(th$term, c("central.1", "central.2", "spacing.1"))
+  expect_false(any(is.na(th$std_error)))
+  V <- as.matrix(stats::vcov(fit))
+  expect_equal(th$std_error, unname(sqrt(diag(V)[alpha_names])))
+  sm <- summary(fit)$coefficients
+  expect_equal(th$std_error, unname(sm[alpha_names, "Std. Error"]))
+  expect_equal(th$statistic, th$estimate / th$std_error)
+  expect_equal(th$p_value, 2 * stats::pnorm(-abs(th$statistic)))
+})
+
+test_that("clm flexible thresholds get correct per-cutpoint SEs", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
+                      threshold = "flexible")
+  th <- spicy:::.clm_thresholds(fit)
+  # Flexible names cutpoints "1|2", "2|3", ... -- (k - 1) of them.
+  expect_identical(th$term, c("1|2", "2|3", "3|4", "4|5"))
+  expect_false(any(is.na(th$std_error)))
+  sm <- summary(fit)$coefficients
+  expect_equal(th$std_error, unname(sm[th$term, "Std. Error"]))
+})
+
+
 # ---- 4. .ordinal_reference_rows(): no factor terms -----------------------
 
 test_that("continuous-only polr fit synthesises no reference rows", {

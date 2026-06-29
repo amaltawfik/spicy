@@ -125,11 +125,15 @@ compute_glm_coef_inference <- function(
       crit <- if (is.finite(df) && df > 0) {
         stats::qt(1 - (1 - ci_level) / 2, df = df)
       } else {
-        # nocov start: clubSandwich::coef_test() always returns a finite,
-        # positive Satterthwaite df for a converged cluster-robust fit, so
-        # the normal-approximation fallback is unreachable from a valid fit.
+        # Normal-approximation fallback. clubSandwich::coef_test() does NOT
+        # always return a finite, positive Satterthwaite df: a coefficient
+        # that is constant within every cluster (a between-cluster
+        # predictor) under complete/quasi-complete separation yields a
+        # degenerate Satterthwaite projection and df_Satt = NaN for that
+        # coefficient. Upstream validation does not reject such fits, so
+        # this branch is reachable from a valid user call; we then fall
+        # back to the z critical value (mirrors R/lm_compute.R).
         stats::qnorm(1 - (1 - ci_level) / 2)
-        # nocov end
       }
       return(list(
         estimate = estimate,

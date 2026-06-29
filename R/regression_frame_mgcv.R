@@ -95,13 +95,22 @@ as_regression_frame.gam <- function(fit,
   est <- unname(pcoef)
   nm  <- names(pcoef)
 
-  if (is_gaussian_identity &&
-      !is.null(ptable) && all(c("t value", "Pr(>|t|)") %in% colnames(ptable))) {
+  # mgcv labels the parametric p.table columns "t value"/"Pr(>|t|)" whenever
+  # the dispersion (scale) is ESTIMATED -- gaussian-identity, but also every
+  # estimated-scale family (Gamma, inverse.gaussian, quasipoisson,
+  # quasibinomial, Tweedie/tw) and gaussian with a non-identity link. In all
+  # of these mgcv references a t-distribution on df.residual(fit). Families
+  # with a KNOWN scale (poisson, binomial, scat, ...) instead expose
+  # "z value"/"Pr(>|z|)". Branch on the columns actually present, not on
+  # is_gaussian_identity, so estimated-scale GAMs get real SE/stat/p-values
+  # instead of an all-NA fallback.
+  if (!is.null(ptable) &&
+      all(c("t value", "Pr(>|t|)") %in% colnames(ptable))) {
     se      <- unname(ptable[nm, "Std. Error"])
     stat    <- unname(ptable[nm, "t value"])
     p_value <- unname(ptable[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-    # Defensive: df.residual() on a valid gaussian-identity gam always returns
+    # Defensive: df.residual() on a valid estimated-scale gam always returns
     # a finite scalar; this only guards an unexpected NULL/Inf and is unreachable.
     if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf  # nocov
     df <- rep(as.numeric(dfr), length(est))
@@ -119,15 +128,21 @@ as_regression_frame.gam <- function(fit,
     ci_lower <- est - z_crit * se
     ci_upper <- est + z_crit * se
     test_type_col <- rep("z", length(est))
-  } else {                                                              # nocov start
-    se      <- rep(NA_real_, length(est))
+  } else {
+    # Defensive catch-all: a non-empty parametric p.table from summary.gam()
+    # always exposes EITHER "t value"/"Pr(>|t|)" (estimated scale) OR
+    # "z value"/"Pr(>|z|)" (known scale), so one of the two branches above
+    # fires for every real fit. This fallback only guards a hypothetical
+    # future mgcv layout with neither column pair; leave estimates in place
+    # but mark inference as unavailable rather than emitting wrong numbers.
+    se      <- rep(NA_real_, length(est))            # nocov start
     stat    <- rep(NA_real_, length(est))
     p_value <- rep(NA_real_, length(est))
     df      <- rep(Inf, length(est))
     ci_lower <- rep(NA_real_, length(est))
     ci_upper <- rep(NA_real_, length(est))
-    test_type_col <- rep("z", length(est))
-  }                                                                     # nocov end
+    test_type_col <- rep("z", length(est))           # nocov end
+  }
 
   factor_meta <- detect_factor_term_meta(fit)
   ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,

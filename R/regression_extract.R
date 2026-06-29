@@ -639,7 +639,11 @@ detect_factor_term_meta <- function(fit) {
       return(tryCatch(stats::terms(f), error = function(e) NULL))
     }
   }
-  NULL                                                              # nocov
+  # Reachable for any non-brmsfit whose stats::terms(fit) errors, e.g.
+  # flexsurv::flexsurvreg (terms() raises "no terms component nor
+  # attribute"): trms stays NULL, the brmsfit branch is skipped, and
+  # execution falls through to here.
+  NULL
 }
 
 
@@ -820,12 +824,19 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
   # Information criteria -- defined for both lm and glm.
   AIC_v <- stats::AIC(fit)
   BIC_v <- stats::BIC(fit)
-  # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (lm: sigma;
-  # glm: dispersion if estimated, else just k = length(coef) for
-  # binomial/poisson with fixed dispersion). The `+ 1` is a
-  # conservative default that matches the convention used by
-  # `MuMIn::AICc`, the most-cited AICc implementation in R.
-  k <- length(stats::coef(fit)) + 1L
+  # AICc -- Hurvich & Tsai (1989). k = number of ESTIMATED parameters,
+  # taken directly from the model's log-likelihood degrees of freedom
+  # (`attr(logLik(fit), "df")`). This is exactly the count `MuMIn::AICc`
+  # uses, and it gets the dispersion right per family:
+  #   * lm and dispersion-ESTIMATED glm (gaussian/Gamma/inverse.gaussian/
+  #     quasi-*): df = length(coef) + 1 (the residual variance/dispersion
+  #     is a fitted parameter), and
+  #   * fixed-dispersion glm (binomial/poisson): df = length(coef) (the
+  #     dispersion is fixed at 1, NOT estimated).
+  # The previous unconditional `length(coef) + 1` over-counted k by one
+  # for binomial/poisson fits, inflating their AICc relative to MuMIn.
+  k <- as.integer(attr(stats::logLik(fit), "df"))
+  if (length(k) != 1L || is.na(k)) k <- length(stats::coef(fit)) + 1L
   n <- stats::nobs(fit)
   AICc_v <- if (n - k - 1L > 0L) {
     AIC_v + (2 * k * (k + 1L)) / (n - k - 1L)

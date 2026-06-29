@@ -120,3 +120,65 @@ test_that("compute_partial_chi2_for_term: NULL for a term not in the model", {
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   expect_null(spicy:::compute_partial_chi2_for_term(fit, "not_a_real_term"))
 })
+
+
+# ---- CR* Satterthwaite normal-approx fallback (non-finite df) --------------
+
+test_that("compute_glm_coef_inference: CR2 with non-finite Satterthwaite df falls back to z critical value", {
+  # The CR* Satterthwaite branch computes a t critical value when
+  # df_Satt is finite and positive, and otherwise falls back to the
+  # normal-approximation (z) critical value qnorm(1 - alpha/2).
+  #
+  # clubSandwich::coef_test() does NOT always return a finite, positive
+  # df_Satt for a converged cluster-robust glm: a between-cluster
+  # (within-cluster-constant) predictor under complete separation yields
+  # a degenerate Satterthwaite projection and df_Satt = NaN. The spicy
+  # upstream vcov validation never rejects such a fit, so a user fitting
+  # glm(y ~ cluster_level_trt, family = binomial) with vcov = "CR2"
+  # reaches the else-branch.
+  #
+  # Deterministic reproduction (no RNG): y == trt exactly, with trt
+  # constant within each cluster -> complete separation by a
+  # between-cluster predictor. This makes df_Satt = NaN.
+  skip_if_not_installed("clubSandwich")
+
+  cluster <- rep(1:4, each = 6)
+  trt <- c(0, 0, 1, 1)[cluster]
+  d <- data.frame(y = trt, trt = trt, cluster = cluster)
+  fit <- suppressWarnings(glm(y ~ trt, data = d, family = binomial))
+  vc <- clubSandwich::vcovCR(fit, cluster = d$cluster, type = "CR2")
+
+  # Precondition: clubSandwich returns a non-finite Satterthwaite df for
+  # the between-cluster 'trt' coefficient on this separated fit.
+  ct <- clubSandwich::coef_test(
+    fit, vcov = vc, cluster = d$cluster, test = "Satterthwaite"
+  )
+  expect_false(is.finite(ct$df_Satt[2L]))
+
+  res <- spicy:::compute_glm_coef_inference(
+    fit = fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
+    cluster = d$cluster, ci_level = 0.95
+  )
+
+  # We entered the CR* Satterthwaite return block (test_type 't', not 'z')...
+  expect_identical(res$test_type, "t")
+  # ...and df was carried through as the (non-finite) Satterthwaite df.
+  expect_false(is.finite(res$df))
+
+  # The CI bounds are FINITE. This is a strict proof that the qnorm
+  # (else) branch executed rather than qt: qt(1 - alpha/2, df = NaN)
+  # returns NaN, so the qt branch would yield crit = NaN and hence
+  # ci = estimate +/- NaN * SE = NaN (since NaN * 0 = NaN even when
+  # SE = 0). A finite CI can only arise from the finite z critical
+  # value qnorm(0.975) = 1.959964..., i.e. line 131.
+  expect_true(is.finite(res$ci_lower))
+  expect_true(is.finite(res$ci_upper))
+
+  # Under complete separation the cluster-robust SE collapses to 0, so
+  # the half-width crit * SE is 0 and the CI is a point at the estimate.
+  # The point is that crit itself is the finite z value: confirm by
+  # reconstructing the CI with the z critical value.
+  crit_z <- stats::qnorm(0.975)
+  expect_equal(res$ci_lower, res$estimate - crit_z * res$se, tolerance = 1e-12)
+  expect_equal(res$ci_upper, res$estimate + crit_z * res$se, tolerance = 1e-12)
+})

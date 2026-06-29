@@ -40,7 +40,16 @@ as_regression_frame.fixest <- function(fit,
                                         ...) {
   .check_fixest_available()
 
-  is_glm <- !is.null(fit$family) && is.list(fit$family)
+  # Family disambiguation. feglm / fepois store fit$family as a glm-family
+  # *list* (gaussian / binomial / poisson / Gamma / ...). fenegbin instead
+  # stores the character string "negbin" (with the dispersion theta in
+  # fit$theta) and is NOT a list. Both feglm-like and fenegbin fits report
+  # asymptotic Wald-z inference (summary()$coeftable has "z value" /
+  # "Pr(>|z|)") with df = Inf, no classical R^2, and a log link by default
+  # -- so they share the GLM-like processing path. feols (OLS) is the only
+  # remaining case: fit$family is NULL and inference is Wald-t.
+  is_negbin <- is.character(fit$family) && identical(fit$family[[1L]], "negbin")
+  is_glm <- is_negbin || (!is.null(fit$family) && is.list(fit$family))
   coefs <- .fixest_coefs(fit, ci_level = ci_level, is_glm = is_glm)
   info  <- .fixest_info(fit,
                         vcov_kind  = vcov,
@@ -179,17 +188,32 @@ as_regression_frame.fixest <- function(fit,
 }
 
 
+# Family-info resolver. Three cases:
+#   * feols (OLS): fit$family is NULL -> gaussian / identity.
+#   * feglm / fepois: fit$family is a glm-family *list* carrying
+#     $family ("binomial", "poisson", "Gamma", ...) and $link.
+#   * fenegbin: fit$family is the character string "negbin" (theta in
+#     fit$theta). The negative-binomial GLM uses a log link by default,
+#     matching MASS::glm.nb()'s convention in as_regression_frame.negbin().
+.fixest_family_info <- function(fit, is_glm) {
+  if (!is_glm) {
+    return(list(family = "gaussian", link = "identity"))
+  }
+  if (is.list(fit$family)) {
+    return(list(family = fit$family$family, link = fit$family$link))
+  }
+  # fenegbin: character "negbin", log link by default.
+  list(family = "negbin", link = "log")
+}
+
+
 # Build the info list for a fixest fit.
 .fixest_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
                           model_id, is_glm) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
-  fam <- if (is_glm) {
-    list(family = fit$family$family, link = fit$family$link)
-  } else {
-    list(family = "gaussian", link = "identity")
-  }
+  fam <- .fixest_family_info(fit, is_glm = is_glm)
 
   if (is.null(ci_method)) ci_method <- "wald"
 
@@ -231,7 +255,15 @@ as_regression_frame.fixest <- function(fit,
     exp_header            = NA_character_,
     n_groups              = n_groups,
     fixef_sizes           = fixef_sizes,
-    vcov_type             = vt
+    vcov_type             = vt,
+    # fenegbin dispersion: theta is stored as a length-1 (named ".theta")
+    # numeric on the fit; NA for non-negbin families. Mirrors the
+    # extras$theta surfaced by as_regression_frame.negbin() (MASS path).
+    theta                 = if (identical(fam$family, "negbin")) {
+      as.numeric(fit$theta %||% NA_real_)
+    } else {
+      NA_real_
+    }
   )
 
   list(
@@ -295,7 +327,7 @@ as_regression_frame.fixest <- function(fit,
       poisson          = "Poisson regression",
       Gamma            = "Gamma regression",
       inverse.gaussian = "Inverse-Gaussian regression",
-      `Negative Binomial` = "Negative-binomial regression",
+      negbin           = "Negative-binomial regression",
       paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L),
              " regression")
     )

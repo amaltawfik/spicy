@@ -124,8 +124,11 @@ as_regression_frame.survreg <- function(fit,
     stat    <- unname(sm[nm, "z"])
     p_value <- unname(sm[nm, "Pr(>|z|)"])
   } else {
-    stat    <- est / se                                                # nocov
-    p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
+    # Reached by a zero-coefficient fit, e.g. coxph(Surv(time, status) ~ 1):
+    # summary.coxph returns $coefficients = NULL, so the guard above is FALSE.
+    # nm is character(0), so est/se are numeric(0) and this runs cleanly.
+    stat    <- est / se
+    p_value <- 2 * stats::pnorm(-abs(stat))
   }
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -347,11 +350,15 @@ as_regression_frame.survreg <- function(fit,
                  error = function(e) all.vars(stats::formula(fit))[1L])
 
   # Family-link convention for survreg: report the distribution name
-  # as `family`. Link is "log" for time-scale-positive dists (the AFT
-  # convention: log T = X'beta + sigma*epsilon), "identity" for gaussian
-  # (the residual-on-time AFT variant).
+  # as `family`. Link is "log" for the log-transformed dists (the AFT
+  # convention: log T = X'beta + sigma*epsilon -- weibull / exponential /
+  # lognormal / loglogistic, which carry trans = log in
+  # survival::survreg.distributions). The remaining dists (gaussian /
+  # logistic / t) model T directly on the identity scale, so link is
+  # "identity".
   dist <- fit$dist %||% "weibull"
-  link <- if (identical(dist, "gaussian")) "identity" else "log"
+  identity_dists <- c("gaussian", "logistic", "t")
+  link <- if (dist %in% identity_dists) "identity" else "log"
   fam <- list(family = dist, link = link)
 
   if (is.null(ci_method)) ci_method <- "wald"
@@ -369,9 +376,10 @@ as_regression_frame.survreg <- function(fit,
   )
 
   # Exponentiating gives time ratios (TR = exp(coef)) for log-scale dists
-  # (weibull / lognormal / loglogistic / exponential). For dist="gaussian"
-  # the scale is identity, so exponentiation is not meaningful.
-  exp_ok <- !identical(dist, "gaussian")
+  # (weibull / lognormal / loglogistic / exponential). For the identity-scale
+  # dists (gaussian / logistic / t) the model is on the identity scale, so
+  # exp(coef) is not a time ratio and exponentiation is not meaningful.
+  exp_ok <- !dist %in% identity_dists
 
   supports <- list(
     ame                 = TRUE,

@@ -47,6 +47,37 @@ test_that("flexsurvreg: ci_level surfaced unchanged in info", {
 })
 
 
+# ---- 1b. flexsurv: intercept-only fit -> empty coefs frame ---------------
+
+# An intercept-only flexsurvreg fit has no regression covariates: fit$res
+# carries only the auxiliary distribution rows (shape/scale for Weibull),
+# so aux_names == all_names and cov_names is empty. .flexsurv_coefs() must
+# return the canonical empty coefs frame (0 rows, correct columns) while the
+# surrounding frame still builds with full info (class, distribution, aux
+# parameters). This drives R/regression_frame_flexsurv_selection.R line 79.
+test_that("flexsurvreg: intercept-only fit yields an empty coefs frame", {
+  skip_if_not_installed("flexsurv")
+  skip_if_not_installed("survival")
+  fit <- flexsurv::flexsurvreg(survival::Surv(time, status) ~ 1,
+                               data = survival::lung, dist = "weibull")
+
+  # fit$res holds only the aux distribution rows; cov_names is therefore empty.
+  expect_setequal(rownames(fit$res), fit$dlist$pars)
+
+  coefs <- spicy:::.flexsurv_coefs(fit, ci_level = 0.95)
+  expect_identical(nrow(coefs), 0L)
+  expect_identical(coefs, spicy:::.empty_coefs_frame())
+
+  # The full frame still builds: empty coefs, but info is fully populated.
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_identical(nrow(fr$coefs), 0L)
+  expect_identical(fr$info$class, "flexsurvreg")
+  expect_identical(fr$info$extras$distribution, "weibull")
+  # Auxiliary shape/scale parameters are still surfaced for an intercept-only fit.
+  expect_setequal(names(fr$info$extras$aux_parameters), c("shape", "scale"))
+})
+
+
 # ---- 2. .flexsurv_dist_title(): switch arms + default --------------------
 
 test_that(".flexsurv_dist_title maps every named distribution", {

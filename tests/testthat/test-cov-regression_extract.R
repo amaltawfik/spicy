@@ -250,3 +250,97 @@ test_that(".spicy_fixed_coef_names reads $coefficients for a stanreg-shaped fit"
     c("(Intercept)", "wt", "cyl6", "cyl8")
   )
 })
+
+
+# ---- 12. .spicy_get_terms(): non-brmsfit terms() error -> NULL (line ~642) -
+
+test_that(".spicy_get_terms returns NULL for a flexsurvreg fit (terms() errors)", {
+  # For a flexsurvreg object stats::terms(fit) raises "no terms component
+  # nor attribute", so the generic tryCatch yields NULL; the fit is not a
+  # brmsfit, so the brms unwrap branch is skipped and execution falls
+  # through to the trailing NULL. This is a genuine, user-reachable path
+  # (table_regression(<flexsurvreg fit>) -> as_regression_frame.flexsurvreg
+  # -> .flexsurv_reference_rows -> detect_factor_terms -> .spicy_get_terms),
+  # so the line is not dead code.
+  skip_if_not_installed("flexsurv")
+  skip_if_not_installed("survival")
+
+  d <- survival::lung
+  d <- d[stats::complete.cases(d[, c("time", "status", "sex")]), ]
+  d$sex <- factor(d$sex)
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ sex, data = d, dist = "weibull"
+  )
+
+  # stats::terms() really does error on the fit (the premise of the branch).
+  expect_error(stats::terms(fit))
+  # ... and the helper swallows that and returns the trailing NULL.
+  expect_null(spicy:::.spicy_get_terms(fit))
+  # The not-a-brmsfit guard is also satisfied.
+  expect_false(inherits(fit, "brmsfit"))
+  # Downstream consequence: no factor terms are introspected (empty list),
+  # which is exactly how this NULL propagates to the public frame.
+  expect_length(spicy:::detect_factor_terms(fit), 0L)
+})
+
+
+# ---- 13. extract_fit_stats(): AICc uses estimated-parameter df (line ~828) -
+
+test_that("AICc for binomial/poisson glm uses k = length(coef) (fixed dispersion)", {
+  # AICc = AIC + 2k(k+1)/(n-k-1) with k = number of ESTIMATED parameters.
+  # For binomial/poisson the dispersion is fixed at 1 (NOT estimated), so
+  # k = length(coef), matching MuMIn::AICc (which uses logLik df). The old
+  # code used k = length(coef) + 1 unconditionally, inflating AICc by one
+  # spurious parameter for these families.
+
+  # Binomial logistic: 3 coefficients -> k = 3 (NOT 4).
+  fit_bin <- glm(am ~ wt + hp, data = mtcars, family = binomial)
+  k_bin <- length(stats::coef(fit_bin))          # 3, no +1 for fixed dispersion
+  n_bin <- stats::nobs(fit_bin)
+  expected_bin <- stats::AIC(fit_bin) +
+    (2 * k_bin * (k_bin + 1)) / (n_bin - k_bin - 1)
+
+  fs_bin <- spicy:::extract_fit_stats(
+    fit_bin, "AICc", weights = NULL, model_id = "M1", outcome = "am"
+  )
+  expect_equal(fs_bin$AICc, expected_bin, tolerance = 1e-8)
+  # Sanity: this is strictly LESS than the old buggy k+1 value.
+  kb <- k_bin + 1L
+  buggy_bin <- stats::AIC(fit_bin) + (2 * kb * (kb + 1)) / (n_bin - kb - 1)
+  expect_lt(fs_bin$AICc, buggy_bin)
+
+  # Poisson: 3 coefficients -> k = 3 (NOT 4).
+  set.seed(1)
+  dp <- data.frame(y = stats::rpois(40, 2),
+                   x1 = stats::rnorm(40), x2 = stats::rnorm(40))
+  fit_pois <- glm(y ~ x1 + x2, data = dp, family = poisson)
+  k_p <- length(stats::coef(fit_pois))           # 3
+  n_p <- stats::nobs(fit_pois)
+  expected_p <- stats::AIC(fit_pois) +
+    (2 * k_p * (k_p + 1)) / (n_p - k_p - 1)
+  fs_p <- spicy:::extract_fit_stats(
+    fit_pois, "AICc", weights = NULL, model_id = "M1", outcome = "y"
+  )
+  expect_equal(fs_p$AICc, expected_p, tolerance = 1e-8)
+})
+
+test_that("AICc for lm and gaussian glm uses k = length(coef) + 1 (estimated dispersion)", {
+  # lm and dispersion-estimated glm families (gaussian/Gamma/...) DO fit a
+  # residual variance, so k = length(coef) + 1. The fix preserves this case.
+  fit_lm <- lm(mpg ~ wt + hp, data = mtcars)
+  k_lm <- length(stats::coef(fit_lm)) + 1L       # 4 (3 coefs + sigma)
+  n_lm <- stats::nobs(fit_lm)
+  expected_lm <- stats::AIC(fit_lm) +
+    (2 * k_lm * (k_lm + 1)) / (n_lm - k_lm - 1)
+  fs_lm <- spicy:::extract_fit_stats(
+    fit_lm, "AICc", weights = NULL, model_id = "M1", outcome = "mpg"
+  )
+  expect_equal(fs_lm$AICc, expected_lm, tolerance = 1e-8)
+
+  # gaussian glm estimates dispersion too -> same k, same AICc as the lm.
+  fit_gg <- glm(mpg ~ wt + hp, data = mtcars, family = gaussian)
+  fs_gg <- spicy:::extract_fit_stats(
+    fit_gg, "AICc", weights = NULL, model_id = "M1", outcome = "mpg"
+  )
+  expect_equal(fs_gg$AICc, expected_lm, tolerance = 1e-8)
+})

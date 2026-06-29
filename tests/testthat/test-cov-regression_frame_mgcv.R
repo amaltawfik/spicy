@@ -6,6 +6,11 @@
 #   * .gam_reference_rows() polynomial-contrast skip + empty return
 #       (ordered-factor predictor -> .L/.Q contrasts, no reference row)
 #   * .gam_smooth_terms() empty early return       (parametric-only fit)
+#   * .gam_coefs() estimated-scale t-branch for NON-gaussian-identity families
+#       (Gamma/quasipoisson/gaussian-log/tw): mgcv labels the parametric
+#       p.table columns "t value"/"Pr(>|t|)" and references a t-distribution
+#       on df.residual(fit). These fits must get real SE/stat/p-values, NOT
+#       the all-NA else fallback.
 # ---------------------------------------------------------------------------
 
 
@@ -35,6 +40,17 @@
   dat <- mgcv::gamSim(1, n = 200, dist = "normal", scale = 2, verbose = FALSE)
   # No smooth term: summary(fit)$s.table is NULL.
   mgcv::gam(y ~ x2 + x3, data = dat)
+}
+
+# Estimated-scale, NON-gaussian-identity family. summary.gam() labels the
+# parametric p.table columns "t value"/"Pr(>|t|)" and references a
+# t-distribution on df.residual(fit).
+.fit_gam_estimated_scale <- function(family) {
+  skip_if_not_installed("mgcv")
+  set.seed(4)
+  dat <- mgcv::gamSim(1, n = 200, dist = "normal", scale = 2, verbose = FALSE)
+  dat$ypos <- dat$y - min(dat$y) + 1            # strictly positive response
+  mgcv::gam(ypos ~ x2 + s(x0), data = dat, family = family)
 }
 
 
@@ -103,4 +119,98 @@ test_that("gam parametric-only frame keeps its parametric coefs and validates", 
   # x2 and x3 parametric estimates are present.
   b_terms <- fr$coefs$term[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref]
   expect_true(all(c("x2", "x3") %in% b_terms))
+})
+
+
+# ---- 4. Estimated-scale family: real (non-NA) t-based inference ---------
+
+test_that("Gamma(log) GAM exposes t-labelled p.table and t-based inference", {
+  skip_if_not_installed("mgcv")
+  fit <- .fit_gam_estimated_scale(stats::Gamma(link = "log"))
+
+  # Precondition for the branch: family is NOT gaussian-identity, yet the
+  # parametric p.table carries "t value"/"Pr(>|t|)" (estimated scale).
+  fam <- stats::family(fit)
+  expect_false(identical(fam$family, "gaussian") &&
+               identical(fam$link, "identity"))
+  sm <- summary(fit)
+  expect_true(all(c("t value", "Pr(>|t|)") %in% colnames(sm$p.table)))
+  expect_false(any(c("z value", "Pr(>|z|)") %in% colnames(sm$p.table)))
+
+  fr <- as_regression_frame(fit, model_id = "M1")
+  b  <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+
+  # The bug this guards: the else fallback set these all-NA. They must be
+  # populated for every parametric term.
+  expect_false(any(is.na(b$std_error)))
+  expect_false(any(is.na(b$statistic)))
+  expect_false(any(is.na(b$p_value)))
+
+  # Inference is the Wald-t reference, so test_type == "t" and df is the
+  # residual df, NOT Inf.
+  expect_true(all(b$test_type == "t"))
+  dfr <- stats::df.residual(fit)
+  expect_equal(unique(b$df), dfr)
+  expect_true(is.finite(dfr))
+})
+
+test_that("Gamma(log) GAM std_error/statistic/p_value match mgcv p.table", {
+  skip_if_not_installed("mgcv")
+  fit <- .fit_gam_estimated_scale(stats::Gamma(link = "log"))
+  sm  <- summary(fit)
+  fr  <- as_regression_frame(fit, model_id = "M1")
+  b   <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+
+  # First-principles oracle: read straight from mgcv's parametric p.table.
+  expect_equal(unname(b$std_error),
+               unname(sm$p.table[b$term, "Std. Error"]))
+  expect_equal(unname(b$statistic),
+               unname(sm$p.table[b$term, "t value"]))
+  expect_equal(unname(b$p_value),
+               unname(sm$p.table[b$term, "Pr(>|t|)"]))
+
+  # CI is estimate +/- qt(0.975, df.residual) * SE (the t-reference CI).
+  tcrit <- stats::qt(0.975, df = stats::df.residual(fit))
+  expect_equal(b$ci_lower, b$estimate - tcrit * b$std_error)
+  expect_equal(b$ci_upper, b$estimate + tcrit * b$std_error)
+})
+
+test_that("other estimated-scale families also get non-NA t inference", {
+  skip_if_not_installed("mgcv")
+  # Use base-stats estimated-scale families: under load_all() the family
+  # closures returned by some mgcv specials (e.g. tw()) capture an enclosing
+  # environment that cannot resolve internal mgcv helpers, which is a test-
+  # harness quirk unrelated to the branch under test. quasipoisson() and
+  # gaussian(link = "log") both exercise the same t-labelled p.table path.
+  families <- list(
+    quasipoisson = stats::quasipoisson(),
+    gaussian_log = stats::gaussian(link = "log")
+  )
+  for (fam in families) {
+    fit <- .fit_gam_estimated_scale(fam)
+    fr  <- as_regression_frame(fit, model_id = "M1")
+    b   <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+    expect_false(any(is.na(b$std_error)))
+    expect_false(any(is.na(b$statistic)))
+    expect_false(any(is.na(b$p_value)))
+    expect_true(all(b$test_type == "t"))
+  }
+})
+
+test_that("known-scale family (poisson) still routes to the z-branch", {
+  skip_if_not_installed("mgcv")
+  set.seed(5)
+  dat <- mgcv::gamSim(1, n = 200, dist = "poisson", scale = 0.1,
+                      verbose = FALSE)
+  fit <- mgcv::gam(y ~ x2 + s(x0), data = dat, family = poisson())
+  sm  <- summary(fit)
+  # Known scale -> z-labelled columns.
+  expect_true(all(c("z value", "Pr(>|z|)") %in% colnames(sm$p.table)))
+
+  fr <- as_regression_frame(fit, model_id = "M1")
+  b  <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_false(any(is.na(b$std_error)))
+  expect_false(any(is.na(b$p_value)))
+  expect_true(all(b$test_type == "z"))
+  expect_true(all(is.infinite(b$df)))
 })
