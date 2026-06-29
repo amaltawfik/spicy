@@ -721,7 +721,12 @@ match_coef_to_factor <- function(coef_name, xlevels) {
   # Skip interaction terms -- they involve multiple factors / numerics
   if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
 
-  for (var in names(xlevels)) {
+  # Try the longest factor name first so that when one factor's name is a
+  # prefix of another (e.g. `f` and `foo`), a coef like `fooC` matches the
+  # more specific `foo` before `f` -- otherwise, if the leftover suffix
+  # ("ooC") happened to be a level of the shorter factor, the coef would be
+  # mis-tagged to `f`.
+  for (var in names(xlevels)[order(-nchar(names(xlevels)))]) {
     if (!startsWith(coef_name, var)) next
     suffix <- substring(coef_name, nchar(var) + 1L)
     lvls <- xlevels[[var]]

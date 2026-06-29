@@ -147,6 +147,22 @@ test_that("match_coef_to_factor returns NULL for an interaction coef name", {
   expect_null(spicy:::match_coef_to_factor("(Intercept)", xl))
 })
 
+test_that("match_coef_to_factor tags the longest-prefix factor (name-collision)", {
+  # Realistic prefix collision: `grp` is a prefix of `grpsize`. The suffix
+  # check already disambiguates these because "sizesmall" is not a grp level.
+  xl <- list(grp = c("A", "B", "C"), grpsize = c("small", "large"))
+  expect_identical(spicy:::match_coef_to_factor("grpsizesmall", xl)$factor_term,
+                   "grpsize")
+  expect_identical(spicy:::match_coef_to_factor("grpB", xl)$factor_term, "grp")
+
+  # Pathological collision: `f` is a prefix of `foo` AND the leftover suffix
+  # ("ooC") is itself a level of `f`. Longest-name-first matching must still
+  # tag `fooC` to `foo`, not mis-tag it to `f`.
+  xl2 <- list(f = c("ooB", "ooC"), foo = c("B", "C"))
+  expect_identical(spicy:::match_coef_to_factor("fooC", xl2)$factor_term, "foo")
+  expect_identical(spicy:::match_coef_to_factor("fooB", xl2)$factor_term, "foo")
+})
+
 test_that("detect_factor_term_meta maps interaction coefs to NULL", {
   d <- mtcars
   d$cyl <- factor(d$cyl)
