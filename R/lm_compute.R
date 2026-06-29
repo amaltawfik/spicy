@@ -505,6 +505,11 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
   sigma_hat <- unname(sm$sigma)
   df_resid <- stats::df.residual(fit)
   cf <- stats::coef(fit)
+  # A (near-)perfect fit leaves the residual SD ~ 0 (QR can leave ~1e-16 on
+  # some platforms), which would make Cohen's d astronomical instead of
+  # undefined. Treat sigma below the machine-precision floor of the
+  # fitted-value scale as zero so d / g fall back to NA.
+  sigma_floor <- sqrt(.Machine$double.eps) * sqrt(mean(stats::fitted(fit)^2))
 
   if (is.null(focal_term)) {
     # Bivariate path: every non-intercept coef belongs to the focal
@@ -515,7 +520,7 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
     d <- if (
       length(cf) < 2L ||
         !is.finite(sigma_hat) ||
-        sigma_hat <= 0 ||
+        sigma_hat <= sigma_floor ||
         anyNA(cf[2])
     ) {
       NA_real_
@@ -562,7 +567,11 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
 # the correct partial-effect quantity in a covariate-adjusted model.
 compute_lm_partial_omega2 <- function(fit, fs) {
   rss_full <- stats::deviance(fit)
-  if (!is.finite(rss_full) || rss_full <= 0) {
+  # A (near-)perfect fit has rss ~ 0; QR can leave ~1e-16 on some platforms,
+  # so compare against the machine-precision floor of the fitted-value scale
+  # rather than testing the exact zero (which is platform-fragile).
+  scale_ref <- sum(stats::fitted(fit)^2)
+  if (!is.finite(rss_full) || rss_full <= scale_ref * .Machine$double.eps) {
     return(NA_real_)
   }
   mse_full <- rss_full / fs$df2

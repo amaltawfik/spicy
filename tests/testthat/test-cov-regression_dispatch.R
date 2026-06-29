@@ -126,6 +126,10 @@ test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
 test_that("print.spicy_gt interactive branch renders browsable HTML with the note", {
   skip_if_not_installed("gt")
   skip_if_not_installed("htmltools")
+  # No-op HTML viewer so the browsable() display path neither opens a real
+  # browser nor errors on a headless CI runner (htmltools::html_print uses
+  # getOption("viewer")).
+  withr::local_options(viewer = function(url, ...) invisible(url))
   fit <- lm(mpg ~ wt + cyl, data = mt)
   g <- table_regression(fit, output = "gt", note = "Note. interactive gt.")
   # Mock base::interactive() so the htmltools::browsable() display path
