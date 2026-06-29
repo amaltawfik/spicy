@@ -573,7 +573,7 @@ table_regression(fit, p_adjust = "bonferroni")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> P-values adjusted via stats::p.adjust(method = 'bonferroni'); m = 5 coefficient(s) per model.
+#> P-values adjusted via stats::p.adjust(method = "bonferroni"); m = 5 coefficient(s) per model.
 #> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
 ```
 
