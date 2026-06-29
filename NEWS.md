@@ -127,6 +127,19 @@ labels) is layered on top for mixed-effects and Bayesian.
 * `table_regression()`: `stars = TRUE` now anchors stars on B
   and on AME (when shown). Previously stars went on β instead
   of B when both were displayed.
+* `table_regression(standardize = TRUE)`: latent-variable (y*)
+  standardized coefficients for log-link binomial models
+  (log-binomial / relative-risk) now return `NA` with a caveat --
+  a log link has no latent threshold, so the y* standardization is
+  undefined (previously an unjustified value using the logistic
+  latent variance π²/3 was reported).
+* `table_regression(list(...))`: stray zero-width-space characters
+  no longer remain in multi-model `tinytable` column headers (the
+  internal duplicate-name disambiguator is now fully stripped from
+  the rendered table).
+* `table_regression(p_adjust = ...)`: the p-value adjustment footer
+  now quotes the method name with double quotes on every platform
+  (previously single quotes on Unix and double quotes on Windows).
 
 # spicy 0.12.0
 
