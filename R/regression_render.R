@@ -257,8 +257,6 @@ render_regression_table <- function(
     outcome_labels
   }
   outcome_row <- build_outcome_row(
-    model_outcomes = model_outcomes,
-    model_outcome_labels = model_outcome_labels,
     outcome_labels = effective_outcome_labels,
     model_ids = model_ids,
     label_map = label_map,
@@ -744,29 +742,21 @@ resolve_label <- function(term, labels) {
 
 # ---- Outcome row (Q11b) --------------------------------------------------
 
-# Smart auto + explicit + suppress logic per Q11b.
+# Smart auto + explicit + suppress logic per Q11b. (The "are DVs
+# identical?" / auto-label smart-default now lives in
+# render_regression_table(); this builder only emits the explicit row.)
 #
-# `model_outcomes` \u2013 variable names from formula(fit)[[2]] per model;
-#                    used ONLY for the "are DVs identical?" decision.
-# `model_outcome_labels` \u2013 auto-display strings: attr("label") if set,
-#                    else the variable name; used as the default
-#                    auto-shown labels when outcome_labels = NULL.
 # `outcome_labels` \u2013 user-supplied: NULL (auto), FALSE (suppress),
 #                    or a character vector of length n_models
 #                    (explicit override).
 #
 # Returns a single-row data.frame to prepend to the body, or NULL
 # when the outcome row should not be displayed.
-build_outcome_row <- function(model_outcomes,
-                                outcome_labels,
+build_outcome_row <- function(outcome_labels,
                                 model_ids,
                                 label_map,
-                                col_spec,
-                                model_outcome_labels = NULL) {
+                                col_spec) {
   n_models <- length(model_ids)
-  if (is.null(model_outcome_labels)) {
-    model_outcome_labels <- model_outcomes
-  }
 
   if (isFALSE(outcome_labels)) {
     return(NULL)                              # suppress entirely

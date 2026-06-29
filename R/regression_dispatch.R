@@ -340,14 +340,7 @@ output_tinytable <- function(rendered) {
   # duplicate-name bug in `group_tt(j = list)` -- but the ZWSP
   # disambiguator below now handles arbitrary duplicates safely,
   # so the same per-col-spanner pattern works for both cases.
-  if (length(ci_cols_set) > 0L) {
-    for (cs in ci_spanners) {
-      if (length(cs$cols) >= 2L) {
-        names(body)[cs$cols[1L]] <- "LL"
-        names(body)[cs$cols[2L]] <- "UL"
-      }
-    }
-  }
+  # (CI columns were already renamed to LL / UL above; no second pass needed.)
   for (j in seq_along(body_names_orig)) {
     if (j %in% ci_cols_set) next
     names(body)[j] <- ""
