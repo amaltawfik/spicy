@@ -65,6 +65,8 @@ Bayesian.
   [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
   Wald-z inference, family- aware footer (“Cox proportional hazards”,
   “Weibull AFT”, etc.), baseline-hazard hint when relevant.
+  `exponentiate = TRUE` reports hazard ratios (Cox) or time ratios
+  (log-scale AFT).
 
 - **Categorical-outcome models**:
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
