@@ -237,7 +237,11 @@ as_regression_frame.iv_robust <- function(fit,
     has_singular          = FALSE,
     singular_terms        = character(0),
     has_weights           = isTRUE(fit$weighted),
-    weighted_n            = NA_real_,
+    weighted_n            = if (isTRUE(fit$weighted)) {
+      sum(stats::weights(fit))
+    } else {
+      NA_real_
+    },
     title_prefix          = if (is_iv) {
       "IV regression (robust SE)"
     } else {
@@ -258,7 +262,10 @@ as_regression_frame.iv_robust <- function(fit,
     dv_label       = dv_label,
     n_obs          = as.integer(stats::nobs(fit)),
     n_groups       = NULL,
-    weights_kind   = if (isTRUE(fit$weighted)) "frequency" else "none",
+    # Match the base-lm convention (.weights_kind_from_fit): non-constant
+    # regression weights are "case", not "frequency" (lm_robust does not
+    # treat them as observation counts).
+    weights_kind   = .weights_kind_from_fit(fit),
     random_effects = list(variance_components = data.frame(), icc = NA_real_),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,

@@ -101,6 +101,10 @@ test_that("survreg logistic: title_prefix = 'Logistic AFT regression'", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$extras$title_prefix, "Logistic AFT regression")
   expect_identical(fr$info$family$family, "logistic")
+  # logistic is identity-scale (models T directly), so link = "identity" and
+  # exp(coef) is not a time ratio -> exponentiate unsupported.
+  expect_identical(fr$info$family$link, "identity")
+  expect_false(fr$info$supports$exponentiate)
 })
 
 test_that("survreg t: title_prefix = 'Student-t AFT regression'", {
@@ -108,6 +112,9 @@ test_that("survreg t: title_prefix = 'Student-t AFT regression'", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
   expect_identical(fr$info$extras$title_prefix, "Student-t AFT regression")
+  # t is identity-scale like logistic/gaussian.
+  expect_identical(fr$info$family$link, "identity")
+  expect_false(fr$info$supports$exponentiate)
 })
 
 test_that(".survreg_dist_title title-cases an unrecognised distribution name", {

@@ -186,7 +186,7 @@ resolve_covariates_argument <- function(
     spicy_abort(
       c(
         sprintf(
-          "Formula syntax for `%s` is not yet supported in spicy 0.12.",
+          "Formula syntax for `%s` is not yet supported.",
           arg
         ),
         "i" = sprintf(

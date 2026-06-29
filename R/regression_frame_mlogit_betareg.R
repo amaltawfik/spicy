@@ -386,7 +386,15 @@ as_regression_frame.betareg <- function(fit,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     n_groups              = NULL,
-    precision_phi         = as.numeric(precision_coefs %||% NA_real_),
+    # The single dispersion phi only exists for constant precision
+    # (y ~ x); with a precision sub-model (y ~ x | z) there is no scalar phi
+    # -- precision_coefs carries the full breakdown. Keep precision_phi a
+    # true scalar (NA when precision varies) to match its documented contract.
+    precision_phi         = if (length(precision_coefs) == 1L) {
+      as.numeric(precision_coefs)
+    } else {
+      NA_real_
+    },
     precision_coefs       = precision_coefs
   )
 
