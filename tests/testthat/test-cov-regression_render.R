@@ -147,18 +147,16 @@ test_that("format_term_label – reference row with NA factor_level uses the ter
 
 
 # ============================================================================
-# build_outcome_row – default model_outcome_labels + NA target col (768, 799)
+# build_outcome_row – skips a model whose first column does not resolve
 # ============================================================================
 
-test_that("build_outcome_row – defaults labels and skips a model with no column", {
+test_that("build_outcome_row – skips a model with no column", {
   # col_spec covers ONLY M1; model_ids includes M2 so its first column
-  # resolves to NA and is skipped (line 799). model_outcome_labels is
-  # omitted so it defaults to model_outcomes (line 768).
+  # resolves to NA and is skipped.
   col_spec_m1 <- spicy:::build_column_spec(
     c("b", "p"), c("M1"), setNames("Model 1", "M1")
   )
   orow <- spicy:::build_outcome_row(
-    model_outcomes = c("mpg", "hp"),
     outcome_labels = c("MPG", "Horsepower"),
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
@@ -178,7 +176,7 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   )
   # outcome_labels = FALSE -> suppressed (line 771).
   expect_null(spicy:::build_outcome_row(
-    model_outcomes = c("mpg", "hp"), outcome_labels = FALSE,
+    outcome_labels = FALSE,
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec
@@ -186,7 +184,7 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   # NULL (auto) -> hidden because the spanner already shows the model
   # (line 782).
   expect_null(spicy:::build_outcome_row(
-    model_outcomes = c("mpg", "hp"), outcome_labels = NULL,
+    outcome_labels = NULL,
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec
@@ -204,7 +202,7 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
     c("b"), c("M1"), setNames("Model 1", "M1")
   )
   expect_null(spicy:::build_outcome_row(
-    model_outcomes = "mpg", outcome_labels = "MPG",
+    outcome_labels = "MPG",
     model_ids = "M1",
     label_map = setNames("Model 1", "M1"),
     col_spec = col_spec_m1
@@ -213,7 +211,7 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   # a row (proving the NULL above is the single-model guard, not some
   # other suppression). The label lands in M1's first column.
   two_model <- spicy:::build_outcome_row(
-    model_outcomes = c("mpg", "hp"), outcome_labels = c("MPG", "Horsepower"),
+    outcome_labels = c("MPG", "Horsepower"),
     model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec
