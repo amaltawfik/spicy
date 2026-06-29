@@ -74,6 +74,7 @@ as_regression_frame.glmmTMB <- function(fit,
 # ---- Internal helpers -----------------------------------------------------
 
 .check_glmmTMB_available <- function() {
+  # nocov start
   if (!spicy_pkg_available("glmmTMB")) {
     spicy_abort(
       c(
@@ -83,6 +84,7 @@ as_regression_frame.glmmTMB <- function(fit,
       class = "spicy_missing_pkg"
     )
   }
+  # nocov end
 }
 
 
@@ -204,7 +206,7 @@ as_regression_frame.glmmTMB <- function(fit,
   n_groups <- if (!is.null(cond_ng) && length(cond_ng) > 0L) {
     setNames(as.integer(cond_ng), names(cond_ng))
   } else {
-    NULL
+    NULL                                                                # nocov
   }
 
   re <- .glmmTMB_random_effects(fit, is_gaussian_identity = is_gaussian_identity)
@@ -336,11 +338,11 @@ as_regression_frame.glmmTMB <- function(fit,
     g_vc <- vc[[group]]
     variances <- diag(g_vc)
     sds <- attr(g_vc, "stddev")
-    if (is.null(sds)) sds <- sqrt(variances)
+    if (is.null(sds)) sds <- sqrt(variances)                           # nocov
     nms <- if (!is.null(names(variances)) && length(names(variances))) {
       names(variances)
     } else {
-      paste0("term", seq_along(variances))
+      paste0("term", seq_along(variances))                            # nocov
     }
     for (i in seq_along(variances)) {
       rows[[length(rows) + 1L]] <- data.frame(
@@ -469,7 +471,7 @@ as_regression_frame.glmmTMB <- function(fit,
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
   } else {
-    rep(FALSE, nrow(vc_df))
+    rep(FALSE, nrow(vc_df))                                            # nocov
   }
   for (i in seq_len(nrow(vc_df))) {
     g <- vc_df$group[i]

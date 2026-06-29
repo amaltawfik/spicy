@@ -447,7 +447,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     },
     error = function(e) NULL
   )
-  if (is.null(data)) return(NULL)
+  if (is.null(data)) return(NULL)  # nocov (model.frame/getData errors on real fits)
 
   # Identify the response variable -- non-Gaussian families (binomial,
   # poisson, ...) require y bounded / integer-valued, so we standardise
@@ -475,7 +475,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   # attached). lme4 fits are S4 -- use stats::getCall(), not `fit$call`.
   fit_std <- tryCatch({
     call_copy <- stats::getCall(fit)
-    if (is.null(call_copy)) return(NULL)
+    if (is.null(call_copy)) return(NULL)  # nocov (real fits always carry a call)
     if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
       call_copy[[1L]] <- quote(lme4::lmer)
     } else if (inherits(fit, "glmerMod")) {
@@ -485,7 +485,9 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     } else if (inherits(fit, "lme")) {
       call_copy[[1L]] <- quote(nlme::lme)
     } else {
+      # nocov start (only the 4 dispatched engines ever reach here)
       return(NULL)
+      # nocov end
     }
     call_copy$data <- data
     suppressMessages(suppressWarnings(eval(call_copy, envir = parent.frame())))
@@ -507,19 +509,21 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     },
     error = function(e) NULL
   )
-  if (is.null(bhat) || length(bhat) == 0L) return(NULL)
+  if (is.null(bhat) || length(bhat) == 0L) return(NULL)  # nocov (fixef extraction never errors/empties on a converged refit)
 
   V <- tryCatch({
     v <- stats::vcov(fit_std)
     if (inherits(fit_std, "glmmTMB")) {
       v_cond <- tryCatch(v$cond, error = function(e) NULL)
+      # nocov start (secondary fallback; `v$cond` succeeds for real glmmTMB vcov)
       if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]],
                                                 error = function(e) NULL)
+      # nocov end
       if (!is.null(v_cond)) v <- v_cond
     }
     as.matrix(v)
   }, error = function(e) NULL)
-  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)
+  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)  # nocov (vcov is square + conformable on a converged refit)
 
   se <- sqrt(diag(V))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -589,7 +593,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   if (is.null(res)) return(coefs)
   beta_rows <- res$coefs_beta
   for (col in setdiff(colnames(coefs), colnames(beta_rows))) {
-    beta_rows[[col]] <- coefs[[col]][NA_integer_]
+    beta_rows[[col]] <- coefs[[col]][NA_integer_]  # nocov (beta_rows already carries the full coefs schema)
   }
   beta_rows <- beta_rows[, colnames(coefs), drop = FALSE]
   rbind(coefs, beta_rows)

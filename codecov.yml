@@ -15,3 +15,10 @@ coverage:
 
 ignore:
   - "R/copy_clipboard.R"
+  # Bayesian (rstanarm / brms) frame methods: the Stan model-compilation
+  # toolchain is unreliable on CI runners (rstan / StanHeaders / BH /
+  # C++ version drift), so the brms / rstanarm tests are skip_on_ci().
+  # CI cannot exercise this file, so excluding it from coverage keeps the
+  # metric an honest measure of CI-reachable code. The methods ARE tested
+  # locally and via CRAN's example runs.
+  - "R/regression_frame_stan.R"

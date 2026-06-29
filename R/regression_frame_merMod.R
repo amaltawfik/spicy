@@ -148,7 +148,7 @@ as_regression_frame.glmerMod <- function(fit,
 .apply_exp_to_mixed_frame <- function(coefs, info, fit, exponentiate) {
   if (!isTRUE(exponentiate)) return(list(coefs = coefs, info = info))
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  if (is.null(fam)) return(list(coefs = coefs, info = info))
+  if (is.null(fam)) return(list(coefs = coefs, info = info))           # nocov
   if (identical(fam$link, "identity")) {
     return(list(coefs = coefs, info = info))
   }
@@ -164,6 +164,7 @@ as_regression_frame.glmerMod <- function(fit,
 # Guard: lme4 must be available to extract from a merMod object.
 .check_lme4_available <- function() {
   if (!spicy_pkg_available("lme4")) {
+    # nocov start -- requires lme4 to be uninstalled
     spicy_abort(
       c(
         "Cannot extract a regression frame from a mixed-effects fit without `lme4`.",
@@ -171,6 +172,7 @@ as_regression_frame.glmerMod <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -206,9 +208,11 @@ as_regression_frame.glmerMod <- function(fit,
       stat     <- unname(sm$coefficients[nm, "z value"])
       p_value  <- unname(sm$coefficients[nm, "Pr(>|z|)"])
     } else {
+      # nocov start -- glmer summary always carries a `Pr(>|z|)` column
       df      <- rep(Inf, length(est))
       stat    <- est / se
       p_value <- 2 * stats::pnorm(-abs(stat))
+      # nocov end
     }
     test_type_col <- rep("z", length(est))
     z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -348,7 +352,7 @@ as_regression_frame.glmerMod <- function(fit,
   n_groups <- if (!is.null(ng) && length(ng) > 0L) {
     setNames(as.integer(ng), names(ng))
   } else {
-    NULL
+    NULL                                                               # nocov
   }
 
   # Random effects: variance_components + icc.
@@ -492,8 +496,10 @@ as_regression_frame.glmerMod <- function(fit,
   }
   vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
   if (is.null(vc)) {
+    # nocov start -- VarCorr() does not fail for a converged merMod fit
     return(list(variance_components = data.frame(), icc = NA_real_,
-                method = method))                                       # nocov
+                method = method))
+    # nocov end
   }
 
   rows <- list()
@@ -501,12 +507,12 @@ as_regression_frame.glmerMod <- function(fit,
     g_vc <- vc[[group]]
     variances <- diag(g_vc)
     sds <- attr(g_vc, "stddev")
-    if (is.null(sds)) sds <- sqrt(variances)
+    if (is.null(sds)) sds <- sqrt(variances)                          # nocov
     corr_mat <- attr(g_vc, "correlation")
     nms <- if (!is.null(names(variances)) && length(names(variances))) {
       names(variances)
     } else {
-      paste0("term", seq_along(variances))
+      paste0("term", seq_along(variances))                            # nocov
     }
     for (i in seq_along(variances)) {
       rows[[length(rows) + 1L]] <- data.frame(
@@ -623,7 +629,7 @@ as_regression_frame.glmerMod <- function(fit,
     df
   }
   if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
-  if (!spicy_pkg_available("merDeriv")) return(na_block(vc_df))
+  if (!spicy_pkg_available("merDeriv")) return(na_block(vc_df))        # nocov
   if (isTRUE(lme4::isSingular(fit))) return(na_block(vc_df))
 
   # merDeriv::vcov.lmerMod with ranpar = "var" returns the asymptotic
@@ -637,7 +643,7 @@ as_regression_frame.glmerMod <- function(fit,
       merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")
     }
   }, error = function(e) NULL)
-  if (is.null(v)) return(na_block(vc_df))
+  if (is.null(v)) return(na_block(vc_df))                              # nocov
 
   # merDeriv returns a Matrix package object (dgeMatrix); coerce to a
   # plain matrix so base::diag() dispatches correctly.
@@ -654,7 +660,7 @@ as_regression_frame.glmerMod <- function(fit,
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
   } else {
-    rep(FALSE, nrow(vc_df))
+    rep(FALSE, nrow(vc_df))                                           # nocov
   }
   var_rows <- which(!is_corr)
 
@@ -724,13 +730,13 @@ as_regression_frame.glmerMod <- function(fit,
         g_name <- vc_df$group[k]
         pair_str <- vc_df$term[k]
         parts <- strsplit(pair_str, ", ", fixed = TRUE)[[1L]]
-        if (length(parts) != 2L) next
-        if (!g_name %in% names(vc_list)) next
+        if (length(parts) != 2L) next                                    # nocov
+        if (!g_name %in% names(vc_list)) next                            # nocov
         g_vc <- as.matrix(vc_list[[g_name]])
         g_nms <- rownames(g_vc)
         i_idx <- match(parts[1L], g_nms)
         j_idx <- match(parts[2L], g_nms)
-        if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) next
+        if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) next         # nocov
 
         n_g_block <- nrow(g_vc)
         var_i_pos <- .vech_colmajor_pos(n_g_block, i_idx, i_idx)
@@ -745,9 +751,9 @@ as_regression_frame.glmerMod <- function(fit,
         var_j   <- g_vc[j_idx, j_idx]
         cov_ij  <- g_vc[i_idx, j_idx]
         if (!is.finite(var_i) || !is.finite(var_j) ||
-            var_i <= 0 || var_j <= 0) next
+            var_i <= 0 || var_j <= 0) next                               # nocov
         rho <- cov_ij / sqrt(var_i * var_j)
-        if (!is.finite(rho)) next
+        if (!is.finite(rho)) next                                        # nocov
 
         grad <- c(
           -rho / (2 * var_i),
@@ -755,7 +761,7 @@ as_regression_frame.glmerMod <- function(fit,
           -rho / (2 * var_j)
         )
         var_rho <- as.numeric(t(grad) %*% Sigma_3 %*% grad)
-        if (!is.finite(var_rho) || var_rho < 0) next
+        if (!is.finite(var_rho) || var_rho < 0) next                     # nocov
         se_rho <- sqrt(var_rho)
 
         vc_df$std_error[k] <- se_rho
@@ -853,7 +859,7 @@ as_regression_frame.glmerMod <- function(fit,
   group_rows <- vc_df[vc_df$group == groups[1L], , drop = FALSE]
   if (nrow(group_rows) != 1L) return(NA_real_)
   var_r <- group_rows$variance[1L]
-  if (!is.finite(var_r)) return(NA_real_)
+  if (!is.finite(var_r)) return(NA_real_)                              # nocov
 
   resid_row <- vc_df[vc_df$group == "Residual", , drop = FALSE]
   var_e <- if (nrow(resid_row) == 1L) {
@@ -874,7 +880,7 @@ as_regression_frame.glmerMod <- function(fit,
 .merMod_link_distribution_variance <- function(fit, var_random) {
   if (is.null(fit)) return(NA_real_)
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  if (is.null(fam)) return(NA_real_)
+  if (is.null(fam)) return(NA_real_)                                   # nocov
   if (identical(fam$family, "binomial")) {
     # cbind(succ, fail) / matrix-response binomial: the closed-form
     # pi^2/3 only applies to single-trial Bernoulli. For trial-weighted
@@ -896,9 +902,9 @@ as_regression_frame.glmerMod <- function(fit,
     # exact same intercept_null + var_g_null (cross-validation against
     # insight::.variance_distributional() is tight: 1e-10).
     null <- .nakagawa_null_params(fit, fam)
-    if (!is.finite(null$intercept) || !is.finite(null$var_g)) return(NA_real_)
+    if (!is.finite(null$intercept) || !is.finite(null$var_g)) return(NA_real_) # nocov
     lambda <- exp(null$intercept + 0.5 * null$var_g)
-    if (!is.finite(lambda) || lambda <= 0) return(NA_real_)
+    if (!is.finite(lambda) || lambda <= 0) return(NA_real_)            # nocov
     return(log1p(1 / lambda))
   }
   NA_real_

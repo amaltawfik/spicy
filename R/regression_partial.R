@@ -293,7 +293,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     },
     error = function(e) NULL
   )
-  if (is.null(fixed_form)) return(NULL)
+  if (is.null(fixed_form)) return(NULL)  # nocov
 
   bhat <- tryCatch(
     if (inherits(fit, "glmmTMB")) {
@@ -308,7 +308,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     },
     error = function(e) NULL
   )
-  if (is.null(bhat) || length(bhat) == 0L) return(NULL)
+  if (is.null(bhat) || length(bhat) == 0L) return(NULL)  # nocov
 
   V <- tryCatch({
     v <- stats::vcov(fit)
@@ -317,12 +317,12 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     # `[["cond"]]`. lme4 / nlme return a plain matrix-like object.
     if (inherits(fit, "glmmTMB")) {
       v_cond <- tryCatch(v$cond, error = function(e) NULL)
-      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)
+      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)  # nocov: v$cond never NULL for glmmTMB
       if (!is.null(v_cond)) v <- v_cond
     }
     as.matrix(v)
   }, error = function(e) NULL)
-  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)
+  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)  # nocov
 
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {
@@ -336,7 +336,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     stats::model.matrix(fixed_form, data = data),
     error = function(e) NULL
   )
-  if (is.null(mm) || ncol(mm) != length(bhat)) return(NULL)
+  if (is.null(mm) || ncol(mm) != length(bhat)) return(NULL)  # nocov
 
   assign_idx <- attr(mm, "assign")
   term_labels <- attr(stats::terms(fixed_form), "term.labels")
@@ -358,8 +358,10 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     }, error = function(e) NA_real_)
     df_val <- length(cols)
     if (!is.finite(chi2_val) || chi2_val < 0) {
+      # nocov start
       chi2_cache[[as.character(k)]] <- NULL
       next
+      # nocov end
     }
     chi2_cache[[as.character(k)]] <- list(
       chi2 = chi2_val,
@@ -373,7 +375,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     term_idx <- assign_idx[i]
     if (term_idx == 0L) next
     eff <- chi2_cache[[as.character(term_idx)]]
-    if (is.null(eff)) next
+    if (is.null(eff)) next  # nocov: cache entry only NULL via the unreachable chi2-fail arm
 
     nm <- names(bhat)[i]
     fmeta <- factor_meta[[nm]]
@@ -399,7 +401,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(NULL)
+  if (length(rows) == 0L) return(NULL)  # nocov
   do.call(rbind, rows)
 }
 

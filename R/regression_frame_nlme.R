@@ -98,6 +98,7 @@ as_regression_frame.gls <- function(fit,
 
 .check_nlme_available <- function() {
   if (!spicy_pkg_available("nlme")) {
+    # nocov start
     spicy_abort(
       c(
         "Cannot extract a regression frame from an nlme fit without `nlme`.",
@@ -105,6 +106,7 @@ as_regression_frame.gls <- function(fit,
       ),
       class = "spicy_missing_pkg"
     )
+    # nocov end
   }
 }
 
@@ -261,7 +263,7 @@ as_regression_frame.gls <- function(fit,
   n_groups <- if (length(ng) > 0L) {
     setNames(as.integer(ng[1L]), primary_group)
   } else {
-    NULL
+    NULL  # nocov  (lme fits always carry >= 1 grouping factor)
   }
 
   re <- .lme_random_effects(fit)
@@ -411,10 +413,12 @@ as_regression_frame.gls <- function(fit,
   method <- if (!is.null(fit$method) &&
                 fit$method %in% c("REML", "ML")) fit$method else NA_character_
   vc <- tryCatch(nlme::VarCorr(fit), error = function(e) NULL)
+  # nocov start  (VarCorr() does not error for a valid lme fit)
   if (is.null(vc)) {
     return(list(variance_components = data.frame(), icc = NA_real_,
-                method = method))                                       # nocov
+                method = method))
   }
+  # nocov end
   raw <- unclass(vc)
   rn <- rownames(raw)
   variances <- suppressWarnings(as.numeric(raw[, "Variance"]))
@@ -470,7 +474,7 @@ as_regression_frame.gls <- function(fit,
     nlme::intervals(fit, which = "var-cov"),
     error = function(e) NULL
   )
-  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) return(vc_df)
+  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) return(vc_df)        # nocov
   group_ci <- ci_obj$reStruct[[group_nm]]
   if (is.null(group_ci)) return(vc_df)                                  # nocov
 
@@ -502,6 +506,7 @@ as_regression_frame.gls <- function(fit,
 
 # Attach Wald SE + 95% CI on variance scale via nlme::intervals().
 .lme_attach_wald_se_ci <- function(vc_df, fit) {
+  # nocov start  (only invoked from the defensive guards below)
   na_block <- function(df) {
     df$std_error <- NA_real_
     df$ci_lower  <- NA_real_
@@ -509,6 +514,7 @@ as_regression_frame.gls <- function(fit,
     df$ci_method <- NA_character_
     df
   }
+  # nocov end
   if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
 
   ci_obj <- tryCatch(

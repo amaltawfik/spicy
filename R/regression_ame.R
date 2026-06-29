@@ -250,7 +250,11 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
   }
   if (is.factor(data[[v]])) {
     lvls <- levels(droplevels(data[[v]]))
-    if (length(lvls) < 2L) return(list())
+    # Defensive: a factor predictor that survived as a model term always
+    # has >= 2 used levels (lm/glm reject single-level factor terms with
+    # "contrasts can be applied only to factors with 2 or more levels"),
+    # so this guard is not reachable from a fitted model.
+    if (length(lvls) < 2L) return(list()) # nocov
     ref <- lvls[1]
     out <- list()
     for (lvl in lvls[-1]) {
@@ -555,7 +559,10 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
         paste0("(^|\\()", var_name, "(\\)|$)"),
         mf_names, value = TRUE
       )
-      if (length(cand) > 0L) cand[1L] else var_name
+      # The `var_name` fallback is unreachable from a valid fit: a term
+      # marginaleffects reports either is a bare model-frame column (the
+      # `if` branch above) or matches a wrapped column via the grep.
+      if (length(cand) > 0L) cand[1L] else var_name # nocov
     }
 
     # Reconstruct coef-style term_id only for true factor variables.
@@ -748,7 +755,10 @@ compute_satt_df_per_coef_glm <- function(fit, vc, cluster) {
     } else {
       cand <- grep(paste0("(^|\\()", var_name, "(\\)|$)"),
                    mf_names, value = TRUE)
-      if (length(cand) > 0L) cand[1L] else var_name
+      # The `var_name` fallback is unreachable from a valid fit (see the
+      # equivalent guard in extract_ame_glm()): a reported term is either
+      # a bare model-frame column or matches a wrapped one via the grep.
+      if (length(cand) > 0L) cand[1L] else var_name # nocov
     }
     is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
 
