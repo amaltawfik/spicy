@@ -75,6 +75,30 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   if (identical(family_name, "cox") && identical(link_name, "log")) {
     return("HR")     # hazard ratio (coxph / rms::cph)
   }
+  if (identical(family_name, "cumulative") && identical(link_name, "logit")) {
+    return("OR")     # proportional-odds ratio (ordinal: polr / clm)
+  }
+  if (identical(family_name, "cumulative") && identical(link_name, "cloglog")) {
+    return("HR")     # proportional-hazards ratio (ordinal cloglog link)
+  }
+  if (identical(family_name, "multinomial") && identical(link_name, "logit")) {
+    return("OR")     # multinomial odds / relative-risk ratio (multinom / mlogit)
+  }
+  if (identical(family_name, "beta") && identical(link_name, "logit")) {
+    return("OR")     # betareg mean model (logit link)
+  }
+  if (identical(family_name, "negbin") && identical(link_name, "log")) {
+    return("IRR")    # negative-binomial rate ratio (fixest / pscl)
+  }
+  if (grepl("^Negative Binomial", family_name) && identical(link_name, "log")) {
+    return("IRR")    # MASS::glm.nb family string is "Negative Binomial(theta)"
+  }
+  if (identical(family_name, "quasibinomial") && identical(link_name, "logit")) {
+    return("OR")     # survey::svyglm(family = quasibinomial())
+  }
+  if (identical(family_name, "quasipoisson") && identical(link_name, "log")) {
+    return("IRR")    # survey::svyglm(family = quasipoisson())
+  }
   "exp(B)"
 }
 
@@ -371,6 +395,45 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
   coefs$std_error[rows] <- exp_est * se_orig  # Delta-method.
   # Statistic and p-value invariant under exp(): leave as-is.
   coefs
+}
+
+
+# Apply exp() to a frame's B / beta rows when exponentiate = TRUE, driven
+# entirely by the frame's own info$family / info$supports -- NOT stats::family(),
+# which errors for polr / clm / multinom / fixest / betareg / mlogit (no family()
+# method). This is the class-agnostic generalisation of
+# .apply_exp_to_survival_frame() / .apply_exp_to_mixed_frame(): any
+# as_regression_frame.* method that sets info$family$link and
+# info$supports$exponentiate can route its coefs through it before assembling
+# the frame, and the title/footer layer reads info$extras$exp_applied /
+# exp_header without any class-specific branching.
+#
+# A no-op (coefs pass through unchanged) when exponentiate is not TRUE or the
+# frame does not advertise supports$exponentiate.
+.apply_exp_to_frame <- function(coefs, info, exponentiate) {
+  # Already exponentiated by a self-applying method (lm/glm legacy, merMod /
+  # glmmTMB / nlme mixed, coxph / survreg)? Leave it untouched. This guard
+  # makes a second, central application in the table_regression() orchestrator
+  # a no-op, so exp() is never applied twice.
+  if (isTRUE(info$extras$exp_applied)) {
+    return(list(coefs = coefs, info = info))
+  }
+  # exp() of an identity-link coefficient is meaningless (the coef IS the
+  # effect on the response scale). Some classes advertise
+  # supports$exponentiate = TRUE generically (e.g. gaussian glm), so guard on
+  # the link too -- mirrors the identity no-op the lm/glm and mixed paths
+  # already apply. Survival reaches here only via .apply_exp_to_survival_frame,
+  # which has already set exp_applied = TRUE, so its log-scale links are safe.
+  if (!isTRUE(exponentiate) || !isTRUE(info$supports$exponentiate) ||
+      identical(info$family$link, "identity")) {
+    return(list(coefs = coefs, info = info))
+  }
+  coefs <- apply_exponentiate_to_frame_coefs(coefs)
+  info$extras$exp_applied <- TRUE
+  info$extras$exp_header  <- spicy_glm_exp_header(
+    info$family$family, info$family$link
+  )
+  list(coefs = coefs, info = info)
 }
 
 

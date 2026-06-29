@@ -1134,41 +1134,12 @@ table_regression <- function(
     }
   }
 
-  # exponentiate: warn only when NO fit in the list has a non-identity
-  # link. The transform applies wherever `family(fit)$link != "identity"`,
-  # including glmer / glmmTMB binomial / poisson -- not just classical
-  # glm. Phase 7c16: extended the check from `inherits(f, "glm")` to a
-  # link-based check that covers any fit class with a `family()` method.
-  if (isTRUE(exponentiate)) {
-    has_non_identity <- any(vapply(models, function(f) {
-      fam <- tryCatch(stats::family(f), error = function(e) NULL)
-      if (!is.null(fam) && !is.null(fam$link)) {
-        return(!identical(fam$link, "identity"))
-      }
-      # Classes with an exponentiable link but no stats::family() method:
-      # coxph / rms::cph model the log relative hazard (exp -> hazard ratio);
-      # survreg log-scale dists model log T (exp -> time ratio). Identity-
-      # scale survreg dists (gaussian / logistic / t) are not exponentiable.
-      if (inherits(f, c("coxph", "cph"))) return(TRUE)
-      if (inherits(f, "survreg")) {
-        return(!isTRUE(f$dist %in% c("gaussian", "logistic", "t")))
-      }
-      FALSE
-    }, logical(1)))
-    if (!has_non_identity) {
-      spicy_warn(
-        c(
-          "`exponentiate = TRUE` has no effect on identity-link fits.",
-          "i" = paste0(
-            "exp() is only applied to fits whose link is non-identity ",
-            "(logit, probit, log, cloglog, inverse). Drop the argument ",
-            "or remove the check."
-          )
-        ),
-        class = "spicy_ignored_arg"
-      )
-    }
-  }
+  # exponentiate: the "no effect" warning is emitted AFTER frame extraction
+  # (see below, just after the frames loop), keyed on each frame's own
+  # info$extras$exp_applied. Doing it post-extraction lets one check cover
+  # every model class -- including polr / clm / multinom / fixest / betareg,
+  # which have no stats::family() method -- instead of guessing the link of
+  # each raw fit up front.
 
   # gaussian-glm caveat: the user fitted glm() with the default
   # (gaussian / identity) family, which is mathematically equivalent
@@ -1345,6 +1316,19 @@ table_regression <- function(
       use_ame_satterthwaite = use_ame_satt,
       cluster_name          = cluster_name_list[i]
     )
+    # Exponentiate centrally so EVERY model class honours `exponentiate = TRUE`
+    # (OR / IRR / HR / RR / MR / TR), driven by each frame's own info$family /
+    # info$supports rather than a per-class `family()` lookup. Classes that
+    # exponentiate internally (lm/glm legacy, mixed, survival) set
+    # info$extras$exp_applied = TRUE, so .apply_exp_to_frame() no-ops for them;
+    # polr / clm / multinom / mlogit / betareg / fixest / pscl / rms / mgcv /
+    # svyglm / stan -- which never applied exp -- are handled here.
+    exp_out <- .apply_exp_to_frame(
+      frames[[i]]$coefs, frames[[i]]$info, exponentiate
+    )
+    frames[[i]]$coefs <- exp_out$coefs
+    frames[[i]]$info  <- exp_out$info
+
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block_from_frames())
     # can decide without reaching back to the live fit.
@@ -1358,6 +1342,28 @@ table_regression <- function(
       frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
         frames[[i]]$coefs, p_adjust)
     }
+  }
+
+  # `exponentiate = TRUE` no-op detection (relocated from before extraction):
+  # now that every frame is built, warn only when NO model actually applied
+  # exp() -- i.e. every link is identity or otherwise non-exponentiable. Keyed
+  # on the frames' own info$extras$exp_applied, so it covers classes with no
+  # stats::family() method (polr / clm / multinom / fixest / betareg / ...).
+  if (isTRUE(exponentiate) &&
+      !any(vapply(frames,
+                  function(fr) isTRUE(fr$info$extras$exp_applied),
+                  logical(1)))) {
+    spicy_warn(
+      c(
+        "`exponentiate = TRUE` has no effect on identity-link fits.",
+        "i" = paste0(
+          "exp() is only applied to fits whose coefficients are on a log / ",
+          "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
+          "argument for identity-link (gaussian) fits."
+        )
+      ),
+      class = "spicy_ignored_arg"
+    )
   }
 
   # Standardized-on-non-additive caveat (Q15, Phase E)

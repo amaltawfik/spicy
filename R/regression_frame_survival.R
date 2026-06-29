@@ -111,15 +111,15 @@ as_regression_frame.survreg <- function(fit,
 # (gaussian / logistic / t survreg) supports$exponentiate is FALSE and the
 # coefs pass through unchanged.
 .apply_exp_to_survival_frame <- function(coefs, info, exponentiate) {
-  if (!isTRUE(exponentiate) || !isTRUE(info$supports$exponentiate)) {
-    return(list(coefs = coefs, info = info))
+  out <- .apply_exp_to_frame(coefs, info, exponentiate)
+  # Log-scale survreg dists (weibull / exponential / lognormal / loglogistic)
+  # carry family != cox, so spicy_glm_exp_header() falls through to "exp(B)";
+  # relabel as a time ratio. Cox is already mapped to "HR".
+  if (isTRUE(out$info$extras$exp_applied) &&
+      identical(out$info$extras$exp_header, "exp(B)")) {
+    out$info$extras$exp_header <- "TR"
   }
-  coefs <- apply_exponentiate_to_frame_coefs(coefs)
-  hdr <- spicy_glm_exp_header(info$family$family, info$family$link)
-  if (identical(hdr, "exp(B)")) hdr <- "TR"  # log-scale survreg: time ratio
-  info$extras$exp_applied <- TRUE
-  info$extras$exp_header  <- hdr
-  list(coefs = coefs, info = info)
+  out
 }
 
 .check_survival_available <- function() {
