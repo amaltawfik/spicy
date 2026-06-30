@@ -1195,7 +1195,11 @@ table_regression <- function(
   # fit and surface the suggestion via spicy_caveat.
   for (i in seq_along(models)) {
     f <- models[[i]]
-    if (inherits(f, "glm")) {
+    # Only a PLAIN glm() earns the "use lm() instead" caveat. svyglm, gam/bam,
+    # and other glm subclasses inherit "glm" but the refit-with-lm() suggestion
+    # is wrong for them (it would drop the survey design / the smooth terms), so
+    # gate on the leading class being exactly "glm".
+    if (identical(class(f)[1L], "glm")) {
       fam <- stats::family(f)
       if (identical(fam$family, "gaussian") &&
             identical(fam$link, "identity")) {

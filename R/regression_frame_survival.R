@@ -87,6 +87,7 @@ as_regression_frame.survreg <- function(fit,
                                          cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
+                                         show_columns = character(0),
                                          model_id = "M1",
                                          exponentiate = FALSE,
                                          ...) {
@@ -96,6 +97,8 @@ as_regression_frame.survreg <- function(fit,
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
+  # Response-scale (predicted survival time) AME via marginaleffects.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .survreg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,

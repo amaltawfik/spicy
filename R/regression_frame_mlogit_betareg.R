@@ -226,6 +226,7 @@ as_regression_frame.betareg <- function(fit,
                                          cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
+                                         show_columns = character(0),
                                          model_id = "M1",
                                          ...) {
   .check_betareg_available()
@@ -237,6 +238,8 @@ as_regression_frame.betareg <- function(fit,
   # the mean coefs occupy its leading positions, which is what `match` selects.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
+  # Response-scale AME on the mean component (marginaleffects::avg_slopes).
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .betareg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,

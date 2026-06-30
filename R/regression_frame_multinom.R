@@ -41,11 +41,15 @@ as_regression_frame.multinom <- function(fit,
                                           vcov_label = NULL,
                                           ci_level = 0.95,
                                           ci_method = NULL,
+                                          show_columns = character(0),
                                           model_id = "M1",
                                           ...) {
   .check_nnet_available()
 
   coefs <- .multinom_coefs(fit, ci_level = ci_level)
+  # Per-outcome AME on P(Y = k): avg_slopes() returns one row per
+  # (predictor, outcome), aligned with the per-outcome B blocks.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .multinom_info(fit,
                           vcov_kind  = vcov,
                           vcov_label = vcov_label,

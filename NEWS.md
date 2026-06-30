@@ -106,7 +106,22 @@ labels) is layered on top for mixed-effects and Bayesian.
   (one per choice situation) and censored `coxph` (one per
   subject).
 
+### Average marginal effects for more model classes
+
+* The `"ame"` columns now report average marginal effects for
+  `betareg`, `mgcv::gam`, `survey::svyglm`, and `survival::survreg`
+  (one response-scale AME per predictor), and **per-outcome-category**
+  AME for `MASS::polr`, `ordinal::clm`, and `nnet::multinom` (one
+  AME per predictor and outcome category). Values are cross-validated
+  to `marginaleffects::avg_slopes()`. These classes previously
+  advertised AME support but rendered an empty column.
+
 ## Minor improvements
+
+* The "fit a gaussian `glm()`? use `lm()` instead" caveat now fires
+  only for a plain `glm` fit, not for `svyglm` / `mgcv::gam` (which
+  inherit `"glm"` but for which the suggestion is wrong -- it would
+  drop the survey design or the smooth terms).
 
 * `show_fit_stats = FALSE` suppresses the fit-stats block (parity
   with `show_re = FALSE` and `outcome_labels = FALSE`).

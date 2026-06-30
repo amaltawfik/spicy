@@ -42,6 +42,7 @@ as_regression_frame.polr <- function(fit,
                                       cluster_name = NULL,
                                       ci_level = 0.95,
                                       ci_method = NULL,
+                                      show_columns = character(0),
                                       model_id = "M1",
                                       ...) {
   .check_MASS_available()
@@ -52,6 +53,9 @@ as_regression_frame.polr <- function(fit,
   # proportional-odds slope rows are reweighted -- which is what we want.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
+  # Per-category AME on P(Y = k): avg_slopes() returns one row per
+  # (predictor, category), rendered as per-category blocks.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .polr_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -79,6 +83,7 @@ as_regression_frame.clm <- function(fit,
                                      cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
+                                     show_columns = character(0),
                                      model_id = "M1",
                                      ...) {
   .check_ordinal_available()
@@ -89,6 +94,8 @@ as_regression_frame.clm <- function(fit,
   # coefs, and `match` selects their (offset) positions in the full vcovCL.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
+  # Per-category AME on P(Y = k): one row per (predictor, category).
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .clm_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,

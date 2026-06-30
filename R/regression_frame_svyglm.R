@@ -32,6 +32,7 @@ as_regression_frame.svyglm <- function(fit,
                                         cluster_name = NULL,
                                         ci_level = 0.95,
                                         ci_method = NULL,
+                                        show_columns = character(0),
                                         model_id = "M1",
                                         ...) {
   .check_survey_available()
@@ -41,6 +42,9 @@ as_regression_frame.svyglm <- function(fit,
   # design-based default ("classical" / "survey-Taylor").
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
+  # Design-based response-scale AME (marginaleffects::avg_slopes uses the
+  # survey design vcov).
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   info  <- .svyglm_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,

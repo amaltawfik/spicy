@@ -723,6 +723,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   }
   mf_names <- if (!is.null(mf)) names(mf) else character(0)
 
+  # Per-category models (ordinal polr/clm, multinomial multinom) report one AME
+  # row per (predictor, outcome category) via a `group` column; single-outcome
+  # models have no such column.
+  has_group <- "group" %in% names(ame_table)
+
   rows <- lapply(seq_len(nrow(ame_table)), function(i) {
     var_name     <- ame_table$term[i]
     contrast_str <- ame_table$contrast[i] %||% NA_character_
@@ -769,6 +774,16 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       (if (!is.na(lvl_str)) lvl_str else term_id)
     pos        <- fmeta$factor_level_pos %||% lvl_pos
 
+    # Encode the outcome category into the term + display label the same way
+    # multinom B rows do ("<category>: <predictor>"), so the renderer pivots
+    # each category into its own block. parent_var stays unprefixed (factor
+    # grouping); outcome_level carries the raw category for engines that use it.
+    grp <- if (has_group) as.character(ame_table$group[i]) else NA_character_
+    if (!is.na(grp)) {
+      term_id <- paste0(grp, ": ", term_id)
+      label   <- paste0(grp, ": ", label)
+    }
+
     data.frame(
       term             = term_id,
       parent_var       = parent_var,
@@ -784,10 +799,16 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       ci_lower         = as.numeric(ame_table$conf.low[i]),
       ci_upper         = as.numeric(ame_table$conf.high[i]),
       test_type        = "z",
+      outcome_level    = grp,
       stringsAsFactors = FALSE
     )
   })
   out <- do.call(rbind, rows)
+  # Single-outcome models have no categories: drop the all-NA outcome_level so
+  # their frames stay lean (only per-category AME carries this column).
+  if (!is.null(out$outcome_level) && all(is.na(out$outcome_level))) {
+    out$outcome_level <- NULL
+  }
   out
 }
 
@@ -801,14 +822,23 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   if (!any(ame_tokens %in% show_columns)) return(coefs)
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
-  # Align columns: if coefs has extra columns (e.g. legacy carry-overs),
-  # rbind would fail. Restrict ame_rows to the intersection and pad
-  # missing columns with NA of the appropriate type.
-  shared <- intersect(colnames(coefs), colnames(ame_rows))
-  if (length(shared) == 0L) return(coefs)
-  for (col in setdiff(colnames(coefs), colnames(ame_rows))) {
-    ame_rows[[col]] <- coefs[[col]][NA_integer_]
-  }
-  ame_rows <- ame_rows[, colnames(coefs), drop = FALSE]
-  rbind(coefs, ame_rows)
+  # Defensive no-op: a structurally-incompatible AME frame (no shared columns)
+  # is never produced by .compute_ame_rows_for_frame, but guard so a future /
+  # mocked caller cannot inject garbage rows into the coefs frame.
+  if (length(intersect(names(coefs), names(ame_rows))) == 0L) return(coefs)
+  # Column-union rbind: per-category AME rows carry an `outcome_level` column
+  # the proportional-odds B rows (polr / clm) lack, and the base coefs may carry
+  # columns the AME rows lack. Pad both sides to the union so the structured
+  # category dimension is PRESERVED (not dropped) -- the renderer / structured
+  # accessor can then key off it instead of parsing the term prefix.
+  .rbind_union(coefs, ame_rows)
+}
+
+
+# rbind two coefs-shaped data.frames with differing columns: pad each to the
+# union (NA of the source column's type) and bind in the first frame's order.
+.rbind_union <- function(a, b) {
+  for (col in setdiff(names(b), names(a))) a[[col]] <- b[[col]][NA_integer_]
+  for (col in setdiff(names(a), names(b))) b[[col]] <- a[[col]][NA_integer_]
+  rbind(a, b[, names(a), drop = FALSE])
 }
