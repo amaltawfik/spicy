@@ -778,6 +778,19 @@ Documented here for direct invocation with custom arguments (e.g.,
   and output to console, gt, tinytable, flextable, Excel, Word, or
   clipboard.
 
+- [Ordinal regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md):
+
+  Publication-ready tables for ordinal (proportional-odds / cumulative
+  logit) regression with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  shared slope coefficients and ordered thresholds, odds ratios,
+  per-outcome-category average marginal effects laid out as a
+  probability matrix, cluster-robust variance, the
+  [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines,
+  and the partial-proportional-odds caveat.
+
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 

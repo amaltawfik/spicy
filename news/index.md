@@ -157,7 +157,23 @@ Bayesian.
   These classes previously advertised AME support but rendered an empty
   column.
 
+- For an ordinal fit, the per-category AME is laid out as a
+  **probability matrix** – predictors in rows, one `AME <category>`
+  column per response category – the field-standard layout for marginal
+  effects (Long & Freese 2014; Williams 2012; `modelsummary`). Cells are
+  probabilities (the same scale as the binary-`glm` AME); the footer
+  spells out the estimand and that a change of 0.07 is 7 percentage
+  points, not 7%. See the new *Ordinal regression tables* vignette.
+
 ### Minor improvements
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  now refuses a partial-proportional-odds
+  [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) fit
+  (`nominal = ~ ...`) with a clear `spicy_unsupported` error instead of
+  crashing – its per-threshold nominal coefficients do not fit the
+  single-block ordinal table. Scale fits (`scale = ~ ...`) remain
+  supported.
 
 - The “fit a gaussian [`glm()`](https://rdrr.io/r/stats/glm.html)? use
   [`lm()`](https://rdrr.io/r/stats/lm.html) instead” caveat now fires
