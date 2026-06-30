@@ -66,6 +66,19 @@ default_extras <- function() {
   )
 }
 
+# Canonical empty `info$random_effects` for non-mixed (or RE-less) fits. One
+# shape everywhere -- key set matches the populated form built by the
+# mixed-effects methods (variance_components / icc / method / null_lrt) -- so
+# consumers never NULL-deref `$icc` (NA_real_ vs NULL) or `$variance_components`.
+empty_random_effects <- function() {
+  list(
+    variance_components = data.frame(),
+    icc                 = NA_real_,
+    method              = NA_character_,
+    null_lrt            = NULL
+  )
+}
+
 # Low-level constructor for the `spicy_regression_frame` S3 object: the single
 # place that assembles a {coefs, info} frame, normalises info$supports /
 # info$extras against their defaults, sets the object class, and attaches the
@@ -401,18 +414,14 @@ validate_regression_frame <- function(frame) {
     }
   }
 
-  # Restricted values for estimate_type. The design doc canonical
-  # vocabulary is c("B", "beta", "ame") (lowercase); the legacy
-  # extract_lm_phase1() pipeline additionally emits "AME" (uppercase
-  # capitalisation accident, harmless) and partial-effect-size tokens
+  # Restricted values for estimate_type. Canonical vocabulary (all
+  # lowercase): c("B", "beta", "ame") for coefficient / standardised /
+  # average-marginal-effect rows, plus the partial-effect-size tokens
   # ("partial_f2", "partial_eta2", "partial_omega2", "partial_chi2")
-  # via extract_partial_effect_rows(). During the strangler-fig phases
-  # (Phase 0b sub-steps 2-4) the frame must accept the full legacy
-  # vocabulary so the round-trip adapter does not need to rewrite
-  # rows. Sub-step 5 will decide whether to normalise to lowercase
-  # and / or split partial_* into a dedicated pipeline.
+  # emitted by extract_partial_effect_rows(). The legacy uppercase
+  # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
   allowed_types <- c(
-    "B", "beta", "ame", "AME",
+    "B", "beta", "ame",
     "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2"
   )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)

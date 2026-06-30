@@ -370,7 +370,7 @@ test_that("apply_exponentiate_to_coefs – only B / beta rows transformed", {
   expect_equal(exp_cf$estimate[b_idx], exp(raw$estimate[b_idx]),
                tolerance = 1e-12)
   # AME rows: untouched (response scale already)
-  a_idx <- raw$estimate_type == "AME" & !is.na(raw$estimate)
+  a_idx <- raw$estimate_type == "ame" & !is.na(raw$estimate)
   expect_equal(exp_cf$estimate[a_idx], raw$estimate[a_idx],
                tolerance = 1e-12)
 })
@@ -686,7 +686,7 @@ test_that("glm pseudo: log-binomial standardisation is NA (no latent threshold)"
 test_that("glm AME: matches marginaleffects::avg_slopes() to machine precision", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   oracle <- marginaleffects::avg_slopes(fit)
   for (term_nm in c("mpg", "wt")) {
     expect_equal(
@@ -705,7 +705,7 @@ test_that("glm AME: matches marginaleffects::avg_slopes() to machine precision",
 test_that("glm AME: classical vcov uses z-asymptotic (df = Inf, test_type = 'z')", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   expect_true(all(is.infinite(ame$df)))
   expect_true(all(ame$test_type == "z"))
 })
@@ -718,7 +718,7 @@ test_that("glm AME + CR2: Satterthwaite df from coef_test on dominant coef", {
   fit <- glm(y ~ x1 + x2, data = d, family = binomial)
   td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = d$clinic,
                                        show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   expect_true(all(ame$test_type == "t"))
   # Cross-check: AME df_Satt should equal the dominant-coef df_Satt
   ct <- clubSandwich::coef_test(fit, vcov = "CR2", cluster = d$clinic,
@@ -756,7 +756,7 @@ test_that("glm AME with factor predictor: each level gets its own AME row", {
   mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
   fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   # mpg + cyl6 + cyl8 = 3 AME rows
   expect_true("mpg" %in% ame$term)
   expect_true("cyl6" %in% ame$term)
@@ -771,7 +771,7 @@ test_that("glm AME: response-scale (NOT link-scale) - AME != B for logit", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
-  ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
+  ame_mpg <- td$estimate[td$estimate_type == "ame" & td$term == "mpg"]
   # Response-scale AME for logistic mpg coef is order-of-magnitude
   # smaller (logistic squashes through pi^2/3 + var(eta))
   expect_true(abs(ame_mpg) < abs(b_mpg) / 5)
@@ -781,7 +781,7 @@ test_that("glm AME: HC* vcov uses z-asymptotic (no Satterthwaite)", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   td <- broom::tidy(table_regression(fit, vcov = "HC1",
                                        show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   expect_true(all(is.infinite(ame$df)))
   expect_true(all(ame$test_type == "z"))
 })
@@ -922,12 +922,12 @@ test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized",
   expect_match(attr(out, "title"), "^Logistic regression: am$")
   td <- broom::tidy(out)
   # All four estimate types present
-  expect_true(all(c("B", "beta", "AME", "partial_chi2") %in% td$estimate_type))
+  expect_true(all(c("B", "beta", "ame", "partial_chi2") %in% td$estimate_type))
   # B exponentiated → row for mpg has positive value (OR scale)
   b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
   expect_true(b_mpg > 0)  # OR is exp(-0.32) ≈ 0.72
   # AME on response scale (probability units) – magnitude < |B|
-  ame_mpg <- td$estimate[td$estimate_type == "AME" & td$term == "mpg"]
+  ame_mpg <- td$estimate[td$estimate_type == "ame" & td$term == "mpg"]
   expect_true(abs(ame_mpg) < 0.1)
 })
 
@@ -982,7 +982,7 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
   expect_true("Δχ²" %in% vars)
   # AME df_Satt is finite (not Inf) under CR2
   td <- broom::tidy(out)
-  ame_rows <- td[td$estimate_type == "AME", ]
+  ame_rows <- td[td$estimate_type == "ame", ]
   expect_true(all(is.finite(ame_rows$df)))
 })
 

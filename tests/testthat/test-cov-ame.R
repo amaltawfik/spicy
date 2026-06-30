@@ -280,10 +280,10 @@ test_that(".attach_ame_to_frame_coefs pads coefs-only columns with NA on AME row
     coefs, fit, ci_level = 0.95, show_columns = c("b", "ame")
   )
   # AME rows were appended.
-  expect_true("AME" %in% res$estimate_type)
+  expect_true("ame" %in% res$estimate_type)
   expect_gt(nrow(res), nrow(coefs))
   # The carry-over column is NA on the appended AME rows and retains the
   # output schema (same columns, same order as the input coefs).
-  expect_true(all(is.na(res$legacy_col[res$estimate_type == "AME"])))
+  expect_true(all(is.na(res$legacy_col[res$estimate_type == "ame"])))
   expect_identical(colnames(res), colnames(coefs))
 })

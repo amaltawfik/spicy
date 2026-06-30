@@ -110,8 +110,8 @@ test_that("exponentiate does NOT re-exponentiate AME rows (already response-scal
   fr_exp    <- as_regression_frame(fit, model_id = "M1",
                                     show_columns = c("b", "ame"),
                                     exponentiate = TRUE)
-  ame_no_exp <- fr_no_exp$coefs[fr_no_exp$coefs$estimate_type == "AME", ]
-  ame_exp    <- fr_exp$coefs[fr_exp$coefs$estimate_type == "AME", ]
+  ame_no_exp <- fr_no_exp$coefs[fr_no_exp$coefs$estimate_type == "ame", ]
+  ame_exp    <- fr_exp$coefs[fr_exp$coefs$estimate_type == "ame", ]
   expect_equal(ame_exp$estimate,  ame_no_exp$estimate,  tolerance = 1e-12)
   expect_equal(ame_exp$std_error, ame_no_exp$std_error, tolerance = 1e-12)
 })

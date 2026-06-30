@@ -19,7 +19,7 @@
 #                                          bootstrap/jackknife).
 #
 # Both paths produce the same long-format rows with
-# `estimate_type = "AME"`, ready to rbind() with B/beta rows in
+# `estimate_type = "ame"`, ready to rbind() with B/beta rows in
 # `extract_lm_phase1()`.
 
 
@@ -203,7 +203,7 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
       nm = spec$term_id,
       model_id = model_id,
       outcome = outcome,
-      estimate_type = "AME",
+      estimate_type = "ame",
       estimate = est_i,
       se = se_i,
       ci_low = test_result$CI_L[i],
@@ -437,7 +437,7 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
       nm = term_id,
       model_id = model_id,
       outcome = outcome,
-      estimate_type = "AME",
+      estimate_type = "ame",
       estimate = ame_table$estimate[i],
       se = ame_table$std.error[i],
       ci_low = ame_table$conf.low[i],
@@ -626,7 +626,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       nm = term_id,
       model_id = model_id,
       outcome = outcome,
-      estimate_type = "AME",
+      estimate_type = "ame",
       estimate = est_i,
       se = se_i,
       ci_low = ci_lo_i,
@@ -775,7 +775,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       label            = label,
       factor_level_pos = as.integer(pos),
       is_ref           = FALSE,
-      estimate_type    = "AME",
+      estimate_type    = "ame",
       estimate         = as.numeric(ame_table$estimate[i]),
       std_error        = as.numeric(ame_table$std.error[i]),
       df               = Inf,

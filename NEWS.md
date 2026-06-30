@@ -15,6 +15,11 @@
   auto-compacts in multi-model layouts (drops the CI column),
   matching the `NULL` default. Use atomic tokens to keep CIs.
 
+* `broom::tidy()` on a `table_regression()` result now reports average
+  marginal-effect rows with `estimate_type = "ame"` (lowercase), not
+  `"AME"`, matching the canonical `c("B", "beta", "ame")` vocabulary.
+  Update any code filtering on `estimate_type == "AME"`.
+
 ## New features
 
 ### Massively expanded model support

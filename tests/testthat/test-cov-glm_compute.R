@@ -84,7 +84,7 @@ test_that("apply_exponentiate_to_frame_coefs: no eligible rows -> unchanged", {
   # so a frame with only AME rows has no eligible rows and returns
   # untouched (L337).
   df_ame <- data.frame(
-    estimate_type = c("AME", "AME"), is_ref = c(FALSE, FALSE),
+    estimate_type = c("ame", "ame"), is_ref = c(FALSE, FALSE),
     estimate = c(0.1, 0.2), std_error = c(0.01, 0.02),
     ci_lower = c(0.05, 0.10), ci_upper = c(0.15, 0.30)
   )

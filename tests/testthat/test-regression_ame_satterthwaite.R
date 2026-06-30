@@ -77,7 +77,7 @@ test_that("extract_ame_satterthwaite – produces one row per non-reference cont
   )
   # 1 numeric AME (x) + 9 factor contrasts (gb..gj)
   expect_equal(nrow(rows), 10L)
-  expect_true(all(rows$estimate_type == "AME"))
+  expect_true(all(rows$estimate_type == "ame"))
   expect_true(all(rows$test_type == "t"))
 })
 

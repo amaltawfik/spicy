@@ -250,7 +250,7 @@ test_that("AME – binary numeric var keeps the var name (not '<var>1')", {
   # must align with the B coef row, both keyed `am`.
   fit <- lm(mpg ~ wt + am, data = mtcars)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-  ame <- td[td$estimate_type == "AME", ]
+  ame <- td[td$estimate_type == "ame", ]
   expect_true("am" %in% ame$term)
   expect_false("am1" %in% ame$term)
 })
@@ -260,7 +260,7 @@ test_that("AME – true factor still gets <var><level> naming", {
   # rows so they align with the B coef rows (cyl6, cyl8).
   fit <- lm(mpg ~ wt + cyl, data = mt)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-  ame_terms <- td$term[td$estimate_type == "AME"]
+  ame_terms <- td$term[td$estimate_type == "ame"]
   expect_true(all(c("cyl6", "cyl8") %in% ame_terms))
 })
 

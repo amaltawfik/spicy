@@ -24,7 +24,7 @@ skip_if_no_marginaleffects <- function() {
 # of appearance.
 ame_factor_order <- function(out, factor_var) {
   long <- broom::tidy(out)
-  ame_rows <- long[long$estimate_type == "AME" &
+  ame_rows <- long[long$estimate_type == "ame" &
                      startsWith(long$term, factor_var), ]
   ame_rows$term
 }
@@ -141,7 +141,7 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
   )) {
     out <- table_regression(fit, show_columns = cols)
     long <- broom::tidy(out)
-    n_ame_rows <- sum(long$estimate_type == "AME", na.rm = TRUE)
+    n_ame_rows <- sum(long$estimate_type == "ame", na.rm = TRUE)
     expect_gt(n_ame_rows, 0L,
               label = sprintf("show_columns = c(%s)",
                               paste(shQuote(cols), collapse = ", ")))

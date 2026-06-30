@@ -353,7 +353,7 @@ as_regression_frame.gls <- function(fit,
     n_obs          = as.integer(stats::nobs(fit)),
     n_groups       = NULL,
     weights_kind   = "none",
-    random_effects = list(variance_components = data.frame(), icc = NA_real_),
+    random_effects = empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
     vcov_label     = vcov_label %||% default_vcov_label,
@@ -405,8 +405,7 @@ as_regression_frame.gls <- function(fit,
   vc <- tryCatch(nlme::VarCorr(fit), error = function(e) NULL)
   # nocov start  (VarCorr() does not error for a valid lme fit)
   if (is.null(vc)) {
-    return(list(variance_components = data.frame(), icc = NA_real_,
-                method = method))
+    return(modifyList(empty_random_effects(), list(method = method)))
   }
   # nocov end
   raw <- unclass(vc)

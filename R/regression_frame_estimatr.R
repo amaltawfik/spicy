@@ -261,7 +261,7 @@ as_regression_frame.iv_robust <- function(fit,
     # regression weights are "case", not "frequency" (lm_robust does not
     # treat them as observation counts).
     weights_kind   = .weights_kind_from_fit(fit),
-    random_effects = list(variance_components = data.frame(), icc = NA_real_),
+    random_effects = empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
     vcov_label     = vcov_label %||% default_label,

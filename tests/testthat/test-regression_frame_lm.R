@@ -71,7 +71,7 @@ test_that("as_regression_frame.lm() populates required info fields correctly", {
   expect_identical(info$dv, "wellbeing_score")
   expect_identical(as.integer(info$n_obs), as.integer(stats::nobs(fit)))
   expect_identical(info$weights_kind, "none")
-  expect_null(info$random_effects)
+  expect_identical(info$random_effects, spicy:::empty_random_effects())
   expect_null(info$n_groups)
   expect_identical(info$ci_level, 0.95)
   expect_identical(info$ci_method, "wald")

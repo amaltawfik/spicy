@@ -112,11 +112,11 @@ test_that("brmsfit: info$ci_method = 'posterior_quantile' by default", {
   expect_identical(fr$info$ci_method, "posterior_quantile")
 })
 
-test_that("brmsfit: info$weights_kind = 'none' and random_effects = NULL", {
+test_that("brmsfit: info$weights_kind = 'none' and random_effects = empty (canonical)", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$weights_kind, "none")
-  expect_null(fr$info$random_effects)
+  expect_identical(fr$info$random_effects, spicy:::empty_random_effects())
 })
 
 

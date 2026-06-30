@@ -406,9 +406,9 @@ build_reference_rows <- function(fit, model_id, outcome,
     if (is_treatment_dropped) {
       est_types <- c(est_types, "B")
       if (isTRUE(beta_requested)) est_types <- c(est_types, "beta")
-      if (isTRUE(ame_requested))  est_types <- c(est_types, "AME")
+      if (isTRUE(ame_requested))  est_types <- c(est_types, "ame")
     } else if (is_poly_with_ame) {
-      est_types <- "AME"
+      est_types <- "ame"
     }
 
     for (et in est_types) {

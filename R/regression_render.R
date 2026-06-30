@@ -453,16 +453,16 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     # guarantees canonical intra-block order
     # (estimate -> SE -> 95% CI -> p) for the standard column groups
     # (`all_b`, `all_ame`).
-    ame    = list(estimate_type = "AME",
+    ame    = list(estimate_type = "ame",
                   fields = "estimate",
                   header_short = "AME"),
-    ame_se = list(estimate_type = "AME",
+    ame_se = list(estimate_type = "ame",
                   fields = "se",
                   header_short = "SE"),
-    ame_ci = list(estimate_type = "AME",
+    ame_ci = list(estimate_type = "ame",
                   fields = c("ci_low", "ci_high"),
                   header_short = ci_hdr),
-    ame_p  = list(estimate_type = "AME",
+    ame_p  = list(estimate_type = "ame",
                   fields = "p_value",
                   header_short = "p"),
     # Partial-variance-explained \u2013 split (was bundled too).

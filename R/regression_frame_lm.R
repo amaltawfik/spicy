@@ -269,7 +269,7 @@ as_regression_frame.glm <- function(fit, ...) {
     n_obs          = as.integer(legacy$nobs),
     n_groups       = NULL,
     weights_kind   = weights_kind,
-    random_effects = NULL,
+    random_effects = empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
     vcov_label     = vcov_label %||% .vcov_label_from_kind(vcov_kind, is_glm),
