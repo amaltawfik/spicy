@@ -17,6 +17,21 @@ compute_model_vcov <- function(
   weights = NULL,
   boot_n = 1000L
 ) {
+  # D2(a) guard: the resamplers refit the model with stats::lm() / stats::glm(),
+  # so for any other class they would silently fit a WRONG model on the
+  # resamples (an lm on survival times, etc.). The orchestrator's per-class
+  # capability check (validate_vcov_cluster_lists) already rejects this, but
+  # guard here too so a direct/internal caller cannot trigger the silent misfit.
+  if (type %in% c("bootstrap", "jackknife") &&
+      !inherits(fit, c("lm", "glm"))) {
+    spicy_abort(
+      sprintf(
+        "`vcov = \"%s\"` (resampling) is only available for lm / glm fits, not `%s`.",
+        type, class(fit)[1L]
+      ),
+      class = "spicy_unsupported_vcov"
+    )
+  }
   if (identical(type, "classical")) {
     return(stats::vcov(fit))
   }
@@ -540,4 +555,30 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     return(NULL)
   }
   setNames(as.numeric(ct$df_Satt), rownames(ct))
+}
+
+
+# ---- Robust-vcov capability (C2) ------------------------------------------
+
+# Which `vcov` types table_regression() can actually COMPUTE for this fit's
+# class. Default: "classical" only -- a robust vcov the class does not (yet)
+# support fails fast in validate_vcov_cluster_lists() with a clear
+# spicy_unsupported_vcov error, instead of silently returning model-based SEs
+# under a robust label (audit finding C2). The supported set grows per class as
+# the robust path is wired + cross-validated; see dev/C2_robust_vcov_spec.md.
+#
+# Note: "classical" is the user-facing token for the model-based default and is
+# supported by EVERY class, so default calls never error -- only an explicit
+# robust request on a class that cannot honour it does.
+.robust_vcov_support <- function(fit) {
+  full <- c("classical", paste0("HC", 0:5), paste0("CR", 0:3),
+            "bootstrap", "jackknife")
+  switch(
+    class(fit)[1L],
+    lm     = full,
+    glm    = full,
+    negbin = full,   # MASS::glm.nb delegates to the glm path
+    # --- classes whose robust path is wired in later C2 increments go here ---
+    "classical"
+  )
 }

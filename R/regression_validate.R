@@ -414,6 +414,29 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     )
   }
 
+  # Step 6c: per-class capability. A robust vcov must be one the model's class
+  # can actually compute, else fail fast (spicy_unsupported_vcov) instead of
+  # silently returning model-based SEs under a robust label (audit finding C2).
+  # "classical" is supported by every class, so default calls never trip this.
+  vcov_per_model <- if (is.list(vcov)) vcov else rep(list(vcov), n_models)
+  for (i in seq_len(n_models)) {
+    vt        <- vcov_per_model[[i]]
+    supported <- .robust_vcov_support(models[[i]])
+    if (!vt %in% supported) {
+      spicy_abort(
+        c(
+          sprintf("`vcov = \"%s\"` is not available for `%s` models.",
+                  vt, class(models[[i]])[1L]),
+          "i" = sprintf(
+            "This class supports: %s. Robust standard errors for more model classes are being added; see ?table_regression.",
+            paste(supported, collapse = ", ")
+          )
+        ),
+        class = "spicy_unsupported_vcov"
+      )
+    }
+  }
+
   # Step 7: cluster list length (only when an actual list, not an atomic vector)
   if (is.list(cluster) && !is.atomic(cluster)) {
     if (length(cluster) != n_models) {
