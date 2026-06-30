@@ -22,8 +22,12 @@ compute_model_vcov <- function(
   # resamples (an lm on survival times, etc.). The orchestrator's per-class
   # capability check (validate_vcov_cluster_lists) already rejects this, but
   # guard here too so a direct/internal caller cannot trigger the silent misfit.
+  # rms ols/lrm/Glm layer "lm"/"glm" into their class vector but use "="-style
+  # coef names the stats::lm/glm refit cannot reproduce (a noisy classical
+  # fallback), so exclude them explicitly -- matching the clean abort cph gets.
   if (type %in% c("bootstrap", "jackknife") &&
-      !inherits(fit, c("lm", "glm"))) {
+      (!inherits(fit, c("lm", "glm")) ||
+         inherits(fit, c("ols", "lrm", "cph", "Glm")))) {
     spicy_abort(
       sprintf(
         "`vcov = \"%s\"` (resampling) is only available for lm / glm fits, not `%s`.",
@@ -81,16 +85,28 @@ compute_model_vcov <- function(
           type
         ), class = "spicy_invalid_input")
     }
+    # Defense-in-depth: validate the cluster length here too (the public
+    # validator already checks it, but a direct/internal caller bypasses that),
+    # BEFORE sandwich/clubSandwich so a wrong length never surfaces their
+    # locale-dependent internal error. Shared single source of truth.
+    .check_cluster_length(fit, cluster)
     # Cluster-robust backend by class. The CR0..CR3 bias-reduction variants are
     # a clubSandwich concept; Cox and the sandwich::vcovCL classes have a single
     # cluster sandwich, so the requested CR* maps to that one estimator.
     #   * coxph / cph -> Lin & Wei (1989) grouped-dfbeta = coxph(cluster=); the
     #     field-standard Cox robust SE (clubSandwich gives a different,
     #     non-standard result for Cox).
+    #   * ols / lrm / cph / Glm (rms) -> rms::robcov() native cluster sandwich
+    #     (Huber-White; Lin-Wei for cph). Requires the fit's x = TRUE, y = TRUE.
     #   * survreg / gam / polr / clm / betareg / mlogit -> sandwich::vcovCL
     #     (clubSandwich has no usable method for these classes).
     #   * lm / glm / lmer / lme / glmmTMB -> clubSandwich bias-reduced CR*.
-    if (inherits(fit, c("coxph", "cph"))) {
+    # rms first: cph inherits "coxph", but robcov() == the Lin-Wei sandwich and
+    # gives a clearer x/y error, so route the whole rms family through it.
+    if (inherits(fit, c("ols", "lrm", "cph", "Glm"))) {
+      return(.rms_robust_vcov(fit, cluster))
+    }
+    if (inherits(fit, "coxph")) {
       return(.coxph_cluster_robust_vcov(fit, cluster))
     }
     if (inherits(fit, c("survreg", "gam", "bam", "polr", "clm",
@@ -366,9 +382,36 @@ compute_coef_inference <- function(
   cf <- if (!is.null(estimates)) estimates else stats::coef(fit)
   estimate <- unname(cf[coef_idx])
 
+  # Rank-deficient guard: when lm()/glm() drops a perfectly collinear column it
+  # keeps an NA entry in stats::coef(fit), but sandwich::vcovHC() /
+  # clubSandwich::vcovCR() / coef_test() DROP that column, so the robust matrix
+  # is NARROWER than the full coef vector. Indexing those by the full-vector
+  # position `coef_idx` would shift every coef after a dropped one onto the
+  # WRONG variance (and push the last out of range -> NA). Index by coefficient
+  # NAME instead, falling back to position only when names are unavailable.
+  # stats::vcov(fit) keeps the NA row/col, so the classical path is unaffected
+  # either way. Dropped coefs never reach here -- build_b_rows() short-circuits
+  # them to NA rows -- so a present name always resolves in the robust matrix.
+  coef_name <- if (!is.null(names(cf))) names(cf)[coef_idx] else NA_character_
+  .robust_pos <- function(nms) {
+    if (!is.na(coef_name) && !is.null(nms) && coef_name %in% nms) {
+      match(coef_name, nms)
+    } else {
+      coef_idx
+    }
+  }
+  .se_at <- function(mat) {
+    # diag() drops names, so take the coefficient names from the matrix
+    # dimnames (sandwich / vcov keep them) for the name-based lookup.
+    nms <- rownames(mat) %||% colnames(mat)
+    dv <- diag(mat)
+    pos <- .robust_pos(nms)
+    if (is.na(pos) || pos > length(dv)) NA_real_ else sqrt(dv[[pos]])
+  }
+
   # Resampling-based vcov: asymptotic z inference (df = Inf).
   if (vcov_type %in% c("bootstrap", "jackknife")) {
-    se_est <- sqrt(diag(vc))[coef_idx]
+    se_est <- .se_at(vc)
     stat <- estimate / se_est
     crit <- stats::qnorm(1 - (1 - ci_level) / 2)
     pval <- 2 * stats::pnorm(abs(stat), lower.tail = FALSE)
@@ -394,16 +437,24 @@ compute_coef_inference <- function(
       ),
       error = function(e) NULL
     )
+    # Index the coef_test() rows by NAME (rank-deficient guard, see above):
+    # coef_test() drops collinear columns, so a present coefficient may sit at a
+    # different row than its full-vector position coef_idx.
+    cr_pos <- if (!is.null(ct) && is.data.frame(ct)) {
+      .robust_pos(rownames(ct))
+    } else {
+      NA_integer_
+    }
     if (
       !is.null(ct) &&
         is.data.frame(ct) &&
-        nrow(ct) >= coef_idx &&
+        !is.na(cr_pos) && cr_pos <= nrow(ct) &&
         all(c("df_Satt", "p_Satt", "SE", "tstat") %in% names(ct))
     ) {
-      df <- ct$df_Satt[coef_idx]
-      se_est <- ct$SE[coef_idx]
-      stat <- ct$tstat[coef_idx]
-      pval <- ct$p_Satt[coef_idx]
+      df <- ct$df_Satt[cr_pos]
+      se_est <- ct$SE[cr_pos]
+      stat <- ct$tstat[cr_pos]
+      pval <- ct$p_Satt[cr_pos]
       crit <- if (is.finite(df) && df > 0) {
         stats::qt(1 - (1 - ci_level) / 2, df = df)
       } else {
@@ -425,7 +476,7 @@ compute_coef_inference <- function(
   # Classical / HC* / CR-fallback default path: t (df.residual or `df_resid`)
   # for `test = "t"`, z (df = Inf) for `test = "z"`. The axis is the estimator's
   # reference distribution, not the fit class.
-  se_est <- sqrt(diag(vc))[coef_idx]
+  se_est <- .se_at(vc)
   stat <- estimate / se_est
   if (identical(test, "z")) {
     df <- Inf
@@ -598,6 +649,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   # Cluster-robust only: clubSandwich CR* is defined, but HC* (an OLS / single-
   # level concept) and the lm/glm-refitting resamplers are not.
   cr_only <- c("classical", paste0("CR", 0:3))
+  # Cluster sandwich classes that ALSO have a working estfun for HC*.
+  hc_cr <- c("classical", paste0("HC", 0:5), paste0("CR", 0:3))
   switch(
     class(fit)[1L],
     lm     = full,
@@ -615,9 +668,36 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
     coxph           = cr_only,
     survreg         = cr_only,
+    # Inc 4: cluster sandwich via sandwich::vcovCL. mlogit also has HC* (it
+    # provides estfun); svyglm uses clubSandwich design-aware CR*. clm is
+    # structure-aware: scale/nominal (partial-PO) fits have no sandwich estfun
+    # method, so CR* is refused for them (-> spicy_unsupported_vcov up front).
+    gam             = cr_only,
+    bam             = cr_only,
+    polr            = cr_only,
+    clm             = .clm_robust_vcov_support(fit, cr_only),
+    betareg         = cr_only,
+    svyglm          = cr_only,
+    mlogit          = hc_cr,
+    # Inc 4b: rms fits via rms::robcov() native cluster sandwich (needs the
+    # fit's x = TRUE, y = TRUE). ols / lrm / cph / Glm.
+    ols             = cr_only,
+    lrm             = cr_only,
+    cph             = cr_only,
+    Glm             = cr_only,
     # --- classes whose robust path is wired in later C2 increments go here ---
     "classical"
   )
+}
+
+
+# clm with a scale (scale = ~) or nominal (nominal = ~, partial-PO) component has
+# no sandwich::estfun method ("estimating functions for scale regression not
+# implemented yet"), so vcovCL / CR* cannot be formed. Refuse CR* up front for
+# those fits (the validate gate then emits a clear spicy_unsupported_vcov) rather
+# than crashing deep inside estfun. Plain proportional-odds clm keeps cr_only.
+.clm_robust_vcov_support <- function(fit, cr_only) {
+  if (!is.null(fit$S.terms) || !is.null(fit$nom.terms)) "classical" else cr_only
 }
 
 
@@ -631,7 +711,11 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 .apply_robust_vcov_to_coefs <- function(coefs, fit, vcov_type, cluster,
                                         ci_level, test = "t",
                                         estimates = NULL) {
-  if (is.null(vcov_type) || vcov_type %in% c("classical", "model")) {
+  # No-op for the model-based defaults: "classical" / "model" (every class) and
+  # "survey-Taylor" (the svyglm design-based default, whose SE .svyglm_coefs()
+  # already computed and which compute_model_vcov() does not know).
+  if (is.null(vcov_type) ||
+        vcov_type %in% c("classical", "model", "survey-Taylor")) {
     return(coefs)
   }
   vc <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
@@ -676,6 +760,79 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 }
 
 
+# Number of cluster entries a cluster-robust vcov expects for this fit: one per
+# row of the score / residual matrix the sandwich sums over. For almost every
+# class that equals stats::nobs(), but two classes need a class-specific count:
+#   * survival::coxph: the Lin-Wei sandwich sums dfbeta residuals over clusters
+#     with one dfbeta row per SUBJECT. Under censoring stats::nobs() is the EVENT
+#     count, which is smaller -- using it would reject a correct subject-level
+#     cluster and let a (wrong) event-length one crash in rowsum(). (rms::cph
+#     also inherits "coxph" but its nobs() already counts subjects, and fit$n is
+#     a c(censored, events) vector, so it is deliberately excluded here.)
+#   * mlogit: estfun() is at the choice-situation level (one row per individual,
+#     not per long-format alternative), so nobs() (the long count) is too big.
+# Used by the orchestrator's cluster-length check (validate_vcov_cluster_lists).
+.expected_cluster_length <- function(fit) {
+  if (inherits(fit, "coxph") && !inherits(fit, "cph")) {
+    n <- tryCatch(NROW(stats::residuals(fit, type = "dfbeta")),
+                  error = function(e) NA_integer_)
+    if (is.finite(n)) return(as.integer(n))
+    if (!is.null(fit$n)) return(as.integer(fit$n[length(fit$n)]))
+  }
+  if (inherits(fit, "mlogit")) {
+    n <- tryCatch(NROW(sandwich::estfun(fit)), error = function(e) NA_integer_)
+    if (is.finite(n)) return(as.integer(n))
+  }
+  # rms fits: robcov() clusters over the design-matrix rows (= observations).
+  # stats::nobs() has no method for some rms classes (e.g. Glm -> NA), so read
+  # the row count off fit$x, which robust SE require to be present anyway.
+  if (inherits(fit, c("ols", "lrm", "cph", "Glm")) && !is.null(fit[["x"]])) {
+    return(as.integer(NROW(fit[["x"]])))
+  }
+  n <- suppressWarnings(tryCatch(stats::nobs(fit), error = function(e) NA_integer_))
+  if (is.null(n) || !is.finite(n)) return(NA_integer_)
+  as.integer(n)
+}
+
+
+# Validate a cluster vector's length against what this fit's cluster-robust vcov
+# requires (.expected_cluster_length()), with a clear, class-aware error checked
+# BEFORE any sandwich/clubSandwich call -- so we never surface their internal,
+# LOCALE-DEPENDENT messages (e.g. sandwich's "number of observations ... do not
+# match", which is translated on a non-English R). Single source of truth shared
+# by the public validator (validate_vcov_cluster_lists) and the internal compute
+# path (compute_model_vcov), so direct/internal callers fail just as cleanly as
+# table_regression(). No-op unless `cluster` is an atomic vector of wrong length.
+.check_cluster_length <- function(fit, cluster, label = "`cluster`") {
+  if (is.null(cluster) || !is.atomic(cluster)) {
+    return(invisible(NULL))
+  }
+  n_exp <- .expected_cluster_length(fit)
+  # If the required length can't be determined (NA), skip the check and let the
+  # compute layer raise the appropriate error (e.g. rms without x/y).
+  if (is.na(n_exp) || length(cluster) == n_exp) {
+    return(invisible(NULL))
+  }
+  hint <- if (inherits(fit, "mlogit")) {
+    paste0("For mlogit, `cluster` is at the choice-situation level (one entry ",
+           "per individual), not per long-format alternative.")
+  } else if (inherits(fit, c("coxph", "cph"))) {
+    paste0("Cox cluster-robust SE need one `cluster` value per subject (row of ",
+           "the model data), not per event.")
+  } else {
+    "Supply one `cluster` value per observation."
+  }
+  spicy_abort(
+    c(
+      sprintf("%s has length %d but the model requires length %d.",
+              label, length(cluster), n_exp),
+      "i" = hint
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
 # Cluster-robust vcov for a Cox PH fit: the Lin & Wei (1989) grouped-dfbeta
 # sandwich -- identical to coxph(..., cluster=) / the survival package's robust
 # fit$var. clubSandwich::vcovCR is deliberately NOT used (it returns a
@@ -687,4 +844,46 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   nm <- names(stats::coef(fit))
   if (length(nm) == nrow(rob)) dimnames(rob) <- list(nm, nm)
   rob
+}
+
+
+# Cluster-robust vcov for an rms fit (ols / lrm / cph / Glm) via rms::robcov(),
+# the package's native Huber-White cluster sandwich (the Lin-Wei estimator for
+# cph -- identical to coxph(..., cluster=)). robcov() needs the fit to carry its
+# design + response matrices (x = TRUE, y = TRUE); we surface a clear, actionable
+# error when they are missing instead of rms's terse "did not specify x=TRUE in
+# fit". Dimnames are normalised ("Intercept" -> "(Intercept)") to match the
+# coefs frame's term column (see .rms_coef_named()).
+.rms_robust_vcov <- function(fit, cluster) {
+  if (is.null(fit[["x"]]) || is.null(fit[["y"]])) {
+    cl <- class(fit)[1L]
+    spicy_abort(
+      c(
+        sprintf("Cluster-robust SE for an rms `%s` fit need the model matrices.",
+                cl),
+        "i" = sprintf(paste0("Refit with `x = TRUE, y = TRUE` (e.g. ",
+                             "`%s(..., x = TRUE, y = TRUE)`) so rms::robcov() ",
+                             "can form the sandwich."), cl)
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  V <- as.matrix(rms::robcov(fit, cluster = cluster)$var)
+  nm <- .rms_normalise_names(names(stats::coef(fit)))
+  if (length(nm) == nrow(V)) dimnames(V) <- list(nm, nm)
+  V
+}
+
+# rms names its intercept "Intercept"; the coefs frame uses "(Intercept)".
+.rms_normalise_names <- function(nm) {
+  nm[nm == "Intercept"] <- "(Intercept)"
+  nm
+}
+
+# stats::coef(rms_fit) with the intercept renamed to match coefs$term, so the
+# name-based robust-vcov application (.apply_robust_vcov_to_coefs) aligns rows.
+.rms_coef_named <- function(fit) {
+  cf <- stats::coef(fit)
+  names(cf) <- .rms_normalise_names(names(cf))
+  cf
 }

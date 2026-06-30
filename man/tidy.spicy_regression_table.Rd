@@ -30,7 +30,7 @@ pipeline.
 \details{
 \code{tidy()} returns one row per \verb{(model_id, term, estimate_type)}
 triplet, with \code{estimate_type} in
-\code{c("B", "beta", "AME", "partial_f2", "partial_eta2", "partial_omega2")}.
+\code{c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")}.
 Reference-row placeholders (factor reference levels) and
 singular coefficients (NA estimates) are dropped. Columns:
 \verb{model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level}.

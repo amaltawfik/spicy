@@ -489,18 +489,16 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       )
     }
 
+    # Cluster length must match what this fit's cluster-robust vcov requires.
+    # Delegated to the shared .check_cluster_length() (the same guard the compute
+    # path uses) so the required-length logic and the class-aware message live in
+    # ONE place. The label carries the per-model `[[i]]` index for multi-model.
     if (!is.null(c_i) && is.atomic(c_i)) {
-      n_obs_i <- stats::nobs(models[[i]])
-      if (length(c_i) != n_obs_i) {
-        spicy_abort(
-          sprintf(
-            "`cluster%s` has length %d but model %d has %d observations.",
-            if (n_models > 1L) sprintf("[[%d]]", i) else "",
-            length(c_i), i, n_obs_i
-          ),
-          class = "spicy_invalid_input"
-        )
-      }
+      .check_cluster_length(
+        models[[i]], c_i,
+        label = sprintf("`cluster%s`",
+                        if (n_models > 1L) sprintf("[[%d]]", i) else "")
+      )
     }
 
     # Cluster supplied but vcov is not CR* -- silent ignore would be a

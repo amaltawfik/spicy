@@ -36,6 +36,8 @@
 as_regression_frame.gam <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -48,6 +50,9 @@ as_regression_frame.gam <- function(fit,
 
   coefs <- .gam_coefs(fit, ci_level = ci_level,
                        is_gaussian_identity = is_gaussian_identity)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .gam_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -56,6 +61,10 @@ as_regression_frame.gam <- function(fit,
                      model_id   = model_id,
                      is_gaussian_identity = is_gaussian_identity,
                      fam        = fam)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
 
   new_regression_frame(coefs, info, fit)
 }

@@ -52,11 +52,17 @@ table_regression(
 )
 }
 \arguments{
-\item{models}{An \code{lm} or \code{glm} fitted model, or a list of such
-fits (named or unnamed; \code{lm} and \code{glm} may be mixed). Single
-fits are auto-promoted to a 1-element list. \code{merMod} and
-other classes raise \code{spicy_unsupported}. Raw data + formula
-is not accepted -- fit-only API.}
+\item{models}{A fitted model object, or a list of such fits
+(named or unnamed; classes may be mixed). Single fits are
+auto-promoted to a 1-element list. A broad set of model classes
+is supported -- linear / generalised linear (\code{lm}, \code{glm},
+\code{MASS::glm.nb}), mixed-effects (\code{lmer}, \code{lme}, \code{glmmTMB}),
+survival (\code{coxph}, \code{survreg}), ordinal (\code{polr}, \code{clm}),
+\code{mgcv::gam}/\code{bam}, \code{betareg}, \code{mlogit}, \code{survey::svyglm}, \code{rms}
+(\code{ols}/\code{lrm}/\code{cph}/\code{Glm}), and Bayesian (\code{rstanarm}/\code{brms}),
+among others. An unsupported class raises
+\code{spicy_unsupported_class}. Raw data + formula is not accepted
+-- fit-only API.}
 
 \item{vcov}{Variance-covariance estimator: \code{"classical"},
 \code{"HC0"}-\code{"HC5"}, \code{"CR0"}-\code{"CR3"}, \code{"bootstrap"}, or
@@ -634,9 +640,11 @@ value (recycled to all models) or a list (one per model). The
 same fit can appear several times with different estimators to
 compare standard errors side-by-side.
 
-Inferential regimes (B and AME share the same regime):
+Inferential regimes for \code{lm} / \code{glm} (B and AME share the same
+regime):
 \itemize{
-\item \code{classical}, \verb{HC*} -> t with \code{df.residual}.
+\item \code{classical}, \verb{HC*} -> t with \code{df.residual} (\code{lm}) /
+z-asymptotic (\code{glm}).
 \item \code{bootstrap}, \code{jackknife} -> z asymptotic.
 \item \code{CR0}-\code{CR3} -> t with \strong{Satterthwaite-corrected df} (B
 via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
@@ -645,6 +653,45 @@ via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
 \code{splines::ns()}), AME falls back to z-asymptotic with a
 \code{spicy_fallback} warning.
 }
+For other classes the t-vs-z axis follows the estimator's native
+reference distribution (e.g. \code{glm}, \code{glmmTMB}, survival, ordinal,
+\code{betareg}, \code{mlogit} use z; \code{lm}, \code{lme}, \code{lmer}, \code{rms::ols} use t).
+\subsection{Robust SE availability by model class}{
+
+Not every estimator is defined for every class. A robust \code{vcov}
+the class cannot honour fails fast with \code{spicy_unsupported_vcov}
+-- never a silent model-based result under a robust label:
+
+\describe{
+\item{\code{lm}, \code{glm}, \code{MASS::glm.nb}}{all of \code{classical}, \verb{HC*},
+\verb{CR*}, \code{bootstrap}, \code{jackknife}.}
+\item{\code{mlogit}}{\code{classical}, \verb{HC*}, \verb{CR*} (cluster at the
+choice-situation level).}
+\item{\code{lmer}, \code{lme}, \code{glmmTMB}, \code{coxph}, \code{survreg},
+\code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
+\code{survey::svyglm}, \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
++ \verb{CR*} only -- \verb{HC*} and the resamplers (which refit
+\code{lm}/\code{glm}) are not defined for these. \code{clm} with a scale /
+nominal (partial-PO) component is \code{classical} only.}
+\item{Other classes (\code{glmer}, \code{nnet::multinom},
+\code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only.}
+}
+
+Cluster-robust backends differ by class but are each cross-validated
+to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme}/\code{glmmTMB} use
+\pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
+\code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
+sandwich (identical to \code{coxph(..., cluster=)});
+\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit} use
+\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{svyglm} uses the design-aware
+\pkg{clubSandwich} estimator; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
+needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
+sandwiches have no CR0-CR3 bias-reduction variants, so the requested
+\verb{CR*} maps to the one available estimator. \code{cluster} length is one
+entry per observation, except \code{mlogit} (one per choice situation)
+and censored \code{coxph} (one per subject).
+}
+
 \subsection{How to specify \code{cluster}}{
 
 Three accepted forms, in order of preference:

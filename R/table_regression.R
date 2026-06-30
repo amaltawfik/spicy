@@ -144,9 +144,11 @@
 #' same fit can appear several times with different estimators to
 #' compare standard errors side-by-side.
 #'
-#' Inferential regimes (B and AME share the same regime):
+#' Inferential regimes for `lm` / `glm` (B and AME share the same
+#' regime):
 #' \itemize{
-#'   \item `classical`, `HC*` -> t with `df.residual`.
+#'   \item `classical`, `HC*` -> t with `df.residual` (`lm`) /
+#'     z-asymptotic (`glm`).
 #'   \item `bootstrap`, `jackknife` -> z asymptotic.
 #'   \item `CR0`-`CR3` -> t with **Satterthwaite-corrected df** (B
 #'     via [clubSandwich::coef_test()]; AME via
@@ -155,6 +157,44 @@
 #'     `splines::ns()`), AME falls back to z-asymptotic with a
 #'     `spicy_fallback` warning.
 #' }
+#' For other classes the t-vs-z axis follows the estimator's native
+#' reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
+#' `betareg`, `mlogit` use z; `lm`, `lme`, `lmer`, `rms::ols` use t).
+#'
+#' ## Robust SE availability by model class
+#'
+#' Not every estimator is defined for every class. A robust `vcov`
+#' the class cannot honour fails fast with `spicy_unsupported_vcov`
+#' -- never a silent model-based result under a robust label:
+#'
+#' \describe{
+#'   \item{`lm`, `glm`, `MASS::glm.nb`}{all of `classical`, `HC*`,
+#'     `CR*`, `bootstrap`, `jackknife`.}
+#'   \item{`mlogit`}{`classical`, `HC*`, `CR*` (cluster at the
+#'     choice-situation level).}
+#'   \item{`lmer`, `lme`, `glmmTMB`, `coxph`, `survreg`,
+#'     `mgcv::gam`/`bam`, `polr`, `clm`, `betareg`,
+#'     `survey::svyglm`, `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical`
+#'     + `CR*` only -- `HC*` and the resamplers (which refit
+#'     `lm`/`glm`) are not defined for these. `clm` with a scale /
+#'     nominal (partial-PO) component is `classical` only.}
+#'   \item{Other classes (`glmer`, `nnet::multinom`,
+#'     `rstanarm`/`brms`, ...)}{`classical` (model-based) only.}
+#' }
+#'
+#' Cluster-robust backends differ by class but are each cross-validated
+#' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme`/`glmmTMB` use
+#' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
+#' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
+#' sandwich (identical to `coxph(..., cluster=)`);
+#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit` use
+#' [sandwich::vcovCL()]; `svyglm` uses the design-aware
+#' \pkg{clubSandwich} estimator; `rms` fits use [rms::robcov()] (which
+#' needs the fit's `x = TRUE, y = TRUE`). These single cluster
+#' sandwiches have no CR0-CR3 bias-reduction variants, so the requested
+#' `CR*` maps to the one available estimator. `cluster` length is one
+#' entry per observation, except `mlogit` (one per choice situation)
+#' and censored `coxph` (one per subject).
 #'
 #' ## How to specify `cluster`
 #'
@@ -308,11 +348,17 @@
 #' `labels`. The title and footer are post-processable via
 #' `attr(result, "title")` and `attr(result, "note")`.
 #'
-#' @param models An `lm` or `glm` fitted model, or a list of such
-#'   fits (named or unnamed; `lm` and `glm` may be mixed). Single
-#'   fits are auto-promoted to a 1-element list. `merMod` and
-#'   other classes raise `spicy_unsupported`. Raw data + formula
-#'   is not accepted -- fit-only API.
+#' @param models A fitted model object, or a list of such fits
+#'   (named or unnamed; classes may be mixed). Single fits are
+#'   auto-promoted to a 1-element list. A broad set of model classes
+#'   is supported -- linear / generalised linear (`lm`, `glm`,
+#'   `MASS::glm.nb`), mixed-effects (`lmer`, `lme`, `glmmTMB`),
+#'   survival (`coxph`, `survreg`), ordinal (`polr`, `clm`),
+#'   `mgcv::gam`/`bam`, `betareg`, `mlogit`, `survey::svyglm`, `rms`
+#'   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`),
+#'   among others. An unsupported class raises
+#'   `spicy_unsupported_class`. Raw data + formula is not accepted
+#'   -- fit-only API.
 #' @param vcov Variance-covariance estimator: `"classical"`,
 #'   `"HC0"`-`"HC5"`, `"CR0"`-`"CR3"`, `"bootstrap"`, or
 #'   `"jackknife"`. A scalar is recycled to all models; a list

@@ -29,6 +29,8 @@
 as_regression_frame.mlogit <- function(fit,
                                         vcov = "model",
                                         vcov_label = NULL,
+                                        cluster = NULL,
+                                        cluster_name = NULL,
                                         ci_level = 0.95,
                                         ci_method = NULL,
                                         model_id = "M1",
@@ -36,12 +38,22 @@ as_regression_frame.mlogit <- function(fit,
   .check_mlogit_available()
 
   coefs <- .mlogit_coefs(fit, ci_level = ci_level)
+  # HC* -> sandwich::vcovHC ; CR* -> sandwich::vcovCL cluster sandwich.
+  # Wald z throughout (mlogit is ML-estimated); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .mlogit_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,
                         ci_level   = ci_level,
                         ci_method  = ci_method,
                         model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(
+      vcov, cluster_name %||% NA_character_,
+      estimator = if (startsWith(vcov, "CR")) "CL" else NULL
+    )
+  }
 
   new_regression_frame(coefs, info, fit)
 }
@@ -210,6 +222,8 @@ as_regression_frame.mlogit <- function(fit,
 as_regression_frame.betareg <- function(fit,
                                          vcov = "model",
                                          vcov_label = NULL,
+                                         cluster = NULL,
+                                         cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          model_id = "M1",
@@ -217,12 +231,22 @@ as_regression_frame.betareg <- function(fit,
   .check_betareg_available()
 
   coefs <- .betareg_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  # The precision (phi) parameter lives in info$extras, not coefs, so only the
+  # mean-component rows are reweighted -- the full vcovCL covers both blocks but
+  # the mean coefs occupy its leading positions, which is what `match` selects.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .betareg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,
                          ci_level   = ci_level,
                          ci_method  = ci_method,
                          model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
 
   new_regression_frame(coefs, info, fit)
 }

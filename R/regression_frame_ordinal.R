@@ -38,6 +38,8 @@
 as_regression_frame.polr <- function(fit,
                                       vcov = "model",
                                       vcov_label = NULL,
+                                      cluster = NULL,
+                                      cluster_name = NULL,
                                       ci_level = 0.95,
                                       ci_method = NULL,
                                       model_id = "M1",
@@ -45,12 +47,21 @@ as_regression_frame.polr <- function(fit,
   .check_MASS_available()
 
   coefs <- .polr_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  # The (k - 1) thresholds live in info$extras, not in coefs, so only the
+  # proportional-odds slope rows are reweighted -- which is what we want.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .polr_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
                       ci_level   = ci_level,
                       ci_method  = ci_method,
                       model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
 
   new_regression_frame(coefs, info, fit)
 }
@@ -64,6 +75,8 @@ as_regression_frame.polr <- function(fit,
 as_regression_frame.clm <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -71,12 +84,21 @@ as_regression_frame.clm <- function(fit,
   .check_ordinal_available()
 
   coefs <- .clm_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  # coef(clm) orders thresholds before slopes; only the slope rows live in
+  # coefs, and `match` selects their (offset) positions in the full vcovCL.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .clm_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
                      ci_level   = ci_level,
                      ci_method  = ci_method,
                      model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
 
   new_regression_frame(coefs, info, fit)
 }

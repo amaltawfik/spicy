@@ -41,6 +41,8 @@
 as_regression_frame.ols <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -48,6 +50,12 @@ as_regression_frame.ols <- function(fit,
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = FALSE)
+  # CR* -> rms::robcov() cluster sandwich. ols keeps Wald t with df.residual
+  # (the rms convention); a no-op for the default. estimates carries the
+  # intercept renamed to "(Intercept)" so the rows align by name.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "t",
+                                       estimates = .rms_coef_named(fit))
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -55,6 +63,10 @@ as_regression_frame.ols <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id,
                      rms_class  = "ols")
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "Huber")
+  }
 
   new_regression_frame(coefs, info, fit)
 }
@@ -68,6 +80,8 @@ as_regression_frame.ols <- function(fit,
 as_regression_frame.lrm <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -75,6 +89,10 @@ as_regression_frame.lrm <- function(fit,
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
+  # CR* -> rms::robcov() cluster sandwich (Wald z); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z",
+                                       estimates = .rms_coef_named(fit))
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -82,6 +100,10 @@ as_regression_frame.lrm <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id,
                      rms_class  = "lrm")
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "Huber")
+  }
 
   new_regression_frame(coefs, info, fit)
 }
@@ -95,6 +117,8 @@ as_regression_frame.lrm <- function(fit,
 as_regression_frame.cph <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -102,6 +126,11 @@ as_regression_frame.cph <- function(fit,
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
+  # CR* -> rms::robcov() == the Lin-Wei grouped-dfbeta sandwich (= coxph
+  # cluster=); Wald z. No intercept row, so no rename needed. No-op by default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z",
+                                       estimates = .rms_coef_named(fit))
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -109,6 +138,10 @@ as_regression_frame.cph <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id,
                      rms_class  = "cph")
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "Lin-Wei")
+  }
 
   new_regression_frame(coefs, info, fit)
 }
@@ -122,6 +155,8 @@ as_regression_frame.cph <- function(fit,
 as_regression_frame.Glm <- function(fit,
                                      vcov = "model",
                                      vcov_label = NULL,
+                                     cluster = NULL,
+                                     cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
                                      model_id = "M1",
@@ -129,6 +164,10 @@ as_regression_frame.Glm <- function(fit,
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
+  # CR* -> rms::robcov() cluster sandwich (Wald z); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z",
+                                       estimates = .rms_coef_named(fit))
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -136,6 +175,10 @@ as_regression_frame.Glm <- function(fit,
                      ci_method  = ci_method,
                      model_id   = model_id,
                      rms_class  = "Glm")
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "Huber")
+  }
 
   new_regression_frame(coefs, info, fit)
 }

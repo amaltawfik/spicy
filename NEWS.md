@@ -84,6 +84,28 @@ labels) is layered on top for mixed-effects and Bayesian.
 * **Other classical extensions**: `rms::ols`, `rms::lrm`,
   `rms::Glm`, `sampleSelection::selection`.
 
+### Robust and cluster-robust standard errors across model classes
+
+* `table_regression(vcov = ...)` computes heteroskedasticity- and
+  cluster-robust standard errors for the supported frequentist
+  classes, each via its field-standard backend: `clubSandwich`
+  (CR2 / Bell-McCaffrey with Satterthwaite df for `lm` / `glm` /
+  `lmer` / `lme` / `glmmTMB`), the Lin-Wei grouped-dfbeta sandwich
+  for `coxph` / `rms::cph` (= `coxph(..., cluster=)`),
+  `sandwich::vcovCL` for `survreg` / `gam` / `polr` / `clm` /
+  `betareg` / `mlogit`, the design-aware `clubSandwich` estimator
+  for `survey::svyglm`, and `rms::robcov()` for `rms` fits (needs
+  `x = TRUE, y = TRUE`). Each backend is cross-validated to its
+  oracle to machine precision.
+
+* A robust `vcov` a model class cannot honour now fails fast with
+  `spicy_unsupported_vcov` instead of silently returning
+  model-based SEs under a robust label. See `?table_regression`,
+  *Robust SE availability by model class*, for the capability
+  matrix. `cluster` is one entry per observation, except `mlogit`
+  (one per choice situation) and censored `coxph` (one per
+  subject).
+
 ## Minor improvements
 
 * `show_fit_stats = FALSE` suppresses the fit-stats block (parity

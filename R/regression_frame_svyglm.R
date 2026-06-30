@@ -28,6 +28,8 @@
 as_regression_frame.svyglm <- function(fit,
                                         vcov = "survey-Taylor",
                                         vcov_label = NULL,
+                                        cluster = NULL,
+                                        cluster_name = NULL,
                                         ci_level = 0.95,
                                         ci_method = NULL,
                                         model_id = "M1",
@@ -35,12 +37,19 @@ as_regression_frame.svyglm <- function(fit,
   .check_survey_available()
 
   coefs <- .svyglm_coefs(fit, ci_level = ci_level)
+  # CR* -> clubSandwich design-aware vcovCR (Wald z); a no-op for the
+  # design-based default ("classical" / "survey-Taylor").
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .svyglm_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,
                         ci_level   = ci_level,
                         ci_method  = ci_method,
                         model_id   = model_id)
+  if (!vcov %in% c("model", "classical", "survey-Taylor")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
+  }
 
   new_regression_frame(coefs, info, fit)
 }

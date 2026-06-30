@@ -1361,7 +1361,7 @@ test_that("AUDIT: cluster length mismatch -> clear actionable error", {
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "length 100", fixed = TRUE)
-  expect_match(conditionMessage(err), "95 observations", fixed = TRUE)
+  expect_match(conditionMessage(err), "requires length 95", fixed = TRUE)
 })
 
 test_that("AUDIT: glm + subset -> nobs reflects subset, table renders", {
