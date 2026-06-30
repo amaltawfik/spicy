@@ -661,26 +661,6 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 }
 
 
-# Map coef name -> Satterthwaite df via clubSandwich::coef_test on the
-# original glm. Returns NULL on failure (e.g., clubSandwich missing,
-# coef_test errored). Caller falls back to z-asymptotic.
-compute_satt_df_per_coef <- function(fit, vc, cluster) {
-  ct <- tryCatch(
-    clubSandwich::coef_test(
-      fit,
-      vcov = vc,
-      cluster = cluster,
-      test = "Satterthwaite"
-    ),
-    error = function(e) NULL
-  )
-  if (is.null(ct) || !is.data.frame(ct) || !"df_Satt" %in% names(ct)) {
-    return(NULL)
-  }
-  setNames(as.numeric(ct$df_Satt), rownames(ct))
-}
-
-
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
 # Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
