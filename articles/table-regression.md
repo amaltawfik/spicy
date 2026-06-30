@@ -1526,34 +1526,38 @@ str(out)
 #>  - attr(*, "title")= chr "Linear regression: wellbeing_score"
 #>  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."
 #>  - attr(*, "col_spec")=List of 4
-#>   ..$ :List of 6
+#>   ..$ :List of 7
 #>   .. ..$ col_name     : chr "B"
 #>   .. ..$ display_label: chr "B"
 #>   .. ..$ token        : chr "b"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr "estimate"
-#>   ..$ :List of 6
+#>   .. ..$ outcome_level: chr NA
+#>   ..$ :List of 7
 #>   .. ..$ col_name     : chr "SE"
 #>   .. ..$ display_label: chr "SE"
 #>   .. ..$ token        : chr "se"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr "se"
-#>   ..$ :List of 6
+#>   .. ..$ outcome_level: chr NA
+#>   ..$ :List of 7
 #>   .. ..$ col_name     : chr "95% CI"
 #>   .. ..$ display_label: chr "95% CI"
 #>   .. ..$ token        : chr "ci"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr [1:2] "ci_low" "ci_high"
-#>   ..$ :List of 6
+#>   .. ..$ outcome_level: chr NA
+#>   ..$ :List of 7
 #>   .. ..$ col_name     : chr "p"
 #>   .. ..$ display_label: chr "p"
 #>   .. ..$ token        : chr "p"
 #>   .. ..$ model_id     : chr "M1"
 #>   .. ..$ estimate_type: chr "B"
 #>   .. ..$ fields       : chr "p_value"
+#>   .. ..$ outcome_level: chr NA
 #>  - attr(*, "group_sep_rows")= int 9
 #>  - attr(*, "align")= chr "decimal"
 #>  - attr(*, "decimal_mark")= chr "."
