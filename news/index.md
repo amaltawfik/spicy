@@ -142,7 +142,29 @@ Bayesian.
   `cluster` is one entry per observation, except `mlogit` (one per
   choice situation) and censored `coxph` (one per subject).
 
+#### Average marginal effects for more model classes
+
+- The `"ame"` columns now report average marginal effects for `betareg`,
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html),
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), and
+  [`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)
+  (one response-scale AME per predictor), and **per-outcome-category**
+  AME for [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html), and
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) (one
+  AME per predictor and outcome category). Values are cross-validated to
+  [`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html).
+  These classes previously advertised AME support but rendered an empty
+  column.
+
 ### Minor improvements
+
+- The “fit a gaussian [`glm()`](https://rdrr.io/r/stats/glm.html)? use
+  [`lm()`](https://rdrr.io/r/stats/lm.html) instead” caveat now fires
+  only for a plain `glm` fit, not for `svyglm` /
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) (which inherit
+  `"glm"` but for which the suggestion is wrong – it would drop the
+  survey design or the smooth terms).
 
 - `show_fit_stats = FALSE` suppresses the fit-stats block (parity with
   `show_re = FALSE` and `outcome_labels = FALSE`).
