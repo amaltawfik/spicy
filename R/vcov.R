@@ -338,10 +338,16 @@ compute_coef_inference <- function(
   cluster = NULL,
   ci_level = 0.95,
   test = c("t", "z"),
-  df_resid = NULL
+  df_resid = NULL,
+  estimates = NULL
 ) {
   test <- match.arg(test)
-  cf <- stats::coef(fit)
+  # Point estimates are stats::coef(fit) for most classes. Classes whose
+  # coef() is NOT the fixed-effect vector (e.g. merMod, where coef() returns
+  # the per-group random-effect-adjusted coefficients) pass `estimates`
+  # explicitly (lme4::fixef(fit)). The clubSandwich coef_test() path already
+  # operates on the fixed effects, so only the estimate source needs overriding.
+  cf <- if (!is.null(estimates)) estimates else stats::coef(fit)
   estimate <- unname(cf[coef_idx])
 
   # Resampling-based vcov: asymptotic z inference (df = Inf).
@@ -573,12 +579,78 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 .robust_vcov_support <- function(fit) {
   full <- c("classical", paste0("HC", 0:5), paste0("CR", 0:3),
             "bootstrap", "jackknife")
+  # Cluster-robust only: clubSandwich CR* is defined, but HC* (an OLS / single-
+  # level concept) and the lm/glm-refitting resamplers are not.
+  cr_only <- c("classical", paste0("CR", 0:3))
   switch(
     class(fit)[1L],
     lm     = full,
     glm    = full,
     negbin = full,   # MASS::glm.nb delegates to the glm path
+    # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
+    # Satterthwaite df; glmmTMB gets the CR matrix with z inference (its
+    # coef_test() Satterthwaite path is unsupported). glmer is NOT granted:
+    # clubSandwich::vcovCR() errors on glmerMod, so it would fall back to
+    # model-based -- better to refuse cleanly until a working backend exists.
+    lmerMod         = cr_only,
+    lmerModLmerTest = cr_only,
+    lme             = cr_only,
+    glmmTMB         = cr_only,
     # --- classes whose robust path is wired in later C2 increments go here ---
     "classical"
   )
+}
+
+
+# Recompute the inference columns (std_error, statistic, df, p_value, ci_lower,
+# ci_upper, test_type) of a frame's B rows under a robust vcov, reusing the
+# class-generic compute_model_vcov() + compute_coef_inference(). A no-op for the
+# model-based default. Classes whose coef() is not the fixed-effect vector pass
+# `estimates` (e.g. lme4::fixef(fit)). Estimates + row metadata are preserved;
+# only the inference cells change. Shared by every non-lm/glm robust-capable
+# method so the robust path is wired in exactly one place.
+.apply_robust_vcov_to_coefs <- function(coefs, fit, vcov_type, cluster,
+                                        ci_level, test = "t",
+                                        estimates = NULL) {
+  if (is.null(vcov_type) || vcov_type %in% c("classical", "model")) {
+    return(coefs)
+  }
+  vc <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
+  cf <- if (!is.null(estimates)) estimates else stats::coef(fit)
+  b_rows <- which(coefs$estimate_type == "B" & !(coefs$is_ref %in% TRUE))
+  for (r in b_rows) {
+    idx <- match(coefs$term[r], names(cf))
+    if (is.na(idx)) next
+    inf <- compute_coef_inference(
+      fit, idx, vc, vcov_type, cluster, ci_level,
+      test = test, estimates = cf
+    )
+    coefs$std_error[r] <- inf$se
+    coefs$statistic[r] <- inf$statistic
+    coefs$df[r]        <- as.double(inf$df)
+    coefs$p_value[r]   <- inf$p.value
+    coefs$ci_lower[r]  <- inf$ci_lower
+    coefs$ci_upper[r]  <- inf$ci_upper
+    coefs$test_type[r] <- inf$test_type
+  }
+  coefs
+}
+
+# Human-readable footer label for an applied robust vcov, mirroring the
+# lm/glm footer (format_vcov_label_from_frame). Used by the non-lm/glm methods
+# to set info$vcov_label when a robust vcov is requested, so the footer names
+# the estimator actually applied instead of the model-based default.
+.robust_vcov_label <- function(vcov_type, cluster_name = NA_character_) {
+  if (startsWith(vcov_type, "HC")) {
+    return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
+  }
+  if (startsWith(vcov_type, "CR")) {
+    cl <- if (is.na(cluster_name) || !nzchar(cluster_name)) {
+      "cluster vector supplied"
+    } else {
+      sprintf("clusters by %s", cluster_name)
+    }
+    return(sprintf("cluster-robust (%s), %s", vcov_type, cl))
+  }
+  vcov_type
 }

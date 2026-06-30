@@ -42,6 +42,8 @@
 as_regression_frame.glmmTMB <- function(fit,
                                          vcov = "model",
                                          vcov_label = NULL,
+                                         cluster = NULL,
+                                         cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          show_columns = character(0),
@@ -52,6 +54,12 @@ as_regression_frame.glmmTMB <- function(fit,
   .check_glmmTMB_available()
 
   coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
+  # CR* via clubSandwich::vcovCR; coef_test()'s Satterthwaite path is
+  # unsupported for glmmTMB, so inference falls back to z (test = "z").
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs, fit, vcov, cluster, ci_level,
+    test = "z", estimates = glmmTMB::fixef(fit)$cond
+  )
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
@@ -61,6 +69,9 @@ as_regression_frame.glmmTMB <- function(fit,
                          ci_level   = ci_level,
                          ci_method  = ci_method,
                          model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
+  }
   # Phase 7c16: exp() on the B / beta rows for non-identity links.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 

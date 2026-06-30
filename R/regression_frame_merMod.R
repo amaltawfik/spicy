@@ -36,6 +36,8 @@
 as_regression_frame.lmerMod <- function(fit,
                                          vcov = "model",
                                          vcov_label = NULL,
+                                         cluster = NULL,
+                                         cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          show_columns = character(0),
@@ -46,6 +48,12 @@ as_regression_frame.lmerMod <- function(fit,
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = FALSE)
+  # Cluster-robust SEs (CR*) recompute the B-row inference from
+  # clubSandwich::vcovCR + Satterthwaite df; a no-op for the model-based default.
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs, fit, vcov, cluster, ci_level,
+    test = "t", estimates = lme4::fixef(fit)
+  )
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
@@ -56,6 +64,11 @@ as_regression_frame.lmerMod <- function(fit,
                         ci_method  = ci_method,
                         is_glm     = FALSE,
                         model_id   = model_id)
+  # Footer names the robust estimator actually applied (overrides the
+  # model-based label set by .merMod_info()).
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
+  }
   # Phase 7c16: exp() transform for non-identity links. lmer is
   # Gaussian-identity by construction, so this is a no-op for the
   # eligibility check below -- kept on the path for parity with the
