@@ -89,8 +89,11 @@ xval_percat <- function(fr, fit, cats) {
   # (its avg_slopes term is the bare name, so it maps unambiguously).
   expect_identical(nrow(a), nrow(orc))
   expect_false(any(is.na(a$estimate)))
+  # Ordinal AME rows carry the BARE predictor term + the category in the
+  # structured outcome_level column (the renderer pivots it into per-category
+  # columns); match on (term, outcome_level).
   for (cat in cats) {
-    spi <- a$estimate[a$term == paste0(cat, ": x1")]
+    spi <- a$estimate[a$term == "x1" & a$outcome_level == cat]
     o   <- orc$estimate[as.character(orc$group) == cat & orc$term == "x1"]
     expect_equal(spi, o, tolerance = 1e-7, info = paste(cat, "x1"))
   }

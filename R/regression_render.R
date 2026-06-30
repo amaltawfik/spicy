@@ -129,10 +129,31 @@ render_regression_table <- function(
   }
   label_map <- setNames(model_labels, model_ids)
   stars_map <- resolve_stars_thresholds(stars)
+
+  # Per-category AME (ordinal / multinomial): collect each model's outcome
+  # categories (in appearance order = response-factor order) so the AME tokens
+  # expand into one column per category. Empty for single-outcome models
+  # (binary glm, lm, mixed, ...) -> AME stays a single column. Data-driven:
+  # the renderer never switches on the model class, only on whether the frame
+  # carries per-category AME rows.
+  ame_cats_by_model <- setNames(lapply(model_ids, function(m) {
+    if (!"outcome_level" %in% names(coefs)) return(character(0))
+    mb <- coefs[coefs$model_id == m, , drop = FALSE]
+    # Multinomial: the COEFFICIENTS are already per-outcome (B rows carry an
+    # outcome_level), so the AME aligns to those rows and is NOT pivoted into
+    # category columns. Only single-block coefficients (ordinal) trigger the
+    # per-category column pivot.
+    if (any(mb$estimate_type == "B" & !is.na(mb$outcome_level))) {
+      return(character(0))
+    }
+    unique(mb$outcome_level[mb$estimate_type == "ame" & !is.na(mb$outcome_level)])
+  }), model_ids)
+
   col_spec <- build_column_spec(
     show_columns, model_ids, label_map,
     ci_level = ci_level,
-    model_exp_headers = aligned$exp_headers_auto
+    model_exp_headers = aligned$exp_headers_auto,
+    ame_categories = ame_cats_by_model
   )
 
   # One render row per unique term (in canonical order).
@@ -411,7 +432,8 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # `label_map`     : named character vector mapping model_id \u2192 label
 build_column_spec <- function(show_columns, model_ids, label_map,
                               ci_level = 0.95,
-                              model_exp_headers = NULL) {
+                              model_exp_headers = NULL,
+                              ame_categories = NULL) {
   ci_pct <- formatC(ci_level * 100, format = "g")
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
@@ -506,26 +528,45 @@ build_column_spec <- function(show_columns, model_ids, label_map,
       } else {
         desc$header_short
       }
-      header <- if (nzchar(m_lbl)) {
-        paste0(m_lbl, ": ", header_short)
+
+      # Per-category AME pivot: when this model carries per-category AME rows
+      # (ordinal / multinomial), an AME-family token expands into ONE column
+      # per outcome category (predictors stay rows, categories become columns
+      # -- the field-standard matrix layout). Each column is tagged with its
+      # `outcome_level` so build_body_row() pulls the right cell. Single-outcome
+      # models (cats empty) keep the original single AME column.
+      cats <- if (identical(desc$estimate_type, "ame")) {
+        ame_categories[[m_id]] %||% character(0)
       } else {
-        header_short
+        character(0)
       }
-      out[[length(out) + 1L]] <- list(
-        col_name = make_unique_col_name(out, header),
-        # `display_label` is the bare header text BEFORE dedup
-        # suffix (`.2`, `.3` ...). It's what engines should show in
-        # spanner labels; `col_name` is the internal data-frame key
-        # and may end in `.N` when the same `header_short` (e.g.
-        # "SE", "p") is requested across two blocks (B + AME). The
-        # multi-model `Model X: ` prefix is also dropped -- the
-        # prefix is reattached separately by the model-spanner row.
-        display_label = header_short,
-        token = tk,
-        model_id = m_id,
-        estimate_type = desc$estimate_type,
-        fields = desc$fields
-      )
+      col_variants <- if (length(cats) > 0L) {
+        lapply(cats, function(ct) {
+          list(hs = paste0(header_short, " ", ct), outcome_level = ct)
+        })
+      } else {
+        list(list(hs = header_short, outcome_level = NA_character_))
+      }
+
+      for (cv in col_variants) {
+        header <- if (nzchar(m_lbl)) paste0(m_lbl, ": ", cv$hs) else cv$hs
+        out[[length(out) + 1L]] <- list(
+          col_name = make_unique_col_name(out, header),
+          # `display_label` is the bare header text BEFORE dedup
+          # suffix (`.2`, `.3` ...). It's what engines should show in
+          # spanner labels; `col_name` is the internal data-frame key
+          # and may end in `.N` when the same `header_short` (e.g.
+          # "SE", "p") is requested across two blocks (B + AME). The
+          # multi-model `Model X: ` prefix is also dropped -- the
+          # prefix is reattached separately by the model-spanner row.
+          display_label = cv$hs,
+          token = tk,
+          model_id = m_id,
+          estimate_type = desc$estimate_type,
+          fields = desc$fields,
+          outcome_level = cv$outcome_level
+        )
+      }
     }
   }
   out
@@ -561,6 +602,14 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
                        coefs$term == term_row$term &
                        coefs$estimate_type == cs$estimate_type, ,
                        drop = FALSE]
+    # Per-category AME columns are tagged with an `outcome_level`; narrow to
+    # that category so each column pulls its own cell. A NULL/NA tag (B columns,
+    # single-outcome AME) leaves the match untouched.
+    if (!is.null(cs$outcome_level) && !is.na(cs$outcome_level) &&
+          "outcome_level" %in% names(long_row) && nrow(long_row) > 0L) {
+      long_row <- long_row[long_row$outcome_level %in% cs$outcome_level, ,
+                           drop = FALSE]
+    }
     # When the row's term does NOT exist in this model's coefs,
     # leave the cell BLANK -- regardless of whether the term is a
     # reference level for some other model. Previously the em-dash

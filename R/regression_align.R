@@ -93,6 +93,14 @@ align_frames <- function(
       factor_level     = ifelse(cf$label == cf$term,
                                 NA_character_, cf$label),
       factor_level_pos = as.integer(cf$factor_level_pos),
+      # Outcome category for per-category AME rows (ordinal / multinomial);
+      # NA for single-outcome frames that don't carry it. Drives the
+      # renderer's per-category AME column pivot.
+      outcome_level    = if (!is.null(cf$outcome_level)) {
+        as.character(cf$outcome_level)
+      } else {
+        NA_character_
+      },
       stringsAsFactors = FALSE
     )
   }))

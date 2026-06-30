@@ -774,15 +774,13 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       (if (!is.na(lvl_str)) lvl_str else term_id)
     pos        <- fmeta$factor_level_pos %||% lvl_pos
 
-    # Encode the outcome category into the term + display label the same way
-    # multinom B rows do ("<category>: <predictor>"), so the renderer pivots
-    # each category into its own block. parent_var stays unprefixed (factor
-    # grouping); outcome_level carries the raw category for engines that use it.
+    # Per-category AME: `term` / `label` / `parent_var` stay BARE (the predictor
+    # itself), so each AME row aligns to its B row by `term`; the outcome
+    # category lives ONLY in the structured `outcome_level` column. The renderer
+    # pivots `outcome_level` into one AME column per category (predictors as
+    # rows, categories as columns) -- the field-standard matrix layout for
+    # marginal effects (Long & Freese, Williams, modelsummary).
     grp <- if (has_group) as.character(ame_table$group[i]) else NA_character_
-    if (!is.na(grp)) {
-      term_id <- paste0(grp, ": ", term_id)
-      label   <- paste0(grp, ": ", label)
-    }
 
     data.frame(
       term             = term_id,
@@ -822,6 +820,22 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   if (!any(ame_tokens %in% show_columns)) return(coefs)
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
+  # When the COEFFICIENTS are themselves per-outcome (multinomial: B rows carry
+  # an outcome_level and an "<outcome>: <term>" term), align the AME rows to
+  # those rows by prefixing their term/label the same way -- the AME then sits
+  # on the same row as the matching per-outcome coefficient. For single-block
+  # coefficients (ordinal proportional-odds: one shared B per predictor) the AME
+  # terms stay BARE and the renderer pivots outcome_level into per-category
+  # columns. Data-driven, not class-driven.
+  b_per_outcome <- "outcome_level" %in% names(coefs) &&
+    any(!is.na(coefs$outcome_level))
+  if (b_per_outcome && "outcome_level" %in% names(ame_rows)) {
+    has_cat <- !is.na(ame_rows$outcome_level)
+    ame_rows$term[has_cat]  <- paste0(ame_rows$outcome_level[has_cat], ": ",
+                                      ame_rows$term[has_cat])
+    ame_rows$label[has_cat] <- paste0(ame_rows$outcome_level[has_cat], ": ",
+                                      ame_rows$label[has_cat])
+  }
   # Defensive no-op: a structurally-incompatible AME frame (no shared columns)
   # is never produced by .compute_ame_rows_for_frame, but guard so a future /
   # mocked caller cannot inject garbage rows into the coefs frame.
