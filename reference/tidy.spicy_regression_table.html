@@ -106,7 +106,7 @@ pipeline.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per <code>(model_id, term, estimate_type)</code>
 triplet, with <code>estimate_type</code> in
-<code>c("B", "beta", "AME", "partial_f2", "partial_eta2", "partial_omega2")</code>.
+<code>c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")</code>.
 Reference-row placeholders (factor reference levels) and
 singular coefficients (NA estimates) are dropped. Columns:
 <code>model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level</code>.</p>

@@ -144,11 +144,17 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 
 
 <dl><dt id="arg-models">models<a class="anchor" aria-label="anchor" href="#arg-models"></a></dt>
-<dd><p>An <code>lm</code> or <code>glm</code> fitted model, or a list of such
-fits (named or unnamed; <code>lm</code> and <code>glm</code> may be mixed). Single
-fits are auto-promoted to a 1-element list. <code>merMod</code> and
-other classes raise <code>spicy_unsupported</code>. Raw data + formula
-is not accepted – fit-only API.</p></dd>
+<dd><p>A fitted model object, or a list of such fits
+(named or unnamed; classes may be mixed). Single fits are
+auto-promoted to a 1-element list. A broad set of model classes
+is supported – linear / generalised linear (<code>lm</code>, <code>glm</code>,
+<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), mixed-effects (<code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>),
+survival (<code>coxph</code>, <code>survreg</code>), ordinal (<code>polr</code>, <code>clm</code>),
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>betareg</code>, <code>mlogit</code>, <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code>
+(<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>), and Bayesian (<code>rstanarm</code>/<code>brms</code>),
+among others. An unsupported class raises
+<code>spicy_unsupported_class</code>. Raw data + formula is not accepted
+– fit-only API.</p></dd>
 
 
 <dt id="arg-vcov">vcov<a class="anchor" aria-label="anchor" href="#arg-vcov"></a></dt>
@@ -753,7 +759,9 @@ Requires <code>cluster</code>.</p></li>
 value (recycled to all models) or a list (one per model). The
 same fit can appear several times with different estimators to
 compare standard errors side-by-side.</p>
-<p>Inferential regimes (B and AME share the same regime):</p><ul><li><p><code>classical</code>, <code>HC*</code> -&gt; t with <code>df.residual</code>.</p></li>
+<p>Inferential regimes for <code>lm</code> / <code>glm</code> (B and AME share the same
+regime):</p><ul><li><p><code>classical</code>, <code>HC*</code> -&gt; t with <code>df.residual</code> (<code>lm</code>) /
+z-asymptotic (<code>glm</code>).</p></li>
 <li><p><code>bootstrap</code>, <code>jackknife</code> -&gt; z asymptotic.</p></li>
 <li><p><code>CR0</code>-<code>CR3</code> -&gt; t with <strong>Satterthwaite-corrected df</strong> (B
 via <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>; AME via
@@ -761,7 +769,52 @@ via <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.htm
 2018). Under non-linear terms (<code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>,
 <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>), AME falls back to z-asymptotic with a
 <code>spicy_fallback</code> warning.</p></li>
-</ul><div class="section">
+</ul><p>For other classes the t-vs-z axis follows the estimator's native
+reference distribution (e.g. <code>glm</code>, <code>glmmTMB</code>, survival, ordinal,
+<code>betareg</code>, <code>mlogit</code> use z; <code>lm</code>, <code>lme</code>, <code>lmer</code>, <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> use t).</p><div class="section">
+<h3 id="robust-se-availability-by-model-class">Robust SE availability by model class<a class="anchor" aria-label="anchor" href="#robust-se-availability-by-model-class"></a></h3>
+
+
+<p>Not every estimator is defined for every class. A robust <code>vcov</code>
+the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
+– never a silent model-based result under a robust label:</p>
+<dl><dt><code>lm</code>, <code>glm</code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code></dt>
+<dd><p>all of <code>classical</code>, <code>HC*</code>,
+<code>CR*</code>, <code>bootstrap</code>, <code>jackknife</code>.</p></dd>
+
+<dt><code>mlogit</code></dt>
+<dd><p><code>classical</code>, <code>HC*</code>, <code>CR*</code> (cluster at the
+choice-situation level).</p></dd>
+
+<dt><code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>, <code>coxph</code>, <code>survreg</code>,
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
+<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
+<dd><p><code>classical</code>
++ <code>CR*</code> only – <code>HC*</code> and the resamplers (which refit
+<code>lm</code>/<code>glm</code>) are not defined for these. <code>clm</code> with a scale /
+nominal (partial-PO) component is <code>classical</code> only.</p></dd>
+
+<dt>Other classes (<code>glmer</code>, <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
+<code>rstanarm</code>/<code>brms</code>, ...)</dt>
+<dd><p><code>classical</code> (model-based) only.</p></dd>
+
+
+</dl><p>Cluster-robust backends differ by class but are each cross-validated
+to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>/<code>lme</code>/<code>glmmTMB</code> use
+<span class="pkg">clubSandwich</span> (CR2 = Bell-McCaffrey, with Satterthwaite df for
+<code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
+sandwich (identical to <code>coxph(..., cluster=)</code>);
+<code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code> use
+<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>svyglm</code> uses the design-aware
+<span class="pkg">clubSandwich</span> estimator; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
+needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
+sandwiches have no CR0-CR3 bias-reduction variants, so the requested
+<code>CR*</code> maps to the one available estimator. <code>cluster</code> length is one
+entry per observation, except <code>mlogit</code> (one per choice situation)
+and censored <code>coxph</code> (one per subject).</p>
+</div>
+
+<div class="section">
 <h3 id="how-to-specify-cluster">How to specify <code>cluster</code><a class="anchor" aria-label="anchor" href="#how-to-specify-cluster"></a></h3>
 
 
@@ -941,8 +994,8 @@ Underlying machinery:
 <code><a href="spicy_print_table.html">spicy_print_table()</a></code> for ASCII rendering;
 <code><a href="build_ascii_table.html">build_ascii_table()</a></code> for the low-level renderer.
 Inferential infrastructure (internal):
-<code>compute_lm_vcov()</code>, <code>compute_lm_coef_inference()</code>,
-<code>compute_lm_wald_test()</code>.
+<code>compute_model_vcov()</code>, <code>compute_coef_inference()</code>,
+<code>compute_wald_test()</code>.
 broom integration:
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>.</p></div>
     </div>

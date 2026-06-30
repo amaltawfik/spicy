@@ -18,6 +18,13 @@
   auto-compacts in multi-model layouts (drops the CI column), matching
   the `NULL` default. Use atomic tokens to keep CIs.
 
+- [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  result now reports average marginal-effect rows with
+  `estimate_type = "ame"` (lowercase), not `"AME"`, matching the
+  canonical `c("B", "beta", "ame")` vocabulary. Update any code
+  filtering on `estimate_type == "AME"`.
+
 ### New features
 
 #### Massively expanded model support
@@ -109,6 +116,31 @@ Bayesian.
   [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html),
   [`rms::Glm`](https://rdrr.io/pkg/rms/man/Glm.html),
   [`sampleSelection::selection`](https://rdrr.io/pkg/sampleSelection/man/selection.html).
+
+#### Robust and cluster-robust standard errors across model classes
+
+- `table_regression(vcov = ...)` computes heteroskedasticity- and
+  cluster-robust standard errors for the supported frequentist classes,
+  each via its field-standard backend: `clubSandwich` (CR2 /
+  Bell-McCaffrey with Satterthwaite df for `lm` / `glm` / `lmer` / `lme`
+  / `glmmTMB`), the Lin-Wei grouped-dfbeta sandwich for `coxph` /
+  [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html) (=
+  `coxph(..., cluster=)`),
+  [`sandwich::vcovCL`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
+  for `survreg` / `gam` / `polr` / `clm` / `betareg` / `mlogit`, the
+  design-aware `clubSandwich` estimator for
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), and
+  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) for `rms`
+  fits (needs `x = TRUE, y = TRUE`). Each backend is cross-validated to
+  its oracle to machine precision.
+
+- A robust `vcov` a model class cannot honour now fails fast with
+  `spicy_unsupported_vcov` instead of silently returning model-based SEs
+  under a robust label. See
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  *Robust SE availability by model class*, for the capability matrix.
+  `cluster` is one entry per observation, except `mlogit` (one per
+  choice situation) and censored `coxph` (one per subject).
 
 ### Minor improvements
 

@@ -64,11 +64,19 @@ table_regression(
 
 - models:
 
-  An `lm` or `glm` fitted model, or a list of such fits (named or
-  unnamed; `lm` and `glm` may be mixed). Single fits are auto-promoted
-  to a 1-element list. `merMod` and other classes raise
-  `spicy_unsupported`. Raw data + formula is not accepted – fit-only
-  API.
+  A fitted model object, or a list of such fits (named or unnamed;
+  classes may be mixed). Single fits are auto-promoted to a 1-element
+  list. A broad set of model classes is supported – linear / generalised
+  linear (`lm`, `glm`,
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)),
+  mixed-effects (`lmer`, `lme`, `glmmTMB`), survival (`coxph`,
+  `survreg`), ordinal (`polr`, `clm`),
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `betareg`,
+  `mlogit`,
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
+  (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`), among
+  others. An unsupported class raises `spicy_unsupported_class`. Raw
+  data + formula is not accepted – fit-only API.
 
 - vcov:
 
@@ -695,9 +703,10 @@ For multi-model use, both `vcov` and `cluster` accept a single value
 appear several times with different estimators to compare standard
 errors side-by-side.
 
-Inferential regimes (B and AME share the same regime):
+Inferential regimes for `lm` / `glm` (B and AME share the same regime):
 
-- `classical`, `HC*` -\> t with `df.residual`.
+- `classical`, `HC*` -\> t with `df.residual` (`lm`) / z-asymptotic
+  (`glm`).
 
 - `bootstrap`, `jackknife` -\> z asymptotic.
 
@@ -711,6 +720,57 @@ Inferential regimes (B and AME share the same regime):
   [`log()`](https://rdrr.io/r/base/Log.html),
   [`splines::ns()`](https://rdrr.io/r/splines/ns.html)), AME falls back
   to z-asymptotic with a `spicy_fallback` warning.
+
+For other classes the t-vs-z axis follows the estimator's native
+reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
+`betareg`, `mlogit` use z; `lm`, `lme`, `lmer`,
+[`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) use t).
+
+### Robust SE availability by model class
+
+Not every estimator is defined for every class. A robust `vcov` the
+class cannot honour fails fast with `spicy_unsupported_vcov` – never a
+silent model-based result under a robust label:
+
+- `lm`, `glm`,
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html):
+
+  all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`.
+
+- `mlogit`:
+
+  `classical`, `HC*`, `CR*` (cluster at the choice-situation level).
+
+- `lmer`, `lme`, `glmmTMB`, `coxph`, `survreg`,
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `polr`,
+  `clm`, `betareg`,
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
+  (`ols`/`lrm`/`cph`/`Glm`):
+
+  `classical` + `CR*` only – `HC*` and the resamplers (which refit
+  `lm`/`glm`) are not defined for these. `clm` with a scale / nominal
+  (partial-PO) component is `classical` only.
+
+- Other classes (`glmer`,
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  `rstanarm`/`brms`, ...):
+
+  `classical` (model-based) only.
+
+Cluster-robust backends differ by class but are each cross-validated to
+the field-standard oracle: `lm`/`glm`/`lmer`/`lme`/`glmmTMB` use
+clubSandwich (CR2 = Bell-McCaffrey, with Satterthwaite df for
+`lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
+sandwich (identical to `coxph(..., cluster=)`);
+`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit` use
+[`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html);
+`svyglm` uses the design-aware clubSandwich estimator; `rms` fits use
+[`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs
+the fit's `x = TRUE, y = TRUE`). These single cluster sandwiches have no
+CR0-CR3 bias-reduction variants, so the requested `CR*` maps to the one
+available estimator. `cluster` length is one entry per observation,
+except `mlogit` (one per choice situation) and censored `coxph` (one per
+subject).
 
 ### How to specify `cluster`
 
@@ -914,8 +974,8 @@ Underlying machinery:
 for ASCII rendering;
 [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
 for the low-level renderer. Inferential infrastructure (internal):
-`compute_lm_vcov()`, `compute_lm_coef_inference()`,
-`compute_lm_wald_test()`. broom integration:
+`compute_model_vcov()`, `compute_coef_inference()`,
+`compute_wald_test()`. broom integration:
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html),
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html).
 
