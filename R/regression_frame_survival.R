@@ -46,6 +46,8 @@
 as_regression_frame.coxph <- function(fit,
                                        vcov = "model",
                                        vcov_label = NULL,
+                                       cluster = NULL,
+                                       cluster_name = NULL,
                                        ci_level = 0.95,
                                        ci_method = NULL,
                                        model_id = "M1",
@@ -54,12 +56,19 @@ as_regression_frame.coxph <- function(fit,
   .check_survival_available()
 
   coefs <- .coxph_coefs(fit, ci_level = ci_level)
+  # CR* -> Lin-Wei grouped-dfbeta robust SE (Wald z); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .coxph_info(fit,
                        vcov_kind  = vcov,
                        vcov_label = vcov_label,
                        ci_level   = ci_level,
                        ci_method  = ci_method,
                        model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "Lin-Wei")
+  }
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
   new_regression_frame(ex$coefs, ex$info, fit)
@@ -74,6 +83,8 @@ as_regression_frame.coxph <- function(fit,
 as_regression_frame.survreg <- function(fit,
                                          vcov = "model",
                                          vcov_label = NULL,
+                                         cluster = NULL,
+                                         cluster_name = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          model_id = "M1",
@@ -82,12 +93,19 @@ as_regression_frame.survreg <- function(fit,
   .check_survival_available()
 
   coefs <- .survreg_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z")
   info  <- .survreg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,
                          ci_level   = ci_level,
                          ci_method  = ci_method,
                          model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
   new_regression_frame(ex$coefs, ex$info, fit)

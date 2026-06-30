@@ -81,6 +81,22 @@ compute_model_vcov <- function(
           type
         ), class = "spicy_invalid_input")
     }
+    # Cluster-robust backend by class. The CR0..CR3 bias-reduction variants are
+    # a clubSandwich concept; Cox and the sandwich::vcovCL classes have a single
+    # cluster sandwich, so the requested CR* maps to that one estimator.
+    #   * coxph / cph -> Lin & Wei (1989) grouped-dfbeta = coxph(cluster=); the
+    #     field-standard Cox robust SE (clubSandwich gives a different,
+    #     non-standard result for Cox).
+    #   * survreg / gam / polr / clm / betareg / mlogit -> sandwich::vcovCL
+    #     (clubSandwich has no usable method for these classes).
+    #   * lm / glm / lmer / lme / glmmTMB -> clubSandwich bias-reduced CR*.
+    if (inherits(fit, c("coxph", "cph"))) {
+      return(.coxph_cluster_robust_vcov(fit, cluster))
+    }
+    if (inherits(fit, c("survreg", "gam", "bam", "polr", "clm",
+                        "betareg", "mlogit"))) {
+      return(sandwich::vcovCL(fit, cluster = cluster))
+    }
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
       spicy_abort(
         sprintf(
@@ -596,6 +612,9 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     lmerModLmerTest = cr_only,
     lme             = cr_only,
     glmmTMB         = cr_only,
+    # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
+    coxph           = cr_only,
+    survreg         = cr_only,
     # --- classes whose robust path is wired in later C2 increments go here ---
     "classical"
   )
@@ -640,9 +659,10 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # lm/glm footer (format_vcov_label_from_frame). Used by the non-lm/glm methods
 # to set info$vcov_label when a robust vcov is requested, so the footer names
 # the estimator actually applied instead of the model-based default.
-.robust_vcov_label <- function(vcov_type, cluster_name = NA_character_) {
+.robust_vcov_label <- function(vcov_type, cluster_name = NA_character_,
+                               estimator = NULL) {
   if (startsWith(vcov_type, "HC")) {
-    return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
+    return(sprintf("heteroskedasticity-robust (%s)", estimator %||% vcov_type))
   }
   if (startsWith(vcov_type, "CR")) {
     cl <- if (is.na(cluster_name) || !nzchar(cluster_name)) {
@@ -650,7 +670,21 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     } else {
       sprintf("clusters by %s", cluster_name)
     }
-    return(sprintf("cluster-robust (%s), %s", vcov_type, cl))
+    return(sprintf("cluster-robust (%s), %s", estimator %||% vcov_type, cl))
   }
   vcov_type
+}
+
+
+# Cluster-robust vcov for a Cox PH fit: the Lin & Wei (1989) grouped-dfbeta
+# sandwich -- identical to coxph(..., cluster=) / the survival package's robust
+# fit$var. clubSandwich::vcovCR is deliberately NOT used (it returns a
+# different, non-standard result for Cox); this matches the field standard.
+.coxph_cluster_robust_vcov <- function(fit, cluster) {
+  db <- stats::residuals(fit, type = "dfbeta")
+  if (is.null(dim(db))) db <- matrix(db, ncol = 1L)
+  rob <- crossprod(rowsum(db, cluster))
+  nm <- names(stats::coef(fit))
+  if (length(nm) == nrow(rob)) dimnames(rob) <- list(nm, nm)
+  rob
 }
