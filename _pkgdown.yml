@@ -65,6 +65,8 @@ navbar:
           href: articles/table-continuous-lm.html
         - text: Regression coefficient tables in R
           href: articles/table-regression.html
+        - text: Ordinal regression tables in R
+          href: articles/table-regression-ordinal.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html
     github:
@@ -84,6 +86,7 @@ articles:
       - table-continuous
       - table-continuous-lm
       - table-regression
+      - table-regression-ordinal
       - summary-tables-reporting
 
 reference:

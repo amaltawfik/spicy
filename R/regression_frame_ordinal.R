@@ -88,6 +88,26 @@ as_regression_frame.clm <- function(fit,
                                      ...) {
   .check_ordinal_available()
 
+  # Partial-proportional-odds clm fits (nominal = ~ ...) estimate a SEPARATE
+  # coefficient per threshold for the nominal terms, which does not fit the
+  # single-block ordinal coefficient schema (and trips the shared-vcov
+  # extraction). Refuse cleanly here instead of crashing downstream. Scale
+  # (scale = ~ ...) fits ARE supported: the location coefficients remain a
+  # single shared block.
+  if (!is.null(fit$nom.terms)) {
+    spicy_abort(
+      c(
+        paste0("table_regression() does not support partial-proportional-odds ",
+               "`clm` fits (`nominal = ~ ...`)."),
+        "i" = paste0("The nominal terms carry a separate coefficient per ",
+                     "threshold, which a single-block ordinal table cannot ",
+                     "represent. Drop `nominal` for a proportional-odds model, ",
+                     "or use `scale = ~` for scale effects.")
+      ),
+      class = "spicy_unsupported"
+    )
+  }
+
   coefs <- .clm_coefs(fit, ci_level = ci_level)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   # coef(clm) orders thresholds before slopes; only the slope rows live in

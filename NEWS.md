@@ -116,7 +116,22 @@ labels) is layered on top for mixed-effects and Bayesian.
   to `marginaleffects::avg_slopes()`. These classes previously
   advertised AME support but rendered an empty column.
 
+* For an ordinal fit, the per-category AME is laid out as a
+  **probability matrix** -- predictors in rows, one `AME <category>`
+  column per response category -- the field-standard layout for
+  marginal effects (Long & Freese 2014; Williams 2012; `modelsummary`).
+  Cells are probabilities (the same scale as the binary-`glm` AME); the
+  footer spells out the estimand and that a change of 0.07 is 7
+  percentage points, not 7%. See the new *Ordinal regression tables*
+  vignette.
+
 ## Minor improvements
+
+* `table_regression()` now refuses a partial-proportional-odds
+  `ordinal::clm()` fit (`nominal = ~ ...`) with a clear
+  `spicy_unsupported` error instead of crashing -- its per-threshold
+  nominal coefficients do not fit the single-block ordinal table.
+  Scale fits (`scale = ~ ...`) remain supported.
 
 * The "fit a gaussian `glm()`? use `lm()` instead" caveat now fires
   only for a plain `glm` fit, not for `svyglm` / `mgcv::gam` (which

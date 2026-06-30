@@ -102,9 +102,17 @@ test_that("clm with scale/nominal component refuses CR* cleanly", {
     table_regression(m_nom, vcov = "CR2", cluster = d$g, output = "data.frame"),
     class = "spicy_unsupported_vcov"
   )
-  # The classical/default path still works for these fits.
+  # The classical/default path still works for a SCALE fit (location
+  # coefficients remain a single shared block).
   expect_s3_class(
     table_regression(m_scale, output = "data.frame"), "data.frame"
+  )
+  # A NOMINAL (partial-proportional-odds) fit cannot be tabulated at all -- its
+  # per-threshold nominal coefficients don't fit the single-block ordinal
+  # schema -- so even the classical path refuses cleanly instead of crashing.
+  expect_error(
+    table_regression(m_nom, output = "data.frame"),
+    class = "spicy_unsupported"
   )
 })
 
