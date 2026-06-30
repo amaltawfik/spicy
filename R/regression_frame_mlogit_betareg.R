@@ -170,7 +170,11 @@ as_regression_frame.mlogit <- function(fit,
   )
 
   supports <- list(
-    ame                 = TRUE,
+    # marginaleffects supports predictions() for mlogit but NOT slopes() (the
+    # one-row-per-choice data structure is unhandled), so AME cannot be computed
+    # -- advertise it as unavailable (requesting "ame" then errors cleanly,
+    # like Cox) rather than rendering a blank column.
+    ame                 = FALSE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
@@ -239,7 +243,8 @@ as_regression_frame.betareg <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
   # Response-scale AME on the mean component (marginaleffects::avg_slopes).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .betareg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,

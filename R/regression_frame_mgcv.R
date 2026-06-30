@@ -55,7 +55,8 @@ as_regression_frame.gam <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
   # Response-scale AME on the parametric terms (marginaleffects::avg_slopes).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .gam_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,

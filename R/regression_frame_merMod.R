@@ -54,7 +54,8 @@ as_regression_frame.lmerMod <- function(fit,
     coefs, fit, vcov, cluster, ci_level,
     test = "t", estimates = lme4::fixef(fit)
   )
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .merMod_info(fit,
@@ -118,7 +119,8 @@ as_regression_frame.glmerMod <- function(fit,
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = TRUE)
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .merMod_info(fit,

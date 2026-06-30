@@ -49,7 +49,10 @@ as_regression_frame.multinom <- function(fit,
   coefs <- .multinom_coefs(fit, ci_level = ci_level)
   # Per-outcome AME on P(Y = k): avg_slopes() returns one row per
   # (predictor, outcome), aligned with the per-outcome B blocks.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  # multinom has no cluster-robust backend (no estfun), so vcov is always
+  # model-based here; pass it through for uniformity (a no-op for AME).
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov)
   info  <- .multinom_info(fit,
                           vcov_kind  = vcov,
                           vcov_label = vcov_label,

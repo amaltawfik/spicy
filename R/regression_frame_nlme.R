@@ -50,7 +50,8 @@ as_regression_frame.lme <- function(fit,
     coefs, fit, vcov, cluster, ci_level,
     test = "t", estimates = nlme::fixef(fit)
   )
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info  <- .lme_info(fit,

@@ -55,7 +55,8 @@ as_regression_frame.polr <- function(fit,
                                        test = "z")
   # Per-category AME on P(Y = k): avg_slopes() returns one row per
   # (predictor, category), rendered as per-category blocks.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .polr_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -115,7 +116,8 @@ as_regression_frame.clm <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
   # Per-category AME on P(Y = k): one row per (predictor, category).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .clm_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,

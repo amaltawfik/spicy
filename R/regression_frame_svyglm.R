@@ -44,7 +44,8 @@ as_regression_frame.svyglm <- function(fit,
                                        test = "z")
   # Design-based response-scale AME (marginaleffects::avg_slopes uses the
   # survey design vcov).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .svyglm_info(fit,
                         vcov_kind  = vcov,
                         vcov_label = vcov_label,

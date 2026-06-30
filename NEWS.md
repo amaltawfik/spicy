@@ -125,6 +125,14 @@ labels) is layered on top for mixed-effects and Bayesian.
   percentage points, not 7%. See the new *Ordinal regression tables*
   vignette.
 
+* Under a robust `vcov` (`HC*` / `CR*`), the AME **standard errors,
+  CIs, and p-values now honour that estimator** (previously the
+  non-`lm`/`glm` classes used the model-based vcov for the AME
+  uncertainty). The AME point estimates are vcov-independent and
+  unchanged. `glmmTMB` is the exception -- `marginaleffects` accepts
+  only its own `HC0` vcov there, so its AME uncertainty falls back to
+  model-based with a `spicy_fallback` warning rather than failing.
+
 ## Minor improvements
 
 * `table_regression()` now refuses a partial-proportional-odds
@@ -132,6 +140,10 @@ labels) is layered on top for mixed-effects and Bayesian.
   `spicy_unsupported` error instead of crashing -- its per-threshold
   nominal coefficients do not fit the single-block ordinal table.
   Scale fits (`scale = ~ ...`) remain supported.
+
+* `mlogit::mlogit()` no longer advertises AME support -- `marginaleffects`
+  has no `slopes()` method for its one-row-per-choice data, so requesting
+  an `"ame"` column now errors clearly instead of rendering blank.
 
 * The "fit a gaussian `glm()`? use `lm()` instead" caveat now fires
   only for a plain `glm` fit, not for `svyglm` / `mgcv::gam` (which

@@ -168,3 +168,59 @@ test_that("gaussian/identity glm caveat fires for plain glm but NOT svyglm/gam",
                 spicy_caveat = function(c) c)
   expect_null(w2)
 })
+
+# ---- robust-vcov-aware AME -------------------------------------------------
+
+test_that("frame AME honours the requested robust vcov (SE), estimate invariant", {
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("sandwich")
+  d <- make_d()
+  d$g <- factor(sample(14, nrow(d), TRUE))
+  fit <- betareg::betareg(yp ~ x1 + f, data = d)
+
+  am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
+  ar <- ame_rows(as_regression_frame(fit, vcov = "CR2", cluster = d$g,
+                                     show_columns = "ame"))
+  # AME point estimates are vcov-independent; their SEs are not.
+  expect_equal(am$estimate, ar$estimate, tolerance = 1e-9)
+  expect_gt(max(abs(am$std_error - ar$std_error)), 1e-8)
+
+  # The robust AME SE equals avg_slopes() fed the same robust vcov matrix.
+  vc <- spicy:::compute_model_vcov(fit, type = "CR2", cluster = d$g)
+  orc <- as.data.frame(suppressWarnings(suppressMessages(
+    marginaleffects::avg_slopes(fit, df = Inf, vcov = vc))))
+  expect_equal(ar$std_error[ar$term == "x1"],
+               orc$std.error[orc$term == "x1"], tolerance = 1e-7)
+})
+
+test_that("mlogit advertises no AME (marginaleffects has no slopes() for it)", {
+  skip_if_not_installed("mlogit")
+  data("Fishing", package = "mlogit", envir = environment())
+  fd <- mlogit::mlogit.data(Fishing, varying = 2:9, shape = "wide",
+                            choice = "mode")
+  mm <- mlogit::mlogit(mode ~ price + catch, data = fd)
+  expect_false(isTRUE(as_regression_frame(mm)$info$supports$ame))
+  expect_error(
+    table_regression(mm, show_columns = c("b", "ame"), output = "data.frame")
+  )
+})
+
+test_that("glmmTMB AME falls back to model-based under a robust vcov (no blank)", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("marginaleffects")
+  d <- make_d()
+  d$g <- factor(sample(14, nrow(d), TRUE))
+  fit <- glmmTMB::glmmTMB(y ~ x1 + f + (1 | g), data = d)
+  am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
+  ar <- suppressWarnings(
+    ame_rows(as_regression_frame(fit, vcov = "CR2", cluster = d$g,
+                                 show_columns = "ame")))
+  # avg_slopes() accepts only TRUE/FALSE/"HC0" for glmmTMB (not a custom vcov
+  # matrix), so the AME gracefully falls back to the model-based vcov rather
+  # than rendering blank. Estimates + (model-based) SEs are unchanged.
+  expect_identical(nrow(ar), nrow(am))
+  expect_gt(nrow(ar), 0L)
+  expect_equal(ar$estimate, am$estimate, tolerance = 1e-9)
+  expect_equal(ar$std_error, am$std_error, tolerance = 1e-9)
+})

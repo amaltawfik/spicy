@@ -686,26 +686,53 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 #
 # Returns a zero-row frame coefs subset on failure (missing
 # marginaleffects, `avg_slopes()` errors, fit class out of scope).
-.compute_ame_rows_for_frame <- function(fit, ci_level) {
+.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL) {
   if (!spicy_pkg_available("marginaleffects")) return(NULL)
-  ame_table <- tryCatch(
+  # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
+  # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
+  # honour that estimator (via the delta method) -- the AME point estimates are
+  # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
+  # uses the fit's own vcov (the model-based one, or the design-based estimator
+  # for svyglm).
+  do_slopes <- function(vcarg) {
     suppressWarnings(suppressMessages(
       marginaleffects::avg_slopes(
-        fit,
-        conf_level = ci_level,
-        df         = Inf
+        fit, conf_level = ci_level, df = Inf, vcov = vcarg
       )
-    )),
+    ))
+  }
+  fail_warn <- function(e) {
+    spicy_warn(
+      c(
+        "AME computation via `marginaleffects::avg_slopes()` failed.",
+        "x" = paste0("Reason: ", conditionMessage(e)),
+        "i" = "AME column will be em-dashed in the displayed table."
+      ),
+      class = "spicy_fallback"
+    )
+    NULL
+  }
+  ame_table <- tryCatch(
+    do_slopes(if (!is.null(vc)) vc else TRUE),
     error = function(e) {
-      spicy_warn(
-        c(
-          "AME computation via `marginaleffects::avg_slopes()` failed.",
-          "x" = paste0("Reason: ", conditionMessage(e)),
-          "i" = "AME column will be em-dashed in the displayed table."
-        ),
-        class = "spicy_fallback"
-      )
-      NULL
+      # Some model types reject a custom vcov matrix in avg_slopes() (e.g.
+      # glmmTMB accepts only TRUE/FALSE/"HC0"). Fall back to the model-based
+      # AME so the estimates still appear -- they are vcov-independent; only the
+      # SE / CI / p revert to model-based -- with a clear warning.
+      if (!is.null(vc)) {
+        spicy_warn(
+          c(
+            paste0("Robust-vcov AME is not available for this model type; ",
+                   "AME uncertainty falls back to the model-based vcov."),
+            "x" = paste0("Reason: ", conditionMessage(e)),
+            "i" = "The AME point estimates are unaffected (they are vcov-independent)."
+          ),
+          class = "spicy_fallback"
+        )
+        tryCatch(do_slopes(TRUE), error = fail_warn)
+      } else {
+        fail_warn(e)
+      }
     }
   )
   if (is.null(ame_table) || nrow(ame_table) == 0L) return(NULL)
@@ -815,10 +842,23 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # A no-op when (a) `show_columns` doesn't ask for AME, (b) the
 # marginaleffects package is unavailable, (c) `avg_slopes()` errors.
 # The returned coefs always has the same schema as the input.
-.attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns) {
+.attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns,
+                                       vcov_type = "model", cluster = NULL) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) return(coefs)
-  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level)
+  # Robust AME uncertainty: when a robust vcov was requested for the
+  # coefficients, recompute the same matrix and pass it to avg_slopes so the AME
+  # SE / CI / p honour the requested estimator. A no-op for the model-based
+  # defaults ("model" / "classical" / "survey-Taylor"), where avg_slopes uses
+  # the fit's own vcov (design-based for svyglm). The AME point estimates are
+  # vcov-independent either way.
+  vc <- NULL
+  if (!is.null(vcov_type) &&
+        !vcov_type %in% c("model", "classical", "survey-Taylor")) {
+    vc <- tryCatch(compute_model_vcov(fit, type = vcov_type, cluster = cluster),
+                   error = function(e) NULL)
+  }
+  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
   # When the COEFFICIENTS are themselves per-outcome (multinomial: B rows carry
   # an outcome_level and an "<outcome>: <term>" term), align the AME rows to

@@ -695,6 +695,31 @@ validate_class_appropriate_tokens <- function(models,
       )
     }
   }
+
+  # AME is not computable for mlogit: marginaleffects supports predictions()
+  # but NOT slopes() for its one-row-per-choice data structure, so avg_slopes()
+  # errors. Reject "ame" tokens up front (when ALL models are mlogit) instead of
+  # rendering a blank column.
+  all_mlogit <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), "mlogit"))
+  if (all_mlogit) {
+    bad <- intersect(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+    if (length(bad) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not available for mlogit models.",
+            paste(shQuote(bad), collapse = ", ")
+          ),
+          "i" = paste0(
+            "marginaleffects computes predictions but not slopes (average ",
+            "marginal effects) for mlogit's one-row-per-choice data structure."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
   invisible(NULL)
 }
 
