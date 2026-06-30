@@ -164,7 +164,7 @@ table_regression(fit, show_columns = c("b", "ame"))
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
 #> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).
+#> AME = average marginal effect on a response-category probability.
 ```
 
 How to read it, with the `smoking = Yes` row:
@@ -207,7 +207,7 @@ table_regression(fit, show_columns = "ame")
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
 #> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).
+#> AME = average marginal effect on a response-category probability.
 ```
 
 Marginal effects are computed with
@@ -252,7 +252,7 @@ table_regression(
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: cluster-robust (CL), clusters by region.
 #> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).
+#> AME = average marginal effect on a response-category probability.
 ```
 
 The footer switches to name the estimator and the clustering variable.
@@ -292,7 +292,7 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
 #> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).
+#> AME = average marginal effect on a response-category probability.
 ```
 
 ### Scale effects and partial proportional odds
@@ -401,7 +401,7 @@ table_regression(
 #> Std. errors: Wald asymptotic (z).
 #> Model 1: Thresholds: Poor|Fair = -2.97, Fair|Good = -1.01, Good|Very good = 1.06.
 #> Model 2: Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).
+#> AME = average marginal effect on a response-category probability.
 ```
 
 ## Output formats
@@ -433,9 +433,8 @@ table_regression(fit, show_columns = c("b", "ame"), output = "gt")
 
 *Note.* Cumulative logit regression (proportional odds). Std. errors:
 Wald asymptotic (z). Thresholds: Poor\|Fair = -2.98, Fair\|Good = -1.02,
-Good\|Very good = 1.04. AME = average marginal effect on the probability
-of each response category (per predictor these sum to ≈ 0 across
-categories; a change of 0.07 = 7 percentage points, not 7%).
+Good\|Very good = 1.04. AME = average marginal effect on a
+response-category probability.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
 one row per `(term, estimate_type)`; per-category AME rows carry the

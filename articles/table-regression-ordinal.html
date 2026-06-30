@@ -260,7 +260,7 @@ rows, response categories in columns (Long &amp; Freese 2014; Williams
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>How to read it, with the <code>smoking = Yes</code> row:</p>
 <ul>
 <li>The four <code>AME ...</code> columns are the average change in the
@@ -301,7 +301,7 @@ such as odds ratios.</li>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>Marginal effects are computed with <a href="https://marginaleffects.com" class="external-link"><code>marginaleffects::avg_slopes()</code></a>
 on the response (probability) scale, then cross-validated to it to
 machine precision. For a single-outcome model (binary <code>glm</code>,
@@ -342,7 +342,7 @@ name, or a vector (see the main vignette, <em>How to specify
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CL), clusters by region.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
 variable. Heteroskedasticity-consistent (<code>HC*</code>) and the
 <code>bootstrap</code> / <code>jackknife</code> resamplers are
@@ -381,7 +381,7 @@ proportional odds.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="scale-effects-and-partial-proportional-odds">Scale effects and partial proportional odds<a class="anchor" aria-label="anchor" href="#scale-effects-and-partial-proportional-odds"></a>
 </h3>
@@ -481,7 +481,7 @@ supplied as a list:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Thresholds: Poor|Fair = -2.97, Fair|Good = -1.01, Good|Very good = 1.06.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on the probability of each response category (per predictor these sum to ≈ 0 across categories; a change of 0.07 = 7 percentage points, not 7%).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -906,9 +906,8 @@ Yes
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Cumulative logit regression (proportional odds). Std.
 errors: Wald asymptotic (z). Thresholds: Poor|Fair = -2.98, Fair|Good =
--1.02, Good|Very good = 1.04. AME = average marginal effect on the
-probability of each response category (per predictor these sum to ≈ 0
-across categories; a change of 0.07 = 7 percentage points, not 7%).
+-1.02, Good|Very good = 1.04. AME = average marginal effect on a
+response-category probability.
 </div>
 </div>
 </div>
