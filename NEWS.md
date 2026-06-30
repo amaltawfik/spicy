@@ -121,9 +121,9 @@ labels) is layered on top for mixed-effects and Bayesian.
   column per response category -- the field-standard layout for
   marginal effects (Long & Freese 2014; Williams 2012; `modelsummary`).
   Cells are probabilities (the same scale as the binary-`glm` AME); the
-  footer spells out the estimand and that a change of 0.07 is 7
-  percentage points, not 7%. See the new *Ordinal regression tables*
-  vignette.
+  footer names the probability scale, and the new *Ordinal regression
+  tables* vignette explains how to read it -- the sum-to-zero property
+  and that a change of 0.07 is 7 percentage points, not 7%.
 
 * Under a robust `vcov` (`HC*` / `CR*`), the AME **standard errors,
   CIs, and p-values now honour that estimator** (previously the

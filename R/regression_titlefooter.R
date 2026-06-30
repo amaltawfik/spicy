@@ -234,18 +234,18 @@ build_abbreviations_footer_block_from_frames <- function(show_columns,
   defs <- character(0)
 
   if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
-    # Per-category AME (ordinal / multinomial): the AME is an effect on the
-    # probability of each response category. Spell out the estimand + the
-    # percentage-points (not percent) reading + the sum-to-zero integrity check.
+    # The footnote is a terse abbreviation key, not a tutorial: per-category
+    # AME (ordinal / multinomial) only names the probability scale that sets
+    # it apart from the single-outcome case. The interpretation guidance --
+    # the sum-to-zero property and the percentage-points (not percent)
+    # reading -- lives in vignette("table-regression-ordinal").
     has_percat <- is.list(frames) && any(vapply(frames, function(f) {
       ol <- f$coefs$outcome_level
       !is.null(ol) && any(!is.na(ol) & f$coefs$estimate_type == "ame")
     }, logical(1)))
     if (isTRUE(has_percat)) {
-      defs <- c(defs, paste0(
-        "AME = average marginal effect on the probability of each response ",
-        "category (per predictor these sum to ≈ 0 across categories; ",
-        "a change of 0.07 = 7 percentage points, not 7%)"))
+      defs <- c(defs,
+                "AME = average marginal effect on a response-category probability")
     } else {
       defs <- c(defs, "AME = average marginal effect")
     }
