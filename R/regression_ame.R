@@ -838,6 +838,24 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 }
 
 
+# Terms whose coefficient is perfectly collinear (aliased): the fit returns an
+# NA estimate and the frame carries an em-dashed, NON-reference B row for them.
+# Their AME (and standardized) estimate is equally undefined. Works on both the
+# frame schema (`is_ref`) and the legacy long-format (`is_reference`).
+.aliased_coef_terms <- function(coefs) {
+  if (is.null(coefs) || nrow(coefs) == 0L) return(character(0))
+  is_b <- coefs$estimate_type == "B"
+  ref <- if (!is.null(coefs$is_ref)) {
+    coefs$is_ref %in% TRUE
+  } else if (!is.null(coefs$is_reference)) {
+    coefs$is_reference %in% TRUE
+  } else {
+    rep(FALSE, nrow(coefs))
+  }
+  unique(coefs$term[is_b & is.na(coefs$estimate) & !ref])
+}
+
+
 # Append AME rows to a frame's coefs when AME tokens are requested.
 # A no-op when (a) `show_columns` doesn't ask for AME, (b) the
 # marginaleffects package is unavailable, (c) `avg_slopes()` errors.
@@ -860,6 +878,21 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   }
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
+  # A perfectly-collinear (aliased) predictor has an NA coefficient and an
+  # em-dashed B row; its AME is equally undefined, but marginaleffects returns a
+  # finite 0 (not NA), which would render a misleading "0.00". Mirror the B-row
+  # NA on the matching AME rows so the cell em-dashes identically (the renderer
+  # em-dashes on is.na()). Match on the BARE term, before any per-outcome prefix.
+  aliased <- .aliased_coef_terms(coefs)
+  if (length(aliased)) {
+    hit <- ame_rows$term %in% aliased
+    if (any(hit)) {
+      for (col in c("estimate", "std_error", "ci_lower", "ci_upper",
+                    "statistic", "p_value")) {
+        ame_rows[[col]][hit] <- NA_real_
+      }
+    }
+  }
   # When the COEFFICIENTS are themselves per-outcome (multinomial: B rows carry
   # an outcome_level and an "<outcome>: <term>" term), align the AME rows to
   # those rows by prefixing their term/label the same way -- the AME then sits

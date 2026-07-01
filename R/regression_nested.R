@@ -50,9 +50,13 @@ compute_nested_comparisons <- function(fits) {
     fit_curr <- fits[[k + 1L]]
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
     pair_glm   <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
+    # coxph has a proper nested likelihood-ratio test (anova.coxph -> Chisq) but
+    # no classical R^2: route it through the LRT pair path, NOT the lm path
+    # (which reads summary()$r.squared and crashes on a Cox fit).
+    pair_lrt   <- inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")
     stats <- if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
-    } else if (pair_glm) {
+    } else if (pair_glm || pair_lrt) {
       compute_one_pair_glm(fit_prev, fit_curr)
     } else {
       compute_one_pair_lm(fit_prev, fit_curr)
@@ -177,12 +181,14 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   )
   if (is.null(av) || nrow(av) < 2L) return(na)
 
-  # Column names vary across R versions: "Deviance" + "Pr(>Chi)" is
-  # standard for binomial / poisson; "Pr(>F)" appears for quasi-
-  # families when test = "F" is the natural test (we still asked for
-  # LRT but anova may downgrade). Look up defensively.
-  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT"), names(av))
-  p_col <- intersect(c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>F)"), names(av))
+  # Column names vary across R versions and model classes: "Deviance" +
+  # "Pr(>Chi)" is standard for binomial / poisson; "Pr(>F)" appears for quasi-
+  # families when test = "F" is the natural test; anova.coxph reports the LRT as
+  # "Chisq" + "Pr(>|Chi|)". Look up defensively.
+  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT", "Chisq"), names(av))
+  p_col <- intersect(
+    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)"), names(av)
+  )
   lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_  # nocov
   p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_         # nocov
 
@@ -197,8 +203,15 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   aicc_p <- aicc(fit_prev, aic_p)
   aicc_c <- aicc(fit_curr, aic_c)
 
-  dev_p <- stats::deviance(fit_prev)
-  dev_c <- stats::deviance(fit_curr)
+  # deviance() is a finite scalar for glm but NULL for coxph (no residual
+  # deviance defined); guard to NA so the change is em-dashed, not a 0-length
+  # value that would break the comparison data.frame.
+  dev1 <- function(fit) {
+    d <- tryCatch(stats::deviance(fit), error = function(e) NULL)
+    if (length(d) == 1L && is.finite(d)) as.numeric(d) else NA_real_
+  }
+  dev_p <- dev1(fit_prev)
+  dev_c <- dev1(fit_curr)
 
   list(
     r2_change       = NA_real_,

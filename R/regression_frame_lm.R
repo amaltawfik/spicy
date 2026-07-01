@@ -146,7 +146,7 @@ as_regression_frame.glm <- function(fit, ...) {
     legacy_coefs$factor_level
   )
 
-  data.frame(
+  out <- data.frame(
     term             = legacy_coefs$term,
     parent_var       = parent_var,
     label            = label,
@@ -166,6 +166,21 @@ as_regression_frame.glm <- function(fit, ...) {
     test_type        = as.character(legacy_coefs$test_type),
     stringsAsFactors = FALSE
   )
+  # m1: an aliased (perfectly collinear) predictor has an NA coefficient and an
+  # em-dashed B row, but its AME comes back as a finite 0 -- a misleading
+  # "0.00". Mirror the B-row NA so the AME cell em-dashes identically (the
+  # frame path does the same in .attach_ame_to_frame_coefs()).
+  aliased <- .aliased_coef_terms(out)
+  if (length(aliased)) {
+    hit <- out$estimate_type == "ame" & out$term %in% aliased
+    if (any(hit)) {
+      for (col in c("estimate", "std_error", "ci_lower", "ci_upper",
+                    "statistic", "p_value")) {
+        out[[col]][hit] <- NA_real_
+      }
+    }
+  }
+  out
 }
 
 

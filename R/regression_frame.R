@@ -1104,7 +1104,12 @@ validate_regression_frame <- function(frame) {
   if (is.null(bars) || length(bars) == 0L) return(na_pair)  # nocov -- a mixed-effects poisson fit always has random-effect bars
   null_rhs <- paste0("1 + ",
                      paste(vapply(bars, function(b) {
-                       paste0("(", deparse(b), ")")
+                       # deparse1(), not deparse(): a long random-effect bar
+                       # deparses to a multi-line character vector, which would
+                       # violate the vapply `character(1)` contract and throw
+                       # (silently bypassing native Nakagawa R^2). deparse1()
+                       # collapses to a single string. R >= 4.0 (Depends 4.1).
+                       paste0("(", deparse1(b), ")")
                      }, character(1)), collapse = " + "))
   null_formula <- stats::reformulate(
     null_rhs,

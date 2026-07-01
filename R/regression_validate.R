@@ -290,8 +290,10 @@ validate_nested_alignment <- function(models, nested) {
     return(invisible(NULL))
   }
 
-  # Step 4: nobs identical
-  nobs_vec <- vapply(models, stats::nobs, integer(1))
+  # Step 4: nobs identical. numeric(1), not integer(1): nobs() returns a
+  # double for some supported classes (e.g. coxph), which would make an
+  # integer(1) vapply throw under `nested = TRUE`.
+  nobs_vec <- vapply(models, function(m) as.numeric(stats::nobs(m)), numeric(1))
   if (length(unique(nobs_vec)) > 1L) {
     spicy_abort(
       c(
