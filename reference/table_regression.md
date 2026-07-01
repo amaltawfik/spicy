@@ -117,14 +117,14 @@ table_regression(
   [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)) uses the
   profile-likelihood CI from
   [`stats::confint()`](https://rdrr.io/r/stats/confint.html) –
-  [`MASS::confint.glm()`](https://rdrr.io/pkg/MASS/man/confint.html) /
-  `MASS::confint.polr()` / `ordinal:::confint.clm()` – asymmetric, exact
-  for likelihood-based inference (Venables & Ripley *MASS* Section 7.2).
-  Only the CI bounds change; estimate, SE, statistic and p-value remain
-  Wald. For ordinal fits the profile covers the predictor coefficients
-  (the cut-point thresholds stay Wald), and a robust `vcov` takes
-  precedence (its Wald-robust CIs are used instead). `"profile"` with
-  `lm` raises `spicy_invalid_input`.
+  [`MASS::confint.glm()`](https://rdrr.io/pkg/MASS/man/confint.html) for
+  `glm`, `confint.polr()` / `confint.clm()` for ordinal fits –
+  asymmetric, exact for likelihood-based inference (Venables & Ripley
+  *MASS* Section 7.2). Only the CI bounds change; estimate, SE,
+  statistic and p-value remain Wald. For ordinal fits the profile covers
+  the predictor coefficients (the cut-point thresholds stay Wald), and a
+  robust `vcov` takes precedence (its Wald-robust CIs are used instead).
+  `"profile"` with `lm` raises `spicy_invalid_input`.
 
 - boot_n:
 

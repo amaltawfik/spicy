@@ -192,8 +192,8 @@ AME, partial effect sizes). Default <code>0.95</code>.</p></dd>
 <code>estimate +/- z x SE</code> (<code>t x SE</code> for <code>lm</code>). <code>"profile"</code>
 (<code>glm</code> and ordinal <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code> / <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>) uses the
 profile-likelihood CI from <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">stats::confint()</a></code> –
-<code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> / <code>MASS::confint.polr()</code> /
-<code>ordinal:::confint.clm()</code> – asymmetric, exact for likelihood-based
+<code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> for <code>glm</code>, <code>confint.polr()</code> / <code>confint.clm()</code>
+for ordinal fits – asymmetric, exact for likelihood-based
 inference (Venables &amp; Ripley <em>MASS</em> Section 7.2). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
 fits the profile covers the predictor coefficients (the cut-point
