@@ -68,22 +68,28 @@ fit <- polr(
 table_regression(fit)
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │   B     SE       95% CI        p   
-#> ────────────────────┼────────────────────────────────────
-#>  age                │ -0.00  0.00  [-0.01,  0.01]   .831 
-#>  sex:               │                                    
-#>    Female (ref.)    │   –     –          –          –    
-#>    Male             │  0.02  0.11  [-0.20,  0.23]   .874 
-#>  smoking:           │                                    
-#>    No (ref.)        │   –     –          –          –    
-#>    Yes              │ -0.27  0.14  [-0.53, -0.00]   .047 
-#>  physical_activity: │                                    
-#>    No (ref.)        │   –     –          –          –    
-#>    Yes              │  0.03  0.11  [-0.19,  0.24]   .794 
-#>  Thresholds:        │                                    
-#>    Poor | Fair      │ -2.98  0.24  [-3.45, -2.52]  <.001 
-#>    Fair | Good      │ -1.02  0.21  [-1.43, -0.62]  <.001 
-#>    Good | Very good │  1.04  0.21  [ 0.64,  1.45]  <.001 
+#>  Variable           │    B      SE       95% CI        p   
+#> ────────────────────┼──────────────────────────────────────
+#>  age                │   -0.00  0.00  [-0.01,  0.01]   .831 
+#>  sex:               │                                      
+#>    Female (ref.)    │     –     –          –          –    
+#>    Male             │    0.02  0.11  [-0.20,  0.23]   .874 
+#>  smoking:           │                                      
+#>    No (ref.)        │     –     –          –          –    
+#>    Yes              │   -0.27  0.14  [-0.53, -0.00]   .047 
+#>  physical_activity: │                                      
+#>    No (ref.)        │     –     –          –          –    
+#>    Yes              │    0.03  0.11  [-0.19,  0.24]   .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                      
+#>    Poor | Fair      │   -2.98  0.24  [-3.45, -2.52]  <.001 
+#>    Fair | Good      │   -1.02  0.21  [-1.43, -0.62]  <.001 
+#>    Good | Very good │    1.04  0.21  [ 0.64,  1.45]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                 
+#>  R² (McFadden)      │    0.00                              
+#>  R² (Nagelkerke)    │    0.00                              
+#>  AIC                │ 2761.2                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -108,6 +114,10 @@ Reading the table:
   not over-read a “significant” threshold – the substantive headline is
   the odds ratios and marginal effects below. Hide the block with
   `show_thresholds = FALSE` to fall back to a compact footer line.
+- Below the fit-stats rule, the model-fit block reports **N**, two
+  pseudo-\\R^2\\ (**McFadden**, the Stata `ologit` default, and
+  **Nagelkerke**, the SPSS PLUM default), and **AIC**. Override with
+  `show_fit_stats` (e.g. `show_fit_stats = c("nobs", "AIC", "BIC")`).
 
 ## Odds ratios: `exponentiate = TRUE`
 
@@ -120,22 +130,28 @@ the estimate and its CI bounds and rebranding the column header:
 table_regression(fit, exponentiate = TRUE)
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │  OR     SE       95% CI        p   
-#> ────────────────────┼────────────────────────────────────
-#>  age                │  1.00  0.00  [ 0.99,  1.01]   .831 
-#>  sex:               │                                    
-#>    Female (ref.)    │   –     –          –          –    
-#>    Male             │  1.02  0.11  [ 0.82,  1.26]   .874 
-#>  smoking:           │                                    
-#>    No (ref.)        │   –     –          –          –    
-#>    Yes              │  0.76  0.10  [ 0.59,  1.00]   .047 
-#>  physical_activity: │                                    
-#>    No (ref.)        │   –     –          –          –    
-#>    Yes              │  1.03  0.11  [ 0.83,  1.28]   .794 
-#>  Thresholds:        │                                    
-#>    Poor | Fair      │ -2.98  0.24  [-3.45, -2.52]  <.001 
-#>    Fair | Good      │ -1.02  0.21  [-1.43, -0.62]  <.001 
-#>    Good | Very good │  1.04  0.21  [ 0.64,  1.45]  <.001 
+#>  Variable           │   OR      SE       95% CI        p   
+#> ────────────────────┼──────────────────────────────────────
+#>  age                │    1.00  0.00  [ 0.99,  1.01]   .831 
+#>  sex:               │                                      
+#>    Female (ref.)    │     –     –          –          –    
+#>    Male             │    1.02  0.11  [ 0.82,  1.26]   .874 
+#>  smoking:           │                                      
+#>    No (ref.)        │     –     –          –          –    
+#>    Yes              │    0.76  0.10  [ 0.59,  1.00]   .047 
+#>  physical_activity: │                                      
+#>    No (ref.)        │     –     –          –          –    
+#>    Yes              │    1.03  0.11  [ 0.83,  1.28]   .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                      
+#>    Poor | Fair      │   -2.98  0.24  [-3.45, -2.52]  <.001 
+#>    Fair | Good      │   -1.02  0.21  [-1.43, -0.62]  <.001 
+#>    Good | Very good │    1.04  0.21  [ 0.64,  1.45]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                 
+#>  R² (McFadden)      │    0.00                              
+#>  R² (Nagelkerke)    │    0.00                              
+#>  AIC                │ 2761.2                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -167,22 +183,28 @@ response categories in columns (Long & Freese 2014; Williams 2012).
 table_regression(fit, show_columns = c("b", "ame"))
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │   B    AME Poor  AME Fair  AME Good  AME Very good 
-#> ────────────────────┼────────────────────────────────────────────────────
-#>  age                │ -0.00      0.00      0.00     -0.00          -0.00 
-#>  sex:               │                                                    
-#>    Female (ref.)    │   –                                                
-#>    Male             │  0.02     -0.00     -0.00      0.00           0.00 
-#>  smoking:           │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │ -0.27      0.01      0.04     -0.01          -0.05 
-#>  physical_activity: │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
-#>  Thresholds:        │                                                    
-#>    Poor | Fair      │ -2.98                                              
-#>    Fair | Good      │ -1.02                                              
-#>    Good | Very good │  1.04                                              
+#>  Variable           │    B     AME Poor  AME Fair  AME Good  AME Very good 
+#> ────────────────────┼──────────────────────────────────────────────────────
+#>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
+#>  sex:               │                                                      
+#>    Female (ref.)    │     –                                                
+#>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
+#>  smoking:           │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
+#>  physical_activity: │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                                      
+#>    Poor | Fair      │   -2.98                                              
+#>    Fair | Good      │   -1.02                                              
+#>    Good | Very good │    1.04                                              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                                 
+#>  R² (McFadden)      │    0.00                                              
+#>  R² (Nagelkerke)    │    0.00                                              
+#>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -226,6 +248,11 @@ table_regression(fit, show_columns = "ame")
 #>  physical_activity: │                                             
 #>    No (ref.)        │                                             
 #>    Yes              │    -0.00     -0.00      0.00           0.01 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │  1156                                       
+#>  R² (McFadden)      │     0.00                                    
+#>  R² (Nagelkerke)    │     0.00                                    
+#>  AIC                │  2761.2                                     
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -259,22 +286,28 @@ table_regression(
 #>   bread.mlm sandwich
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │   B    AME Poor  AME Fair  AME Good  AME Very good 
-#> ────────────────────┼────────────────────────────────────────────────────
-#>  age                │ -0.00      0.00      0.00     -0.00          -0.00 
-#>  sex:               │                                                    
-#>    Female (ref.)    │   –                                                
-#>    Male             │  0.02     -0.00     -0.00      0.00           0.00 
-#>  smoking:           │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │ -0.27      0.01      0.04     -0.01          -0.05 
-#>  physical_activity: │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
-#>  Thresholds:        │                                                    
-#>    Poor | Fair      │ -2.98                                              
-#>    Fair | Good      │ -1.02                                              
-#>    Good | Very good │  1.04                                              
+#>  Variable           │    B     AME Poor  AME Fair  AME Good  AME Very good 
+#> ────────────────────┼──────────────────────────────────────────────────────
+#>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
+#>  sex:               │                                                      
+#>    Female (ref.)    │     –                                                
+#>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
+#>  smoking:           │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
+#>  physical_activity: │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                                      
+#>    Poor | Fair      │   -2.98                                              
+#>    Fair | Good      │   -1.02                                              
+#>    Good | Very good │    1.04                                              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                                 
+#>  R² (McFadden)      │    0.00                                              
+#>  R² (Nagelkerke)    │    0.00                                              
+#>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: cluster-robust (CL), clusters by region.
@@ -303,22 +336,28 @@ clm_fit <- ordinal::clm(
 table_regression(clm_fit, show_columns = c("b", "ame"))
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │   B    AME Poor  AME Fair  AME Good  AME Very good 
-#> ────────────────────┼────────────────────────────────────────────────────
-#>  age                │ -0.00      0.00      0.00     -0.00          -0.00 
-#>  sex:               │                                                    
-#>    Female (ref.)    │   –                                                
-#>    Male             │  0.02     -0.00     -0.00      0.00           0.00 
-#>  smoking:           │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │ -0.27      0.01      0.04     -0.01          -0.05 
-#>  physical_activity: │                                                    
-#>    No (ref.)        │   –                                                
-#>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
-#>  Thresholds:        │                                                    
-#>    Poor | Fair      │ -2.98                                              
-#>    Fair | Good      │ -1.02                                              
-#>    Good | Very good │  1.04                                              
+#>  Variable           │    B     AME Poor  AME Fair  AME Good  AME Very good 
+#> ────────────────────┼──────────────────────────────────────────────────────
+#>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
+#>  sex:               │                                                      
+#>    Female (ref.)    │     –                                                
+#>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
+#>  smoking:           │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
+#>  physical_activity: │                                                      
+#>    No (ref.)        │     –                                                
+#>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                                      
+#>    Poor | Fair      │   -2.98                                              
+#>    Fair | Good      │   -1.02                                              
+#>    Good | Very good │    1.04                                              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                                 
+#>  R² (McFadden)      │    0.00                                              
+#>  R² (Nagelkerke)    │    0.00                                              
+#>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -345,16 +384,22 @@ clm_scale <- ordinal::clm(
 table_regression(clm_scale)             # classical: renders normally
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │   B     SE       95% CI        p   
-#> ────────────────────┼────────────────────────────────────
-#>  age                │ -0.00  0.00  [-0.01,  0.01]   .884 
-#>  smoking:           │                                    
-#>    No (ref.)        │   –     –          –          –    
-#>    Yes              │ -0.27  0.14  [-0.55,  0.01]   .060 
-#>  Thresholds:        │                                    
-#>    Poor | Fair      │ -3.06  0.24  [-3.53, -2.60]  <.001 
-#>    Fair | Good      │ -1.05  0.20  [-1.44, -0.66]  <.001 
-#>    Good | Very good │  1.05  0.20  [ 0.66,  1.45]  <.001 
+#>  Variable           │    B      SE       95% CI        p   
+#> ────────────────────┼──────────────────────────────────────
+#>  age                │   -0.00  0.00  [-0.01,  0.01]   .884 
+#>  smoking:           │                                      
+#>    No (ref.)        │     –     –          –          –    
+#>    Yes              │   -0.27  0.14  [-0.55,  0.01]   .060 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                      
+#>    Poor | Fair      │   -3.06  0.24  [-3.53, -2.60]  <.001 
+#>    Fair | Good      │   -1.05  0.20  [-1.44, -0.66]  <.001 
+#>    Good | Very good │    1.05  0.20  [ 0.66,  1.45]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                 
+#>  R² (McFadden)      │    0.00                              
+#>  R² (Nagelkerke)    │    0.01                              
+#>  AIC                │ 2757.8                               
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
@@ -402,24 +447,30 @@ table_regression(
 )
 #> Cumulative logit regression (proportional odds) comparison: self_rated_health
 #> 
-#>                                       Unadjusted                  Adjus 
-#>                       ──────────────────────────────────────────  ───── 
-#>  Variable           │   B    p Poor  p Fair  p Good  p Very good    B   
-#> ────────────────────┼───────────────────────────────────────────────────
-#>  smoking:           │                                                   
-#>    No (ref.)        │   –                                           –   
-#>    Yes              │ -0.27    .067    .050    .218         .037  -0.27 
-#>  age                │                                             -0.00 
-#>  sex:               │                                                   
-#>    Female (ref.)    │                                               –   
-#>    Male             │                                              0.02 
-#>  physical_activity: │                                                   
-#>    No (ref.)        │                                               –   
-#>    Yes              │                                              0.03 
-#>  Thresholds:        │                                                   
-#>    Poor | Fair      │ -2.97                                       -2.98 
-#>    Fair | Good      │ -1.01                                       -1.02 
-#>    Good | Very good │  1.06                                        1.04 
+#>                                        Unadjusted                   Adjuste 
+#>                       ────────────────────────────────────────────  ─────── 
+#>  Variable           │    B     p Poor  p Fair  p Good  p Very good     B    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  smoking:           │                                                       
+#>    No (ref.)        │     –                                             –   
+#>    Yes              │   -0.27    .067    .050    .218         .037    -0.27 
+#>  age                │                                                 -0.00 
+#>  sex:               │                                                       
+#>    Female (ref.)    │                                                   –   
+#>    Male             │                                                  0.02 
+#>  physical_activity: │                                                       
+#>    No (ref.)        │                                                   –   
+#>    Yes              │                                                  0.03 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                                       
+#>    Poor | Fair      │   -2.97                                         -2.98 
+#>    Fair | Good      │   -1.01                                         -1.02 
+#>    Good | Very good │    1.06                                          1.04 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                          1156    
+#>  R² (McFadden)      │    0.00                                          0.00 
+#>  R² (Nagelkerke)    │    0.00                                          0.00 
+#>  AIC                │ 2755.3                                        2761.2  
 #> 
 #>                                    Adjusted               
 #>                       ─────────────────────────────────── 
@@ -435,10 +486,16 @@ table_regression(
 #>  physical_activity: │                                     
 #>    No (ref.)        │                                     
 #>    Yes              │   .794    .794    .794         .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Thresholds:        │                                     
 #>    Poor | Fair      │                                     
 #>    Fair | Good      │                                     
 #>    Good | Very good │                                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │                                     
+#>  R² (McFadden)      │                                     
+#>  R² (Nagelkerke)    │                                     
+#>  AIC                │                                     
 #> 
 #> Note. Cumulative logit regression (proportional odds) models.
 #> Std. errors: Wald asymptotic (z).
@@ -457,13 +514,13 @@ per-category AME matrix included) carries through to every format.
 ``` r
 
 head(table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"))
-#>          Variable     B AME Poor AME Fair AME Good AME Very good
-#> 1             age -0.00     0.00     0.00    -0.00         -0.00
-#> 2            sex:                                               
-#> 3   Female (ref.)   –                                           
-#> 4            Male  0.02    -0.00    -0.00     0.00          0.00
-#> 5        smoking:                                               
-#> 6       No (ref.)   –
+#>          Variable       B AME Poor AME Fair AME Good AME Very good
+#> 1             age   -0.00     0.00     0.00    -0.00         -0.00
+#> 2            sex:                                                 
+#> 3   Female (ref.)     –                                           
+#> 4            Male    0.02    -0.00    -0.00     0.00          0.00
+#> 5        smoking:                                                 
+#> 6       No (ref.)     –
 ```
 
 ``` r

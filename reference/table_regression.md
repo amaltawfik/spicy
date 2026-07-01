@@ -282,8 +282,9 @@ table_regression(
 
   - `lm`: `c("nobs", "r2", "adj_r2")`.
 
-  - `glm`:
-    `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`.
+  - `glm`, ordinal `polr` / `clm`:
+    `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`
+    (McFadden = Stata `ologit` default, Nagelkerke = SPSS PLUM).
 
   - mixed `lm` + `glm`: the union of the two (the renderer em-dashes per
     cell the stat not defined for a given model class).
@@ -648,9 +649,9 @@ restore it explicitly when needed).
 
 - Variance explained (`lm` only): `"r2"`, `"adj_r2"`, `"omega2"`.
 
-- Pseudo-\\R^2\\ (`glm` only): `"pseudo_r2_mcfadden"` (McFadden 1974),
-  `"pseudo_r2_nagelkerke"` (Nagelkerke 1991), `"pseudo_r2_tjur"` (Tjur
-  2009; binomial only).
+- Pseudo-\\R^2\\ (`glm` and ordinal `polr` / `clm`):
+  `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"`
+  (Nagelkerke 1991), `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 
 - Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
   `"rmse"`.
@@ -666,7 +667,7 @@ restore it explicitly when needed).
   `"p_change"`.
 
 Default (resolved when `NULL`) is class-aware: lm fits get
-`c("nobs", "r2", "adj_r2")`; glm fits get
+`c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`; mixed
 lm + glm sets union both groups (the renderer per-row em-dashes the
 inappropriate cell). When `nested = TRUE`, the class-aware default is

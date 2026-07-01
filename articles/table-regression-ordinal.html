@@ -164,22 +164,28 @@ convention: <code>summary.polr()</code>, SPSS PLUM, SAS, Stata
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B     SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00  0.00  [-0.01,  0.01]   .831 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  0.02  0.11  [-0.20,  0.23]   .874 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27  0.14  [-0.53, -0.00]   .047 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03  0.11  [-0.19,  0.24]   .794 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00  0.00  [-0.01,  0.01]   .831 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.02  0.11  [-0.20,  0.23]   .874 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27  0.14  [-0.53, -0.00]   .047 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.03  0.11  [-0.19,  0.24]   .794 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -205,6 +211,12 @@ do not over-read a “significant” threshold – the substantive headline is
 the odds ratios and marginal effects below. Hide the block with
 <code>show_thresholds = FALSE</code> to fall back to a compact footer
 line.</li>
+<li>Below the fit-stats rule, the model-fit block reports
+<strong>N</strong>, two pseudo-<span class="math inline">\(R^2\)</span>
+(<strong>McFadden</strong>, the Stata <code>ologit</code> default, and
+<strong>Nagelkerke</strong>, the SPSS PLUM default), and
+<strong>AIC</strong>. Override with <code>show_fit_stats</code>
+(e.g. <code>show_fit_stats = c("nobs", "AIC", "BIC")</code>).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -218,22 +230,28 @@ the column header:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>  OR     SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>  1.00  0.00  [ 0.99,  1.01]   .831 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  1.02  0.11  [ 0.82,  1.26]   .874 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.76  0.10  [ 0.59,  1.00]   .047 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  1.03  0.11  [ 0.83,  1.28]   .794 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   OR      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>    1.00  0.00  [ 0.99,  1.01]   .831 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    1.02  0.11  [ 0.82,  1.26]   .874 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.76  0.10  [ 0.59,  1.00]   .047 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    1.03  0.11  [ 0.83,  1.28]   .794 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -263,22 +281,28 @@ rows, response categories in columns (Long &amp; Freese 2014; Williams
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B    AME Poor  AME Fair  AME Good  AME Very good </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00      0.00      0.00     -0.00          -0.00 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  0.02     -0.00     -0.00      0.00           0.00 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27      0.01      0.04     -0.01          -0.05 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B     AME Poor  AME Fair  AME Good  AME Very good </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00      0.00      0.00     -0.00          -0.00 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.02     -0.00     -0.00      0.00           0.00 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27      0.01      0.04     -0.01          -0.05 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04                                              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -320,6 +344,11 @@ such as odds ratios.</li>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                             </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                             </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span>  1156                                       </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span>  2761.2                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -349,22 +378,28 @@ name, or a vector (see the main vignette, <em>How to specify
 <span><span class="co">#&gt;   bread.mlm sandwich</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B    AME Poor  AME Fair  AME Good  AME Very good </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00      0.00      0.00     -0.00          -0.00 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  0.02     -0.00     -0.00      0.00           0.00 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27      0.01      0.04     -0.01          -0.05 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B     AME Poor  AME Fair  AME Good  AME Very good </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00      0.00      0.00     -0.00          -0.00 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.02     -0.00     -0.00      0.00           0.00 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27      0.01      0.04     -0.01          -0.05 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04                                              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CL), clusters by region.</span></span></span>
@@ -392,22 +427,28 @@ proportional odds.</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B    AME Poor  AME Fair  AME Good  AME Very good </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00      0.00      0.00     -0.00          -0.00 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  0.02     -0.00     -0.00      0.00           0.00 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27      0.01      0.04     -0.01          -0.05 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B     AME Poor  AME Fair  AME Good  AME Very good </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00      0.00      0.00     -0.00          -0.00 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.02     -0.00     -0.00      0.00           0.00 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27      0.01      0.04     -0.01          -0.05 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                                </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04                                              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -431,16 +472,22 @@ front with a clear <code>spicy_unsupported_vcov</code> error:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span><span class="op">)</span>             <span class="co"># classical: renders normally</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B     SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00  0.00  [-0.01,  0.01]   .884 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27  0.14  [-0.55,  0.01]   .060 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -3.06  0.24  [-3.53, -2.60]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.05  0.20  [-1.44, -0.66]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.05  0.20  [ 0.66,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00  0.00  [-0.01,  0.01]   .884 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27  0.14  [-0.55,  0.01]   .060 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -3.06  0.24  [-3.53, -2.60]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.05  0.20  [-1.44, -0.66]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.05  0.20  [ 0.66,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2757.8                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -482,24 +529,30 @@ supplied as a list:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds) comparison: self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                       Unadjusted                  Adjus </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ──────────────────────────────────────────  ───── </span></span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B    p Poor  p Fair  p Good  p Very good    B   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                   </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                           –   </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27    .067    .050    .218         .037  -0.27 </span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>                                             -0.00 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                   </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>                                               –   </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>                                              0.02 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                   </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                               –   </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>                                              0.03 </span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                   </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.97                                       -2.98 </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.01                                       -1.02 </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.06                                        1.04 </span></span>
+<span><span class="co">#&gt;                                        Unadjusted                   Adjuste </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ────────────────────────────────────────────  ─────── </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B     p Poor  p Fair  p Good  p Very good     B    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –                                             –   </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27    .067    .050    .218         .037    -0.27 </span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>                                                 -0.00 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>                                                   –   </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>                                                  0.02 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                                   –   </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>                                                  0.03 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.97                                         -2.98 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.01                                         -1.02 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.06                                          1.04 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                          1156    </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                          0.00 </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                          0.00 </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2755.3                                        2761.2  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                                    Adjusted               </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────────────────────────── </span></span></span>
@@ -515,10 +568,16 @@ supplied as a list:</p>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   .794    .794    .794         .794 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -536,13 +595,13 @@ or Word tables. The structure (the per-category AME matrix included)
 carries through to every format.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          Variable     B AME Poor AME Fair AME Good AME Very good</span></span>
-<span><span class="co">#&gt; 1             age -0.00     0.00     0.00    -0.00         -0.00</span></span>
-<span><span class="co">#&gt; 2            sex:                                               </span></span>
-<span><span class="co">#&gt; 3   Female (ref.)   –                                           </span></span>
-<span><span class="co">#&gt; 4            Male  0.02    -0.00    -0.00     0.00          0.00</span></span>
-<span><span class="co">#&gt; 5        smoking:                                               </span></span>
-<span><span class="co">#&gt; 6       No (ref.)   –</span></span></code></pre></div>
+<span><span class="co">#&gt;          Variable       B AME Poor AME Fair AME Good AME Very good</span></span>
+<span><span class="co">#&gt; 1             age   -0.00     0.00     0.00    -0.00         -0.00</span></span>
+<span><span class="co">#&gt; 2            sex:                                                 </span></span>
+<span><span class="co">#&gt; 3   Female (ref.)     –                                           </span></span>
+<span><span class="co">#&gt; 4            Male    0.02    -0.00    -0.00     0.00          0.00</span></span>
+<span><span class="co">#&gt; 5        smoking:                                                 </span></span>
+<span><span class="co">#&gt; 6       No (ref.)     –</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -763,7 +822,7 @@ AME Very good
 age
 </td>
 <td headers="B" class="gt_row gt_center">
--0.00
+  -0.00
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
  0.00
@@ -798,7 +857,7 @@ sex:
 Female (ref.)
 </td>
 <td headers="B" class="gt_row gt_center">
- –   
+   –   
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
  –   
@@ -818,7 +877,7 @@ Female (ref.)
 Male
 </td>
 <td headers="B" class="gt_row gt_center">
- 0.02
+   0.02
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
 -0.00
@@ -853,7 +912,7 @@ smoking:
 No (ref.)
 </td>
 <td headers="B" class="gt_row gt_center">
- –   
+   –   
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
  –   
@@ -873,7 +932,7 @@ No (ref.)
 Yes
 </td>
 <td headers="B" class="gt_row gt_center">
--0.27
+  -0.27
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
  0.01
@@ -908,7 +967,7 @@ physical_activity:
 No (ref.)
 </td>
 <td headers="B" class="gt_row gt_center">
- –   
+   –   
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
  –   
@@ -928,7 +987,7 @@ No (ref.)
 Yes
 </td>
 <td headers="B" class="gt_row gt_center">
- 0.03
+   0.03
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
 -0.00
@@ -963,7 +1022,7 @@ Thresholds:
 Poor | Fair
 </td>
 <td headers="B" class="gt_row gt_center">
--2.98
+  -2.98
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
 </td>
@@ -979,7 +1038,7 @@ Poor | Fair
 Fair | Good
 </td>
 <td headers="B" class="gt_row gt_center">
--1.02
+  -1.02
 </td>
 <td headers="AME Poor" class="gt_row gt_center">
 </td>
@@ -991,11 +1050,75 @@ Fair | Good
 </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-indent: 20px;">
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc; text-indent: 20px;">
 Good | Very good
 </td>
+<td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+   1.04
+</td>
+<td headers="AME Poor" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+<td headers="AME Fair" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+<td headers="AME Good" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+<td headers="AME Very good" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+n
+</td>
+<td headers="B" class="gt_row gt_center">
+1156   
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+R² (McFadden)
+</td>
+<td headers="B" class="gt_row gt_center">
+   0.00
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+R² (Nagelkerke)
+</td>
+<td headers="B" class="gt_row gt_center">
+   0.00
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+AIC
+</td>
 <td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
- 1.04
+2761.2 
 </td>
 <td headers="AME Poor" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>

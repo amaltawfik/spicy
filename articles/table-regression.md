@@ -1559,6 +1559,7 @@ str(out)
 #>   .. ..$ fields       : chr "p_value"
 #>   .. ..$ outcome_level: chr NA
 #>  - attr(*, "group_sep_rows")= int 9
+#>  - attr(*, "section_sep_rows")= int(0) 
 #>  - attr(*, "align")= chr "decimal"
 #>  - attr(*, "decimal_mark")= chr "."
 #>  - attr(*, "structured")=List of 10

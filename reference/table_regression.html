@@ -356,7 +356,9 @@ wording – "ref:", "vs", "Reference categories:").</p></dd>
 <dd><p>Character vector of tokens for the
 model-level rows below the coefficients; row order follows
 token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>: <code>c("nobs", "r2", "adj_r2")</code>.</p></li>
-<li><p><code>glm</code>: <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>.</p></li>
+<li><p><code>glm</code>, ordinal <code>polr</code> / <code>clm</code>:
+<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code> (McFadden = Stata <code>ologit</code> default,
+Nagelkerke = SPSS PLUM).</p></li>
 <li><p>mixed <code>lm</code> + <code>glm</code>: the union of the two (the
 renderer em-dashes per cell the stat not defined for a
 given model class).</p></li>
@@ -714,8 +716,9 @@ side-by-side layout; restore it explicitly when needed).</p>
 <ul><li><p>Counts: <code>"nobs"</code>, <code>"weighted_nobs"</code>.</p></li>
 <li><p>Variance explained (<code>lm</code> only): <code>"r2"</code>, <code>"adj_r2"</code>,
 <code>"omega2"</code>.</p></li>
-<li><p>Pseudo-\(R^2\) (<code>glm</code> only): <code>"pseudo_r2_mcfadden"</code>
-(McFadden 1974), <code>"pseudo_r2_nagelkerke"</code> (Nagelkerke 1991),
+<li><p>Pseudo-\(R^2\) (<code>glm</code> and ordinal <code>polr</code> / <code>clm</code>):
+<code>"pseudo_r2_mcfadden"</code> (McFadden 1974),
+<code>"pseudo_r2_nagelkerke"</code> (Nagelkerke 1991),
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
 <li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
 / glm dispersion), <code>"rmse"</code>.</p></li>
@@ -729,7 +732,7 @@ comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
 <code>"aic_change"</code>, <code>"aicc_change"</code>, <code>"bic_change"</code>,
 <code>"deviance_change"</code>, <code>"p_change"</code>.</p></li>
 </ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm fits get
-<code>c("nobs", "r2", "adj_r2")</code>; glm fits get
+<code>c("nobs", "r2", "adj_r2")</code>; glm and ordinal <code>polr</code> / <code>clm</code> fits get
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>;
 mixed lm + glm sets union both groups (the renderer per-row
 em-dashes the inappropriate cell). When <code>nested = TRUE</code>, the
