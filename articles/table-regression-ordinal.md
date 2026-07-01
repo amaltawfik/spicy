@@ -474,22 +474,51 @@ table_regression(clm_scale, vcov = "CR2", cluster = ~region)
 ```
 
 A **nominal** component (`nominal = ~`, *partial* proportional odds)
-estimates a separate coefficient **per threshold** for the nominal terms
-— a structure a single-block ordinal table cannot represent.
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-refuses these fits with a clear error rather than mis-tabulating them:
+lets a predictor’s effect vary across the cut-points: it estimates a
+separate coefficient **per cut-point** for the nominal terms. These
+render as a labelled **`Non-proportional effects`** block — one row per
+cut-point — between the proportional coefficients and the thresholds:
 
 ``` r
 
 clm_npo <- ordinal::clm(
-  self_rated_health ~ age + smoking, nominal = ~ smoking,
+  self_rated_health ~ age, nominal = ~ smoking,
   data = sochealth
 )
 table_regression(clm_npo)
-#> Error in `as_regression_frame()`:
-#> ! table_regression() does not support partial-proportional-odds `clm` fits (`nominal = ~ ...`).
-#> ℹ The nominal terms carry a separate coefficient per threshold, which a single-block ordinal table cannot represent. Drop `nominal` for a proportional-odds model, or use `scale = ~` for scale effects.
+#> Cumulative logit regression (partial proportional odds): self_rated_health
+#> 
+#>  Variable                        │    B      SE       95% CI        p   
+#> ─────────────────────────────────┼──────────────────────────────────────
+#>  age                             │   -0.00  0.00  [-0.01,  0.01]   .844 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Non-proportional effects:       │                                      
+#>    smokingYes @ Poor | Fair      │    0.82  0.28  [ 0.28,  1.37]   .003 
+#>    smokingYes @ Fair | Good      │    0.22  0.16  [-0.09,  0.53]   .160 
+#>    smokingYes @ Good | Very good │    0.24  0.17  [-0.10,  0.58]   .165 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:                     │                                      
+#>    Poor | Fair                   │   -3.17  0.25  [-3.65, -2.69]  <.001 
+#>    Fair | Good                   │   -1.03  0.20  [-1.42, -0.65]  <.001 
+#>    Good | Very good              │    1.03  0.20  [ 0.64,  1.41]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │ 1156                                 
+#>  R² (McFadden)                   │    0.00                              
+#>  R² (Nagelkerke)                 │    0.01                              
+#>  AIC                             │ 2756.1                               
+#> 
+#> Note. Cumulative logit regression (partial proportional odds).
+#> Std. errors: Wald asymptotic (z).
+#> Thresholds: latent-scale category cut-points.
 ```
+
+Two caveats for the non-proportional terms, both surfaced by the table:
+robust / cluster SEs are **not available** (`sandwich` has no
+estimating-functions method, so a robust `vcov` is refused), and
+`ci_method = "profile"` covers the proportional coefficients only (the
+non-proportional and threshold rows stay Wald). Under
+`exponentiate = TRUE` each non-proportional coefficient becomes an odds
+ratio for its cut-point.
 
 ## Several models side by side
 

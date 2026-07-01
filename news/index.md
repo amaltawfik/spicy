@@ -84,6 +84,12 @@ for the walk-throughs.
 - `ci_method = "profile"` gives profile-likelihood CIs for `glm`,
   `polr`, and `clm`; the footer discloses `95% CIs: profile likelihood.`
   when used.
+- [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)
+  partial-proportional-odds fits (`nominal = ~`) are now supported
+  (previously refused): the non-proportional terms render as a
+  `Non-proportional effects` block, one coefficient per cut-point.
+  Robust SEs are not available for them; profile CIs cover the
+  proportional terms.
 
 ### Minor improvements
 

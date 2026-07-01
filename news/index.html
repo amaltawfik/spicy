@@ -97,6 +97,8 @@
 <li>Ordinal fits get a class-aware fit-stats default (<code>nobs</code>, McFadden + Nagelkerke pseudo-R², <code>AIC</code>); any other class falls back to <code>nobs</code> + <code>AIC</code> (was a blank block).</li>
 <li>
 <code>ci_method = "profile"</code> gives profile-likelihood CIs for <code>glm</code>, <code>polr</code>, and <code>clm</code>; the footer discloses <code>95% CIs: profile likelihood.</code> when used.</li>
+<li>
+<code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code> partial-proportional-odds fits (<code>nominal = ~</code>) are now supported (previously refused): the non-proportional terms render as a <code>Non-proportional effects</code> block, one coefficient per cut-point. Robust SEs are not available for them; profile CIs cover the proportional terms.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>

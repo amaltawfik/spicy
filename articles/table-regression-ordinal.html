@@ -562,20 +562,50 @@ front with a clear <code>spicy_unsupported_vcov</code> error:</p>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.</span></span></code></pre></div>
 <p>A <strong>nominal</strong> component (<code>nominal = ~</code>,
-<em>partial</em> proportional odds) estimates a separate coefficient
-<strong>per threshold</strong> for the nominal terms — a structure a
-single-block ordinal table cannot represent.
-<code><a href="../reference/table_regression.html">table_regression()</a></code> refuses these fits with a clear error
-rather than mis-tabulating them:</p>
+<em>partial</em> proportional odds) lets a predictor’s effect vary
+across the cut-points: it estimates a separate coefficient <strong>per
+cut-point</strong> for the nominal terms. These render as a labelled
+<strong><code>Non-proportional effects</code></strong> block — one row
+per cut-point — between the proportional coefficients and the
+thresholds:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clm_npo</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
-<span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>, nominal <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
+<span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span>, nominal <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_npo</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `as_regression_frame()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> table_regression() does not support partial-proportional-odds `clm` fits (`nominal = ~ ...`).</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> The nominal terms carry a separate coefficient per threshold, which a single-block ordinal table cannot represent. Drop `nominal` for a proportional-odds model, or use `scale = ~` for scale effects.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (partial proportional odds): self_rated_health</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                             <span style="color: #9E9E9E;">│</span>   -0.00  0.00  [-0.01,  0.01]   .844 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Non-proportional effects:       <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    smokingYes @ Poor | Fair      <span style="color: #9E9E9E;">│</span>    0.82  0.28  [ 0.28,  1.37]   .003 </span></span>
+<span><span class="co">#&gt;    smokingYes @ Fair | Good      <span style="color: #9E9E9E;">│</span>    0.22  0.16  [-0.09,  0.53]   .160 </span></span>
+<span><span class="co">#&gt;    smokingYes @ Good | Very good <span style="color: #9E9E9E;">│</span>    0.24  0.17  [-0.10,  0.58]   .165 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:                     <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair                   <span style="color: #9E9E9E;">│</span>   -3.17  0.25  [-3.65, -2.69]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good                   <span style="color: #9E9E9E;">│</span>   -1.03  0.20  [-1.42, -0.65]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good              <span style="color: #9E9E9E;">│</span>    1.03  0.20  [ 0.64,  1.41]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)                   <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)                 <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
+<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 2756.1                               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (partial proportional odds).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
+<p>Two caveats for the non-proportional terms, both surfaced by the
+table: robust / cluster SEs are <strong>not available</strong>
+(<code>sandwich</code> has no estimating-functions method, so a robust
+<code>vcov</code> is refused), and <code>ci_method = "profile"</code>
+covers the proportional coefficients only (the non-proportional and
+threshold rows stay Wald). Under <code>exponentiate = TRUE</code> each
+non-proportional coefficient becomes an odds ratio for its
+cut-point.</p>
 </div>
 </div>
 <div class="section level2">
