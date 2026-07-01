@@ -387,11 +387,15 @@
 #'   `1000L`.
 #' @param ci_method CI construction. `"wald"` (default) uses
 #'   `estimate +/- z x SE` (`t x SE` for `lm`). `"profile"`
-#'   (*glm only*) uses the profile-likelihood CI from
-#'   [MASS::confint.glm()] -- asymmetric, exact for
-#'   likelihood-based inference (Venables & Ripley *MASS* Section 7.2).
-#'   Only the CI bounds change; estimate, SE, statistic and
-#'   p-value remain Wald. `"profile"` with `lm` raises
+#'   (`glm` and ordinal `MASS::polr` / `ordinal::clm`) uses the
+#'   profile-likelihood CI from [stats::confint()] --
+#'   [MASS::confint.glm()] / [MASS::confint.polr()] /
+#'   `ordinal:::confint.clm()` -- asymmetric, exact for likelihood-based
+#'   inference (Venables & Ripley *MASS* Section 7.2). Only the CI bounds
+#'   change; estimate, SE, statistic and p-value remain Wald. For ordinal
+#'   fits the profile covers the predictor coefficients (the cut-point
+#'   thresholds stay Wald), and a robust `vcov` takes precedence (its
+#'   Wald-robust CIs are used instead). `"profile"` with `lm` raises
 #'   `spicy_invalid_input`.
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
@@ -1168,23 +1172,31 @@ table_regression <- function(
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
 
-  # `ci_method = "profile"` is glm only. Profile-likelihood CIs are
-  # standard for glm (MASS::confint.glm); for lm, Wald CIs are exact
-  # under the normal-error assumption, so a profile path would be
-  # equivalent to Wald with extra cost.
+  # `ci_method = "profile"` is available for glm and ordinal (polr / clm),
+  # which have a genuine profile-likelihood CI (confint.glm / confint.polr /
+  # confint.clm). It is rejected for lm, where Wald CIs are exact under the
+  # normal-error assumption so a profile path would just be Wald with extra
+  # cost. (Other classes silently keep Wald -- the frame method ignores the
+  # request when it has no profile path.)
   if (identical(ci_method, "profile")) {
-    any_lm_only <- any(vapply(models, function(f) {
-      inherits(f, "lm") && !inherits(f, "glm")
-    }, logical(1)))
-    if (any_lm_only) {
+    # Profile-likelihood CIs are genuine only where confint() profiles the
+    # coefficients: plain `glm` (MASS::confint.glm), `polr` (confint.polr) and
+    # `clm` (confint.clm). class(f)[1] pins the PLAIN glm and excludes glm
+    # subclasses whose confint() is not profile (svyglm design-based, gam).
+    # Any other class is rejected rather than silently returning Wald.
+    supports_profile <- vapply(models, function(f) {
+      class(f)[1] %in% c("glm", "polr", "clm")
+    }, logical(1))
+    if (!all(supports_profile)) {
+      offending <- class(models[[which(!supports_profile)[1]]])[1]
       spicy_abort(
         c(
-          "`ci_method = \"profile\"` is defined for `glm` only.",
-          "i" = paste0(
-            "For `lm`, Wald CIs are exact under the normal-error ",
-            "assumption (no profile refinement available)."
-          ),
-          "i" = "Use `ci_method = \"wald\"` (default) for `lm`."
+          paste0("`ci_method = \"profile\"` is available only for `glm` and ",
+                 "ordinal (`polr` / `clm`) fits."),
+          "x" = sprintf(paste0("`%s` has no profile-likelihood path; its CIs ",
+                               "would silently fall back to Wald."), offending),
+          "i" = paste0("Use `ci_method = \"wald\"` (default), or a robust ",
+                       "`vcov` for robust (Wald) CIs.")
         ),
         class = "spicy_invalid_input"
       )

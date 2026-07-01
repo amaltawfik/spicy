@@ -158,6 +158,25 @@ labels) is layered on top for mixed-effects and Bayesian.
   so they are robust to `update()`'s data-scoping fragility and
   cross-validated to `performance::r2_mcfadden()` / `r2_nagelkerke()`.
 
+* `ci_method = "profile"` now produces genuine **profile-likelihood CIs**
+  for ordinal fits (`MASS::polr` via `confint.polr`, `ordinal::clm` via
+  `confint.clm`), cross-validated to `confint()` to machine precision --
+  previously the request was silently downgraded to Wald. Profile is a
+  CI-only refinement (the estimate, SE, statistic and *p* stay Wald) and
+  covers the predictor coefficients; the cut-point thresholds stay Wald,
+  and a robust `vcov` takes precedence.
+
+* When confidence intervals are profile-likelihood (`glm` or ordinal
+  fits), the footer now **discloses** it (`95% CIs: profile likelihood.`)
+  alongside the standard-error method -- a profile CI is not
+  `estimate ± z × SE`, so the method is stated (APA 7 / SAMPL / STROBE;
+  matching `parameters::model_parameters()`).
+
+* `ci_method = "profile"` is now **rejected with a clear error** for any
+  class without a genuine profile path (previously only `lm` was rejected;
+  other classes silently returned Wald). It is accepted for `glm`, `polr`
+  and `clm`.
+
 ## Minor improvements
 
 * `table_regression()` now shows a model-fit block for **every** model

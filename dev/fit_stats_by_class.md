@@ -35,8 +35,8 @@ Columns:
 | `lmerMod` / `glmerMod` | `lme4::lmer` / `glmer` | ✅ | glmer: OR/IRR | **random effects** |
 | `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (robust → model fallback) | link-dep | **random effects** |
 | `lme` | `nlme::lme` | ✅ | — | **random effects** |
-| `polr` | `MASS::polr` | ✅ **per-cat** | OR | **Thresholds** ✅ |
-| `clm` | `ordinal::clm` | ✅ **per-cat** | OR | **Thresholds** ✅ |
+| `polr` | `MASS::polr` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
+| `clm` | `ordinal::clm` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
 | `multinom` | `nnet::multinom` | ✅ **per-outcome** | RRR | per-outcome coef blocks |
 | `mlogit` | `mlogit::mlogit` | ❌ no `slopes()` | OR | per-alternative rows |
 | `betareg` | `betareg::betareg` | ✅ | OR (mean link) | 🔶 precision φ (now footer) |
@@ -65,6 +65,38 @@ Notes:
   `Thresholds` (ordinal, shipped) and the future `random effects` block share
   the exact same rendering path — a subordinate labelled block of rows — which
   is why the section-separator primitive should be built once and generally.
+
+### 1b. Argument & robust-SE support (varies by class)
+
+What each class accepts for the cross-cutting arguments. `vcov` / `cluster` is
+the highest-variance axis — a wrong request errors with a class-specific
+supported list. Ordinal is verified below; other rows are filled + confirmed in
+the per-class passes.
+
+| Class | `vcov` backends | `ci_method` | `standardized` |
+|---|---|---|---|
+| `lm` | classical, HC*, CR* | wald (profile → error) | refit + posthoc/basic/smart |
+| `glm` | classical, HC*, CR* | wald, **profile** (`confint.glm`) | refit + posthoc/... |
+| `polr` / `clm` | classical, CR0–CR3 (**no HC***) | wald, **profile** (predictors via `confint`; thresholds stay Wald) | refit (posthoc/basic run but dubious on a categorical outcome) |
+| mixed (`lmer`/`glmer`/`glmmTMB`/`lme`) | 🔶 classical, CR* (clubSandwich) | wald (+ Satterthwaite df) | refit |
+| `coxph` / `cph` | 🔶 classical, CR* (Lin–Wei dfbeta) | wald | refit |
+| others | 🔶 per-class | 🔶 | 🔶 |
+
+Notes:
+- `cluster` requires a `CR*` (cluster-robust) `vcov`; it then also flows into
+  the AME uncertainty (robust-vcov-aware AME).
+- `exponentiate` yields an **odds ratio only under a logit link**; other links
+  (probit, cloglog, cauchit) produce a generic `exp(B)` header, never "OR".
+- `ci_method = "profile"` is accepted **only** for `glm` / `polr` / `clm` (the
+  classes with a genuine `confint()` profile path, pinned by `class(f)[1]`);
+  any other class now **errors** with a clear message rather than silently
+  returning Wald. For ordinal it profiles the predictor coefficients
+  (`confint.polr` / `confint.clm`); the cut-point thresholds stay Wald. A robust
+  `vcov` takes precedence (profile is model-based, so its Wald-robust CIs win).
+- **Footer disclosure**: profile is a CI-only refinement (estimate, SE,
+  statistic and p stay Wald; the CI is not `est ± z·SE`), so when profile CIs
+  are actually shown the footer states `<N>% CIs: profile likelihood.` (APA /
+  SAMPL / STROBE: disclose how uncertainty was computed).
 
 ---
 

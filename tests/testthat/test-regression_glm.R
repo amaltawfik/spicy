@@ -876,7 +876,8 @@ test_that("ci_method = 'profile' on lm: rejected with hint", {
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "glm.*only", perl = TRUE)
+  expect_match(conditionMessage(err), "only for", fixed = TRUE)
+  expect_match(conditionMessage(err), "glm", fixed = TRUE)
   expect_match(conditionMessage(err), "Wald", fixed = TRUE)
 })
 

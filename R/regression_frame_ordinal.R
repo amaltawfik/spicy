@@ -47,7 +47,15 @@ as_regression_frame.polr <- function(fit,
                                       ...) {
   .check_MASS_available()
 
-  coefs <- .polr_coefs(fit, ci_level = ci_level)
+  # Profile CIs are model-based (confint.polr); a robust vcov takes precedence
+  # -- its Wald-robust CIs overwrite them below -- so only profile under a
+  # model-based vcov.
+  eff_ci_method <- if (vcov %in% c("model", "classical")) {
+    ci_method %||% "wald"
+  } else {
+    "wald"
+  }
+  coefs <- .polr_coefs(fit, ci_level = ci_level, ci_method = eff_ci_method)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   # The (k - 1) thresholds live in info$extras, not in coefs, so only the
   # proportional-odds slope rows are reweighted -- which is what we want.
@@ -109,7 +117,14 @@ as_regression_frame.clm <- function(fit,
     )
   }
 
-  coefs <- .clm_coefs(fit, ci_level = ci_level)
+  # Profile CIs are model-based (confint.clm); a robust vcov takes precedence,
+  # so only profile under a model-based vcov.
+  eff_ci_method <- if (vcov %in% c("model", "classical")) {
+    ci_method %||% "wald"
+  } else {
+    "wald"
+  }
+  coefs <- .clm_coefs(fit, ci_level = ci_level, ci_method = eff_ci_method)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   # coef(clm) orders thresholds before slopes; only the slope rows live in
   # coefs, and `match` selects their (offset) positions in the full vcovCL.
@@ -170,7 +185,7 @@ as_regression_frame.clm <- function(fit,
 
 # Build the coefs tibble for a polr fit. Predictor coefs only --
 # thresholds (fit$zeta) go into info$extras$thresholds.
-.polr_coefs <- function(fit, ci_level) {
+.polr_coefs <- function(fit, ci_level, ci_method = "wald") {
   cf <- stats::coef(fit)  # excludes thresholds by construction
   V_full <- as.matrix(stats::vcov(fit))
   # Subset vcov to predictor coefs only.
@@ -219,6 +234,50 @@ as_regression_frame.clm <- function(fit,
 
   ref_rows <- .ordinal_reference_rows(fit)
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
+}
+
+
+# When ci_method == "profile", replace the Wald predictor CIs with profile-
+# likelihood CIs from confint(fit). The point estimate / SE / statistic /
+# p-value stay Wald -- profile is a CI-only refinement, matching the glm path
+# and MASS::confint.glm / parameters::ci(method = "profile"). confint.polr /
+# confint.clm cover the location coefficients only, not the cut-points (the
+# thresholds stay Wald). Robust to confint()'s single-predictor vector shape;
+# all-or-nothing, with a spicy_fallback warning + Wald CIs if profiling fails.
+# Called only under a model-based vcov (a robust vcov takes precedence, so the
+# caller passes ci_method = "wald" then).
+.ordinal_maybe_profile_ci <- function(coefs, fit, ci_level, ci_method) {
+  if (!identical(ci_method, "profile")) return(coefs)
+  prow <- which(!coefs$is_ref & !is.na(coefs$estimate))
+  if (length(prow) == 0L) return(coefs)
+
+  pci <- tryCatch(
+    suppressMessages(suppressWarnings(stats::confint(fit, level = ci_level))),
+    error = function(e) NULL)
+  # confint() returns a named length-2 vector when there is a single predictor.
+  if (!is.null(pci) && !is.matrix(pci)) {
+    pci <- if (length(pci) == 2L && length(prow) == 1L) {
+      matrix(pci, nrow = 1L, dimnames = list(coefs$term[prow], NULL))
+    } else {
+      NULL
+    }
+  }
+  idx <- if (!is.null(pci) && is.matrix(pci) && ncol(pci) == 2L) {
+    match(coefs$term[prow], rownames(pci))
+  } else {
+    NA_integer_
+  }
+  if (!anyNA(idx)) {
+    coefs$ci_lower[prow] <- pci[idx, 1L]
+    coefs$ci_upper[prow] <- pci[idx, 2L]
+    return(coefs)
+  }
+  spicy_warn(
+    c("Profile-likelihood CI computation failed; falling back to Wald CI.",
+      "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
+                   "fit converged cleanly.")),
+    class = "spicy_fallback")
   coefs
 }
 
@@ -350,7 +409,7 @@ as_regression_frame.clm <- function(fit,
 
 # Build the coefs tibble for a clm fit. Predictor coefs (fit$beta) only.
 # Thresholds (fit$alpha) go into info$extras$thresholds.
-.clm_coefs <- function(fit, ci_level) {
+.clm_coefs <- function(fit, ci_level, ci_method = "wald") {
   beta <- fit$beta
   if (is.null(beta) || length(beta) == 0L) {
     return(.empty_coefs_frame())
@@ -408,7 +467,7 @@ as_regression_frame.clm <- function(fit,
 
   ref_rows <- .ordinal_reference_rows(fit)
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
-  coefs
+  .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 
 

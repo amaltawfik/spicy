@@ -76,6 +76,7 @@ build_regression_footer_from_frames <- function(
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
+    build_ci_method_footer_block_from_frames(frames),
     build_mixed_inference_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(frames,
                                                    show_re = show_re,
@@ -220,6 +221,27 @@ build_vcov_footer_block_from_frames <- function(frames) {
     sprintf("  Model %d: %s", i, labels[i])
   }, character(1))
   paste0("Std. errors:\n", paste(per, collapse = "\n"))
+}
+
+
+# CI-method disclosure. Profile-likelihood CIs are a CI-ONLY refinement -- the
+# point estimate, SE, statistic and p-value all stay Wald -- and are NOT
+# reconstructable as est +/- z * SE, so the method is stated here (APA 7 /
+# SAMPL / STROBE all require disclosing how uncertainty was computed; matches
+# parameters::model_parameters). The note fires only when a model's CIs are
+# ACTUALLY profile: ci_method == "profile" under a model-based vcov -- a robust
+# vcov takes precedence (its Wald-robust CIs are used, no note). The validator
+# guarantees ci_method == "profile" reaches only glm / polr / clm.
+build_ci_method_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  is_profile <- vapply(frames, function(f) {
+    identical(f$info$ci_method, "profile") &&
+      (f$info$vcov_kind %||% "model") %in% c("model", "classical")
+  }, logical(1))
+  if (!any(is_profile)) return(NULL)
+  lvl <- frames[[which(is_profile)[1]]]$info$ci_level %||% 0.95
+  pct <- sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
+  paste0(pct, "% CIs: profile likelihood.")
 }
 
 

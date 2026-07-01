@@ -92,11 +92,15 @@ AME, partial effect sizes). Default \code{0.95}.}
 
 \item{ci_method}{CI construction. \code{"wald"} (default) uses
 \verb{estimate +/- z x SE} (\verb{t x SE} for \code{lm}). \code{"profile"}
-(\emph{glm only}) uses the profile-likelihood CI from
-\code{\link[MASS:confint.glm]{MASS::confint.glm()}} -- asymmetric, exact for
-likelihood-based inference (Venables & Ripley \emph{MASS} Section 7.2).
-Only the CI bounds change; estimate, SE, statistic and
-p-value remain Wald. \code{"profile"} with \code{lm} raises
+(\code{glm} and ordinal \code{MASS::polr} / \code{ordinal::clm}) uses the
+profile-likelihood CI from \code{\link[stats:confint]{stats::confint()}} --
+\code{\link[MASS:confint.glm]{MASS::confint.glm()}} / \code{\link[MASS:confint.polr]{MASS::confint.polr()}} /
+\code{ordinal:::confint.clm()} -- asymmetric, exact for likelihood-based
+inference (Venables & Ripley \emph{MASS} Section 7.2). Only the CI bounds
+change; estimate, SE, statistic and p-value remain Wald. For ordinal
+fits the profile covers the predictor coefficients (the cut-point
+thresholds stay Wald), and a robust \code{vcov} takes precedence (its
+Wald-robust CIs are used instead). \code{"profile"} with \code{lm} raises
 \code{spicy_invalid_input}.}
 
 \item{boot_n}{Number of bootstrap replicates when
