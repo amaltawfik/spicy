@@ -389,8 +389,8 @@
 #'   `estimate +/- z x SE` (`t x SE` for `lm`). `"profile"`
 #'   (`glm` and ordinal `MASS::polr` / `ordinal::clm`) uses the
 #'   profile-likelihood CI from [stats::confint()] --
-#'   [MASS::confint.glm()] / [MASS::confint.polr()] /
-#'   `ordinal:::confint.clm()` -- asymmetric, exact for likelihood-based
+#'   [MASS::confint.glm()] for `glm`, `confint.polr()` / `confint.clm()`
+#'   for ordinal fits -- asymmetric, exact for likelihood-based
 #'   inference (Venables & Ripley *MASS* Section 7.2). Only the CI bounds
 #'   change; estimate, SE, statistic and p-value remain Wald. For ordinal
 #'   fits the profile covers the predictor coefficients (the cut-point

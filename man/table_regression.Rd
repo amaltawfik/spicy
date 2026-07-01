@@ -94,8 +94,8 @@ AME, partial effect sizes). Default \code{0.95}.}
 \verb{estimate +/- z x SE} (\verb{t x SE} for \code{lm}). \code{"profile"}
 (\code{glm} and ordinal \code{MASS::polr} / \code{ordinal::clm}) uses the
 profile-likelihood CI from \code{\link[stats:confint]{stats::confint()}} --
-\code{\link[MASS:confint.glm]{MASS::confint.glm()}} / \code{\link[MASS:confint.polr]{MASS::confint.polr()}} /
-\code{ordinal:::confint.clm()} -- asymmetric, exact for likelihood-based
+\code{\link[MASS:confint.glm]{MASS::confint.glm()}} for \code{glm}, \code{confint.polr()} / \code{confint.clm()}
+for ordinal fits -- asymmetric, exact for likelihood-based
 inference (Venables & Ripley \emph{MASS} Section 7.2). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
 fits the profile covers the predictor coefficients (the cut-point
