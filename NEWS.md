@@ -40,9 +40,7 @@ See `vignette("table-regression")` for the walk-throughs.
 
 * `vcov` computes heteroskedasticity- and cluster-robust SEs for the supported
   classes, each via its field-standard backend (`clubSandwich`, Lin-Wei
-  dfbeta, `sandwich::vcovCL`, `rms::robcov`). An unsupported robust `vcov`
-  errors with `spicy_unsupported_vcov` rather than silently returning
-  model-based SEs.
+  dfbeta, `sandwich::vcovCL`, `rms::robcov`).
 * `"ame"` columns populate for `betareg`, `mgcv::gam`, `svyglm`, `survreg`,
   and per-outcome-category for `polr` / `clm` / `multinom`; the ordinal
   per-category AME renders as a probability matrix.
@@ -55,20 +53,11 @@ See `vignette("table-regression")` for the walk-throughs.
   Nagelkerke pseudo-R², `AIC`); any other class falls back to `nobs` + `AIC`
   (was a blank block).
 * `ci_method = "profile"` gives profile-likelihood CIs for `glm`, `polr`, and
-  `clm`, and errors for classes without a profile path (was silently Wald);
-  the footer discloses `95% CIs: profile likelihood.` when used.
+  `clm`; the footer discloses `95% CIs: profile likelihood.` when used.
 
 ## Minor improvements
 
-* `table_regression()` refuses a partial-proportional-odds `clm` fit
-  (`nominal = ~`) with a `spicy_unsupported` error (scale fits still
-  supported).
-* `mlogit` no longer advertises AME support (`marginaleffects` has no
-  `slopes()` method for it).
-* The gaussian-`glm` "use `lm()`" caveat no longer fires for
-  `svyglm` / `mgcv::gam`.
 * `show_fit_stats = FALSE` suppresses the fit-stats block.
-* The polynomial-trends footer respects `keep` / `drop`.
 * En-dash placeholder cells decimal-align in `gt` / `flextable` /
   `tinytable` / Word / Excel outputs.
 * `"deviance"` prints at 1 decimal (matching `AIC` / `BIC`).
@@ -80,6 +69,8 @@ See `vignette("table-regression")` for the walk-throughs.
 * Fix decimal-point alignment in `gt` / `tinytable` / `flextable` / Word
   outputs of `table_continuous_lm()` / `table_continuous()` /
   `table_categorical()`.
+* The polynomial-trends footer note no longer fires when the ordered factor
+  is filtered out by `keep` / `drop`.
 * `table_regression()`: factor coefficient and AME rows follow `levels()`
   order (was alphabetical).
 * `table_regression()`: AME rows for ordered factors nest under the factor
