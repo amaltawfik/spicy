@@ -208,6 +208,15 @@ Bayesian.
 ### Minor improvements
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  now shows a model-fit block for **every** model class. Classes without
+  a tailored default (e.g. `betareg`, `survreg`, `coxph`,
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  `mlogit`, `fixest`, `rms`, Bayesian) fall back to `c("nobs", "AIC")`
+  instead of rendering a blank block; the tailored, field-standard set
+  for each family follows in its per-class release. See
+  `dev/fit_stats_by_class.md`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   now refuses a partial-proportional-odds
   [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) fit
   (`nominal = ~ ...`) with a clear `spicy_unsupported` error instead of
