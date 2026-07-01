@@ -151,10 +151,11 @@ category.</p>
 </h2>
 <p>Pass a fitted <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">polr()</a></code> object.
 <code><a href="../reference/table_regression.html">table_regression()</a></code> renders the shared slope coefficients
-with a Wald-<span class="math inline">\(z\)</span> inference regime, and
-prints the ordered thresholds in the footer (they are model parameters,
-not predictor effects, so they do not belong in the coefficient
-body):</p>
+with a Wald-<span class="math inline">\(z\)</span> inference regime,
+followed by a subordinate <strong><code>Thresholds</code></strong> block
+listing the ordered cut-points with their own B / SE / CI / p (the field
+convention: <code>summary.polr()</code>, SPSS PLUM, SAS, Stata
+<code>ologit</code>, Bender &amp; Grouven 1997):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">polr</a></span><span class="op">(</span></span>
 <span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>,</span>
@@ -175,10 +176,14 @@ body):</p>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                    </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03  0.11  [-0.19,  0.24]   .794 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>Each predictor has <strong>one</strong> coefficient row
@@ -189,10 +194,17 @@ em-dash.</li>
 ordinal MLE has no residual degrees of freedom, matching
 <code>summary.polr()</code>, Stata <code>ologit</code>, and SPSS
 PLUM.</li>
-<li>The footer reports the <strong>thresholds</strong>
-(<code>Poor|Fair</code>, <code>Fair|Good</code>,
-<code>Good|Very good</code>). They locate the cut-points on the latent
-logit scale and replace the single intercept of a binary logit.</li>
+<li>A subordinate <strong><code>Thresholds</code></strong> block lists
+the cut-points (<code>Poor | Fair</code>, <code>Fair | Good</code>,
+<code>Good | Very good</code>) with B / SE / CI / p, like the predictor
+rows. They locate the category boundaries on the latent logit scale and
+replace the single intercept of a binary logit. They are reported on the
+log-odds scale and are <strong>never exponentiated</strong>. The <span class="math inline">\(z\)</span>-test against zero is rarely of interest
+(it only asks whether the baseline cumulative split sits at 50/50), so
+do not over-read a “significant” threshold – the substantive headline is
+the odds ratios and marginal effects below. Hide the block with
+<code>show_thresholds = FALSE</code> to fall back to a compact footer
+line.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -206,27 +218,34 @@ the column header:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>  OR    SE      95% CI       p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> 1.00  0.00  [0.99, 1.01]   .831 </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                 </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>  –     –         –         –    </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span> 1.02  0.11  [0.82, 1.26]   .874 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                 </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>  –     –         –         –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> 0.76  0.10  [0.59, 1.00]   .047 </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                 </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>  –     –         –         –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> 1.03  0.11  [0.83, 1.28]   .794 </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>  OR     SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>  1.00  0.00  [ 0.99,  1.01]   .831 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>  1.02  0.11  [ 0.82,  1.26]   .874 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.76  0.10  [ 0.59,  1.00]   .047 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  1.03  0.11  [ 0.83,  1.28]   .794 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98  0.24  [-3.45, -2.52]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02  0.21  [-1.43, -0.62]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04  0.21  [ 0.64,  1.45]  &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>An OR above 1 raises the odds of being in a <em>higher</em> health
 category; below 1 lowers them. Smoking’s OR here is interpretable as
-“smokers have lower odds of better self-rated health.”</p>
+“smokers have lower odds of better self-rated health.” The
+<code>Thresholds</code> rows stay on the <strong>log-odds scale</strong>
+(a cut-point is not an odds ratio, so it is never exponentiated); only
+the predictor coefficients become ORs, and the footer flags this.</p>
 </div>
 <div class="section level2">
 <h2 id="average-marginal-effects-a-probability-matrix">Average marginal effects: a probability matrix<a class="anchor" aria-label="anchor" href="#average-marginal-effects-a-probability-matrix"></a>
@@ -256,10 +275,14 @@ rows, response categories in columns (Long &amp; Freese 2014; Williams
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>How to read it, with the <code>smoking = Yes</code> row:</p>
 <ul>
@@ -338,10 +361,14 @@ name, or a vector (see the main vignette, <em>How to specify
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CL), clusters by region.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
 variable. Heteroskedasticity-consistent (<code>HC*</code>) and the
@@ -377,10 +404,14 @@ proportional odds.</p>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –                                                </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>  0.03     -0.00     -0.00      0.00           0.01 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.98                                              </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.02                                              </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.04                                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="scale-effects-and-partial-proportional-odds">Scale effects and partial proportional odds<a class="anchor" aria-label="anchor" href="#scale-effects-and-partial-proportional-odds"></a>
@@ -400,16 +431,20 @@ front with a clear <code>spicy_unsupported_vcov</code> error:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span><span class="op">)</span>             <span class="co"># classical: renders normally</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   B     SE      95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼───────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age         <span style="color: #9E9E9E;">│</span> -0.00  0.00  [-0.01, 0.01]   .884 </span></span>
-<span><span class="co">#&gt;  smoking:    <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    No (ref.) <span style="color: #9E9E9E;">│</span>   –     –          –         –    </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span> -0.27  0.14  [-0.55, 0.01]   .060 </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   B     SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span> -0.00  0.00  [-0.01,  0.01]   .884 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>   –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span> -0.27  0.14  [-0.55,  0.01]   .060 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -3.06  0.24  [-3.53, -2.60]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.05  0.20  [-1.44, -0.66]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.05  0.20  [ 0.66,  1.45]  &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -3.06, Fair|Good = -1.05, Good|Very good = 1.05.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
@@ -461,6 +496,10 @@ supplied as a list:</p>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                   </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                               –   </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>                                              0.03 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                                   </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span> -2.97                                       -2.98 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span> -1.01                                       -1.02 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>  1.06                                        1.04 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                                    Adjusted               </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────────────────────────── </span></span></span>
@@ -476,11 +515,14 @@ supplied as a list:</p>
 <span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   .794    .794    .794         .794 </span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>                                     </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Thresholds: Poor|Fair = -2.97, Fair|Good = -1.01, Good|Very good = 1.06.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -882,32 +924,95 @@ No (ref.)
 </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-indent: 20px;">
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
 Yes
 </td>
-<td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="B" class="gt_row gt_center">
  0.03
 </td>
-<td headers="AME Poor" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="AME Poor" class="gt_row gt_center">
 -0.00
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+-0.00
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+-0.00
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+-0.00
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+Thresholds:
+</td>
+<td headers="B" class="gt_row gt_center">
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
+Poor | Fair
+</td>
+<td headers="B" class="gt_row gt_center">
+-2.98
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">
+Fair | Good
+</td>
+<td headers="B" class="gt_row gt_center">
+-1.02
+</td>
+<td headers="AME Poor" class="gt_row gt_center">
+</td>
+<td headers="AME Fair" class="gt_row gt_center">
+</td>
+<td headers="AME Good" class="gt_row gt_center">
+</td>
+<td headers="AME Very good" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-indent: 20px;">
+Good | Very good
+</td>
+<td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+ 1.04
+</td>
+<td headers="AME Poor" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>
 <td headers="AME Fair" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
--0.00
 </td>
 <td headers="AME Good" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
--0.00
 </td>
 <td headers="AME Very good" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
--0.00
 </td>
 </tr>
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Cumulative logit regression (proportional odds). Std.
-errors: Wald asymptotic (z). Thresholds: Poor|Fair = -2.98, Fair|Good =
--1.02, Good|Very good = 1.04. AME = average marginal effect on a
-response-category probability.
+errors: Wald asymptotic (z). Thresholds: latent-scale category
+cut-points. AME = average marginal effect on a response-category
+probability.
 </div>
 </div>
 </div>
@@ -918,29 +1023,20 @@ per-category AME rows carry the response category in the
 <code>outcome_level</code>-derived structure:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 15</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 15</span></span></span>
 <span><span class="co">#&gt;    model_id outcome    term  estimate_type estimate std.error conf.low conf.high</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rate… age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span>  -<span style="color: #BB0000;">3.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>   3.99<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rate… age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span>  -<span style="color: #BB0000;">9.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>   1.23<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0 -<span style="color: #BB0000;">1.24</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>   9.97<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span>  -<span style="color: #BB0000;">1.50</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>   1.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rate… age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>   -<span style="color: #BB0000;">8.09</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>   6.50<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>   -<span style="color: #BB0000;">1.14</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   9.72<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>    -<span style="color: #BB0000;">3.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   2.99<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       self_rate… sexM… ame            2.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">66</span>   -<span style="color: #BB0000;">3.00</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>   3.52<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       self_rate… sexM… ame            3.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">4</span>    -<span style="color: #BB0000;">3.67</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   4.31<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       self_rate… sexM… B              1.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110     -<span style="color: #BB0000;">1.97</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span>   2.32<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> M1       self_rate… smok… ame            1.41<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.007<span style="text-decoration: underline;">78</span>   -<span style="color: #BB0000;">1.12</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>   2.94<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> M1       self_rate… smok… ame            4.16<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.021<span style="text-decoration: underline;">4</span>    -<span style="color: #BB0000;">3.01</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>   8.36<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> M1       self_rate… smok… ame           -<span style="color: #BB0000;">7.88</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.006<span style="text-decoration: underline;">44</span>   -<span style="color: #BB0000;">2.05</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   4.74<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> M1       self_rate… smok… ame           -<span style="color: #BB0000;">4.79</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.023<span style="text-decoration: underline;">1</span>    -<span style="color: #BB0000;">9.32</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  -<span style="color: #BB0000;">2.56</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> M1       self_rate… smok… B             -<span style="color: #BB0000;">2.68</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.135     -<span style="color: #BB0000;">5.33</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span>  -<span style="color: #BB0000;">3.34</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> M1       self_rate… phys… ame           -<span style="color: #BB0000;">1.42</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.005<span style="text-decoration: underline;">42</span>   -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   9.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> M1       self_rate… phys… ame           -<span style="color: #BB0000;">4.36</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">7</span>    -<span style="color: #BB0000;">3.71</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   2.84<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> M1       self_rate… phys… ame            4.30<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">65</span>   -<span style="color: #BB0000;">2.80</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>   3.66<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> M1       self_rate… phys… ame            5.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">5</span>    -<span style="color: #BB0000;">3.48</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>   4.55<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> M1       self_rate… phys… B              2.88<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110     -<span style="color: #BB0000;">1.87</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span>   2.45<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rate… age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span>  -<span style="color: #BB0000;">3.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">399</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rate… age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span>  -<span style="color: #BB0000;">9.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">23</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0 -<span style="color: #BB0000;">1.24</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">099</span>7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span>  -<span style="color: #BB0000;">1.50</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.001<span style="text-decoration: underline;">21</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rate… age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>   -<span style="color: #BB0000;">8.09</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.006<span style="text-decoration: underline;">50</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>   -<span style="color: #BB0000;">1.14</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.009<span style="text-decoration: underline;">72</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>    -<span style="color: #BB0000;">3.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.029<span style="text-decoration: underline;">9</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       self_rate… sexM… ame            2.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">66</span>   -<span style="color: #BB0000;">3.00</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.003<span style="text-decoration: underline;">52</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       self_rate… sexM… ame            3.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">4</span>    -<span style="color: #BB0000;">3.67</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.043<span style="text-decoration: underline;">1</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       self_rate… sexM… B              1.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110     -<span style="color: #BB0000;">1.97</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.232    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 13 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
 </div>

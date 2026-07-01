@@ -174,6 +174,24 @@ Bayesian.
   its own `HC0` vcov there, so its AME uncertainty falls back to
   model-based with a `spicy_fallback` warning rather than failing.
 
+#### Ordinal thresholds as a table block
+
+- For ordinal cumulative-link fits
+  ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)),
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  now shows the estimated category thresholds (cut-points) as a labelled
+  **`Thresholds`** block of rows below the predictors, carrying B / SE /
+  95% CI / p like the predictor rows (cross-validated to
+  [`summary()`](https://rdrr.io/r/base/summary.html)), instead of the
+  previous one-line footer note. They are reported on the log-odds (B)
+  scale and are **never exponentiated** – under `exponentiate = TRUE`
+  the threshold rows stay on the log-odds scale while the predictors
+  become odds ratios. This matches the field convention (SPSS PLUM, SAS,
+  Stata `ologit`, `summary.polr` / `summary.clm`, Bender & Grouven
+  1997). Opt out with `show_thresholds = FALSE` to restore the compact
+  footer line.
+
 ### Minor improvements
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

@@ -54,9 +54,10 @@ change has a different effect on the probability of each category.
 Pass a fitted [`polr()`](https://rdrr.io/pkg/MASS/man/polr.html) object.
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 renders the shared slope coefficients with a Wald-\\z\\ inference
-regime, and prints the ordered thresholds in the footer (they are model
-parameters, not predictor effects, so they do not belong in the
-coefficient body):
+regime, followed by a subordinate **`Thresholds`** block listing the
+ordered cut-points with their own B / SE / CI / p (the field convention:
+`summary.polr()`, SPSS PLUM, SAS, Stata `ologit`, Bender & Grouven
+1997):
 
 ``` r
 
@@ -79,10 +80,14 @@ table_regression(fit)
 #>  physical_activity: │                                    
 #>    No (ref.)        │   –     –          –          –    
 #>    Yes              │  0.03  0.11  [-0.19,  0.24]   .794 
+#>  Thresholds:        │                                    
+#>    Poor | Fair      │ -2.98  0.24  [-3.45, -2.52]  <.001 
+#>    Fair | Good      │ -1.02  0.21  [-1.43, -0.62]  <.001 
+#>    Good | Very good │  1.04  0.21  [ 0.64,  1.45]  <.001 
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points.
 ```
 
 Reading the table:
@@ -93,9 +98,16 @@ Reading the table:
 - Inference is **Wald-\\z\\** (`df = Inf`): ordinal MLE has no residual
   degrees of freedom, matching `summary.polr()`, Stata `ologit`, and
   SPSS PLUM.
-- The footer reports the **thresholds** (`Poor|Fair`, `Fair|Good`,
-  `Good|Very good`). They locate the cut-points on the latent logit
-  scale and replace the single intercept of a binary logit.
+- A subordinate **`Thresholds`** block lists the cut-points
+  (`Poor | Fair`, `Fair | Good`, `Good | Very good`) with B / SE / CI /
+  p, like the predictor rows. They locate the category boundaries on the
+  latent logit scale and replace the single intercept of a binary logit.
+  They are reported on the log-odds scale and are **never
+  exponentiated**. The \\z\\-test against zero is rarely of interest (it
+  only asks whether the baseline cumulative split sits at 50/50), so do
+  not over-read a “significant” threshold – the substantive headline is
+  the odds ratios and marginal effects below. Hide the block with
+  `show_thresholds = FALSE` to fall back to a compact footer line.
 
 ## Odds ratios: `exponentiate = TRUE`
 
@@ -108,29 +120,36 @@ the estimate and its CI bounds and rebranding the column header:
 table_regression(fit, exponentiate = TRUE)
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable           │  OR    SE      95% CI       p   
-#> ────────────────────┼─────────────────────────────────
-#>  age                │ 1.00  0.00  [0.99, 1.01]   .831 
-#>  sex:               │                                 
-#>    Female (ref.)    │  –     –         –         –    
-#>    Male             │ 1.02  0.11  [0.82, 1.26]   .874 
-#>  smoking:           │                                 
-#>    No (ref.)        │  –     –         –         –    
-#>    Yes              │ 0.76  0.10  [0.59, 1.00]   .047 
-#>  physical_activity: │                                 
-#>    No (ref.)        │  –     –         –         –    
-#>    Yes              │ 1.03  0.11  [0.83, 1.28]   .794 
+#>  Variable           │  OR     SE       95% CI        p   
+#> ────────────────────┼────────────────────────────────────
+#>  age                │  1.00  0.00  [ 0.99,  1.01]   .831 
+#>  sex:               │                                    
+#>    Female (ref.)    │   –     –          –          –    
+#>    Male             │  1.02  0.11  [ 0.82,  1.26]   .874 
+#>  smoking:           │                                    
+#>    No (ref.)        │   –     –          –          –    
+#>    Yes              │  0.76  0.10  [ 0.59,  1.00]   .047 
+#>  physical_activity: │                                    
+#>    No (ref.)        │   –     –          –          –    
+#>    Yes              │  1.03  0.11  [ 0.83,  1.28]   .794 
+#>  Thresholds:        │                                    
+#>    Poor | Fair      │ -2.98  0.24  [-3.45, -2.52]  <.001 
+#>    Fair | Good      │ -1.02  0.21  [-1.43, -0.62]  <.001 
+#>    Good | Very good │  1.04  0.21  [ 0.64,  1.45]  <.001 
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 ```
 
 An OR above 1 raises the odds of being in a *higher* health category;
 below 1 lowers them. Smoking’s OR here is interpretable as “smokers have
-lower odds of better self-rated health.”
+lower odds of better self-rated health.” The `Thresholds` rows stay on
+the **log-odds scale** (a cut-point is not an odds ratio, so it is never
+exponentiated); only the predictor coefficients become ORs, and the
+footer flags this.
 
 ## Average marginal effects: a probability matrix
 
@@ -160,10 +179,14 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>  physical_activity: │                                                    
 #>    No (ref.)        │   –                                                
 #>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
+#>  Thresholds:        │                                                    
+#>    Poor | Fair      │ -2.98                                              
+#>    Fair | Good      │ -1.02                                              
+#>    Good | Very good │  1.04                                              
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points.
 #> AME = average marginal effect on a response-category probability.
 ```
 
@@ -248,10 +271,14 @@ table_regression(
 #>  physical_activity: │                                                    
 #>    No (ref.)        │   –                                                
 #>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
+#>  Thresholds:        │                                                    
+#>    Poor | Fair      │ -2.98                                              
+#>    Fair | Good      │ -1.02                                              
+#>    Good | Very good │  1.04                                              
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: cluster-robust (CL), clusters by region.
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points.
 #> AME = average marginal effect on a response-category probability.
 ```
 
@@ -288,10 +315,14 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #>  physical_activity: │                                                    
 #>    No (ref.)        │   –                                                
 #>    Yes              │  0.03     -0.00     -0.00      0.00           0.01 
+#>  Thresholds:        │                                                    
+#>    Poor | Fair      │ -2.98                                              
+#>    Fair | Good      │ -1.02                                              
+#>    Good | Very good │  1.04                                              
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points.
 #> AME = average marginal effect on a response-category probability.
 ```
 
@@ -314,16 +345,20 @@ clm_scale <- ordinal::clm(
 table_regression(clm_scale)             # classical: renders normally
 #> Cumulative logit regression (proportional odds): self_rated_health
 #> 
-#>  Variable    │   B     SE      95% CI        p   
-#> ─────────────┼───────────────────────────────────
-#>  age         │ -0.00  0.00  [-0.01, 0.01]   .884 
-#>  smoking:    │                                   
-#>    No (ref.) │   –     –          –         –    
-#>    Yes       │ -0.27  0.14  [-0.55, 0.01]   .060 
+#>  Variable           │   B     SE       95% CI        p   
+#> ────────────────────┼────────────────────────────────────
+#>  age                │ -0.00  0.00  [-0.01,  0.01]   .884 
+#>  smoking:           │                                    
+#>    No (ref.)        │   –     –          –          –    
+#>    Yes              │ -0.27  0.14  [-0.55,  0.01]   .060 
+#>  Thresholds:        │                                    
+#>    Poor | Fair      │ -3.06  0.24  [-3.53, -2.60]  <.001 
+#>    Fair | Good      │ -1.05  0.20  [-1.44, -0.66]  <.001 
+#>    Good | Very good │  1.05  0.20  [ 0.66,  1.45]  <.001 
 #> 
 #> Note. Cumulative logit regression (proportional odds).
 #> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -3.06, Fair|Good = -1.05, Good|Very good = 1.05.
+#> Thresholds: latent-scale category cut-points.
 ```
 
 ``` r
@@ -381,6 +416,10 @@ table_regression(
 #>  physical_activity: │                                                   
 #>    No (ref.)        │                                               –   
 #>    Yes              │                                              0.03 
+#>  Thresholds:        │                                                   
+#>    Poor | Fair      │ -2.97                                       -2.98 
+#>    Fair | Good      │ -1.01                                       -1.02 
+#>    Good | Very good │  1.06                                        1.04 
 #> 
 #>                                    Adjusted               
 #>                       ─────────────────────────────────── 
@@ -396,11 +435,14 @@ table_regression(
 #>  physical_activity: │                                     
 #>    No (ref.)        │                                     
 #>    Yes              │   .794    .794    .794         .794 
+#>  Thresholds:        │                                     
+#>    Poor | Fair      │                                     
+#>    Fair | Good      │                                     
+#>    Good | Very good │                                     
 #> 
 #> Note. Cumulative logit regression (proportional odds) models.
 #> Std. errors: Wald asymptotic (z).
-#> Model 1: Thresholds: Poor|Fair = -2.97, Fair|Good = -1.01, Good|Very good = 1.06.
-#> Model 2: Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
+#> Thresholds: latent-scale category cut-points.
 #> AME = average marginal effect on a response-category probability.
 ```
 
@@ -432,9 +474,8 @@ table_regression(fit, show_columns = c("b", "ame"), output = "gt")
 [TABLE]
 
 *Note.* Cumulative logit regression (proportional odds). Std. errors:
-Wald asymptotic (z). Thresholds: Poor\|Fair = -2.98, Fair\|Good = -1.02,
-Good\|Very good = 1.04. AME = average marginal effect on a
-response-category probability.
+Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME =
+average marginal effect on a response-category probability.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
 one row per `(term, estimate_type)`; per-category AME rows carry the
@@ -443,29 +484,20 @@ response category in the `outcome_level`-derived structure:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 20 × 15
+#> # A tibble: 23 × 15
 #>    model_id outcome    term  estimate_type estimate std.error conf.low conf.high
 #>    <chr>    <chr>      <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#>  1 M1       self_rate… age   ame            3.91e-5 0.000183  -3.20e-4   3.99e-4
-#>  2 M1       self_rate… age   ame            1.20e-4 0.000565  -9.86e-4   1.23e-3
-#>  3 M1       self_rate… age   ame           -1.20e-5 0.0000570 -1.24e-4   9.97e-5
-#>  4 M1       self_rate… age   ame           -1.47e-4 0.000692  -1.50e-3   1.21e-3
-#>  5 M1       self_rate… age   B             -7.94e-4 0.00372   -8.09e-3   6.50e-3
-#>  6 M1       self_rate… sexM… ame           -8.52e-4 0.00539   -1.14e-2   9.72e-3
-#>  7 M1       self_rate… sexM… ame           -2.62e-3 0.0166    -3.52e-2   2.99e-2
-#>  8 M1       self_rate… sexM… ame            2.62e-4 0.00166   -3.00e-3   3.52e-3
-#>  9 M1       self_rate… sexM… ame            3.21e-3 0.0204    -3.67e-2   4.31e-2
-#> 10 M1       self_rate… sexM… B              1.73e-2 0.110     -1.97e-1   2.32e-1
-#> 11 M1       self_rate… smok… ame            1.41e-2 0.00778   -1.12e-3   2.94e-2
-#> 12 M1       self_rate… smok… ame            4.16e-2 0.0214    -3.01e-4   8.36e-2
-#> 13 M1       self_rate… smok… ame           -7.88e-3 0.00644   -2.05e-2   4.74e-3
-#> 14 M1       self_rate… smok… ame           -4.79e-2 0.0231    -9.32e-2  -2.56e-3
-#> 15 M1       self_rate… smok… B             -2.68e-1 0.135     -5.33e-1  -3.34e-3
-#> 16 M1       self_rate… phys… ame           -1.42e-3 0.00542   -1.20e-2   9.20e-3
-#> 17 M1       self_rate… phys… ame           -4.36e-3 0.0167    -3.71e-2   2.84e-2
-#> 18 M1       self_rate… phys… ame            4.30e-4 0.00165   -2.80e-3   3.66e-3
-#> 19 M1       self_rate… phys… ame            5.35e-3 0.0205    -3.48e-2   4.55e-2
-#> 20 M1       self_rate… phys… B              2.88e-2 0.110     -1.87e-1   2.45e-1
+#>  1 M1       self_rate… age   ame            3.91e-5 0.000183  -3.20e-4 0.000399 
+#>  2 M1       self_rate… age   ame            1.20e-4 0.000565  -9.86e-4 0.00123  
+#>  3 M1       self_rate… age   ame           -1.20e-5 0.0000570 -1.24e-4 0.0000997
+#>  4 M1       self_rate… age   ame           -1.47e-4 0.000692  -1.50e-3 0.00121  
+#>  5 M1       self_rate… age   B             -7.94e-4 0.00372   -8.09e-3 0.00650  
+#>  6 M1       self_rate… sexM… ame           -8.52e-4 0.00539   -1.14e-2 0.00972  
+#>  7 M1       self_rate… sexM… ame           -2.62e-3 0.0166    -3.52e-2 0.0299   
+#>  8 M1       self_rate… sexM… ame            2.62e-4 0.00166   -3.00e-3 0.00352  
+#>  9 M1       self_rate… sexM… ame            3.21e-3 0.0204    -3.67e-2 0.0431   
+#> 10 M1       self_rate… sexM… B              1.73e-2 0.110     -1.97e-1 0.232    
+#> # ℹ 13 more rows
 #> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
 #> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
 ```

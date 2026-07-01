@@ -26,6 +26,7 @@ table_regression(
   keep = NULL,
   drop = NULL,
   show_intercept = TRUE,
+  show_thresholds = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -191,6 +192,21 @@ table_regression(
 
   Whether to display the intercept row. Default `TRUE` (APA convention).
   Hide via `FALSE`.
+
+- show_thresholds:
+
+  For ordinal cumulative-link models
+  ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)), whether
+  to display the estimated category thresholds (cut-points) as a
+  subordinate `"Thresholds"` block of rows below the predictors,
+  carrying B / SE / CI / p like the predictor rows. Default `TRUE`.
+  `FALSE` collapses them to a compact one-line footer note instead.
+  Thresholds are reported on the log-odds (B) scale and are **never
+  exponentiated** (under `exponentiate = TRUE` their rows stay on the
+  log-odds scale). Has no effect on non-ordinal models, and the rows are
+  shown only when a coefficient column (`"b"`/`"beta"`) is in
+  `show_columns`.
 
 - intercept_position:
 
