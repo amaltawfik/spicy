@@ -1147,6 +1147,15 @@ table_regression <- function(
                             "pseudo_r2_nagelkerke",
                             "AIC")
     }
+    # Universal safety net: a class matched by none of the branches above
+    # (betareg, survreg, coxph, multinom, mlogit, fixest, rms, stan, ...) still
+    # gets N + AIC, so no fit ever renders a blank model-fit block. The
+    # per-class passes refine this to each family's field-standard set (e.g.
+    # concordance for coxph, deviance-explained for gam). nobs / AIC are defined
+    # for essentially every likelihood fit; an absent token is skipped per row.
+    if (length(show_fit_stats) == 0L) {
+      show_fit_stats <- c("nobs", "AIC")
+    }
     show_fit_stats <- unique(show_fit_stats)
     if (isTRUE(nested) && length(models) >= 2L) {
       show_fit_stats <- c(show_fit_stats, default_nested_tokens(models))

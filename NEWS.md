@@ -160,6 +160,13 @@ labels) is layered on top for mixed-effects and Bayesian.
 
 ## Minor improvements
 
+* `table_regression()` now shows a model-fit block for **every** model
+  class. Classes without a tailored default (e.g. `betareg`, `survreg`,
+  `coxph`, `nnet::multinom`, `mlogit`, `fixest`, `rms`, Bayesian) fall
+  back to `c("nobs", "AIC")` instead of rendering a blank block; the
+  tailored, field-standard set for each family follows in its per-class
+  release. See `dev/fit_stats_by_class.md`.
+
 * `table_regression()` now refuses a partial-proportional-odds
   `ordinal::clm()` fit (`nominal = ~ ...`) with a clear
   `spicy_unsupported` error instead of crashing -- its per-threshold
