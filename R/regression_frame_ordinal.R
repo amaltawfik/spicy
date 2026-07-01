@@ -235,17 +235,20 @@ as_regression_frame.clm <- function(fit,
 
   if (is.null(ci_method)) ci_method <- "wald"
 
+  pr2 <- .ordinal_pseudo_r2(fit)
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    aic            = stats::AIC(fit),
-    bic            = stats::BIC(fit),
-    log_lik        = as.numeric(stats::logLik(fit)),
-    deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                              error = function(e) NA_real_),
-    sigma          = NA_real_,
-    nobs           = as.integer(stats::nobs(fit))
+    r_squared            = NA_real_,
+    adj_r_squared        = NA_real_,
+    pseudo_r2            = NULL,
+    pseudo_r2_mcfadden   = pr2$mcfadden,
+    pseudo_r2_nagelkerke = pr2$nagelkerke,
+    aic                  = stats::AIC(fit),
+    bic                  = stats::BIC(fit),
+    log_lik              = as.numeric(stats::logLik(fit)),
+    deviance             = tryCatch(suppressWarnings(stats::deviance(fit)),
+                                    error = function(e) NA_real_),
+    sigma                = NA_real_,
+    nobs                 = as.integer(stats::nobs(fit))
   )
 
   supports <- list(
@@ -420,17 +423,20 @@ as_regression_frame.clm <- function(fit,
 
   if (is.null(ci_method)) ci_method <- "wald"
 
+  pr2 <- .ordinal_pseudo_r2(fit)
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    aic            = stats::AIC(fit),
-    bic            = stats::BIC(fit),
-    log_lik        = as.numeric(stats::logLik(fit)),
-    deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                              error = function(e) NA_real_),
-    sigma          = NA_real_,
-    nobs           = as.integer(stats::nobs(fit))
+    r_squared            = NA_real_,
+    adj_r_squared        = NA_real_,
+    pseudo_r2            = NULL,
+    pseudo_r2_mcfadden   = pr2$mcfadden,
+    pseudo_r2_nagelkerke = pr2$nagelkerke,
+    aic                  = stats::AIC(fit),
+    bic                  = stats::BIC(fit),
+    log_lik              = as.numeric(stats::logLik(fit)),
+    deviance             = tryCatch(suppressWarnings(stats::deviance(fit)),
+                                    error = function(e) NA_real_),
+    sigma                = NA_real_,
+    nobs                 = as.integer(stats::nobs(fit))
   )
 
   supports <- list(
@@ -550,6 +556,54 @@ as_regression_frame.clm <- function(fit,
 # "Poor|Fair" -> "Poor | Fair": spaces around the cumulative bar for display.
 .prettify_threshold_label <- function(term) {
   gsub("|", " | ", term, fixed = TRUE)
+}
+
+
+# McFadden + Nagelkerke pseudo-R^2 for a cumulative-link fit (polr / clm). The
+# glm compute_pseudo_r2_*() helpers are glm-only (they guard on
+# inherits(fit, "glm") and refit with stats::glm), so the ordinal path derives
+# them here from the closed-form null log-likelihood (see .ordinal_null_loglik).
+# Cross-validated to performance::r2_mcfadden() / r2_nagelkerke() to ~1e-6.
+.ordinal_pseudo_r2 <- function(fit) {
+  na <- list(mcfadden = NA_real_, nagelkerke = NA_real_)
+  ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) NA_real_)
+  ll_null <- .ordinal_null_loglik(fit)
+  n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) NA_real_)
+  if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0 ||
+        !is.finite(n) || n <= 0) {
+    return(na)
+  }
+  mcfadden  <- 1 - ll_full / ll_null
+  cox_snell <- 1 - exp((ll_null - ll_full) * 2 / n)
+  upper     <- 1 - exp(ll_null * 2 / n)
+  nagelkerke <- if (is.finite(upper) && upper > 0) cox_snell / upper else NA_real_
+  list(mcfadden = mcfadden, nagelkerke = nagelkerke)
+}
+
+
+# Log-likelihood of the intercept-only ("null") cumulative-link model, in CLOSED
+# FORM. An intercept-only proportional-odds / cumulative model reproduces the
+# marginal category frequencies exactly (its K-1 thresholds fit the K-1 free
+# cumulative probabilities), so its log-likelihood is the multinomial
+# log-likelihood of those proportions: ll0 = sum_k W_k * log(W_k / W), where W_k
+# is the (possibly weighted) total in category k and W = sum(W_k). This is
+# link-independent and avoids stats::update()'s data-scoping fragility -- update
+# re-evaluates the fit's `data =` expression in the caller's frame, which
+# silently fails (-> NA pseudo-R^2) when table_regression() runs inside another
+# function or the data symbol is out of scope. Cross-validated to
+# logLik(update(fit, . ~ 1)) to ~1e-12 (unweighted and weighted).
+.ordinal_null_loglik <- function(fit) {
+  mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(mf)) return(NA_real_)
+  y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
+  if (is.null(y) || length(y) == 0L) return(NA_real_)
+  w <- tryCatch(stats::model.weights(mf), error = function(e) NULL)
+  if (is.null(w)) w <- rep(1, length(y))
+  Wk <- tapply(w, y, sum)
+  Wk <- Wk[is.finite(Wk) & Wk > 0]
+  W <- sum(Wk)
+  if (!is.finite(W) || W <= 0) return(NA_real_)
+  sum(Wk * log(Wk / W))
 }
 
 

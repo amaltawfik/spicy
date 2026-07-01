@@ -135,3 +135,71 @@ test_that("non-ordinal fits are unaffected by show_thresholds", {
   df <- table_regression(fit, output = "data.frame")
   expect_false(any(grepl("Thresholds", df$Variable)))
 })
+
+# ---- section separator before the Thresholds block ------------------------
+
+test_that("a section separator is emitted before the Thresholds block", {
+  skip_if_not_installed("MASS")
+  fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
+  res <- table_regression(fit)                       # default (printable) output
+  sep <- attr(res, "section_sep_rows")
+  expect_length(sep, 1L)
+  expect_gt(sep, 1L)
+  # nothing when the block is opted out
+  res0 <- table_regression(fit, show_thresholds = FALSE)
+  expect_length(attr(res0, "section_sep_rows"), 0L)
+})
+
+# ---- ordinal fit-stats default --------------------------------------------
+
+test_that("polr/clm default fit-stats = n + McFadden + Nagelkerke + AIC", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("ordinal")
+  for (fit in list(MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE),
+                   ordinal::clm(yc ~ x1 + smoke, data = make_ord()))) {
+    df <- table_regression(fit, output = "data.frame")
+    v <- trimws(df$Variable)
+    expect_true(any(v == "n"))
+    expect_true(any(grepl("McFadden", v)))
+    expect_true(any(grepl("Nagelkerke", v)))
+    expect_true(any(v == "AIC"))
+  }
+})
+
+test_that(".ordinal_pseudo_r2 matches the closed-form null and performance", {
+  skip_if_not_installed("MASS")
+  d <- make_ord()
+  fit <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  pr <- .ordinal_pseudo_r2(fit)
+
+  # self-contained closed-form null log-likelihood (marginal proportions):
+  # an intercept-only cumulative model reproduces the category frequencies.
+  ll  <- as.numeric(stats::logLik(fit))
+  nk  <- as.numeric(table(d$yc)); nk <- nk[nk > 0]
+  ll0 <- sum(nk * log(nk / sum(nk)))
+  n   <- stats::nobs(fit)
+  expect_equal(pr$mcfadden, 1 - ll / ll0, tolerance = 1e-9)
+  cs <- 1 - exp((ll0 - ll) * 2 / n); up <- 1 - exp(ll0 * 2 / n)
+  expect_equal(pr$nagelkerke, cs / up, tolerance = 1e-9)
+
+  skip_if_not_installed("performance")
+  expect_equal(pr$mcfadden,
+               as.numeric(performance::r2_mcfadden(fit)$R2), tolerance = 1e-6)
+  expect_equal(pr$nagelkerke,
+               as.numeric(performance::r2_nagelkerke(fit)), tolerance = 1e-6)
+})
+
+test_that("ordinal pseudo-R2 survives a refit-hostile scope (update() would fail)", {
+  skip_if_not_installed("MASS")
+  # table_regression() called inside a function with data local to that
+  # function: update(fit, . ~ 1) can't re-find the data, but the closed-form
+  # null log-likelihood does not refit, so the pseudo-R2 is still computed.
+  f <- function() {
+    d <- make_ord()
+    fit <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+    table_regression(fit, output = "data.frame")
+  }
+  df <- f()
+  mcf <- trimws(df[grepl("McFadden", df$Variable), 2])
+  expect_true(length(mcf) == 1L && nzchar(mcf) && mcf != "NA")
+})

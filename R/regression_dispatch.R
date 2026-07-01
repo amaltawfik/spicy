@@ -2277,6 +2277,12 @@ print.spicy_regression_table <- function(x, ...) {
   # bypasses the renderer.
   if (is.null(group_sep)) group_sep <- integer(0)
   # nocov end
+  # The subordinate "Thresholds" section rule is ASCII-only: union it in here
+  # so the gt / flextable / tinytable / excel backends -- which read the raw
+  # `group_sep_rows` attr and treat its first element as the fit-stats boundary
+  # (+ merge ranges) -- are left untouched.
+  section_sep <- attr(x, "section_sep_rows") %||% integer(0)
+  group_sep <- sort(unique(c(as.integer(group_sep), as.integer(section_sep))))
   align <- attr(x, "align") %||% "decimal"
   spanners <- attr(x, "spanners")
 

@@ -75,8 +75,9 @@
 #'   \item Counts: `"nobs"`, `"weighted_nobs"`.
 #'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
 #'     `"omega2"`.
-#'   \item Pseudo-\eqn{R^2}{R^2} (`glm` only): `"pseudo_r2_mcfadden"`
-#'     (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991),
+#'   \item Pseudo-\eqn{R^2}{R^2} (`glm` and ordinal `polr` / `clm`):
+#'     `"pseudo_r2_mcfadden"` (McFadden 1974),
+#'     `"pseudo_r2_nagelkerke"` (Nagelkerke 1991),
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 #'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
 #'     / glm dispersion), `"rmse"`.
@@ -92,7 +93,7 @@
 #' }
 #'
 #' Default (resolved when `NULL`) is class-aware: lm fits get
-#' `c("nobs", "r2", "adj_r2")`; glm fits get
+#' `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 #' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`;
 #' mixed lm + glm sets union both groups (the renderer per-row
 #' em-dashes the inappropriate cell). When `nested = TRUE`, the
@@ -514,8 +515,10 @@
 #'   token order. `NULL` (default) resolves class-aware:
 #'   \itemize{
 #'     \item `lm`: `c("nobs", "r2", "adj_r2")`.
-#'     \item `glm`: `c("nobs", "pseudo_r2_mcfadden",
-#'       "pseudo_r2_nagelkerke", "AIC")`.
+#'     \item `glm`, ordinal `polr` / `clm`:
+#'       `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
+#'       "AIC")` (McFadden = Stata `ologit` default,
+#'       Nagelkerke = SPSS PLUM).
 #'     \item mixed `lm` + `glm`: the union of the two (the
 #'       renderer em-dashes per cell the stat not defined for a
 #'       given model class).
@@ -1112,6 +1115,13 @@ table_regression <- function(
     any_mixed <- any(vapply(models, function(f) {
       inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
     }, logical(1)))
+    # Ordinal cumulative-link (polr / clm): nobs + the two pseudo-R^2 that
+    # generalise the binary-logit default (McFadden = Stata ologit default,
+    # Nagelkerke = SPSS PLUM) + AIC. summary.polr reports Residual Deviance +
+    # AIC; Stata/SPSS lead with the pseudo-R^2, so those are the headline here.
+    any_ordinal <- any(vapply(models, function(f) {
+      inherits(f, c("polr", "clm"))
+    }, logical(1)))
     show_fit_stats <- character(0)
     if (any_lm_only) {
       show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
@@ -1129,6 +1139,13 @@ table_regression <- function(
                             "r2_marginal",
                             "r2_conditional",
                             "AIC", "BIC")
+    }
+    if (any_ordinal) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm && !any_mixed) "nobs",
+                            "pseudo_r2_mcfadden",
+                            "pseudo_r2_nagelkerke",
+                            "AIC")
     }
     show_fit_stats <- unique(show_fit_stats)
     if (isTRUE(nested) && length(models) >= 2L) {

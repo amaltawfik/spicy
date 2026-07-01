@@ -237,7 +237,9 @@ model-level rows below the coefficients; row order follows
 token order. \code{NULL} (default) resolves class-aware:
 \itemize{
 \item \code{lm}: \code{c("nobs", "r2", "adj_r2")}.
-\item \code{glm}: \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")}.
+\item \code{glm}, ordinal \code{polr} / \code{clm}:
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")} (McFadden = Stata \code{ologit} default,
+Nagelkerke = SPSS PLUM).
 \item mixed \code{lm} + \code{glm}: the union of the two (the
 renderer em-dashes per cell the stat not defined for a
 given model class).
@@ -582,8 +584,9 @@ side-by-side layout; restore it explicitly when needed).
 \item Counts: \code{"nobs"}, \code{"weighted_nobs"}.
 \item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
 \code{"omega2"}.
-\item Pseudo-\eqn{R^2}{R^2} (\code{glm} only): \code{"pseudo_r2_mcfadden"}
-(McFadden 1974), \code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991),
+\item Pseudo-\eqn{R^2}{R^2} (\code{glm} and ordinal \code{polr} / \code{clm}):
+\code{"pseudo_r2_mcfadden"} (McFadden 1974),
+\code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991),
 \code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
 \item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
 / glm dispersion), \code{"rmse"}.
@@ -599,7 +602,7 @@ comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
 }
 
 Default (resolved when \code{NULL}) is class-aware: lm fits get
-\code{c("nobs", "r2", "adj_r2")}; glm fits get
+\code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")};
 mixed lm + glm sets union both groups (the renderer per-row
 em-dashes the inappropriate cell). When \code{nested = TRUE}, the

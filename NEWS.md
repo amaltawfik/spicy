@@ -146,6 +146,17 @@ labels) is layered on top for mixed-effects and Bayesian.
   ratios. This matches the field convention (SPSS PLUM, SAS, Stata
   `ologit`, `summary.polr` / `summary.clm`, Bender & Grouven 1997). Opt
   out with `show_thresholds = FALSE` to restore the compact footer line.
+  A light horizontal rule sets the `Thresholds` block off from the
+  predictors above, mirroring the coefficients / fit-stats divide.
+
+* Ordinal fits now get a class-aware **fit-stats** default (previously
+  `polr` / `clm` tables showed no model-fit block at all):
+  `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")` --
+  McFadden's R² is the Stata `ologit` default, Nagelkerke the SPSS PLUM
+  default. The two pseudo-R² are computed from a closed-form null
+  log-likelihood (the marginal category proportions),
+  so they are robust to `update()`'s data-scoping fragility and
+  cross-validated to `performance::r2_mcfadden()` / `r2_nagelkerke()`.
 
 ## Minor improvements
 

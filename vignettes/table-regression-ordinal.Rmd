@@ -102,6 +102,10 @@ Reading the table:
   not over-read a "significant" threshold -- the substantive headline is
   the odds ratios and marginal effects below. Hide the block with
   `show_thresholds = FALSE` to fall back to a compact footer line.
+* Below the fit-stats rule, the model-fit block reports **N**, two
+  pseudo-$R^2$ (**McFadden**, the Stata `ologit` default, and
+  **Nagelkerke**, the SPSS PLUM default), and **AIC**. Override with
+  `show_fit_stats` (e.g. `show_fit_stats = c("nobs", "AIC", "BIC")`).
 
 ## Odds ratios: `exponentiate = TRUE`
 

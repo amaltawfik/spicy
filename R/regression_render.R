@@ -167,6 +167,11 @@ render_regression_table <- function(
     setNames(character(0), character(0))
 
   rows <- list()
+  # Body-row index of the "Thresholds" block header (ordinal cut-points) so the
+  # ASCII printer can rule it off from the predictors above -- exposed via the
+  # section_sep_rows attr, read only by print.spicy_regression_table().
+  # integer(0) = no Thresholds block.
+  thr_sep <- integer(0)
   current_factor <- NA_character_
   # Set of factor_term values that have already received the
   # ` [vs <ref_level>]` annotation in flat layout. Used instead of
@@ -186,6 +191,11 @@ render_regression_table <- function(
         ref_level_map[[rt$factor_term]]
       } else {
         NA_character_
+      }
+      # Rule off the subordinate "Thresholds" block (ordinal cut-points) from
+      # the predictors above, mirroring the coefficients / fit-stats divide.
+      if (identical(rt$factor_term, "Thresholds")) {
+        thr_sep <- length(rows) + 1L
       }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
         rt$factor_term, col_spec, labels,
@@ -285,6 +295,7 @@ render_regression_table <- function(
   )
   if (!is.null(outcome_row)) {
     body <- rbind(outcome_row, body)
+    if (length(thr_sep)) thr_sep <- thr_sep + 1L
   }
 
   # Append fit-stats rows below the body (one per requested token).
@@ -342,6 +353,7 @@ render_regression_table <- function(
   attr(body, "note") <- note
   attr(body, "col_spec") <- col_spec
   attr(body, "group_sep_rows") <- group_sep
+  attr(body, "section_sep_rows") <- thr_sep
   attr(body, "align") <- align
   attr(body, "decimal_mark") <- decimal_mark
   attr(body, "spanners") <- build_model_spanners(body, col_spec, label_map)
