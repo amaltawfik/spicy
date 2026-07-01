@@ -71,9 +71,10 @@ different effect on the probability of each category.
 ## Basic table
 
 Pass a fitted `polr()` object. `table_regression()` renders the shared
-slope coefficients with a Wald-$z$ inference regime, and prints the
-ordered thresholds in the footer (they are model parameters, not
-predictor effects, so they do not belong in the coefficient body):
+slope coefficients with a Wald-$z$ inference regime, followed by a
+subordinate **`Thresholds`** block listing the ordered cut-points with
+their own B / SE / CI / p (the field convention: `summary.polr()`, SPSS
+PLUM, SAS, Stata `ologit`, Bender & Grouven 1997):
 
 ```{r basic}
 fit <- polr(
@@ -91,9 +92,16 @@ Reading the table:
 * Inference is **Wald-$z$** (`df = Inf`): ordinal MLE has no residual
   degrees of freedom, matching `summary.polr()`, Stata `ologit`, and
   SPSS PLUM.
-* The footer reports the **thresholds** (`Poor|Fair`, `Fair|Good`,
-  `Good|Very good`). They locate the cut-points on the latent logit
-  scale and replace the single intercept of a binary logit.
+* A subordinate **`Thresholds`** block lists the cut-points
+  (`Poor | Fair`, `Fair | Good`, `Good | Very good`) with B / SE / CI /
+  p, like the predictor rows. They locate the category boundaries on the
+  latent logit scale and replace the single intercept of a binary logit.
+  They are reported on the log-odds scale and are **never
+  exponentiated**. The $z$-test against zero is rarely of interest (it
+  only asks whether the baseline cumulative split sits at 50/50), so do
+  not over-read a "significant" threshold -- the substantive headline is
+  the odds ratios and marginal effects below. Hide the block with
+  `show_thresholds = FALSE` to fall back to a compact footer line.
 
 ## Odds ratios: `exponentiate = TRUE`
 
@@ -107,7 +115,10 @@ table_regression(fit, exponentiate = TRUE)
 
 An OR above 1 raises the odds of being in a *higher* health category;
 below 1 lowers them. Smoking's OR here is interpretable as
-"smokers have lower odds of better self-rated health."
+"smokers have lower odds of better self-rated health." The `Thresholds`
+rows stay on the **log-odds scale** (a cut-point is not an odds ratio,
+so it is never exponentiated); only the predictor coefficients become
+ORs, and the footer flags this.
 
 ## Average marginal effects: a probability matrix
 

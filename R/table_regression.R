@@ -443,6 +443,16 @@
 #'   `keep`. Default `NULL`.
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
+#' @param show_thresholds For ordinal cumulative-link models
+#'   (`MASS::polr`, `ordinal::clm`), whether to display the estimated
+#'   category thresholds (cut-points) as a subordinate `"Thresholds"`
+#'   block of rows below the predictors, carrying B / SE / CI / p like
+#'   the predictor rows. Default `TRUE`. `FALSE` collapses them to a
+#'   compact one-line footer note instead. Thresholds are reported on
+#'   the log-odds (B) scale and are **never exponentiated** (under
+#'   `exponentiate = TRUE` their rows stay on the log-odds scale).
+#'   Has no effect on non-ordinal models, and the rows are shown only
+#'   when a coefficient column (`"b"`/`"beta"`) is in `show_columns`.
 #' @param intercept_position Where to place the intercept when
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
@@ -925,6 +935,7 @@ table_regression <- function(
   keep = NULL,
   drop = NULL,
   show_intercept = TRUE,
+  show_thresholds = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -1391,6 +1402,21 @@ table_regression <- function(
     if (!identical(p_adjust, "none")) {
       frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
         frames[[i]]$coefs, p_adjust)
+    }
+
+    # Ordinal thresholds as a subordinate "Thresholds" block of rows
+    # (show_thresholds = TRUE, the default). The (k - 1) cut-points stashed in
+    # info$extras$thresholds become coefs rows HERE -- after exp + p_adjust, so
+    # neither touches them: cut-points are never exponentiated, and they are not
+    # part of the p-adjust family. Gated on a coefficient column being shown
+    # (else the rows would render empty); when thresholds are not promoted to
+    # rows they fall back to the compact footer line (titlefooter layer).
+    thr_i <- frames[[i]]$info$extras$thresholds
+    if (isTRUE(show_thresholds) &&
+        any(c("b", "beta") %in% show_columns) &&
+        !is.null(thr_i) && is.data.frame(thr_i) && nrow(thr_i) > 0L) {
+      frames[[i]]$coefs <- .append_threshold_rows(
+        frames[[i]]$coefs, thr_i, ci_level)
     }
   }
 

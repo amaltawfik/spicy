@@ -511,6 +511,48 @@ as_regression_frame.clm <- function(fit,
 }
 
 
+# Promote the stashed thresholds (info$extras$thresholds) into coefs rows for a
+# subordinate "Thresholds" block. Called by the table_regression() orchestrator
+# (NOT by the frame methods) AFTER exponentiate + p_adjust, so the cut-points
+# are never exponentiated and are not part of the p-adjust family. The rows
+# reuse estimate_type = "B" and parent_var = "Thresholds" so the existing
+# factor-group renderer emits a labelled block under a "Thresholds" header; the
+# is_threshold marker lets the footer suppress its compact one-line fallback.
+# CIs are Wald (`est +/- z * SE`): polr/clm do not profile threshold CIs, and
+# this matches the Wald CIs spicy uses for these classes' predictor rows.
+.append_threshold_rows <- function(coefs, thr, ci_level) {
+  if (is.null(thr) || !is.data.frame(thr) || nrow(thr) == 0L) return(coefs)
+  if (is.null(coefs$is_threshold)) coefs$is_threshold <- FALSE
+  z <- stats::qnorm(0.5 + ci_level / 2)
+  new <- data.frame(
+    term             = thr$term,
+    parent_var       = "Thresholds",
+    label            = .prettify_threshold_label(thr$term),
+    factor_level_pos = seq_len(nrow(thr)),
+    is_ref           = FALSE,
+    estimate_type    = "B",
+    estimate         = thr$estimate,
+    std_error        = thr$std_error,
+    df               = Inf,
+    statistic        = thr$statistic,
+    p_value          = thr$p_value,
+    ci_lower         = thr$estimate - z * thr$std_error,
+    ci_upper         = thr$estimate + z * thr$std_error,
+    test_type        = "z",
+    outcome_level    = NA_character_,
+    is_threshold     = TRUE,
+    stringsAsFactors = FALSE
+  )
+  .rbind_union(coefs, new)
+}
+
+
+# "Poor|Fair" -> "Poor | Fair": spaces around the cumulative bar for display.
+.prettify_threshold_label <- function(term) {
+  gsub("|", " | ", term, fixed = TRUE)
+}
+
+
 .clm_link_title <- function(link) {
   switch(link,
     logit   = "Cumulative logit",

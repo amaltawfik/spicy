@@ -138,6 +138,16 @@ align_frames <- function(
 
   term_order <- group_factor_terms(term_order, coefs_long)
 
+  # Ordinal cut-points always sort to the very bottom, after every predictor.
+  # The synthetic "Thresholds" parent (created only by the show_thresholds
+  # path) would otherwise land at its first-appearance position, which in a
+  # multi-model table can fall ahead of a predictor a later model introduces.
+  thr_terms <- unique(coefs_long$term[coefs_long$factor_term %in% "Thresholds"])
+  if (length(thr_terms) > 0L) {
+    term_order <- c(setdiff(term_order, thr_terms),
+                    intersect(term_order, thr_terms))
+  }
+
   if (!identical(reference_style, "row")) {
     coefs_long <- coefs_long[!coefs_long$is_reference, , drop = FALSE]
     term_order <- intersect(term_order, unique(coefs_long$term))

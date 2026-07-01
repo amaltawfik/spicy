@@ -18,6 +18,7 @@ table_regression(
   keep = NULL,
   drop = NULL,
   show_intercept = TRUE,
+  show_thresholds = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -159,6 +160,17 @@ matching any pattern are removed. Mutually exclusive with
 
 \item{show_intercept}{Whether to display the intercept row.
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}
+
+\item{show_thresholds}{For ordinal cumulative-link models
+(\code{MASS::polr}, \code{ordinal::clm}), whether to display the estimated
+category thresholds (cut-points) as a subordinate \code{"Thresholds"}
+block of rows below the predictors, carrying B / SE / CI / p like
+the predictor rows. Default \code{TRUE}. \code{FALSE} collapses them to a
+compact one-line footer note instead. Thresholds are reported on
+the log-odds (B) scale and are \strong{never exponentiated} (under
+\code{exponentiate = TRUE} their rows stay on the log-odds scale).
+Has no effect on non-ordinal models, and the rows are shown only
+when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
 
 \item{intercept_position}{Where to place the intercept when
 shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,

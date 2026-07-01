@@ -425,6 +425,26 @@ format_p_threshold <- function(p) {
 build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
 
+  # Rows mode: thresholds were promoted to an in-table "Thresholds" block
+  # (show_thresholds = TRUE -- the orchestrator appended is_threshold rows to
+  # coefs). The compact per-model line would then double-report them, so emit a
+  # single one-line gloss instead. Under exponentiate, flag that the rows stay
+  # on the log-odds scale (cut-points are never exponentiated).
+  rows_mode <- any(vapply(frames, function(f) {
+    isTRUE(any(f$coefs$is_threshold))
+  }, logical(1)))
+  if (isTRUE(rows_mode)) {
+    exp_any <- any(vapply(frames, function(f) {
+      isTRUE(f$info$extras$exp_applied)
+    }, logical(1)))
+    gloss <- "Thresholds: latent-scale category cut-points"
+    if (isTRUE(exp_any)) {
+      gloss <- paste0(gloss, " (log-odds scale, not exponentiated)")
+    }
+    return(paste0(gloss, "."))
+  }
+
+  # Footer mode (show_thresholds = FALSE): the compact per-model line.
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
     txt <- .format_ordinal_thresholds_for_frame(f)
