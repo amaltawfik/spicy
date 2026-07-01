@@ -1,5 +1,4 @@
 AER
-AICc
 AME
 APA
 ASA's
@@ -59,7 +58,6 @@ Hillsdale
 Hinkley
 Hochberg
 Holm's
-Honours
 Hosmer
 Hotelling
 IPTW
@@ -160,7 +158,6 @@ clubSandwich
 codebook
 codebooks
 coef
-coefs
 colour
 coloured
 colours
@@ -175,7 +172,6 @@ deduplicated
 deduplicates
 df
 dfbeta
-disambiguator
 docx
 entropies
 enum
@@ -245,14 +241,13 @@ stabilising
 standardisation
 standardised
 summarise
-summarised
 th
+throughs
 tibble
 tidyselect
 tidyverse
 tinytable
 unexponentiated
-ungrouped
 unitless
 unstandardised
 unstarred
@@ -261,12 +256,9 @@ vcov
 vcovCR
 vcovHC
 wellbeing
-ΔAIC
-ΔBIC
 ΔR
 Δf
 Δr
-Δχ
 β
 ε
 η

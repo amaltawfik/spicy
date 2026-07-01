@@ -2,264 +2,100 @@
 
 ## Breaking changes
 
-* `align = "auto"` removed from all `table_*` functions. Use
-  `"decimal"` (default), `"center"`, or `"right"`.
-
-* `table_regression(show_fit_stats = character(0))` now errors --
-  use `FALSE` to suppress the fit-stats block.
-
-* `table_regression()` glm footer: `"classical (MLE inverse Hessian)"`
-  renamed to `"classical (Fisher information)"`.
-
+* `align = "auto"` removed from all `table_*` functions; use `"decimal"`
+  (default), `"center"`, or `"right"`.
+* `table_regression(show_fit_stats = character(0))` now errors; use `FALSE`
+  to suppress the block.
+* `table_regression()` SE footer `"classical (MLE inverse Hessian)"` renamed
+  to `"classical (Fisher information)"`.
 * `table_regression(list(...), show_columns = "all_b" | "all_ame")`
-  auto-compacts in multi-model layouts (drops the CI column),
-  matching the `NULL` default. Use atomic tokens to keep CIs.
+  auto-compacts (drops CIs) in multi-model layouts; use atomic tokens to keep
+  them.
+* `broom::tidy()` on a `table_regression()` result labels AME rows
+  `estimate_type = "ame"` (was `"AME"`).
 
-* `broom::tidy()` on a `table_regression()` result now reports average
-  marginal-effect rows with `estimate_type = "ame"` (lowercase), not
-  `"AME"`, matching the canonical `c("B", "beta", "ame")` vocabulary.
-  Update any code filtering on `estimate_type == "AME"`.
+## New supported models
+
+`table_regression()` gains first-class support for ~30 model classes beyond
+`lm` / `glm`:
+
+* Mixed effects: `lme4::lmer` / `glmer`, `glmmTMB::glmmTMB`, `nlme::lme` --
+  with a random-effects panel (σ, ρ, ICC, per-group N, Nakagawa R²) and an LR
+  test vs the no-random model.
+* Bayesian: `rstanarm`, `brms` -- posterior median / SD / equal-tailed
+  `95% CrI`, no p-value.
+* Survey: `survey::svyglm`.
+* Survival: `survival::coxph` / `survreg`, `rms::cph`, `flexsurv::flexsurvreg`.
+* Categorical: `nnet::multinom`, `mlogit::mlogit`, `MASS::polr`,
+  `ordinal::clm`.
+* Robust / IV / panel: `estimatr::lm_robust` / `iv_robust`, `AER::ivreg`,
+  `fixest::feols` / `feglm` / `fepois`.
+* Beta / Tobit / count: `betareg`, `AER::tobit`, `pscl::hurdle` / `zeroinfl`.
+* Other: `MASS::rlm` / `glm.nb`, `quantreg::rq`, `mgcv::gam` / `bam`,
+  `stats::nls`, `rms::ols` / `lrm` / `Glm`, `sampleSelection::selection`.
+
+See `vignette("table-regression")` for the walk-throughs.
 
 ## New features
 
-### Massively expanded model support
-
-`table_regression()` previously accepted only `lm` and `glm` fits.
-This release adds first-class support for ~ 30 additional model
-classes. Frames pass through the same APA-aligned renderer,
-broom-canonical `tidy()` / `glance()` methods, and footer
-infrastructure. Engine-specific polish (panels, family-specific
-labels) is layered on top for mixed-effects and Bayesian.
-
-* **Mixed-effects regression** (the headline feature): `lme4::lmer()`,
-  `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`. Publication-
-  ready random-effects panel with σ + Wald SE + 95 % CI, ρ rows
-  with SE + CI (Delta method), ICC, N per group, Nakagawa
-  marginal / conditional R², Type-3 Wald χ², adjusted ICC for
-  GLMM, per-class p-values footer, LR test vs no-random
-  (chi-bar-squared), AME (response-scale), `exponentiate = TRUE`
-  for OR / IRR / HR, `standardized = "refit"`, `nested = TRUE`
-  with ΔAIC / ΔBIC / Δχ² LRT rows. See `vignette("table-regression")`,
-  *Mixed-effects models*, for the walk-through and methodological
-  rationale.
-
-* **Bayesian regression**: `rstanarm::stanreg`, `brms::brmsfit`.
-  Estimate = posterior median, `std_error` = posterior SD,
-  `ci_lower` / `ci_upper` = equal-tailed posterior quantiles
-  (rendered as `95% CrI`, not `95% CI`). `p.value = NA` for every
-  Bayesian row (no frequentist p-value is reported).
-
-* **Survey-weighted regression**: `survey::svyglm`. Honours the
-  user's `vcov` (`"linearized"` from the survey design, plus the
-  `HC*` / `CR*` family for additional robustness).
-
-* **Survival models**: `survival::coxph`, `survival::survreg`,
-  `rms::cph`, `flexsurv::flexsurvreg`. Wald-z inference, family-
-  aware footer ("Cox proportional hazards", "Weibull AFT", etc.),
-  baseline-hazard hint when relevant. `exponentiate = TRUE` reports
-  hazard ratios (Cox) or time ratios (log-scale AFT).
-
-* **Categorical-outcome models**: `nnet::multinom`,
-  `mlogit::mlogit`, `MASS::polr`, `ordinal::clm`. Per-outcome /
-  per-cumulative-cutoff coefficient blocks; outcome-prefixed
-  term labels.
-
-* **Heteroskedasticity / cluster-robust regressions**:
-  `estimatr::lm_robust`, `estimatr::iv_robust`. Native HC / CR
-  vcov pass-through (no double-application).
-
-* **Fixed-effects econometrics**: `fixest::feols`, `fixest::feglm`,
-  `fixest::fepois`. Cluster-robust SE pass-through; one-way and
-  multi-way FE.
-
-* **Beta / Tobit / count-with-zeros**: `betareg::betareg`,
-  `AER::tobit`, `pscl::hurdle`, `pscl::zeroinfl` (count +
-  zero-inflation components rendered as separate blocks).
-
-* **Robust / quantile / GAM / nonlinear**: `MASS::rlm`,
-  `MASS::glm.nb`, `quantreg::rq`, `AER::ivreg`, `mgcv::gam` /
-  `mgcv::bam` (parametric coefs only — smooth terms summarised
-  separately), `stats::nls`.
-
-* **Other classical extensions**: `rms::ols`, `rms::lrm`,
-  `rms::Glm`, `sampleSelection::selection`.
-
-### Robust and cluster-robust standard errors across model classes
-
-* `table_regression(vcov = ...)` computes heteroskedasticity- and
-  cluster-robust standard errors for the supported frequentist
-  classes, each via its field-standard backend: `clubSandwich`
-  (CR2 / Bell-McCaffrey with Satterthwaite df for `lm` / `glm` /
-  `lmer` / `lme` / `glmmTMB`), the Lin-Wei grouped-dfbeta sandwich
-  for `coxph` / `rms::cph` (= `coxph(..., cluster=)`),
-  `sandwich::vcovCL` for `survreg` / `gam` / `polr` / `clm` /
-  `betareg` / `mlogit`, the design-aware `clubSandwich` estimator
-  for `survey::svyglm`, and `rms::robcov()` for `rms` fits (needs
-  `x = TRUE, y = TRUE`). Each backend is cross-validated to its
-  oracle to machine precision.
-
-* A robust `vcov` a model class cannot honour now fails fast with
-  `spicy_unsupported_vcov` instead of silently returning
-  model-based SEs under a robust label. See `?table_regression`,
-  *Robust SE availability by model class*, for the capability
-  matrix. `cluster` is one entry per observation, except `mlogit`
-  (one per choice situation) and censored `coxph` (one per
-  subject).
-
-### Average marginal effects for more model classes
-
-* The `"ame"` columns now report average marginal effects for
-  `betareg`, `mgcv::gam`, `survey::svyglm`, and `survival::survreg`
-  (one response-scale AME per predictor), and **per-outcome-category**
-  AME for `MASS::polr`, `ordinal::clm`, and `nnet::multinom` (one
-  AME per predictor and outcome category). Values are cross-validated
-  to `marginaleffects::avg_slopes()`. These classes previously
-  advertised AME support but rendered an empty column.
-
-* For an ordinal fit, the per-category AME is laid out as a
-  **probability matrix** -- predictors in rows, one `AME <category>`
-  column per response category -- the field-standard layout for
-  marginal effects (Long & Freese 2014; Williams 2012; `modelsummary`).
-  Cells are probabilities (the same scale as the binary-`glm` AME); the
-  footer names the probability scale, and the new *Ordinal regression
-  tables* vignette explains how to read it -- the sum-to-zero property
-  and that a change of 0.07 is 7 percentage points, not 7%.
-
-* Under a robust `vcov` (`HC*` / `CR*`), the AME **standard errors,
-  CIs, and p-values now honour that estimator** (previously the
-  non-`lm`/`glm` classes used the model-based vcov for the AME
-  uncertainty). The AME point estimates are vcov-independent and
-  unchanged. `glmmTMB` is the exception -- `marginaleffects` accepts
-  only its own `HC0` vcov there, so its AME uncertainty falls back to
-  model-based with a `spicy_fallback` warning rather than failing.
-
-### Ordinal thresholds as a table block
-
-* For ordinal cumulative-link fits (`MASS::polr`, `ordinal::clm`),
-  `table_regression()` now shows the estimated category thresholds
-  (cut-points) as a labelled **`Thresholds`** block of rows below the
-  predictors, carrying B / SE / 95% CI / p like the predictor rows
-  (cross-validated to `summary()`), instead of the previous one-line
-  footer note. They are reported on the log-odds (B) scale and are
-  **never exponentiated** -- under `exponentiate = TRUE` the threshold
-  rows stay on the log-odds scale while the predictors become odds
-  ratios. This matches the field convention (SPSS PLUM, SAS, Stata
-  `ologit`, `summary.polr` / `summary.clm`, Bender & Grouven 1997). Opt
-  out with `show_thresholds = FALSE` to restore the compact footer line.
-  A light horizontal rule sets the `Thresholds` block off from the
-  predictors above, mirroring the coefficients / fit-stats divide.
-
-* Ordinal fits now get a class-aware **fit-stats** default (previously
-  `polr` / `clm` tables showed no model-fit block at all):
-  `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")` --
-  McFadden's R² is the Stata `ologit` default, Nagelkerke the SPSS PLUM
-  default. The two pseudo-R² are computed from a closed-form null
-  log-likelihood (the marginal category proportions),
-  so they are robust to `update()`'s data-scoping fragility and
-  cross-validated to `performance::r2_mcfadden()` / `r2_nagelkerke()`.
-
-* `ci_method = "profile"` now produces genuine **profile-likelihood CIs**
-  for ordinal fits (`MASS::polr` via `confint.polr`, `ordinal::clm` via
-  `confint.clm`), cross-validated to `confint()` to machine precision --
-  previously the request was silently downgraded to Wald. Profile is a
-  CI-only refinement (the estimate, SE, statistic and *p* stay Wald) and
-  covers the predictor coefficients; the cut-point thresholds stay Wald,
-  and a robust `vcov` takes precedence.
-
-* When confidence intervals are profile-likelihood (`glm` or ordinal
-  fits), the footer now **discloses** it (`95% CIs: profile likelihood.`)
-  alongside the standard-error method -- a profile CI is not
-  `estimate ± z × SE`, so the method is stated (APA 7 / SAMPL / STROBE;
-  matching `parameters::model_parameters()`).
-
-* `ci_method = "profile"` is now **rejected with a clear error** for any
-  class without a genuine profile path (previously only `lm` was rejected;
-  other classes silently returned Wald). It is accepted for `glm`, `polr`
-  and `clm`.
+* `vcov` computes heteroskedasticity- and cluster-robust SEs for the supported
+  classes, each via its field-standard backend (`clubSandwich`, Lin-Wei
+  dfbeta, `sandwich::vcovCL`, `rms::robcov`). An unsupported robust `vcov`
+  errors with `spicy_unsupported_vcov` rather than silently returning
+  model-based SEs.
+* `"ame"` columns populate for `betareg`, `mgcv::gam`, `svyglm`, `survreg`,
+  and per-outcome-category for `polr` / `clm` / `multinom`; the ordinal
+  per-category AME renders as a probability matrix.
+* AME standard errors, CIs, and p-values honour a robust `vcov` (`glmmTMB`
+  falls back to model-based with a warning).
+* Ordinal (`polr` / `clm`) thresholds render as a labelled `Thresholds` block
+  of rows below the predictors, on the log-odds scale (never exponentiated);
+  opt out with `show_thresholds = FALSE`.
+* Ordinal fits get a class-aware fit-stats default (`nobs`, McFadden +
+  Nagelkerke pseudo-R², `AIC`); any other class falls back to `nobs` + `AIC`
+  (was a blank block).
+* `ci_method = "profile"` gives profile-likelihood CIs for `glm`, `polr`, and
+  `clm`, and errors for classes without a profile path (was silently Wald);
+  the footer discloses `95% CIs: profile likelihood.` when used.
 
 ## Minor improvements
 
-* `table_regression()` now shows a model-fit block for **every** model
-  class. Classes without a tailored default (e.g. `betareg`, `survreg`,
-  `coxph`, `nnet::multinom`, `mlogit`, `fixest`, `rms`, Bayesian) fall
-  back to `c("nobs", "AIC")` instead of rendering a blank block; the
-  tailored, field-standard set for each family follows in its per-class
-  release. See `dev/fit_stats_by_class.md`.
-
-* `table_regression()` now refuses a partial-proportional-odds
-  `ordinal::clm()` fit (`nominal = ~ ...`) with a clear
-  `spicy_unsupported` error instead of crashing -- its per-threshold
-  nominal coefficients do not fit the single-block ordinal table.
-  Scale fits (`scale = ~ ...`) remain supported.
-
-* `mlogit::mlogit()` no longer advertises AME support -- `marginaleffects`
-  has no `slopes()` method for its one-row-per-choice data, so requesting
-  an `"ame"` column now errors clearly instead of rendering blank.
-
-* The "fit a gaussian `glm()`? use `lm()` instead" caveat now fires
-  only for a plain `glm` fit, not for `svyglm` / `mgcv::gam` (which
-  inherit `"glm"` but for which the suggestion is wrong -- it would
-  drop the survey design or the smooth terms).
-
-* `show_fit_stats = FALSE` suppresses the fit-stats block (parity
-  with `show_re = FALSE` and `outcome_labels = FALSE`).
-
-* AME-Satterthwaite footer trimmed to `"AME inference: t-test
-  with Satterthwaite df."` (methodological references moved to
-  `?table_regression`).
-
-* Polynomial-trends footer note now respects `keep` / `drop` --
-  no longer fires when the ordered factor is filtered out of
-  the display.
-
-* Decimal-align en-dash placeholder cells (factor reference rows,
-  "not applicable") in `gt` / `flextable` / `tinytable` / Word /
-  Excel outputs.
-
-* `"deviance"` fit-stat precision now matches AIC / BIC / AICc
-  (1 decimal by default, was 2).
-
-* `table_continuous_lm()` / `table_continuous()` /
-  `table_categorical()`: `flextable` / `word` outputs use a
-  single font throughout.
+* `table_regression()` refuses a partial-proportional-odds `clm` fit
+  (`nominal = ~`) with a `spicy_unsupported` error (scale fits still
+  supported).
+* `mlogit` no longer advertises AME support (`marginaleffects` has no
+  `slopes()` method for it).
+* The gaussian-`glm` "use `lm()`" caveat no longer fires for
+  `svyglm` / `mgcv::gam`.
+* `show_fit_stats = FALSE` suppresses the fit-stats block.
+* The polynomial-trends footer respects `keep` / `drop`.
+* En-dash placeholder cells decimal-align in `gt` / `flextable` /
+  `tinytable` / Word / Excel outputs.
+* `"deviance"` prints at 1 decimal (matching `AIC` / `BIC`).
+* `table_continuous*()` / `table_categorical()` use a single font in
+  `flextable` / Word outputs.
 
 ## Bug fixes
 
-* `table_continuous_lm()`, `table_continuous()`, `table_categorical()`:
-  fix decimal-point alignment in `gt`, `tinytable`, `flextable`,
-  and `word` outputs.
-
-* `table_regression()`: factor coefficient and AME rows now
-  follow the factor's `levels()` order (previously sorted
-  alphabetically on the level string).
-* `table_regression()`: AME rows for ordered factors are now
-  nested under the factor group header with bare level labels
-  (e.g. `Upper secondary`), not as ungrouped rows with the full
-  coefficient name (`educationUpper secondary`).
-* `table_regression()`: requesting AME companion columns
-  (`ame_ci`, `ame_p`, `ame_se`) without the bare `ame` token now
-  populates those columns (was empty).
-* `table_regression()`: ordered factors with AME columns now
-  show a reference row (e.g. `Lower secondary (ref.)`), matching
-  the convention already used for plain factors. In multi-model
-  layout, a factor's reference row is now blank in models that
-  do not include the factor (was em-dashed regardless).
-* `table_regression()`: `stars = TRUE` now anchors stars on B
-  and on AME (when shown). Previously stars went on β instead
-  of B when both were displayed.
-* `table_regression(standardize = TRUE)`: latent-variable (y*)
-  standardized coefficients for log-link binomial models
-  (log-binomial / relative-risk) now return `NA` with a caveat --
-  a log link has no latent threshold, so the y* standardization is
-  undefined (previously an unjustified value using the logistic
-  latent variance π²/3 was reported).
-* `table_regression(list(...))`: stray zero-width-space characters
-  no longer remain in multi-model `tinytable` column headers (the
-  internal duplicate-name disambiguator is now fully stripped from
-  the rendered table).
-* `table_regression(p_adjust = ...)`: the p-value adjustment footer
-  now quotes the method name with double quotes on every platform
-  (previously single quotes on Unix and double quotes on Windows).
+* Fix decimal-point alignment in `gt` / `tinytable` / `flextable` / Word
+  outputs of `table_continuous_lm()` / `table_continuous()` /
+  `table_categorical()`.
+* `table_regression()`: factor coefficient and AME rows follow `levels()`
+  order (was alphabetical).
+* `table_regression()`: AME rows for ordered factors nest under the factor
+  header with bare level labels.
+* `table_regression()`: `ame_ci` / `ame_p` / `ame_se` without the bare `ame`
+  token now populate their columns.
+* `table_regression()`: ordered factors with AME columns show a reference row;
+  in multi-model layouts a factor's reference row is blank in models that lack
+  it.
+* `table_regression(stars = TRUE)`: stars anchor on B (and AME), not β.
+* `table_regression(standardize = TRUE)`: y* standardized coefficients return
+  `NA` for log-link binomial models (undefined; was an unjustified value).
+* `table_regression(list(...))`: no stray zero-width spaces in multi-model
+  `tinytable` headers.
+* `table_regression(p_adjust = ...)`: the method name is double-quoted on
+  every platform.
 
 # spicy 0.12.0
 
