@@ -192,10 +192,11 @@ render_regression_table <- function(
       } else {
         NA_character_
       }
-      # Rule off the subordinate "Thresholds" block (ordinal cut-points) from
-      # the predictors above, mirroring the coefficients / fit-stats divide.
-      if (identical(rt$factor_term, "Thresholds")) {
-        thr_sep <- length(rows) + 1L
+      # Rule off each subordinate block (ordinal `Thresholds`, partial-PO
+      # `Non-proportional effects`) from the rows above, mirroring the
+      # coefficients / fit-stats divide.
+      if (rt$factor_term %in% c("Thresholds", "Non-proportional effects")) {
+        thr_sep <- c(thr_sep, length(rows) + 1L)
       }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
         rt$factor_term, col_spec, labels,

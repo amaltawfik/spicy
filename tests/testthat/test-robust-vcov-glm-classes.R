@@ -107,13 +107,13 @@ test_that("clm with scale/nominal component refuses CR* cleanly", {
   expect_s3_class(
     table_regression(m_scale, output = "data.frame"), "data.frame"
   )
-  # A NOMINAL (partial-proportional-odds) fit cannot be tabulated at all -- its
-  # per-threshold nominal coefficients don't fit the single-block ordinal
-  # schema -- so even the classical path refuses cleanly instead of crashing.
-  expect_error(
-    table_regression(m_nom, output = "data.frame"),
-    class = "spicy_unsupported"
-  )
+  # A NOMINAL (partial-proportional-odds) fit IS tabulated: its non-proportional
+  # terms render as a "Non-proportional effects" block (one coefficient per
+  # cut-point). Only a robust vcov is refused (no estfun); the classical path
+  # works.
+  np <- table_regression(m_nom, output = "data.frame")
+  expect_s3_class(np, "data.frame")
+  expect_true(any(grepl("Non-proportional", np$Variable)))
 })
 
 ## ---- betareg --------------------------------------------------------------

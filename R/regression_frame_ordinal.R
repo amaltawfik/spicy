@@ -97,23 +97,26 @@ as_regression_frame.clm <- function(fit,
                                      ...) {
   .check_ordinal_available()
 
-  # Partial-proportional-odds clm fits (nominal = ~ ...) estimate a SEPARATE
-  # coefficient per threshold for the nominal terms, which does not fit the
-  # single-block ordinal coefficient schema (and trips the shared-vcov
-  # extraction). Refuse cleanly here instead of crashing downstream. Scale
-  # (scale = ~ ...) fits ARE supported: the location coefficients remain a
-  # single shared block.
-  if (!is.null(fit$nom.terms)) {
+  # Partial-proportional-odds clm fits (nominal = ~ ...) ARE supported: the
+  # non-proportional terms render as a labelled "Non-proportional effects" block
+  # (one coefficient per cut-point). But robust / cluster SEs are NOT available
+  # for them -- `ordinal` provides no estimating functions (estfun) for the
+  # nominal part, so `sandwich` / `clubSandwich` cannot build the sandwich.
+  # Refuse a robust `vcov` cleanly (classical is available) rather than erroring
+  # deep inside sandwich.
+  is_ppo <- !is.null(fit$nom.terms)
+  if (is_ppo && !(vcov %in% c("model", "classical"))) {
     spicy_abort(
       c(
-        paste0("table_regression() does not support partial-proportional-odds ",
-               "`clm` fits (`nominal = ~ ...`)."),
-        "i" = paste0("The nominal terms carry a separate coefficient per ",
-                     "threshold, which a single-block ordinal table cannot ",
-                     "represent. Drop `nominal` for a proportional-odds model, ",
-                     "or use `scale = ~` for scale effects.")
+        sprintf(paste0("A robust `vcov` (\"%s\") is not available for a ",
+                       "partial-proportional-odds `clm` fit (`nominal = ~ ...`)."),
+                vcov),
+        "i" = paste0("`sandwich` / `clubSandwich` have no estimating functions ",
+                     "for the non-proportional (nominal) terms. Use the default ",
+                     "model-based SEs, or drop `nominal` for a proportional-odds ",
+                     "fit.")
       ),
-      class = "spicy_unsupported"
+      class = "spicy_unsupported_vcov"
     )
   }
 
@@ -234,6 +237,8 @@ as_regression_frame.clm <- function(fit,
 
   ref_rows <- .ordinal_reference_rows(fit)
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  nonprop <- .ordinal_nonprop_rows(fit, ci_level)
+  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 
@@ -263,21 +268,29 @@ as_regression_frame.clm <- function(fit,
       NULL
     }
   }
-  idx <- if (!is.null(pci) && is.matrix(pci) && ncol(pci) == 2L) {
-    match(coefs$term[prow], rownames(pci))
-  } else {
-    NA_integer_
-  }
-  if (!anyNA(idx)) {
-    coefs$ci_lower[prow] <- pci[idx, 1L]
-    coefs$ci_upper[prow] <- pci[idx, 2L]
+  if (is.null(pci) || !is.matrix(pci) || ncol(pci) != 2L) {
+    spicy_warn(
+      c("Profile-likelihood CI computation failed; falling back to Wald CI.",
+        "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
+                     "fit converged cleanly.")),
+      class = "spicy_fallback")
     return(coefs)
   }
-  spicy_warn(
-    c("Profile-likelihood CI computation failed; falling back to Wald CI.",
-      "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
-                   "fit converged cleanly.")),
-    class = "spicy_fallback")
+  # Per row: profile the coefficients confint() returns (the PO / location
+  # terms), and LEAVE Wald for any it does not -- notably the non-proportional
+  # (nominal) terms of a partial-PO clm, which confint.clm does not profile.
+  idx <- match(coefs$term[prow], rownames(pci))
+  hit <- !is.na(idx)
+  if (!any(hit)) {
+    spicy_warn(
+      c("Profile-likelihood CI computation failed; falling back to Wald CI.",
+        "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
+                     "fit converged cleanly.")),
+      class = "spicy_fallback")
+    return(coefs)
+  }
+  coefs$ci_lower[prow[hit]] <- pci[idx[hit], 1L]
+  coefs$ci_upper[prow[hit]] <- pci[idx[hit], 2L]
   coefs
 }
 
@@ -467,7 +480,65 @@ as_regression_frame.clm <- function(fit,
 
   ref_rows <- .ordinal_reference_rows(fit)
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  nonprop <- .ordinal_nonprop_rows(fit, ci_level)
+  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
+}
+
+
+# Non-proportional (nominal) coefficient rows for a partial-proportional-odds
+# clm fit (`nominal = ~`). `fit$alpha.mat` is a [term x cut-point] matrix; its
+# "(Intercept)" row is the baseline thresholds (handled by .clm_thresholds), and
+# every other row is a predictor with a SEPARATE coefficient per cut-point. Each
+# such coefficient becomes a "B" row in a "Non-proportional effects" block,
+# named `<cut>.<term>` (matching summary / vcov), with Wald inference
+# (confint.clm does not profile the nominal terms). These rows exponentiate
+# normally (an OR per cut-point). Returns NULL for PO / scale clm and for polr
+# (no `alpha.mat`) -- so it is a safe no-op on the shared coef-builder path.
+.ordinal_nonprop_rows <- function(fit, ci_level) {
+  am <- fit$alpha.mat
+  if (is.null(am)) return(NULL)
+  nom_terms <- setdiff(rownames(am), "(Intercept)")
+  if (length(nom_terms) == 0L) return(NULL)
+  cuts <- colnames(am)
+  sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
+  have_sm <- !is.null(sm) &&
+    all(c("Std. Error", "z value", "Pr(>|z|)") %in% colnames(sm))
+  z_crit <- stats::qnorm(0.5 + ci_level / 2)
+  out <- list()
+  pos <- 0L
+  for (t in nom_terms) {
+    for (cut in cuts) {
+      cname <- paste0(cut, ".", t)
+      est <- unname(am[t, cut])
+      if (have_sm && cname %in% rownames(sm)) {
+        se   <- unname(sm[cname, "Std. Error"])
+        stat <- unname(sm[cname, "z value"])
+        p    <- unname(sm[cname, "Pr(>|z|)"])
+      } else {                                                          # nocov
+        se <- NA_real_; stat <- NA_real_; p <- NA_real_                 # nocov
+      }
+      pos <- pos + 1L
+      out[[length(out) + 1L]] <- data.frame(
+        term             = cname,
+        parent_var       = "Non-proportional effects",
+        label            = paste0(t, " @ ", .prettify_threshold_label(cut)),
+        factor_level_pos = pos,
+        is_ref           = FALSE,
+        estimate_type    = "B",
+        estimate         = est,
+        std_error        = se,
+        df               = Inf,
+        statistic        = stat,
+        p_value          = p,
+        ci_lower         = est - z_crit * se,
+        ci_upper         = est + z_crit * se,
+        test_type        = "z",
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  do.call(rbind, out)
 }
 
 
@@ -516,8 +587,10 @@ as_regression_frame.clm <- function(fit,
     singular_terms        = character(0),
     has_weights           = FALSE,
     weighted_n            = NA_real_,
-    title_prefix          = paste0(.clm_link_title(link),
-                                    " regression (proportional odds)"),
+    title_prefix          = paste0(
+      .clm_link_title(link), " regression (",
+      if (!is.null(fit$nom.terms)) "partial proportional odds" else
+        "proportional odds", ")"),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     response_levels       = as.character(fit$y.levels %||% character(0)),
@@ -552,7 +625,17 @@ as_regression_frame.clm <- function(fit,
   # nocov: clm always estimates >= 1 cumulative threshold (k - 1 for k
   # response levels, k >= 2), so an empty alpha is impossible for a fit.
   if (length(alpha) == 0L) return(data.frame())
-  alpha_names <- names(alpha)
+  # PPO (nominal = ~): alpha is expanded to "<cut>.<term>"; the baseline
+  # thresholds are the ".(Intercept)" entries (the nominal effects are rendered
+  # as coefficient rows by .ordinal_nonprop_rows). Restrict to those, and
+  # relabel the display term to the bare cut-point.
+  if (!is.null(fit$alpha.mat)) {
+    alpha <- alpha[grepl("\\.\\(Intercept\\)$", names(alpha))]
+    display <- sub("\\.\\(Intercept\\)$", "", names(alpha))
+  } else {
+    display <- names(alpha)
+  }
+  alpha_names <- names(alpha)   # full names for summary / vcov indexing
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
   if (!is.null(sm) && all(alpha_names %in% rownames(sm)) &&
       all(c("Std. Error", "z value", "Pr(>|z|)") %in% colnames(sm))) {
@@ -566,7 +649,7 @@ as_regression_frame.clm <- function(fit,
     p_value <- 2 * stats::pnorm(-abs(stat))
   }                                                                     # nocov end
   data.frame(
-    term      = alpha_names,
+    term      = display,
     estimate  = unname(alpha),
     std_error = se,
     statistic = stat,
