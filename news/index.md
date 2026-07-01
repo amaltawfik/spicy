@@ -205,6 +205,30 @@ Bayesian.
   [`performance::r2_mcfadden()`](https://easystats.github.io/performance/reference/r2_mcfadden.html)
   / `r2_nagelkerke()`.
 
+- `ci_method = "profile"` now produces genuine **profile-likelihood
+  CIs** for ordinal fits
+  ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) via
+  `confint.polr`,
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) via
+  `confint.clm`), cross-validated to
+  [`confint()`](https://rdrr.io/r/stats/confint.html) to machine
+  precision – previously the request was silently downgraded to Wald.
+  Profile is a CI-only refinement (the estimate, SE, statistic and *p*
+  stay Wald) and covers the predictor coefficients; the cut-point
+  thresholds stay Wald, and a robust `vcov` takes precedence.
+
+- When confidence intervals are profile-likelihood (`glm` or ordinal
+  fits), the footer now **discloses** it
+  (`95% CIs: profile likelihood.`) alongside the standard-error method –
+  a profile CI is not `estimate ± z × SE`, so the method is stated (APA
+  7 / SAMPL / STROBE; matching
+  [`parameters::model_parameters()`](https://easystats.github.io/parameters/reference/model_parameters.html)).
+
+- `ci_method = "profile"` is now **rejected with a clear error** for any
+  class without a genuine profile path (previously only `lm` was
+  rejected; other classes silently returned Wald). It is accepted for
+  `glm`, `polr` and `clm`.
+
 ### Minor improvements
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

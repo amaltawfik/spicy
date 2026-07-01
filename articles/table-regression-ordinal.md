@@ -320,6 +320,65 @@ Heteroskedasticity-consistent (`HC*`) and the `bootstrap` / `jackknife`
 resamplers are *not* defined for ordinal fits and are refused with a
 clear `spicy_unsupported_vcov` error rather than a silent fallback.
 
+## Standard errors and confidence intervals
+
+The three inference regimes differ in **how the standard error and the
+confidence interval relate**:
+
+- **Wald** (default): both come from the model information matrix. The
+  CI is `estimate ± z × SE` (symmetric) and the *p*-value uses the same
+  SE — SE, CI and *p* are one coherent set.
+- **Robust / cluster-robust** (`vcov = "CR*"`): the whole set switches
+  to the sandwich estimator — SE, CI (`± z × SE_robust`) and *p* shift
+  together, still coupled.
+- **Profile likelihood** (`ci_method = "profile"`): the CI is inverted
+  from the likelihood-ratio statistic and is **asymmetric** — *not*
+  `estimate ± z × SE`. Profile is a **CI-only refinement**: the
+  estimate, SE, statistic and *p*-value stay Wald; only the CI changes.
+  It covers the predictor coefficients (via
+  [`confint()`](https://rdrr.io/r/stats/confint.html)); the thresholds
+  stay Wald. A robust `vcov` takes precedence (profile is model-based),
+  so requesting both uses the robust Wald CIs.
+
+Because a profile CI cannot be reconstructed from the SE, the footer
+**discloses** it (`95% CIs: profile likelihood.`) alongside the SE
+method — following APA 7 / SAMPL / STROBE and matching
+[`parameters::model_parameters()`](https://easystats.github.io/parameters/reference/model_parameters.html):
+
+``` r
+
+table_regression(fit, ci_method = "profile", show_columns = c("b", "ci", "p"))
+#> Cumulative logit regression (proportional odds): self_rated_health
+#> 
+#>  Variable           │    B         95% CI        p   
+#> ────────────────────┼────────────────────────────────
+#>  age                │   -0.00  [-0.01,  0.01]   .831 
+#>  sex:               │                                
+#>    Female (ref.)    │     –          –          –    
+#>    Male             │    0.02  [-0.20,  0.23]   .874 
+#>  smoking:           │                                
+#>    No (ref.)        │     –          –          –    
+#>    Yes              │   -0.27  [-0.53, -0.00]   .047 
+#>  physical_activity: │                                
+#>    No (ref.)        │     –          –          –    
+#>    Yes              │    0.03  [-0.19,  0.24]   .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                
+#>    Poor | Fair      │   -2.98  [-3.45, -2.52]  <.001 
+#>    Fair | Good      │   -1.02  [-1.43, -0.62]  <.001 
+#>    Good | Very good │    1.04  [ 0.64,  1.45]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                           
+#>  R² (McFadden)      │    0.00                        
+#>  R² (Nagelkerke)    │    0.00                        
+#>  AIC                │ 2761.2                         
+#> 
+#> Note. Cumulative logit regression (proportional odds).
+#> Std. errors: Wald asymptotic (z).
+#> 95% CIs: profile likelihood.
+#> Thresholds: latent-scale category cut-points.
+```
+
 ## The `ordinal::clm()` engine
 
 [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) is rendered

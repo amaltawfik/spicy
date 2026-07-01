@@ -413,13 +413,77 @@ variable. Heteroskedasticity-consistent (<code>HC*</code>) and the
 fallback.</p>
 </div>
 <div class="section level2">
+<h2 id="standard-errors-and-confidence-intervals">Standard errors and confidence intervals<a class="anchor" aria-label="anchor" href="#standard-errors-and-confidence-intervals"></a>
+</h2>
+<p>The three inference regimes differ in <strong>how the standard error
+and the confidence interval relate</strong>:</p>
+<ul>
+<li>
+<strong>Wald</strong> (default): both come from the model
+information matrix. The CI is <code>estimate ± z × SE</code> (symmetric)
+and the <em>p</em>-value uses the same SE — SE, CI and <em>p</em> are
+one coherent set.</li>
+<li>
+<strong>Robust / cluster-robust</strong>
+(<code>vcov = "CR*"</code>): the whole set switches to the sandwich
+estimator — SE, CI (<code>± z × SE_robust</code>) and <em>p</em> shift
+together, still coupled.</li>
+<li>
+<strong>Profile likelihood</strong>
+(<code>ci_method = "profile"</code>): the CI is inverted from the
+likelihood-ratio statistic and is <strong>asymmetric</strong> —
+<em>not</em> <code>estimate ± z × SE</code>. Profile is a
+<strong>CI-only refinement</strong>: the estimate, SE, statistic and
+<em>p</em>-value stay Wald; only the CI changes. It covers the predictor
+coefficients (via <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>); the thresholds stay Wald. A
+robust <code>vcov</code> takes precedence (profile is model-based), so
+requesting both uses the robust Wald CIs.</li>
+</ul>
+<p>Because a profile CI cannot be reconstructed from the SE, the footer
+<strong>discloses</strong> it
+(<code>95% CIs: profile likelihood.</code>) alongside the SE method —
+following APA 7 / SAMPL / STROBE and matching
+<code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code>:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B         95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00  [-0.01,  0.01]   .831 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.02  [-0.20,  0.23]   .874 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27  [-0.53, -0.00]   .047 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    0.03  [-0.19,  0.24]   .794 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -2.98  [-3.45, -2.52]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.02  [-1.43, -0.62]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.04  [ 0.64,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                           </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                        </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                        </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; 95% CIs: profile likelihood.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="the-ordinalclm-engine">The <code>ordinal::clm()</code> engine<a class="anchor" aria-label="anchor" href="#the-ordinalclm-engine"></a>
 </h2>
 <p><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code> is rendered through the same code path
 and supports the same columns. It is the engine to reach for when you
 need flexible link functions, scale effects, or a relaxation of
 proportional odds.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clm_fit</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
 <span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
@@ -464,7 +528,7 @@ a single shared block, so the table renders normally. Cluster-robust SEs
 are not available for scale fits (<code>sandwich</code> has no
 estimating-functions method for them), so <code>CR*</code> is refused up
 front with a clear <code>spicy_unsupported_vcov</code> error:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clm_scale</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
 <span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>, scale <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
@@ -492,7 +556,7 @@ front with a clear <code>spicy_unsupported_vcov</code> error:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
@@ -503,7 +567,7 @@ front with a clear <code>spicy_unsupported_vcov</code> error:</p>
 single-block ordinal table cannot represent.
 <code><a href="../reference/table_regression.html">table_regression()</a></code> refuses these fits with a clear error
 rather than mis-tabulating them:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clm_npo</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
 <span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>, nominal <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
@@ -521,7 +585,7 @@ rather than mis-tabulating them:</p>
 different fits can be compared, with
 <code>table_regression(list(...))</code>. Per-model <code>vcov</code> is
 supplied as a list:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">polr</a></span><span class="op">(</span><span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span>, Hess <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Unadjusted <span class="op">=</span> <span class="va">fit_min</span>, Adjusted <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
@@ -593,7 +657,7 @@ broom-style tibble, and — with the corresponding Suggests package — rich
 <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel,
 or Word tables. The structure (the per-category AME matrix included)
 carries through to every format.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          Variable       B AME Poor AME Fair AME Good AME Very good</span></span>
 <span><span class="co">#&gt; 1             age   -0.00     0.00     0.00    -0.00         -0.00</span></span>
@@ -602,7 +666,7 @@ carries through to every format.</p>
 <span><span class="co">#&gt; 4            Male    0.02    -0.00    -0.00     0.00          0.00</span></span>
 <span><span class="co">#&gt; 5        smoking:                                                 </span></span>
 <span><span class="co">#&gt; 6       No (ref.)     –</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
@@ -1144,7 +1208,7 @@ probability.
 returns the long frame, one row per <code>(term, estimate_type)</code>;
 per-category AME rows carry the response category in the
 <code>outcome_level</code>-derived structure:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 15</span></span></span>
 <span><span class="co">#&gt;    model_id outcome    term  estimate_type estimate std.error conf.low conf.high</span></span>

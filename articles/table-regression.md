@@ -916,6 +916,7 @@ table_regression(fit, ci_method = "profile")
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (Fisher information).
+#> 95% CIs: profile likelihood.
 ```
 
 ### Hierarchical glm (LRT)
