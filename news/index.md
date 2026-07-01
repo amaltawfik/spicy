@@ -68,9 +68,7 @@ for the walk-throughs.
   supported classes, each via its field-standard backend
   (`clubSandwich`, Lin-Wei dfbeta,
   [`sandwich::vcovCL`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html),
-  [`rms::robcov`](https://rdrr.io/pkg/rms/man/robcov.html)). An
-  unsupported robust `vcov` errors with `spicy_unsupported_vcov` rather
-  than silently returning model-based SEs.
+  [`rms::robcov`](https://rdrr.io/pkg/rms/man/robcov.html)).
 - `"ame"` columns populate for `betareg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html), `svyglm`,
   `survreg`, and per-outcome-category for `polr` / `clm` / `multinom`;
@@ -84,22 +82,12 @@ for the walk-throughs.
   Nagelkerke pseudo-R², `AIC`); any other class falls back to `nobs` +
   `AIC` (was a blank block).
 - `ci_method = "profile"` gives profile-likelihood CIs for `glm`,
-  `polr`, and `clm`, and errors for classes without a profile path (was
-  silently Wald); the footer discloses `95% CIs: profile likelihood.`
+  `polr`, and `clm`; the footer discloses `95% CIs: profile likelihood.`
   when used.
 
 ### Minor improvements
 
-- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  refuses a partial-proportional-odds `clm` fit (`nominal = ~`) with a
-  `spicy_unsupported` error (scale fits still supported).
-- `mlogit` no longer advertises AME support (`marginaleffects` has no
-  `slopes()` method for it).
-- The gaussian-`glm` “use [`lm()`](https://rdrr.io/r/stats/lm.html)”
-  caveat no longer fires for `svyglm` /
-  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html).
 - `show_fit_stats = FALSE` suppresses the fit-stats block.
-- The polynomial-trends footer respects `keep` / `drop`.
 - En-dash placeholder cells decimal-align in `gt` / `flextable` /
   `tinytable` / Word / Excel outputs.
 - `"deviance"` prints at 1 decimal (matching `AIC` / `BIC`).
@@ -116,6 +104,8 @@ for the walk-throughs.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   /
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+- The polynomial-trends footer note no longer fires when the ordered
+  factor is filtered out by `keep` / `drop`.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   factor coefficient and AME rows follow
   [`levels()`](https://rdrr.io/r/base/levels.html) order (was

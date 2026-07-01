@@ -89,25 +89,19 @@
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
 <ul><li>
-<code>vcov</code> computes heteroskedasticity- and cluster-robust SEs for the supported classes, each via its field-standard backend (<code>clubSandwich</code>, Lin-Wei dfbeta, <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov</a></code>). An unsupported robust <code>vcov</code> errors with <code>spicy_unsupported_vcov</code> rather than silently returning model-based SEs.</li>
+<code>vcov</code> computes heteroskedasticity- and cluster-robust SEs for the supported classes, each via its field-standard backend (<code>clubSandwich</code>, Lin-Wei dfbeta, <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov</a></code>).</li>
 <li>
 <code>"ame"</code> columns populate for <code>betareg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>, <code>svyglm</code>, <code>survreg</code>, and per-outcome-category for <code>polr</code> / <code>clm</code> / <code>multinom</code>; the ordinal per-category AME renders as a probability matrix.</li>
 <li>AME standard errors, CIs, and p-values honour a robust <code>vcov</code> (<code>glmmTMB</code> falls back to model-based with a warning).</li>
 <li>Ordinal (<code>polr</code> / <code>clm</code>) thresholds render as a labelled <code>Thresholds</code> block of rows below the predictors, on the log-odds scale (never exponentiated); opt out with <code>show_thresholds = FALSE</code>.</li>
 <li>Ordinal fits get a class-aware fit-stats default (<code>nobs</code>, McFadden + Nagelkerke pseudo-R², <code>AIC</code>); any other class falls back to <code>nobs</code> + <code>AIC</code> (was a blank block).</li>
 <li>
-<code>ci_method = "profile"</code> gives profile-likelihood CIs for <code>glm</code>, <code>polr</code>, and <code>clm</code>, and errors for classes without a profile path (was silently Wald); the footer discloses <code>95% CIs: profile likelihood.</code> when used.</li>
+<code>ci_method = "profile"</code> gives profile-likelihood CIs for <code>glm</code>, <code>polr</code>, and <code>clm</code>; the footer discloses <code>95% CIs: profile likelihood.</code> when used.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
 <ul><li>
-<code><a href="../reference/table_regression.html">table_regression()</a></code> refuses a partial-proportional-odds <code>clm</code> fit (<code>nominal = ~</code>) with a <code>spicy_unsupported</code> error (scale fits still supported).</li>
-<li>
-<code>mlogit</code> no longer advertises AME support (<code>marginaleffects</code> has no <code>slopes()</code> method for it).</li>
-<li>The gaussian-<code>glm</code> “use <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>” caveat no longer fires for <code>svyglm</code> / <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>.</li>
-<li>
 <code>show_fit_stats = FALSE</code> suppresses the fit-stats block.</li>
-<li>The polynomial-trends footer respects <code>keep</code> / <code>drop</code>.</li>
 <li>En-dash placeholder cells decimal-align in <code>gt</code> / <code>flextable</code> / <code>tinytable</code> / Word / Excel outputs.</li>
 <li>
 <code>"deviance"</code> prints at 1 decimal (matching <code>AIC</code> / <code>BIC</code>).</li>
@@ -117,6 +111,7 @@
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>Fix decimal-point alignment in <code>gt</code> / <code>tinytable</code> / <code>flextable</code> / Word outputs of <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> / <code><a href="../reference/table_continuous.html">table_continuous()</a></code> / <code><a href="../reference/table_categorical.html">table_categorical()</a></code>.</li>
+<li>The polynomial-trends footer note no longer fires when the ordered factor is filtered out by <code>keep</code> / <code>drop</code>.</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code>: factor coefficient and AME rows follow <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order (was alphabetical).</li>
 <li>
