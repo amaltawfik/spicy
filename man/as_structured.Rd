@@ -46,6 +46,13 @@ that have no value (reference levels, non-applicable rows in
 multi-model output, factor headers) are \code{NA}.
 \item \code{reference_rows}, \code{factor_header_rows}, \code{fit_stat_rows},
 \code{level_rows}, \code{outcome_row} -- integer row indices.
+\item \code{reference_models_by_row} -- for each reference row (keyed by its
+row index as a character string), the \code{model_id}s of the models
+that actually contain the factor: renderers show the reference
+marker only in those models' columns and leave the others blank.
+\item \code{outcome_labels_by_col} -- for the \code{outcome_row} (explicit
+\code{outcome_labels} with two or more models), the display label
+keyed by each model's first structured column name.
 \item \code{col_meta} -- per-column metadata keyed by structured column
 name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label).

@@ -738,13 +738,16 @@ output_gt <- function(rendered) {
       )
     }
   }
-  # Outer Model spanner level (multi-model only).
+  # Outer Model spanner level (multi-model only). The id uses the spanner's
+  # POSITION, not make.names(label): distinct labels like "Step 1" and
+  # "Step.1" collapse to the same make.names() string, and gt hard-errors on
+  # a duplicated spanner id (finding m2). The label still displays verbatim.
   if (has_model_spanner) {
-    for (lbl in names(spanners)) {
-      cols_in_span <- orig_names[spanners[[lbl]]]
+    for (k in seq_along(spanners)) {
+      lbl <- names(spanners)[k]
+      cols_in_span <- orig_names[spanners[[k]]]
       tbl <- gt::tab_spanner(tbl, label = lbl, columns = cols_in_span,
-                              id = paste0("model_span_",
-                                          make.names(lbl)))
+                              id = paste0("model_span_", k))
     }
   }
 
@@ -807,7 +810,7 @@ output_gt <- function(rendered) {
   # row (extra line above "Variable"). Restrict to the outermost
   # level via explicit spanner IDs.
   if (has_model_spanner) {
-    model_span_ids <- paste0("model_span_", make.names(names(spanners)))
+    model_span_ids <- paste0("model_span_", seq_along(spanners))
     # Top rule above the Model row.
     tbl <- gt::tab_style(
       tbl, style = rule_top,
@@ -1771,9 +1774,27 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           )
         }
       }
-      # Reference rows: overwrite numeric with en-dash text
+      # Outcome row (multi-DV): overlay the label text (metadata; the typed
+      # body keeps the cell NA).
+      if (length(struct$outcome_row) == 1L &&
+          col_name %in% names(struct$outcome_labels_by_col)) {
+        wb <- openxlsx2::wb_add_data(
+          wb, sheet = excel_sheet,
+          x = struct$outcome_labels_by_col[[col_name]],
+          start_row = body_first_row + struct$outcome_row - 1L,
+          start_col = j
+        )
+      }
+      # Reference rows: overwrite numeric with en-dash text -- but only in
+      # the columns of models that HAVE the factor; models it is absent from
+      # keep a blank cell (char-body parity, finding M3).
       if (length(reference_rows) > 0L) {
         for (i in reference_rows) {
+          ref_models <- struct$reference_models_by_row[[as.character(i)]]
+          if (!is.null(ref_models) && !is.null(meta$model_id) &&
+              !meta$model_id %in% ref_models) {
+            next
+          }
           excel_row <- body_first_row + i - 1L
           wb <- openxlsx2::wb_add_data(
             wb, sheet = excel_sheet, x = na_dash,
@@ -2226,6 +2247,13 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   multi-model output, factor headers) are `NA`.
 #' * `reference_rows`, `factor_header_rows`, `fit_stat_rows`,
 #'   `level_rows`, `outcome_row` -- integer row indices.
+#' * `reference_models_by_row` -- for each reference row (keyed by its
+#'   row index as a character string), the `model_id`s of the models
+#'   that actually contain the factor: renderers show the reference
+#'   marker only in those models' columns and leave the others blank.
+#' * `outcome_labels_by_col` -- for the `outcome_row` (explicit
+#'   `outcome_labels` with two or more models), the display label
+#'   keyed by each model's first structured column name.
 #' * `col_meta` -- per-column metadata keyed by structured column
 #'   name (token, model_id, precision, p-style, below-threshold,
 #'   CI pair / role / label).

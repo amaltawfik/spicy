@@ -209,6 +209,11 @@ build_structured_body <- function(aligned,
 
   rows <- list()
   reference_rows <- integer(0)
+  # Per reference row: the model_ids that actually carry the term. In a
+  # multi-model table a factor absent from a model must render BLANK in that
+  # model's columns (matching the char body), not em-dash -- the em-dash
+  # means "reference by design", which only holds where the factor exists.
+  reference_models_by_row <- list()
   factor_header_rows <- integer(0)
   fit_stat_rows <- integer(0)
   level_rows <- integer(0)
@@ -228,13 +233,11 @@ build_structured_body <- function(aligned,
     expanded = expanded,
     empty_row = empty_row
   )
+  outcome_labels_by_col <- character(0)
   if (!is.null(outcome_row)) {
-    # nocov start: .build_structured_outcome_row() currently always
-    # returns NULL (the multi-DV text-override system is not yet
-    # finalised), so this branch is forward-compat dead code.
-    rows[[length(rows) + 1L]] <- outcome_row
+    rows[[length(rows) + 1L]] <- outcome_row$row
     outcome_row_idx <- length(rows)
-    # nocov end
+    outcome_labels_by_col <- outcome_row$labels_by_col
   }
 
   # --- Body rows (per term) ---
@@ -291,6 +294,8 @@ build_structured_body <- function(aligned,
     rows[[length(rows) + 1L]] <- new_row
     if (isTRUE(rt$is_reference)) {
       reference_rows <- c(reference_rows, length(rows))
+      reference_models_by_row[[as.character(length(rows))]] <-
+        unique(coefs$model_id[coefs$term == rt$term])
     }
     # level_rows: same heuristic as .detect_level_rows() — Variable
     # starts with whitespace under grouped layout.
@@ -375,6 +380,8 @@ build_structured_body <- function(aligned,
   structured <- list(
     body = body_df,
     reference_rows = reference_rows,
+    reference_models_by_row = reference_models_by_row,
+    outcome_labels_by_col = outcome_labels_by_col,
     factor_header_rows = factor_header_rows,
     fit_stat_rows = fit_stat_rows,
     level_rows = level_rows,
@@ -661,6 +668,13 @@ build_structured_body <- function(aligned,
 
 # ---- Outcome row (structured) --------------------------------------------
 
+# Mirrors build_outcome_row() (char body): the Outcome row appears ONLY when
+# the user explicitly passes `outcome_labels = c(...)` and there are >= 2
+# models. The typed body stays numeric: the row is all-NA, and the label
+# TEXT lives in the returned `labels_by_col` map (keyed by the first non-CI
+# structured column of each model). String-producing layers -- the shared
+# string-body formatter and the Excel writer -- overlay the text, so every
+# engine shows the same row print() shows (finding B-structured-outcome).
 .build_structured_outcome_row <- function(model_outcomes,
                                             model_outcome_labels,
                                             outcome_labels,
@@ -670,29 +684,32 @@ build_structured_body <- function(aligned,
                                             expanded,
                                             empty_row) {
   # Same suppression logic as build_outcome_row().
-  if (isFALSE(outcome_labels)) return(NULL)
-  if (is.null(model_outcomes) || length(model_outcomes) == 0L) return(NULL)
-  if (length(unique(model_outcomes)) <= 1L &&
-        length(model_outcomes) >= 1L &&
-        is.null(outcome_labels)) {
-    return(NULL)
+  if (isFALSE(outcome_labels) || is.null(outcome_labels)) return(NULL)
+  if (!is.character(outcome_labels)) return(NULL)                      # nocov
+  if (length(model_ids) <= 1L) return(NULL)
+
+  # First non-CI structured sub-column of each model.
+  first_col_per_model <- stats::setNames(
+    rep(NA_character_, length(model_ids)), model_ids
+  )
+  for (e in expanded) {
+    m_id <- e$cs$model_id
+    if (is.na(first_col_per_model[[m_id]]) && is.null(e$ci_role)) {
+      first_col_per_model[[m_id]] <- e$name
+    }
   }
 
-  display_labels <- if (!is.null(outcome_labels) &&
-                          is.character(outcome_labels)) {
-    outcome_labels
-  } else if (!is.null(model_outcome_labels)) {
-    model_outcome_labels
-  } else {
-    model_outcomes
+  labels_by_col <- character(0)
+  for (i in seq_along(model_ids)) {
+    target <- first_col_per_model[[model_ids[i]]]
+    if (is.na(target)) next                                            # nocov
+    labels_by_col[[target]] <- outcome_labels[i]
   }
+  if (length(labels_by_col) == 0L) return(NULL)                        # nocov
 
-  # Build row: Variable = "Outcome", first structured non-CI col per
-  # model = the outcome label (as text). For a numeric body, we leave
-  # the cell as NA and rely on a TEXT OVERRIDE marker (TBD). For now
-  # we just record the label in the col_meta. Returning NULL for now
-  # until the override system is finalised in session 2.
-  NULL
+  row <- empty_row
+  row$Variable <- "Outcome"
+  list(row = row, labels_by_col = labels_by_col)
 }
 
 
@@ -752,8 +769,16 @@ build_structured_body <- function(aligned,
 # and below-threshold "<.001" overrides. Used by engines that drive
 # their formatters via pre-formatted strings (flextable, console).
 .cell_to_string <- function(val, row_idx, col_meta_entry,
-                              reference_rows, decimal_mark = ".") {
-  if (row_idx %in% reference_rows) return("\u2013")
+                              reference_rows, decimal_mark = ".",
+                              ref_models = NULL) {
+  if (row_idx %in% reference_rows) {
+    # Em-dash only in the columns of models that HAVE the factor; a model
+    # the factor is absent from gets a blank cell (char-body parity, M3).
+    in_model <- is.null(ref_models) ||
+      is.null(col_meta_entry$model_id) ||
+      col_meta_entry$model_id %in% ref_models
+    return(if (in_model) "\u2013" else "")
+  }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) return("")
   if (!is.null(cfmt$threshold) && is.finite(val) &&
@@ -879,8 +904,17 @@ build_structured_body <- function(aligned,
     col_vals <- body_num[[j]]
     formatted <- character(n_rows)
     for (i in seq_len(n_rows)) {
-      formatted[i] <- .cell_to_string(col_vals[i], i, meta,
-                                         reference_rows, decimal_mark)
+      formatted[i] <- .cell_to_string(
+        col_vals[i], i, meta, reference_rows, decimal_mark,
+        ref_models = struct$reference_models_by_row[[as.character(i)]]
+      )
+    }
+    # Outcome row (multi-DV): the label text lives in metadata (the typed
+    # body stays numeric); overlay it on the model's first sub-column.
+    if (length(struct$outcome_row) == 1L &&
+        col_name %in% names(struct$outcome_labels_by_col)) {
+      formatted[struct$outcome_row] <-
+        struct$outcome_labels_by_col[[col_name]]
     }
     out[[j]] <- formatted
   }

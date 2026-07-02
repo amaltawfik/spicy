@@ -12,8 +12,9 @@ test_that("structured body: schema invariants (numerics, CI split, markers)", {
   s <- attr(r, "structured")
 
   expect_type(s, "list")
-  expect_named(s, c("body", "reference_rows", "factor_header_rows",
-                     "fit_stat_rows", "level_rows", "outcome_row",
+  expect_named(s, c("body", "reference_rows", "reference_models_by_row",
+                     "factor_header_rows", "fit_stat_rows", "level_rows",
+                     "outcome_row", "outcome_labels_by_col",
                      "col_meta", "spanners", "ci_pairs", "format_spec"),
                ignore.order = TRUE)
 
@@ -164,8 +165,9 @@ test_that("as_structured() returns the typed view with the documented schema", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   tbl <- table_regression(m1, show_columns = c("b", "se", "ci", "p"))
   s <- as_structured(tbl)
-  expect_named(s, c("body", "reference_rows", "factor_header_rows",
-                     "fit_stat_rows", "level_rows", "outcome_row",
+  expect_named(s, c("body", "reference_rows", "reference_models_by_row",
+                     "factor_header_rows", "fit_stat_rows", "level_rows",
+                     "outcome_row", "outcome_labels_by_col",
                      "col_meta", "spanners", "ci_pairs", "format_spec"),
                ignore.order = TRUE)
   # Body has typed columns (numeric where applicable).
