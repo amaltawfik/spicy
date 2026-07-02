@@ -76,6 +76,20 @@ See `vignette("table-regression")` for the walk-throughs.
 * The `N (groups)` fit-stat row upgrades to `N (Subject)` with plain counts
   when every model shares a single grouping factor (crossed structures keep
   the generic label with descriptive counts).
+* Two-part count models now show their FULL model: the zero component of
+  `pscl::zeroinfl` / `hurdle` and the `ziformula` / `dispformula` components
+  of `glmmTMB` render as labelled subordinate row blocks (`Zero-inflation`,
+  `Zero hurdle`, `Dispersion`) with full Wald inference -- previously only
+  the count/conditional coefficients rendered. The two zero blocks are
+  labelled by what they model (structural zero vs nonzero count); a footer
+  line names each block's meaning and scale. Opt out with
+  `show_components = FALSE`. Under `exponentiate = TRUE` a component is
+  exponentiated only when its link yields an odds ratio (logit); probit /
+  count-type zero parts and the dispersion model stay on the link scale.
+* Cluster-robust `vcov` (`CR*`, via `sandwich::vcovCL`) now supported for
+  `pscl::zeroinfl` / `hurdle`, covering both components with one estimator.
+* The AME column now populates for `pscl` fits (combined-response
+  `avg_slopes()`; it was silently empty).
 
 ## Minor improvements
 

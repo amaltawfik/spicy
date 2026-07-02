@@ -147,7 +147,8 @@ align_frames <- function(
   # show_thresholds / show_re paths) would otherwise land at their
   # first-appearance position, which in a multi-model table can fall ahead of a
   # predictor a later model introduces.
-  for (blk in c("Thresholds", "Random effects")) {
+  for (blk in c("Zero-inflation", "Zero hurdle", "Dispersion",
+                "Thresholds", "Random effects")) {
     blk_terms <- unique(coefs_long$term[coefs_long$factor_term %in% blk])
     if (length(blk_terms) > 0L) {
       blk_in_order <- intersect(term_order, blk_terms)
@@ -240,9 +241,21 @@ group_factor_terms <- function(term_order, coefs_long) {
     }
     group <- meta$term[!is.na(meta$factor_term) & meta$factor_term == ft]
     group_meta <- meta[group, , drop = FALSE]
-    group_meta <- group_meta[order(!group_meta$is_reference,
-                                    group_meta$factor_level_pos,
-                                    na.last = TRUE), , drop = FALSE]
+    # Subordinate BLOCKS (their rows all share the block label as
+    # factor_term) keep their builder-supplied row order (factor_level_pos =
+    # a sequence): the refs-first rule below is a per-FACTOR convention and
+    # would float every reference row to the top of the whole block.
+    is_block <- ft %in% c("Thresholds", "Non-proportional effects",
+                          "Random effects", "Zero-inflation", "Zero hurdle",
+                          "Dispersion")
+    group_meta <- if (is_block) {
+      group_meta[order(group_meta$factor_level_pos, na.last = TRUE), ,
+                 drop = FALSE]
+    } else {
+      group_meta[order(!group_meta$is_reference,
+                       group_meta$factor_level_pos,
+                       na.last = TRUE), , drop = FALSE]
+    }
     new <- intersect(group_meta$term, term_order)  # preserve any drops
     out <- c(out, new)
     visited[new] <- TRUE

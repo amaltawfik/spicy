@@ -15,7 +15,11 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   if (identical(method, "none") || is.null(method)) return(coefs)
   if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
 
+  # Intercepts are excluded from the family: the main one by term, and the
+  # component-block ones (zero-inflation / dispersion, terms "zero_(Intercept)"
+  # / "zi.(Intercept)") by their display label.
   family_mask <- coefs$term != "(Intercept)" &
+                   !(coefs$label %in% "(Intercept)") &
                    !coefs$is_ref &
                    !is.na(coefs$p_value)
 
@@ -75,7 +79,8 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
   ca <- aligned$coefs_aligned
   subordinate <- ca$factor_term %in%
-    c("Thresholds", "Non-proportional effects", "Random effects") |
+    c("Thresholds", "Non-proportional effects", "Random effects",
+      "Zero-inflation", "Zero hurdle", "Dispersion") |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
 

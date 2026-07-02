@@ -270,14 +270,20 @@ test_that("glmmTMB poisson: info$family is poisson/log; title 'Poisson'", {
 
 # ---- 9. Zero-inflation ---------------------------------------------------
 
-test_that("glmmTMB zero-inflated: info$extras$has_zi = TRUE; zi_coefs captured", {
+test_that("glmmTMB zero-inflated: info$extras$has_zi = TRUE; component block captured", {
   fit <- .fit_glmmTMB_zi()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
   expect_true(fr$info$extras$has_zi)
-  expect_true(is.numeric(fr$info$extras$zi_coefs))
-  expect_identical(names(fr$info$extras$zi_coefs),
-                   names(glmmTMB::fixef(fit)$zi))
+  blocks <- fr$info$extras$component_blocks
+  expect_true(is.list(blocks) && length(blocks) >= 1L)
+  blk <- blocks[[1L]]
+  expect_identical(blk$label, "Zero-inflation")
+  expect_identical(blk$link, "logit")
+  non_ref <- blk$coefs[!blk$coefs$is_ref, , drop = FALSE]
+  expect_setequal(non_ref$term,
+                  paste0("zi.", names(glmmTMB::fixef(fit)$zi)))
+  expect_true(all(is.finite(non_ref$std_error)))
 })
 
 test_that("glmmTMB zero-inflated: title_prefix suffixed '(zero-inflated)'", {

@@ -10,11 +10,14 @@
 #                 part (binary).
 #
 # Both classes carry TWO components: $count (the conditional count
-# regression) and $zero (the binary part). Mirroring the glmmTMB
-# convention, the frame's coefs table covers the COUNT component
-# only; the zero component is stashed in info$extras$zero_coefs (for
-# hurdle) or info$extras$zi_coefs (for zeroinfl) for downstream
-# consumers that surface them.
+# regression) and $zero (the binary / censored-count part). The frame's
+# coefs table covers the COUNT component; the zero component ships as a
+# fully-inferenced component block (info$extras$component_blocks) that the
+# orchestrator promotes to a labelled subordinate block of table rows --
+# "Zero-inflation" (zeroinfl: models P(structural zero)) or "Zero hurdle"
+# (hurdle: models P(y > 0); verified numerically equal to
+# glm(I(y > 0) ~ ...) for the binomial/logit case). See
+# dev/component_blocks_spec.md.
 #
 # Per-class quirks vs glm:
 #   * stats::coef(fit) returns a flat vector with "count_" / "zero_"
@@ -39,22 +42,17 @@
 as_regression_frame.hurdle <- function(fit,
                                         vcov = "model",
                                         vcov_label = NULL,
+                                        cluster = NULL,
+                                        cluster_name = NULL,
                                         ci_level = 0.95,
                                         ci_method = NULL,
+                                        show_columns = character(0),
                                         model_id = "M1",
                                         ...) {
   .check_pscl_available()
-
-  coefs <- .pscl_coefs(fit, ci_level = ci_level)
-  info  <- .pscl_info(fit,
-                      vcov_kind  = vcov,
-                      vcov_label = vcov_label,
-                      ci_level   = ci_level,
-                      ci_method  = ci_method,
-                      model_id   = model_id,
-                      is_hurdle  = TRUE)
-
-  new_regression_frame(coefs, info, fit)
+  .pscl_frame(fit, vcov, vcov_label, cluster, cluster_name,
+              ci_level, ci_method, show_columns, model_id,
+              is_hurdle = TRUE)
 }
 
 
@@ -66,21 +64,52 @@ as_regression_frame.hurdle <- function(fit,
 as_regression_frame.zeroinfl <- function(fit,
                                           vcov = "model",
                                           vcov_label = NULL,
+                                          cluster = NULL,
+                                          cluster_name = NULL,
                                           ci_level = 0.95,
                                           ci_method = NULL,
+                                          show_columns = character(0),
                                           model_id = "M1",
                                           ...) {
   .check_pscl_available()
+  .pscl_frame(fit, vcov, vcov_label, cluster, cluster_name,
+              ci_level, ci_method, show_columns, model_id,
+              is_hurdle = FALSE)
+}
 
+
+# Shared body of the two pscl frame methods.
+.pscl_frame <- function(fit, vcov, vcov_label, cluster, cluster_name,
+                        ci_level, ci_method, show_columns, model_id,
+                        is_hurdle) {
   coefs <- .pscl_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
+  # estfun/bread cover BOTH components; the coefs (count) rows are re-inferred
+  # here, the zero-component block rows inside .pscl_component_block().
+  # pscl coef(fit) names are "count_"/"zero_"-prefixed while the coefs terms
+  # are bare count names: pass a de-prefixed estimates vector so term matching
+  # lands on the right positions of the full vcovCL matrix.
+  cf_full <- stats::coef(fit)
+  names(cf_full) <- sub("^count_", "", names(cf_full))
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z", estimates = cf_full)
+  # Combined-response AME (avg_slopes default): the marginal effect on E[Y]
+  # through BOTH components; attaches to the main (count) rows.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .pscl_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
                       ci_level   = ci_level,
                       ci_method  = ci_method,
                       model_id   = model_id,
-                      is_hurdle  = FALSE)
-
+                      is_hurdle  = is_hurdle,
+                      vcov_type  = vcov,
+                      cluster    = cluster)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
+                                          estimator = "CL")
+  }
   new_regression_frame(coefs, info, fit)
 }
 
@@ -204,7 +233,8 @@ as_regression_frame.zeroinfl <- function(fit,
 
 # Build the info list for a hurdle / zeroinfl fit.
 .pscl_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                        model_id, is_hurdle) {
+                        model_id, is_hurdle, vcov_type = "model",
+                        cluster = NULL) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
@@ -237,15 +267,24 @@ as_regression_frame.zeroinfl <- function(fit,
     standardise_refit   = TRUE
   )
 
-  # Stash the zero component coefficients for downstream consumers.
-  smz <- summary(fit)$coefficients$zero
-  zero_coefs <- if (!is.null(smz)) {
-    stats::coef(fit, model = "zero")
+  # The zero component ships as a fully-inferenced component block that the
+  # orchestrator promotes to a labelled subordinate rows block (see
+  # dev/component_blocks_spec.md).
+  #
+  # zero_link: only meaningful when the zero part is a binomial GLM. A hurdle
+  # with a count-type zero.dist (poisson / negbin / geometric right-censored)
+  # has NO link concept on fit$link (it is NULL) -- its zero part lives on the
+  # log scale and must never be labelled "logit".
+  zero_link <- if (identical(zero_dist, "binomial")) {
+    fit$link %||% "logit"
   } else {
-    NULL  # nocov: every valid hurdle/zeroinfl fit carries a zero/inflation
-           # component with at least an intercept, so summary()$coefficients$zero
-           # is never NULL for a real fit.
+    NA_character_
   }
+  component_blocks <- list(
+    .pscl_component_block(fit, is_hurdle, zero_dist, zero_link, ci_level,
+                          vcov_type = vcov_type, cluster = cluster)
+  )
+  component_blocks <- Filter(Negate(is.null), component_blocks)
 
   title_prefix <- if (is_hurdle) {
     paste0(.pscl_dist_title(count_dist), " hurdle regression")
@@ -253,20 +292,24 @@ as_regression_frame.zeroinfl <- function(fit,
     paste0(.pscl_dist_title(count_dist), " zero-inflated regression")
   }
 
+  # has_weights: pscl stores case weights on fit$weights (all-1 when unset).
+  wts <- fit$weights
+  has_weights <- !is.null(wts) && length(wts) > 0L && any(wts != 1)
+
   extras <- list(
     cluster_name          = NULL,
     use_ame_satterthwaite = FALSE,
     has_singular          = FALSE,
     singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
+    has_weights           = has_weights,
+    weighted_n            = if (has_weights) sum(wts) else NA_real_,
     title_prefix          = title_prefix,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     has_zi                = TRUE,
-    zi_coefs              = zero_coefs,
+    component_blocks      = component_blocks,
     zero_dist             = zero_dist,
-    zero_link             = fit$link %||% "logit"
+    zero_link             = zero_link
   )
 
   list(
@@ -297,4 +340,135 @@ as_regression_frame.zeroinfl <- function(fit,
     negbin        = "Negative-binomial",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
+}
+
+
+# Build the zero-component block for a hurdle / zeroinfl fit: a standardised
+# `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
+# promotes to a labelled subordinate rows block. Full Wald inference straight
+# from summary(fit)$coefficients$zero -- no refit. Under a CR* request the SEs
+# come from the zero_* rows of the same whole-model sandwich::vcovCL matrix
+# (estfun covers both components), so the whole table shares one estimator.
+#
+# The labels are per-SEMANTICS (dev/component_blocks_spec.md D1): zeroinfl
+# models P(structural zero) -> "Zero-inflation"; hurdle models P(y > 0) ->
+# "Zero hurdle" (verified numerically == glm(I(y > 0) ~ .) for binomial/logit).
+.pscl_component_block <- function(fit, is_hurdle, zero_dist, zero_link,
+                                  ci_level, vcov_type = "model",
+                                  cluster = NULL) {
+  smz <- summary(fit)$coefficients$zero
+  if (is.null(smz) || nrow(smz) == 0L) return(NULL)                    # nocov
+
+  nm  <- rownames(smz)
+  est <- unname(smz[, "Estimate"])
+  se  <- unname(smz[, "Std. Error"])
+  # Robust: re-infer from the zero_* block of the whole-model cluster sandwich.
+  if (!vcov_type %in% c("model", "classical")) {
+    vc_full <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
+    pref <- paste0("zero_", nm)
+    if (all(pref %in% rownames(vc_full))) {
+      se <- sqrt(diag(as.matrix(vc_full))[pref])
+    }
+  }
+  stat <- est / se
+  p    <- 2 * stats::pnorm(-abs(stat))
+  z    <- stats::qnorm(0.5 + ci_level / 2)
+
+  # Factor metadata for the ZERO component: its terms live on
+  # fit$terms$zero; fit$levels carries the xlevels union of both components.
+  zero_vars <- tryCatch(all.vars(stats::delete.response(fit$terms$zero)),
+                        error = function(e) character(0))
+  xlev <- fit$levels[names(fit$levels) %in% zero_vars]
+  ft  <- rep(NA_character_, length(nm))
+  lvl <- rep(NA_character_, length(nm))
+  pos <- rep(NA_integer_, length(nm))
+  for (i in seq_along(nm)) {
+    meta <- match_coef_to_factor(nm[i], xlev)
+    if (!is.null(meta)) {
+      ft[i]  <- meta$factor_term
+      lvl[i] <- meta$factor_level
+      pos[i] <- meta$factor_level_pos %||% NA_integer_
+    }
+  }
+
+  label_chr <- if (is_hurdle) "Zero hurdle" else "Zero-inflation"
+  rows <- data.frame(
+    term             = paste0("zero_", nm),
+    label            = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
+    factor_level_pos = as.integer(pos),
+    is_ref           = FALSE,
+    estimate         = est,
+    std_error        = se,
+    statistic        = stat,
+    p_value          = p,
+    ci_lower         = est - z * se,
+    ci_upper         = est + z * se,
+    stringsAsFactors = FALSE
+  )
+
+  # Reference rows for zero-component factors (independent of the count side).
+  for (v in names(xlev)) {
+    lvls <- xlev[[v]]
+    present <- lvls[paste0(v, lvls) %in% nm]
+    ref <- setdiff(lvls, present)
+    if (length(ref) == length(lvls)) next   # factor absent from zero coefs   # nocov
+    if (length(ref) >= 1L) {
+      rows <- rbind(rows, data.frame(
+        term             = paste0("zero_", v, ref[1L]),
+        label            = paste0(v, ": ", ref[1L]),
+        factor_level_pos = as.integer(match(ref[1L], lvls)),
+        is_ref           = TRUE,
+        estimate         = NA_real_,
+        std_error        = NA_real_,
+        statistic        = NA_real_,
+        p_value          = NA_real_,
+        ci_lower         = NA_real_,
+        ci_upper         = NA_real_,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+
+  rows <- .order_component_rows(rows, xlev)
+
+  gloss <- if (is_hurdle) {
+    if (identical(zero_dist, "binomial")) {
+      "Zero hurdle component: log-odds of a nonzero count."
+    } else {
+      sprintf(
+        "Zero hurdle component: right-censored %s on the log scale.",
+        zero_dist
+      )
+    }
+  } else {
+    "Zero-inflation component: log-odds of a structural (excess) zero."
+  }
+
+  list(
+    label  = label_chr,
+    link   = zero_link,
+    exp_ok = identical(zero_link, "logit"),
+    gloss  = gloss,
+    coefs  = rows
+  )
+}
+
+
+# Display order for a component block's rows: intercept first, then each
+# factor's rows contiguous with the reference level in its natural `levels()`
+# position, then remaining numeric terms. The appender re-keys
+# factor_level_pos to this sequence and the align layer preserves it
+# (block groups sort by position only).
+.order_component_rows <- function(rows, xlev) {
+  ft_of <- function(lbl) {
+    hit <- regmatches(lbl, regexpr("^[^:]+(?=: )", lbl, perl = TRUE))
+    if (length(hit)) hit else NA_character_
+  }
+  fts <- vapply(rows$label, ft_of, character(1), USE.NAMES = FALSE)
+  fct_order <- unique(fts[!is.na(fts)])
+  key1 <- ifelse(rows$label == "(Intercept)", 0L,
+                 ifelse(is.na(fts), length(fct_order) + 1L,
+                        match(fts, fct_order)))
+  key2 <- ifelse(is.na(rows$factor_level_pos), 0L, rows$factor_level_pos)
+  rows[order(key1, key2), , drop = FALSE]
 }

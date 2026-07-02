@@ -86,6 +86,7 @@ build_regression_footer_from_frames <- function(
                                                    re_test = re_test),
     build_survival_footer_block_from_frames(frames),
     build_ordinal_thresholds_footer_block_from_frames(frames),
+    build_component_blocks_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
     build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
@@ -793,6 +794,110 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     }
   }
   out
+}
+
+
+# Footer glosses for the component blocks: one line per DISTINCT block
+# rendered in the table (gated on is_component rows actually present, so
+# show_components = FALSE prints nothing), naming what each block models and
+# its scale under exponentiate. Plus the glmmTMB robust disclosure: under a
+# CR* request clubSandwich covers the conditional fixed effects only, so the
+# component rows stay model-based -- said explicitly, never silently.
+build_component_blocks_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+
+  lines <- character(0)
+  seen <- character(0)
+  robust_note <- FALSE
+  for (f in frames) {
+    cf <- f$coefs
+    if (is.null(cf$is_component) || !any(cf$is_component %in% TRUE)) next
+    for (blk in f$info$extras$component_blocks %||% list()) {
+      key <- blk$label
+      if (key %in% seen) next
+      seen <- c(seen, key)
+      gl <- blk$gloss
+      if (isTRUE(blk$exp_applied)) {
+        gl <- paste0(
+          gl, " Coefficients exponentiated and displayed as odds ratios."
+        )
+      } else if (isTRUE(f$info$extras$exp_applied) && !isTRUE(blk$exp_ok)) {
+        gl <- paste0(gl, " Left on the link scale (not exponentiated).")
+      }
+      lines <- c(lines, gl)
+    }
+    if (isTRUE(f$info$extras$component_robust_note) &&
+        !f$info$vcov_kind %in% c("model", "classical")) {
+      robust_note <- TRUE
+    }
+  }
+  if (robust_note) {
+    lines <- c(lines, paste0(
+      "Robust SEs apply to the conditional component; zero-inflation / ",
+      "dispersion SEs are model-based."
+    ))
+  }
+  if (length(lines) == 0L) return(NULL)
+  paste(lines, collapse = "\n")
+}
+
+
+# Promote the component blocks (zero-inflation / zero hurdle / dispersion,
+# from info$extras$component_blocks) into coefs rows for labelled subordinate
+# blocks. Called by the table_regression() orchestrator AFTER the central
+# exponentiate (each block applies its OWN link-gated exp -- see below) and
+# BEFORE p_adjust: component coefficients are substantive hypotheses and JOIN
+# the p-adjust family (unlike ordinal thresholds), and their tests carry stars.
+#
+# Per-block exponentiation (dev/component_blocks_spec.md D3): exp only where
+# the result IS an odds ratio -- the logit-link zero components. Probit /
+# cauchit / cloglog zero links, count-type hurdle zero parts (log scale), and
+# the dispersion model are left on the link scale (Stata's `irr` precedent:
+# the inflate equation is never eform'd; parameters mislabels probit as OR --
+# we gate instead). The footer gloss names each block's scale.
+.append_component_rows <- function(coefs, blocks, exponentiate) {
+  if (is.null(blocks) || length(blocks) == 0L) return(coefs)
+  if (is.null(coefs$is_component)) coefs$is_component <- FALSE
+
+  for (blk in blocks) {
+    rows <- blk$coefs
+    if (is.null(rows) || nrow(rows) == 0L) next                        # nocov
+
+    est <- rows$estimate
+    se  <- rows$std_error
+    cil <- rows$ci_lower
+    ciu <- rows$ci_upper
+    if (isTRUE(exponentiate) && isTRUE(blk$exp_ok)) {
+      keep <- !rows$is_ref & !is.na(est)
+      # exp() + Delta-method SE; z / p invariant (H0: B = 0 <-> exp(B) = 1).
+      cil[keep] <- exp(cil[keep])
+      ciu[keep] <- exp(ciu[keep])
+      se[keep]  <- exp(est[keep]) * se[keep]
+      est[keep] <- exp(est[keep])
+    }
+
+    new <- data.frame(
+      term             = rows$term,
+      parent_var       = blk$label,
+      label            = rows$label,
+      factor_level_pos = seq_len(nrow(rows)),
+      is_ref           = rows$is_ref,
+      estimate_type    = "B",
+      estimate         = est,
+      std_error        = se,
+      df               = ifelse(rows$is_ref, NA_real_, Inf),
+      statistic        = rows$statistic,
+      p_value          = rows$p_value,
+      ci_lower         = cil,
+      ci_upper         = ciu,
+      test_type        = ifelse(rows$is_ref, NA_character_, "z"),
+      outcome_level    = NA_character_,
+      is_component     = TRUE,
+      stringsAsFactors = FALSE
+    )
+    coefs <- .rbind_union(coefs, new)
+  }
+  coefs
 }
 
 

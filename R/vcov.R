@@ -110,7 +110,7 @@ compute_model_vcov <- function(
       return(.coxph_cluster_robust_vcov(fit, cluster))
     }
     if (inherits(fit, c("survreg", "gam", "bam", "polr", "clm",
-                        "betareg", "mlogit"))) {
+                        "betareg", "mlogit", "zeroinfl", "hurdle"))) {
       return(sandwich::vcovCL(fit, cluster = cluster))
     }
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
@@ -685,6 +685,11 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     lrm             = cr_only,
     cph             = cr_only,
     Glm             = cr_only,
+    # Two-part count models (pscl): sandwich::estfun / bread work for BOTH
+    # components (verified 2026-07-02), so the CL cluster sandwich covers the
+    # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
+    zeroinfl        = cr_only,
+    hurdle          = cr_only,
     # --- classes whose robust path is wired in later C2 increments go here ---
     "classical"
   )
@@ -788,6 +793,10 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   # the row count off fit$x, which robust SE require to be present anyway.
   if (inherits(fit, c("ols", "lrm", "cph", "Glm")) && !is.null(fit[["x"]])) {
     return(as.integer(NROW(fit[["x"]])))
+  }
+  # pscl two-part models: stats::nobs() has no method; fit$n is the count.
+  if (inherits(fit, c("zeroinfl", "hurdle"))) {
+    return(as.integer(fit$n %||% NA_integer_))
   }
   n <- suppressWarnings(tryCatch(stats::nobs(fit), error = function(e) NA_integer_))
   if (is.null(n) || !is.finite(n)) return(NA_integer_)

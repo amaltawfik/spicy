@@ -19,6 +19,7 @@ table_regression(
   drop = NULL,
   show_intercept = TRUE,
   show_thresholds = TRUE,
+  show_components = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -177,7 +178,27 @@ the log-odds (B) scale and are \strong{never exponentiated} (under
 Has no effect on non-ordinal models, and the rows are shown only
 when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
 
-\item{intercept_position}{Where to place the intercept when
+\item{show_components}{For two-part count models, whether to display
+the non-primary model components as labelled subordinate blocks of
+rows below the (count / conditional) coefficients. Default \code{TRUE}:
+\itemize{
+\item \code{pscl::zeroinfl} and \code{glmmTMB(ziformula = )}: a
+\code{Zero-inflation} block -- the model for the probability of a
+\strong{structural (excess) zero}.
+\item \code{pscl::hurdle}: a \verb{Zero hurdle} block -- the model for the
+probability of a \strong{nonzero count} (note the opposite direction
+vs zero-inflation; the footer names each block's meaning).
+\item \code{glmmTMB(dispformula = )}: a \code{Dispersion} block (only when
+dispersion was actually modelled; log scale, never
+exponentiated).
+}
+Component rows carry full Wald inference (B / SE / z / p / CI),
+join the \code{p_adjust} family, and take significance stars. Under
+\code{exponentiate = TRUE} a component is exponentiated \strong{only when its
+link makes the result an odds ratio} (the logit zero components);
+probit / cauchit / cloglog zero links and count-type hurdle zero
+parts stay on the link scale, disclosed in the footer. \code{FALSE}
+omits the blocks (the title still names the model type).
 shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,
 intercept just above the fit-stats footer). Ignored when
 \code{show_intercept = FALSE} (with \code{spicy_ignored_arg} warning).}

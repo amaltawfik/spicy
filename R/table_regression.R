@@ -458,7 +458,27 @@
 #'   `exponentiate = TRUE` their rows stay on the log-odds scale).
 #'   Has no effect on non-ordinal models, and the rows are shown only
 #'   when a coefficient column (`"b"`/`"beta"`) is in `show_columns`.
-#' @param intercept_position Where to place the intercept when
+#' @param show_components For two-part count models, whether to display
+#'   the non-primary model components as labelled subordinate blocks of
+#'   rows below the (count / conditional) coefficients. Default `TRUE`:
+#'   \itemize{
+#'     \item `pscl::zeroinfl` and `glmmTMB(ziformula = )`: a
+#'       `Zero-inflation` block -- the model for the probability of a
+#'       **structural (excess) zero**.
+#'     \item `pscl::hurdle`: a `Zero hurdle` block -- the model for the
+#'       probability of a **nonzero count** (note the opposite direction
+#'       vs zero-inflation; the footer names each block's meaning).
+#'     \item `glmmTMB(dispformula = )`: a `Dispersion` block (only when
+#'       dispersion was actually modelled; log scale, never
+#'       exponentiated).
+#'   }
+#'   Component rows carry full Wald inference (B / SE / z / p / CI),
+#'   join the `p_adjust` family, and take significance stars. Under
+#'   `exponentiate = TRUE` a component is exponentiated **only when its
+#'   link makes the result an odds ratio** (the logit zero components);
+#'   probit / cauchit / cloglog zero links and count-type hurdle zero
+#'   parts stay on the link scale, disclosed in the footer. `FALSE`
+#'   omits the blocks (the title still names the model type).
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
 #'   `show_intercept = FALSE` (with `spicy_ignored_arg` warning).
@@ -985,6 +1005,7 @@ table_regression <- function(
   drop = NULL,
   show_intercept = TRUE,
   show_thresholds = TRUE,
+  show_components = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -1347,6 +1368,7 @@ table_regression <- function(
   # per-model extraction, and with a spicy_invalid_input class (finding m3).
   # Reused both to materialise the RE rows (in the loop) and by the footer.
   validate_logical_scalar(show_re, "show_re")
+  validate_logical_scalar(show_components, "show_components")
   re_scale_val <- .validate_re_scale(re_scale)
   re_columns_val <- .validate_re_columns(re_columns)
   re_test_val <- .validate_re_test(re_test)
@@ -1500,6 +1522,25 @@ table_regression <- function(
     # can decide without reaching back to the live fit.
     frames[[i]]$info$extras$non_additive <-
       detect_non_additive_terms(models[[i]])
+
+    # Component blocks (zero-inflation / zero hurdle / dispersion) as labelled
+    # subordinate rows blocks. Materialised AFTER the central exponentiate --
+    # each block applies its OWN link-gated exp (logit -> OR; probit /
+    # count-type / dispersion stay on the link scale) -- and BEFORE p_adjust:
+    # component coefficients are substantive hypotheses and join the p-adjust
+    # family (unlike ordinal thresholds).
+    cb_i <- frames[[i]]$info$extras$component_blocks
+    if (isTRUE(show_components) &&
+        "b" %in% show_columns &&
+        !is.null(cb_i) && length(cb_i) > 0L) {
+      frames[[i]]$coefs <- .append_component_rows(
+        frames[[i]]$coefs, cb_i, exponentiate)
+      # Record whether each block's exp actually applied (footer gloss).
+      frames[[i]]$info$extras$component_blocks <- lapply(cb_i, function(b) {
+        b$exp_applied <- isTRUE(exponentiate) && isTRUE(b$exp_ok)
+        b
+      })
+    }
 
     # p_adjust runs per model BEFORE alignment / keep-drop filtering
     # so the family is the model's full coefficient set (intercept

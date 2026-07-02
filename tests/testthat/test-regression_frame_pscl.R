@@ -127,13 +127,19 @@ test_that("hurdle: supports$exponentiate = TRUE (IRR for log link)", {
 
 # ---- 5. hurdle: zero component in extras ---------------------------------
 
-test_that("hurdle: info$extras$has_zi = TRUE; zi_coefs populated", {
+test_that("hurdle: info$extras$has_zi = TRUE; component block populated", {
   fit <- .fit_hurdle_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_true(fr$info$extras$has_zi)
-  expect_true(is.numeric(fr$info$extras$zi_coefs))
-  expect_identical(names(fr$info$extras$zi_coefs),
-                   names(stats::coef(fit, model = "zero")))
+  blocks <- fr$info$extras$component_blocks
+  expect_true(is.list(blocks) && length(blocks) == 1L)
+  blk <- blocks[[1L]]
+  expect_identical(blk$label, "Zero hurdle")
+  # one fully-inferenced row per zero coefficient, zero_-prefixed terms
+  zc <- stats::coef(fit, model = "zero")
+  non_ref <- blk$coefs[!blk$coefs$is_ref, , drop = FALSE]
+  expect_setequal(non_ref$term, paste0("zero_", names(zc)))
+  expect_true(all(is.finite(non_ref$std_error)))
 })
 
 test_that("hurdle: zero_dist + zero_link surfaced", {

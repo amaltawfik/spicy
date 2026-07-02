@@ -254,12 +254,41 @@ as_regression_frame.glmmTMB <- function(fit,
     standardise_refit   = TRUE
   )
 
-  # Zero-inflation / dispersion fixed-effect coefficients stashed for
-  # downstream consumers. NULL when the corresponding formula was empty.
+  # Zero-inflation / dispersion components ship as fully-inferenced component
+  # blocks the orchestrator promotes to labelled subordinate row blocks (see
+  # dev/component_blocks_spec.md). The zi link is ALWAYS logit (verified:
+  # plogis(X zi-coefs) == predict(type = "zprob")); the dispersion model is on
+  # the log scale and is never exponentiated (parameters precedent).
   ff_all <- glmmTMB::fixef(fit)
-  zi_coefs   <- if (length(ff_all$zi)   > 0L) ff_all$zi   else NULL
-  disp_coefs <- if (length(ff_all$disp) > 0L) ff_all$disp else NULL
-  has_zi <- !is.null(zi_coefs)
+  has_zi <- length(ff_all$zi) > 0L
+  component_blocks <- list()
+  if (has_zi) {
+    component_blocks[[length(component_blocks) + 1L]] <-
+      .glmmTMB_component_block(
+        fit, component = "zi", label = "Zero-inflation", link = "logit",
+        exp_ok = TRUE,
+        gloss = "Zero-inflation component: log-odds of a structural (excess) zero.",
+        ci_level = ci_level
+      )
+  }
+  # The Dispersion block appears only when the user MODELLED dispersion:
+  # fixef()$disp is non-empty for any family with a free dispersion parameter
+  # even at the default `dispformula = ~ 1` (a bare log-dispersion intercept,
+  # not a model worth a block). Gate on the formula having variables -- the
+  # .nakagawa_components_glmmTMB() precedent.
+  disp_form <- tryCatch(stats::formula(fit, component = "disp"),
+                        error = function(e) NULL)
+  has_disp_model <- !is.null(disp_form) && length(all.vars(disp_form)) > 0L
+  if (has_disp_model && length(ff_all$disp) > 0L) {
+    component_blocks[[length(component_blocks) + 1L]] <-
+      .glmmTMB_component_block(
+        fit, component = "disp", label = "Dispersion", link = "log",
+        exp_ok = FALSE,
+        gloss = "Dispersion component: log scale.",
+        ci_level = ci_level
+      )
+  }
+  component_blocks <- Filter(Negate(is.null), component_blocks)
 
   extras <- list(
     cluster_name          = NULL,
@@ -271,9 +300,13 @@ as_regression_frame.glmmTMB <- function(fit,
     title_prefix          = .glmmTMB_title_prefix(fam, has_zi),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    zi_coefs              = zi_coefs,
-    disp_coefs            = disp_coefs,
-    has_zi                = has_zi
+    component_blocks      = component_blocks,
+    has_zi                = has_zi,
+    # Under a robust (CR*) request clubSandwich covers the CONDITIONAL fixed
+    # effects only; the zi/disp rows stay model-based. Consumed by the footer
+    # for an explicit disclosure.
+    component_robust_note = length(component_blocks) > 0L &&
+      !vcov_kind %in% c("model", "classical")
   )
 
   list(
@@ -299,6 +332,95 @@ as_regression_frame.glmmTMB <- function(fit,
 .glmmTMB_family_info <- function(fit) {
   fam <- stats::family(fit)
   list(family = fam$family, link = fam$link)
+}
+
+
+# Build one component block (zi / disp) for a glmmTMB fit: a standardised
+# `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
+# promotes to a labelled subordinate rows block. Full Wald inference straight
+# from summary(fit)$coefficients[[component]] -- no refit. Terms are
+# "<component>."-prefixed for uniqueness against the conditional rows
+# (matching glmmTMB's own confint() rownames convention).
+.glmmTMB_component_block <- function(fit, component, label, link, exp_ok,
+                                     gloss, ci_level) {
+  sm <- tryCatch(summary(fit)$coefficients[[component]],
+                 error = function(e) NULL)
+  if (is.null(sm) || nrow(sm) == 0L) return(NULL)                      # nocov
+
+  nm   <- rownames(sm)
+  est  <- unname(sm[, "Estimate"])
+  se   <- unname(sm[, "Std. Error"])
+  stat <- unname(sm[, "z value"])
+  p    <- unname(sm[, "Pr(>|z|)"])
+  z    <- stats::qnorm(0.5 + ci_level / 2)
+
+  # Factor metadata for this component: variables come from the component's
+  # own formula; factor levels from the (shared) model frame.
+  comp_form <- tryCatch(
+    stats::formula(fit, component = if (identical(component, "zi")) "zi" else "disp"),
+    error = function(e) NULL
+  )
+  comp_vars <- if (!is.null(comp_form)) all.vars(comp_form) else character(0)
+  mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  xlev <- list()
+  if (!is.null(mf)) {
+    for (v in intersect(comp_vars, names(mf))) {
+      if (is.factor(mf[[v]])) xlev[[v]] <- levels(mf[[v]])
+    }
+  }
+  ft  <- rep(NA_character_, length(nm))
+  lvl <- rep(NA_character_, length(nm))
+  pos <- rep(NA_integer_, length(nm))
+  for (i in seq_along(nm)) {
+    meta <- match_coef_to_factor(nm[i], xlev)
+    if (!is.null(meta)) {
+      ft[i]  <- meta$factor_term
+      lvl[i] <- meta$factor_level
+      pos[i] <- meta$factor_level_pos %||% NA_integer_
+    }
+  }
+
+  rows <- data.frame(
+    term             = paste0(component, ".", nm),
+    label            = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
+    factor_level_pos = as.integer(pos),
+    is_ref           = FALSE,
+    estimate         = est,
+    std_error        = se,
+    statistic        = stat,
+    p_value          = p,
+    ci_lower         = est - z * se,
+    ci_upper         = est + z * se,
+    stringsAsFactors = FALSE
+  )
+
+  # Reference rows for this component's factors.
+  for (v in names(xlev)) {
+    lvls <- xlev[[v]]
+    present <- lvls[paste0(v, lvls) %in% nm]
+    ref <- setdiff(lvls, present)
+    if (length(ref) == length(lvls)) next                              # nocov
+    if (length(ref) >= 1L) {
+      rows <- rbind(rows, data.frame(
+        term             = paste0(component, ".", v, ref[1L]),
+        label            = paste0(v, ": ", ref[1L]),
+        factor_level_pos = as.integer(match(ref[1L], lvls)),
+        is_ref           = TRUE,
+        estimate         = NA_real_,
+        std_error        = NA_real_,
+        statistic        = NA_real_,
+        p_value          = NA_real_,
+        ci_lower         = NA_real_,
+        ci_upper         = NA_real_,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+
+  rows <- .order_component_rows(rows, xlev)
+
+  list(label = label, link = link, exp_ok = exp_ok, gloss = gloss,
+       coefs = rows)
 }
 
 

@@ -90,6 +90,12 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   if (identical(family_name, "negbin") && identical(link_name, "log")) {
     return("IRR")    # negative-binomial rate ratio (fixest / pscl)
   }
+  if (family_name %in% c("nbinom1", "nbinom2", "truncated_poisson",
+                         "truncated_nbinom1", "truncated_nbinom2",
+                         "genpois", "compois") &&
+      identical(link_name, "log")) {
+    return("IRR")    # glmmTMB count families (log link)
+  }
   if (grepl("^Negative Binomial", family_name) && identical(link_name, "log")) {
     return("IRR")    # MASS::glm.nb family string is "Negative Binomial(theta)"
   }
