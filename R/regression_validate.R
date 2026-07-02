@@ -350,6 +350,38 @@ validate_nested_alignment <- function(models, nested) {
 validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   n_models <- length(models)
 
+  # Forgot `list()`? `table_regression(m1, m2)` binds the second model
+  # to `vcov`; lm-like objects ARE lists, so the generic length check
+  # below would emit a baffling "`vcov` is a list of length 12" error.
+  # Catch any classed non-character object here and name the likely
+  # cause.
+  if (is.object(vcov) && !is.character(vcov)) {
+    hint <- if (!is.atomic(vcov)) {
+      c(
+        "i" = paste0(
+          "A model object here usually means a forgotten `list()`: ",
+          "`table_regression(m1, m2)` binds the second model to `vcov`."
+        ),
+        "i" = "Wrap the models instead: `table_regression(list(m1, m2))`."
+      )
+    } else {
+      c("i" = paste0(
+          "Pass a single string (\"classical\", \"HC3\", ...) or a ",
+          "list of strings."
+        ))
+    }
+    spicy_abort(
+      c(
+        sprintf(
+          "`vcov` must be a string or a list of strings, not a `%s` object.",
+          class(vcov)[1]
+        ),
+        hint
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   # Canonical vcov vocabulary (Q7). Validated upfront so an unknown
   # type is caught with a clear error instead of letting `sandwich` /
   # `clubSandwich` warn-and-fallback at compute time.

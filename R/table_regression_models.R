@@ -39,14 +39,14 @@
     c("Mixed effects",                 "gls",      "nlme::gls()",              "yes", "-",                    "-"),
     c("Ordinal",                       "polr",     "MASS::polr()",             "per category", "OR (logit)", "Thresholds"),
     c("Ordinal",                       "clm",      "ordinal::clm()",           "per category", "OR (logit)", "Thresholds; Non-proportional effects"),
-    c("Categorical",                   "multinom", "nnet::multinom()",         "per outcome",  "RRR",        "per-outcome blocks"),
+    c("Categorical",                   "multinom", "nnet::multinom()",         "per outcome",  "OR",         "per-outcome blocks"),
     c("Categorical",                   "mlogit",   "mlogit::mlogit()",         "no",  "OR",                  "per-alternative rows"),
     c("Counts, two-part",              "zeroinfl", "pscl::zeroinfl()",         "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero-inflation"),
     c("Counts, two-part",              "hurdle",   "pscl::hurdle()",           "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero hurdle"),
     c("Survival",                      "coxph",    "survival::coxph()",        "no",  "HR",                  "-"),
     c("Survival",                      "survreg",  "survival::survreg()",      "yes", "TR (log-scale distributions)","-"),
     c("Survival",                      "cph",      "rms::cph()",               "no",  "HR",                  "-"),
-    c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg()", "yes", "TR / HR (dist)",    "distribution parameters"),
+    c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg()", "no",  "TR / HR (dist)",    "distribution parameters"),
     c("Survey-weighted",               "svyglm",   "survey::svyglm()",         "yes (design-based)", "OR / IRR", "-"),
     c("Additive, proportions, selection", "gam",   "mgcv::gam(), mgcv::bam()",        "yes", "OR / IRR (link)",     "-"),
     c("Additive, proportions, selection", "betareg", "betareg::betareg()",     "yes", "OR (mean link)",      "-"),
@@ -54,8 +54,8 @@
     c("rms",                           "ols",      "rms::ols()",               "yes", "-",                    "-"),
     c("rms",                           "lrm",      "rms::lrm()",               "yes", "OR",                   "-"),
     c("rms",                           "Glm",      "rms::Glm()",               "yes", "link-dependent",       "-"),
-    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "yes", "link-dependent", "Random effects (if multilevel)"),
-    c("Bayesian",                      "brmsfit",  "brms::brm()",              "yes", "link-dependent",       "Random effects (if multilevel)")
+    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "no",  "link-dependent", "Random effects (if multilevel)"),
+    c("Bayesian",                      "brmsfit",  "brms::brm()",              "no",  "link-dependent",       "Random effects (if multilevel)")
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   names(out) <- c("family", "class", "engine", "ame", "exponentiate",
@@ -119,7 +119,7 @@
 #'     supported set -- never silently ignored; the footer always names the
 #'     estimator actually applied.
 #'   \item `exponentiate = TRUE` is link-gated: it produces a labelled ratio
-#'     (OR / IRR / HR / RR / MR / RRR / TR) only where the link warrants
+#'     (OR / IRR / HR / RR / MR / TR) only where the link warrants
 #'     one. Identity-link fits warn and are left untouched; non-ratio
 #'     links (probit, cauchit, inverse, ...) are **refused with a clear
 #'     error** -- never silently exponentiated.
@@ -167,7 +167,11 @@
 #'
 #' @section Categorical outcomes:
 #' `multinom` renders per non-reference outcome; `exponentiate` yields
-#' relative-risk ratios (RRR); AME is per-outcome. `mlogit` renders
+#' odds ratios of each outcome against the reference outcome -- the
+#' baseline-category logits are log-odds (Agresti; SAS prints
+#' "Odds Ratio Estimates" under its generalized-logit link; Stata's `mlogit, rrr` labels
+#' the same quantity a relative-risk ratio). AME is per-outcome.
+#' `mlogit` renders
 #' per-alternative rows; AME is refused (no `slopes()` method exists for
 #' its data format); `HC*` and `CR*` are available.
 #'

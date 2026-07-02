@@ -192,7 +192,9 @@ test_that("brmsfit: supports flags reflect Bayesian conventions", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   sp <- fr$info$supports
-  expect_true(sp$ame)
+  # AME refused until a draws-based Bayesian design exists (finding M2:
+  # TRUE here rendered an entirely empty column).
+  expect_false(sp$ame)
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_false(sp$nested_lrt)

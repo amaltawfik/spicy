@@ -1726,6 +1726,38 @@ table_regression <- function(
     }
   }
 
+  # AME capability guard (finding M2): a class with no
+  # average-marginal-effects backend (supports$ame = FALSE: mlogit, coxph,
+  # flexsurv, selection, nls, Bayesian) must REFUSE the request rather
+  # than render an entirely empty column. In mixed tables where at least
+  # one model can produce AME, the capable models populate their columns
+  # and the incapable ones em-dash -- so only the all-incapable case
+  # errors.
+  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
+    ame_ok <- vapply(frames, function(fr) {
+      isTRUE(fr$info$supports$ame)
+    }, logical(1))
+    if (!any(ame_ok)) {
+      classes <- unique(vapply(frames, function(fr) {
+        fr$info$class %||% "?"
+      }, character(1)))
+      spicy_abort(
+        c(
+          sprintf(
+            "AME columns are not available for %s.",
+            paste0("`", classes, "`", collapse = " / ")
+          ),
+          "i" = paste0(
+            "No average-marginal-effects backend exists for this class ",
+            "(see ?table_regression_models, column AME)."
+          ),
+          "i" = "Drop the AME token(s) from `show_columns`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   # `exponentiate = TRUE` no-op detection (relocated from before extraction):
   # now that every frame is built, warn only when NO model actually applied
   # exp() -- i.e. every link is identity or otherwise non-exponentiable. Keyed

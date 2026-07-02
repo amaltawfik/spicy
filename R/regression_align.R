@@ -188,6 +188,21 @@ align_frames <- function(
   }, character(1))
   names(exp_headers_auto) <- model_ids
 
+  # Per-model statistic-column header: the "t" TOKEN is API-stable, but
+  # the displayed header follows the model's actual reference
+  # distribution (coefs$test_type on the B rows): "z" for z-asymptotic
+  # classes (glm, cox, ordinal, glmmTMB, resampling vcov), "t" for
+  # t-referenced ones (lm, lmer-Satterthwaite). Stata prints z for logit
+  # and t for regress; a hardcoded "t" header over z statistics
+  # mislabels the column.
+  stat_headers_auto <- vapply(frames, function(f) {
+    tt <- unique(f$coefs$test_type[f$coefs$estimate_type == "B" &
+                                     !f$coefs$is_ref])
+    tt <- tt[!is.na(tt)]
+    if (length(tt) == 1L && tt %in% c("t", "z")) tt else NA_character_
+  }, character(1))
+  names(stat_headers_auto) <- model_ids
+
   # Raw per-model grouping-factor counts (named integer vectors; NULL for
   # non-mixed models). Read by the fit-stat builders so the `n_groups` row
   # can carry a dynamic label ("N (Subject)") + numeric counts when every
@@ -203,6 +218,7 @@ align_frames <- function(
     factor_ref_levels = factor_ref_levels,
     outcome_labels_auto = outcome_labels_auto,
     exp_headers_auto = exp_headers_auto,
+    stat_headers_auto = stat_headers_auto,
     model_ids = model_ids,
     n_models = length(frames),
     n_groups_by_model = n_groups_by_model

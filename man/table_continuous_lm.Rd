@@ -605,8 +605,10 @@ Supplying \code{cluster} switches both to their cluster-aware variants
 leave-one-cluster-out jackknife). The number of bootstrap replicates
 is controlled by \code{boot_n} (default \code{1000}); replicates that fail to
 fit on rank-deficient resamples are dropped, with an explicit warning
-if more than half fail and a fallback to the classical OLS variance
-below 10 valid replicates. Inference for both estimators is
+if more than half fail. Fewer than 10 valid bootstrap replicates (or
+fewer than 2 jackknife leave-outs) raises \code{spicy_resampling_failed}
+rather than silently reporting a different variance estimator.
+Inference for both estimators is
 asymptotic (\code{z} for single-coefficient contrasts, \code{chi^2(q)} for the
 multi-coefficient global Wald test on \code{k > 2} categorical
 predictors), reflected in the displayed test header. Use the

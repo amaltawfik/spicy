@@ -154,3 +154,23 @@ test_that("standardized = 'posthoc' on mixed warns + falls back to refit", {
   )
   expect_true("beta" %in% fr$coefs$estimate_type)
 })
+
+test_that("M1: beta rows inherit the B rows' Satterthwaite reference (lmerTest)", {
+  skip_if_not_installed("lmerTest")
+  fit <- lmerTest::lmer(Reaction ~ Days + (1 | Subject),
+                        data = lme4::sleepstudy)
+  fr <- as_regression_frame(fit, standardized = "refit",
+                            show_columns = c("b", "beta", "p"))
+  cf <- fr$coefs
+  b  <- cf[cf$term == "Days" & cf$estimate_type == "B", ]
+  be <- cf[cf$term == "Days" & cf$estimate_type == "beta", ]
+  # Was: beta carried Wald z (df = Inf) next to B's Satterthwaite t --
+  # same statistic, different p in the same table.
+  expect_identical(be$test_type, "t")
+  expect_equal(be$df, b$df, tolerance = 1e-6)
+  expect_equal(be$p_value, b$p_value, tolerance = 1e-6)
+  # CI rebuilt from the t critical value
+  crit <- qt(0.975, df = be$df)
+  expect_equal(be$ci_lower, be$estimate - crit * be$std_error,
+               tolerance = 1e-10)
+})

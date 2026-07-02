@@ -146,3 +146,43 @@ test_that("component blocks stay stricter than the main gate (zeroinfl probit ze
   out <- table_regression(fit, exponentiate = TRUE)
   expect_true("IRR" %in% names(out))
 })
+
+# ---- flexsurv: dist-aware location link + anc guard (audit follow-up) ------
+
+test_that("flexsurvspline(scale = 'normal') is refused by the gate", {
+  skip_if_not_installed("flexsurv")
+  library(survival)
+  fit <- flexsurv::flexsurvspline(Surv(futime, fustat) ~ age,
+                                  data = ovarian, k = 1, scale = "normal")
+  err <- .gate_err(table_regression(fit, exponentiate = TRUE))
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "probit", fixed = TRUE)
+  # without exponentiate: renders fine
+  expect_s3_class(table_regression(fit), "spicy_regression_table")
+})
+
+test_that("flexsurvspline hazard/odds scales and built-in dists still exponentiate", {
+  skip_if_not_installed("flexsurv")
+  library(survival)
+  f_h <- flexsurv::flexsurvspline(Surv(futime, fustat) ~ age,
+                                  data = ovarian, k = 1, scale = "hazard")
+  expect_s3_class(table_regression(f_h, exponentiate = TRUE),
+                  "spicy_regression_table")
+  f_w <- flexsurv::flexsurvreg(Surv(futime, fustat) ~ age,
+                               data = ovarian, dist = "weibull")
+  expect_s3_class(table_regression(f_w, exponentiate = TRUE),
+                  "spicy_regression_table")
+})
+
+test_that("flexsurv anc covariates + exponentiate are refused (identity-scale rows)", {
+  skip_if_not_installed("flexsurv")
+  library(survival)
+  # Was: the Gompertz shape(rx) row exponentiated to '1.00 [1.00, 1.00]'.
+  fit <- flexsurv::flexsurvreg(Surv(futime, fustat) ~ age,
+                               anc = list(shape = ~ rx),
+                               data = ovarian, dist = "gompertz")
+  err <- .gate_err(table_regression(fit, exponentiate = TRUE))
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "ancillary", fixed = TRUE)
+  expect_s3_class(table_regression(fit), "spicy_regression_table")
+})

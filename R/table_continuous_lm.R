@@ -508,8 +508,10 @@
 #' leave-one-cluster-out jackknife). The number of bootstrap replicates
 #' is controlled by `boot_n` (default `1000`); replicates that fail to
 #' fit on rank-deficient resamples are dropped, with an explicit warning
-#' if more than half fail and a fallback to the classical OLS variance
-#' below 10 valid replicates. Inference for both estimators is
+#' if more than half fail. Fewer than 10 valid bootstrap replicates (or
+#' fewer than 2 jackknife leave-outs) raises `spicy_resampling_failed`
+#' rather than silently reporting a different variance estimator.
+#' Inference for both estimators is
 #' asymptotic (`z` for single-coefficient contrasts, `chi^2(q)` for the
 #' multi-coefficient global Wald test on `k > 2` categorical
 #' predictors), reflected in the displayed test header. Use the

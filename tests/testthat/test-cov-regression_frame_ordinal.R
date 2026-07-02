@@ -306,3 +306,19 @@ test_that("ordered (polynomial-contrast) predictor also skips ref rows in clm", 
   rr <- spicy:::.ordinal_reference_rows(fit)
   expect_identical(nrow(rr), 0L)
 })
+
+test_that("has_weights detects non-uniform prior weights for polr AND clm", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("ordinal")
+  data(housing, package = "MASS")
+  # Neither class stores $weights; the previous polr check was always
+  # FALSE and clm hardcoded FALSE.
+  p_w  <- MASS::polr(Sat ~ Infl, weights = Freq, data = housing, Hess = TRUE)
+  p_nw <- MASS::polr(Sat ~ Infl, data = housing, Hess = TRUE)
+  c_w  <- ordinal::clm(Sat ~ Infl, weights = Freq, data = housing)
+  c_nw <- ordinal::clm(Sat ~ Infl, data = housing)
+  expect_true(as_regression_frame(p_w)$info$extras$has_weights)
+  expect_false(as_regression_frame(p_nw)$info$extras$has_weights)
+  expect_true(as_regression_frame(c_w)$info$extras$has_weights)
+  expect_false(as_regression_frame(c_nw)$info$extras$has_weights)
+})

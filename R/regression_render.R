@@ -154,6 +154,7 @@ render_regression_table <- function(
     show_columns, model_ids, label_map,
     ci_level = ci_level,
     model_exp_headers = aligned$exp_headers_auto,
+    model_stat_headers = aligned$stat_headers_auto,
     ame_categories = ame_cats_by_model
   )
 
@@ -451,10 +452,17 @@ build_model_spanners <- function(body, col_spec, label_map) {
 build_column_spec <- function(show_columns, model_ids, label_map,
                               ci_level = 0.95,
                               model_exp_headers = NULL,
+                              model_stat_headers = NULL,
                               ame_categories = NULL) {
   ci_pct <- formatC(ci_level * 100, format = "g")
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
+      rep(NA_character_, length(model_ids)),
+      model_ids
+    )
+  }
+  if (is.null(model_stat_headers)) {
+    model_stat_headers <- setNames(
       rep(NA_character_, length(model_ids)),
       model_ids
     )
@@ -535,14 +543,21 @@ build_column_spec <- function(show_columns, model_ids, label_map,
   for (m_id in model_ids) {
     m_lbl <- label_map[[m_id]]
     exp_hdr <- model_exp_headers[[m_id]]
+    stat_hdr <- model_stat_headers[[m_id]]
     for (tk in show_columns) {
       desc <- base[[tk]]
       if (is.null(desc)) next
       # Per-model B-header rebrand under exponentiate (Step 2 / glm).
+      # Per-model statistic header: the "t" token displays the model's
+      # actual reference distribution ("z" for z-asymptotic classes).
       header_short <- if (identical(tk, "b") &&
                             !is.na(exp_hdr) &&
                             nzchar(exp_hdr)) {
         exp_hdr
+      } else if (identical(tk, "t") &&
+                   !is.na(stat_hdr) &&
+                   nzchar(stat_hdr)) {
+        stat_hdr
       } else {
         desc$header_short
       }

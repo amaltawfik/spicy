@@ -56,14 +56,14 @@ supported set. Feature requests are welcome on the issue tracker.
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
    Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \cr
    Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
-   Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab RRR \tab per-outcome blocks \cr
+   Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab OR \tab per-outcome blocks \cr
    Categorical \tab \code{mlogit} \tab \code{mlogit::mlogit()} \tab no \tab OR \tab per-alternative rows \cr
    Counts, two-part \tab \code{zeroinfl} \tab \code{pscl::zeroinfl()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero-inflation \cr
    Counts, two-part \tab \code{hurdle} \tab \code{pscl::hurdle()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero hurdle \cr
    Survival \tab \code{coxph} \tab \code{survival::coxph()} \tab no \tab HR \tab - \cr
    Survival \tab \code{survreg} \tab \code{survival::survreg()} \tab yes \tab TR (log-scale distributions) \tab - \cr
    Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \cr
-   Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab yes \tab TR / HR (dist) \tab distribution parameters \cr
+   Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab no \tab TR / HR (dist) \tab distribution parameters \cr
    Survey-weighted \tab \code{svyglm} \tab \code{survey::svyglm()} \tab yes (design-based) \tab OR / IRR \tab - \cr
    Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \cr
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \cr
@@ -71,8 +71,8 @@ supported set. Feature requests are welcome on the issue tracker.
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \cr
    rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes \tab OR \tab - \cr
    rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \cr
-   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
-   Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
+   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab no \tab link-dependent \tab Random effects (if multilevel) \cr
+   Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab no \tab link-dependent \tab Random effects (if multilevel) \cr
 }
 }
 
@@ -84,7 +84,7 @@ field-standard backend, or \strong{refused with a clear error} naming the
 supported set -- never silently ignored; the footer always names the
 estimator actually applied.
 \item \code{exponentiate = TRUE} is link-gated: it produces a labelled ratio
-(OR / IRR / HR / RR / MR / RRR / TR) only where the link warrants
+(OR / IRR / HR / RR / MR / TR) only where the link warrants
 one. Identity-link fits warn and are left untouched; non-ratio
 links (probit, cauchit, inverse, ...) are \strong{refused with a clear
 error} -- never silently exponentiated.
@@ -140,7 +140,11 @@ via \code{sandwich::vcovCL()}. Opt out with \code{show_components = FALSE}.
 \section{Categorical outcomes}{
 
 \code{multinom} renders per non-reference outcome; \code{exponentiate} yields
-relative-risk ratios (RRR); AME is per-outcome. \code{mlogit} renders
+odds ratios of each outcome against the reference outcome -- the
+baseline-category logits are log-odds (Agresti; SAS prints
+"Odds Ratio Estimates" under its generalized-logit link; Stata's \verb{mlogit, rrr} labels
+the same quantity a relative-risk ratio). AME is per-outcome.
+\code{mlogit} renders
 per-alternative rows; AME is refused (no \code{slopes()} method exists for
 its data format); \verb{HC*} and \verb{CR*} are available.
 }

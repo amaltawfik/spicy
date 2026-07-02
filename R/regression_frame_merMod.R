@@ -109,6 +109,8 @@ as_regression_frame.lmerModLmerTest <- function(fit, ...) {
 as_regression_frame.glmerMod <- function(fit,
                                           vcov = "model",
                                           vcov_label = NULL,
+                                          cluster = NULL,
+                                          cluster_name = NULL,
                                           ci_level = 0.95,
                                           ci_method = NULL,
                                           show_columns = character(0),
@@ -119,6 +121,9 @@ as_regression_frame.glmerMod <- function(fit,
   .check_lme4_available()
 
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = TRUE)
+  # `cluster` was previously not a formal here: the lazily-evaluated
+  # `cluster = cluster` resolved OUTSIDE the function (benign only
+  # because robust vcov is refused upstream for glmer).
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
                                       vcov_type = vcov, cluster = cluster)
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)

@@ -339,7 +339,7 @@ as_regression_frame.clm <- function(fit,
     use_ame_satterthwaite = FALSE,
     has_singular          = FALSE,
     singular_terms        = character(0),
-    has_weights           = !is.null(fit$weights) && length(fit$weights) > 0L,
+    has_weights           = .ordinal_has_weights(fit),
     weighted_n            = NA_real_,
     title_prefix          = paste0(.polr_link_title(link),
                                     " regression (proportional odds)"),
@@ -585,7 +585,7 @@ as_regression_frame.clm <- function(fit,
     use_ame_satterthwaite = FALSE,
     has_singular          = FALSE,
     singular_terms        = character(0),
-    has_weights           = FALSE,
+    has_weights           = .ordinal_has_weights(fit),
     weighted_n            = NA_real_,
     title_prefix          = paste0(
       .clm_link_title(link), " regression (",
@@ -796,4 +796,16 @@ as_regression_frame.clm <- function(fit,
   }
   if (length(rows) == 0L) return(.empty_coefs_frame())
   do.call(rbind, rows)
+}
+
+
+# Non-trivial prior weights for polr / clm. Neither class stores a
+# `$weights` component (the previous polr check `!is.null(fit$weights)`
+# was therefore always FALSE, and clm hardcoded FALSE); the weights live
+# in the model frame's "(weights)" column. Mirrors the lm convention:
+# has_weights means NON-UNIFORM weights.
+.ordinal_has_weights <- function(fit) {
+  w <- tryCatch(stats::model.weights(stats::model.frame(fit)),
+                error = function(e) NULL)
+  !is.null(w) && length(unique(w)) > 1L
 }

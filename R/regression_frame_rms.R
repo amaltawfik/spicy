@@ -45,6 +45,7 @@ as_regression_frame.ols <- function(fit,
                                      cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
+                                     show_columns = character(0),
                                      model_id = "M1",
                                      ...) {
   .check_rms_available()
@@ -56,6 +57,10 @@ as_regression_frame.ols <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "t",
                                        estimates = .rms_coef_named(fit))
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -84,6 +89,7 @@ as_regression_frame.lrm <- function(fit,
                                      cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
+                                     show_columns = character(0),
                                      model_id = "M1",
                                      ...) {
   .check_rms_available()
@@ -93,6 +99,10 @@ as_regression_frame.lrm <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z",
                                        estimates = .rms_coef_named(fit))
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,
@@ -159,6 +169,7 @@ as_regression_frame.Glm <- function(fit,
                                      cluster_name = NULL,
                                      ci_level = 0.95,
                                      ci_method = NULL,
+                                     show_columns = character(0),
                                      model_id = "M1",
                                      ...) {
   .check_rms_available()
@@ -168,6 +179,18 @@ as_regression_frame.Glm <- function(fit,
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z",
                                        estimates = .rms_coef_named(fit))
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured. marginaleffects has no
+  # rms::Glm support (rms's predict.Glm rejects the glm-style
+  # type = "response"), but a Glm object carries the full stats::glm
+  # components, so demoting the class hands avg_slopes() the native glm
+  # path -- same fit, same coefficients, same model-based vcov
+  # (oracle-checked against stats::glm on the same data).
+  fit_for_ame <- fit
+  class(fit_for_ame) <- setdiff(class(fit_for_ame), c("Glm", "rms"))
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit_for_ame, ci_level,
+                                      show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .rms_info(fit,
                      vcov_kind  = vcov,
                      vcov_label = vcov_label,

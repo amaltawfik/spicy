@@ -29,9 +29,29 @@ as_regression_frame.flexsurvreg <- function(fit,
                                              vcov_label = NULL,
                                              ci_level = 0.95,
                                              ci_method = NULL,
+                                             exponentiate = FALSE,
                                              model_id = "M1",
                                              ...) {
   .check_flexsurv_available()
+
+  # Covariates on ancillary parameters (anc = list(shape = ~x, ...)) act
+  # on the ancillary parameter's own scale -- identity for e.g. the
+  # Gompertz shape -- so exponentiating them alongside the location
+  # coefficients would print meaningless "ratios" (a 1.00 [1.00, 1.00]
+  # row). Refuse rather than mislabel (G1 policy).
+  if (isTRUE(exponentiate) && .flexsurv_has_anc_covariates(fit)) {
+    spicy_abort(
+      c(
+        paste0("`exponentiate = TRUE` is not available for `flexsurvreg` ",
+               "fits with covariates on ancillary parameters (`anc =`)."),
+        "i" = paste0("Ancillary coefficients act on their own parameter ",
+                     "scales; exponentiating them would mislabel the ",
+                     "estimates."),
+        "i" = "Drop `exponentiate = TRUE` to report link-scale coefficients."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
 
   coefs <- .flexsurv_coefs(fit, ci_level = ci_level)
   info  <- .flexsurv_info(fit,
@@ -173,6 +193,39 @@ as_regression_frame.flexsurvreg <- function(fit,
 }
 
 
+# TRUE when covariates model an ANCILLARY parameter (anc = list(...)):
+# fit$mx maps each distribution parameter to its covariate columns; any
+# non-location entry with columns means anc covariates are present.
+.flexsurv_has_anc_covariates <- function(fit) {
+  mx <- fit$mx %||% list()
+  if (length(mx) == 0L) return(FALSE)
+  loc <- fit$dlist$location %||% character(0)
+  anc <- mx[setdiff(names(mx), loc)]
+  any(vapply(anc, length, integer(1)) > 0L)
+}
+
+
+# Scale of the LOCATION parameter, for the G1 exponentiate gate. Every
+# built-in parametric dist places its location on a log scale (exp(B)
+# is a genuine time / hazard ratio). flexsurvspline depends on its
+# `scale`: "hazard" and "odds" locations are log-cumulative-hazard /
+# log-cumulative-odds (exp(B) is a ratio), but "normal" is a
+# probit-like scale whose exp(B) has no estimand -- returning "probit"
+# routes it into the existing G1 hard error.
+.flexsurv_location_link <- function(fit, dist_clean) {
+  if (grepl("^survspline", dist_clean)) {
+    sc <- fit$aux$scale %||% fit$scale %||% "hazard"
+    return(switch(sc,
+      hazard = "log",
+      odds   = "log",
+      normal = "probit",
+      "log"
+    ))
+  }
+  "log"
+}
+
+
 .flexsurv_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
   dv <- tryCatch(deparse1(stats::formula(fit)[[2L]]),
                  error = function(e) all.vars(stats::formula(fit))[1L])
@@ -181,7 +234,11 @@ as_regression_frame.flexsurvreg <- function(fit,
   dist <- fit$dlist$name %||% "weibull"
   # flexsurv suffixes some dist names with ".quiet"; strip for display.
   dist_clean <- sub("\\.quiet$", "", dist)
-  fam <- list(family = dist_clean, link = "log")  # most flexsurv dists use log link
+  # The location link feeds the G1 exponentiate gate: hardcoding "log"
+  # let flexsurvspline(scale = "normal") -- a probit-like location scale
+  # whose exp(B) has no estimand -- through the gate unchallenged.
+  fam <- list(family = dist_clean,
+              link = .flexsurv_location_link(fit, dist_clean))
 
   if (is.null(ci_method)) ci_method <- "wald"
 
@@ -199,7 +256,11 @@ as_regression_frame.flexsurvreg <- function(fit,
   )
 
   supports <- list(
-    ame                 = TRUE,
+    # avg_slopes() on flexsurvreg returns per-time rows, not one AME per
+    # predictor -- declaring TRUE without attaching rendered an EMPTY
+    # column (finding M2). Refused until a survival-AME estimand is
+    # designed (see the causal-survival roadmap: RMST / risk differences).
+    ame                 = FALSE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
@@ -432,7 +493,9 @@ as_regression_frame.selection <- function(fit,
   )
 
   supports <- list(
-    ame                 = TRUE,
+    # No avg_slopes() method handles the two-equation selection model
+    # (finding M2: TRUE here rendered an empty column). Refused.
+    ame                 = FALSE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,

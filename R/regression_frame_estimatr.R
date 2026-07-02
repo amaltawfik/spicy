@@ -25,18 +25,22 @@
 as_regression_frame.lm_robust <- function(fit,
                                            vcov = "robust",
                                            vcov_label = NULL,
+                                           cluster = NULL,
                                            ci_level = 0.95,
                                            ci_method = NULL,
+                                           show_columns = character(0),
                                            model_id = "M1",
                                            ...) {
   .check_estimatr_available()
   .estimatr_frame(fit,
-                  vcov_kind  = vcov,
-                  vcov_label = vcov_label,
-                  ci_level   = ci_level,
-                  ci_method  = ci_method,
-                  model_id   = model_id,
-                  is_iv      = FALSE)
+                  vcov_kind    = vcov,
+                  vcov_label   = vcov_label,
+                  cluster      = cluster,
+                  ci_level     = ci_level,
+                  ci_method    = ci_method,
+                  show_columns = show_columns,
+                  model_id     = model_id,
+                  is_iv        = FALSE)
 }
 
 
@@ -48,18 +52,22 @@ as_regression_frame.lm_robust <- function(fit,
 as_regression_frame.iv_robust <- function(fit,
                                            vcov = "robust",
                                            vcov_label = NULL,
+                                           cluster = NULL,
                                            ci_level = 0.95,
                                            ci_method = NULL,
+                                           show_columns = character(0),
                                            model_id = "M1",
                                            ...) {
   .check_estimatr_available()
   .estimatr_frame(fit,
-                  vcov_kind  = vcov,
-                  vcov_label = vcov_label,
-                  ci_level   = ci_level,
-                  ci_method  = ci_method,
-                  model_id   = model_id,
-                  is_iv      = TRUE)
+                  vcov_kind    = vcov,
+                  vcov_label   = vcov_label,
+                  cluster      = cluster,
+                  ci_level     = ci_level,
+                  ci_method    = ci_method,
+                  show_columns = show_columns,
+                  model_id     = model_id,
+                  is_iv        = TRUE)
 }
 
 
@@ -80,9 +88,13 @@ as_regression_frame.iv_robust <- function(fit,
 
 # Shared frame builder for lm_robust + iv_robust. The schema-level fields
 # differ only in `info$class` and `info$extras$title_prefix`.
-.estimatr_frame <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                            model_id, is_iv) {
+.estimatr_frame <- function(fit, vcov_kind, vcov_label, cluster, ci_level,
+                            ci_method, show_columns, model_id, is_iv) {
   coefs <- .estimatr_coefs(fit, ci_level = ci_level)
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov_kind, cluster = cluster)
   info  <- .estimatr_info(fit,
                           vcov_kind  = vcov_kind,
                           vcov_label = vcov_label,

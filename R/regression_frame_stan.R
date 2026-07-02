@@ -361,7 +361,10 @@ as_regression_frame.brmsfit <- function(fit,
   )
 
   supports <- list(
-    ame                 = TRUE,
+    # Bayesian AME needs a draws-based design (posterior median + CrI of
+    # avg_slopes draws, no z / p) -- declaring TRUE without attaching
+    # rendered an EMPTY column (finding M2). Refused until designed.
+    ame                 = FALSE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = FALSE,

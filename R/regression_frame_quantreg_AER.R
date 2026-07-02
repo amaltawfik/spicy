@@ -25,14 +25,20 @@
 as_regression_frame.rq <- function(fit,
                                     vcov = "model",
                                     vcov_label = NULL,
+                                    cluster = NULL,
                                     ci_level = 0.95,
                                     ci_method = NULL,
+                                    show_columns = character(0),
                                     model_id = "M1",
                                     se = "iid",
                                     ...) {
   .check_quantreg_available()
 
   coefs <- .rq_coefs(fit, ci_level = ci_level, se = se)
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .rq_info(fit,
                     vcov_kind  = vcov,
                     vcov_label = vcov_label,
@@ -225,13 +231,19 @@ as_regression_frame.rq <- function(fit,
 as_regression_frame.ivreg <- function(fit,
                                        vcov = "model",
                                        vcov_label = NULL,
+                                       cluster = NULL,
                                        ci_level = 0.95,
                                        ci_method = NULL,
+                                       show_columns = character(0),
                                        model_id = "M1",
                                        ...) {
   .check_AER_available()
 
   coefs <- .ivreg_coefs(fit, ci_level = ci_level)
+  # AME rows when requested (finding M2): response-scale avg_slopes(); a
+  # robust vcov is recomputed inside and honoured.
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .ivreg_info(fit,
                        vcov_kind  = vcov,
                        vcov_label = vcov_label,

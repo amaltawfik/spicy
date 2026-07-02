@@ -681,6 +681,32 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     return(coefs)
   }
   beta_rows <- res$coefs_beta
+
+  # Finding M1: inference is invariant under the linear rescaling of a
+  # refit on z-scored data (same statistic / df / p as the B rows) --
+  # but the refit is a PLAIN lmer fit, so it reported Wald z (df = Inf)
+  # even when the B rows carry Satterthwaite t. That printed a different
+  # p for beta than for B on the same term in the same table. Carry the
+  # B row's reference distribution onto the matching beta row and
+  # rebuild p + CI from it.
+  b_rows <- coefs[coefs$estimate_type == "B" & !coefs$is_ref, , drop = FALSE]
+  idx <- match(beta_rows$term, b_rows$term)
+  ok <- !is.na(idx) &
+    b_rows$test_type[idx] %in% "t" &
+    is.finite(b_rows$df[idx]) & b_rows$df[idx] > 0 &
+    is.finite(beta_rows$statistic) & is.finite(beta_rows$std_error)
+  if (any(ok)) {
+    beta_rows$df[ok]        <- b_rows$df[idx[ok]]
+    beta_rows$test_type[ok] <- "t"
+    beta_rows$p_value[ok]   <- 2 * stats::pt(-abs(beta_rows$statistic[ok]),
+                                             df = beta_rows$df[ok])
+    crit <- stats::qt(0.5 + ci_level / 2, df = beta_rows$df[ok])
+    beta_rows$ci_lower[ok] <- beta_rows$estimate[ok] -
+      crit * beta_rows$std_error[ok]
+    beta_rows$ci_upper[ok] <- beta_rows$estimate[ok] +
+      crit * beta_rows$std_error[ok]
+  }
+
   for (col in setdiff(colnames(coefs), colnames(beta_rows))) {
     beta_rows[[col]] <- coefs[[col]][NA_integer_]  # nocov (beta_rows already carries the full coefs schema)
   }
