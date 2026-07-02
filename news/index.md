@@ -17,6 +17,14 @@
 - [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   result labels AME rows `estimate_type = "ame"` (was `"AME"`).
+- Mixed-effects random effects now render as a `Random effects` block of
+  table rows (σ, ρ, residual – estimate, SE, CI; `estimate_type = "vc"`
+  in `tidy()`), replacing the footer panel. `N (groups)` and `ICC` move
+  to fit-stat rows; the footer keeps the estimator (`REML` / `ML`) and
+  the chi-bar-squared LR test. Variance-component rows carry no p-value
+  (boundary; Self & Liang 1987). `show_re` / `re_scale` / `re_columns`
+  keep their meaning; `re_columns` is now display-only (`tidy()` always
+  carries SE + CI).
 
 ### New supported models
 
@@ -26,9 +34,10 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
 - Mixed effects: [`lme4::lmer`](https://rdrr.io/pkg/lme4/man/lmer.html)
   / `glmer`,
   [`glmmTMB::glmmTMB`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html),
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) – with a
-  random-effects panel (σ, ρ, ICC, per-group N, Nakagawa R²) and an LR
-  test vs the no-random model.
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) – random effects
+  as a block of rows (σ, ρ, residual with SE + CI), ICC + per-group N +
+  Nakagawa R² as fit stats, and a chi-bar-squared LR test vs the
+  no-random model.
 - Bayesian: `rstanarm`, `brms` – posterior median / SD / equal-tailed
   `95% CrI`, no p-value.
 - Survey:

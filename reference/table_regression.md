@@ -339,20 +339,28 @@ table_regression(
 
 - show_re:
 
-  Logical. `TRUE` (default) prints the random-effects panel below the
-  fit-statistics footer for mixed-effects fits (`lmer`, `glmer`,
-  `glmmTMB`, `lme`). `FALSE` suppresses the panel entirely. No effect on
-  fits without random effects (`lm`, `glm`, `coxph`, ...). The panel
-  header carries the estimator label (`(REML)` or `(ML)`); see the
+  Logical. `TRUE` (default) renders the random-effects variance
+  components of a mixed-effects fit (`lmer`, `glmer`, `glmmTMB`, `lme`)
+  as a subordinate **"Random effects" block of table rows** below the
+  fixed effects: one row per standard deviation / correlation per
+  grouping factor, plus the residual, each with its estimate, SE, and CI
+  in the shared coefficient columns. The group sizes (`N (groups)`) and
+  the ICC render as fit-statistic rows; the footer reports the
+  estimation method (`REML` / `ML`) and the likelihood-ratio test of the
+  whole random part against the no-random-effects model, with the
+  boundary-corrected chi-bar-squared p-value (Self & Liang 1987; Stram &
+  Lee 1994). Variance-component rows deliberately carry **no per-row
+  p-value**: a Wald test of a variance is invalid at the boundary of the
+  parameter space, and no reporting guideline requests one (see the
   *Mixed-effects models* section of
-  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
-  for the methodological rationale (Gelman 2005; Bates et al. 2015;
-  Bolker FAQ).
+  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)).
+  `FALSE` suppresses the block. No effect on fits without random effects
+  (`lm`, `glm`, `coxph`, ...).
 
 - re_scale:
 
   One of `"sd"` (default) or `"variance"`. Controls the display scale of
-  the random-effects panel:
+  the random-effects rows:
 
   - `"sd"`: report the random-effect standard deviation \\\sigma\\
     (Gelman 2005, *Technometrics*: "*directly interpretable as the size
@@ -370,10 +378,14 @@ table_regression(
 - re_columns:
 
   Character vector. Subset of `c("est", "se", "ci")` controlling which
-  columns of the random-effects panel are rendered. `"est"` is
-  mandatory. Useful for slimming output (`re_columns = "est"`) or for
+  cells of the random-effects rows are **displayed** (`"est"` is
+  mandatory); de-selected SE / CI cells render as an em-dash on those
+  rows only. Useful for slimming output (`re_columns = "est"`) or for
   journals that want only standard errors
-  (`re_columns = c("est", "se")`).
+  (`re_columns = c("est", "se")`). Display-only: the underlying data
+  ([`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md))
+  always carries the full SE + CI.
 
   Note. Standard errors and CIs are Wald (`est ± z * SE`, clamped at 0
   for variances). Wald can be optimistic near the variance boundary
@@ -1338,16 +1350,17 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>   bread.lmerMod clubSandwich
 #> Linear mixed-effects regression: Reaction
 #> 
-#>  Variable         │    B      SE        95% CI         p   
-#> ──────────────────┼────────────────────────────────────────
-#>  (Intercept)      │  251.41  6.82  [238.03, 264.78]  <.001 
-#>  Days             │   10.47  1.55  [  7.44,  13.50]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                │  180                                   
-#>  R² (marginal)    │    0.28                                
-#>  R² (conditional) │    0.80                                
-#>  AIC              │ 1755.6                                 
-#>  BIC              │ 1774.8                                 
+#>  Variable         │         B           SE        95% CI         p   
+#> ──────────────────┼──────────────────────────────────────────────────
+#>  (Intercept)      │            251.41  6.82  [238.03, 264.78]  <.001 
+#>  Days             │             10.47  1.55  [  7.44,  13.50]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │            180                                   
+#>  N (groups)       │       18 Subjects                                
+#>  R² (marginal)    │              0.28                                
+#>  R² (conditional) │              0.80                                
+#>  AIC              │           1755.6                                 
+#>  BIC              │           1774.8                                 
 #> 
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).
@@ -1365,62 +1378,87 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 }
 #> Hierarchical linear mixed-effects regression: Reaction
 #> 
-#>                           Model 1                Model 2            Model 3     
-#>                     ────────────────────  ─────────────────────  ────────────── 
-#>  Variable         │    B      SE     p       B       SE     p       B       SE  
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)      │  298.51  8.79  <.001   251.41   9.51  <.001   251.41   6.63 
-#>  Days             │                         10.47   0.80  <.001    10.47   1.50 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                │  180                   180                    180           
-#>  R² (marginal)    │    0.00                  0.29                   0.29        
-#>  R² (conditional) │    0.38                  0.70                   0.79        
-#>  AIC              │ 1916.5                1802.1                 1763.9         
-#>  BIC              │ 1926.1                1814.9                 1783.1         
-#>  ΔAIC             │     –                 -114.5                  -38.1         
-#>  ΔBIC             │     –                 -111.3                  -31.8         
-#>  Δχ²              │     –                 +116.46                 +42.14        
-#>  p (change)       │     –                    <.001                  <.001       
+#>                                               Model 1             
+#>                                    ────────────────────────────── 
+#>  Variable                        │         B           SE     p   
+#> ─────────────────────────────────┼────────────────────────────────
+#>  (Intercept)                     │            298.51  8.79  <.001 
+#>  Days                            │                                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                
+#>    σ Subject (Intercept)         │             34.59  6.72   –    
+#>    σ Subject Days                │                                
+#>    ρ Subject ((Intercept), Days) │                                
+#>    σ (Residual)                  │             44.26  2.46   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │            180                 
+#>  N (groups)                      │       18 Subjects              
+#>  ICC                             │              0.38              
+#>  R² (marginal)                   │              0.00              
+#>  R² (conditional)                │              0.38              
+#>  AIC                             │           1916.5               
+#>  BIC                             │           1926.1               
+#>  ΔAIC                            │               –                
+#>  ΔBIC                            │               –                
+#>  Δχ²                             │               –                
+#>  p (change)                      │               –                
 #> 
-#>                     Model 
-#>                     ───── 
-#>  Variable         │   p   
-#> ──────────────────┼───────
-#>  (Intercept)      │ <.001 
-#>  Days             │ <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n                │       
-#>  R² (marginal)    │       
-#>  R² (conditional) │       
-#>  AIC              │       
-#>  BIC              │       
-#>  ΔAIC             │       
-#>  ΔBIC             │       
-#>  Δχ²              │       
-#>  p (change)       │       
+#>                                               Model 2             
+#>                                    ────────────────────────────── 
+#>  Variable                        │         B           SE     p   
+#> ─────────────────────────────────┼────────────────────────────────
+#>  (Intercept)                     │           251.41   9.51  <.001 
+#>  Days                            │            10.47   0.80  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                
+#>    σ Subject (Intercept)         │            36.01   6.45   –    
+#>    σ Subject Days                │                                
+#>    ρ Subject ((Intercept), Days) │                                
+#>    σ (Residual)                  │            30.90   1.72   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │           180                  
+#>  N (groups)                      │       18 Subjects              
+#>  ICC                             │             0.58               
+#>  R² (marginal)                   │             0.29               
+#>  R² (conditional)                │             0.70               
+#>  AIC                             │          1802.1                
+#>  BIC                             │          1814.9                
+#>  ΔAIC                            │          -114.5                
+#>  ΔBIC                            │          -111.3                
+#>  Δχ²                             │          +116.46               
+#>  p (change)                      │             <.001              
+#> 
+#>                                               Model 3             
+#>                                    ────────────────────────────── 
+#>  Variable                        │         B           SE     p   
+#> ─────────────────────────────────┼────────────────────────────────
+#>  (Intercept)                     │           251.41   6.63  <.001 
+#>  Days                            │            10.47   1.50  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                
+#>    σ Subject (Intercept)         │            23.78   5.58   –    
+#>    σ Subject Days                │             5.72   1.19   –    
+#>    ρ Subject ((Intercept), Days) │             0.08   0.32   –    
+#>    σ (Residual)                  │            25.59   1.51   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │           180                  
+#>  N (groups)                      │       18 Subjects              
+#>  ICC                             │                                
+#>  R² (marginal)                   │             0.29               
+#>  R² (conditional)                │             0.79               
+#>  AIC                             │          1763.9                
+#>  BIC                             │          1783.1                
+#>  ΔAIC                            │           -38.1                
+#>  ΔBIC                            │           -31.8                
+#>  Δχ²                             │           +42.14               
+#>  p (change)                      │             <.001              
 #> 
 #> Note. Linear mixed-effects regression models.
 #> Std. errors: Wald (model-based).
 #> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Model 1: Random effects (ML):
-#>   σ Subject (Intercept)  34.59  (6.72)  [16.91, 45.90]
-#>   σ (Residual)          44.26  (2.46)  [39.14, 48.84]
-#>   ICC                     0.38
-#>   N (Subject)               18
-#> LR test vs linear regression: χ̄²(1) = 50.51, p < .001
-#> Model 2: Random effects (ML):
-#>   σ Subject (Intercept)  36.01  (6.45)  [19.67, 46.98]
-#>   σ (Residual)          30.90  (1.72)  [27.33, 34.09]
-#>   ICC                     0.58
-#>   N (Subject)               18
-#> LR test vs linear regression: χ̄²(1) = 106.21, p < .001
-#> Model 3: Random effects (ML):
-#>   σ Subject (Intercept)         23.78  (5.58)  [6.75, 32.94]
-#>   σ Subject Days                 5.72  (1.19)  [2.47, 7.70]
-#>   ρ Subject ((Intercept), Days)   0.08  (0.32)  [-0.55, 0.72]
-#>   σ (Residual)                  25.59  (1.51)  [22.44, 28.39]
-#>   N (Subject)                       18
-#> LR test vs linear regression: χ̄²(3) = 148.35, p < .001
+#> Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001.
+#> Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001.
+#> Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
 
 if (FALSE) { # \dontrun{
 # ---- Rich-format outputs (require optional Suggests packages) ----
