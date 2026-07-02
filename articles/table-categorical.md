@@ -1,4 +1,4 @@
-# Categorical summary tables in R
+# Categorical summary tables
 
 ``` r
 

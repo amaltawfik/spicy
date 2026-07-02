@@ -1,4 +1,4 @@
-# Model-based continuous summary tables in R
+# Model-based continuous summary tables
 
 ``` r
 

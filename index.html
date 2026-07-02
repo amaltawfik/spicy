@@ -55,14 +55,14 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/spicy.html">Getting started with spicy</a></li>
-    <li><a class="dropdown-item" href="articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
-    <li><a class="dropdown-item" href="articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-categorical.html">Categorical summary tables in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-continuous.html">Continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-regression.html">Regression coefficient tables in R</a></li>
-    <li><a class="dropdown-item" href="articles/table-regression-ordinal.html">Ordinal regression tables in R</a></li>
+    <li><a class="dropdown-item" href="articles/variable-exploration.html">Explore variables and build codebooks</a></li>
+    <li><a class="dropdown-item" href="articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
+    <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="articles/table-categorical.html">Categorical summary tables</a></li>
+    <li><a class="dropdown-item" href="articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -98,31 +98,30 @@
 
 <p>spicy is an R package for frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, publication-ready regression tables for 30+ model classes, and labelled survey data workflows.</p>
 <div class="section level2">
-<h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
+<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<p>spicy helps you explore categorical, continuous, and labelled survey data in R, then report the results in APA-aligned tables. It provides readable, console-first outputs for survey research, descriptive statistics, and reporting workflows, including frequency tables, cross-tabulations with chi-squared tests and effect sizes, categorical and continuous summary tables, regression coefficient tables for one or more fitted models – from <code>lm</code> and <code>glm</code> to mixed-effects, ordinal, survival, and zero-inflated count models – variable inspection, and codebooks.</p>
-<p>With spicy, you can:</p>
+<p>Every spicy table prints as readable text in the console and exports to gt, tinytable, flextable, Excel, Word, or the clipboard, following APA conventions. Around the tables, spicy provides the survey-data tools that feed them: variable inspection, codebooks, label extraction, and row-wise summaries.</p>
 <ul>
 <li>
-<strong>Inspect variables</strong> with <code><a href="reference/varlist.html">varlist()</a></code> and <code><a href="reference/varlist.html">vl()</a></code> for names, labels, values, classes, and missing data.</li>
+<strong>Frequency tables</strong> with <code><a href="reference/freq.html">freq()</a></code>.</li>
 <li>
-<strong>Create frequency tables in R</strong> with <code><a href="reference/freq.html">freq()</a></code>.</li>
+<strong>Cross-tabulations</strong> with <code><a href="reference/cross_tab.html">cross_tab()</a></code>: percentages, weights, chi-squared tests, and effect sizes.</li>
 <li>
-<strong>Create cross-tabulations in R</strong> with <code><a href="reference/cross_tab.html">cross_tab()</a></code>, including percentages, chi-squared tests, and effect sizes.</li>
+<strong>Association measures</strong>: <code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code> and 6 other coefficients; <code><a href="reference/assoc_measures.html">assoc_measures()</a></code> computes the full set at once.</li>
 <li>
-<strong>Measure associations</strong> with <code><a href="reference/cramer_v.html">cramer_v()</a></code>, <code><a href="reference/phi.html">phi()</a></code>, <code><a href="reference/gamma_gk.html">gamma_gk()</a></code>, <code><a href="reference/kendall_tau_b.html">kendall_tau_b()</a></code>, <code><a href="reference/somers_d.html">somers_d()</a></code> and 6 other coefficients; use <code><a href="reference/assoc_measures.html">assoc_measures()</a></code> to compute the full set at once.</li>
+<strong>Categorical and continuous summary tables</strong> with <code><a href="reference/table_categorical.html">table_categorical()</a></code> and <code><a href="reference/table_continuous.html">table_continuous()</a></code>, overall or by group.</li>
 <li>
-<strong>Build categorical summary tables in R</strong> with <code><a href="reference/table_categorical.html">table_categorical()</a></code> for console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
+<strong>Model-based continuous summary tables</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear-model reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’ g, Hays’ omega²) with noncentral CIs, additive covariate adjustment with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, and weighted comparisons.</li>
 <li>
-<strong>Build continuous summary tables in R</strong> with <code><a href="reference/table_continuous.html">table_continuous()</a></code> for console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
+<strong>Regression tables</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more fitted models side by side, across 30+ model classes (see <em>Supported models</em> below): classical / heteroskedasticity-robust / cluster-robust / bootstrap / jackknife variance with each class’s field-standard backend, standardised coefficients, family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR – link-gated, never mislabelled), Wald or profile-likelihood CIs, average marginal effects (per-category for ordinal and multinomial models), partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, class-aware fit statistics (pseudo-<em>R²</em>, Nakagawa marginal / conditional <em>R²</em>, ICC), hierarchical model comparisons with the correct nested test per class, and multiple-comparison adjustment. Mixed models report their random effects as table rows with an optional boundary-correct per-term test; ordinal models report their thresholds; zero-inflated and hurdle models report every model component.</li>
 <li>
-<strong>Build model-based continuous summary tables in R</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear regression reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’ g, Hays’ omega²) with noncentral CIs, optional <strong>additive covariate adjustment</strong> with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, weighted comparisons, and console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
+<strong>Variable inspection</strong> with <code><a href="reference/varlist.html">varlist()</a></code> and <code><a href="reference/varlist.html">vl()</a></code>: names, labels, values, classes, and missing data.</li>
 <li>
-<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more fitted models side by side, across 30+ model classes (see <em>Supported models</em> below): classical / heteroskedasticity-robust / cluster-robust / bootstrap / jackknife variance with each class’s field-standard backend, standardised coefficients, family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR – link-gated, never mislabelled), Wald or profile-likelihood CIs, average marginal effects (per-category for ordinal and multinomial models), partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, class-aware fit statistics (pseudo-<em>R²</em>, Nakagawa marginal / conditional <em>R²</em>, ICC), hierarchical model comparisons with the correct nested test per class, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output. Mixed models report their random effects as table rows with an optional boundary-correct per-term test; ordinal models report their thresholds; zero-inflated and hurdle models report every model component.</li>
+<strong>Codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code>: interactive and exportable, for labelled and survey-style datasets.</li>
 <li>
-<strong>Generate interactive and exportable codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
+<strong>Label extraction</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
 <li>
-<strong>Extract variable labels</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
+<strong>Row-wise summaries</strong> with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code>, with explicit control over missing values.</li>
 </ul>
 <p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types. For a full introduction, see <a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a>.</p>
 </div>
@@ -132,8 +131,8 @@
 <p><code><a href="reference/table_regression.html">table_regression()</a></code> accepts a single fit or a list of fits from any of these classes, and renders them with the conventions of each model family:</p>
 <table class="table">
 <colgroup>
-<col width="20%">
-<col width="79%">
+<col width="15%">
+<col width="84%">
 </colgroup>
 <thead><tr>
 <th>Family</th>
@@ -143,59 +142,59 @@
 <tr>
 <td>Linear and generalized linear</td>
 <td>
-<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code>, <code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls</a></code>
+<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code>, <code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls()</a></code>
 </td>
 </tr>
 <tr>
 <td>Robust, IV, quantile, panel</td>
 <td>
-<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust</a></code> / <code>iv_robust</code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg</a></code> / <code>tobit</code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols</a></code> / <code>feglm</code> / <code>fepois</code> / <code>fenegbin</code>
+<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>, <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
 </td>
 </tr>
 <tr>
 <td>Mixed effects</td>
 <td>
-<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer</a></code> / <code>glmer</code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> / <code>gls</code>
+<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code>, <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code>
 </td>
 </tr>
 <tr>
 <td>Ordinal and categorical</td>
 <td>
-<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code> (incl. partial proportional odds), <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>, <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit</a></code>
+<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code> (incl. partial proportional odds), <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code>, <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code>
 </td>
 </tr>
 <tr>
 <td>Counts, two-part models</td>
 <td>
-<code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle</a></code> / <code>zeroinfl</code>, <code>glmmTMB</code> (zero-inflation and dispersion components)</td>
+<code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> (zero-inflation and dispersion components)</td>
 </tr>
 <tr>
 <td>Survival</td>
 <td>
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> / <code>survreg</code>, <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code>, <code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg</a></code>
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code>, <code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code>
 </td>
 </tr>
 <tr>
 <td>Survey-weighted</td>
 <td>
-<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code> (design-based SEs)</td>
+<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code> (design-based SEs)</td>
 </tr>
 <tr>
 <td>Additive, proportions, selection</td>
 <td>
-<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> / <code>bam</code>, <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection</a></code>
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">mgcv::bam()</a></code>, <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>
 </td>
 </tr>
 <tr>
 <td>rms</td>
 <td>
-<code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> / <code>lrm</code> / <code>Glm</code>
+<code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code>
 </td>
 </tr>
 <tr>
 <td>Bayesian</td>
 <td>
-<code>rstanarm</code>, <code>brms</code> (posterior median, credible intervals, no p-values)</td>
+<code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">rstanarm::stan_glmer()</a></code>, <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> (posterior median, credible intervals, no p-values)</td>
 </tr>
 </tbody>
 </table>
@@ -254,7 +253,7 @@
 <span>  values <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  include_na <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a> for more on <code><a href="reference/varlist.html">varlist()</a></code>, <code><a href="reference/varlist.html">vl()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a> for more on <code><a href="reference/varlist.html">varlist()</a></code>, <code><a href="reference/varlist.html">vl()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
 </div>
 <div class="section level3">
 <h3 id="frequency-tables-and-cross-tabulations">Frequency tables and cross-tabulations<a class="anchor" aria-label="anchor" href="#frequency-tables-and-cross-tabulations"></a>
@@ -290,7 +289,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span><span class="co">#&gt; Cramer's V = 0.14</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
 </div>
 <div class="section level3">
 <h3 id="association-measures">Association measures<a class="anchor" aria-label="anchor" href="#association-measures"></a>
@@ -306,7 +305,7 @@
 <span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.176     0.120     0.231  &lt;.001</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a> for a guide on choosing the right measure.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures</a> for a guide on choosing the right measure.</p>
 </div>
 <div class="section level3">
 <h3 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
@@ -493,7 +492,7 @@
 <span><span class="co">#&gt; Std. errors: Wald (model-based).</span></span>
 <span><span class="co">#&gt; p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
 <span><span class="co">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a> for <code>lm</code> and <code>glm</code> coefficient tables, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables</a> for regression tables across model families, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -529,41 +528,26 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $score</span></span>
 <span><span class="co">#&gt; [1] "Total score"</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a> for more on <code><a href="reference/label_from_names.html">label_from_names()</a></code>, <code><a href="reference/varlist.html">varlist()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a> for more on <code><a href="reference/label_from_names.html">label_from_names()</a></code>, <code><a href="reference/varlist.html">varlist()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="learn-by-task">Learn by task<a class="anchor" aria-label="anchor" href="#learn-by-task"></a>
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>If you are looking for a specific workflow, start with these vignettes:</p>
+<p>Each workflow has a dedicated vignette:</p>
 <ul>
 <li><a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
 </ul>
-<p>Key reference pages:</p>
-<ul>
-<li><a href="https://amaltawfik.github.io/spicy/reference/varlist.html">Reference for <code>varlist()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/code_book.html">Reference for <code>code_book()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/label_from_names.html">Reference for <code>label_from_names()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/freq.html">Reference for <code>freq()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/cross_tab.html">Reference for <code>cross_tab()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/cramer_v.html">Reference for <code>cramer_v()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html">Reference for <code>table_categorical()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous.html">Reference for <code>table_continuous()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html">Reference for <code>table_continuous_lm()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/table_regression.html">Reference for <code>table_regression()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/mean_n.html">Reference for <code>mean_n()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/sum_n.html">Reference for <code>sum_n()</code></a></li>
-<li><a href="https://amaltawfik.github.io/spicy/reference/count_n.html">Reference for <code>count_n()</code></a></li>
-</ul>
+<p>Key reference pages: <a href="https://amaltawfik.github.io/spicy/reference/freq.html"><code>freq()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/cross_tab.html"><code>cross_tab()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/cramer_v.html"><code>cramer_v()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html"><code>table_categorical()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_continuous.html"><code>table_continuous()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html"><code>table_continuous_lm()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_regression.html"><code>table_regression()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/varlist.html"><code>varlist()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/code_book.html"><code>code_book()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/label_from_names.html"><code>label_from_names()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/mean_n.html"><code>mean_n()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/sum_n.html"><code>sum_n()</code></a>, and <a href="https://amaltawfik.github.io/spicy/reference/count_n.html"><code>count_n()</code></a> – see the <a href="https://amaltawfik.github.io/spicy/reference/index.html">full function index</a> for everything else.</p>
 <hr>
 </div>
 <div class="section level2">

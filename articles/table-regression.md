@@ -1595,20 +1595,24 @@ str(out)
 #>  - attr(*, "section_sep_rows")= int(0) 
 #>  - attr(*, "align")= chr "decimal"
 #>  - attr(*, "decimal_mark")= chr "."
-#>  - attr(*, "structured")=List of 10
-#>   ..$ body              :'data.frame':   11 obs. of  6 variables:
+#>  - attr(*, "structured")=List of 12
+#>   ..$ body                   :'data.frame':  11 obs. of  6 variables:
 #>   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...
 #>   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...
 #>   .. ..$ SE        : num [1:11] 1.6567 0.0307 NA NA 0.9053 ...
 #>   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...
 #>   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...
 #>   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...
-#>   ..$ reference_rows    : int [1:2] 4 7
-#>   ..$ factor_header_rows: int [1:2] 3 6
-#>   ..$ fit_stat_rows     : int [1:3] 9 10 11
-#>   ..$ level_rows        : int [1:4] 4 5 7 8
-#>   ..$ outcome_row       : int(0) 
-#>   ..$ col_meta          :List of 5
+#>   ..$ reference_rows         : int [1:2] 4 7
+#>   ..$ reference_models_by_row:List of 2
+#>   .. ..$ 4: chr "M1"
+#>   .. ..$ 7: chr "M1"
+#>   ..$ outcome_labels_by_col  : chr(0) 
+#>   ..$ factor_header_rows     : int [1:2] 3 6
+#>   ..$ fit_stat_rows          : int [1:3] 9 10 11
+#>   ..$ level_rows             : int [1:4] 4 5 7 8
+#>   ..$ outcome_row            : int(0) 
+#>   ..$ col_meta               :List of 5
 #>   .. ..$ B         :List of 12
 #>   .. .. ..$ token             : chr "b"
 #>   .. .. ..$ model_id          : chr "M1"
@@ -1688,12 +1692,12 @@ str(out)
 #>   .. .. ..$ ci_label     : NULL
 #>   .. .. ..$ is_df        : logi FALSE
 #>   .. .. ..$ display_label: chr "p"
-#>   ..$ spanners          : NULL
-#>   ..$ ci_pairs          :List of 1
+#>   ..$ spanners               : NULL
+#>   ..$ ci_pairs               :List of 1
 #>   .. ..$ :List of 2
 #>   .. .. ..$ label: chr "95% CI"
 #>   .. .. ..$ cols : int [1:2] 4 5
-#>   ..$ format_spec       :List of 9
+#>   ..$ format_spec            :List of 9
 #>   .. ..$ decimal_mark      : chr "."
 #>   .. ..$ digits            : int 2
 #>   .. ..$ p_digits          : int 3

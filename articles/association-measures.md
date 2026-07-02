@@ -1,4 +1,4 @@
-# Cramer's V, Phi, and association measures for contingency tables in R
+# Cramer's V, Phi, and association measures
 
 ``` r
 

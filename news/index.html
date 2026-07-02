@@ -27,14 +27,14 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
-    <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
-    <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-regression.html">Regression coefficient tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
+    <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -136,6 +136,10 @@
 <code>table_regression(standardize = TRUE)</code>: y* standardized coefficients return <code>NA</code> for log-link binomial models (undefined; was an unjustified value).</li>
 <li>
 <code>table_regression(list(...))</code>: no stray zero-width spaces in multi-model <code>tinytable</code> headers.</li>
+<li>
+<code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich engines (<code>gt</code>, <code>tinytable</code>, <code>flextable</code>, Excel, clipboard) now match the console body exactly: multi-model reference rows stay blank in models that lack the factor (was em-dash everywhere), and the multi-outcome <code>Outcome</code> row is carried through. The structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code> (both documented in <code><a href="../reference/as_structured.html">?as_structured</a></code>).</li>
+<li>
+<code>table_regression(output = "gt")</code> no longer errors when two model labels collide under <code><a href="https://rdrr.io/r/base/make.names.html" class="external-link">make.names()</a></code> (e.g. <code>"Step 1"</code> and <code>"Step.1"</code>): spanner ids are assigned by position.</li>
 <li>
 <code>table_regression(p_adjust = ...)</code>: the method name is double-quoted on every platform.</li>
 <li>Mixed models with a transformed or matrix response (<code>cbind(...)</code> binomial <code>glmer</code> / <code>glmmTMB</code>) now get their LR test vs the no-random-effects model (the null refit silently failed before).</li>

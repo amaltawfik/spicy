@@ -41,14 +41,14 @@ per-cell markers and a format specification.'><meta property="og:image" content=
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
-    <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks in R</a></li>
-    <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations in R</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures for contingency tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-regression.html">Regression coefficient tables in R</a></li>
-    <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables in R</a></li>
+    <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
+    <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -124,6 +124,13 @@ that have no value (reference levels, non-applicable rows in
 multi-model output, factor headers) are <code>NA</code>.</p></li>
 <li><p><code>reference_rows</code>, <code>factor_header_rows</code>, <code>fit_stat_rows</code>,
 <code>level_rows</code>, <code>outcome_row</code> – integer row indices.</p></li>
+<li><p><code>reference_models_by_row</code> – for each reference row (keyed by its
+row index as a character string), the <code>model_id</code>s of the models
+that actually contain the factor: renderers show the reference
+marker only in those models' columns and leave the others blank.</p></li>
+<li><p><code>outcome_labels_by_col</code> – for the <code>outcome_row</code> (explicit
+<code>outcome_labels</code> with two or more models), the display label
+keyed by each model's first structured column name.</p></li>
 <li><p><code>col_meta</code> – per-column metadata keyed by structured column
 name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label).</p></li>

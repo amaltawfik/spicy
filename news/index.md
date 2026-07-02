@@ -180,6 +180,19 @@ for the walk-throughs.
   unjustified value).
 - `table_regression(list(...))`: no stray zero-width spaces in
   multi-model `tinytable` headers.
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  and the rich engines (`gt`, `tinytable`, `flextable`, Excel,
+  clipboard) now match the console body exactly: multi-model reference
+  rows stay blank in models that lack the factor (was em-dash
+  everywhere), and the multi-outcome `Outcome` row is carried through.
+  The structured schema gains `reference_models_by_row` and
+  `outcome_labels_by_col` (both documented in
+  [`?as_structured`](https://amaltawfik.github.io/spicy/reference/as_structured.md)).
+- `table_regression(output = "gt")` no longer errors when two model
+  labels collide under
+  [`make.names()`](https://rdrr.io/r/base/make.names.html)
+  (e.g. `"Step 1"` and `"Step.1"`): spanner ids are assigned by
+  position.
 - `table_regression(p_adjust = ...)`: the method name is double-quoted
   on every platform.
 - Mixed models with a transformed or matrix response (`cbind(...)`

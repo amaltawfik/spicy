@@ -51,6 +51,15 @@ This is the right entry point for users who want to:
 - `reference_rows`, `factor_header_rows`, `fit_stat_rows`, `level_rows`,
   `outcome_row` – integer row indices.
 
+- `reference_models_by_row` – for each reference row (keyed by its row
+  index as a character string), the `model_id`s of the models that
+  actually contain the factor: renderers show the reference marker only
+  in those models' columns and leave the others blank.
+
+- `outcome_labels_by_col` – for the `outcome_row` (explicit
+  `outcome_labels` with two or more models), the display label keyed by
+  each model's first structured column name.
+
 - `col_meta` – per-column metadata keyed by structured column name
   (token, model_id, precision, p-style, below-threshold, CI pair / role
   / label).

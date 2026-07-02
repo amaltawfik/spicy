@@ -1,4 +1,4 @@
-# Continuous summary tables in R
+# Continuous summary tables
 
 ``` r
 

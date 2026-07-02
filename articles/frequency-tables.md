@@ -1,4 +1,4 @@
-# Frequency tables and cross-tabulations in R
+# Frequency tables and cross-tabulations
 
 ``` r
 
