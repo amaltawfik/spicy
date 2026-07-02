@@ -721,11 +721,16 @@ table_regression(fit)
 
 ### Response-scale display: `exponentiate = TRUE`
 
-Set `exponentiate = TRUE` to switch the `B` column to the response scale
+Set `exponentiate = TRUE` to switch the `B` column to the ratio scale
 and rebrand its header per family and link: `OR` for `binomial(logit)`,
 `IRR` for `poisson(log)`, `HR` for `binomial(cloglog)`, `RR` for
-`binomial(log)`, `MR` for `Gamma(log)`, and the generic `exp(B)`
-otherwise. The standard error follows the delta-method approximation
+`binomial(log)`, `MR` for `Gamma(log)`, and the generic `exp(B)` for
+other log-link families (a genuine ratio of means). Links whose
+exponential is *not* a ratio – probit, cauchit, inverse (the
+[`Gamma()`](https://rdrr.io/r/stats/family.html) default), and friends –
+are refused with a clear error rather than silently mislabelled; report
+response-scale effects for those models via the AME column instead. The
+standard error follows the delta-method approximation
 `SE_OR = OR × SE_log-odds` (the Stata `logit, or` convention). The test
 statistic and the p-value are invariant under any monotone
 transformation, so they remain on the link scale and match the
@@ -756,7 +761,7 @@ table_regression(fit, exponentiate = TRUE)
 #> Note. Logistic regression.
 #> Std. errors: classical (Fisher information).
 #> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).
 ```
 
 ### Term-level partial chi-square

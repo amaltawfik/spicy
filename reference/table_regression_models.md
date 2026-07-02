@@ -79,8 +79,10 @@ A data frame with one row per supported engine and columns `family`,
   applied.
 
 - `exponentiate = TRUE` is link-gated: it produces a labelled ratio (OR
-  / IRR / HR / RR / MR / RRR / TR) only where the link warrants one;
-  identity-link fits warn and are left untouched.
+  / IRR / HR / RR / MR / RRR / TR) only where the link warrants one.
+  Identity-link fits warn and are left untouched; non-ratio links
+  (probit, cauchit, inverse, ...) are **refused with a clear error** –
+  never silently exponentiated.
 
 - Class-specific structure renders as labelled subordinate blocks of
   rows in the same table, each explained by a footer line.

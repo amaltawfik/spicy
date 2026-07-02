@@ -97,7 +97,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  vcov <span class="op">=</span> <span class="st">"classical"</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  ci_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"profile"</span><span class="op">)</span>,</span>
+<span>  ci_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"profile"</span>, <span class="st">"boot_percentile"</span><span class="op">)</span>,</span>
 <span>  boot_n <span class="op">=</span> <span class="fl">1000L</span>,</span>
 <span>  standardized <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"refit"</span>, <span class="st">"posthoc"</span>, <span class="st">"basic"</span>, <span class="st">"smart"</span>, <span class="st">"pseudo"</span><span class="op">)</span>,</span>
 <span>  exponentiate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -166,7 +166,15 @@ among others. An unsupported class raises
 <code>"HC0"</code>-<code>"HC5"</code>, <code>"CR0"</code>-<code>"CR3"</code>, <code>"bootstrap"</code>, or
 <code>"jackknife"</code>. A scalar is recycled to all models; a list
 (one string per model) allows mixed estimators. Default
-<code>"classical"</code>. See <em>Inference and standard errors</em>.</p></dd>
+<code>"classical"</code>. The resampling estimators (<code>lm</code> / <code>glm</code>,
+including <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>) refit each replicate on resampled rows
+of the fixed evaluated design; for <code>glm.nb</code> the dispersion
+parameter theta is held at its full-sample estimate (Stata's
+<code>nbreg, vce(bootstrap)</code> re-estimates it per replicate – the two
+conventions differ slightly). Resampling that fails on nearly
+every replicate raises <code>spicy_resampling_failed</code> rather than
+silently reporting a different estimator. See <em>Inference and
+standard errors</em>.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
@@ -200,8 +208,20 @@ inference (Venables &amp; Ripley <em>MASS</em> Section 7.2). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
 fits the profile covers the predictor coefficients (the cut-point
 thresholds stay Wald), and a robust <code>vcov</code> takes precedence (its
-Wald-robust CIs are used instead). <code>"profile"</code> with <code>lm</code> raises
-<code>spicy_invalid_input</code>.</p></dd>
+Wald-robust CIs are used instead, with a consolidated warning).
+<code>"profile"</code> with <code>lm</code> raises <code>spicy_invalid_input</code>.
+<code>"boot_percentile"</code> (requires <code>vcov = "bootstrap"</code> for every
+model) replaces the coefficient CI bounds with equal-tailed
+percentile intervals of the bootstrap replicates (the
+<code><a href="https://rdrr.io/pkg/boot/man/boot.ci.html" class="external-link">boot::boot.ci()</a></code> <code>type = "perc"</code> convention; Davison &amp; Hinkley
+1997, ch. 5), reusing the same resamples as the bootstrap SEs.
+Only the CI bounds change; estimate, SE, statistic and p-value
+remain Wald from the bootstrap covariance – the Stata convention
+(normal-based table CIs by default, percentile on request via
+<code>estat bootstrap</code>). AME and standardized-beta CIs are not
+covered. With <code>exponentiate = TRUE</code> the percentile bounds are
+exponentiated (percentile intervals are
+transformation-respecting).</p></dd>
 
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
@@ -220,16 +240,31 @@ section.</p></dd>
 
 
 <dt id="arg-exponentiate">exponentiate<a class="anchor" aria-label="anchor" href="#arg-exponentiate"></a></dt>
-<dd><p>Logical. When <code>TRUE</code> and the model is a
-<code>glm</code> with a non-identity link, <code>B</code>, the CI bounds, and the
-SE are transformed via <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> (delta method:
-<code>SE_OR = OR x SE_log-odds</code>). The column header is rebranded
-per family / link: <code>OR</code> (binomial logit), <code>IRR</code> (poisson
-log), <code>HR</code> (binomial cloglog), <code>RR</code> (binomial log), <code>MR</code>
-(Gamma log), else <code>exp(B)</code>. The statistic and p-value stay
-on the link scale (invariant under monotone transformation).
-Default <code>FALSE</code>. No effect on <code>lm</code> or identity-link glm;
-emits a <code>spicy_ignored_arg</code> warning in those cases.</p></dd>
+<dd><p>Logical. When <code>TRUE</code>, <code>B</code>, the CI bounds, and
+the SE (delta method: <code>SE_OR = OR x SE_log-odds</code>) are
+<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code>-transformed for links where the result is a ratio:
+logit (<code>OR</code>), log (<code>IRR</code> / <code>RR</code> / <code>MR</code> per family, generic
+<code>exp(B)</code> for other log-link families – a genuine ratio of
+means), and binomial / ordinal cloglog (<code>HR</code>; grouped-time
+proportional hazards, Prentice &amp; Gloeckler 1978). The statistic
+and p-value stay on the link scale (invariant under monotone
+transformation). Identity-link fits are left untouched (a
+<code>spicy_ignored_arg</code> warning fires when no model in the table
+exponentiates), so mixed <code>lm</code> + logit tables keep working. Any
+other link (probit, cauchit, inverse – the
+<code><a href="https://rdrr.io/r/stats/family.html" class="external-link">Gamma()</a></code> default –, <code>1/mu^2</code>, sqrt, ordinal <code>loglog</code>, ...)
+raises <code>spicy_invalid_input</code>: the exponential of such a
+coefficient has no ratio interpretation, and reporting it
+would mislabel the estimate. Report response-scale effects for
+those models via the AME column instead. Note that the displayed
+CI is the link-scale CI with exponentiated endpoints (Wald or
+profile per <code>ci_method</code>), so it is asymmetric around the ratio
+and cannot be reconstructed as <code>estimate ± z × SE</code>; the
+delta-method SE follows the Stata convention (<code>[R] logistic</code>,
+Methods and formulas: <code>se(OR) = OR × se(b)</code>) and the log-scale
+CI endpoints carry the uncertainty more faithfully than this SE.
+The footer states the SE scale and the CI asymmetry whenever an
+SE column is displayed. Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
@@ -976,11 +1011,26 @@ with \(Y^*\) the latent variable on the link scale and
 \(\pi^2/6\) cloglog). Binomial families only;
 non-binomial returns NA with a <code>spicy_caveat</code>.</p></li>
 <li><p><code>"none"</code> (default) – no \(\beta\) computed.</p></li>
-</ul><p>Under interactions or transformed predictors (<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>,
-<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>), a <code>spicy_caveat</code> warns that
-standardised coefficients on such terms are subtle to interpret
-(Cohen et al. 2003 Section 7.7; Aiken &amp; West 1991). The caveat is
-auto-documented in the footer.</p>
+</ul><p><strong>Interactions and transforms.</strong> Under <code>"refit"</code>, an interaction's
+\(\beta\) is the coefficient of the product of the z-scored
+components – the recommended treatment for such models (Cohen et
+al. 2003 Section 7.7; Aiken &amp; West 1991; Friedrich 1982). Under
+<code>"posthoc"</code>, <code>"basic"</code>, and <code>"smart"</code>, the product / transformed
+design column is treated as a single numeric column and scaled by
+its own SD (under <code>"smart"</code>, by <code>2 * SD</code> when the product column is
+itself binary, e.g. binary-by-binary interactions) – the convention
+of SPSS beta, Stata <code>regress, beta</code>, SAS PROC REG <code>STB</code>, and
+<code>lm.beta::lm.beta()</code>, identical to
+<code>effectsize::standardize_parameters(method = "basic")</code> on those
+columns. The two conventions differ whenever the components are
+correlated; a <code>spicy_caveat</code> warns and the footer names the
+convention actually used. <code>"refit"</code> declines formulas with inline
+transforms (<code>log(x)</code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code> written in the formula):
+the model frame's evaluated columns cannot be re-evaluated on
+z-scored data, so spicy falls back to <code>"posthoc"</code> with a warning
+(<code>effectsize</code>'s refit instead standardizes <em>before</em> the transform
+– a different estimand). Pre-build transformed columns in <code>data</code>
+for an exact refit.</p>
     </div>
     <div class="section level2">
     <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a></h2>
@@ -1061,6 +1111,11 @@ and interpreting interactions</em>.</p>
 <p>Cohen, J., Cohen, P., West, S.G., &amp; Aiken, L.S. (2003).
 <em>Applied multiple regression / correlation analysis for the
 behavioral sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
+<p>Davison, A.C. &amp; Hinkley, D.V. (1997). <em>Bootstrap methods and
+their application</em>. Cambridge University Press.</p>
+<p>Friedrich, R.J. (1982). In defense of multiplicative terms in
+multiple regression equations. <em>American Journal of Political
+Science</em>, 26(4), 797-833.</p>
 <p>Pustejovsky, J.E. &amp; Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. <em>Journal of Business &amp; Economic

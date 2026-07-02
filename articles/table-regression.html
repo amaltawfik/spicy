@@ -814,17 +814,21 @@ below.</p>
 <h3 id="response-scale-display-exponentiate-true">Response-scale display: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#response-scale-display-exponentiate-true"></a>
 </h3>
 <p>Set <code>exponentiate = TRUE</code> to switch the <code>B</code>
-column to the response scale and rebrand its header per family and link:
+column to the ratio scale and rebrand its header per family and link:
 <code>OR</code> for <code>binomial(logit)</code>, <code>IRR</code> for
 <code>poisson(log)</code>, <code>HR</code> for
 <code>binomial(cloglog)</code>, <code>RR</code> for
 <code>binomial(log)</code>, <code>MR</code> for <code>Gamma(log)</code>,
-and the generic <code>exp(B)</code> otherwise. The standard error
-follows the delta-method approximation
-<code>SE_OR = OR × SE_log-odds</code> (the Stata <code>logit, or</code>
-convention). The test statistic and the p-value are invariant under any
-monotone transformation, so they remain on the link scale and match the
-unexponentiated table verbatim:</p>
+and the generic <code>exp(B)</code> for other log-link families (a
+genuine ratio of means). Links whose exponential is <em>not</em> a ratio
+– probit, cauchit, inverse (the <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">Gamma()</a></code> default), and
+friends – are refused with a clear error rather than silently
+mislabelled; report response-scale effects for those models via the AME
+column instead. The standard error follows the delta-method
+approximation <code>SE_OR = OR × SE_log-odds</code> (the Stata
+<code>logit, or</code> convention). The test statistic and the p-value
+are invariant under any monotone transformation, so they remain on the
+link scale and match the unexponentiated table verbatim:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -849,7 +853,7 @@ unexponentiated table verbatim:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="term-level-partial-chi-square">Term-level partial chi-square<a class="anchor" aria-label="anchor" href="#term-level-partial-chi-square"></a>

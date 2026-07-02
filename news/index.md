@@ -4,6 +4,16 @@
 
 ### Breaking changes
 
+- `table_regression(exponentiate = TRUE)` now errors
+  (`spicy_invalid_input`) on links whose exponentiated coefficient has
+  no ratio interpretation: probit, cauchit, inverse (the
+  [`Gamma()`](https://rdrr.io/r/stats/family.html) default), `1/mu^2`,
+  sqrt, ordinal `loglog`, and cloglog outside the binomial / ordinal
+  families. Previously these silently printed a meaningless `exp(B)`
+  column. The ratio links (logit, log, binomial / ordinal cloglog) are
+  unchanged; identity keeps its warn-and-skip; the error names the
+  offending model and points at the AME column for response-scale
+  effects.
 - `align = "auto"` removed from all `table_*` functions; use `"decimal"`
   (default), `"center"`, or `"right"`.
 - `table_regression(show_fit_stats = character(0))` now errors; use
@@ -93,6 +103,24 @@ for the walk-throughs.
 - `ci_method = "profile"` gives profile-likelihood CIs for `glm`,
   `polr`, and `clm`; the footer discloses `95% CIs: profile likelihood.`
   when used.
+- New `ci_method = "boot_percentile"` (with `vcov = "bootstrap"`): the
+  coefficient CI bounds become equal-tailed percentile intervals of the
+  bootstrap replicates (the `boot::boot.ci(type = "perc")` convention,
+  cross-validated to machine precision), reusing the same resamples as
+  the bootstrap SEs. Estimate, SE, statistic and p stay Wald from the
+  bootstrap covariance – the Stata layering (normal-based table CIs by
+  default, percentile on request). Footer:
+  `95% CIs: bootstrap percentile.`
+- Resampling footers now name the estimator actually applied:
+  `Std. errors: nonparametric bootstrap (N replicates).` (N = VALID
+  replicates, as in Stata’s completed-replications header; cluster
+  variant named too) and `jackknife (leave-one-out)` /
+  `(leave-one-cluster-out)`. A bootstrap / jackknife whose replicates
+  nearly all fail now raises `spicy_resampling_failed` instead of
+  silently reporting classical SEs under a “bootstrap” footer (also
+  applies to
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  which shares the resamplers).
 - [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)
   partial-proportional-odds fits (`nominal = ~`) are now supported
   (previously refused): the non-proportional terms render as a
@@ -142,6 +170,14 @@ for the walk-throughs.
 
 ### Minor improvements
 
+- Under `exponentiate = TRUE` with a visible SE column, the footer now
+  states the SE scale (“SE on the OR scale (delta method)”; the Stata
+  `[R] logistic` convention `se(OR) = OR x se(b)`) and that the CI is
+  asymmetric (the exponential of the link-scale bounds). The
+  documentation explains why such a CI cannot be reconstructed as
+  `estimate +/- z x SE`. In tables mixing exponentiated and
+  identity-link models the sentence is scoped to the exponentiated
+  models.
 - `show_fit_stats = FALSE` suppresses the fit-stats block.
 - En-dash placeholder cells decimal-align in `gt` / `flextable` /
   `tinytable` / Word / Excel outputs.
@@ -195,6 +231,42 @@ for the walk-throughs.
   position.
 - `table_regression(p_adjust = ...)`: the method name is double-quoted
   on every platform.
+- Standardised-coefficient disclosure fixed on three counts: the footer
+  and runtime caveat now NAME the algebraic interaction convention (SD
+  of the product design column – the SPSS / Stata `regress, beta` /
+  `lm.beta` convention, identical to `effectsize` `"basic"`; it differs
+  from `"refit"` when components are correlated, Friedrich 1982); the
+  footer is fallback-aware (a failed `"refit"` that fell back to
+  `posthoc` says so instead of printing the refit wording over `posthoc`
+  numbers); and the source comments claiming `effectsize` `posthoc`
+  equivalence on interaction rows – false – were corrected, with the
+  true equivalences pinned by cross-package oracle tests.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `ci_method = "profile"` combined with a robust or resampling `vcov` no
+  longer silently displays classical profile CIs next to robust SEs. The
+  `vcov` takes precedence (its Wald CIs are reported, matching the
+  documented `polr` / `clm` behaviour) and a consolidated
+  `spicy_ignored_arg` warning discloses the override.
+- Refits no longer leak the caller’s environment (silent wrong output on
+  formulas with inline transforms such as `log(x)` when the raw variable
+  was visible in the calling environment): `vcov = "bootstrap"` /
+  `"jackknife"` now resample rows of the fixed evaluated design
+  (`lm.wfit` / `glm.fit`) – which also makes them **work** on
+  [`factor()`](https://rdrr.io/r/base/factor.html) /
+  [`log()`](https://rdrr.io/r/base/Log.html) /
+  [`poly()`](https://rdrr.io/r/stats/poly.html) formulas that previously
+  failed on every replicate – and the `standardized = "refit"` paths
+  (lm, glm, mixed) fall back with a `spicy_fallback` warning instead of
+  silently refitting on raw unscaled data.
+- `standardized = "refit"` on a
+  [`poly()`](https://rdrr.io/r/stats/poly.html) /
+  [`splines::ns()`](https://rdrr.io/r/splines/ns.html) formula no longer
+  crashes (matrix-valued model-frame columns are skipped; the refit
+  falls back to `posthoc` with a warning), and a failed mixed-effects
+  refit now warns instead of silently omitting the requested beta rows.
+- Binomial model titles are link-aware for `glmer` / `glmmTMB` /
+  `svyglm` fits: a probit fit is no longer titled “Logistic …
+  regression”.
 - Mixed models with a transformed or matrix response (`cbind(...)`
   binomial `glmer` / `glmmTMB`) now get their LR test vs the
   no-random-effects model (the null refit silently failed before).
