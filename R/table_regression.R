@@ -479,6 +479,7 @@
 #'   probit / cauchit / cloglog zero links and count-type hurdle zero
 #'   parts stay on the link scale, disclosed in the footer. `FALSE`
 #'   omits the blocks (the title still names the model type).
+#' @param intercept_position Where to place the intercept when
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
 #'   `show_intercept = FALSE` (with `spicy_ignored_arg` warning).

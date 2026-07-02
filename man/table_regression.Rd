@@ -198,7 +198,9 @@ join the \code{p_adjust} family, and take significance stars. Under
 link makes the result an odds ratio} (the logit zero components);
 probit / cauchit / cloglog zero links and count-type hurdle zero
 parts stay on the link scale, disclosed in the footer. \code{FALSE}
-omits the blocks (the title still names the model type).
+omits the blocks (the title still names the model type).}
+
+\item{intercept_position}{Where to place the intercept when
 shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,
 intercept just above the fit-stats footer). Ignored when
 \code{show_intercept = FALSE} (with \code{spicy_ignored_arg} warning).}
