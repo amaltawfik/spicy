@@ -74,11 +74,37 @@ test_that("re_test validation and guards", {
                class = "spicy_invalid_input")
   expect_error(table_regression(fit, re_test = "lrt", show_re = FALSE),
                class = "spicy_invalid_input")
+})
+
+test_that("lrt works for nlme::lme (random = ~ slope | group)", {
   skip_if_not_installed("nlme")
-  ml <- nlme::lme(distance ~ age, data = nlme::Orthodont,
+  ml <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
+                  random = ~ age | Subject)
+  vc <- .rt_vc(ml, re_test = "lrt")
+  tested <- vc[!is.na(vc$p.value), ]
+  expect_equal(nrow(tested), 1L)
+  expect_match(tested$term, "re::Subject::age", fixed = TRUE)
+  # oracle: hand REML LRT vs the intercept-only reduced refit (built
+  # directly -- update(lme_fit) needs nlme on the search path)
+  ml_red <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
+                      random = ~ 1 | Subject)
+  chi2_h <- 2 * (as.numeric(stats::logLik(ml)) -
+                   as.numeric(stats::logLik(ml_red)))
+  expect_equal(tested$statistic, chi2_h, tolerance = 1e-6)
+})
+
+test_that("rlrt works for a single-component nlme::lme (matches exactRLRT)", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("RLRsim")
+  mi <- nlme::lme(distance ~ age, data = nlme::Orthodont,
                   random = ~ 1 | Subject)
-  expect_error(table_regression(ml, re_test = "lrt"),
-               class = "spicy_unsupported")
+  set.seed(7)
+  vc <- .rt_vc(mi, re_test = "rlrt")
+  tested <- vc[!is.na(vc$p.value), ]
+  expect_equal(nrow(tested), 1L)
+  set.seed(7)
+  orc <- RLRsim::exactRLRT(mi)
+  expect_equal(tested$statistic, unname(orc$statistic), tolerance = 1e-8)
 })
 
 test_that("lrt works for glmmTMB and never tests rho / residual", {

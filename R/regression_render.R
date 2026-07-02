@@ -315,7 +315,8 @@ render_regression_table <- function(
       col_spec = col_spec,
       digits = digits, fit_digits = fit_digits,
       ic_digits = ic_digits, p_digits = p_digits,
-      decimal_mark = decimal_mark
+      decimal_mark = decimal_mark,
+      n_groups_by_model = aligned$n_groups_by_model
     )
     if (length(fit_rows) > 0L) {
       group_sep <- nrow(body) + 1L
@@ -904,9 +905,25 @@ build_outcome_row <- function(outcome_labels,
 build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
                                   label_map, col_spec,
                                   digits, fit_digits, ic_digits,
-                                  decimal_mark, p_digits = 3L) {
+                                  decimal_mark, p_digits = 3L,
+                                  n_groups_by_model = NULL) {
   if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
     return(list())
+  }
+
+  # `n_groups` gets a DYNAMIC label + numeric cells when every mixed model
+  # shares the same single grouping factor (the dominant case): the row reads
+  # "N (Subject) | 18" (sjPlot / HLM style) instead of
+  # "N (groups) | 18 Subjects". Heterogeneous or crossed structures keep the
+  # generic label with the per-model descriptive strings.
+  ngl <- Filter(function(x) !is.null(x) && length(x) > 0L,
+                n_groups_by_model %||% list())
+  ng_shared_factor <- if (length(ngl) > 0L &&
+                          all(vapply(ngl, length, integer(1)) == 1L) &&
+                          length(unique(unlist(lapply(ngl, names)))) == 1L) {
+    names(ngl[[1L]])[1L]
+  } else {
+    NA_character_
   }
 
   # First sub-column per model (where the fit-stat value will land)
@@ -926,7 +943,12 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # value (e.g. icc on a random-slope fit, or the tokens on a non-mixed
     # table), drop the row entirely instead of rendering an empty one.
     if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
-    cells <- list(Variable = fit_stat_label(tk))
+    lab <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
+      sprintf("N (%s)", ng_shared_factor)
+    } else {
+      fit_stat_label(tk)
+    }
+    cells <- list(Variable = lab)
     for (col in all_data_cols) cells[[col]] <- ""
     for (m_id in model_ids) {
       target_col <- first_col_per_model[[m_id]]
@@ -934,6 +956,16 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
       sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
       if (nrow(sub) == 0L) next
       val <- sub[[tk]][1]
+      # Dynamic n_groups: numeric count from the per-model raw data.
+      if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
+        ng <- (n_groups_by_model %||% list())[[m_id]]
+        cells[[target_col]] <- if (is.null(ng) || length(ng) == 0L) {
+          ""
+        } else {
+          sprintf("%d", as.integer(ng[[1L]]))
+        }
+        next
+      }
       cells[[target_col]] <- format_fit_stat_value(
         tk, val,
         digits = digits, fit_digits = fit_digits,

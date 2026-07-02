@@ -112,7 +112,7 @@ test_that("glmer (cbpp cbind binomial) table_regression output uses structured p
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Random effects (ML)",  fixed = TRUE)
   expect_match(combined, "σ herd (Intercept)",    fixed = TRUE)
-  expect_match(combined, "herds",              fixed = TRUE)
+  expect_match(combined, "N (herd)",              fixed = TRUE)
   # cbind binomial -> no ICC (gated; per-trial formula not in scope).
   expect_false(grepl("ICC", combined, fixed = TRUE))
 })

@@ -748,15 +748,28 @@ validate_regression_frame <- function(frame) {
   }
   if (is.null(fit_full_ml)) return(NULL)  # nocov -- refitML does not fail on a converged lmer
 
+  # Refit against the model frame under a SAFE response name: a transformed
+  # or matrix response (e.g. `cbind(incidence, size - incidence)`) exists in
+  # the model frame only as its combined deparsed column, so re-evaluating
+  # the original response expression there fails ("object 'incidence' not
+  # found"). model.response() hands us the already-evaluated response.
+  data[[".spicy_response."]] <- stats::model.response(data)
+  null_f <- tryCatch(
+    stats::as.formula(
+      paste(".spicy_response. ~", deparse1(no_re_formula[[3L]]))
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(null_f)) return(NULL)                                    # nocov
   fit_null <- tryCatch(
     if (is_gaussian) {
-      stats::lm(no_re_formula, data = data)
+      stats::lm(null_f, data = data)
     } else {
-      stats::glm(no_re_formula, data = data, family = fam)
+      stats::glm(null_f, data = data, family = fam)
     },
     error = function(e) NULL
   )
-  if (is.null(fit_null)) return(NULL)  # nocov -- null lm/glm fits on the same data
+  if (is.null(fit_null)) return(NULL)
 
   ll_full <- as.numeric(stats::logLik(fit_full_ml))
   ll_null <- as.numeric(stats::logLik(fit_null))
@@ -799,15 +812,25 @@ validate_regression_frame <- function(frame) {
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted glmmTMB
 
+  # Safe response name: see the .null_lrt_merMod comment (a transformed or
+  # matrix response only exists in the model frame as its combined column).
+  data[[".spicy_response."]] <- stats::model.response(data)
+  null_f <- tryCatch(
+    stats::as.formula(
+      paste(".spicy_response. ~", deparse1(no_re_formula[[3L]]))
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(null_f)) return(NULL)                                    # nocov
   fit_null <- tryCatch(
     if (is_gaussian) {
-      stats::lm(no_re_formula, data = data)
+      stats::lm(null_f, data = data)
     } else {
-      stats::glm(no_re_formula, data = data, family = fam)
+      stats::glm(null_f, data = data, family = fam)
     },
     error = function(e) NULL
   )
-  if (is.null(fit_null)) return(NULL)  # nocov -- null lm/glm fits on the same data
+  if (is.null(fit_null)) return(NULL)
 
   ll_full <- as.numeric(stats::logLik(fit))
   ll_null <- as.numeric(stats::logLik(fit_null))

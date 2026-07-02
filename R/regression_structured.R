@@ -307,7 +307,8 @@ build_structured_body <- function(aligned,
       fit_stats, show_fit_stats, model_ids, col_spec, expanded,
       empty_row = empty_row,
       digits = digits, fit_digits = fit_digits,
-      ic_digits = ic_digits, p_digits = p_digits
+      ic_digits = ic_digits, p_digits = p_digits,
+      n_groups_by_model = aligned$n_groups_by_model
     )
     for (fr in fit_rows) {
       rows[[length(rows) + 1L]] <- fr$row
@@ -544,7 +545,18 @@ build_structured_body <- function(aligned,
                                               model_ids, col_spec, expanded,
                                               empty_row,
                                               digits, fit_digits,
-                                              ic_digits, p_digits) {
+                                              ic_digits, p_digits,
+                                              n_groups_by_model = NULL) {
+  # Shared-single-grouping-factor detection: mirrors build_fit_stats_rows().
+  ngl <- Filter(function(x) !is.null(x) && length(x) > 0L,
+                n_groups_by_model %||% list())
+  ng_shared_factor <- if (length(ngl) > 0L &&
+                          all(vapply(ngl, length, integer(1)) == 1L) &&
+                          length(unique(unlist(lapply(ngl, names)))) == 1L) {
+    names(ngl[[1L]])[1L]
+  } else {
+    NA_character_
+  }
   # Each fit-stat row puts the value in the FIRST structured sub-column
   # of each model (i.e., the col_name of the first col_spec entry per
   # model, which in the structured expansion is the FIRST expanded
@@ -572,7 +584,11 @@ build_structured_body <- function(aligned,
     # build_fit_stats_rows).
     if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
     row <- empty_row
-    row$Variable <- fit_stat_label(tk)
+    row$Variable <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
+      sprintf("N (%s)", ng_shared_factor)
+    } else {
+      fit_stat_label(tk)
+    }
     col_overrides <- list()
 
     # Per-token precision: same logic as format_fit_stat_value()
@@ -592,17 +608,17 @@ build_structured_body <- function(aligned,
       # sub[[tk]][1L] is always a scalar (NA at worst), never NULL.
       if (is.null(val)) val <- NA_real_
       # nocov end
-      # n_groups is a pre-formatted character cell ("18 Subjects"). The
-      # structured body is numeric-typed, so carry the group COUNT for the
-      # single-factor case; crossed factors ("18 Subjects, 9 Items") have no
-      # single count and fall to NA (blank) in the structured/rich engines --
-      # the char body keeps the full string.
+      # n_groups: the structured body is numeric-typed. Carry the group COUNT
+      # from the raw per-model data when the model has a single grouping
+      # factor; crossed factors have no single count and fall to NA (blank)
+      # in the structured/rich engines -- the char body keeps the full
+      # descriptive string.
       row[[target_col]] <- if (identical(tk, "n_groups")) {
-        v <- as.character(val)
-        if (is.na(v) || grepl(",", v, fixed = TRUE)) {
-          NA_real_
+        ng <- (n_groups_by_model %||% list())[[m_id]]
+        if (!is.null(ng) && length(ng) == 1L) {
+          as.numeric(ng[[1L]])
         } else {
-          suppressWarnings(as.numeric(sub("^(\\d+) .*$", "\\1", v)))
+          NA_real_
         }
       } else {
         as.numeric(val)

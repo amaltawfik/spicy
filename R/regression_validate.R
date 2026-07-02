@@ -1260,8 +1260,14 @@ validate_predictor_labels <- function(labels, models) {
   all_terms <- unique(unlist(lapply(models, function(fit) {
     attr(stats::terms(fit), "term.labels")
   })))
+  # Fixed-effect coefficient names via the polymorphic helper:
+  # names(coef(fit)) is wrong for several classes (merMod returns the
+  # per-GROUP coefficient list, so its names are the grouping factors;
+  # lme returns random-effect-augmented coefficients; clm mixes
+  # thresholds in). .spicy_fixed_coef_names() knows each class.
   all_coefs <- unique(unlist(lapply(models, function(fit) {
-    names(stats::coef(fit))
+    tryCatch(.spicy_fixed_coef_names(fit),
+             error = function(e) names(stats::coef(fit)))
   })))
   valid_keys <- unique(c(all_terms, all_coefs))
   unknown <- setdiff(nms, valid_keys)

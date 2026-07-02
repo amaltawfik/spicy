@@ -360,11 +360,12 @@ Lee 1994). The reduction scheme matches
 \code{lmerTest::ranova()}; the mixture reference makes the
 p-value exact-asymptotic rather than conservative. A bar's
 intercept is tested only when it is the bar's single term.
-Supported: \code{lmer}, \code{glmer}, \code{glmmTMB}.
+Supported: \code{lmer}, \code{glmer}, \code{glmmTMB}, and \code{lme} with a
+simple \code{random = ~ terms | group} structure.
 \item \code{"rlrt"}: exact restricted likelihood-ratio test with a
 simulated finite-sample null (\code{RLRsim::exactRLRT()};
 Crainiceanu & Ruppert 2004). Only defined for a Gaussian
-\code{lmer} fit with a single variance component.
+\code{lmer} / \code{lme} fit with a single variance component.
 }
 The test statistic and df stay out of the displayed t/z column
 (they are chi-square-scale, not t/z) but are carried in

@@ -187,6 +187,14 @@ align_frames <- function(
   }, character(1))
   names(exp_headers_auto) <- model_ids
 
+  # Raw per-model grouping-factor counts (named integer vectors; NULL for
+  # non-mixed models). Read by the fit-stat builders so the `n_groups` row
+  # can carry a dynamic label ("N (Subject)") + numeric counts when every
+  # model shares the same single grouping factor.
+  n_groups_by_model <- stats::setNames(
+    lapply(frames, function(f) f$info$n_groups), model_ids
+  )
+
   list(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
@@ -195,7 +203,8 @@ align_frames <- function(
     outcome_labels_auto = outcome_labels_auto,
     exp_headers_auto = exp_headers_auto,
     model_ids = model_ids,
-    n_models = length(frames)
+    n_models = length(frames),
+    n_groups_by_model = n_groups_by_model
   )
 }
 

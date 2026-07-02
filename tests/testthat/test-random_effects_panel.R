@@ -40,7 +40,7 @@ test_that("lmer random-intercept output has structured 'Random effects' panel", 
   expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
   expect_match(combined, "σ (Residual)",         fixed = TRUE)
   expect_match(combined, "ICC",                  fixed = TRUE)
-  expect_match(combined, "18 Subjects",          fixed = TRUE)
+  expect_match(combined, "N (Subject)",          fixed = TRUE)
 })
 
 

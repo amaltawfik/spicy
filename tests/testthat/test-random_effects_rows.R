@@ -221,11 +221,68 @@ test_that("N (groups) and ICC render as fit-stat rows (mixed defaults)", {
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
-  expect_true(any(v == "N (groups)"))
+  expect_true(any(v == "N (Subject)"))
   expect_true(any(v == "ICC"))
-  n_cell <- trimws(df[[2]][v == "N (groups)"])
-  expect_match(n_cell, "18 Subjects", fixed = TRUE)
+  n_cell <- trimws(df[[2]][v == "N (Subject)"])
+  expect_match(n_cell, "18", fixed = TRUE)
   # ICC row auto-drops when not computable (random slope)
   df2 <- table_regression(.rr_lmer_slope(), output = "data.frame")
   expect_false(any(trimws(df2$Variable) == "ICC"))
+})
+
+## ---- 10. Ledger sweep (spec section 17, 2026-07-02) ------------------------
+
+test_that("cbind-response glmer gets the chi-bar-squared LR footer line", {
+  skip_if_not_installed("lme4")
+  m <- suppressMessages(lme4::glmer(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = lme4::cbpp, family = binomial))
+  nl <- spicy:::.compute_null_model_lrt(m)
+  expect_false(is.null(nl))
+  expect_true(is.finite(nl$chi2) && nl$chi2 > 0)
+  out <- paste(capture.output(print(table_regression(m))), collapse = "\n")
+  expect_match(out, "LR test", fixed = TRUE)
+})
+
+test_that("labels accepts coefficient-level keys on mixed fits", {
+  skip_if_not_installed("lme4")
+  m <- suppressMessages(lme4::glmer(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = lme4::cbpp, family = binomial))
+  df <- table_regression(m, labels = c(period2 = "Period 2"),
+                         output = "data.frame")
+  expect_true(any(grepl("Period 2", df$Variable, fixed = TRUE)))
+  # a grouping factor is NOT a coefficient name: still rejected
+  expect_error(
+    table_regression(m, labels = c(bogus_key = "X"), output = "data.frame"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("n_groups: dynamic label + numeric cell when one shared factor", {
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  df <- table_regression(fit, output = "data.frame")
+  v <- trimws(df$Variable)
+  expect_true(any(v == "N (Subject)"))
+  expect_identical(trimws(df[[2]][v == "N (Subject)"]), "18")
+  # structured body carries the numeric count
+  s <- as_structured(table_regression(fit))
+  b <- s$body
+  expect_equal(as.numeric(b[[2]][b$Variable == "N (Subject)"]), 18)
+})
+
+test_that("n_groups: crossed factors fall back to the generic label + strings", {
+  skip_if_not_installed("lme4")
+  set.seed(1)
+  d <- data.frame(y = stats::rnorm(300), x = stats::rnorm(300),
+                  g1 = factor(sample(10, 300, TRUE)),
+                  g2 = factor(sample(15, 300, TRUE)))
+  m <- suppressWarnings(suppressMessages(
+    lme4::lmer(y ~ x + (1 | g1) + (1 | g2), data = d)))
+  df <- table_regression(m, output = "data.frame")
+  v <- trimws(df$Variable)
+  expect_true(any(v == "N (groups)"))
+  cell <- trimws(df[[2]][v == "N (groups)"])
+  expect_match(cell, "g1", fixed = TRUE)
+  expect_match(cell, "g2", fixed = TRUE)
 })

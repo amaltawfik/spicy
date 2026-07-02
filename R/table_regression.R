@@ -633,11 +633,12 @@
 #'       `lmerTest::ranova()`; the mixture reference makes the
 #'       p-value exact-asymptotic rather than conservative. A bar's
 #'       intercept is tested only when it is the bar's single term.
-#'       Supported: `lmer`, `glmer`, `glmmTMB`.
+#'       Supported: `lmer`, `glmer`, `glmmTMB`, and `lme` with a
+#'       simple `random = ~ terms | group` structure.
 #'     \item `"rlrt"`: exact restricted likelihood-ratio test with a
 #'       simulated finite-sample null (`RLRsim::exactRLRT()`;
 #'       Crainiceanu & Ruppert 2004). Only defined for a Gaussian
-#'       `lmer` fit with a single variance component.
+#'       `lmer` / `lme` fit with a single variance component.
 #'   }
 #'   The test statistic and df stay out of the displayed t/z column
 #'   (they are chi-square-scale, not t/z) but are carried in
@@ -1357,19 +1358,6 @@ table_regression <- function(
           "i" = "The per-term test fills the p column of those rows."
         ),
         class = "spicy_invalid_input"
-      )
-    }
-    if (any(vapply(models, inherits, logical(1), "lme"))) {
-      spicy_abort(
-        c(
-          "`re_test` is not yet implemented for `nlme::lme` fits.",
-          "i" = paste0(
-            "The random structure of an lme fit lives outside the formula, ",
-            "so the per-term reduced refits need a dedicated path. Supported ",
-            "today: lmer / glmer / glmmTMB."
-          )
-        ),
-        class = "spicy_unsupported"
       )
     }
   }

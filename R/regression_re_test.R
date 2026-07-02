@@ -35,6 +35,8 @@
 .compute_re_term_tests <- function(fit, re_test) {
   if (identical(re_test, "rlrt")) {
     .re_term_tests_rlrt(fit)
+  } else if (inherits(fit, "lme")) {
+    .re_term_tests_lrt_lme(fit)
   } else {
     .re_term_tests_lrt(fit)
   }
@@ -150,6 +152,110 @@
 }
 
 
+# nlme::lme sibling of .re_term_tests_lrt(). The random structure lives in
+# the `random =` argument (not the formula), so the reduced refits go through
+# `update(fit, random = ...)`. Only the simple single-level formula case
+# (`~ terms | group`, incl. the `random = ~ terms` shorthand) is handled;
+# pdMat / multilevel list structures leave the rows untested with a warning.
+.re_term_tests_lrt_lme <- function(fit) {
+  rnd <- tryCatch(fit$call$random, error = function(e) NULL)
+  rnd <- tryCatch(eval(rnd, envir = parent.frame()), error = function(e) rnd)
+  unsupported <- function() {
+    spicy_warn(
+      c(
+        "Per-term LR tests support only a simple `random = ~ terms | group` lme structure.",
+        "i" = "The random-effect rows' test columns stay NA."
+      ),
+      class = "spicy_fallback"
+    )
+    NULL
+  }
+  if (!inherits(rnd, "formula") || length(rnd) != 2L) return(unsupported())
+  rhs <- rnd[[2L]]
+  if (is.call(rhs) && identical(rhs[[1L]], as.name("|"))) {
+    lhs_expr <- rhs[[2L]]
+    grp <- deparse1(rhs[[3L]])
+  } else {
+    # `random = ~ terms` shorthand: the group comes from the fitted object.
+    lhs_expr <- rhs
+    grp <- names(fit$groups)[1L]
+  }
+  tt <- tryCatch(stats::terms(stats::reformulate(deparse1(lhs_expr))),
+                 error = function(e) NULL)
+  if (is.null(tt)) return(unsupported())                               # nocov
+  slopes <- attr(tt, "term.labels")
+  has_int <- attr(tt, "intercept") == 1L
+  n_terms_bar <- length(slopes) + as.integer(has_int)
+  ll_full <- as.numeric(stats::logLik(fit))
+
+  out <- list()
+  tests <- c(slopes, if (has_int && length(slopes) == 0L) "(Intercept)")
+  for (s in tests) {
+    if (identical(s, "(Intercept)")) {
+      # Dropping the only random term leaves no random part: reuse the
+      # whole-block null LRT (ML refit vs gls/lm).
+      nl <- .compute_null_model_lrt(fit)
+      if (!is.null(nl)) {
+        out[[length(out) + 1L]] <- data.frame(
+          group = grp, term = s,
+          statistic = nl$chi2, df = as.numeric(nl$df),
+          p_value = nl$p_chibar2,
+          stringsAsFactors = FALSE
+        )
+      }
+      next
+    }
+    keep <- setdiff(slopes, s)
+    new_rnd <- tryCatch(
+      stats::as.formula(
+        paste0("~", paste(c(if (has_int) "1" else "0", keep),
+                          collapse = " + "), " | ", grp),
+        env = environment(stats::formula(fit))
+      ),
+      error = function(e) NULL
+    )
+    # Re-evaluate the captured call with the reduced random structure.
+    # stats::update(fit, random = ...) fails when nlme is not attached (the
+    # captured call is unqualified `lme(...)`): requalify to nlme::lme first,
+    # exactly like .null_lrt_lme().
+    red <- if (is.null(new_rnd)) NULL else tryCatch({                  # nocov
+      call_copy <- fit$call
+      call_copy[[1L]] <- quote(nlme::lme)
+      call_copy$random <- new_rnd
+      suppressWarnings(suppressMessages(eval(call_copy, envir = parent.frame())))
+    }, error = function(e) NULL)
+    if (is.null(red)) {
+      spicy_warn(
+        c(
+          sprintf(
+            "Per-term LR test: the reduced refit for random term `%s` (%s) failed.",
+            s, grp
+          ),
+          "i" = "The row's test columns stay NA."
+        ),
+        class = "spicy_fallback"
+      )
+      next
+    }
+    chi2 <- max(0, 2 * (ll_full - as.numeric(stats::logLik(red))))
+    q <- 1L + (n_terms_bar - 1L)
+    p <- 0.5 * stats::pchisq(chi2, df = q, lower.tail = FALSE) +
+      if (q - 1L > 0L) {
+        0.5 * stats::pchisq(chi2, df = q - 1L, lower.tail = FALSE)
+      } else {
+        0.5 * as.numeric(chi2 <= 0)                                    # nocov
+      }
+    out[[length(out) + 1L]] <- data.frame(
+      group = grp, term = s,
+      statistic = chi2, df = as.numeric(q), p_value = p,
+      stringsAsFactors = FALSE
+    )
+  }
+  if (length(out) == 0L) return(NULL)                                  # nocov
+  do.call(rbind, out)
+}
+
+
 .re_term_tests_rlrt <- function(fit) {
   if (!spicy_pkg_available("RLRsim")) {
     spicy_abort(
@@ -160,18 +266,26 @@
       class = "spicy_missing_pkg"
     )
   }
-  # exactRLRT() is exact for ONE variance component in a Gaussian LMM.
-  ok_class <- inherits(fit, "lmerMod") && !inherits(fit, "glmerMod")
-  vc <- if (ok_class) lme4::VarCorr(fit) else NULL
-  n_var <- if (is.null(vc)) NA_integer_ else {
+  # exactRLRT() is exact for ONE variance component in a Gaussian LMM
+  # (lmer or lme fits are both accepted by RLRsim).
+  is_lmer <- inherits(fit, "lmerMod") && !inherits(fit, "glmerMod")
+  is_lme  <- inherits(fit, "lme")
+  n_var <- if (is_lmer) {
+    vc <- lme4::VarCorr(fit)
     sum(vapply(vc, function(m) nrow(as.matrix(m)), integer(1)))
+  } else if (is_lme) {
+    # One unconstrained reStruct parameter <=> a single variance component.
+    length(tryCatch(stats::coef(fit$modelStruct$reStruct),
+                    error = function(e) numeric(2)))
+  } else {
+    NA_integer_
   }
-  if (!ok_class || !identical(n_var, 1L)) {
+  if (!(is_lmer || is_lme) || !identical(as.integer(n_var), 1L)) {
     spicy_abort(
       c(
         paste0(
           "`re_test = \"rlrt\"` (exact restricted LRT) is only defined for a ",
-          "Gaussian `lmer` fit with a single variance component."
+          "Gaussian `lmer` / `lme` fit with a single variance component."
         ),
         "i" = "Use `re_test = \"lrt\"` (chi-bar-squared LR test) for richer random structures."
       ),
@@ -180,8 +294,15 @@
   }
   res <- tryCatch(RLRsim::exactRLRT(fit), error = function(e) NULL)
   if (is.null(res)) return(NULL)                                       # nocov
-  grp <- names(vc)[1L]
-  term <- rownames(as.matrix(vc[[1L]]))[1L]
+  if (is_lmer) {
+    vc <- lme4::VarCorr(fit)
+    grp <- names(vc)[1L]
+    term <- rownames(as.matrix(vc[[1L]]))[1L]
+  } else {
+    grp <- names(fit$groups)[1L]
+    vcn <- rownames(nlme::VarCorr(fit))
+    term <- setdiff(vcn, "Residual")[1L]
+  }
   data.frame(
     group = grp, term = term,
     statistic = unname(res$statistic), df = NA_real_,

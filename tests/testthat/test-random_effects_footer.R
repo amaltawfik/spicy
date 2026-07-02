@@ -152,7 +152,7 @@ test_that("table_regression() footer carries the Random effects panel for lmer",
   # Phase 7c7c: structured panel format
   expect_match(combined, "Random effects",     fixed = TRUE)
   expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
-  expect_match(combined, "18 Subjects",        fixed = TRUE)
+  expect_match(combined, "N (Subject)",        fixed = TRUE)
 })
 
 test_that("table_regression() footer does NOT carry Random effects for lm", {
