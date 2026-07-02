@@ -470,7 +470,7 @@ as_regression_frame.glmmTMB <- function(fit,
   vc_all <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
   vc <- vc_all$cond
   if (is.null(vc)) {
-    return(modifyList(empty_random_effects(), list(method = method)))                                       # nocov
+    return(utils::modifyList(empty_random_effects(), list(method = method)))                                       # nocov
   }
 
   rows <- list()

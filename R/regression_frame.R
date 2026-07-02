@@ -87,8 +87,8 @@ empty_random_effects <- function() {
 # live in exactly one location. Pairs with validate_regression_frame() per the
 # standard new_<class>() / validate_<class>() constructor convention.
 new_regression_frame <- function(coefs, info, fit) {
-  info$supports <- modifyList(default_supports(), info$supports %||% list())
-  info$extras   <- modifyList(default_extras(),   info$extras   %||% list())
+  info$supports <- utils::modifyList(default_supports(), info$supports %||% list())
+  info$extras   <- utils::modifyList(default_extras(),   info$extras   %||% list())
   structure(
     list(coefs = coefs, info = info),
     class               = "spicy_regression_frame",

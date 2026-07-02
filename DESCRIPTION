@@ -36,6 +36,7 @@ Imports:
     tidyselect,
     utils
 Suggests:
+    boot,
     broom,
     clipr,
     clubSandwich,

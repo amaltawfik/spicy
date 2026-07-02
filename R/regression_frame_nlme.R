@@ -415,7 +415,7 @@ as_regression_frame.gls <- function(fit,
   vc <- tryCatch(nlme::VarCorr(fit), error = function(e) NULL)
   # nocov start  (VarCorr() does not error for a valid lme fit)
   if (is.null(vc)) {
-    return(modifyList(empty_random_effects(), list(method = method)))
+    return(utils::modifyList(empty_random_effects(), list(method = method)))
   }
   # nocov end
   raw <- unclass(vc)

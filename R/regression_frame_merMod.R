@@ -518,7 +518,7 @@ as_regression_frame.glmerMod <- function(fit,
   vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
   if (is.null(vc)) {
     # nocov start -- VarCorr() does not fail for a converged merMod fit
-    return(modifyList(empty_random_effects(), list(method = method)))
+    return(utils::modifyList(empty_random_effects(), list(method = method)))
     # nocov end
   }
 
