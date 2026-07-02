@@ -678,30 +678,17 @@ details.
 
   Extract the typed (structured) view of a `spicy_regression_table`
 
-## Regression tables by model family
+## Supported models
 
-What
+The registry of model classes
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-does for each supported model family: engines, inference,
-robust-variance backends, exponentiate semantics, marginal effects, fit
-statistics, and the family’s labelled blocks.
+supports – one function returning the machine-readable list, whose
+documentation page also describes the per-family behaviour (inference,
+robust-variance backends, exponentiate semantics, marginal effects,
+labelled blocks).
 
-- [`table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-  : Supported model classes in table_regression()
-- [`table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md)
-  : Mixed-effects models in table_regression()
-- [`table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md)
-  : Ordinal models in table_regression()
-- [`table_regression_categorical`](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md)
-  : Categorical (multinomial) models in table_regression()
-- [`table_regression_counts`](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md)
-  : Count and two-part models in table_regression()
-- [`table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md)
-  : Survival models in table_regression()
-- [`table_regression_robust`](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md)
-  : Robust, IV, quantile and panel models in table_regression()
-- [`table_regression_bayesian`](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md)
-  : Bayesian models in table_regression()
+- [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+  : Supported models and per-family behaviour of table_regression()
 
 ## Export
 

@@ -1057,17 +1057,14 @@ beyond "p \< 0.05". *The American Statistician*, 73(sup1), 1-19.
 
 ## See also
 
-Per-family behaviour reference:
-[table_regression_models](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-(the supported-classes map), and the family pages
-[table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md),
-[table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md),
-[table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md),
-[table_regression_counts](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md),
-[table_regression_survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md),
-[table_regression_robust](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md),
-[table_regression_bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md).
-Other regression-table functions:
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+for the registry of supported model classes and the per-family behaviour
+reference (also reachable as
+[`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
+[`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
+...). If a class is not listed there, try `table_regression(fit)` anyway
+– unsupported classes error with a clear message. Other regression-table
+functions:
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 for one-predictor-by-many-outcomes descriptive tables. Other spicy table
 functions:
