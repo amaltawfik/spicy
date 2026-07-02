@@ -1,5 +1,5 @@
 ---
-title: "Explore variables and build codebooks in R"
+title: "Explore variables and build codebooks"
 description: >
   Explore variables, inspect labels, and build interactive codebooks in R
   with spicy. Learn how to use varlist(), vl(), code_book(), and
@@ -9,7 +9,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Explore variables and build codebooks in R}
+  %\VignetteIndexEntry{Explore variables and build codebooks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

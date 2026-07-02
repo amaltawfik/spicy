@@ -1,5 +1,5 @@
 ---
-title: "Cramer's V, Phi, and association measures for contingency tables in R"
+title: "Cramer's V, Phi, and association measures"
 description: >
   Calculate Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b,
   Somers' D, and other effect sizes for contingency tables in R, with
@@ -9,7 +9,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Cramer's V, Phi, and association measures for contingency tables in R}
+  %\VignetteIndexEntry{Cramer's V, Phi, and association measures}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

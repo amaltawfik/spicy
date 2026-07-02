@@ -21,41 +21,41 @@
 # through table_regression_models().
 .supported_models_registry <- function() {
   df <- rbind(
-    c("Linear and generalized linear", "lm",       "stats::lm",              "yes", "-",                    "-"),
-    c("Linear and generalized linear", "glm",      "stats::glm",             "yes", "OR / IRR / RR (link)", "-"),
-    c("Linear and generalized linear", "negbin",   "MASS::glm.nb",           "yes", "IRR",                  "-"),
-    c("Linear and generalized linear", "rlm",      "MASS::rlm",              "yes", "-",                    "-"),
-    c("Linear and generalized linear", "nls",      "stats::nls",             "no",  "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "lm_robust","estimatr::lm_robust",    "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "iv_robust","estimatr::iv_robust",    "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "ivreg",    "AER::ivreg",             "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "tobit",    "AER::tobit",             "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "rq",       "quantreg::rq",           "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "fixest",   "fixest::feols / feglm / fepois / fenegbin", "yes", "`feglm`: OR / IRR", "-"),
-    c("Mixed effects",                 "lmerMod",  "lme4::lmer",             "yes", "-",                    "Random effects"),
-    c("Mixed effects",                 "glmerMod", "lme4::glmer",            "yes", "OR / IRR (link)",      "Random effects"),
-    c("Mixed effects",                 "glmmTMB",  "glmmTMB::glmmTMB",       "yes", "link-dependent (IRR for count families)", "Random effects; Zero-inflation; Dispersion"),
-    c("Mixed effects",                 "lme",      "nlme::lme",              "yes", "-",                    "Random effects"),
-    c("Mixed effects",                 "gls",      "nlme::gls",              "yes", "-",                    "-"),
-    c("Ordinal",                       "polr",     "MASS::polr",             "per category", "OR (logit)", "Thresholds"),
-    c("Ordinal",                       "clm",      "ordinal::clm",           "per category", "OR (logit)", "Thresholds; Non-proportional effects"),
-    c("Categorical",                   "multinom", "nnet::multinom",         "per outcome",  "RRR",        "per-outcome blocks"),
-    c("Categorical",                   "mlogit",   "mlogit::mlogit",         "no",  "OR",                  "per-alternative rows"),
-    c("Counts, two-part",              "zeroinfl", "pscl::zeroinfl",         "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero-inflation"),
-    c("Counts, two-part",              "hurdle",   "pscl::hurdle",           "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero hurdle"),
-    c("Survival",                      "coxph",    "survival::coxph",        "no",  "HR",                  "-"),
-    c("Survival",                      "survreg",  "survival::survreg",      "yes", "TR (log-scale distributions)","-"),
-    c("Survival",                      "cph",      "rms::cph",               "no",  "HR",                  "-"),
-    c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg", "yes", "TR / HR (dist)",    "distribution parameters"),
-    c("Survey-weighted",               "svyglm",   "survey::svyglm",         "yes (design-based)", "OR / IRR", "-"),
-    c("Additive, proportions, selection", "gam",   "mgcv::gam / bam",        "yes", "OR / IRR (link)",     "-"),
-    c("Additive, proportions, selection", "betareg", "betareg::betareg",     "yes", "OR (mean link)",      "-"),
-    c("Additive, proportions, selection", "selection", "sampleSelection::selection", "no", "-",           "selection component"),
-    c("rms",                           "ols",      "rms::ols",               "yes", "-",                    "-"),
-    c("rms",                           "lrm",      "rms::lrm",               "yes", "OR",                   "-"),
-    c("rms",                           "Glm",      "rms::Glm",               "yes", "link-dependent",       "-"),
-    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm / stan_glmer / ...", "yes", "link-dependent", "Random effects (if multilevel)"),
-    c("Bayesian",                      "brmsfit",  "brms::brm",              "yes", "link-dependent",       "Random effects (if multilevel)")
+    c("Linear and generalized linear", "lm",       "stats::lm()",              "yes", "-",                    "-"),
+    c("Linear and generalized linear", "glm",      "stats::glm()",             "yes", "OR / IRR / RR (link)", "-"),
+    c("Linear and generalized linear", "negbin",   "MASS::glm.nb()",           "yes", "IRR",                  "-"),
+    c("Linear and generalized linear", "rlm",      "MASS::rlm()",              "yes", "-",                    "-"),
+    c("Linear and generalized linear", "nls",      "stats::nls()",             "no",  "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "lm_robust","estimatr::lm_robust()",    "yes", "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "iv_robust","estimatr::iv_robust()",    "yes", "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "ivreg",    "AER::ivreg()",             "yes", "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "tobit",    "AER::tobit()",             "yes", "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "rq",       "quantreg::rq()",           "yes", "-",                    "-"),
+    c("Robust, IV, quantile, panel",   "fixest",   "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::fenegbin()", "yes", "`feglm`: OR / IRR", "-"),
+    c("Mixed effects",                 "lmerMod",  "lme4::lmer()",             "yes", "-",                    "Random effects"),
+    c("Mixed effects",                 "glmerMod", "lme4::glmer()",            "yes", "OR / IRR (link)",      "Random effects"),
+    c("Mixed effects",                 "glmmTMB",  "glmmTMB::glmmTMB()",       "yes", "link-dependent (IRR for count families)", "Random effects; Zero-inflation; Dispersion"),
+    c("Mixed effects",                 "lme",      "nlme::lme()",              "yes", "-",                    "Random effects"),
+    c("Mixed effects",                 "gls",      "nlme::gls()",              "yes", "-",                    "-"),
+    c("Ordinal",                       "polr",     "MASS::polr()",             "per category", "OR (logit)", "Thresholds"),
+    c("Ordinal",                       "clm",      "ordinal::clm()",           "per category", "OR (logit)", "Thresholds; Non-proportional effects"),
+    c("Categorical",                   "multinom", "nnet::multinom()",         "per outcome",  "RRR",        "per-outcome blocks"),
+    c("Categorical",                   "mlogit",   "mlogit::mlogit()",         "no",  "OR",                  "per-alternative rows"),
+    c("Counts, two-part",              "zeroinfl", "pscl::zeroinfl()",         "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero-inflation"),
+    c("Counts, two-part",              "hurdle",   "pscl::hurdle()",           "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero hurdle"),
+    c("Survival",                      "coxph",    "survival::coxph()",        "no",  "HR",                  "-"),
+    c("Survival",                      "survreg",  "survival::survreg()",      "yes", "TR (log-scale distributions)","-"),
+    c("Survival",                      "cph",      "rms::cph()",               "no",  "HR",                  "-"),
+    c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg()", "yes", "TR / HR (dist)",    "distribution parameters"),
+    c("Survey-weighted",               "svyglm",   "survey::svyglm()",         "yes (design-based)", "OR / IRR", "-"),
+    c("Additive, proportions, selection", "gam",   "mgcv::gam(), mgcv::bam()",        "yes", "OR / IRR (link)",     "-"),
+    c("Additive, proportions, selection", "betareg", "betareg::betareg()",     "yes", "OR (mean link)",      "-"),
+    c("Additive, proportions, selection", "selection", "sampleSelection::selection()", "no", "-",           "selection component"),
+    c("rms",                           "ols",      "rms::ols()",               "yes", "-",                    "-"),
+    c("rms",                           "lrm",      "rms::lrm()",               "yes", "OR",                   "-"),
+    c("rms",                           "Glm",      "rms::Glm()",               "yes", "link-dependent",       "-"),
+    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "yes", "link-dependent", "Random effects (if multilevel)"),
+    c("Bayesian",                      "brmsfit",  "brms::brm()",              "yes", "link-dependent",       "Random effects (if multilevel)")
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   names(out) <- c("family", "class", "engine", "ame", "exponentiate",
@@ -70,9 +70,15 @@
 .render_supported_models_md <- function() {
   reg <- .supported_models_registry()
   # Class and engine are code: backtick them (correct typography, and the
-  # spell checker skips code spans).
+  # spell checker skips code spans). Engines are backticked ONE FUNCTION PER
+  # SPAN: downlit auto-links an inline code span only when the whole span is
+  # a single `pkg::fun()` call, so each function becomes clickable on the
+  # pkgdown site.
   reg$class  <- paste0("`", reg$class, "`")
-  reg$engine <- paste0("`", reg$engine, "`")
+  reg$engine <- vapply(strsplit(reg$engine, ", ", fixed = TRUE),
+                       function(fns) {
+                         paste0("`", fns, "`", collapse = ", ")
+                       }, character(1))
   header <- "| Family | Class | Engine | AME | Exponentiate | Blocks |"
   sep    <- "|---|---|---|---|---|---|"
   rows <- vapply(seq_len(nrow(reg)), function(i) {
@@ -155,7 +161,7 @@
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
 #' combined-response effect on E(Y). `CR*` for `pscl` fits covers both components
-#' via `sandwich::vcovCL`. Opt out with `show_components = FALSE`.
+#' via `sandwich::vcovCL()`. Opt out with `show_components = FALSE`.
 #'
 #' @section Categorical outcomes:
 #' `multinom` renders per non-reference outcome; `exponentiate` yields
@@ -168,12 +174,12 @@
 #' distributions to time ratios (identity-scale distributions are left
 #' untouched). AME is refused for Cox fits (no marginal-probability effect
 #' on the hazard scale). `CR*` uses the Lin-Wei grouped-dfbeta sandwich
-#' (`coxph`) or `rms::robcov` (`cph`, needs `x = TRUE, y = TRUE`).
+#' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`).
 #' `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 #'
 #' @section Robust, IV, quantile and panel models:
 #' `estimatr` fits keep their own robust SEs (never overwritten);
-#' `quantreg::rq` honours its `se =` method, including rank-inversion CIs;
+#' `quantreg::rq()` honours its `se =` method, including rank-inversion CIs;
 #' `fixest` fits report their fixed-effects structure in the footer.
 #'
 #' @section Bayesian models:

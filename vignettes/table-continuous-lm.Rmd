@@ -1,5 +1,5 @@
 ---
-title: "Model-based continuous summary tables in R"
+title: "Model-based continuous summary tables"
 description: >
   Build model-based summary tables for continuous outcomes in R with
   table_continuous_lm(): estimated marginal means, robust /
@@ -13,7 +13,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Model-based continuous summary tables in R}
+  %\VignetteIndexEntry{Model-based continuous summary tables}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

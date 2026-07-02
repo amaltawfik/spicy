@@ -2,7 +2,7 @@
 title: "Ordinal regression tables"
 description: >
   Publication-ready tables for ordinal (proportional-odds / cumulative
-  logit) regression with `table_regression()`: shared slope
+  logit) regression in R with `table_regression()`: shared slope
   coefficients and ordered thresholds, odds ratios, per-outcome-category
   average marginal effects laid out as a probability matrix,
   cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines,

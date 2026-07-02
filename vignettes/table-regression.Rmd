@@ -1,7 +1,7 @@
 ---
 title: "Publication-ready regression tables"
 description: >
-  Coefficient tables for `lm` and `glm` fits with APA-aligned
+  Coefficient tables for `lm` and `glm` fits in R with APA-aligned
   formatting: classical, heteroskedasticity-consistent and
   cluster-robust variance, four standardisation methods, partial
   effect sizes with noncentral-F CIs, average marginal effects,

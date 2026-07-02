@@ -51,21 +51,21 @@ navbar:
       menu:
         - text: Getting started with spicy
           href: articles/spicy.html
-        - text: Explore variables and build codebooks in R
+        - text: Explore variables and build codebooks
           href: articles/variable-exploration.html
-        - text: Frequency tables and cross-tabulations in R
+        - text: Frequency tables and cross-tabulations
           href: articles/frequency-tables.html
-        - text: "Cramer's V, Phi, and association measures for contingency tables in R"
+        - text: "Cramer's V, Phi, and association measures"
           href: articles/association-measures.html
-        - text: Categorical summary tables in R
+        - text: Categorical summary tables
           href: articles/table-categorical.html
-        - text: Continuous summary tables in R
+        - text: Continuous summary tables
           href: articles/table-continuous.html
-        - text: Model-based continuous summary tables in R
+        - text: Model-based continuous summary tables
           href: articles/table-continuous-lm.html
-        - text: Regression coefficient tables in R
+        - text: Publication-ready regression tables
           href: articles/table-regression.html
-        - text: Ordinal regression tables in R
+        - text: Ordinal regression tables
           href: articles/table-regression-ordinal.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html

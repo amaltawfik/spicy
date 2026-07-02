@@ -38,41 +38,41 @@ supported set. Feature requests are welcome on the issue tracker.
 \section{Supported classes}{
 \tabular{llllll}{
    Family \tab Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \cr
-   Linear and generalized linear \tab \code{lm} \tab \code{stats::lm} \tab yes \tab - \tab - \cr
-   Linear and generalized linear \tab \code{glm} \tab \code{stats::glm} \tab yes \tab OR / IRR / RR (link) \tab - \cr
-   Linear and generalized linear \tab \code{negbin} \tab \code{MASS::glm.nb} \tab yes \tab IRR \tab - \cr
-   Linear and generalized linear \tab \code{rlm} \tab \code{MASS::rlm} \tab yes \tab - \tab - \cr
-   Linear and generalized linear \tab \code{nls} \tab \code{stats::nls} \tab no \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{lm_robust} \tab \code{estimatr::lm_robust} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{iv_robust} \tab \code{estimatr::iv_robust} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{rq} \tab \code{quantreg::rq} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols / feglm / fepois / fenegbin} \tab yes \tab \code{feglm}: OR / IRR \tab - \cr
-   Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer} \tab yes \tab - \tab Random effects \cr
-   Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer} \tab yes \tab OR / IRR (link) \tab Random effects \cr
-   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB} \tab yes \tab link-dependent (IRR for count families) \tab Random effects; Zero-inflation; Dispersion \cr
-   Mixed effects \tab \code{lme} \tab \code{nlme::lme} \tab yes \tab - \tab Random effects \cr
-   Mixed effects \tab \code{gls} \tab \code{nlme::gls} \tab yes \tab - \tab - \cr
-   Ordinal \tab \code{polr} \tab \code{MASS::polr} \tab per category \tab OR (logit) \tab Thresholds \cr
-   Ordinal \tab \code{clm} \tab \code{ordinal::clm} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
-   Categorical \tab \code{multinom} \tab \code{nnet::multinom} \tab per outcome \tab RRR \tab per-outcome blocks \cr
-   Categorical \tab \code{mlogit} \tab \code{mlogit::mlogit} \tab no \tab OR \tab per-alternative rows \cr
-   Counts, two-part \tab \code{zeroinfl} \tab \code{pscl::zeroinfl} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero-inflation \cr
-   Counts, two-part \tab \code{hurdle} \tab \code{pscl::hurdle} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero hurdle \cr
-   Survival \tab \code{coxph} \tab \code{survival::coxph} \tab no \tab HR \tab - \cr
-   Survival \tab \code{survreg} \tab \code{survival::survreg} \tab yes \tab TR (log-scale distributions) \tab - \cr
-   Survival \tab \code{cph} \tab \code{rms::cph} \tab no \tab HR \tab - \cr
-   Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg} \tab yes \tab TR / HR (dist) \tab distribution parameters \cr
-   Survey-weighted \tab \code{svyglm} \tab \code{survey::svyglm} \tab yes (design-based) \tab OR / IRR \tab - \cr
-   Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam / bam} \tab yes \tab OR / IRR (link) \tab - \cr
-   Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg} \tab yes \tab OR (mean link) \tab - \cr
-   Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection} \tab no \tab - \tab selection component \cr
-   rms \tab \code{ols} \tab \code{rms::ols} \tab yes \tab - \tab - \cr
-   rms \tab \code{lrm} \tab \code{rms::lrm} \tab yes \tab OR \tab - \cr
-   rms \tab \code{Glm} \tab \code{rms::Glm} \tab yes \tab link-dependent \tab - \cr
-   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm / stan_glmer / ...} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
-   Bayesian \tab \code{brmsfit} \tab \code{brms::brm} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
+   Linear and generalized linear \tab \code{lm} \tab \code{stats::lm()} \tab yes \tab - \tab - \cr
+   Linear and generalized linear \tab \code{glm} \tab \code{stats::glm()} \tab yes \tab OR / IRR / RR (link) \tab - \cr
+   Linear and generalized linear \tab \code{negbin} \tab \code{MASS::glm.nb()} \tab yes \tab IRR \tab - \cr
+   Linear and generalized linear \tab \code{rlm} \tab \code{MASS::rlm()} \tab yes \tab - \tab - \cr
+   Linear and generalized linear \tab \code{nls} \tab \code{stats::nls()} \tab no \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \cr
+   Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::fenegbin()} \tab yes \tab \code{feglm}: OR / IRR \tab - \cr
+   Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \cr
+   Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \cr
+   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes \tab link-dependent (IRR for count families) \tab Random effects; Zero-inflation; Dispersion \cr
+   Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
+   Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
+   Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \cr
+   Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
+   Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab RRR \tab per-outcome blocks \cr
+   Categorical \tab \code{mlogit} \tab \code{mlogit::mlogit()} \tab no \tab OR \tab per-alternative rows \cr
+   Counts, two-part \tab \code{zeroinfl} \tab \code{pscl::zeroinfl()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero-inflation \cr
+   Counts, two-part \tab \code{hurdle} \tab \code{pscl::hurdle()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero hurdle \cr
+   Survival \tab \code{coxph} \tab \code{survival::coxph()} \tab no \tab HR \tab - \cr
+   Survival \tab \code{survreg} \tab \code{survival::survreg()} \tab yes \tab TR (log-scale distributions) \tab - \cr
+   Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \cr
+   Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab yes \tab TR / HR (dist) \tab distribution parameters \cr
+   Survey-weighted \tab \code{svyglm} \tab \code{survey::svyglm()} \tab yes (design-based) \tab OR / IRR \tab - \cr
+   Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \cr
+   Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \cr
+   Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \cr
+   rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \cr
+   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes \tab OR \tab - \cr
+   rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \cr
+   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
+   Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes \tab link-dependent \tab Random effects (if multilevel) \cr
 }
 }
 
@@ -132,7 +132,7 @@ nonzero count -- the opposite direction, hence the distinct label), and a
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). \verb{CR*} for \code{pscl} fits covers both components
-via \code{sandwich::vcovCL}. Opt out with \code{show_components = FALSE}.
+via \code{sandwich::vcovCL()}. Opt out with \code{show_components = FALSE}.
 }
 
 \section{Categorical outcomes}{
@@ -149,14 +149,14 @@ Cox models exponentiate to hazard ratios; \code{survreg} log-scale
 distributions to time ratios (identity-scale distributions are left
 untouched). AME is refused for Cox fits (no marginal-probability effect
 on the hazard scale). \verb{CR*} uses the Lin-Wei grouped-dfbeta sandwich
-(\code{coxph}) or \code{rms::robcov} (\code{cph}, needs \verb{x = TRUE, y = TRUE}).
+(\code{coxph}) or \code{rms::robcov()} (\code{cph}, needs \verb{x = TRUE, y = TRUE}).
 \code{nested = TRUE} compares nested Cox fits by likelihood-ratio test.
 }
 
 \section{Robust, IV, quantile and panel models}{
 
 \code{estimatr} fits keep their own robust SEs (never overwritten);
-\code{quantreg::rq} honours its \verb{se =} method, including rank-inversion CIs;
+\code{quantreg::rq()} honours its \verb{se =} method, including rank-inversion CIs;
 \code{fixest} fits report their fixed-effects structure in the footer.
 }
 
