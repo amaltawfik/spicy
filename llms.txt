@@ -2,8 +2,8 @@
 
 spicy is an R package for frequency tables, cross-tabulations,
 association measures, categorical and continuous summary tables,
-regression coefficient tables for `lm` / `glm` fits, and labelled survey
-data workflows.
+publication-ready regression tables for 30+ model classes, and labelled
+survey data workflows.
 
 ## What is spicy?
 
@@ -13,7 +13,9 @@ readable, console-first outputs for survey research, descriptive
 statistics, and reporting workflows, including frequency tables,
 cross-tabulations with chi-squared tests and effect sizes, categorical
 and continuous summary tables, regression coefficient tables for one or
-more `lm` / `glm` fits, variable inspection, and codebooks.
+more fitted models – from `lm` and `glm` to mixed-effects, ordinal,
+survival, and zero-inflated count models – variable inspection, and
+codebooks.
 
 With spicy, you can:
 
@@ -54,14 +56,21 @@ With spicy, you can:
   output.
 - **Build regression coefficient tables in R** with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  for one or more `lm` or `glm` fits side by side: classical / HC\* /
-  cluster-robust / bootstrap / jackknife variance, four standardisation
-  methods (plus `pseudo` for `glm`), family-aware `exponentiate` (OR /
-  IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal
-  effects on the response scale, partial *f²* / *η²* / *ω²* / *χ²*
-  effect sizes, pseudo-*R²* family, hierarchical model comparisons,
+  for one or more fitted models side by side, across 30+ model classes
+  (see *Supported models* below): classical / heteroskedasticity-robust
+  / cluster-robust / bootstrap / jackknife variance with each class’s
+  field-standard backend, standardised coefficients, family-aware
+  `exponentiate` (OR / IRR / HR / RR / MR – link-gated, never
+  mislabelled), Wald or profile-likelihood CIs, average marginal effects
+  (per-category for ordinal and multinomial models), partial *f²* / *η²*
+  / *ω²* / *χ²* effect sizes, class-aware fit statistics (pseudo-*R²*,
+  Nakagawa marginal / conditional *R²*, ICC), hierarchical model
+  comparisons with the correct nested test per class,
   multiple-comparison adjustment, and the same console / gt / tinytable
-  / flextable / Excel / Word / clipboard output.
+  / flextable / Excel / Word / clipboard output. Mixed models report
+  their random effects as table rows with an optional boundary-correct
+  per-term test; ordinal models report their thresholds; zero-inflated
+  and hurdle models report every model component.
 - **Generate interactive and exportable codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   for labelled and survey-style datasets.
@@ -72,6 +81,33 @@ With spicy, you can:
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
 common variable types. For a full introduction, see [Getting started
 with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
+
+## Supported models
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+accepts a single fit or a list of fits from any of these classes, and
+renders them with the conventions of each model family:
+
+| Family | Engines |
+|----|----|
+| Linear and generalized linear | [`stats::lm`](https://rdrr.io/r/stats/lm.html), [`stats::glm`](https://rdrr.io/r/stats/glm.html), [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html), [`stats::nls`](https://rdrr.io/r/stats/nls.html) |
+| Robust, IV, quantile, panel | [`estimatr::lm_robust`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) / `iv_robust`, [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html) / `tobit`, [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html), [`fixest::feols`](https://lrberge.github.io/fixest/reference/feols.html) / `feglm` / `fepois` / `fenegbin` |
+| Mixed effects | [`lme4::lmer`](https://rdrr.io/pkg/lme4/man/lmer.html) / `glmer`, [`glmmTMB::glmmTMB`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html), [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) / `gls` |
+| Ordinal and categorical | [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html), [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) (incl. partial proportional odds), [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html), [`mlogit::mlogit`](https://rdrr.io/pkg/mlogit/man/mlogit.html) |
+| Counts, two-part models | [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html) / `zeroinfl`, `glmmTMB` (zero-inflation and dispersion components) |
+| Survival | [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) / `survreg`, [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html), [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) |
+| Survey-weighted | [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) (design-based SEs) |
+| Additive, proportions, selection | [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam`, [`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html), [`sampleSelection::selection`](https://rdrr.io/pkg/sampleSelection/man/selection.html) |
+| rms | [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) / `lrm` / `Glm` |
+| Bayesian | `rstanarm`, `brms` (posterior median, credible intervals, no p-values) |
+
+Class-specific structure renders as labelled blocks in the same table:
+random effects (with SE and CI on each variance component, and an
+optional boundary-correct per-term likelihood-ratio test), ordinal
+thresholds, non-proportional effects, zero-inflation and dispersion
+components. Robust variance requests use each class’s field-standard
+backend and are refused with a clear message when no valid backend
+exists – never silently ignored.
 
 ## Installation
 
@@ -376,10 +412,10 @@ table_regression(fit)
 #>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                      
-#>    Female (ref.) │     —     —          —          —    
+#>    Female (ref.) │     –     –          –          –    
 #>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
 #>  smoking:        │                                      
-#>    No (ref.)     │     —     —          —          —    
+#>    No (ref.)     │     –     –          –          –    
 #>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
@@ -388,6 +424,43 @@ table_regression(fit)
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
+```
+
+Regression tables cover 30+ model classes with the conventions of each
+family. A mixed-effects fit, for example, reports its random effects as
+rows (SD, correlation, residual – each with SE and CI), the ICC and
+group sizes as fit statistics, and the likelihood-ratio test of the
+random part with the boundary-correct chi-bar-squared p-value:
+
+``` r
+
+library(lme4)
+fit_mixed <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+table_regression(fit_mixed)
+#> Linear mixed-effects regression: Reaction
+#> 
+#>  Variable                        │    B      SE        95% CI         p   
+#> ─────────────────────────────────┼────────────────────────────────────────
+#>  (Intercept)                     │  251.41  6.82  [238.03, 264.78]  <.001 
+#>  Days                            │   10.47  1.55  [  7.44,  13.50]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                        
+#>    σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –    
+#>    σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    σ (Residual)                  │   25.59  1.51  [ 22.44,  28.39]   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │  180                                   
+#>  N (Subject)                     │   18                                   
+#>  R² (marginal)                   │    0.28                                
+#>  R² (conditional)                │    0.80                                
+#>  AIC                             │ 1755.6                                 
+#>  BIC                             │ 1774.8                                 
+#> 
+#> Note. Linear mixed-effects regression.
+#> Std. errors: Wald (model-based).
+#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
 ```
 
 See [Categorical summary tables in

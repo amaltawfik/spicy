@@ -96,11 +96,11 @@
 </div>
 <!-- badges: start -->
 
-<p>spicy is an R package for frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, regression coefficient tables for <code>lm</code> / <code>glm</code> fits, and labelled survey data workflows.</p>
+<p>spicy is an R package for frequency tables, cross-tabulations, association measures, categorical and continuous summary tables, publication-ready regression tables for 30+ model classes, and labelled survey data workflows.</p>
 <div class="section level2">
 <h2 id="what-is-spicy">What is spicy?<a class="anchor" aria-label="anchor" href="#what-is-spicy"></a>
 </h2>
-<p>spicy helps you explore categorical, continuous, and labelled survey data in R, then report the results in APA-aligned tables. It provides readable, console-first outputs for survey research, descriptive statistics, and reporting workflows, including frequency tables, cross-tabulations with chi-squared tests and effect sizes, categorical and continuous summary tables, regression coefficient tables for one or more <code>lm</code> / <code>glm</code> fits, variable inspection, and codebooks.</p>
+<p>spicy helps you explore categorical, continuous, and labelled survey data in R, then report the results in APA-aligned tables. It provides readable, console-first outputs for survey research, descriptive statistics, and reporting workflows, including frequency tables, cross-tabulations with chi-squared tests and effect sizes, categorical and continuous summary tables, regression coefficient tables for one or more fitted models – from <code>lm</code> and <code>glm</code> to mixed-effects, ordinal, survival, and zero-inflated count models – variable inspection, and codebooks.</p>
 <p>With spicy, you can:</p>
 <ul>
 <li>
@@ -118,13 +118,88 @@
 <li>
 <strong>Build model-based continuous summary tables in R</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear regression reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’ g, Hays’ omega²) with noncentral CIs, optional <strong>additive covariate adjustment</strong> with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, weighted comparisons, and console, gt, tinytable, flextable, Excel, Word, or clipboard output.</li>
 <li>
-<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more <code>lm</code> or <code>glm</code> fits side by side: classical / HC* / cluster-robust / bootstrap / jackknife variance, four standardisation methods (plus <code>pseudo</code> for <code>glm</code>), family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR), Wald or profile-likelihood CIs, average marginal effects on the response scale, partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, pseudo-<em>R²</em> family, hierarchical model comparisons, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output.</li>
+<strong>Build regression coefficient tables in R</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more fitted models side by side, across 30+ model classes (see <em>Supported models</em> below): classical / heteroskedasticity-robust / cluster-robust / bootstrap / jackknife variance with each class’s field-standard backend, standardised coefficients, family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR – link-gated, never mislabelled), Wald or profile-likelihood CIs, average marginal effects (per-category for ordinal and multinomial models), partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, class-aware fit statistics (pseudo-<em>R²</em>, Nakagawa marginal / conditional <em>R²</em>, ICC), hierarchical model comparisons with the correct nested test per class, multiple-comparison adjustment, and the same console / gt / tinytable / flextable / Excel / Word / clipboard output. Mixed models report their random effects as table rows with an optional boundary-correct per-term test; ordinal models report their thresholds; zero-inflated and hurdle models report every model component.</li>
 <li>
 <strong>Generate interactive and exportable codebooks</strong> with <code><a href="reference/code_book.html">code_book()</a></code> for labelled and survey-style datasets.</li>
 <li>
 <strong>Extract variable labels</strong> with <code><a href="reference/label_from_names.html">label_from_names()</a></code>, including LimeSurvey-style headers.</li>
 </ul>
 <p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types. For a full introduction, see <a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="supported-models">Supported models<a class="anchor" aria-label="anchor" href="#supported-models"></a>
+</h2>
+<p><code><a href="reference/table_regression.html">table_regression()</a></code> accepts a single fit or a list of fits from any of these classes, and renders them with the conventions of each model family:</p>
+<table class="table">
+<colgroup>
+<col width="20%">
+<col width="79%">
+</colgroup>
+<thead><tr>
+<th>Family</th>
+<th>Engines</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Linear and generalized linear</td>
+<td>
+<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>, <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code>, <code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls</a></code>
+</td>
+</tr>
+<tr>
+<td>Robust, IV, quantile, panel</td>
+<td>
+<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust</a></code> / <code>iv_robust</code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg</a></code> / <code>tobit</code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols</a></code> / <code>feglm</code> / <code>fepois</code> / <code>fenegbin</code>
+</td>
+</tr>
+<tr>
+<td>Mixed effects</td>
+<td>
+<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer</a></code> / <code>glmer</code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> / <code>gls</code>
+</td>
+</tr>
+<tr>
+<td>Ordinal and categorical</td>
+<td>
+<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code> (incl. partial proportional odds), <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>, <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit</a></code>
+</td>
+</tr>
+<tr>
+<td>Counts, two-part models</td>
+<td>
+<code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle</a></code> / <code>zeroinfl</code>, <code>glmmTMB</code> (zero-inflation and dispersion components)</td>
+</tr>
+<tr>
+<td>Survival</td>
+<td>
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> / <code>survreg</code>, <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code>, <code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg</a></code>
+</td>
+</tr>
+<tr>
+<td>Survey-weighted</td>
+<td>
+<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code> (design-based SEs)</td>
+</tr>
+<tr>
+<td>Additive, proportions, selection</td>
+<td>
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> / <code>bam</code>, <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection</a></code>
+</td>
+</tr>
+<tr>
+<td>rms</td>
+<td>
+<code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> / <code>lrm</code> / <code>Glm</code>
+</td>
+</tr>
+<tr>
+<td>Bayesian</td>
+<td>
+<code>rstanarm</code>, <code>brms</code> (posterior median, credible intervals, no p-values)</td>
+</tr>
+</tbody>
+</table>
+<p>Class-specific structure renders as labelled blocks in the same table: random effects (with SE and CI on each variance component, and an optional boundary-correct per-term likelihood-ratio test), ordinal thresholds, non-proportional effects, zero-inflation and dispersion components. Robust variance requests use each class’s field-standard backend and are refused with a clear message when no valid backend exists – never silently ignored.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -377,10 +452,10 @@
 <span><span class="co">#&gt;  (Intercept)     │   65.20  1.66  [61.95, 68.45]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             │    0.05  0.03  [-0.01,  0.11]   .130 </span></span>
 <span><span class="co">#&gt;  sex:            │                                      </span></span>
-<span><span class="co">#&gt;    Female (ref.) │     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    Female (ref.) │     –     –          –          –    </span></span>
 <span><span class="co">#&gt;    Male          │    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  smoking:        │                                      </span></span>
-<span><span class="co">#&gt;    No (ref.)     │     —     —          —          —    </span></span>
+<span><span class="co">#&gt;    No (ref.)     │     –     –          –          –    </span></span>
 <span><span class="co">#&gt;    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  n               │ 1175                                 </span></span>
@@ -389,12 +464,41 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Note. Linear regression.</span></span>
 <span><span class="co">#&gt; Std. errors: classical (OLS).</span></span></code></pre></div>
+<p>Regression tables cover 30+ model classes with the conventions of each family. A mixed-effects fit, for example, reports its random effects as rows (SD, correlation, residual – each with SE and CI), the ICC and group sizes as fit statistics, and the likelihood-ratio test of the random part with the boundary-correct chi-bar-squared p-value:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
+<span><span class="va">fit_mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_mixed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Linear mixed-effects regression: Reaction</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                        │    B      SE        95% CI         p   </span></span>
+<span><span class="co">#&gt; ─────────────────────────────────┼────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  (Intercept)                     │  251.41  6.82  [238.03, 264.78]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Days                            │   10.47  1.55  [  7.44,  13.50]  &lt;.001 </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Random effects:                 │                                        </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –    </span></span>
+<span><span class="co">#&gt;    σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –    </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                  │   25.59  1.51  [ 22.44,  28.39]   –    </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  n                               │  180                                   </span></span>
+<span><span class="co">#&gt;  N (Subject)                     │   18                                   </span></span>
+<span><span class="co">#&gt;  R² (marginal)                   │    0.28                                </span></span>
+<span><span class="co">#&gt;  R² (conditional)                │    0.80                                </span></span>
+<span><span class="co">#&gt;  AIC                             │ 1755.6                                 </span></span>
+<span><span class="co">#&gt;  BIC                             │ 1774.8                                 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Note. Linear mixed-effects regression.</span></span>
+<span><span class="co">#&gt; Std. errors: Wald (model-based).</span></span>
+<span><span class="co">#&gt; p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
+<span><span class="co">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables in R</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables in R</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables in R</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables in R</a> for <code>lm</code> and <code>glm</code> coefficient tables, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span>, <span class="fl">15</span>, <span class="cn">NA</span>, <span class="fl">25</span><span class="op">)</span>,</span>
@@ -412,7 +516,7 @@
 <div class="section level3">
 <h3 id="label-extraction">Label extraction<a class="anchor" aria-label="anchor" href="#label-extraction"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LimeSurvey-style headers: "code. label"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
 <span>  <span class="st">"age. Age of respondent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span><span class="op">)</span>,</span>
