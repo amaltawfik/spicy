@@ -618,6 +618,35 @@
 #'   fitted model (`confint(fit, method = "profile")` for
 #'   `lmer`) when robustness is critical. See the
 #'   *Mixed-effects models* section of `vignette("table-regression")`.
+#' @param re_test One of `"none"` (default), `"lrt"`, or `"rlrt"`.
+#'   Opt-in **per-term significance test** for the random-effect
+#'   variance components, filling the otherwise-empty p column of
+#'   the Random effects rows. Never a Wald test (invalid at the
+#'   boundary sigma = 0):
+#'   \itemize{
+#'     \item `"lrt"`: likelihood-ratio test of each random term vs
+#'       the model refitted without it (the term's variance plus its
+#'       covariances with the other terms of its bar), referred to
+#'       the boundary-corrected chi-bar-squared mixture
+#'       `0.5 chi2(q-1) + 0.5 chi2(q)` (Self & Liang 1987; Stram &
+#'       Lee 1994). The reduction scheme matches
+#'       `lmerTest::ranova()`; the mixture reference makes the
+#'       p-value exact-asymptotic rather than conservative. A bar's
+#'       intercept is tested only when it is the bar's single term.
+#'       Supported: `lmer`, `glmer`, `glmmTMB`.
+#'     \item `"rlrt"`: exact restricted likelihood-ratio test with a
+#'       simulated finite-sample null (`RLRsim::exactRLRT()`;
+#'       Crainiceanu & Ruppert 2004). Only defined for a Gaussian
+#'       `lmer` fit with a single variance component.
+#'   }
+#'   The test statistic and df stay out of the displayed t/z column
+#'   (they are chi-square-scale, not t/z) but are carried in
+#'   `broom::tidy()` (`test_type` `"chibar2"` / `"rlrt"`). The
+#'   whole-block LR test in the footer is unaffected. Correlation
+#'   and residual rows are never tested (a correlation is tested
+#'   jointly with its slope; the residual has no zero-variance
+#'   null). Refits happen once per random term: expect a
+#'   noticeable cost on large models.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
@@ -964,6 +993,7 @@ table_regression <- function(
   show_re = TRUE,
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
+  re_test = c("none", "lrt", "rlrt"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -1318,6 +1348,31 @@ table_regression <- function(
   validate_logical_scalar(show_re, "show_re")
   re_scale_val <- .validate_re_scale(re_scale)
   re_columns_val <- .validate_re_columns(re_columns)
+  re_test_val <- .validate_re_test(re_test)
+  if (!identical(re_test_val, "none")) {
+    if (!isTRUE(show_re)) {
+      spicy_abort(
+        c(
+          "`re_test` requires the random-effects rows (`show_re = TRUE`).",
+          "i" = "The per-term test fills the p column of those rows."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    if (any(vapply(models, inherits, logical(1), "lme"))) {
+      spicy_abort(
+        c(
+          "`re_test` is not yet implemented for `nlme::lme` fits.",
+          "i" = paste0(
+            "The random structure of an lme fit lives outside the formula, ",
+            "so the per-term reduced refits need a dedicated path. Supported ",
+            "today: lmer / glmer / glmmTMB."
+          )
+        ),
+        class = "spicy_unsupported"
+      )
+    }
+  }
 
   # Phase E -- cross-arg semantic warnings (no errors). The
   # standardized x non-additive caveat is emitted later (after
@@ -1495,8 +1550,17 @@ table_regression <- function(
         "b" %in% show_columns &&
         !is.null(re_i) && is.data.frame(re_i$variance_components) &&
         nrow(re_i$variance_components) > 0L) {
+      # Opt-in per-term significance tests (LRT with the chi-bar-squared
+      # boundary correction, or the exact RLRT): fill the otherwise-NA test
+      # columns of the vc rows. Refits happen here, once per random term.
+      term_tests <- if (!identical(re_test_val, "none")) {
+        .compute_re_term_tests(models[[i]], re_test_val)
+      } else {
+        NULL
+      }
       frames[[i]]$coefs <- .append_random_effects_rows(
-        frames[[i]]$coefs, re_i, re_scale = re_scale_val)
+        frames[[i]]$coefs, re_i, re_scale = re_scale_val,
+        term_tests = term_tests, re_test = re_test_val)
     }
   }
 
@@ -1601,6 +1665,7 @@ table_regression <- function(
     show_re = isTRUE(show_re),
     re_scale = re_scale_val,
     re_columns = re_columns_val,
+    re_test = re_test_val,
     displayed_parent_vars = displayed_parent_vars
   )
 

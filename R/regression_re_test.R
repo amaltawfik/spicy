@@ -1,0 +1,213 @@
+# Opt-in per-term significance tests for random-effect variance components
+# (`table_regression(re_test = )`). Fills the statistic / df / p_value columns
+# of the "Random effects" rows block, which are NA by default.
+#
+# Never a Wald z: H0 sigma = 0 sits on the boundary of the parameter space, so
+# the estimate/SE ratio is invalid there (Self & Liang 1987). Two engines:
+#
+#   * "lrt"  -- per-term likelihood-ratio test: refit the model WITHOUT the
+#     random term (its variance + its covariances with the other terms of the
+#     same bar) and compare log-likelihoods, referring the statistic to the
+#     chi-bar-squared mixture 0.5 * chi2_{q-1} + 0.5 * chi2_{q}, where q =
+#     1 + (number of dropped covariances) (Self & Liang 1987; Stram & Lee
+#     1994). REML fits are compared on the REML likelihood -- valid for nested
+#     RANDOM structures with an identical fixed part (Pinheiro & Bates 2000).
+#     This is the lmerTest::ranova() reduction scheme with the boundary
+#     correction ranova leaves out (its plain chi-square p is conservative).
+#     Slopes are tested by removal from their bar; a bar's intercept is tested
+#     only when it is the bar's ONLY term (dropping the whole bar), matching
+#     ranova. Supported: lmer / glmer / glmmTMB.
+#
+#   * "rlrt" -- exact restricted likelihood-ratio test via RLRsim::exactRLRT()
+#     (Crainiceanu & Ruppert 2004; Scheipl, Greven & Kuchenhoff 2008), the
+#     finite-sample-exact test. Only defined for a Gaussian lmer fit with a
+#     SINGLE variance component; anything richer errors with a pointer to
+#     "lrt".
+#
+# The whole-block significance signal (LR test vs the no-random-effects model,
+# chi-bar-squared) stays in the footer regardless of `re_test`.
+
+
+# Dispatch. Returns a data.frame(group, term, statistic, df, p_value) whose
+# (group, term) keys match the variance_components rows, or NULL when nothing
+# is testable. Failures of individual refits leave that term untested (NA
+# row) with a spicy_fallback warning rather than erroring the whole table.
+.compute_re_term_tests <- function(fit, re_test) {
+  if (identical(re_test, "rlrt")) {
+    .re_term_tests_rlrt(fit)
+  } else {
+    .re_term_tests_lrt(fit)
+  }
+}
+
+
+.re_term_tests_lrt <- function(fit) {
+  f <- tryCatch(stats::formula(fit), error = function(e) NULL)
+  if (is.null(f)) return(NULL)                                         # nocov
+  bars <- tryCatch(.re_findbars(f), error = function(e) NULL)
+  if (is.null(bars) || length(bars) == 0L) return(NULL)                # nocov
+  ll_full <- as.numeric(stats::logLik(fit))
+
+  out <- list()
+  for (b in bars) {
+    grp <- deparse1(b[[3L]])
+    tt <- stats::terms(stats::reformulate(deparse1(b[[2L]])))
+    slopes <- attr(tt, "term.labels")
+    has_int <- attr(tt, "intercept") == 1L
+    n_terms_bar <- length(slopes) + as.integer(has_int)
+
+    # ranova reduction scheme: test each slope; test the intercept only when
+    # it is the bar's only term (the test then drops the whole bar).
+    tests <- c(slopes, if (has_int && length(slopes) == 0L) "(Intercept)")
+    for (s in tests) {
+      # Dropping the model's ONLY bar leaves no random part -- lmer / glmer /
+      # glmmTMB cannot fit that reduced model. The test is then exactly the
+      # whole-block LR vs the fixed-effects-only model, already computed (on
+      # the ML scale) by the null-LRT machinery: reuse it.
+      if (identical(s, "(Intercept)") && length(bars) == 1L) {
+        nl <- .compute_null_model_lrt(fit)
+        if (!is.null(nl)) {
+          out[[length(out) + 1L]] <- data.frame(
+            group = grp, term = s,
+            statistic = nl$chi2, df = as.numeric(nl$df),
+            p_value = nl$p_chibar2,
+            stringsAsFactors = FALSE
+          )
+        }
+        next
+      }
+      red <- .refit_without_re_term(fit, f, bars, b, s, slopes, has_int)
+      if (is.null(red)) {
+        spicy_warn(
+          c(
+            sprintf(
+              "Per-term LR test: the reduced refit for random term `%s` (%s) failed.",
+              s, grp
+            ),
+            "i" = "The row's test columns stay NA."
+          ),
+          class = "spicy_fallback"
+        )
+        next
+      }
+      chi2 <- max(0, 2 * (ll_full - as.numeric(stats::logLik(red))))
+      # Dropping one variance + its covariances with the (q - 1) other terms
+      # of the bar: chi-bar-squared mixture 0.5 chi2_{q-1} + 0.5 chi2_{q}.
+      q <- 1L + (n_terms_bar - 1L)
+      p <- 0.5 * stats::pchisq(chi2, df = q, lower.tail = FALSE) +
+        if (q - 1L > 0L) {
+          0.5 * stats::pchisq(chi2, df = q - 1L, lower.tail = FALSE)
+        } else {
+          0.5 * as.numeric(chi2 <= 0)   # chi2_0 point mass at 0
+        }
+      out[[length(out) + 1L]] <- data.frame(
+        group = grp, term = s,
+        statistic = chi2, df = as.numeric(q), p_value = p,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  if (length(out) == 0L) return(NULL)                                  # nocov
+  do.call(rbind, out)
+}
+
+
+# Refit `fit` with random term `s` removed from bar `b` (slopes), or with the
+# whole bar removed (s == "(Intercept)", intercept-only bar). Returns NULL on
+# any failure. When removing the last remaining bar the model has no random
+# part left -- delegate to the null-model machinery used by the footer LRT.
+.refit_without_re_term <- function(fit, f, bars, b, s, slopes, has_int) {
+  bar_str <- function(bb) {
+    paste0("(", deparse1(bb[[2L]]), " | ", deparse1(bb[[3L]]), ")")
+  }
+  this_bar <- bar_str(b)
+  other_bars <- vapply(bars, bar_str, character(1))
+  other_bars <- other_bars[other_bars != this_bar]
+
+  new_bar <- if (identical(s, "(Intercept)")) {
+    character(0)                       # drop the whole intercept-only bar
+  } else {
+    keep <- setdiff(slopes, s)
+    lhs <- paste(c(if (has_int) "1" else "0", keep), collapse = " + ")
+    paste0("(", lhs, " | ", deparse1(b[[3L]]), ")")
+  }
+
+  fixed_rhs <- deparse1(.re_nobars(f)[[3L]])
+  rhs_parts <- c(fixed_rhs, other_bars, new_bar)
+  new_f <- tryCatch(
+    stats::as.formula(
+      paste(deparse1(f[[2L]]), "~", paste(rhs_parts, collapse = " + ")),
+      env = environment(f)
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(new_f)) return(NULL)                                     # nocov
+
+  tryCatch(
+    suppressWarnings(suppressMessages(stats::update(fit, formula = new_f))),
+    error = function(e) NULL
+  )
+}
+
+
+.re_term_tests_rlrt <- function(fit) {
+  if (!spicy_pkg_available("RLRsim")) {
+    spicy_abort(
+      c(
+        "`re_test = \"rlrt\"` requires the RLRsim package.",
+        "i" = "Install it with `install.packages(\"RLRsim\")`, or use `re_test = \"lrt\"`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+  # exactRLRT() is exact for ONE variance component in a Gaussian LMM.
+  ok_class <- inherits(fit, "lmerMod") && !inherits(fit, "glmerMod")
+  vc <- if (ok_class) lme4::VarCorr(fit) else NULL
+  n_var <- if (is.null(vc)) NA_integer_ else {
+    sum(vapply(vc, function(m) nrow(as.matrix(m)), integer(1)))
+  }
+  if (!ok_class || !identical(n_var, 1L)) {
+    spicy_abort(
+      c(
+        paste0(
+          "`re_test = \"rlrt\"` (exact restricted LRT) is only defined for a ",
+          "Gaussian `lmer` fit with a single variance component."
+        ),
+        "i" = "Use `re_test = \"lrt\"` (chi-bar-squared LR test) for richer random structures."
+      ),
+      class = "spicy_unsupported"
+    )
+  }
+  res <- tryCatch(RLRsim::exactRLRT(fit), error = function(e) NULL)
+  if (is.null(res)) return(NULL)                                       # nocov
+  grp <- names(vc)[1L]
+  term <- rownames(as.matrix(vc[[1L]]))[1L]
+  data.frame(
+    group = grp, term = term,
+    statistic = unname(res$statistic), df = NA_real_,
+    p_value = unname(res$p.value),
+    stringsAsFactors = FALSE
+  )
+}
+
+
+# Validate the `re_test` argument: "none" (default), "lrt", or "rlrt".
+.validate_re_test <- function(x) {
+  choices <- c("none", "lrt", "rlrt")
+  if (identical(x, choices)) return("none")          # unset default vector
+  if (length(x) == 1L && !is.na(x) && x %in% choices) return(x)
+  spicy_abort(
+    c(
+      "`re_test` must be one of \"none\", \"lrt\", or \"rlrt\".",
+      "x" = sprintf(
+        "You supplied %s.",
+        paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+      ),
+      "i" = paste0(
+        "There is deliberately no Wald test: a variance's null hypothesis ",
+        "sits on the boundary of the parameter space."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}

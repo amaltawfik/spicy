@@ -656,9 +656,13 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     }
     # `re_columns` (display-only): on a variance-component row, em-dash the
     # SE / CI cells the user de-selected. The underlying data stays complete
-    # (broom::tidy / as_structured always carry full SE + CI).
+    # (broom::tidy / as_structured always carry full SE + CI). The t/z cell is
+    # always em-dashed on vc rows: the optional re_test statistic is a
+    # chi-bar-squared LR statistic, which would be mislabelled under a t/z
+    # header (it stays available via broom::tidy()).
     if (identical(long_row$estimate_type[1L], "vc") &&
-        ((identical(cs$token, "se") && !"se" %in% re_columns) ||
+        (identical(cs$token, "t") ||
+         (identical(cs$token, "se") && !"se" %in% re_columns) ||
          (identical(cs$token, "ci") && !"ci" %in% re_columns))) {
       cells[[cs$col_name]] <- "\u2013"
       next
@@ -763,6 +767,10 @@ format_cell_value <- function(long_row, cs, stars_map,
     (tk == "beta" && !"b" %in% show_columns) ||
     (tk == "ame")
   )
+  # Never star a variance-component row: its optional p (re_test) is a
+  # model-comparison chi-bar-squared test, not a coefficient test, and no
+  # convention stars the random part.
+  if (identical(long_row$estimate_type[1L], "vc")) apply_stars <- FALSE
   if (apply_stars) {
     p_val <- long_row$p_value[1]
     out <- paste0(out, format_stars(p_val, stars_map))

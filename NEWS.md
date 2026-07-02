@@ -66,6 +66,12 @@ See `vignette("table-regression")` for the walk-throughs.
   supported (previously refused): the non-proportional terms render as a
   `Non-proportional effects` block, one coefficient per cut-point. Robust SEs
   are not available for them; profile CIs cover the proportional terms.
+* `re_test = "lrt"` / `"rlrt"` adds an opt-in per-term significance test for
+  the random-effect variance components (never Wald): a likelihood-ratio test
+  vs the reduced random structure with the chi-bar-squared boundary
+  correction, or `RLRsim`'s exact restricted LRT for a single variance
+  component. The p fills the `Random effects` rows; a footer line names the
+  test.
 
 ## Minor improvements
 

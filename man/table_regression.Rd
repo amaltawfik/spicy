@@ -28,6 +28,7 @@ table_regression(
   show_re = TRUE,
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
+  re_test = c("none", "lrt", "rlrt"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -343,6 +344,36 @@ profile-likelihood intervals are available directly on the
 fitted model (\code{confint(fit, method = "profile")} for
 \code{lmer}) when robustness is critical. See the
 \emph{Mixed-effects models} section of \code{vignette("table-regression")}.}
+
+\item{re_test}{One of \code{"none"} (default), \code{"lrt"}, or \code{"rlrt"}.
+Opt-in \strong{per-term significance test} for the random-effect
+variance components, filling the otherwise-empty p column of
+the Random effects rows. Never a Wald test (invalid at the
+boundary sigma = 0):
+\itemize{
+\item \code{"lrt"}: likelihood-ratio test of each random term vs
+the model refitted without it (the term's variance plus its
+covariances with the other terms of its bar), referred to
+the boundary-corrected chi-bar-squared mixture
+\verb{0.5 chi2(q-1) + 0.5 chi2(q)} (Self & Liang 1987; Stram &
+Lee 1994). The reduction scheme matches
+\code{lmerTest::ranova()}; the mixture reference makes the
+p-value exact-asymptotic rather than conservative. A bar's
+intercept is tested only when it is the bar's single term.
+Supported: \code{lmer}, \code{glmer}, \code{glmmTMB}.
+\item \code{"rlrt"}: exact restricted likelihood-ratio test with a
+simulated finite-sample null (\code{RLRsim::exactRLRT()};
+Crainiceanu & Ruppert 2004). Only defined for a Gaussian
+\code{lmer} fit with a single variance component.
+}
+The test statistic and df stay out of the displayed t/z column
+(they are chi-square-scale, not t/z) but are carried in
+\code{broom::tidy()} (\code{test_type} \code{"chibar2"} / \code{"rlrt"}). The
+whole-block LR test in the footer is unaffected. Correlation
+and residual rows are never tested (a correlation is tested
+jointly with its slope; the residual has no zero-variance
+null). Refits happen once per random term: expect a
+noticeable cost on large models.}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /

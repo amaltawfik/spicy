@@ -72,6 +72,7 @@ build_regression_footer_from_frames <- function(
     show_re = TRUE,
     re_scale = "sd",
     re_columns = c("est", "se", "ci"),
+    re_test = "none",
     displayed_parent_vars = NULL) {
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
@@ -81,7 +82,8 @@ build_regression_footer_from_frames <- function(
     build_random_effects_footer_block_from_frames(frames,
                                                    show_re = show_re,
                                                    re_scale = re_scale,
-                                                   re_columns = re_columns),
+                                                   re_columns = re_columns,
+                                                   re_test = re_test),
     build_survival_footer_block_from_frames(frames),
     build_ordinal_thresholds_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
@@ -630,7 +632,8 @@ build_random_effects_footer_block_from_frames <- function(
     frames,
     show_re = TRUE,
     re_scale = "sd",
-    re_columns = c("est", "se", "ci")) {
+    re_columns = c("est", "se", "ci"),
+    re_test = "none") {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
   # Phase 7c7d: user-disabled panel returns NULL early -- the random-
   # effects block is fully suppressed from the footer.
@@ -645,13 +648,29 @@ build_random_effects_footer_block_from_frames <- function(
   per_model <- Filter(Negate(is.null), per_model)
   if (length(per_model) == 0L) return(NULL)
 
+  # Per-term test disclosure (re_test = "lrt" / "rlrt"): one sentence for the
+  # whole block, naming the test behind the vc rows' p column.
+  test_line <- switch(re_test,
+    lrt = paste0(
+      "Random-effect p-values: LR test vs the reduced random structure, ",
+      "chi-bar-squared reference (Self & Liang 1987; Stram & Lee 1994)."
+    ),
+    rlrt = paste0(
+      "Random-effect p-value: exact restricted LRT, simulated null ",
+      "(RLRsim; Crainiceanu & Ruppert 2004)."
+    ),
+    NULL
+  )
+
   # Prefix with "Model k:" only when more than one frame contributes
   # content (parity with the survival footer's convention).
-  if (length(per_model) == 1L) return(per_model[[1L]]$text)
+  if (length(per_model) == 1L) {
+    return(paste(c(per_model[[1L]]$text, test_line), collapse = "\n"))
+  }
   lines <- vapply(per_model, function(pm) {
     sprintf("Model %d: %s", pm$idx, pm$text)
   }, character(1))
-  paste(lines, collapse = "\n")
+  paste(c(lines, test_line), collapse = "\n")
 }
 
 
@@ -794,7 +813,9 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 # asks for it). The correct significance signal is the model-level
 # chi-bar-squared LRT (footer line, from info$random_effects$null_lrt). The
 # columns are kept so a future opt-in per-term LRT/RLRT test can fill them.
-.append_random_effects_rows <- function(coefs, re, re_scale = "sd") {
+.append_random_effects_rows <- function(coefs, re, re_scale = "sd",
+                                        term_tests = NULL,
+                                        re_test = "none") {
   if (is.null(re)) return(coefs)
   vc <- re$variance_components
   if (is.null(vc) || !is.data.frame(vc) || nrow(vc) == 0L) return(coefs)
@@ -850,6 +871,22 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     is_re            = TRUE,
     stringsAsFactors = FALSE
   )
+
+  # Opt-in per-term tests (re_test = "lrt" / "rlrt"): fill statistic / df /
+  # p_value on the matching SD rows (never on correlation / residual rows --
+  # a correlation is tested jointly with its slope's variance, and the
+  # residual has no zero-variance null).
+  if (!is.null(term_tests) && is.data.frame(term_tests) &&
+      nrow(term_tests) > 0L) {
+    row_key  <- paste(vc$group, vc$term, sep = "\r")
+    test_key <- paste(term_tests$group, term_tests$term, sep = "\r")
+    idx <- match(row_key, test_key)
+    hit <- !is.na(idx) & !is_corr & !is_resid
+    new$statistic[hit] <- term_tests$statistic[idx[hit]]
+    new$df[hit]        <- term_tests$df[idx[hit]]
+    new$p_value[hit]   <- term_tests$p_value[idx[hit]]
+    new$test_type[hit] <- if (identical(re_test, "rlrt")) "rlrt" else "chibar2"
+  }
   .rbind_union(coefs, new)
 }
 
