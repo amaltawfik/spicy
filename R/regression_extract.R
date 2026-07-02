@@ -101,6 +101,7 @@ extract_lm_phase1 <- function(
   coefs_long <- rbind(coefs_B, ref_rows)
 
   # ---- Standardised beta rows (Step 4) ---------------------------------------
+  standardized_used <- NA_character_
   if (!identical(standardized, "none")) {
     beta_rows <- extract_beta_rows(
       fit = fit,
@@ -113,6 +114,7 @@ extract_lm_phase1 <- function(
       model_id = model_id,
       outcome = outcome
     )
+    standardized_used <- attr(beta_rows, "used_method") %||% standardized
     coefs_long <- rbind(coefs_long, beta_rows)
   }
 
@@ -125,6 +127,9 @@ extract_lm_phase1 <- function(
   exp_applied <- isTRUE(exponentiate) && is_glm &&
                    !identical(family_info$link, "identity")
   if (exp_applied) {
+    # Link gate (G1): probit / cauchit / inverse / ... hard error.
+    .assert_exp_link_ok(family_info$family, family_info$link,
+                        model_id = model_id)
     coefs_long <- apply_exponentiate_to_coefs(coefs_long)
   }
 
@@ -205,7 +210,14 @@ extract_lm_phase1 <- function(
     is_glm = is_glm,
     title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Linear regression",
     exp_applied = exp_applied,
-    exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_
+    exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_,
+    # Valid bootstrap replicate count (attr set by
+    # compute_resample_vcov_bootstrap); the footer reports it -- Stata's
+    # bootstrap header reports completed replications, not requested ones.
+    boot_n_valid = attr(vc, "boot_n_valid") %||% NA_integer_,
+    # Standardisation method ACTUALLY applied ("posthoc" after a refit
+    # fallback); the footer discloses the difference.
+    standardized_used = standardized_used
   )
 }
 
@@ -288,7 +300,8 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
         vcov_type = vcov_type,
         cluster = cluster,
         ci_level = ci_level,
-        test = if (inherits(fit, "glm")) "z" else "t"
+        test = if (inherits(fit, "glm")) "z" else "t",
+        ci_method = ci_method
       )
       ci_low_i <- inf$ci_lower
       ci_high_i <- inf$ci_upper

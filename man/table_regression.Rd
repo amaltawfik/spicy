@@ -9,7 +9,7 @@ table_regression(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
-  ci_method = c("wald", "profile"),
+  ci_method = c("wald", "profile", "boot_percentile"),
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
@@ -71,7 +71,15 @@ among others. An unsupported class raises
 \code{"HC0"}-\code{"HC5"}, \code{"CR0"}-\code{"CR3"}, \code{"bootstrap"}, or
 \code{"jackknife"}. A scalar is recycled to all models; a list
 (one string per model) allows mixed estimators. Default
-\code{"classical"}. See \emph{Inference and standard errors}.}
+\code{"classical"}. The resampling estimators (\code{lm} / \code{glm},
+including \code{MASS::glm.nb}) refit each replicate on resampled rows
+of the fixed evaluated design; for \code{glm.nb} the dispersion
+parameter theta is held at its full-sample estimate (Stata's
+\verb{nbreg, vce(bootstrap)} re-estimates it per replicate -- the two
+conventions differ slightly). Resampling that fails on nearly
+every replicate raises \code{spicy_resampling_failed} rather than
+silently reporting a different estimator. See \emph{Inference and
+standard errors}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
 (used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /
@@ -102,8 +110,20 @@ inference (Venables & Ripley \emph{MASS} Section 7.2). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
 fits the profile covers the predictor coefficients (the cut-point
 thresholds stay Wald), and a robust \code{vcov} takes precedence (its
-Wald-robust CIs are used instead). \code{"profile"} with \code{lm} raises
-\code{spicy_invalid_input}.}
+Wald-robust CIs are used instead, with a consolidated warning).
+\code{"profile"} with \code{lm} raises \code{spicy_invalid_input}.
+\code{"boot_percentile"} (requires \code{vcov = "bootstrap"} for every
+model) replaces the coefficient CI bounds with equal-tailed
+percentile intervals of the bootstrap replicates (the
+\code{\link[boot:boot.ci]{boot::boot.ci()}} \code{type = "perc"} convention; Davison & Hinkley
+1997, ch. 5), reusing the same resamples as the bootstrap SEs.
+Only the CI bounds change; estimate, SE, statistic and p-value
+remain Wald from the bootstrap covariance -- the Stata convention
+(normal-based table CIs by default, percentile on request via
+\verb{estat bootstrap}). AME and standardized-beta CIs are not
+covered. With \code{exponentiate = TRUE} the percentile bounds are
+exponentiated (percentile intervals are
+transformation-respecting).}
 
 \item{boot_n}{Number of bootstrap replicates when
 \code{vcov = "bootstrap"}. Single positive integer. Default
@@ -116,16 +136,31 @@ column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{spicy_invalid_input}. See the \emph{Standardised coefficients}
 section.}
 
-\item{exponentiate}{Logical. When \code{TRUE} and the model is a
-\code{glm} with a non-identity link, \code{B}, the CI bounds, and the
-SE are transformed via \code{exp()} (delta method:
-\verb{SE_OR = OR x SE_log-odds}). The column header is rebranded
-per family / link: \code{OR} (binomial logit), \code{IRR} (poisson
-log), \code{HR} (binomial cloglog), \code{RR} (binomial log), \code{MR}
-(Gamma log), else \code{exp(B)}. The statistic and p-value stay
-on the link scale (invariant under monotone transformation).
-Default \code{FALSE}. No effect on \code{lm} or identity-link glm;
-emits a \code{spicy_ignored_arg} warning in those cases.}
+\item{exponentiate}{Logical. When \code{TRUE}, \code{B}, the CI bounds, and
+the SE (delta method: \verb{SE_OR = OR x SE_log-odds}) are
+\code{exp()}-transformed for links where the result is a ratio:
+logit (\code{OR}), log (\code{IRR} / \code{RR} / \code{MR} per family, generic
+\code{exp(B)} for other log-link families -- a genuine ratio of
+means), and binomial / ordinal cloglog (\code{HR}; grouped-time
+proportional hazards, Prentice & Gloeckler 1978). The statistic
+and p-value stay on the link scale (invariant under monotone
+transformation). Identity-link fits are left untouched (a
+\code{spicy_ignored_arg} warning fires when no model in the table
+exponentiates), so mixed \code{lm} + logit tables keep working. Any
+other link (probit, cauchit, inverse -- the
+\code{Gamma()} default --, \code{1/mu^2}, sqrt, ordinal \code{loglog}, ...)
+raises \code{spicy_invalid_input}: the exponential of such a
+coefficient has no ratio interpretation, and reporting it
+would mislabel the estimate. Report response-scale effects for
+those models via the AME column instead. Note that the displayed
+CI is the link-scale CI with exponentiated endpoints (Wald or
+profile per \code{ci_method}), so it is asymmetric around the ratio
+and cannot be reconstructed as \verb{estimate ± z × SE}; the
+delta-method SE follows the Stata convention (\verb{[R] logistic},
+Methods and formulas: \verb{se(OR) = OR × se(b)}) and the log-scale
+CI endpoints carry the uncertainty more faithfully than this SE.
+The footer states the SE scale and the CI asymmetry whenever an
+SE column is displayed. Default \code{FALSE}.}
 
 \item{p_adjust}{Multiple-comparison adjustment method applied
 to the family of estimated coefficient p-values within each
@@ -863,11 +898,26 @@ non-binomial returns NA with a \code{spicy_caveat}.
 \item \code{"none"} (default) -- no \eqn{\beta}{beta} computed.
 }
 
-Under interactions or transformed predictors (\code{I()}, \code{poly()},
-\code{log()}, \code{splines::ns()}), a \code{spicy_caveat} warns that
-standardised coefficients on such terms are subtle to interpret
-(Cohen et al. 2003 Section 7.7; Aiken & West 1991). The caveat is
-auto-documented in the footer.
+\strong{Interactions and transforms.} Under \code{"refit"}, an interaction's
+\eqn{\beta}{beta} is the coefficient of the product of the z-scored
+components -- the recommended treatment for such models (Cohen et
+al. 2003 Section 7.7; Aiken & West 1991; Friedrich 1982). Under
+\code{"posthoc"}, \code{"basic"}, and \code{"smart"}, the product / transformed
+design column is treated as a single numeric column and scaled by
+its own SD (under \code{"smart"}, by \code{2 * SD} when the product column is
+itself binary, e.g. binary-by-binary interactions) -- the convention
+of SPSS beta, Stata \verb{regress, beta}, SAS PROC REG \code{STB}, and
+\code{lm.beta::lm.beta()}, identical to
+\code{effectsize::standardize_parameters(method = "basic")} on those
+columns. The two conventions differ whenever the components are
+correlated; a \code{spicy_caveat} warns and the footer names the
+convention actually used. \code{"refit"} declines formulas with inline
+transforms (\code{log(x)}, \code{poly()}, \code{factor()} written in the formula):
+the model frame's evaluated columns cannot be re-evaluated on
+z-scored data, so spicy falls back to \code{"posthoc"} with a warning
+(\code{effectsize}'s refit instead standardizes \emph{before} the transform
+-- a different estimand). Pre-build transformed columns in \code{data}
+for an exact refit.
 }
 
 \section{Multiple-comparison adjustment}{
@@ -1068,6 +1118,13 @@ and interpreting interactions}.
 Cohen, J., Cohen, P., West, S.G., & Aiken, L.S. (2003).
 \emph{Applied multiple regression / correlation analysis for the
 behavioral sciences} (3rd ed.). Lawrence Erlbaum.
+
+Davison, A.C. & Hinkley, D.V. (1997). \emph{Bootstrap methods and
+their application}. Cambridge University Press.
+
+Friedrich, R.J. (1982). In defense of multiplicative terms in
+multiple regression equations. \emph{American Journal of Political
+Science}, 26(4), 797-833.
 
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in

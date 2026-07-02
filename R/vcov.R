@@ -158,13 +158,22 @@ compute_resample_vcov_bootstrap <- function(
   weights = NULL,
   boot_n = 1000L
 ) {
+  # Each replicate refits on resampled rows of the FIXED evaluated design
+  # (model.matrix / model.response), not by re-evaluating the formula on
+  # a resampled model frame. Formula re-evaluation cannot see wrapped
+  # columns (`factor(cyl)`, `log(x)`, `poly(x, 2)`): it either failed on
+  # every replicate (silently degrading to the classical fallback below)
+  # or -- worse -- re-evaluated the transform against the caller's
+  # environment, pairing resampled rows with UNRESAMPLED columns and
+  # returning a silently wrong covariance. Row-wise transforms give
+  # identical replicate coefficients either way; basis terms (`poly()`,
+  # `splines::ns()`) keep the original basis, so replicate coefficients
+  # stay comparable across resamples.
+  mm <- stats::model.matrix(fit)
   mf <- stats::model.frame(fit)
-  # Drop the auxiliary "(weights)" column, if any: it carries a
-  # parenthesised name that confuses `lm()` when `mf` is passed back
-  # in as `data`. Weights are reattached explicitly via `weights =`.
-  mf[["(weights)"]] <- NULL
-  formula <- stats::formula(fit)
-  n_obs <- nrow(mf)
+  resp <- stats::model.response(mf)
+  off <- stats::model.offset(mf)
+  n_obs <- nrow(mm)
   orig_coefs <- stats::coef(fit)
   k <- length(orig_coefs)
   coef_names <- names(orig_coefs)
@@ -173,31 +182,36 @@ compute_resample_vcov_bootstrap <- function(
     weights <- stats::weights(fit)
   }
 
-  # Class-aware refit: glm fits must be re-fit with stats::glm and the
-  # original family / link, otherwise the bootstrap variance is computed
-  # for a misspecified linear model on the (often binary) response. The
-  # original family is captured once and reused across replicates.
+  # Class-aware refit: glm fits must be re-fit with stats::glm.fit and
+  # the original family / link, otherwise the bootstrap variance is
+  # computed for a misspecified linear model on the (often binary)
+  # response. The original family is captured once and reused.
   is_glm <- inherits(fit, "glm")
   fam <- if (is_glm) stats::family(fit) else NULL
-  refit <- function(boot_idx) {
-    sub_data <- mf[boot_idx, , drop = FALSE]
-    sub_w <- if (is.null(weights)) NULL else weights[boot_idx]
-    args <- list(formula = formula, data = sub_data)
-    if (!is.null(sub_w)) {
-      args$weights <- sub_w
-    }
-    if (is_glm) {
-      args$family <- fam
+  glm_ctrl <- if (is_glm) fit$control %||% stats::glm.control() else NULL
+  refit_coefs <- function(boot_idx) {
+    x_b <- mm[boot_idx, , drop = FALSE]
+    w_b <- if (is.null(weights)) rep.int(1, length(boot_idx))
+           else weights[boot_idx]
+    off_b <- if (is.null(off)) NULL else off[boot_idx]
+    z <- if (is_glm) {
+      y_b <- if (is.matrix(resp)) resp[boot_idx, , drop = FALSE]
+             else resp[boot_idx]
       tryCatch(
-        suppressWarnings(do.call(stats::glm, args)),
+        suppressWarnings(stats::glm.fit(
+          x = x_b, y = y_b, weights = w_b, offset = off_b,
+          family = fam, control = glm_ctrl
+        )),
         error = function(e) NULL
       )
     } else {
       tryCatch(
-        suppressWarnings(do.call(stats::lm, args)),
+        suppressWarnings(stats::lm.wfit(x = x_b, y = resp[boot_idx],
+                                         w = w_b, offset = off_b)),
         error = function(e) NULL
       )
     }
+    if (is.null(z)) NULL else z$coefficients
   }
 
   beta_boot <- matrix(NA_real_, nrow = boot_n, ncol = k)
@@ -207,9 +221,8 @@ compute_resample_vcov_bootstrap <- function(
     # Nonparametric obs bootstrap
     for (b in seq_len(boot_n)) {
       boot_idx <- sample.int(n_obs, n_obs, replace = TRUE)
-      fit_b <- refit(boot_idx)
-      if (!is.null(fit_b)) {
-        coefs_b <- stats::coef(fit_b)
+      coefs_b <- refit_coefs(boot_idx)
+      if (!is.null(coefs_b)) {
         common <- intersect(names(coefs_b), coef_names)
         beta_boot[b, common] <- coefs_b[common]
       }
@@ -222,9 +235,8 @@ compute_resample_vcov_bootstrap <- function(
     for (b in seq_len(boot_n)) {
       boot_g <- sample(unique_g, G, replace = TRUE)
       boot_idx <- unlist(cl_indices[as.character(boot_g)], use.names = FALSE)
-      fit_b <- refit(boot_idx)
-      if (!is.null(fit_b)) {
-        coefs_b <- stats::coef(fit_b)
+      coefs_b <- refit_coefs(boot_idx)
+      if (!is.null(coefs_b)) {
         common <- intersect(names(coefs_b), coef_names)
         beta_boot[b, common] <- coefs_b[common]
       }
@@ -234,18 +246,22 @@ compute_resample_vcov_bootstrap <- function(
   valid <- stats::complete.cases(beta_boot)
   n_valid <- sum(valid)
   if (n_valid < 10L) {
-    spicy_warn(
+    # Pre-1.0 hard error (was: classical fallback under a "bootstrap"
+    # footer -- the footer lied about the estimator actually applied).
+    spicy_abort(
       c(
         sprintf(
-          "Bootstrap: only %d / %d replicates were valid; the bootstrap vcov is unreliable.",
-          n_valid,
-          boot_n
+          "Bootstrap failed: only %d of %d replicates produced a full coefficient vector.",
+          n_valid, boot_n
         ),
-        "i" = "Falling back to the classical OLS variance."
+        "i" = paste0(
+          "The resampled refits are unstable (rank-deficient or ",
+          "non-converged resamples). Increase `boot_n`, simplify the ",
+          "model, or use an analytic `vcov` (\"HC3\", \"CR2\", ...)."
+        )
       ),
-      class = "spicy_fallback"
+      class = "spicy_resampling_failed"
     )
-    return(stats::vcov(fit))
   }
   if (n_valid < boot_n %/% 2L) {
     spicy_warn(
@@ -265,7 +281,14 @@ compute_resample_vcov_bootstrap <- function(
   }
 
   beta_boot <- beta_boot[valid, , drop = FALSE]
-  stats::cov(beta_boot)
+  vc <- stats::cov(beta_boot)
+  # Percentile CIs (`ci_method = "boot_percentile"`) reuse THESE replicates
+  # -- never a second resampling pass -- and the footer reports the VALID
+  # replicate count (Stata's bootstrap header reports completed
+  # replications, not requested ones).
+  attr(vc, "beta_boot") <- beta_boot
+  attr(vc, "boot_n_valid") <- n_valid
+  vc
 }
 
 # Internal: leave-one-out (or leave-one-cluster-out) jackknife
@@ -277,10 +300,16 @@ compute_resample_vcov_jackknife <- function(
   cluster = NULL,
   weights = NULL
 ) {
+  # Leave-one-out refits run on the FIXED evaluated design, exactly like
+  # the bootstrap resampler above (see the rationale there): formula
+  # re-evaluation on a subset model frame cannot see wrapped columns and
+  # either failed every replicate or silently leaked the caller's
+  # environment.
+  mm <- stats::model.matrix(fit)
   mf <- stats::model.frame(fit)
-  mf[["(weights)"]] <- NULL
-  formula <- stats::formula(fit)
-  n_obs <- nrow(mf)
+  resp <- stats::model.response(mf)
+  off <- stats::model.offset(mf)
+  n_obs <- nrow(mm)
   orig_coefs <- stats::coef(fit)
   k <- length(orig_coefs)
   coef_names <- names(orig_coefs)
@@ -289,30 +318,35 @@ compute_resample_vcov_jackknife <- function(
     weights <- stats::weights(fit)
   }
 
-  # Class-aware refit: glm fits must be re-fit with stats::glm and the
-  # original family / link (see `compute_resample_vcov_bootstrap` for the
-  # same rationale).
+  # Class-aware refit: glm fits must be re-fit with stats::glm.fit and
+  # the original family / link (see `compute_resample_vcov_bootstrap`
+  # for the same rationale).
   is_glm <- inherits(fit, "glm")
   fam <- if (is_glm) stats::family(fit) else NULL
-  refit <- function(jack_idx) {
-    sub_data <- mf[jack_idx, , drop = FALSE]
-    sub_w <- if (is.null(weights)) NULL else weights[jack_idx]
-    args <- list(formula = formula, data = sub_data)
-    if (!is.null(sub_w)) {
-      args$weights <- sub_w
-    }
-    if (is_glm) {
-      args$family <- fam
+  glm_ctrl <- if (is_glm) fit$control %||% stats::glm.control() else NULL
+  refit_coefs <- function(jack_idx) {
+    x_g <- mm[jack_idx, , drop = FALSE]
+    w_g <- if (is.null(weights)) rep.int(1, length(jack_idx))
+           else weights[jack_idx]
+    off_g <- if (is.null(off)) NULL else off[jack_idx]
+    z <- if (is_glm) {
+      y_g <- if (is.matrix(resp)) resp[jack_idx, , drop = FALSE]
+             else resp[jack_idx]
       tryCatch(
-        suppressWarnings(do.call(stats::glm, args)),
+        suppressWarnings(stats::glm.fit(
+          x = x_g, y = y_g, weights = w_g, offset = off_g,
+          family = fam, control = glm_ctrl
+        )),
         error = function(e) NULL
       )
     } else {
       tryCatch(
-        suppressWarnings(do.call(stats::lm, args)),
+        suppressWarnings(stats::lm.wfit(x = x_g, y = resp[jack_idx],
+                                         w = w_g, offset = off_g)),
         error = function(e) NULL
       )
     }
+    if (is.null(z)) NULL else z$coefficients
   }
 
   if (is.null(cluster)) {
@@ -328,9 +362,8 @@ compute_resample_vcov_jackknife <- function(
   beta_jack <- matrix(NA_real_, nrow = G, ncol = k)
   colnames(beta_jack) <- coef_names
   for (g in seq_len(G)) {
-    fit_g <- refit(leave_out(g))
-    if (!is.null(fit_g)) {
-      coefs_g <- stats::coef(fit_g)
+    coefs_g <- refit_coefs(leave_out(g))
+    if (!is.null(coefs_g)) {
       common <- intersect(names(coefs_g), coef_names)
       beta_jack[g, common] <- coefs_g[common]
     }
@@ -339,20 +372,59 @@ compute_resample_vcov_jackknife <- function(
   valid <- stats::complete.cases(beta_jack)
   n_valid <- sum(valid)
   if (n_valid < 2L) {
-    spicy_warn(
+    # Pre-1.0 hard error (was: classical fallback under a "jackknife"
+    # footer -- the footer lied about the estimator actually applied).
+    spicy_abort(
       c(
-        "Jackknife: fewer than 2 valid leave-out replicates.",
-        "i" = "Falling back to the classical OLS variance."
+        "Jackknife failed: fewer than 2 valid leave-out replicates.",
+        "i" = paste0(
+          "The leave-out refits are unstable (rank-deficient or ",
+          "non-converged subsets). Simplify the model or use an ",
+          "analytic `vcov` (\"HC3\", \"CR2\", ...)."
+        )
       ),
-      class = "spicy_fallback"
+      class = "spicy_resampling_failed"
     )
-    return(stats::vcov(fit))
   }
   beta_jack <- beta_jack[valid, , drop = FALSE]
   beta_mean <- colMeans(beta_jack)
   centered <- sweep(beta_jack, 2L, beta_mean, FUN = "-")
   scale <- (n_valid - 1L) / n_valid
   scale * crossprod(centered)
+}
+
+# Equal-tailed percentile interval from bootstrap replicates, following the
+# boot::boot.ci(type = "perc") convention exactly: the (R+1)*alpha-th order
+# statistics, interpolated between adjacent order statistics on the normal
+# quantile scale when (R+1)*alpha is not an integer (boot:::norm.inter;
+# Davison & Hinkley 1997, ch. 5). Implemented locally -- no new dependency --
+# and cross-validated against boot::boot.ci in the test suite.
+.boot_percentile_ci <- function(t, ci_level) {
+  t <- t[is.finite(t)]
+  R <- length(t)
+  alpha <- c((1 - ci_level) / 2, (1 + ci_level) / 2)
+  rk <- (R + 1) * alpha
+  k <- trunc(rk)
+  tstar <- sort(t)
+  out <- numeric(2L)
+  for (j in 1:2) {
+    if (k[j] == 0L) {
+      out[j] <- tstar[1L]           # extreme order statistic (small R)
+    } else if (k[j] >= R) {
+      out[j] <- tstar[R]            # extreme order statistic (small R)
+    } else if (k[j] == rk[j]) {
+      out[j] <- tstar[k[j]]         # integer rank: exact order statistic
+    } else {
+      # Interpolate between order statistics k and k + 1 on the normal
+      # quantile scale (norm.inter).
+      q_a  <- stats::qnorm(alpha[j])
+      q_k  <- stats::qnorm(k[j] / (R + 1))
+      q_k1 <- stats::qnorm((k[j] + 1L) / (R + 1))
+      out[j] <- tstar[k[j]] +
+        (q_a - q_k) / (q_k1 - q_k) * (tstar[k[j] + 1L] - tstar[k[j]])
+    }
+  }
+  out
 }
 
 # Internal: single-coefficient inference (estimate, SE, statistic, df, p, CI).
@@ -371,7 +443,8 @@ compute_coef_inference <- function(
   ci_level = 0.95,
   test = c("t", "z"),
   df_resid = NULL,
-  estimates = NULL
+  estimates = NULL,
+  ci_method = "wald"
 ) {
   test <- match.arg(test)
   # Point estimates are stats::coef(fit) for most classes. Classes whose
@@ -415,14 +488,29 @@ compute_coef_inference <- function(
     stat <- estimate / se_est
     crit <- stats::qnorm(1 - (1 - ci_level) / 2)
     pval <- 2 * stats::pnorm(abs(stat), lower.tail = FALSE)
+    ci_lo <- estimate - crit * unname(se_est)
+    ci_hi <- estimate + crit * unname(se_est)
+    # `ci_method = "boot_percentile"` (bootstrap only, validated upstream):
+    # replace ONLY the CI bounds with equal-tailed percentile intervals of
+    # the stored replicates -- estimate, SE, statistic and p stay Wald from
+    # the bootstrap covariance (the Stata convention: normal-based table
+    # CIs by default, percentile via estat bootstrap on request).
+    if (identical(ci_method, "boot_percentile")) {
+      bb <- attr(vc, "beta_boot")
+      if (!is.null(bb) && !is.na(coef_name) && coef_name %in% colnames(bb)) {
+        pci <- .boot_percentile_ci(bb[, coef_name], ci_level)
+        ci_lo <- pci[1L]
+        ci_hi <- pci[2L]
+      }
+    }
     return(list(
       estimate = estimate,
       se = unname(se_est),
       statistic = unname(stat),
       df = Inf,
       p.value = unname(pval),
-      ci_lower = estimate - crit * unname(se_est),
-      ci_upper = estimate + crit * unname(se_est),
+      ci_lower = ci_lo,
+      ci_upper = ci_hi,
       test_type = "z"
     ))
   }

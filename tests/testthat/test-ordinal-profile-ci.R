@@ -107,3 +107,51 @@ test_that("glm profile still works and discloses in the footer (cross-class)", {
   expect_match(note_of(table_regression(fit, ci_method = "profile")),
                "profile likelihood", fixed = TRUE)
 })
+
+# ---- glm: profile x robust/resampling precedence (Group D companion) -------
+
+test_that("glm profile + robust vcov: robust Wald CIs, not classical profile", {
+  d <- make_ord()
+  d$y <- rbinom(nrow(d), 1, plogis(0.8 * d$x1))
+  fit <- glm(y ~ x1 + smoke, data = d, family = binomial)
+
+  # Previously: classical profile bounds displayed silently next to
+  # robust SEs. Now the robust vcov takes precedence (polr/clm
+  # precedent): CIs are symmetric Wald from the robust SE.
+  fr <- suppressWarnings(
+    as_regression_frame(fit, vcov = "HC3", ci_method = "profile")
+  )
+  r <- fr$coefs[fr$coefs$term == "x1" & fr$coefs$estimate_type == "B", ]
+  expect_equal((r$ci_lower[1] + r$ci_upper[1]) / 2, r$estimate[1],
+               tolerance = 1e-9)
+  prof <- suppressMessages(stats::confint(fit))["x1", ]
+  expect_gt(max(abs(c(r$ci_lower[1], r$ci_upper[1]) - unname(prof))), 1e-6)
+  # The effective method is recorded (footer / as_structured stay truthful).
+  expect_identical(fr$info$ci_method, "wald")
+})
+
+test_that("glm profile + robust vcov warns once (consolidated disclosure)", {
+  d <- make_ord()
+  d$y <- rbinom(nrow(d), 1, plogis(0.8 * d$x1))
+  fit <- glm(y ~ x1, data = d, family = binomial)
+  expect_warning(
+    res <- table_regression(fit, vcov = "HC1", ci_method = "profile"),
+    class = "spicy_ignored_arg"
+  )
+  expect_false(grepl("profile likelihood", note_of(res), fixed = TRUE))
+})
+
+test_that("glm profile + bootstrap vcov: same precedence", {
+  d <- make_ord()
+  d$y <- rbinom(nrow(d), 1, plogis(0.8 * d$x1))
+  fit <- glm(y ~ x1, data = d, family = binomial)
+  set.seed(4)
+  fr <- suppressWarnings(
+    as_regression_frame(fit, vcov = "bootstrap", boot_n = 50L,
+                        ci_method = "profile")
+  )
+  r <- fr$coefs[fr$coefs$term == "x1" & fr$coefs$estimate_type == "B", ]
+  expect_equal((r$ci_lower[1] + r$ci_upper[1]) / 2, r$estimate[1],
+               tolerance = 1e-9)
+  expect_identical(fr$info$ci_method, "wald")
+})

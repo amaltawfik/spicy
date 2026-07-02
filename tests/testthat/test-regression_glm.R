@@ -263,10 +263,19 @@ test_that("exponentiate: binomial(cloglog) ⇒ HR header", {
   expect_true("HR" %in% names(out))
 })
 
-test_that("exponentiate: probit ⇒ generic exp(B) header", {
+test_that("exponentiate: probit ⇒ hard error (G1 link gate)", {
+  # Was: silent generic exp(B) header. exp() of a probit coefficient has
+  # no ratio estimand -- pre-1.0 policy is hard error over silent wrong
+  # output (Stata's probit ships no or/eform option; SAS EXPB is
+  # documented for the logit model).
   fit <- glm(am ~ mpg, data = mt, family = binomial(link = "probit"))
-  out <- table_regression(fit, exponentiate = TRUE)
-  expect_true("exp(B)" %in% names(out))
+  err <- tryCatch(
+    table_regression(fit, exponentiate = TRUE),
+    spicy_invalid_input = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "probit", fixed = TRUE)
+  expect_match(conditionMessage(err), "AME", fixed = TRUE)
 })
 
 test_that("exponentiate: lm ⇒ no transform + spicy_ignored_arg warning", {
@@ -299,13 +308,31 @@ test_that("exponentiate: footer mentions the family-specific label", {
   out <- table_regression(fit, exponentiate = TRUE)
   expect_match(attr(out, "note"),
                "Coefficients exponentiated and displayed as OR")
-  # Phase 7c14: the per-rendered-row delta-method "how it was
-  # computed" sentence ("SE_OR = OR x SE_link") was dropped from
-  # the footer -- redundant with the help text and noisy in a
-  # publication table. The footer now ends at "CI bounds
-  # exponentiated.".
+  # G4 disclosure: when the SE column is displayed (default view), the
+  # footer states the SE scale (delta method) and warns that the CI is
+  # asymmetric -- OR +/- z x SE does NOT reproduce the shown bounds
+  # (Stata [R] logistic convention).
+  expect_match(attr(out, "note"), "SE on the OR scale (delta method)",
+               fixed = TRUE)
+  expect_match(attr(out, "note"), "asymmetric", fixed = TRUE)
   expect_match(attr(out, "note"), "CI bounds exponentiated")
-  expect_false(grepl("delta-method", attr(out, "note"), fixed = TRUE))
+})
+
+test_that("exponentiate: SE-scale clause gated on a visible SE column", {
+  fit <- glm(am ~ mpg, data = mt, family = binomial)
+  out <- table_regression(fit, exponentiate = TRUE,
+                          show_columns = c("b", "ci"))
+  expect_match(attr(out, "note"),
+               "Coefficients exponentiated and displayed as OR")
+  expect_false(grepl("delta method", attr(out, "note"), fixed = TRUE))
+})
+
+test_that("exponentiate: mixed exp/non-exp table scopes the footer per model", {
+  f_lm <- lm(mpg ~ wt, data = mt)
+  f_gl <- glm(am ~ mpg, data = mt, family = binomial)
+  out <- table_regression(list(f_lm, f_gl), exponentiate = TRUE)
+  expect_match(attr(out, "note"),
+               "Model 2: coefficients exponentiated", fixed = TRUE)
 })
 
 test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifier", {

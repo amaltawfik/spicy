@@ -47,7 +47,7 @@ standardize_glm <- function(
   method <- match.arg(method)
   if (is.null(weights)) weights <- stats::weights(fit)
 
-  switch(
+  out <- switch(
     method,
     refit   = standardize_refit_glm(fit, vcov_type, cluster, ci_level,
                                      weights, boot_n),
@@ -69,6 +69,10 @@ standardize_glm <- function(
     pseudo  = standardize_pseudo_glm(fit, vcov_type, cluster, ci_level,
                                       weights, boot_n)
   )
+  # Record the method ACTUALLY applied (the refit path may fall back to
+  # the algebraic posthoc, setting the attribute itself).
+  if (is.null(attr(out, "used_method"))) attr(out, "used_method") <- method
+  out
 }
 
 
@@ -85,12 +89,19 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
   resp_name <- all.vars(stats::formula(fit)[[2L]])[1L]
   for (nm in names(mf)) {
     if (identical(nm, resp_name)) next
-    if (is.numeric(mf[[nm]])) {
+    # Matrix-valued columns (`poly(x, 2)` / `splines::ns()` bases,
+    # `cbind()` responses) are left untouched: scaling them column-blind
+    # corrupts the frame; the refit then declines into the algebraic
+    # fallback instead of hard-crashing here.
+    if (is.numeric(mf[[nm]]) && is.null(dim(mf[[nm]]))) {
       mf[[nm]] <- as.numeric(scale(mf[[nm]]))
     }
   }
 
-  formula <- stats::formula(fit)
+  # Environment stripped so variables resolve from `mf` only -- an
+  # inline transform must fail into the warned fallback below, not
+  # silently re-evaluate against the caller's raw unscaled vectors.
+  formula <- strip_formula_env(stats::formula(fit))
   fam <- stats::family(fit)
   args <- list(formula = formula, family = fam, data = mf)
   if (!is.null(weights)) args$weights <- weights
@@ -118,10 +129,12 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
       ),
       class = "spicy_fallback"
     )
-    return(standardize_algebraic_glm(
+    out <- standardize_algebraic_glm(
       fit, vcov_type, cluster, ci_level, weights, boot_n,
       factor_treatment = "unscaled", binary_factor = 1, sd_y_div = 1
-    ))
+    )
+    attr(out, "used_method") <- "posthoc"
+    return(out)
   }
 
   vc_std <- compute_model_vcov(

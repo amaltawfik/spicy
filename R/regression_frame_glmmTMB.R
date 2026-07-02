@@ -432,17 +432,29 @@ as_regression_frame.glmmTMB <- function(fit,
   base <- if (is_gaussian_identity) {
     "Linear mixed-effects regression (glmmTMB)"
   } else {
-    fam_title <- switch(fam$family,
-      binomial         = "Logistic",
-      poisson          = "Poisson",
-      Gamma            = "Gamma",
-      inverse.gaussian = "Inverse-Gaussian",
-      nbinom1          = "Negative-binomial",
-      nbinom2          = "Negative-binomial",
-      tweedie          = "Tweedie",
-      beta_family      = "Beta",
-      paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
-    )
+    # Binomial titles are LINK-aware: a probit glmmTMB is NOT a
+    # logistic regression.
+    fam_title <- if (identical(fam$family, "binomial")) {
+      switch(fam$link,
+        "logit"   = "Logistic",
+        "probit"  = "Probit",
+        "cloglog" = "Complementary log-log",
+        "log"     = "Log-binomial",
+        "Binomial"
+      )
+    } else {
+      switch(fam$family,
+        poisson          = "Poisson",
+        Gamma            = "Gamma",
+        inverse.gaussian = "Inverse-Gaussian",
+        nbinom1          = "Negative-binomial",
+        nbinom2          = "Negative-binomial",
+        tweedie          = "Tweedie",
+        beta_family      = "Beta",
+        paste0(toupper(substr(fam$family, 1L, 1L)),
+               substring(fam$family, 2L))
+      )
+    }
     paste0(fam_title, " mixed-effects regression (glmmTMB)")
   }
   if (has_zi) paste0(base, " (zero-inflated)") else base

@@ -287,10 +287,19 @@ as_regression_frame.svyglm <- function(fit,
 # nominal-likelihood variance; we still display "Logistic" / "Poisson"
 # to the user because that is the model class they typed.
 .svyglm_family_title <- function(fam) {
+  # Binomial titles are LINK-aware: a probit svyglm is NOT a logistic
+  # regression (title mistitle caught in the Group D verification pass).
+  if (fam$family %in% c("binomial", "quasibinomial")) {
+    return(switch(fam$link,
+      "logit"   = "logistic",
+      "probit"  = "probit",
+      "cloglog" = "complementary log-log",
+      "log"     = "log-binomial",
+      "binomial"
+    ))
+  }
   switch(fam$family,
-    quasibinomial = "logistic",
     quasipoisson  = "Poisson",
-    binomial      = "logistic",
     poisson       = "Poisson",
     Gamma         = "Gamma",
     inverse.gaussian = "inverse-Gaussian",

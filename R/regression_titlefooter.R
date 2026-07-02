@@ -90,7 +90,7 @@ build_regression_footer_from_frames <- function(
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
     build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
-    build_exponentiate_footer_block_from_frames(frames),
+    build_exponentiate_footer_block_from_frames(frames, show_columns),
     build_standardized_caveat_footer_block_from_frames(frames, standardized),
     build_p_adjust_footer_block_from_frames(frames, p_adjust),
     build_stars_footer_block(stars),
@@ -208,7 +208,27 @@ format_vcov_label_from_frame <- function(frame) {
     }
     return(sprintf("cluster-robust (%s), %s", vt, cluster_part))
   }
-  if (vt %in% c("bootstrap", "jackknife")) return(vt)
+  # Resampling estimators name the scheme and -- for the bootstrap -- the
+  # VALID replicate count (failed replicates are dropped; Stata's
+  # bootstrap header reports completed replications). The bare token
+  # ("Std. errors: bootstrap.") violated the footer's
+  # name-the-estimator-actually-applied principle.
+  if (identical(vt, "bootstrap")) {
+    n_valid <- frame$info$extras$boot_n_valid %||% NA_integer_
+    reps <- if (is.na(n_valid)) {
+      ""
+    } else {
+      sprintf(" (%d replicates)", as.integer(n_valid))
+    }
+    if (is.na(cn) || !nzchar(cn)) {
+      return(sprintf("nonparametric bootstrap%s", reps))
+    }
+    return(sprintf("cluster bootstrap%s, clusters by %s", reps, cn))
+  }
+  if (identical(vt, "jackknife")) {
+    if (is.na(cn) || !nzchar(cn)) return("jackknife (leave-one-out)")
+    return(sprintf("jackknife (leave-one-cluster-out), clusters by %s", cn))
+  }
   vt
 }
 
@@ -237,14 +257,27 @@ build_vcov_footer_block_from_frames <- function(frames) {
 # guarantees ci_method == "profile" reaches only glm / polr / clm.
 build_ci_method_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  .pct <- function(idx) {
+    lvl <- frames[[idx]]$info$ci_level %||% 0.95
+    sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
+  }
   is_profile <- vapply(frames, function(f) {
     identical(f$info$ci_method, "profile") &&
       (f$info$vcov_kind %||% "model") %in% c("model", "classical")
   }, logical(1))
-  if (!any(is_profile)) return(NULL)
-  lvl <- frames[[which(is_profile)[1]]]$info$ci_level %||% 0.95
-  pct <- sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
-  paste0(pct, "% CIs: profile likelihood.")
+  if (any(is_profile)) {
+    return(paste0(.pct(which(is_profile)[1]), "% CIs: profile likelihood."))
+  }
+  # Percentile bootstrap CIs (G5): a CI-only refinement of the bootstrap
+  # replicates; the replicate count already sits on the Std. errors line.
+  is_bperc <- vapply(frames, function(f) {
+    identical(f$info$ci_method, "boot_percentile") &&
+      identical(f$info$vcov_kind, "bootstrap")
+  }, logical(1))
+  if (any(is_bperc)) {
+    return(paste0(.pct(which(is_bperc)[1]), "% CIs: bootstrap percentile."))
+  }
+  NULL
 }
 
 
@@ -380,20 +413,44 @@ build_standardized_caveat_footer_block_from_frames <- function(frames,
   }
   if (!any_problem) return(NULL)
 
-  caveat <- if (identical(standardized, "refit")) {
-    paste0(
-      "Standardised \u03B2: after refit on z-scored data, \u03B2 for interaction ",
-      "and transform terms reflects the interaction of z-scored ",
-      "variables, not the standardisation of the original term."
-    )
-  } else {
-    paste0(
-      "Standardised \u03B2: for interaction and transform terms, \u03B2 uses ",
-      "SD of the product / transformed column, which differs from ",
-      "SD(x) \u00D7 SD(z) and may be unstable (Cohen et al. 2003 \u00A77.7)."
-    )
+  # Fallback awareness (G2): the refit path declines on inline-transform
+  # formulas and applies posthoc instead -- the footer must then carry
+  # the ALGEBRAIC wording (naming the convention), not the refit one.
+  used <- vapply(frames, function(f) {
+    f$info$extras$standardized_used %||% NA_character_
+  }, character(1))
+  fell_back <- identical(standardized, "refit") &&
+    any(!is.na(used) & used != "refit")
+
+  # Table notes state what IS shown; the negative-space contrast
+  # ("components are NOT standardised first", "NOT the standardisation
+  # of the original term") is reader pedagogy and lives in the
+  # *Standardised coefficients* section of ?table_regression. The
+  # differs-from-"refit" clause stays: it is the interpretive caveat
+  # about the displayed numbers themselves.
+  algebraic <- paste0(
+    "Standardised \u03B2: interaction / transformed terms are scaled by ",
+    "the SD of the product (or transformed) design column -- the ",
+    "SPSS / Stata (regress, beta) / lm.beta convention; differs from ",
+    "\"refit\" under correlated components (Friedrich 1982; Cohen et ",
+    "al. 2003 \u00A77.7)."
+  )
+
+  if (identical(standardized, "refit") && !fell_back) {
+    return(paste0(
+      "Standardised \u03B2: after refit on z-scored data, an interaction's ",
+      "\u03B2 is the coefficient of the product of the z-scored components ",
+      "(Cohen et al. 2003 \u00A77.7)."
+    ))
   }
-  caveat
+  if (fell_back) {
+    return(paste0(
+      "Standardised \u03B2: \"refit\" failed; algebraic (posthoc) scaling ",
+      "applied. ",
+      sub("^Standardised \u03B2: ", "", algebraic)
+    ))
+  }
+  algebraic
 }
 
 
@@ -1108,7 +1165,20 @@ build_singular_footer_block_from_frames <- function(frames) {
 # Frame-aware sibling of build_exponentiate_footer_block(). Reads
 #   frame$info$extras$exp_applied (was extract$exp_applied)
 #   frame$info$extras$exp_header  (was extract$exp_header)
-build_exponentiate_footer_block_from_frames <- function(frames) {
+#
+# G4 disclosure: when an SE column is actually displayed, the sentence
+# also states the SE scale (delta method; Stata [R] logistic convention
+# se(OR) = OR x se(b)) and that the CI -- the exponential of the
+# link-scale CI endpoints, Wald or profile alike -- is asymmetric. The
+# table note says what IS shown; the negative-space explanation (the CI
+# is NOT reconstructable as estimate +/- z x SE) is reader pedagogy and
+# lives in ?table_regression, not in a publication table note. Without a
+# visible SE column the short sentence suffices. In a table mixing
+# exponentiated and identity-link models, the sentence is scoped to the
+# exponentiated models (an lm's SE column in the same table is
+# OLS-scale).
+build_exponentiate_footer_block_from_frames <- function(
+    frames, show_columns = character(0)) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
   applied <- vapply(frames,
                     function(f) isTRUE(f$info$extras$exp_applied),
@@ -1117,22 +1187,39 @@ build_exponentiate_footer_block_from_frames <- function(frames) {
   hdrs <- unique(vapply(frames[applied],
                         function(f) f$info$extras$exp_header,
                         character(1)))
-  # The SE column is reported on the exp() scale via the Delta
-  # method (SE_exp = exp(B) * SE_link). That mechanic is documented
-  # in the `?table_regression` help; the footer keeps a one-line
-  # "what the column shows" rather than a "how it was computed"
-  # methods sentence that would otherwise clutter the table note.
-  if (length(hdrs) == 1L) {
-    hdr <- hdrs[1L]
+
+  scope <- if (all(applied)) {
+    "Coefficients"
+  } else {
+    sprintf("%s: coefficients",
+            paste(sprintf("Model %d", which(applied)), collapse = ", "))
+  }
+
+  if ("se" %in% show_columns) {
+    if (length(hdrs) == 1L) {
+      return(sprintf(
+        paste0("%s exponentiated and displayed as %s; SE on the %s scale ",
+               "(delta method); CI bounds exponentiated (asymmetric)."),
+        scope, hdrs[1L], hdrs[1L]
+      ))
+    }
     return(sprintf(
-      "Coefficients exponentiated and displayed as %s; CI bounds exponentiated.",
-      hdr
+      paste0("%s exponentiated and displayed as %s (per family); SE on ",
+             "the displayed ratio scale (delta method); CI bounds ",
+             "exponentiated (asymmetric)."),
+      scope, paste(hdrs, collapse = " / ")
     ))
   }
-  paste0(
-    "Coefficients exponentiated and displayed as ",
-    paste(hdrs, collapse = " / "),
-    " (per family); CI bounds exponentiated."
+
+  if (length(hdrs) == 1L) {
+    return(sprintf(
+      "%s exponentiated and displayed as %s; CI bounds exponentiated.",
+      scope, hdrs[1L]
+    ))
+  }
+  sprintf(
+    "%s exponentiated and displayed as %s (per family); CI bounds exponentiated.",
+    scope, paste(hdrs, collapse = " / ")
   )
 }
 

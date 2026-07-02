@@ -2695,20 +2695,20 @@ test_that("get_test_header_lm covers all test_type branches", {
   expect_null(spicy:::get_test_header_lm(out_kgt2, FALSE, TRUE))
 })
 
-test_that("compute_resample_vcov_bootstrap warns on too few valid replicates", {
+test_that("compute_resample_vcov_bootstrap errors on too few valid replicates", {
   # Fit before mocking so the original fit succeeds; the mock then
   # blocks every refit inside compute_resample_vcov_bootstrap.
+  # Pre-1.0: hard error (was a classical fallback under a "bootstrap"
+  # footer -- the footer lied about the estimator actually applied).
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
-    lm = function(...) stop("synthetic refit failure"),
+    lm.wfit = function(...) stop("synthetic refit failure"),
     .package = "stats"
   )
-  msg <- tryCatch(
+  expect_error(
     spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 100),
-    warning = function(w) conditionMessage(w)
+    class = "spicy_resampling_failed"
   )
-  expect_true(is.character(msg))
-  expect_match(msg, "replicates were valid")
 })
 
 # ---- end additional coverage ----
@@ -2737,17 +2737,16 @@ test_that("compute_resample_vcov_jackknife cluster path matches leave-one-out", 
   expect_false(isTRUE(all.equal(vc_obs, vc_cl)))
 })
 
-test_that("compute_resample_vcov_jackknife falls back when too few replicates", {
+test_that("compute_resample_vcov_jackknife errors when too few replicates", {
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
-    lm = function(...) stop("synthetic refit failure"),
+    lm.wfit = function(...) stop("synthetic refit failure"),
     .package = "stats"
   )
-  msg <- tryCatch(
+  expect_error(
     spicy:::compute_resample_vcov_jackknife(fit),
-    warning = function(w) conditionMessage(w)
+    class = "spicy_resampling_failed"
   )
-  expect_match(msg, "fewer than 2 valid")
 })
 
 test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", {
@@ -3158,32 +3157,32 @@ test_that("compute_model_vcov simulates clubSandwich missing for CR types", {
 
 # ---- coverage: bootstrap warnings ----
 
-test_that("compute_resample_vcov_bootstrap warns when fewer than 10 valid replicates", {
+test_that("compute_resample_vcov_bootstrap errors when fewer than 10 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
-  # Force every refit to fail by mocking lm so 0 replicates succeed.
+  # Force every refit to fail by mocking lm.wfit so 0 replicates succeed.
   testthat::local_mocked_bindings(
-    lm = function(...) stop("synthetic lm failure"),
+    lm.wfit = function(...) stop("synthetic lm failure"),
     .package = "stats"
   )
-  msg <- tryCatch(
+  err <- tryCatch(
     spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 20L),
-    warning = function(w) conditionMessage(w)
+    spicy_resampling_failed = function(e) e
   )
-  expect_match(msg, "only 0 / 20 replicates were valid")
-  expect_match(msg, "unreliable")
+  expect_s3_class(err, "spicy_resampling_failed")
+  expect_match(conditionMessage(err), "only 0 of 20 replicates")
 })
 
 test_that("compute_resample_vcov_bootstrap warns when over half of replicates fail", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
-  real_lm <- stats::lm
+  real_lm_wfit <- stats::lm.wfit
   call_count <- 0L
   # Make ~75% of bootstrap refits fail (still leave > 10 valid so we
   # exercise the n_valid < boot_n/2 warning branch, not the < 10 branch).
   testthat::local_mocked_bindings(
-    lm = function(...) {
+    lm.wfit = function(...) {
       call_count <<- call_count + 1L
       if (call_count %% 4L == 0L) {
-        return(real_lm(...))
+        return(real_lm_wfit(...))
       }
       stop("synthetic lm failure")
     },
@@ -3566,24 +3565,28 @@ test_that("compute_model_vcov CR fallback returns the classical vcov after warni
   expect_equal(vc, stats::vcov(fit))
 })
 
-test_that("compute_resample_vcov_bootstrap fallback returns the classical vcov when 0 valid replicates", {
+test_that("compute_resample_vcov_bootstrap errors when 0 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
-    lm = function(...) stop("synthetic lm failure"),
+    lm.wfit = function(...) stop("synthetic lm failure"),
     .package = "stats"
   )
-  vc <- suppressWarnings(spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 5L))
-  expect_equal(vc, stats::vcov(fit))
+  expect_error(
+    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 5L),
+    class = "spicy_resampling_failed"
+  )
 })
 
-test_that("compute_resample_vcov_jackknife fallback returns the classical vcov when 0 valid replicates", {
+test_that("compute_resample_vcov_jackknife errors when 0 valid replicates", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
-    lm = function(...) stop("synthetic lm failure"),
+    lm.wfit = function(...) stop("synthetic lm failure"),
     .package = "stats"
   )
-  vc <- suppressWarnings(spicy:::compute_resample_vcov_jackknife(fit))
-  expect_equal(vc, stats::vcov(fit))
+  expect_error(
+    spicy:::compute_resample_vcov_jackknife(fit),
+    class = "spicy_resampling_failed"
+  )
 })
 
 test_that("compute_lm_omega2 returns NA when weights length mismatches y / when sum(w) = 0", {

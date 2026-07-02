@@ -120,7 +120,9 @@
 #'     estimator actually applied.
 #'   \item `exponentiate = TRUE` is link-gated: it produces a labelled ratio
 #'     (OR / IRR / HR / RR / MR / RRR / TR) only where the link warrants
-#'     one; identity-link fits warn and are left untouched.
+#'     one. Identity-link fits warn and are left untouched; non-ratio
+#'     links (probit, cauchit, inverse, ...) are **refused with a clear
+#'     error** -- never silently exponentiated.
 #'   \item Class-specific structure renders as labelled subordinate blocks
 #'     of rows in the same table, each explained by a footer line.
 #'   \item Fit statistics default to the family's field standard

@@ -281,11 +281,26 @@
 #'   \item `"none"` (default) -- no \eqn{\beta}{beta} computed.
 #' }
 #'
-#' Under interactions or transformed predictors (`I()`, `poly()`,
-#' `log()`, `splines::ns()`), a `spicy_caveat` warns that
-#' standardised coefficients on such terms are subtle to interpret
-#' (Cohen et al. 2003 Section 7.7; Aiken & West 1991). The caveat is
-#' auto-documented in the footer.
+#' **Interactions and transforms.** Under `"refit"`, an interaction's
+#' \eqn{\beta}{beta} is the coefficient of the product of the z-scored
+#' components -- the recommended treatment for such models (Cohen et
+#' al. 2003 Section 7.7; Aiken & West 1991; Friedrich 1982). Under
+#' `"posthoc"`, `"basic"`, and `"smart"`, the product / transformed
+#' design column is treated as a single numeric column and scaled by
+#' its own SD (under `"smart"`, by `2 * SD` when the product column is
+#' itself binary, e.g. binary-by-binary interactions) -- the convention
+#' of SPSS beta, Stata `regress, beta`, SAS PROC REG `STB`, and
+#' `lm.beta::lm.beta()`, identical to
+#' `effectsize::standardize_parameters(method = "basic")` on those
+#' columns. The two conventions differ whenever the components are
+#' correlated; a `spicy_caveat` warns and the footer names the
+#' convention actually used. `"refit"` declines formulas with inline
+#' transforms (`log(x)`, `poly()`, `factor()` written in the formula):
+#' the model frame's evaluated columns cannot be re-evaluated on
+#' z-scored data, so spicy falls back to `"posthoc"` with a warning
+#' (`effectsize`'s refit instead standardizes *before* the transform
+#' -- a different estimand). Pre-build transformed columns in `data`
+#' for an exact refit.
 #'
 #' # Multiple-comparison adjustment
 #'
@@ -364,7 +379,15 @@
 #'   `"HC0"`-`"HC5"`, `"CR0"`-`"CR3"`, `"bootstrap"`, or
 #'   `"jackknife"`. A scalar is recycled to all models; a list
 #'   (one string per model) allows mixed estimators. Default
-#'   `"classical"`. See *Inference and standard errors*.
+#'   `"classical"`. The resampling estimators (`lm` / `glm`,
+#'   including `MASS::glm.nb`) refit each replicate on resampled rows
+#'   of the fixed evaluated design; for `glm.nb` the dispersion
+#'   parameter theta is held at its full-sample estimate (Stata's
+#'   `nbreg, vce(bootstrap)` re-estimates it per replicate -- the two
+#'   conventions differ slightly). Resampling that fails on nearly
+#'   every replicate raises `spicy_resampling_failed` rather than
+#'   silently reporting a different estimator. See *Inference and
+#'   standard errors*.
 #' @param cluster Cluster identifier for cluster-robust variance
 #'   (used when `vcov` is `"CR0"`-`"CR3"` or a cluster-bootstrap /
 #'   cluster-jackknife). Three accepted forms (see *How to specify
@@ -395,24 +418,51 @@
 #'   change; estimate, SE, statistic and p-value remain Wald. For ordinal
 #'   fits the profile covers the predictor coefficients (the cut-point
 #'   thresholds stay Wald), and a robust `vcov` takes precedence (its
-#'   Wald-robust CIs are used instead). `"profile"` with `lm` raises
-#'   `spicy_invalid_input`.
+#'   Wald-robust CIs are used instead, with a consolidated warning).
+#'   `"profile"` with `lm` raises `spicy_invalid_input`.
+#'   `"boot_percentile"` (requires `vcov = "bootstrap"` for every
+#'   model) replaces the coefficient CI bounds with equal-tailed
+#'   percentile intervals of the bootstrap replicates (the
+#'   [boot::boot.ci()] `type = "perc"` convention; Davison & Hinkley
+#'   1997, ch. 5), reusing the same resamples as the bootstrap SEs.
+#'   Only the CI bounds change; estimate, SE, statistic and p-value
+#'   remain Wald from the bootstrap covariance -- the Stata convention
+#'   (normal-based table CIs by default, percentile on request via
+#'   `estat bootstrap`). AME and standardized-beta CIs are not
+#'   covered. With `exponentiate = TRUE` the percentile bounds are
+#'   exponentiated (percentile intervals are
+#'   transformation-respecting).
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
 #'   (Menard 2011 fully-standardised); using it with `lm()` raises
 #'   `spicy_invalid_input`. See the *Standardised coefficients*
 #'   section.
-#' @param exponentiate Logical. When `TRUE` and the model is a
-#'   `glm` with a non-identity link, `B`, the CI bounds, and the
-#'   SE are transformed via `exp()` (delta method:
-#'   `SE_OR = OR x SE_log-odds`). The column header is rebranded
-#'   per family / link: `OR` (binomial logit), `IRR` (poisson
-#'   log), `HR` (binomial cloglog), `RR` (binomial log), `MR`
-#'   (Gamma log), else `exp(B)`. The statistic and p-value stay
-#'   on the link scale (invariant under monotone transformation).
-#'   Default `FALSE`. No effect on `lm` or identity-link glm;
-#'   emits a `spicy_ignored_arg` warning in those cases.
+#' @param exponentiate Logical. When `TRUE`, `B`, the CI bounds, and
+#'   the SE (delta method: `SE_OR = OR x SE_log-odds`) are
+#'   `exp()`-transformed for links where the result is a ratio:
+#'   logit (`OR`), log (`IRR` / `RR` / `MR` per family, generic
+#'   `exp(B)` for other log-link families -- a genuine ratio of
+#'   means), and binomial / ordinal cloglog (`HR`; grouped-time
+#'   proportional hazards, Prentice & Gloeckler 1978). The statistic
+#'   and p-value stay on the link scale (invariant under monotone
+#'   transformation). Identity-link fits are left untouched (a
+#'   `spicy_ignored_arg` warning fires when no model in the table
+#'   exponentiates), so mixed `lm` + logit tables keep working. Any
+#'   other link (probit, cauchit, inverse -- the
+#'   `Gamma()` default --, `1/mu^2`, sqrt, ordinal `loglog`, ...)
+#'   raises `spicy_invalid_input`: the exponential of such a
+#'   coefficient has no ratio interpretation, and reporting it
+#'   would mislabel the estimate. Report response-scale effects for
+#'   those models via the AME column instead. Note that the displayed
+#'   CI is the link-scale CI with exponentiated endpoints (Wald or
+#'   profile per `ci_method`), so it is asymmetric around the ratio
+#'   and cannot be reconstructed as `estimate ± z × SE`; the
+#'   delta-method SE follows the Stata convention (`[R] logistic`,
+#'   Methods and formulas: `se(OR) = OR × se(b)`) and the log-scale
+#'   CI endpoints carry the uncertainty more faithfully than this SE.
+#'   The footer states the SE scale and the CI asymmetry whenever an
+#'   SE column is displayed. Default `FALSE`.
 #' @param p_adjust Multiple-comparison adjustment method applied
 #'   to the family of estimated coefficient p-values within each
 #'   model (intercept and reference rows excluded). One of
@@ -986,6 +1036,13 @@
 #' *Applied multiple regression / correlation analysis for the
 #' behavioral sciences* (3rd ed.). Lawrence Erlbaum.
 #'
+#' Davison, A.C. & Hinkley, D.V. (1997). *Bootstrap methods and
+#' their application*. Cambridge University Press.
+#'
+#' Friedrich, R.J. (1982). In defense of multiplicative terms in
+#' multiple regression equations. *American Journal of Political
+#' Science*, 26(4), 797-833.
+#'
 #' Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 #' cluster-robust variance estimation and hypothesis testing in
 #' fixed effects models. *Journal of Business & Economic
@@ -1001,7 +1058,7 @@ table_regression <- function(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
-  ci_method = c("wald", "profile"),
+  ci_method = c("wald", "profile", "boot_percentile"),
   boot_n = 1000L,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
@@ -1272,6 +1329,76 @@ table_regression <- function(
                                "would silently fall back to Wald."), offending),
           "i" = paste0("Use `ci_method = \"wald\"` (default), or a robust ",
                        "`vcov` for robust (Wald) CIs.")
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+
+    # Profile CIs are model-based likelihood quantities; a robust or
+    # resampling vcov takes precedence (its Wald CIs are used). The frame
+    # methods (lm / glm / polr / clm) resolve the request themselves --
+    # this is the single consolidated disclosure of that override.
+    vlist <- if (is.list(vcov)) vcov else rep(list(vcov), length(models))
+    overridden <- vapply(vlist, function(v) {
+      !(is.character(v) && length(v) == 1L &&
+          v %in% c("model", "classical"))
+    }, logical(1))
+    if (any(overridden)) {
+      mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+        names(models)
+      } else {
+        paste("Model", seq_along(models))
+      }
+      spicy_warn(
+        c(
+          paste0("`ci_method = \"profile\"` is ignored under a robust or ",
+                 "resampling `vcov`: ",
+                 paste(mod_labels[overridden], collapse = ", "), "."),
+          "i" = paste0(
+            "Profile CIs are model-based likelihood quantities; the ",
+            "requested `vcov` takes precedence and its Wald CIs are ",
+            "reported (the footer names the estimator)."
+          )
+        ),
+        class = "spicy_ignored_arg"
+      )
+    }
+  }
+
+  # `ci_method = "boot_percentile"` is a CI-only refinement of the
+  # bootstrap: equal-tailed percentile intervals of the SAME replicates
+  # that produced the bootstrap covariance (boot::boot.ci type = "perc"
+  # convention). It therefore requires vcov = "bootstrap" for every
+  # model (jackknife has no replicate distribution to take quantiles
+  # of), and is not defined for standardized betas (their CIs rescale
+  # the raw Wald machinery, not the replicates).
+  if (identical(ci_method, "boot_percentile")) {
+    vlist <- if (is.list(vcov)) vcov else rep(list(vcov), length(models))
+    all_boot <- all(vapply(vlist, function(v) {
+      is.character(v) && length(v) == 1L && identical(v, "bootstrap")
+    }, logical(1)))
+    if (!all_boot) {
+      spicy_abort(
+        c(
+          paste0("`ci_method = \"boot_percentile\"` requires ",
+                 "`vcov = \"bootstrap\"` for every model."),
+          "i" = paste0("Percentile CIs are quantiles of the bootstrap ",
+                       "replicates; they reuse the same resamples as the ",
+                       "bootstrap SEs (no second resampling pass)."),
+          "i" = paste0("Set `vcov = \"bootstrap\"` (tune with `boot_n`), ",
+                       "or drop `ci_method = \"boot_percentile\"`.")
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    if (!identical(standardized, "none")) {
+      spicy_abort(
+        c(
+          paste0("`ci_method = \"boot_percentile\"` is not available ",
+                 "with `standardized`."),
+          "i" = paste0("Percentile CIs are quantiles of the raw-",
+                       "coefficient replicates; standardised betas would ",
+                       "need their own resampling scheme.")
         ),
         class = "spicy_invalid_input"
       )

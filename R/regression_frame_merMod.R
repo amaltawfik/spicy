@@ -161,6 +161,10 @@ as_regression_frame.glmerMod <- function(fit,
   if (identical(fam$link, "identity")) {
     return(list(coefs = coefs, info = info))
   }
+  # Link gate (G1): probit / cauchit / ... mixed fits hard error rather
+  # than silently printing a meaningless exp(B) column.
+  .assert_exp_link_ok(fam$family, fam$link,
+                      model_id = coefs$model_id[1L])
   coefs <- apply_exponentiate_to_frame_coefs(coefs)
   info$extras$exp_applied <- TRUE
   info$extras$exp_header  <- spicy_glm_exp_header(fam$family, fam$link)
@@ -467,13 +471,23 @@ as_regression_frame.glmerMod <- function(fit,
 # Title-case family label for glmer. Mirrors the convention used by
 # lm / glm (Logistic / Poisson / Binomial / Generalised mixed-effects).
 .merMod_glm_family_title <- function(fit) {
-  fam <- stats::family(fit)$family
-  switch(fam,
-    binomial = "Logistic",
+  fam <- stats::family(fit)
+  # Binomial titles are LINK-aware: a probit glmer is NOT a logistic
+  # regression (title mistitle caught in the Group D verification pass).
+  if (identical(fam$family, "binomial")) {
+    return(switch(fam$link,
+      "logit"   = "Logistic",
+      "probit"  = "Probit",
+      "cloglog" = "Complementary log-log",
+      "log"     = "Log-binomial",
+      "Binomial"
+    ))
+  }
+  switch(fam$family,
     poisson  = "Poisson",
     Gamma    = "Gamma",
     inverse.gaussian = "Inverse-Gaussian",
-    paste0(toupper(substr(fam, 1L, 1L)), substring(fam, 2L))
+    paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
   )
 }
 

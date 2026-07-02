@@ -1339,8 +1339,10 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
     )
   } else {
     paste0(
-      "\u03B2 uses SD of the product / transformed column, which differs ",
-      "from SD(x) \u00D7 SD(z) and may be unstable."
+      "\u03B2 scales these terms by the SD of the product / transformed ",
+      "design column (the SPSS / Stata `regress, beta` / lm.beta ",
+      "convention); components are not standardised first, so results ",
+      "differ from \"refit\" when components are correlated."
     )
   }
 
@@ -1355,7 +1357,7 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
       ),
       lines,
       "i" = caveat_msg,
-      "i" = "Cohen, Cohen, West & Aiken (2003) \u00A77.7."
+      "i" = "Friedrich (1982); Cohen, Cohen, West & Aiken (2003) \u00A77.7."
     ),
     class = "spicy_caveat"
   )

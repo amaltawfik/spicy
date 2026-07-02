@@ -19,6 +19,22 @@
 # effectsize::standardize_parameters() in tests as the oracle.
 
 
+# ---- Shared helper ---------------------------------------------------------
+
+# Standardisation refits run on the model frame, whose columns are the
+# *evaluated* terms (`log(x)`, `factor(g)`, `poly(x, 2)`, ...). The refit
+# formula must therefore resolve variables from `data` only: with the
+# original formula environment attached, an inline transform silently
+# re-evaluates against whatever the caller's environment happens to hold
+# (raw, unscaled vectors), yielding wrong betas with no warning. Stripping
+# the environment turns that into an error that lands in the classed
+# spicy_fallback paths.
+strip_formula_env <- function(formula) {
+  environment(formula) <- new.env(parent = baseenv())
+  formula
+}
+
+
 # ---- Public-internal dispatch ---------------------------------------------
 
 standardize_lm <- function(
@@ -33,7 +49,7 @@ standardize_lm <- function(
   method <- match.arg(method)
   if (is.null(weights)) weights <- stats::weights(fit)
 
-  switch(
+  out <- switch(
     method,
     refit   = standardize_refit_lm(fit, vcov_type, cluster, ci_level,
                                     weights, boot_n),
@@ -44,6 +60,11 @@ standardize_lm <- function(
     smart   = standardize_smart_lm(fit, vcov_type, cluster, ci_level,
                                     weights, boot_n)
   )
+  # Record the method ACTUALLY applied (the refit path may fall back to
+  # posthoc, setting the attribute itself) so the footer can disclose a
+  # fallback instead of printing the refit wording over posthoc numbers.
+  if (is.null(attr(out, "used_method"))) attr(out, "used_method") <- method
+  out
 }
 
 
@@ -64,22 +85,27 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
 
   # z-score numeric columns (response + numeric predictors). Factor
   # columns are kept as-is (their dummies stay 0/1 in the design
-  # matrix, matching effectsize convention).
+  # matrix, matching effectsize convention). Matrix-valued columns
+  # (`poly(x, 2)`, `splines::ns(x, 3)` bases, `cbind()` responses) are
+  # left untouched: scaling them column-blind corrupts the frame, and
+  # the refit below then declines into the posthoc fallback instead of
+  # hard-crashing here.
   for (nm in names(mf)) {
-    if (is.numeric(mf[[nm]])) {
+    if (is.numeric(mf[[nm]]) && is.null(dim(mf[[nm]]))) {
       mf[[nm]] <- as.numeric(scale(mf[[nm]]))
     }
   }
 
-  # Refit on standardised frame, preserving weights. Wrapped in
-  # tryCatch because model.frame columns named after function calls
-  # (`factor(cyl)`, `I(x^2)`, `poly(x, 2)`, `log(x)`, etc.) can fail
-  # to refit cleanly -- the column exists with the wrapped name but
-  # lm() tries to re-evaluate the function on the inner symbol.
-  # On failure, fall back to algebraic posthoc with a transparent
-  # spicy_fallback warning so the user knows they got a different
-  # method than they asked for.
-  formula <- stats::formula(fit)
+  # Refit on standardised frame, preserving weights. The formula
+  # environment is stripped so variables resolve from `mf` ONLY:
+  # model.frame columns named after function calls (`factor(cyl)`,
+  # `I(x^2)`, `poly(x, 2)`, `log(x)`, etc.) cannot re-evaluate -- lm()
+  # tries the function on the inner symbol, which must fail here rather
+  # than silently pick up the caller's raw unscaled vector. On failure,
+  # fall back to algebraic posthoc with a transparent spicy_fallback
+  # warning so the user knows they got a different method than they
+  # asked for.
+  formula <- strip_formula_env(stats::formula(fit))
   args <- list(formula = formula, data = mf)
   if (!is.null(weights)) args$weights <- weights
   fit_std <- tryCatch(
@@ -108,9 +134,11 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
       ),
       class = "spicy_fallback"
     )
-    return(standardize_posthoc_lm(
+    out <- standardize_posthoc_lm(
       fit, vcov_type, cluster, ci_level, weights, boot_n
-    ))
+    )
+    attr(out, "used_method") <- "posthoc"
+    return(out)
   }
 
   # Apply user's vcov to the refitted model and run per-coef inference
@@ -135,8 +163,15 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
 
 # Numerics scaled by sd(X)/sd(Y); factor-derived design columns
 # scaled by 1/sd(Y) only (no X-scaling -- treat 0/1 dummies as
-# already on a "standardised" scale). Matches the semantics of
-# `effectsize::standardize_parameters(method = "posthoc")`.
+# already on a "standardised" scale). Matches
+# `effectsize::standardize_parameters(method = "posthoc")` on ADDITIVE
+# terms only: on interaction / transformed design columns this scales by
+# the SD of the PRODUCT column itself -- the SPSS beta / Stata
+# `regress, beta` / SAS PROC REG STB / `lm.beta` / effectsize "basic"
+# convention (effectsize "posthoc" z-scores the components instead;
+# Friedrich 1982 documents why the two differ when components are
+# correlated). Cross-validated against lm.beta / effectsize "basic" at
+# 1e-7 on interaction rows.
 # Inference: SE_beta scales by the same per-column factor; t and p
 # are unchanged under linear transformation; CI rebuilt from
 # scaled SE.
@@ -183,6 +218,12 @@ standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
 # and replicable. For exact effectsize-style "smart", call effectsize
 # directly. The numeric divergence on factor dummies is typically
 # < 5 % in practice.
+#
+# Interaction / transformed design columns follow the same
+# product-column convention as posthoc (SD of the column itself, not
+# the components) -- and the binary rule applies to the PRODUCT column:
+# a binary x binary interaction column is itself 0/1, so it gets the
+# 2 x sd rule (verified: smart == 2 x posthoc on that row).
 standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
                                   weights, boot_n) {
   scale_and_rebuild(
@@ -413,7 +454,11 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
       factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
     )
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  # Thread the method actually applied (refit may fall back to posthoc)
+  # up to the extract so the footer can disclose the fallback.
+  attr(out, "used_method") <- attr(std_table, "used_method")
+  out
 }
 
 
@@ -461,7 +506,10 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   )[1L]
 
   for (nm in names(data)) {
-    if (!is.numeric(data[[nm]]) || startsWith(nm, "(")) next
+    if (!is.numeric(data[[nm]]) || !is.null(dim(data[[nm]])) ||
+        startsWith(nm, "(")) {
+      next  # skip matrix columns (poly/ns bases, cbind() responses)
+    }
     if (!is_gaussian && identical(nm, response_var)) next  # skip y on glmm
     sd_x <- stats::sd(data[[nm]], na.rm = TRUE)
     if (is.finite(sd_x) && sd_x > 0) {
@@ -469,21 +517,47 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     }
   }
 
+  # lme refits on the RAW data (nlme::getData), so an inline transform
+  # in the fixed formula would re-evaluate on the z-scored raw column
+  # (log of a z-scored variable, ...) -- a different model, silently.
+  # Decline instead; the caller warns and omits the beta rows.
+  if (inherits(fit, c("lme", "gls"))) {
+    vars <- tryCatch(as.list(attr(stats::terms(fit), "variables"))[-1L],
+                     error = function(e) NULL)
+    if (is.null(vars) || !all(vapply(vars, is.symbol, logical(1)))) {
+      return(NULL)
+    }
+  }
+
   # Engine-specific refit, manually requalified so the call works in
   # any context (the captured `getCall(fit)` would fail to resolve
   # `lmer` / `glmer` / `glmmTMB` / `lme` when those packages aren't
   # attached). lme4 fits are S4 -- use stats::getCall(), not `fit$call`.
+  # The call is normalised with match.call() so the model formula can be
+  # replaced by name with an environment-stripped copy: for the
+  # model-frame engines (lmer / glmer / glmmTMB) the data columns are
+  # the *evaluated* terms, and an intact formula environment lets an
+  # inline transform silently re-evaluate against the caller's raw
+  # unscaled vectors instead of erroring into the warned fallback.
   fit_std <- tryCatch({
     call_copy <- stats::getCall(fit)
     if (is.null(call_copy)) return(NULL)  # nocov (real fits always carry a call)
     if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
       call_copy[[1L]] <- quote(lme4::lmer)
+      call_copy <- match.call(lme4::lmer, call_copy)
+      call_copy$formula <- strip_formula_env(stats::formula(fit))
     } else if (inherits(fit, "glmerMod")) {
       call_copy[[1L]] <- quote(lme4::glmer)
+      call_copy <- match.call(lme4::glmer, call_copy)
+      call_copy$formula <- strip_formula_env(stats::formula(fit))
     } else if (inherits(fit, "glmmTMB")) {
       call_copy[[1L]] <- quote(glmmTMB::glmmTMB)
+      call_copy <- match.call(glmmTMB::glmmTMB, call_copy)
+      call_copy$formula <- strip_formula_env(stats::formula(fit))
     } else if (inherits(fit, "lme")) {
       call_copy[[1L]] <- quote(nlme::lme)
+      call_copy <- match.call(nlme::lme, call_copy)
+      call_copy$fixed <- strip_formula_env(stats::formula(fit))
     } else {
       # nocov start (only the 4 dispatched engines ever reach here)
       return(NULL)
@@ -590,7 +664,22 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     )
   }
   res <- .compute_beta_rows_for_mixed(fit, ci_level = ci_level)
-  if (is.null(res)) return(coefs)
+  if (is.null(res)) {
+    spicy_warn(
+      c(
+        paste0("Standardised coefficients unavailable: the refit on ",
+               "z-scored data could not be built for this fit."),
+        "i" = paste0(
+          "Formulas with inline function calls (`log(x)`, `poly(x, 2)`, ",
+          "...) cannot be re-evaluated on z-scored data. Pre-build the ",
+          "transformed column in `data` before fitting."
+        ),
+        "i" = "The table shows unstandardised coefficients only."
+      ),
+      class = "spicy_fallback"
+    )
+    return(coefs)
+  }
   beta_rows <- res$coefs_beta
   for (col in setdiff(colnames(coefs), colnames(beta_rows))) {
     beta_rows[[col]] <- coefs[[col]][NA_integer_]  # nocov (beta_rows already carries the full coefs schema)

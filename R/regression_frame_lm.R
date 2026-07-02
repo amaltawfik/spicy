@@ -38,6 +38,20 @@ as_regression_frame.lm <- function(fit,
                                     cluster_name = NULL,
                                     model_id = "M1",
                                     ...) {
+  # Profile CIs are model-based likelihood quantities (MASS::confint.glm);
+  # a robust / resampling vcov takes precedence -- its Wald CIs are used --
+  # so only profile under a model-based vcov. Mirrors the polr / clm
+  # precedent; previously the profile override applied for ANY vcov_type,
+  # silently displaying classical profile CIs next to robust SEs. The
+  # orchestrator warns once per table; resolving here keeps
+  # info$ci_method truthful (the CI footer and as_structured() consumers
+  # see the EFFECTIVE method).
+  if (identical(ci_method, "profile") &&
+      !(is.character(vcov) && length(vcov) == 1L &&
+          vcov %in% c("model", "classical"))) {
+    ci_method <- "wald"
+  }
+
   # `glm` inherits from `lm`, so this method serves both. The reshape
   # picks up class-specific bits (family, supports) by branching on
   # inherits(fit, "glm") below.
@@ -273,7 +287,9 @@ as_regression_frame.glm <- function(fit, ...) {
     title_prefix          = legacy$title_prefix %||%
       (if (is_glm) "Generalized linear regression" else "Linear regression"),
     exp_applied           = isTRUE(legacy$exp_applied),
-    exp_header            = legacy$exp_header %||% NA_character_
+    exp_header            = legacy$exp_header %||% NA_character_,
+    boot_n_valid          = legacy$boot_n_valid %||% NA_integer_,
+    standardized_used     = legacy$standardized_used %||% NA_character_
   )
 
   list(

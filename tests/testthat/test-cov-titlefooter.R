@@ -124,7 +124,11 @@ test_that("standardized caveat (std) detects interaction from attached fit", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_standardized_caveat_footer_block_from_frames(
     list(fr), "std")
-  expect_match(out, "SD of the product / transformed column", fixed = TRUE)
+  expect_match(out, "SD of the product (or transformed) design column",
+               fixed = TRUE)
+  # G2: the footer names the convention and cites the caveat source.
+  expect_match(out, "lm.beta convention", fixed = TRUE)
+  expect_match(out, "Friedrich 1982", fixed = TRUE)
 })
 
 

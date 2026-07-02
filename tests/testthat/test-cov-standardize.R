@@ -153,7 +153,7 @@ test_that(".compute_beta_rows_for_mixed returns NULL when the refit fails", {
   expect_null(res)
 })
 
-test_that(".attach_beta_to_frame_coefs is a no-op when the refit fails", {
+test_that(".attach_beta_to_frame_coefs keeps coefs and DISCLOSES when the refit fails", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ I(Days^2) + (1 | Subject),
                     data = lme4::sleepstudy)
@@ -161,21 +161,27 @@ test_that(".attach_beta_to_frame_coefs is a no-op when the refit fails", {
   # Drive the attach helper directly with a stand-in coefs frame: because
   # the refit fails (`I(Days^2)` cannot re-evaluate on z-scored data),
   # `.compute_beta_rows_for_mixed()` returns NULL and the helper returns
-  # the input coefs untouched -- the schema columns are irrelevant on
-  # this branch, so a minimal frame suffices.
+  # the input coefs untouched -- but now WARNS instead of silently
+  # omitting the requested beta rows (disclosure principle).
   coefs0 <- data.frame(
     term = c("(Intercept)", "I(Days^2)"),
     estimate_type = "B",
     estimate = c(1, 2),
     stringsAsFactors = FALSE
   )
-  coefs1 <- spicy:::.attach_beta_to_frame_coefs(coefs0, fit, "refit")
+  expect_warning(
+    coefs1 <- spicy:::.attach_beta_to_frame_coefs(coefs0, fit, "refit"),
+    class = "spicy_fallback"
+  )
   expect_identical(coefs1, coefs0)
 
-  # End-to-end: the public frame silently keeps only B rows (no beta).
-  fr <- as_regression_frame(fit, model_id = "M1",
-                            show_columns = c("b", "beta"),
-                            standardized = "refit")
+  # End-to-end: the public frame keeps only B rows (no beta), warned.
+  expect_warning(
+    fr <- as_regression_frame(fit, model_id = "M1",
+                              show_columns = c("b", "beta"),
+                              standardized = "refit"),
+    class = "spicy_fallback"
+  )
   expect_false("beta" %in% fr$coefs$estimate_type)
   expect_true("B" %in% fr$coefs$estimate_type)
 })

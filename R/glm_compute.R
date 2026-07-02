@@ -109,6 +109,118 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 }
 
 
+# ---- Exponentiate link gate (Group D, G1) ---------------------------------
+
+# exp(B) is a ratio only when the linear predictor is a log of something:
+# log-odds (logit -> OR), log-mean / rate / risk (log -> IRR / RR / MR),
+# or log-cumulative-hazard (cloglog -> HR; the grouped-time proportional-
+# hazards reading of Prentice & Gloeckler 1978, which exists ONLY for
+# binomial / quasibinomial / cumulative families -- a beta-mean cloglog
+# coefficient has no ratio estimand). For every other non-identity link
+# (probit, cauchit, inverse -- the Gamma() DEFAULT --, 1/mu^2, sqrt,
+# ordinal loglog, ...) the exponentiated coefficient is a number with no
+# estimand: Stata's flagship `probit` command ships no `or` / `eform`
+# reporting option and SAS documents EXPB "for the logit model". The
+# surveyed R packages silently exponentiate anyway (parameters even
+# labels cauchit "Risk Ratio") -- exactly the mislabelling spicy gates
+# against. Pre-1.0 policy: hard error over silent wrong output.
+#
+# Identity links must never reach this assert: the callers' warn + no-op
+# guard runs first (mixed lm + logit tables keep working -- the identity
+# request is satisfied vacuously, a probit request cannot be).
+.exp_gate_allowed <- function(family_name, link_name) {
+  if (link_name %in% c("log", "logit")) return(TRUE)
+  identical(link_name, "cloglog") &&
+    family_name %in% c("binomial", "quasibinomial", "cumulative")
+}
+
+.assert_exp_link_ok <- function(family_name, link_name, model_id = NULL) {
+  family_name <- as.character(family_name %||% "")[1L]
+  link_name   <- as.character(link_name %||% "")[1L]
+  if (.exp_gate_allowed(family_name, link_name)) return(invisible(TRUE))
+
+  why <- switch(
+    link_name,
+    "probit" = paste0(
+      "Probit coefficients are shifts on a latent standard-normal ",
+      "scale; their exponential has no interpretation."
+    ),
+    "cauchit" = paste0(
+      "Cauchit coefficients are shifts on a latent standard-Cauchy ",
+      "scale; their exponential has no interpretation."
+    ),
+    "cloglog" = sprintf(
+      paste0(
+        "Under a %s model the cloglog coefficient is not a log hazard ",
+        "ratio (the grouped-time proportional-hazards reading exists ",
+        "only for binomial and cumulative families); its exponential ",
+        "has no interpretation."
+      ),
+      family_name
+    ),
+    "loglog" = paste0(
+      "Ordinal loglog coefficients are not log hazard ratios (loglog ",
+      "equals cloglog on the reversed response ordering); their ",
+      "exponential has no interpretation."
+    ),
+    "inverse" = sprintf(
+      paste0(
+        "The coefficient acts on the inverse-mean scale (1/mu); its ",
+        "exponential has no interpretation. For a mean-ratio ",
+        "interpretation refit with %s(link = \"log\")."
+      ),
+      family_name
+    ),
+    "1/mu^2" = paste0(
+      "The coefficient acts on the inverse-squared-mean scale ",
+      "(1/mu^2); its exponential has no interpretation."
+    ),
+    "sqrt" = paste0(
+      "The coefficient acts on the square-root-mean scale; its ",
+      "exponential has no interpretation."
+    ),
+    sprintf(
+      paste0(
+        "The \"%s\" link does not place coefficients on a log scale; ",
+        "their exponential has no interpretation."
+      ),
+      link_name
+    )
+  )
+
+  # Display-facing model label: auto ids "M<k>" render as "Model <k>"
+  # (matching the table spanners); user-supplied names pass through.
+  label <- if (is.null(model_id) || !nzchar(model_id)) {
+    ""
+  } else if (grepl("^M[0-9]+$", model_id)) {
+    sprintf(" (Model %s)", substring(model_id, 2L))
+  } else {
+    sprintf(" (model \"%s\")", model_id)
+  }
+
+  spicy_abort(
+    c(
+      sprintf(
+        "`exponentiate = TRUE` is not meaningful for a model with link \"%s\"%s.",
+        link_name, label
+      ),
+      "i" = why,
+      "i" = paste0(
+        "exp(B) is a ratio only for logit (odds ratio), log (rate / ",
+        "risk / mean ratio), and binomial or ordinal cloglog (hazard ",
+        "ratio) links."
+      ),
+      "i" = paste0(
+        "Drop `exponentiate = TRUE` (it applies to every model in the ",
+        "table) or report response-scale effects via the AME column ",
+        "(`show_columns = c(\"b\", \"ame\")`)."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
 # ---- Pseudo-R^2 family ----------------------------------------------------
 
 # Pseudo-R^2 for glm. Three variants (the most reported in the
@@ -343,6 +455,10 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
       identical(info$family$link, "identity")) {
     return(list(coefs = coefs, info = info))
   }
+  # Link gate (G1): non-ratio links (probit, cauchit, inverse, ...) hard
+  # error rather than silently printing a meaningless exp(B) column.
+  .assert_exp_link_ok(info$family$family, info$family$link,
+                      model_id = coefs$model_id[1L])
   coefs <- apply_exponentiate_to_frame_coefs(coefs)
   info$extras$exp_applied <- TRUE
   info$extras$exp_header  <- spicy_glm_exp_header(
