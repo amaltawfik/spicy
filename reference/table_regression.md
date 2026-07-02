@@ -411,13 +411,14 @@ table_regression(
     [`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html);
     the mixture reference makes the p-value exact-asymptotic rather than
     conservative. A bar's intercept is tested only when it is the bar's
-    single term. Supported: `lmer`, `glmer`, `glmmTMB`.
+    single term. Supported: `lmer`, `glmer`, `glmmTMB`, and `lme` with a
+    simple `random = ~ terms | group` structure.
 
   - `"rlrt"`: exact restricted likelihood-ratio test with a simulated
     finite-sample null
     ([`RLRsim::exactRLRT()`](https://rdrr.io/pkg/RLRsim/man/exactRLRT.html);
-    Crainiceanu & Ruppert 2004). Only defined for a Gaussian `lmer` fit
-    with a single variance component.
+    Crainiceanu & Ruppert 2004). Only defined for a Gaussian `lmer` /
+    `lme` fit with a single variance component.
 
   The test statistic and df stay out of the displayed t/z column (they
   are chi-square-scale, not t/z) but are carried in
@@ -1383,17 +1384,17 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>   bread.lmerMod clubSandwich
 #> Linear mixed-effects regression: Reaction
 #> 
-#>  Variable         │         B           SE        95% CI         p   
-#> ──────────────────┼──────────────────────────────────────────────────
-#>  (Intercept)      │            251.41  6.82  [238.03, 264.78]  <.001 
-#>  Days             │             10.47  1.55  [  7.44,  13.50]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                │            180                                   
-#>  N (groups)       │       18 Subjects                                
-#>  R² (marginal)    │              0.28                                
-#>  R² (conditional) │              0.80                                
-#>  AIC              │           1755.6                                 
-#>  BIC              │           1774.8                                 
+#>  Variable         │    B      SE        95% CI         p   
+#> ──────────────────┼────────────────────────────────────────
+#>  (Intercept)      │  251.41  6.82  [238.03, 264.78]  <.001 
+#>  Days             │   10.47  1.55  [  7.44,  13.50]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │  180                                   
+#>  N (Subject)      │   18                                   
+#>  R² (marginal)    │    0.28                                
+#>  R² (conditional) │    0.80                                
+#>  AIC              │ 1755.6                                 
+#>  BIC              │ 1774.8                                 
 #> 
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).
@@ -1411,80 +1412,55 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 }
 #> Hierarchical linear mixed-effects regression: Reaction
 #> 
-#>                                               Model 1             
-#>                                    ────────────────────────────── 
-#>  Variable                        │         B           SE     p   
-#> ─────────────────────────────────┼────────────────────────────────
-#>  (Intercept)                     │            298.51  8.79  <.001 
-#>  Days                            │                                
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                
-#>    σ Subject (Intercept)         │             34.59  6.72   –    
-#>    σ Subject Days                │                                
-#>    ρ Subject ((Intercept), Days) │                                
-#>    σ (Residual)                  │             44.26  2.46   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │            180                 
-#>  N (groups)                      │       18 Subjects              
-#>  ICC                             │              0.38              
-#>  R² (marginal)                   │              0.00              
-#>  R² (conditional)                │              0.38              
-#>  AIC                             │           1916.5               
-#>  BIC                             │           1926.1               
-#>  ΔAIC                            │               –                
-#>  ΔBIC                            │               –                
-#>  Δχ²                             │               –                
-#>  p (change)                      │               –                
+#>                                          Model 1                Model 2        
+#>                                    ────────────────────  ───────────────────── 
+#>  Variable                        │    B      SE     p       B       SE     p   
+#> ─────────────────────────────────┼─────────────────────────────────────────────
+#>  (Intercept)                     │  298.51  8.79  <.001   251.41   9.51  <.001 
+#>  Days                            │                         10.47   0.80  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                             
+#>    σ Subject (Intercept)         │   34.59  6.72   –       36.01   6.45   –    
+#>    σ Subject Days                │                                             
+#>    ρ Subject ((Intercept), Days) │                                             
+#>    σ (Residual)                  │   44.26  2.46   –       30.90   1.72   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │  180                   180                  
+#>  N (Subject)                     │   18                    18                  
+#>  ICC                             │    0.38                  0.58               
+#>  R² (marginal)                   │    0.00                  0.29               
+#>  R² (conditional)                │    0.38                  0.70               
+#>  AIC                             │ 1916.5                1802.1                
+#>  BIC                             │ 1926.1                1814.9                
+#>  ΔAIC                            │     –                 -114.5                
+#>  ΔBIC                            │     –                 -111.3                
+#>  Δχ²                             │     –                 +116.46               
+#>  p (change)                      │     –                    <.001              
 #> 
-#>                                               Model 2             
-#>                                    ────────────────────────────── 
-#>  Variable                        │         B           SE     p   
-#> ─────────────────────────────────┼────────────────────────────────
-#>  (Intercept)                     │           251.41   9.51  <.001 
-#>  Days                            │            10.47   0.80  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                
-#>    σ Subject (Intercept)         │            36.01   6.45   –    
-#>    σ Subject Days                │                                
-#>    ρ Subject ((Intercept), Days) │                                
-#>    σ (Residual)                  │            30.90   1.72   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │           180                  
-#>  N (groups)                      │       18 Subjects              
-#>  ICC                             │             0.58               
-#>  R² (marginal)                   │             0.29               
-#>  R² (conditional)                │             0.70               
-#>  AIC                             │          1802.1                
-#>  BIC                             │          1814.9                
-#>  ΔAIC                            │          -114.5                
-#>  ΔBIC                            │          -111.3                
-#>  Δχ²                             │          +116.46               
-#>  p (change)                      │             <.001              
-#> 
-#>                                               Model 3             
-#>                                    ────────────────────────────── 
-#>  Variable                        │         B           SE     p   
-#> ─────────────────────────────────┼────────────────────────────────
-#>  (Intercept)                     │           251.41   6.63  <.001 
-#>  Days                            │            10.47   1.50  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                
-#>    σ Subject (Intercept)         │            23.78   5.58   –    
-#>    σ Subject Days                │             5.72   1.19   –    
-#>    ρ Subject ((Intercept), Days) │             0.08   0.32   –    
-#>    σ (Residual)                  │            25.59   1.51   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │           180                  
-#>  N (groups)                      │       18 Subjects              
-#>  ICC                             │                                
-#>  R² (marginal)                   │             0.29               
-#>  R² (conditional)                │             0.79               
-#>  AIC                             │          1763.9                
-#>  BIC                             │          1783.1                
-#>  ΔAIC                            │           -38.1                
-#>  ΔBIC                            │           -31.8                
-#>  Δχ²                             │           +42.14               
-#>  p (change)                      │             <.001              
+#>                                           Model 3        
+#>                                    ───────────────────── 
+#>  Variable                        │    B       SE     p   
+#> ─────────────────────────────────┼───────────────────────
+#>  (Intercept)                     │  251.41   6.63  <.001 
+#>  Days                            │   10.47   1.50  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                       
+#>    σ Subject (Intercept)         │   23.78   5.58   –    
+#>    σ Subject Days                │    5.72   1.19   –    
+#>    ρ Subject ((Intercept), Days) │    0.08   0.32   –    
+#>    σ (Residual)                  │   25.59   1.51   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │  180                  
+#>  N (Subject)                     │   18                  
+#>  ICC                             │                       
+#>  R² (marginal)                   │    0.29               
+#>  R² (conditional)                │    0.79               
+#>  AIC                             │ 1763.9                
+#>  BIC                             │ 1783.1                
+#>  ΔAIC                            │  -38.1                
+#>  ΔBIC                            │  -31.8                
+#>  Δχ²                             │  +42.14               
+#>  p (change)                      │    <.001              
 #> 
 #> Note. Linear mixed-effects regression models.
 #> Std. errors: Wald (model-based).

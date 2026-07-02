@@ -104,7 +104,12 @@ for the walk-throughs.
   likelihood-ratio test vs the reduced random structure with the
   chi-bar-squared boundary correction, or `RLRsim`’s exact restricted
   LRT for a single variance component. The p fills the `Random effects`
-  rows; a footer line names the test.
+  rows; a footer line names the test. Supports `lmer` / `glmer` /
+  `glmmTMB` and simple
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) structures.
+- The `N (groups)` fit-stat row upgrades to `N (Subject)` with plain
+  counts when every model shares a single grouping factor (crossed
+  structures keep the generic label with descriptive counts).
 
 ### Minor improvements
 
@@ -148,6 +153,12 @@ for the walk-throughs.
   multi-model `tinytable` headers.
 - `table_regression(p_adjust = ...)`: the method name is double-quoted
   on every platform.
+- Mixed models with a transformed or matrix response (`cbind(...)`
+  binomial `glmer` / `glmmTMB`) now get their LR test vs the
+  no-random-effects model (the null refit silently failed before).
+- `labels` accepts coefficient-level keys (e.g. `period2`) on mixed
+  fits; the valid-key universe previously listed the grouping factors
+  instead.
 
 ## spicy 0.12.0
 

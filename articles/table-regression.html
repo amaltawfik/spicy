@@ -1111,41 +1111,23 @@ they align per model in a comparison table:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>         B           SE        95% CI      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>            251.41  6.82  [238.03, 264.78] </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>             10.47  1.55  [  7.44,  13.50] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                           </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>             24.74  5.84  [  6.79,  34.32] </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>              5.92  1.25  [  2.47,   8.00] </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>              0.07  0.33  [ -0.57,   0.70] </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>             25.59  1.51  [ 22.44,  28.39] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>            180                            </span></span>
-<span><span class="co">#&gt;  N (groups)                      <span style="color: #9E9E9E;">│</span>       18 Subjects                         </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>              0.28                         </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>              0.80                         </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span>           1755.6                          </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span>           1774.8                          </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;  N (groups)                      <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B      SE        95% CI         p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>  251.41  6.82  [238.03, 264.78]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>   10.47  1.55  [  7.44,  13.50]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                        </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   24.74  5.84  [  6.79,  34.32]   –    </span></span>
+<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>    5.92  1.25  [  2.47,   8.00]   –    </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.07  0.33  [ -0.57,   0.70]   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   25.59  1.51  [ 22.44,  28.39]   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                                   </span></span>
+<span><span class="co">#&gt;  N (Subject)                     <span style="color: #9E9E9E;">│</span>   18                                   </span></span>
+<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>    0.28                                </span></span>
+<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>    0.80                                </span></span>
+<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6                                 </span></span>
+<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
@@ -1432,80 +1414,55 @@ fits better</li>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                               Model 1             </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ────────────────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>         B           SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>            298.51  8.79  &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>             34.59  6.72   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>             44.26  2.46   –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>            180                 </span></span>
-<span><span class="co">#&gt;  N (groups)                      <span style="color: #9E9E9E;">│</span>       18 Subjects              </span></span>
-<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>              0.38              </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>              0.00              </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>              0.38              </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span>           1916.5               </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span>           1926.1               </span></span>
-<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>               –                </span></span>
-<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>               –                </span></span>
-<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>               –                </span></span>
-<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>               –                </span></span>
+<span><span class="co">#&gt;                                          Model 1                Model 2        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ────────────────────  ───────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>  298.51  8.79  &lt;.001   251.41   9.51  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>                         10.47   0.80  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   34.59  6.72   –       36.01   6.45   –    </span></span>
+<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   44.26  2.46   –       30.90   1.72   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                   180                  </span></span>
+<span><span class="co">#&gt;  N (Subject)                     <span style="color: #9E9E9E;">│</span>   18                    18                  </span></span>
+<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>    0.38                  0.58               </span></span>
+<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>    0.00                  0.29               </span></span>
+<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>    0.38                  0.70               </span></span>
+<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1916.5                1802.1                </span></span>
+<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1926.1                1814.9                </span></span>
+<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>     –                 -114.5                </span></span>
+<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>     –                 -111.3                </span></span>
+<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>     –                 +116.46               </span></span>
+<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>     –                    &lt;.001              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                               Model 2             </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ────────────────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>         B           SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>           251.41   9.51  &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>            10.47   0.80  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>            36.01   6.45   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>            30.90   1.72   –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>           180                  </span></span>
-<span><span class="co">#&gt;  N (groups)                      <span style="color: #9E9E9E;">│</span>       18 Subjects              </span></span>
-<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>             0.58               </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>             0.29               </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>             0.70               </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span>          1802.1                </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span>          1814.9                </span></span>
-<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>          -114.5                </span></span>
-<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>          -111.3                </span></span>
-<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>          +116.46               </span></span>
-<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>             &lt;.001              </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                               Model 3             </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ────────────────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>         B           SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>           251.41   6.63  &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>            10.47   1.50  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>            23.78   5.58   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>             5.72   1.19   –    </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>             0.08   0.32   –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>            25.59   1.51   –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>           180                  </span></span>
-<span><span class="co">#&gt;  N (groups)                      <span style="color: #9E9E9E;">│</span>       18 Subjects              </span></span>
-<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>             0.29               </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>             0.79               </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span>          1763.9                </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span>          1783.1                </span></span>
-<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>           -38.1                </span></span>
-<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>           -31.8                </span></span>
-<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>           +42.14               </span></span>
-<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>             &lt;.001              </span></span>
+<span><span class="co">#&gt;                                           Model 3        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ───────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B       SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>  251.41   6.63  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>   10.47   1.50  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   23.78   5.58   –    </span></span>
+<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>    5.72   1.19   –    </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.08   0.32   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   25.59   1.51   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                  </span></span>
+<span><span class="co">#&gt;  N (Subject)                     <span style="color: #9E9E9E;">│</span>   18                  </span></span>
+<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>    0.29               </span></span>
+<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>    0.79               </span></span>
+<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1763.9                </span></span>
+<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1783.1                </span></span>
+<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>  -38.1                </span></span>
+<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>  -31.8                </span></span>
+<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>  +42.14               </span></span>
+<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>    &lt;.001              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
@@ -1562,25 +1519,25 @@ redundant.</li>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic mixed-effects regression: y</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>    B       SE     p     AME     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>     0.25  0.34   .470               </span></span>
-<span><span class="co">#&gt;  x                 <span style="color: #9E9E9E;">│</span>     0.85  0.12  &lt;.001   0.15  &lt;.001 </span></span>
-<span><span class="co">#&gt;  cat:              <span style="color: #9E9E9E;">│</span>                                     </span></span>
-<span><span class="co">#&gt;    A (ref.)        <span style="color: #9E9E9E;">│</span>      –     –     –                  </span></span>
-<span><span class="co">#&gt;    B               <span style="color: #9E9E9E;">│</span>     0.46  0.28   .107   0.08   .106 </span></span>
-<span><span class="co">#&gt;    C               <span style="color: #9E9E9E;">│</span>    -0.30  0.27   .264  -0.05   .262 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:   <span style="color: #9E9E9E;">│</span>                                     </span></span>
-<span><span class="co">#&gt;    σ g (Intercept) <span style="color: #9E9E9E;">│</span>     1.40  0.23   –                  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                 <span style="color: #9E9E9E;">│</span>   500                               </span></span>
-<span><span class="co">#&gt;  N (groups)        <span style="color: #9E9E9E;">│</span>    25 gs                            </span></span>
-<span><span class="co">#&gt;  ICC               <span style="color: #9E9E9E;">│</span>     0.37                            </span></span>
-<span><span class="co">#&gt;  R² (marginal)     <span style="color: #9E9E9E;">│</span>     0.14                            </span></span>
-<span><span class="co">#&gt;  R² (conditional)  <span style="color: #9E9E9E;">│</span>     0.46                            </span></span>
-<span><span class="co">#&gt;  AIC               <span style="color: #9E9E9E;">│</span>   562.4                             </span></span>
-<span><span class="co">#&gt;  BIC               <span style="color: #9E9E9E;">│</span>   583.5                             </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   B      SE     p     AME     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>   0.25  0.34   .470               </span></span>
+<span><span class="co">#&gt;  x                 <span style="color: #9E9E9E;">│</span>   0.85  0.12  &lt;.001   0.15  &lt;.001 </span></span>
+<span><span class="co">#&gt;  cat:              <span style="color: #9E9E9E;">│</span>                                   </span></span>
+<span><span class="co">#&gt;    A (ref.)        <span style="color: #9E9E9E;">│</span>    –     –     –                  </span></span>
+<span><span class="co">#&gt;    B               <span style="color: #9E9E9E;">│</span>   0.46  0.28   .107   0.08   .106 </span></span>
+<span><span class="co">#&gt;    C               <span style="color: #9E9E9E;">│</span>  -0.30  0.27   .264  -0.05   .262 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:   <span style="color: #9E9E9E;">│</span>                                   </span></span>
+<span><span class="co">#&gt;    σ g (Intercept) <span style="color: #9E9E9E;">│</span>   1.40  0.23   –                  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                 <span style="color: #9E9E9E;">│</span> 500                               </span></span>
+<span><span class="co">#&gt;  N (g)             <span style="color: #9E9E9E;">│</span>  25                               </span></span>
+<span><span class="co">#&gt;  ICC               <span style="color: #9E9E9E;">│</span>   0.37                            </span></span>
+<span><span class="co">#&gt;  R² (marginal)     <span style="color: #9E9E9E;">│</span>   0.14                            </span></span>
+<span><span class="co">#&gt;  R² (conditional)  <span style="color: #9E9E9E;">│</span>   0.46                            </span></span>
+<span><span class="co">#&gt;  AIC               <span style="color: #9E9E9E;">│</span> 562.4                             </span></span>
+<span><span class="co">#&gt;  BIC               <span style="color: #9E9E9E;">│</span> 583.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
