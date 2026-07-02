@@ -353,7 +353,7 @@ either way.}
 \item{re_columns}{Character vector. Subset of
 \code{c("est", "se", "ci")} controlling which cells of the
 random-effects rows are \strong{displayed} (\code{"est"} is mandatory);
-de-selected SE / CI cells render as an em-dash on those rows
+deselected SE / CI cells render as an em-dash on those rows
 only. Useful for slimming output (\code{re_columns = "est"}) or
 for journals that want only standard errors
 (\code{re_columns = c("est", "se")}). Display-only: the underlying
@@ -1079,6 +1079,12 @@ to a world beyond "p < 0.05". \emph{The American Statistician},
 73(sup1), 1-19.
 }
 \seealso{
+Per-family behaviour reference:
+\link{table_regression_models} (the supported-classes map), and the
+family pages \link{table_regression_mixed}, \link{table_regression_ordinal},
+\link{table_regression_categorical}, \link{table_regression_counts},
+\link{table_regression_survival}, \link{table_regression_robust},
+\link{table_regression_bayesian}.
 Other regression-table functions:
 \code{\link[=table_continuous_lm]{table_continuous_lm()}} for one-predictor-by-many-outcomes
 descriptive tables.

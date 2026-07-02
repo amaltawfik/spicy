@@ -18,6 +18,7 @@ CMD
 Calibri
 Codecov
 Cousineau
+Crainiceanu
 Cramer's
 Cramer’s
 Cribari
@@ -35,6 +36,7 @@ Eicker
 Erlbaum
 Ervin
 Excel's
+Exponentiate
 Fouladi
 Freese
 GLMM
@@ -77,6 +79,7 @@ Liebetrau
 Likert
 LimeSurvey
 LimeSurvey's
+MLwiN
 MacKinnon
 Mahwah
 McCaffrey
@@ -103,11 +106,14 @@ Pinheiro
 Pre
 Pustejovsky
 Quenouille
+RMST
 ROR
+RRR
 RStudio
 Rcpp
 Rinehart
 Rothman
+Ruppert
 SAMPL
 SEs
 Satterthwaite
@@ -179,12 +185,15 @@ erroring
 estimand
 estimands
 et
+exponentiate
+exponentiates
 exponentiating
 factorisation
 fallbacks
 favour
 flextable
 flextable's
+footer's
 frac
 generalisation
 generalisations
@@ -195,6 +204,7 @@ glmer
 glmmTMB
 handoff
 hardcoded
+hatvalues
 heteroskedasticity
 homoskedastic
 honour
@@ -212,10 +222,13 @@ marginaleffects
 marginality
 merDeriv
 mis
+mislabelled
+modelled
 monospace
 natively
 nd
 nlme
+nlme's
 noncentral
 noncentrality
 normalised
@@ -235,6 +248,8 @@ relabelled
 renderer
 renderers
 resamplers
+rms
+roadmap
 sortable
 spicy's
 stabilising
@@ -256,6 +271,7 @@ vcov
 vcovCR
 vcovHC
 wellbeing
+zi
 ΔR
 Δf
 Δr

@@ -625,7 +625,7 @@
 #' @param re_columns Character vector. Subset of
 #'   `c("est", "se", "ci")` controlling which cells of the
 #'   random-effects rows are **displayed** (`"est"` is mandatory);
-#'   de-selected SE / CI cells render as an em-dash on those rows
+#'   deselected SE / CI cells render as an em-dash on those rows
 #'   only. Useful for slimming output (`re_columns = "est"`) or
 #'   for journals that want only standard errors
 #'   (`re_columns = c("est", "se")`). Display-only: the underlying
@@ -843,6 +843,12 @@
 #' [`spicy`][spicy::spicy-package] for the full taxonomy.
 #'
 #' @seealso
+#' Per-family behaviour reference:
+#' [table_regression_models] (the supported-classes map), and the
+#' family pages [table_regression_mixed], [table_regression_ordinal],
+#' [table_regression_categorical], [table_regression_counts],
+#' [table_regression_survival], [table_regression_robust],
+#' [table_regression_bayesian].
 #' Other regression-table functions:
 #' [table_continuous_lm()] for one-predictor-by-many-outcomes
 #' descriptive tables.

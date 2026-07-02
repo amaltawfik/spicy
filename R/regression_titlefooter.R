@@ -943,7 +943,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
   cil <- if ("ci_lower" %in% names(vc)) vc$ci_lower else rep(NA_real_, nrow(vc))
   ciu <- if ("ci_upper" %in% names(vc)) vc$ci_upper else rep(NA_real_, nrow(vc))
   # NOTE: `re_columns` is a DISPLAY concern -- it is honoured at render time
-  # (build_body_row em-dashes the de-selected cells on vc rows). The data stays
+  # (build_body_row em-dashes the deselected cells on vc rows). The data stays
   # complete here so broom::tidy() / as_structured() always carry full SE + CI.
 
   label <- vapply(seq_len(nrow(vc)), function(i) {

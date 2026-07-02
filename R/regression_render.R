@@ -657,7 +657,7 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
       next
     }
     # `re_columns` (display-only): on a variance-component row, em-dash the
-    # SE / CI cells the user de-selected. The underlying data stays complete
+    # SE / CI cells the user deselected. The underlying data stays complete
     # (broom::tidy / as_structured always carry full SE + CI). The t/z cell is
     # always em-dashed on vc rows: the optional re_test statistic is a
     # chi-bar-squared LR statistic, which would be mislabelled under a t/z
