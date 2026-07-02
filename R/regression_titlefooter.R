@@ -777,143 +777,80 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 }
 
 
-# Phase 7c7c: structured multi-line panel for the random-effects
-# footer block. Replaces the legacy one-line sentence when SE / CI
-# are populated. Format is sjPlot / MLwiN-inspired, on the SD scale
-# (per Gelman 2005), aligned with whitespace padding so each column
-# (label, estimate, SE, CI) lines up vertically.
+# Promote info$random_effects$variance_components into coefs rows for a
+# subordinate "Random effects" block. Called by the table_regression()
+# orchestrator (NOT the frame methods) AFTER exponentiate + p_adjust, so those
+# paths never touch variance components (a variance is never exponentiated or
+# p-adjusted). Mirrors .append_threshold_rows().
 #
-# Layout (single grouping factor, random intercept + slope):
+# estimate_type = "vc" (variance component) is a first-class token: a variance
+# parameter is NOT a mean-model coefficient, so it is honestly typed and is
+# excluded by construction from the exp / standardize / stars filters (which key
+# on "B" / "beta"). The renderer aliases "vc" to the B (estimate) columns for
+# display.
 #
-#   Random effects (REML):
-#     sigma Subject (Intercept)  37.12  (5.84)  [27.2, 51.1]
-#     sigma Subject Days          5.92  (1.25)  [ 4.3,  7.9]
-#     rho Subject                 0.07     \u2013     \u2013
-#     sigma (Residual)           30.99  (1.51)  [28.5, 33.7]
-#     ICC                         0.59
-#     N (Subject)                   18
-#
-# (Greek letters rendered as their unicode glyphs.)
-#
-# Returns NULL when no rows would render (graceful skip), so the
-# caller can fall back to the legacy sentence.
-.format_random_effects_panel <- function(
-    frame,
-    vc_var_scale,
-    re_scale = "sd",
-    re_columns = c("est", "se", "ci")) {
-  re <- frame$info$random_effects
-  # Phase 7c7d: convert to the user-requested display scale.
-  vc <- .re_components_on_scale(vc_var_scale, re_scale)
-  if (nrow(vc) == 0L) return(NULL)                                     # nocov
-  show_se <- "se" %in% re_columns
-  show_ci <- "ci" %in% re_columns
+# statistic / df / p_value are carried as NA: no per-row p by default (H0:
+# sigma = 0 is on the boundary; a Wald z is invalid -- no reporting guideline
+# asks for it). The correct significance signal is the model-level
+# chi-bar-squared LRT (footer line, from info$random_effects$null_lrt). The
+# columns are kept so a future opt-in per-term LRT/RLRT test can fill them.
+.append_random_effects_rows <- function(coefs, re, re_scale = "sd") {
+  if (is.null(re)) return(coefs)
+  vc <- re$variance_components
+  if (is.null(vc) || !is.data.frame(vc) || nrow(vc) == 0L) return(coefs)
+  if (is.null(coefs$is_re)) coefs$is_re <- FALSE
 
-  is_corr <- if ("is_correlation" %in% colnames(vc)) {
+  # Convert SD / variance / SE / CI to the requested display scale (Delta
+  # method for the SD scale). `.re_components_on_scale` repurposes the
+  # `variance` column as the scaled point estimate; correlation rows keep their
+  # value in `corr`.
+  vc <- .re_components_on_scale(vc, re_scale)
+  is_corr <- if ("is_correlation" %in% names(vc)) {
     vc$is_correlation %in% TRUE
   } else {
     rep(FALSE, nrow(vc))
   }
   is_resid <- !is.na(vc$group) & vc$group == "Residual"
 
-  # Build per-row (label, value, se, ci) text tuples.
-  rows <- list()
-  for (i in seq_len(nrow(vc))) {
-    label <- .re_panel_label(vc$group[i], vc$term[i],
-                              is_corr[i], is_resid[i])
-    est   <- if (isTRUE(is_corr[i])) vc$corr[i] else vc$variance[i]
-    se    <- vc$std_error[i]
-    cilo  <- vc$ci_lower[i]
-    cihi  <- vc$ci_upper[i]
-    rows[[length(rows) + 1L]] <- list(
-      label = label,
-      val   = if (is.finite(est))  sprintf("%.2f", est) else "\u2013",
-      se    = if (is.finite(se))   sprintf("(%.2f)", se) else "\u2013",
-      ci    = if (is.finite(cilo) && is.finite(cihi)) {
-        sprintf("[%.2f, %.2f]", cilo, cihi)
-      } else "\u2013"
-    )
-  }
+  est <- ifelse(is_corr, vc$corr, vc$variance)
+  se  <- if ("std_error" %in% names(vc)) vc$std_error else rep(NA_real_, nrow(vc))
+  cil <- if ("ci_lower" %in% names(vc)) vc$ci_lower else rep(NA_real_, nrow(vc))
+  ciu <- if ("ci_upper" %in% names(vc)) vc$ci_upper else rep(NA_real_, nrow(vc))
+  # NOTE: `re_columns` is a DISPLAY concern -- it is honoured at render time
+  # (build_body_row em-dashes the de-selected cells on vc rows). The data stays
+  # complete here so broom::tidy() / as_structured() always carry full SE + CI.
 
-  # ICC row (no SE/CI -- it's a derived quantity).
-  icc_val <- re$icc
-  if (!is.null(icc_val) && is.finite(icc_val)) {
-    rows[[length(rows) + 1L]] <- list(
-      label = "ICC",
-      val   = sprintf("%.2f", icc_val),
-      se    = "",
-      ci    = ""
-    )
-  }
-
-  # N (group) row -- integer counts.
-  ng <- frame$info$n_groups
-  if (!is.null(ng) && length(ng) > 0L) {
-    for (k in seq_along(ng)) {
-      rows[[length(rows) + 1L]] <- list(
-        label = sprintf("N (%s)", names(ng)[k]),
-        val   = sprintf("%d", as.integer(ng[[k]])),
-        se    = "",
-        ci    = ""
-      )
-    }
-  }
-
-  if (length(rows) == 0L) return(NULL)                                 # nocov
-
-  # Column widths for alignment.
-  labels <- vapply(rows, function(r) r$label, character(1))
-  vals   <- vapply(rows, function(r) r$val,   character(1))
-  ses    <- vapply(rows, function(r) r$se,    character(1))
-  cis    <- vapply(rows, function(r) r$ci,    character(1))
-  w_lab  <- max(nchar(labels))
-  w_val  <- max(nchar(vals))
-  w_se   <- max(nchar(ses))
-  w_ci   <- max(nchar(cis))
-
-  # Header line with method tag.
-  method_tag <- re$method
-  header <- if (!is.null(method_tag) && is.character(method_tag) &&
-                length(method_tag) == 1L && !is.na(method_tag) &&
-                nzchar(method_tag)) {
-    sprintf("Random effects (%s):", method_tag)
-  } else {
-    "Random effects:"
-  }
-
-  # Phase 7c7d: drop SE / CI columns from the rendered rows when the
-  # user opted out via re_columns. Estimate is always present.
-  body_lines <- vapply(seq_along(rows), function(i) {
-    parts <- c(
-      sprintf("  %-*s", w_lab, labels[i]),
-      sprintf("%*s",    w_val, vals[i])
-    )
-    if (isTRUE(show_se)) parts <- c(parts, sprintf("%-*s", w_se, ses[i]))
-    if (isTRUE(show_ci)) parts <- c(parts, sprintf("%-*s", w_ci, cis[i]))
-    paste(parts, collapse = "  ")
+  label <- vapply(seq_len(nrow(vc)), function(i) {
+    .re_panel_label(vc$group[i], vc$term[i], is_corr[i], is_resid[i])
   }, character(1))
-  # Trim trailing whitespace for ICC / N rows (which have empty se / ci).
-  body_lines <- sub("\\s+$", "", body_lines)
-
-  # Phase 7c19: LR test vs no-random-effects model. Stata `mixed`
-  # prints this single line at the bottom of every output (when
-  # available) to answer the publication-substantive question
-  # "are the random effects needed at all?". The p-value uses the
-  # chi-bar-squared correction (Self & Liang 1987;
-  # p = 0.5 * pchisq(chi2, q, lower.tail = FALSE) where q is the
-  # number of free random parameters).
-  lrt <- re$null_lrt
-  lrt_line <- NULL
-  if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
-    p_str <- format_p_value_for_panel(lrt$p_chibar2)
-    lrt_line <- sprintf(
-      "LR test vs %s: \u03C7\u0304\u00B2(%d) = %.2f, p %s",
-      lrt$family_label %||% "no-random model",
-      as.integer(lrt$df), lrt$chi2, p_str
-    )
+  # On the variance scale the sigma glyph would mislabel the value: promote
+  # the SD labels to sigma-squared (correlations are unitless, untouched).
+  if (identical(re_scale, "variance")) {
+    label[!is_corr] <- sub("^\u03C3 ", "\u03C3\u00B2 ", label[!is_corr])
   }
+  # Stable per-(group, term) key so RE rows align across models by structure.
+  key <- paste0("re::", vc$group, "::", vc$term, ifelse(is_corr, "::cor", ""))
 
-  paste(c(header, body_lines, lrt_line), collapse = "\n")
+  new <- data.frame(
+    term             = key,
+    parent_var       = "Random effects",
+    label            = label,
+    factor_level_pos = seq_len(nrow(vc)),
+    is_ref           = FALSE,
+    estimate_type    = "vc",
+    estimate         = as.numeric(est),
+    std_error        = as.numeric(se),
+    df               = NA_real_,
+    statistic        = NA_real_,
+    p_value          = NA_real_,
+    ci_lower         = as.numeric(cil),
+    ci_upper         = as.numeric(ciu),
+    test_type        = NA_character_,
+    outcome_level    = NA_character_,
+    is_re            = TRUE,
+    stringsAsFactors = FALSE
+  )
+  .rbind_union(coefs, new)
 }
 
 
@@ -941,113 +878,43 @@ format_p_value_for_panel <- function(p) {
 
 # Format the per-frame random-effects sentence. Returns NULL when the
 # frame has no random-effects content (lm / glm / coxph / etc.).
-.format_random_effects_for_frame <- function(
-    frame,
-    re_scale = "sd",
-    re_columns = c("est", "se", "ci")) {
+.format_random_effects_for_frame <- function(frame, ...) {
   re <- frame$info$random_effects
   if (is.null(re)) return(NULL)
   vc <- re$variance_components
   if (is.null(vc) || !is.data.frame(vc) || nrow(vc) == 0L) return(NULL)
 
-  # Phase 7c7c: when SE / CI are populated (Phase 7c7a+b), render a
-  # multi-line aligned panel instead of the legacy one-line sentence.
-  # The panel matches sjPlot / MLwiN-style publication layout per
-  # Gelman 2005 (SD scale) + Bates' guidance on profile-CI absence
-  # of p-values for variance components.
-  has_se <- "std_error" %in% colnames(vc) && any(is.finite(vc$std_error))
-  if (isTRUE(has_se)) {
-    panel <- .format_random_effects_panel(frame, vc,
-                                            re_scale = re_scale,
-                                            re_columns = re_columns)
-    if (!is.null(panel)) return(panel)
+  # The variance parameters render as table rows; N (groups) + ICC render as
+  # fit-stat rows (aligned per model). The footer keeps only what has no row
+  # home: the estimation method (REML / ML) and the model-level LR test vs the
+  # no-random-effects model, referred to the chi-bar-squared mixture null
+  # (Self & Liang 1987; Stram & Lee 1994) -- the correct, boundary-aware
+  # significance signal for the random part. There is deliberately no per-row
+  # Wald p on the variance components (no reporting guideline asks for it;
+  # see dev/mixed_random_effects_rows_spec.md).
+  method_tag <- re$method
+  has_method <- !is.null(method_tag) && is.character(method_tag) &&
+    length(method_tag) == 1L && !is.na(method_tag) && nzchar(method_tag)
+  header <- if (has_method) {
+    sprintf("Random effects (%s)", method_tag)
+  } else {
+    "Random effects"
   }
 
-  # Identify the (single) primary grouping factor row(s) vs the residual row.
-  is_resid <- !is.na(vc$group) & vc$group == "Residual"
-  group_rows <- vc[!is_resid, , drop = FALSE]
-  resid_rows <- vc[is_resid,  , drop = FALSE]
-
-  # Sample-size sentence: "18 Subjects" (or "5 Months and 18 Subjects" for
-  # multiple grouping factors). Derived from frame$info$n_groups since
-  # this is more reliable than the var-components nrow. Phase 7c6:
-  # append "(REML)" or "(ML)" when the per-class method has set
-  # re$method -- clarifies the estimator without implying inference
-  # (variance-component p-values are non-standard at the boundary;
-  # see Self & Liang 1987 + Brauer & Curtin 2018).
-  ng <- frame$info$n_groups
-  n_groups_part <- if (!is.null(ng) && length(ng) > 0L) {
-    parts <- vapply(seq_along(ng), function(k) {
-      sprintf("%d %s%s", ng[[k]], names(ng)[k],
-              if (ng[[k]] > 1L) "s" else "")
-    }, character(1))
-    base <- paste(parts, collapse = " and ")
-    method_tag <- re$method
-    if (!is.null(method_tag) && is.character(method_tag) &&
-        length(method_tag) == 1L && !is.na(method_tag) && nzchar(method_tag)) {
-      paste0(base, " (", method_tag, ")")
-    } else {
-      base
-    }
-  } else NA_character_
-
-  # Variance components sentence: list each non-residual row + residual.
-  # Phase 7c7b: skip correlation rows (is_correlation == TRUE); the
-  # rho is unitless and doesn't fit the "X variance = Y" sentence
-  # shape. The full panel rendering (Phase 7c7c) surfaces rho on its
-  # own row when present.
-  comp_parts <- character(0)
-  if (nrow(group_rows) > 0L) {
-    is_corr <- if ("is_correlation" %in% colnames(group_rows)) {
-      group_rows$is_correlation %in% TRUE
-    } else {
-      rep(FALSE, nrow(group_rows))
-    }
-    for (i in seq_len(nrow(group_rows))) {
-      if (isTRUE(is_corr[i])) next
-      term_label <- if (!is.na(group_rows$term[i]) && nzchar(group_rows$term[i])) {
-        tolower(group_rows$term[i])
-      } else NA_character_
-      v <- .fmt_var(group_rows$variance[i])
-      if (is.na(term_label) || term_label == "(intercept)") {
-        comp_parts <- c(comp_parts, paste0("intercept variance = ", v))
-      } else {
-        comp_parts <- c(comp_parts,
-                        sprintf("%s slope variance = %s", term_label, v))
-      }
-    }
+  lrt <- re$null_lrt
+  lrt_part <- NULL
+  if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
+    p_str <- format_p_value_for_panel(lrt$p_chibar2)
+    lrt_part <- sprintf(
+      "LR test vs %s, \u03C7\u0304\u00B2(%d) = %.2f, p %s",
+      lrt$family_label %||% "no-random model",
+      as.integer(lrt$df), lrt$chi2, p_str
+    )
   }
-  if (nrow(resid_rows) > 0L && is.finite(resid_rows$variance[1L])) {
-    comp_parts <- c(comp_parts,
-                    paste0("residual variance = ",
-                           .fmt_var(resid_rows$variance[1L])))
-  }
-  components_part <- if (length(comp_parts) > 0L) {
-    paste(comp_parts, collapse = ", ")
-  } else NA_character_
-
-  # ICC sentence.
-  icc_val <- re$icc
-  icc_part <- if (!is.null(icc_val) && is.finite(icc_val)) {
-    sprintf("ICC = %.2f", icc_val)
-  } else NA_character_
-
-  # Assemble. Skip parts that are NA (e.g. icc on non-Gaussian glmer).
-  segments <- c(n_groups_part, components_part, icc_part)
-  segments <- segments[!is.na(segments)]
-  if (length(segments) == 0L) return(NULL)
-  paste0("Random effects: ", paste(segments, collapse = "; "), ".")
-}
-
-
-# Format a variance estimate for the random-effects sentence. Switches
-# to scientific notation when the value is very small (< 0.001) to
-# avoid printing "0.00" for boundary-singular fits where the variance
-# is near zero but informatively non-zero.
-.fmt_var <- function(x) {
-  if (!is.finite(x)) return("NA")
-  if (x < 0.001 && x > 0) return(formatC(x, format = "e", digits = 2))
-  sprintf("%.2f", x)
+  # Nothing informative (no method tag, no LR test): suppress entirely.
+  if (!has_method && is.null(lrt_part)) return(NULL)
+  if (is.null(lrt_part)) return(paste0(header, "."))
+  paste0(header, ": ", lrt_part, ".")
 }
 
 

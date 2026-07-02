@@ -28,17 +28,20 @@
 
 # ---- 1. Single-model footer ---------------------------------------------
 
-test_that("random effects footer fires for lmer fits", {
+# D4 amendment: the footer keeps only the estimation method + the model-level
+# chi-bar-squared LR test. The variance components render as table rows; N
+# (groups) + ICC render as fit-stat rows.
+
+test_that("random effects footer fires for lmer fits (method + LR test)", {
   fit <- .fit_lmer_re()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
-  # Phase 7c7c: structured panel format (when SE/CI populated).
-  expect_match(out, "Random effects",          fixed = TRUE)
-  expect_match(out, "σ Subject (Intercept)",   fixed = TRUE)
-  expect_match(out, "σ (Residual)",            fixed = TRUE)
-  expect_match(out, "N (Subject)",             fixed = TRUE)
-  expect_match(out, "ICC",                     fixed = TRUE)
+  expect_match(out, "Random effects (REML)", fixed = TRUE)
+  expect_match(out, "LR test",               fixed = TRUE)
+  # N / ICC moved to fit-stat rows -- no longer in the footer.
+  expect_false(grepl("18 Subjects", out, fixed = TRUE))
+  expect_false(grepl("ICC", out, fixed = TRUE))
 })
 
 test_that("random effects footer fires for glmmTMB Gaussian-identity fits", {
@@ -47,17 +50,15 @@ test_that("random effects footer fires for glmmTMB Gaussian-identity fits", {
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
   expect_match(out, "Random effects", fixed = TRUE)
-  expect_match(out, "N (Subject)",    fixed = TRUE)
+  expect_match(out, "LR test",        fixed = TRUE)
 })
 
 test_that("random effects footer fires for nlme::lme fits", {
   fit <- .fit_lme_re()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
-  expect_match(out, "Random effects", fixed = TRUE)
-  expect_match(out, "N (Subject)",    fixed = TRUE)
-  # Subject count = 27 appears as integer in the N row.
-  expect_match(out, "27",             fixed = TRUE)
+  expect_match(out, "Random effects (REML)", fixed = TRUE)
+  expect_match(out, "LR test",               fixed = TRUE)
 })
 
 
@@ -151,7 +152,7 @@ test_that("table_regression() footer carries the Random effects panel for lmer",
   # Phase 7c7c: structured panel format
   expect_match(combined, "Random effects",     fixed = TRUE)
   expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
-  expect_match(combined, "N (Subject)",        fixed = TRUE)
+  expect_match(combined, "18 Subjects",        fixed = TRUE)
 })
 
 test_that("table_regression() footer does NOT carry Random effects for lm", {
@@ -176,26 +177,3 @@ test_that("random effects footer prefixes per model for multi-model lists", {
 })
 
 
-# ---- 5. Number format: scientific for tiny boundary-singular variances -
-
-test_that("random effects footer formats tiny variances in scientific notation", {
-  # Build a fake frame with a very small variance to exercise .fmt_var.
-  vc <- data.frame(
-    group    = c("Subject", "Residual"),
-    term     = c("(Intercept)", ""),
-    variance = c(1.02e-17, 1.0),
-    sd       = c(3.19e-9,  1.0),
-    corr     = c(NA_real_, NA_real_),
-    stringsAsFactors = FALSE
-  )
-  fake_frame <- list(
-    coefs = data.frame(),
-    info  = list(
-      class = "lmerMod",
-      n_groups = c(Subject = 3L),
-      random_effects = list(variance_components = vc, icc = 1e-17)
-    )
-  )
-  out <- spicy:::.format_random_effects_for_frame(fake_frame)
-  expect_match(out, "1.02e-17", fixed = TRUE)
-})

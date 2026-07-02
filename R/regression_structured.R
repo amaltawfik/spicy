@@ -519,9 +519,14 @@ build_structured_body <- function(aligned,
       # em-dash via reference_rows tag).
       next
     }
+    # Random-effect variance rows (estimate_type = "vc") display on the B
+    # (estimate / SE / CI) axis: alias "vc" to the "B" column here, mirroring
+    # the char body's build_body_row().
+    et_match <- if (identical(cs$estimate_type, "B")) c("B", "vc") else
+      cs$estimate_type
     long_row <- coefs[coefs$model_id == cs$model_id &
                         coefs$term == rt$term &
-                        coefs$estimate_type == cs$estimate_type, ,
+                        coefs$estimate_type %in% et_match, ,
                         drop = FALSE]
     if (nrow(long_row) == 0L) next   # cell stays NA (blank)
     val <- long_row[[e$source]][1L]
@@ -563,6 +568,9 @@ build_structured_body <- function(aligned,
   rows <- list()
   for (tk in show_fit_stats) {
     if (!tk %in% names(fit_stats)) next
+    # icc / n_groups: drop the row when no model carries a value (mirrors
+    # build_fit_stats_rows).
+    if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
     row <- empty_row
     row$Variable <- fit_stat_label(tk)
     col_overrides <- list()
@@ -584,7 +592,21 @@ build_structured_body <- function(aligned,
       # sub[[tk]][1L] is always a scalar (NA at worst), never NULL.
       if (is.null(val)) val <- NA_real_
       # nocov end
-      row[[target_col]] <- as.numeric(val)
+      # n_groups is a pre-formatted character cell ("18 Subjects"). The
+      # structured body is numeric-typed, so carry the group COUNT for the
+      # single-factor case; crossed factors ("18 Subjects, 9 Items") have no
+      # single count and fall to NA (blank) in the structured/rich engines --
+      # the char body keeps the full string.
+      row[[target_col]] <- if (identical(tk, "n_groups")) {
+        v <- as.character(val)
+        if (is.na(v) || grepl(",", v, fixed = TRUE)) {
+          NA_real_
+        } else {
+          suppressWarnings(as.numeric(sub("^(\\d+) .*$", "\\1", v)))
+        }
+      } else {
+        as.numeric(val)
+      }
 
       col_overrides[[target_col]] <- list(
         fit_stat = tk,
@@ -603,10 +625,11 @@ build_structured_body <- function(aligned,
 
 .fit_stat_precision <- function(token, digits, fit_digits, ic_digits,
                                   p_digits) {
-  is_int <- token %in% c("nobs", "weighted_nobs")
+  is_int <- token %in% c("nobs", "weighted_nobs", "n_groups")
   is_fit <- token %in% c("r2", "adj_r2", "omega2", "f2", "sigma", "rmse",
                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
                           "pseudo_r2_tjur",
+                          "r2_marginal", "r2_conditional", "icc",
                           "r2_change", "adj_r2_change", "f2_change",
                           "f_change")
   is_ic <- token %in% c("AIC", "AICc", "BIC", "aic_change", "aicc_change",

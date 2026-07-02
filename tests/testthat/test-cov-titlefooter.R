@@ -200,11 +200,12 @@ test_that(".re_components_on_scale returns the frame unchanged when empty", {
 })
 
 
-# ---- Random-effects panel: header without a method tag -------------------
-# vc carries std_error (so the panel path is chosen) but no is_correlation
-# column and no re$method, so the header is the bare "Random effects:".
+# ---- Random-effects summary: method + LR test only (D4 amendment) --------
+# The variance components render as table rows; N (groups) + ICC render as
+# fit-stat rows. The footer keeps only the estimation method and the
+# chi-bar-squared LR test; with NEITHER, the block is suppressed (NULL).
 
-test_that("random-effects panel header is bare 'Random effects:' without a method", {
+test_that("random-effects summary is NULL without a method and LR test", {
   vc <- data.frame(
     group     = c("Subject", "Residual"),
     term      = c("(Intercept)", ""),
@@ -221,9 +222,26 @@ test_that("random-effects panel header is bare 'Random effects:' without a metho
     n_groups = c(Subject = 18L),
     random_effects = list(variance_components = vc, icc = 0.5)  # no method
   ))
+  expect_null(spicy:::.format_random_effects_for_frame(frame))
+})
+
+test_that("random-effects summary shows the method alone when no LR test", {
+  vc <- data.frame(
+    group     = c("Subject", "Residual"),
+    term      = c("(Intercept)", ""),
+    variance  = c(600, 650),
+    sd        = c(24.5, 25.5),
+    corr      = c(NA_real_, NA_real_),
+    stringsAsFactors = FALSE
+  )
+  frame <- list(coefs = data.frame(), info = list(
+    class = "lmerMod",
+    n_groups = c(Subject = 18L),
+    random_effects = list(variance_components = vc, icc = 0.5,
+                          method = "REML")
+  ))
   out <- spicy:::.format_random_effects_for_frame(frame)
-  expect_match(out, "Random effects:\n", fixed = TRUE)
-  expect_match(out, "N (Subject)", fixed = TRUE)
+  expect_identical(out, "Random effects (REML).")
 })
 
 
@@ -236,12 +254,11 @@ test_that("format_p_value_for_panel handles NA, finite, and tiny p", {
 })
 
 
-# ---- Legacy random-effects sentence: slope-variance + skipped corr row ---
-# A vc WITHOUT std_error forces the legacy one-line sentence path (instead
-# of the structured panel). A random-slope term exercises the "X slope
-# variance" branch; a correlation row exercises the `next` skip.
+# ---- RE summary: variance components + N + ICC stay OUT of the footer ----
+# The variance components render as table rows; N (groups) + ICC render as
+# fit-stat rows. The footer never repeats any of them.
 
-test_that("legacy RE sentence renders slope variance and skips correlation rows", {
+test_that("RE footer summary omits component values, N, and ICC", {
   vc <- data.frame(
     group = c("Subject", "Subject", "Subject", "Residual"),
     term  = c("(Intercept)", "Days", "Days", ""),
@@ -254,18 +271,19 @@ test_that("legacy RE sentence renders slope variance and skips correlation rows"
   frame <- list(coefs = data.frame(), info = list(
     class = "lmerMod",
     n_groups = c(Subject = 18L),
-    random_effects = list(variance_components = vc, icc = 0.5)
+    random_effects = list(variance_components = vc, icc = 0.5,
+                          method = "REML")
   ))
   out <- spicy:::.format_random_effects_for_frame(frame)
-  expect_match(out, "intercept variance = 600.00", fixed = TRUE)
-  expect_match(out, "days slope variance = 35.00", fixed = TRUE)
-  expect_match(out, "residual variance = 650.00", fixed = TRUE)
-  # The correlation row (rho) must NOT appear in the one-line sentence.
-  expect_false(grepl("0.07", out, fixed = TRUE))
+  expect_identical(out, "Random effects (REML).")
+  expect_false(grepl("600", out, fixed = TRUE))   # variances live in the body
+  expect_false(grepl("0.07", out, fixed = TRUE))  # so does the correlation
+  expect_false(grepl("Subjects", out, fixed = TRUE))  # N -> fit-stat row
+  expect_false(grepl("ICC", out, fixed = TRUE))       # ICC -> fit-stat row
 })
 
-test_that("legacy RE sentence returns NULL when no segments survive", {
-  # Only a correlation row, no n_groups, no icc -> all segments NA -> NULL.
+test_that("RE footer summary returns NULL when nothing informative survives", {
+  # Only a correlation row, no method, no n_groups, no icc, no LR test.
   vc <- data.frame(
     group = "Subject", term = "Days", variance = NA_real_,
     sd = NA_real_, corr = 0.07, is_correlation = TRUE,
@@ -276,14 +294,6 @@ test_that("legacy RE sentence returns NULL when no segments survive", {
     random_effects = list(variance_components = vc, icc = NULL)
   ))
   expect_null(spicy:::.format_random_effects_for_frame(frame))
-})
-
-
-# ---- .fmt_var: non-finite input ------------------------------------------
-
-test_that(".fmt_var returns 'NA' for non-finite input", {
-  expect_identical(spicy:::.fmt_var(NA_real_), "NA")
-  expect_identical(spicy:::.fmt_var(Inf), "NA")
 })
 
 

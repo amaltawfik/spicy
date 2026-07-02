@@ -40,7 +40,7 @@ test_that("lmer random-intercept output has structured 'Random effects' panel", 
   expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
   expect_match(combined, "σ (Residual)",         fixed = TRUE)
   expect_match(combined, "ICC",                  fixed = TRUE)
-  expect_match(combined, "N (Subject)",          fixed = TRUE)
+  expect_match(combined, "18 Subjects",          fixed = TRUE)
 })
 
 
@@ -132,20 +132,19 @@ test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
 })
 
 
-# ---- 8. Correlation row now renders SE + CI (Phase 7c17) -------------
+# ---- 8. Correlation row shows rho with SE + CI in the rows layout -------
 
-test_that("lme4 correlation row prints rho with SE + CI (Phase 7c17)", {
+test_that("lme4 correlation row shows rho with SE + CI (rows layout)", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_panel()
-  out <- capture.output(print(table_regression(fit)))
-  rho_line <- grep("ρ Subject", strsplit(paste(out, collapse = "\n"),
-                                            "\n")[[1L]],
-                    value = TRUE)
-  expect_length(rho_line, 1L)
-  # Phase 7c17: multivariate Delta-method on merDeriv vcov now
-  # populates SE + CI on the rho row, matching Stata `mixed` and
-  # SAS PROC MIXED. The em-dash fallback was the Phase 7c7b
-  # placeholder.
-  expect_match(rho_line, "\\([0-9]+\\.[0-9]+\\)")  # (SE)
-  expect_match(rho_line, "\\[")                    # [CI ...
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         output = "data.frame")
+  # the correlation row's label ends in ", Days)"; unique to it
+  rho <- df[grepl(", Days)", df$Variable, fixed = TRUE), , drop = FALSE]
+  expect_equal(nrow(rho), 1L)
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  # Phase 7c17: multivariate Delta-method populates SE + CI on the rho row.
+  expect_true(grepl("[0-9]", rho[[se_col]][1]))
+  expect_true(grepl("[0-9]", rho[[ci_col]][1]))
 })

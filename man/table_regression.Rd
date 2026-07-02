@@ -289,18 +289,27 @@ values plus any fit-stat value(s) in \code{"first_col"} mode
 trivially decimal-aligns in \code{"merged"} mode (the fit-stat
 values move out of the B column into the merged cell).}
 
-\item{show_re}{Logical. \code{TRUE} (default) prints the
-random-effects panel below the fit-statistics footer for
-mixed-effects fits (\code{lmer}, \code{glmer}, \code{glmmTMB}, \code{lme}).
-\code{FALSE} suppresses the panel entirely. No effect on fits
-without random effects (\code{lm}, \code{glm}, \code{coxph}, ...). The
-panel header carries the estimator label (\code{(REML)} or
-\code{(ML)}); see the \emph{Mixed-effects models} section of
-\code{vignette("table-regression")} for the methodological
-rationale (Gelman 2005; Bates et al. 2015; Bolker FAQ).}
+\item{show_re}{Logical. \code{TRUE} (default) renders the random-effects
+variance components of a mixed-effects fit (\code{lmer}, \code{glmer},
+\code{glmmTMB}, \code{lme}) as a subordinate \strong{"Random effects" block of
+table rows} below the fixed effects: one row per standard
+deviation / correlation per grouping factor, plus the residual,
+each with its estimate, SE, and CI in the shared coefficient
+columns. The group sizes (\code{N (groups)}) and the ICC render as
+fit-statistic rows; the footer reports the estimation method
+(\code{REML} / \code{ML}) and the likelihood-ratio test of the whole
+random part against the no-random-effects model, with the
+boundary-corrected chi-bar-squared p-value (Self & Liang 1987;
+Stram & Lee 1994). Variance-component rows deliberately carry
+\strong{no per-row p-value}: a Wald test of a variance is invalid at
+the boundary of the parameter space, and no reporting guideline
+requests one (see the \emph{Mixed-effects models} section of
+\code{vignette("table-regression")}). \code{FALSE} suppresses the block.
+No effect on fits without random effects (\code{lm}, \code{glm},
+\code{coxph}, ...).}
 
 \item{re_scale}{One of \code{"sd"} (default) or \code{"variance"}.
-Controls the display scale of the random-effects panel:
+Controls the display scale of the random-effects rows:
 \itemize{
 \item \code{"sd"}: report the random-effect standard
 deviation \eqn{\sigma} (Gelman 2005, \emph{Technometrics}:
@@ -318,11 +327,14 @@ Correlation rows (\eqn{\rho}) are unitless and pass through
 either way.}
 
 \item{re_columns}{Character vector. Subset of
-\code{c("est", "se", "ci")} controlling which columns of the
-random-effects panel are rendered. \code{"est"} is mandatory.
-Useful for slimming output (\code{re_columns = "est"}) or
+\code{c("est", "se", "ci")} controlling which cells of the
+random-effects rows are \strong{displayed} (\code{"est"} is mandatory);
+de-selected SE / CI cells render as an em-dash on those rows
+only. Useful for slimming output (\code{re_columns = "est"}) or
 for journals that want only standard errors
-(\code{re_columns = c("est", "se")}).
+(\code{re_columns = c("est", "se")}). Display-only: the underlying
+data (\code{broom::tidy()}, \code{\link[=as_structured]{as_structured()}}) always carries the
+full SE + CI.
 
 Note. Standard errors and CIs are Wald (\verb{est ± z * SE},
 clamped at 0 for variances). Wald can be optimistic near

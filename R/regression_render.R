@@ -55,7 +55,8 @@ render_regression_table <- function(
     labels = NULL,
     outcome_labels = NULL,
     title = NULL,
-    note = NULL) {
+    note = NULL,
+    re_columns = c("est", "se", "ci")) {
   align <- match.arg(align)
   reference_style <- match.arg(reference_style)
   factor_layout <- match.arg(factor_layout)
@@ -195,7 +196,8 @@ render_regression_table <- function(
       # Rule off each subordinate block (ordinal `Thresholds`, partial-PO
       # `Non-proportional effects`) from the rows above, mirroring the
       # coefficients / fit-stats divide.
-      if (rt$factor_term %in% c("Thresholds", "Non-proportional effects")) {
+      if (rt$factor_term %in%
+            c("Thresholds", "Non-proportional effects", "Random effects")) {
         thr_sep <- c(thr_sep, length(rows) + 1L)
       }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
@@ -216,7 +218,8 @@ render_regression_table <- function(
       digits = digits, p_digits = p_digits,
       effect_size_digits = effect_size_digits,
       decimal_mark = decimal_mark,
-      labels = labels
+      labels = labels,
+      re_columns = re_columns
     )
     # `reference_style = "annotation"` in flat layout: attach
     # ` [vs <ref_level>]` to the FIRST contrast-vs-reference row of
@@ -605,15 +608,22 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
                             group_factor_levels,
                             stars_map,
                             digits, p_digits, effect_size_digits,
-                            decimal_mark, labels) {
+                            decimal_mark, labels,
+                            re_columns = c("est", "se", "ci")) {
   cells <- list(Variable = format_term_label(
     term_row, reference_label, reference_style, group_factor_levels, labels
   ))
 
   for (cs in col_spec) {
+    # Random-effect variance rows (estimate_type = "vc") render in the primary
+    # B (estimate / SE / CI) columns: a variance component is not a coefficient
+    # (kept as its own token so exp / standardize skip it) but it displays on
+    # the same estimate/SE/CI axis. Alias "vc" to the "B" column here.
+    et_match <- if (identical(cs$estimate_type, "B")) c("B", "vc") else
+      cs$estimate_type
     long_row <- coefs[coefs$model_id == cs$model_id &
                        coefs$term == term_row$term &
-                       coefs$estimate_type == cs$estimate_type, ,
+                       coefs$estimate_type %in% et_match, ,
                        drop = FALSE]
     # Per-category AME columns are tagged with an `outcome_level`; narrow to
     # that category so each column pulls its own cell. A NULL/NA tag (B columns,
@@ -642,6 +652,15 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     # "reference, no estimate by design".
     if (isTRUE(long_row$is_reference[1L])) {
       cells[[cs$col_name]] <- "\u2013"   # em-dash
+      next
+    }
+    # `re_columns` (display-only): on a variance-component row, em-dash the
+    # SE / CI cells the user de-selected. The underlying data stays complete
+    # (broom::tidy / as_structured always carry full SE + CI).
+    if (identical(long_row$estimate_type[1L], "vc") &&
+        ((identical(cs$token, "se") && !"se" %in% re_columns) ||
+         (identical(cs$token, "ci") && !"ci" %in% re_columns))) {
+      cells[[cs$col_name]] <- "\u2013"
       next
     }
     cells[[cs$col_name]] <- format_cell_value(
@@ -780,6 +799,17 @@ format_term_label <- function(term_row, reference_label, reference_style,
     flat_lbl <- resolve_label(flat_key, labels)
     return(paste0(flat_lbl, " ", reference_label))
   }
+  # Subordinate-block rows (ordinal thresholds, PPO non-proportional
+  # effects, random-effect variance components) always render their display
+  # label, even in the flat layout: their `term` is an internal key (e.g.
+  # "re::Subject::Days") or a bare cut-point, not a coefficient name.
+  if (!is.na(term_row$factor_term) &&
+      term_row$factor_term %in%
+        c("Thresholds", "Non-proportional effects", "Random effects")) {
+    lvl <- term_row$factor_level
+    if (is.na(lvl) || !nzchar(lvl)) lvl <- term
+    return(paste0(if (isTRUE(group_factor_levels)) "  " else "", lvl))
+  }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
@@ -884,6 +914,10 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
   rows <- list()
   for (tk in show_fit_stats) {
     if (!tk %in% names(fit_stats)) next   # token absent from fit_stats schema
+    # icc / n_groups are mixed-only structure stats: when NO model has a
+    # value (e.g. icc on a random-slope fit, or the tokens on a non-mixed
+    # table), drop the row entirely instead of rendering an empty one.
+    if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
     cells <- list(Variable = fit_stat_label(tk))
     for (col in all_data_cols) cells[[col]] <- ""
     for (m_id in model_ids) {
@@ -920,6 +954,8 @@ fit_stat_label <- function(token) {
     pseudo_r2_tjur        = "R\u00B2 (Tjur)",
     r2_marginal           = "R\u00B2 (marginal)",
     r2_conditional        = "R\u00B2 (conditional)",
+    icc                   = "ICC",
+    n_groups              = "N (groups)",
     sigma                 = "\u03C3\u0302",
     rmse                  = "RMSE",
     f2                    = "f\u00B2",
@@ -963,6 +999,8 @@ format_fit_stat_value <- function(token, val,
   if (is.null(val) || is.na(val)) {
     return(if (is_change) "\u2013" else "")
   }
+  # n_groups is a pre-formatted character cell ("18 Subjects"): pass through.
+  if (identical(token, "n_groups")) return(as.character(val))
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
     return(format_p_value(val, decimal_mark = decimal_mark,
@@ -979,6 +1017,7 @@ format_fit_stat_value <- function(token, val,
     pseudo_r2_tjur        = fit_digits,
     r2_marginal           = fit_digits,
     r2_conditional        = fit_digits,
+    icc                   = fit_digits,
     sigma                 = fit_digits,
     rmse                  = fit_digits,
     f2                    = fit_digits,

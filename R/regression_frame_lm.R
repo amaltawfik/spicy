@@ -300,7 +300,8 @@ as_regression_frame.glm <- function(fit, ...) {
 # it as a list. Round-trip: rebuild the data.frame structure by selecting
 # only the legacy-named scalar fields (drop the schema aliases and the
 # pseudo_r2 nested list we added in `.build_info()`).
-.compact_fit_stats_for_legacy <- function(fs, model_id, outcome) {
+.compact_fit_stats_for_legacy <- function(fs, model_id, outcome,
+                                          icc = NA_real_, n_groups = NULL) {
   # Order matches the original `extract_fit_stats()` return, with the
   # nested-LRT change tokens appended at the end (Phase 0c C3:
   # attach_nested_stats_to_frames() injects these into fs BEFORE
@@ -323,6 +324,18 @@ as_regression_frame.glm <- function(fit, ...) {
     pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
     r2_marginal          = .scalar_or_na(fs$r2_marginal),
     r2_conditional       = .scalar_or_na(fs$r2_conditional),
+    # Mixed-effects group structure (fit-stat rows). n_groups is a
+    # pre-formatted character cell ("18 Subjects" / "18 Subjects, 9 Items"),
+    # NA_character_ for non-mixed fits; icc a numeric scalar.
+    icc                  = .scalar_or_na(icc),
+    n_groups             = if (!is.null(n_groups) && length(n_groups) > 0L) {
+      paste(vapply(seq_along(n_groups), function(k) {
+        sprintf("%d %s%s", as.integer(n_groups[[k]]), names(n_groups)[k],
+                if (n_groups[[k]] > 1L) "s" else "")
+      }, character(1)), collapse = ", ")
+    } else {
+      NA_character_
+    },
     sigma                = .scalar_or_na(fs$sigma),
     rmse                 = .scalar_or_na(fs$rmse),
     f2                   = .scalar_or_na(fs$f2),

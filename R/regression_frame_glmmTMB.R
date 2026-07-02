@@ -424,6 +424,24 @@ as_regression_frame.glmmTMB <- function(fit,
     parts <- strsplit(bare, "\\|", fixed = FALSE)[[1L]]
     pair <- parts[1L]
     group <- parts[2L]
+    # Normalise the pair to lme4's canonical "<t1>, <t2>" (terms in their
+    # VarCorr order) so identical random structures ALIGN across engines in a
+    # multi-model table (lme4 stores "(Intercept), Days"; the raw glmmTMB
+    # rowname is "Days.(Intercept)"). The "." separator is ambiguous when a
+    # term name itself contains a dot, so split by matching both sides
+    # against the group's KNOWN variance-row terms instead of blind regex.
+    known <- vc_df$term[vc_df$group == group &
+                          !(vc_df$is_correlation %in% TRUE)]
+    dots <- gregexpr(".", pair, fixed = TRUE)[[1L]]
+    for (pos in dots) {
+      lhs <- substr(pair, 1L, pos - 1L)
+      rhs <- substr(pair, pos + 1L, nchar(pair))
+      if (lhs %in% known && rhs %in% known) {
+        ord <- c(lhs, rhs)[order(match(c(lhs, rhs), known))]
+        pair <- paste(ord, collapse = ", ")
+        break
+      }
+    }
     rows_extra[[length(rows_extra) + 1L]] <- data.frame(
       group          = group,
       term           = pair,
@@ -484,11 +502,18 @@ as_regression_frame.glmmTMB <- function(fit,
     t <- vc_df$term[i]
 
     if (isTRUE(is_corr[i])) {
-      # Correlation row: confint exposes "Cor.<t>|<g>" with CI on rho
-      # in (-1, 1). Wald-symmetric on rho scale.
-      pattern_cor <- paste0("^Cor.", gsub("([()])", "\\\\\\1", t),
-                            "\\|", g, "$")
-      idx <- grep(pattern_cor, rownames(ci_sd))
+      # Correlation row: confint exposes "Cor.<t2>.<t1>|<g>" with CI on rho
+      # in (-1, 1), Wald-symmetric on rho scale. vc_df stores the pair in
+      # the canonical "<t1>, <t2>" form (engine-aligned, see the appender):
+      # rebuild BOTH possible rowname orders and match exactly.
+      comps <- strsplit(t, ", ", fixed = TRUE)[[1L]]
+      cands <- if (length(comps) == 2L) {
+        paste0("Cor.", c(paste(comps, collapse = "."),
+                         paste(rev(comps), collapse = ".")), "|", g)
+      } else {
+        paste0("Cor.", t, "|", g)                                      # nocov
+      }
+      idx <- which(rownames(ci_sd) %in% cands)
       if (length(idx) != 1L) next                                      # nocov
       cor_est   <- ci_sd[idx, "Estimate"]
       cor_lower <- ci_sd[idx, 1L]

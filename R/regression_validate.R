@@ -60,6 +60,9 @@
     # fixed effects alone; conditional = variance explained by
     # fixed + random.
     "r2_marginal", "r2_conditional",
+    # Mixed-effects group structure: N per grouping factor + intraclass
+    # correlation, as fit-stat rows (sjPlot / modelsummary convention).
+    "n_groups", "icc",
     "sigma", "rmse",
     "f2",
     "AIC", "AICc", "BIC", "deviance",
@@ -670,6 +673,59 @@ validate_class_appropriate_tokens <- function(models,
     }
   }
 
+  # Mixed-effects fits match neither all_glm nor all_lm, so lm-only tokens would
+  # otherwise slip through and render an empty row (finding m4). Classical /
+  # pseudo R^2 and the least-squares partial-variance tokens are undefined for
+  # mixed models; point the user at the Nakagawa marginal / conditional R^2.
+  # Reject only when ALL models are mixed (a mixed set em-dashes the RE rows).
+  all_mixed <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1),
+               c("merMod", "lmerModLmerTest", "glmmTMB", "lme")))
+  if (all_mixed) {
+    bad_fit <- intersect(show_fit_stats,
+                         c("r2", "adj_r2", "omega2", "f2",
+                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
+                           "pseudo_r2_tjur"))
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for mixed-effects models.",
+            paste(shQuote(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Classical / pseudo R^2 do not apply to mixed-effects models. ",
+            "Use the Nakagawa marginal / conditional R^2 instead: ",
+            "`\"r2_marginal\"` and `\"r2_conditional\"` (Nakagawa et al. 2017)."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    # partial_chi2 (LRT-based, drop1 test = "LRT") IS defined for mixed fits, so
+    # it is deliberately NOT rejected here -- only the variance-explained
+    # (least-squares) partials are undefined for mixed models.
+    bad_cols <- intersect(show_columns,
+                          c("partial_f2", "partial_f2_ci",
+                            "partial_eta2", "partial_eta2_ci",
+                            "partial_omega2", "partial_omega2_ci"))
+    if (length(bad_cols) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for mixed-effects models.",
+            paste(shQuote(bad_cols), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Variance-explained partials do not apply to mixed models. For a ",
+            "partial likelihood-ratio test use `\"partial_chi2\"`."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   # AME is not defined for Cox proportional hazards models: avg_slopes() on a
   # coxph / cph fit returns effects on an ambiguous survival/hazard scale, and
   # marginaleffects itself warns its delta-method standard errors are
@@ -868,6 +924,26 @@ validate_token_vector <- function(x, valid, arg) {
     )
   }
   x
+}
+
+
+# Validate the `re_scale` argument of table_regression(): "sd" (default) or
+# "variance". Errors early with a spicy_invalid_input (not a raw base-R
+# match.arg message), and BEFORE the expensive extraction loop (finding m3).
+.validate_re_scale <- function(x) {
+  choices <- c("sd", "variance")
+  if (identical(x, choices)) return("sd")            # unset default vector
+  if (length(x) == 1L && !is.na(x) && x %in% choices) return(x)
+  spicy_abort(
+    c(
+      "`re_scale` must be one of \"sd\" or \"variance\".",
+      "x" = sprintf(
+        "You supplied %s.",
+        paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
 }
 
 

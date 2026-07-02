@@ -421,7 +421,7 @@ validate_regression_frame <- function(frame) {
   # emitted by extract_partial_effect_rows(). The legacy uppercase
   # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
   allowed_types <- c(
-    "B", "beta", "ame",
+    "B", "beta", "ame", "vc",
     "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2"
   )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)
@@ -706,13 +706,34 @@ validate_regression_frame <- function(frame) {
 }
 
 
+# lme4 >= 1.1-37 moved findbars() / nobars() to the `reformulas` package and
+# re-exports them with a once-per-session deprecation warning. Prefer the new
+# home when installed (it is a hard dependency of those lme4 versions), fall
+# back to the lme4 re-export otherwise.
+.re_findbars <- function(x) {
+  if (requireNamespace("reformulas", quietly = TRUE)) {
+    reformulas::findbars(x)
+  } else {
+    suppressWarnings(lme4::findbars(x))                                  # nocov
+  }
+}
+
+.re_nobars <- function(x) {
+  if (requireNamespace("reformulas", quietly = TRUE)) {
+    reformulas::nobars(x)
+  } else {
+    suppressWarnings(lme4::nobars(x))                                    # nocov
+  }
+}
+
+
 .null_lrt_merMod <- function(fit) {
   if (!requireNamespace("lme4", quietly = TRUE)) return(NULL)
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
 
   no_re_formula <- suppressWarnings(
-    lme4::nobars(stats::formula(fit, fixed.only = TRUE))
+    .re_nobars(stats::formula(fit, fixed.only = TRUE))
   )
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted merMod
@@ -773,7 +794,7 @@ validate_regression_frame <- function(frame) {
   is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
 
   no_re_formula <- suppressWarnings(
-    lme4::nobars(stats::formula(fit, fixed.only = TRUE, component = "cond"))
+    .re_nobars(stats::formula(fit, fixed.only = TRUE, component = "cond"))
   )
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted glmmTMB
@@ -1098,7 +1119,7 @@ validate_regression_frame <- function(frame) {
   na_pair <- list(intercept = NA_real_, var_g = NA_real_)
   if (!identical(fam$family, "poisson")) return(na_pair)
   bars <- tryCatch(
-    suppressWarnings(lme4::findbars(stats::formula(fit))),
+    (.re_findbars(stats::formula(fit))),
     error = function(e) NULL
   )
   if (is.null(bars) || length(bars) == 0L) return(na_pair)  # nocov -- a mixed-effects poisson fit always has random-effect bars

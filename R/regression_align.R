@@ -110,7 +110,10 @@ align_frames <- function(
     as.data.frame(
       .compact_fit_stats_for_legacy(frames[[i]]$info$fit_stats,
                                     model_ids[i],
-                                    frames[[i]]$info$dv),
+                                    frames[[i]]$info$dv,
+                                    icc = frames[[i]]$info$random_effects$icc
+                                      %||% NA_real_,
+                                    n_groups = frames[[i]]$info$n_groups),
       stringsAsFactors = FALSE
     )
   }))
@@ -138,14 +141,26 @@ align_frames <- function(
 
   term_order <- group_factor_terms(term_order, coefs_long)
 
-  # Ordinal cut-points always sort to the very bottom, after every predictor.
-  # The synthetic "Thresholds" parent (created only by the show_thresholds
-  # path) would otherwise land at its first-appearance position, which in a
-  # multi-model table can fall ahead of a predictor a later model introduces.
-  thr_terms <- unique(coefs_long$term[coefs_long$factor_term %in% "Thresholds"])
-  if (length(thr_terms) > 0L) {
-    term_order <- c(setdiff(term_order, thr_terms),
-                    intersect(term_order, thr_terms))
+  # Subordinate blocks always sort to the very bottom, after every predictor,
+  # in a fixed order: Thresholds (ordinal cut-points) then Random effects
+  # (mixed variance components). Their synthetic parents (created only by the
+  # show_thresholds / show_re paths) would otherwise land at their
+  # first-appearance position, which in a multi-model table can fall ahead of a
+  # predictor a later model introduces.
+  for (blk in c("Thresholds", "Random effects")) {
+    blk_terms <- unique(coefs_long$term[coefs_long$factor_term %in% blk])
+    if (length(blk_terms) > 0L) {
+      blk_in_order <- intersect(term_order, blk_terms)
+      # Within the Random effects block, the Residual row(s) sort LAST --
+      # in a multi-model table the first-appearance order would otherwise
+      # interleave a residual before a later model's slope / correlation
+      # rows (spec section 5: residual closes the block).
+      if (identical(blk, "Random effects")) {
+        is_resid <- startsWith(blk_in_order, "re::Residual::")
+        blk_in_order <- c(blk_in_order[!is_resid], blk_in_order[is_resid])
+      }
+      term_order <- c(setdiff(term_order, blk_terms), blk_in_order)
+    }
   }
 
   if (!identical(reference_style, "row")) {

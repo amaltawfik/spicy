@@ -484,6 +484,24 @@ as_regression_frame.gls <- function(fit,
   for (rn in cor_rows) {
     est <- group_ci[rn, "est."]
     pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
+    # Normalise "(Intercept),age" (nlme's comma-only join) to the canonical
+    # "(Intercept), age" (lme4's ", " join, VarCorr term order) so identical
+    # random structures align across engines in a multi-model table. Match
+    # both sides against the group's known variance-row terms -- robust to
+    # term names that themselves contain a comma-free "," is impossible in
+    # an R name, but matching keeps the split principled.
+    known <- vc_df$term[vc_df$group == group_nm &
+                          !(vc_df$is_correlation %in% TRUE)]
+    commas <- gregexpr(",", pair, fixed = TRUE)[[1L]]
+    for (pos in commas) {
+      lhs <- trimws(substr(pair, 1L, pos - 1L))
+      rhs <- trimws(substr(pair, pos + 1L, nchar(pair)))
+      if (lhs %in% known && rhs %in% known) {
+        ord <- c(lhs, rhs)[order(match(c(lhs, rhs), known))]
+        pair <- paste(ord, collapse = ", ")
+        break
+      }
+    }
     rows_extra[[length(rows_extra) + 1L]] <- data.frame(
       group          = group_nm,
       term           = pair,
@@ -540,10 +558,21 @@ as_regression_frame.gls <- function(fit,
     if (isTRUE(is_corr[i])) {
       # Correlation row: intervals reStruct exposes "cor(<pair>)" rows
       # on the natural rho scale (not transformed). Wald CI symmetric.
+      # vc_df stores the pair canonically as "<t1>, <t2>" (engine-aligned);
+      # nlme's rowname joins with a bare comma -- try both orders and both
+      # separators via exact-string matching.
       group_ci <- ci_obj$reStruct[[g]]
       if (is.null(group_ci)) next                                      # nocov
-      target <- paste0("cor(", t, ")")
-      row_idx <- match(target, rownames(group_ci))
+      comps <- strsplit(t, ", ", fixed = TRUE)[[1L]]
+      targets <- if (length(comps) == 2L) {
+        paste0("cor(", c(paste(comps, collapse = ","),
+                         paste(rev(comps), collapse = ","),
+                         paste(comps, collapse = ", "),
+                         paste(rev(comps), collapse = ", ")), ")")
+      } else {
+        paste0("cor(", t, ")")                                         # nocov
+      }
+      row_idx <- which(rownames(group_ci) %in% targets)[1L]
       if (is.na(row_idx)) next                                         # nocov
       cor_est   <- group_ci[row_idx, "est."]
       cor_lower <- group_ci[row_idx, "lower"]

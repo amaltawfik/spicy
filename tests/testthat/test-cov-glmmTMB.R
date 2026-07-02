@@ -74,5 +74,5 @@ test_that("table_regression(glmmTMB factor) renders factor block + panel", {
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "grp:",            fixed = TRUE)
   expect_match(combined, "Random effects",  fixed = TRUE)
-  expect_match(combined, "N (Subject)",     fixed = TRUE)
+  expect_match(combined, "Subjects",     fixed = TRUE)
 })

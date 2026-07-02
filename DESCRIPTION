@@ -66,6 +66,7 @@ Suggests:
     mlogit (>= 1.1),
     pscl (>= 1.5),
     quantreg (>= 5.86),
+    reformulas,
     rms (>= 6.7),
     sampleSelection (>= 1.2),
     posterior (>= 1.5.0),

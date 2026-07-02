@@ -68,6 +68,17 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   drop_mask <- if (!is.null(drop)) matches_any(terms, drop) else rep(FALSE, length(terms))
   final_mask <- keep_mask & !drop_mask
 
+  # Subordinate blocks are exempt from keep / drop: `keep` / `drop` select
+  # PREDICTORS, and a regex accidentally matching an ordinal cut-point or a
+  # synthetic random-effect key ("re::Subject::Days") would mutilate the block
+  # into a statistically incoherent subset (e.g. a correlation without its
+  # variances). The whole-block switches are `show_thresholds` / `show_re`.
+  ca <- aligned$coefs_aligned
+  subordinate <- ca$factor_term %in%
+    c("Thresholds", "Non-proportional effects", "Random effects") |
+    (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
+  final_mask <- final_mask | subordinate
+
   aligned$coefs_aligned <- aligned$coefs_aligned[final_mask, , drop = FALSE]
   rownames(aligned$coefs_aligned) <- NULL
 

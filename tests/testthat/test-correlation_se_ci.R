@@ -218,18 +218,20 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
 })
 
 
-# ---- 5. End-to-end rendering: rho row prints with bracketed CI ----------
+# ---- 5. End-to-end rendering: rho row carries SE + CI (rows layout) -----
 
-test_that("table_regression(lmer slope) prints rho row with SE + CI brackets", {
+test_that("table_regression(lmer slope) renders the rho row with SE + CI", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_corr()
-  out <- capture.output(print(table_regression(fit)))
-  combined <- paste(out, collapse = "\n")
-  # rho row must include parenthesised SE and bracketed CI (no em-dash).
-  rho_line <- grep("ρ Subject", strsplit(combined, "\n")[[1L]], value = TRUE)
-  expect_length(rho_line, 1L)
-  expect_match(rho_line, "\\([0-9]+\\.[0-9]+\\)")  # (SE)
-  expect_match(rho_line, "\\[")                    # [CI ...
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         output = "data.frame")
+  # the correlation row's label ends in ", Days)"; unique to it
+  rho <- df[grepl(", Days)", df$Variable, fixed = TRUE), , drop = FALSE]
+  expect_equal(nrow(rho), 1L)
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  expect_true(grepl("[0-9]", rho[[se_col]][1]))    # SE populated, no em-dash
+  expect_true(grepl("[0-9]", rho[[ci_col]][1]))    # CI populated
 })
 
 

@@ -566,17 +566,26 @@
 #'   (native primitives handle the mixed-precision case), and
 #'   trivially decimal-aligns in `"merged"` mode (the fit-stat
 #'   values move out of the B column into the merged cell).
-#' @param show_re Logical. `TRUE` (default) prints the
-#'   random-effects panel below the fit-statistics footer for
-#'   mixed-effects fits (`lmer`, `glmer`, `glmmTMB`, `lme`).
-#'   `FALSE` suppresses the panel entirely. No effect on fits
-#'   without random effects (`lm`, `glm`, `coxph`, ...). The
-#'   panel header carries the estimator label (`(REML)` or
-#'   `(ML)`); see the *Mixed-effects models* section of
-#'   `vignette("table-regression")` for the methodological
-#'   rationale (Gelman 2005; Bates et al. 2015; Bolker FAQ).
+#' @param show_re Logical. `TRUE` (default) renders the random-effects
+#'   variance components of a mixed-effects fit (`lmer`, `glmer`,
+#'   `glmmTMB`, `lme`) as a subordinate **"Random effects" block of
+#'   table rows** below the fixed effects: one row per standard
+#'   deviation / correlation per grouping factor, plus the residual,
+#'   each with its estimate, SE, and CI in the shared coefficient
+#'   columns. The group sizes (`N (groups)`) and the ICC render as
+#'   fit-statistic rows; the footer reports the estimation method
+#'   (`REML` / `ML`) and the likelihood-ratio test of the whole
+#'   random part against the no-random-effects model, with the
+#'   boundary-corrected chi-bar-squared p-value (Self & Liang 1987;
+#'   Stram & Lee 1994). Variance-component rows deliberately carry
+#'   **no per-row p-value**: a Wald test of a variance is invalid at
+#'   the boundary of the parameter space, and no reporting guideline
+#'   requests one (see the *Mixed-effects models* section of
+#'   `vignette("table-regression")`). `FALSE` suppresses the block.
+#'   No effect on fits without random effects (`lm`, `glm`,
+#'   `coxph`, ...).
 #' @param re_scale One of `"sd"` (default) or `"variance"`.
-#'   Controls the display scale of the random-effects panel:
+#'   Controls the display scale of the random-effects rows:
 #'   \itemize{
 #'     \item `"sd"`: report the random-effect standard
 #'       deviation \eqn{\sigma} (Gelman 2005, *Technometrics*:
@@ -593,11 +602,14 @@
 #'   Correlation rows (\eqn{\rho}) are unitless and pass through
 #'   either way.
 #' @param re_columns Character vector. Subset of
-#'   `c("est", "se", "ci")` controlling which columns of the
-#'   random-effects panel are rendered. `"est"` is mandatory.
-#'   Useful for slimming output (`re_columns = "est"`) or
+#'   `c("est", "se", "ci")` controlling which cells of the
+#'   random-effects rows are **displayed** (`"est"` is mandatory);
+#'   de-selected SE / CI cells render as an em-dash on those rows
+#'   only. Useful for slimming output (`re_columns = "est"`) or
 #'   for journals that want only standard errors
-#'   (`re_columns = c("est", "se")`).
+#'   (`re_columns = c("est", "se")`). Display-only: the underlying
+#'   data (`broom::tidy()`, [as_structured()]) always carries the
+#'   full SE + CI.
 #'
 #'   Note. Standard errors and CIs are Wald (`est ± z * SE`,
 #'   clamped at 0 for variances). Wald can be optimistic near
@@ -1138,8 +1150,13 @@ table_regression <- function(
                             "AIC")
     }
     if (any_mixed) {
+      # n_groups + icc render as fit-stat ROWS (aligned per model), like
+      # sjPlot / modelsummary -- not footer prose. ICC is blank when not
+      # computable (random slopes, multiple grouping factors, non-Gaussian
+      # without a link-scale formula).
       show_fit_stats <- c(show_fit_stats,
                             if (!any_lm_only && !any_glm) "nobs",
+                            "n_groups", "icc",
                             "r2_marginal",
                             "r2_conditional",
                             "AIC", "BIC")
@@ -1294,6 +1311,13 @@ table_regression <- function(
   validate_model_labels(model_labels, models)
   validate_outcome_labels(outcome_labels, models)
   validate_predictor_labels(labels, models)
+  # Random-effects display args: validate fail-fast (before the extraction
+  # loop), so a bad value errors immediately instead of after the expensive
+  # per-model extraction, and with a spicy_invalid_input class (finding m3).
+  # Reused both to materialise the RE rows (in the loop) and by the footer.
+  validate_logical_scalar(show_re, "show_re")
+  re_scale_val <- .validate_re_scale(re_scale)
+  re_columns_val <- .validate_re_columns(re_columns)
 
   # Phase E -- cross-arg semantic warnings (no errors). The
   # standardized x non-additive caveat is emitted later (after
@@ -1456,6 +1480,24 @@ table_regression <- function(
       frames[[i]]$coefs <- .append_threshold_rows(
         frames[[i]]$coefs, thr_i, ci_level)
     }
+
+    # Random effects as a subordinate "Random effects" block of rows (show_re =
+    # TRUE, the default). Materialised HERE -- after exp + p_adjust, so variance
+    # components are never exponentiated or p-adjusted. Gated on a coefficient
+    # column being shown (else the rows render empty). ICC / N (groups) / the
+    # method tag and the chi-bar-squared LR test stay in the footer (they are
+    # summaries, not estimated variance parameters).
+    # Gated on the RAW coefficient column ("b"): a beta-only display has no
+    # column a variance component can honestly fill (a vc is never
+    # standardized), so the block is omitted rather than rendered empty.
+    re_i <- frames[[i]]$info$random_effects
+    if (isTRUE(show_re) &&
+        "b" %in% show_columns &&
+        !is.null(re_i) && is.data.frame(re_i$variance_components) &&
+        nrow(re_i$variance_components) > 0L) {
+      frames[[i]]$coefs <- .append_random_effects_rows(
+        frames[[i]]$coefs, re_i, re_scale = re_scale_val)
+    }
   }
 
   # `exponentiate = TRUE` no-op detection (relocated from before extraction):
@@ -1535,10 +1577,8 @@ table_regression <- function(
   # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
   # kept in the codebase for C5 cleanup so we can revert quickly if a
   # corner case slips through the byte-equivalence gates.
-  # Phase 7c7d: validate + thread random-effects display args through
-  # the footer dispatcher.
-  re_scale_val <- match.arg(re_scale)
-  re_columns_val <- .validate_re_columns(re_columns)
+  # `re_scale_val` / `re_columns_val` were validated fail-fast up top (finding
+  # m3) and reused to materialise the RE rows; thread them through the footer.
 
   # Phase 7c22 (item f): pass the surviving parent_vars (post keep /
   # drop filter) so the polynomial-trends footer note suppresses when
@@ -1633,7 +1673,8 @@ table_regression <- function(
     labels = labels,
     outcome_labels = outcome_labels,
     title = title,
-    note = full_footer_str
+    note = full_footer_str,
+    re_columns = re_columns_val
   )
   # Stash the print-time padding as an attribute so the print
   # method can honour the call-site choice (and tooling like

@@ -50,8 +50,8 @@ one-row-per-model glance summary (`broom::glance()`).
 
 `lm` and `glm` are both supported. The *Generalised linear
 models* section covers the glm-specific argument semantics; the
-*Mixed-effects models* section covers the random-effects panel
-that mixed-effects fits add below the fit-statistics footer
+*Mixed-effects models* section covers the Random effects rows
+that mixed-effects fits add below the fixed effects
 (`lmer`, `glmer`, `glmmTMB`, `lme`). Everything else applies to
 all four families.
 
@@ -583,10 +583,14 @@ over rejection* rule, spicy accepts the fit and emits a
 * `nlme::lme()`
 
 The fixed-effects section of the table follows the same
-conventions as `lm` / `glm`. Below the fit-statistics footer
-(`n`, `AIC`, `BIC`, ...), a **Random effects panel** reports
-the variance components, the model's intra-class correlation
-(ICC) when defined, and the sample size at each grouping level:
+conventions as `lm` / `glm`. Below the fixed effects, a
+subordinate **Random effects** block of rows reports the
+variance components — one row per random standard deviation
+(σ), correlation (ρ), and the residual — each with its
+estimate, SE, and CI in the shared coefficient columns. The
+group sizes (`N (groups)`) and the intra-class correlation
+(`ICC`, when defined) appear among the fit-statistic rows, so
+they align per model in a comparison table:
 
 ```{r mixed-basic, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("merDeriv", quietly = TRUE)}
 library(lme4)
@@ -594,13 +598,26 @@ fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 table_regression(fit)
 ```
 
-The panel header carries the estimator label — `(REML)` for
-restricted maximum likelihood (the `lmer` / `lme` default) or
-`(ML)` for full ML (`glmer`, `glmmTMB` default, and
-`lmer(..., REML = FALSE)`). The label is informational: it tells
-the reader which likelihood the variance estimates are anchored
-to, without implying that REML and ML estimates are
-interchangeable for inference.
+Two deliberate conventions:
+
+* The variance-component rows carry **no p-value**. The null
+  hypothesis σ = 0 sits on the boundary of the parameter space,
+  where a Wald test is invalid (Self & Liang 1987); no reporting
+  guideline requests a per-component p, and the R ecosystem
+  (`lme4`, `nlme`, `parameters`, `broom.mixed`), Stata, and
+  MLwiN all omit it. The correct significance signal for the
+  random part is the footer's **likelihood-ratio test** against
+  the no-random-effects model, whose p-value uses the
+  boundary-corrected chi-bar-squared mixture
+  (`p = 0.5 * P(χ²_q > LR)`; Self & Liang 1987; Stram & Lee
+  1994) — the same line Stata's `mixed` prints.
+* The footer also carries the estimator label — `(REML)` for
+  restricted maximum likelihood (the `lmer` / `lme` default) or
+  `(ML)` for full ML (`glmer`, `glmmTMB` default, and
+  `lmer(..., REML = FALSE)`). The label is informational: it
+  tells the reader which likelihood the variance estimates are
+  anchored to, without implying that REML and ML estimates are
+  interchangeable for inference.
 
 ### Fit statistics: Nakagawa marginal and conditional R²
 
@@ -648,13 +665,16 @@ models, zero-inflated GLMM — spicy delegates to
 dependency: when absent the fit-stat rows render as NA without
 erroring (the table still prints; only the R² rows go blank).
 The default `show_fit_stats` for mixed fits is
-`c("nobs", "r2_marginal", "r2_conditional", "AIC", "BIC")` —
-set `show_fit_stats` explicitly to override.
+`c("nobs", "n_groups", "icc", "r2_marginal", "r2_conditional",
+"AIC", "BIC")` — set `show_fit_stats` explicitly to override.
+The `icc` row is dropped automatically when the ICC is not
+defined for the fit (random slopes, several grouping factors,
+families without a link-scale variance formula).
 
 ### Display scale: σ vs σ²
 
-By default the panel reports the random-effect **standard
-deviation** σ rather than the variance σ². Following Gelman
+By default the Random effects rows report the random-effect
+**standard deviation** σ rather than the variance σ². Following Gelman
 (2005, p. 5), the SD scale is "*directly interpretable as the
 size of the variation across groups*" and lives on the same
 scale as the response variable, which is what readers usually
@@ -667,13 +687,14 @@ table_regression(fit, re_scale = "variance")
 
 The conversion is internally consistent: SE and CI are
 transported between scales by the Delta method
-(`SE(σ) = SE(σ²) / (2σ)`, `CI(σ) = √CI(σ²)`), so the panel
+(`SE(σ) = SE(σ²) / (2σ)`, `CI(σ) = √CI(σ²)`), so the displayed
 values agree with `arm::sigma.hat()` (SD) and with
-`VarCorr(fit)` (variance) up to rounding.
+`VarCorr(fit)` (variance) up to rounding. On the variance scale
+the row labels switch from σ to σ².
 
 ### Standard errors and confidence intervals
 
-Each variance row of the panel carries a Wald SE and 95 % CI
+Each variance row of the block carries a Wald SE and 95 % CI
 (`est ± z · SE`, clamped at 0 for variances). The source
 depends on the class:
 
@@ -686,10 +707,12 @@ depends on the class:
   with SE backed out by Delta method on σ.
 * `nlme::lme`: native Wald CI from `nlme::intervals(fit)`.
 
-For **correlations** between random terms (ρ rows in the
-panel), only the point estimate is shown — SE / CI for
-correlations need a full Delta method on the Cholesky
-factorisation, deferred to a future release.
+**Correlations** between random terms (ρ rows) carry SE and CI
+too: for `lmer` via a multivariate Delta method on the
+`merDeriv` covariance of the variance parameters, for `glmmTMB`
+and `lme` from their native `confint()` / `intervals()` output.
+Identical random structures fitted with different engines align
+on the same ρ row in a multi-model table.
 
 A methodological note. Wald CIs on variance components are
 known to be optimistic near the boundary σ = 0 (Self and
@@ -707,7 +730,7 @@ Profile CIs are not exposed as a `table_regression()` option
 because they are 10–100× slower than Wald on random-slope
 models (≈ 45 s on `sleepstudy` random slope vs ≈ 100 ms for
 Wald), which is incompatible with the function's "fast enough
-for a knit" goal. The panel reports the SE so the reader can
+for a knit" goal. The rows report the SE so the reader can
 form their own boundary-safe judgment; the `re_columns`
 argument (below) lets you drop SE and CI from the rendered
 output entirely if your reporting standard prefers
@@ -717,10 +740,13 @@ output entirely if your reporting standard prefers
 p-values are not reported for variance components. The null
 σ² = 0 sits on the boundary of the parameter space, so the
 standard Wald χ²₁ statistic has a chi-bar-squared limiting
-distribution (Self and Liang 1987; Stram and Lee 1994). LRT-
-based tests on a chi-bar-squared scale (`lmerTest::ranova()`)
-remain the recommended path when the question is genuinely
-"do we need this random term?". Note that `lmerTest`'s
+distribution (Self and Liang 1987; Stram and Lee 1994). The
+table's built-in significance signal for the random part is
+the footer's **LR test vs the no-random-effects model**, whose
+p-value already applies the chi-bar-squared correction. For a
+per-term question ("do we need this random slope?"), LRT-based
+model comparison (`lmerTest::ranova()`, `RLRsim::exactRLRT()`)
+remains the recommended path. Note that `lmerTest`'s
 Satterthwaite p-values apply to the **fixed effects** of an
 `lmer` fit (and `table_regression()` will pick them up
 automatically when the fit object inherits from `lmerModLmerTest`);
@@ -761,9 +787,9 @@ Wald-z only when no better df strategy is available.
 
 ### glmer (logistic / Poisson) and the adjusted ICC
 
-`glmer` fits render the same panel as `lmer` — σ rows with Wald
-SE and 95 % CI from `merDeriv`, an ICC row, and the N (group)
-row. Two things differ from the lmer case:
+`glmer` fits render the same Random effects rows as `lmer` — σ
+rows with Wald SE and 95 % CI from `merDeriv` — plus the ICC and
+N (groups) fit-stat rows. Two things differ from the lmer case:
 
 * No "σ (Residual)" row. `lme4::sigma()` returns the fixed
   dispersion parameter (1 for `binomial` and `poisson`) by
@@ -866,11 +892,11 @@ same table. `marginaleffects` is a Suggests dependency; when
 unavailable, the AME columns appear in the header but render as
 NA without erroring (the rest of the table is unaffected).
 
-### Hiding parts of the panel
+### Hiding parts of the Random effects block
 
-Three arguments control panel rendering:
+Three arguments control the block's rendering:
 
-* `show_re = FALSE` suppresses the panel entirely. Useful when
+* `show_re = FALSE` suppresses the block entirely. Useful when
   the random structure is documented in the manuscript text
   and the table only needs the fixed-effects block.
 * `re_scale = "variance"` switches to σ² (see *Display scale*
@@ -878,8 +904,10 @@ Three arguments control panel rendering:
 * `re_columns` is a character subset of `c("est", "se", "ci")`.
   `"est"` is mandatory. Drop SE and CI when reporting a
   minimal table (`re_columns = "est"`) or drop only CI when
-  following a journal style that uses parenthesised SE
-  alone (`re_columns = c("est", "se")`).
+  following a journal style that reports SE alone
+  (`re_columns = c("est", "se")`). Display-only: the underlying
+  data (`broom::tidy()`, `as_structured()`) always carries the
+  full SE and CI.
 
 ```{r mixed-cols, eval = FALSE}
 table_regression(fit, re_columns = "est")               # σ only

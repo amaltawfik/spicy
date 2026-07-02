@@ -84,58 +84,63 @@ test_that("invalid re_scale value triggers match.arg error", {
 })
 
 
-# ---- 3. re_columns subsets the rendered columns -------------------------
 
-test_that("re_columns = 'est' hides SE and CI columns", {
+
+# ---- 3. re_columns subsets the RE-row columns (rows layout) -------------
+# In the rows layout the SE / CI columns are shared with the fixed effects;
+# re_columns em-dashes them on the RE rows only. A cell "has a number" when it
+# shows a value, and is em-dashed / blank otherwise -- tested on the body.
+
+.re_cell_has_num <- function(df, col) {
+  r <- df[grepl("Subject (Intercept)", df$Variable, fixed = TRUE), ,
+          drop = FALSE]
+  grepl("[0-9]", r[[col]][1])
+}
+
+test_that("re_columns = 'est' em-dashes SE and CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  out <- capture.output(print(table_regression(fit, re_columns = "est")))
-  # Restrict the regex to RE-panel rows (those with sigma / rho labels)
-  # to avoid colliding with fixed-effects CIs in the main table.
-  panel_rows <- grep("σ|ρ", out, value = TRUE)
-  expect_true(length(panel_rows) >= 1L)
-  panel_text <- paste(panel_rows, collapse = "\n")
-  expect_match(panel_text, "σ Subject (Intercept)", fixed = TRUE)
-  # SE rendered as "(NN.NN)" -- absent when re_columns = "est".
-  expect_false(grepl("\\(\\d+\\.\\d+\\)", panel_text))
-  # CI rendered as "[lo, hi]" -- absent when re_columns = "est".
-  expect_false(grepl("\\[\\d", panel_text))
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         re_columns = "est", output = "data.frame")
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  expect_false(.re_cell_has_num(df, se_col))
+  expect_false(.re_cell_has_num(df, ci_col))
+  # a fixed-effect row keeps its SE (re_columns only touches the RE rows)
+  expect_true(grepl("[0-9]", trimws(df[df$Variable == "Days", se_col])))
 })
 
-test_that("re_columns = c('est', 'se') hides only the CI column", {
+test_that("re_columns = c('est', 'se') keeps SE, em-dashes CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  out <- capture.output(print(
-    table_regression(fit, re_columns = c("est", "se"))))
-  panel_rows <- grep("σ|ρ", out, value = TRUE)
-  panel_text <- paste(panel_rows, collapse = "\n")
-  expect_match(panel_text, "σ Subject (Intercept)", fixed = TRUE)
-  # SE present (parens), CI absent (brackets) in the panel rows.
-  expect_true(grepl("\\(\\d+\\.\\d+\\)", panel_text))
-  expect_false(grepl("\\[\\d", panel_text))
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         re_columns = c("est", "se"), output = "data.frame")
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  expect_true(.re_cell_has_num(df, se_col))
+  expect_false(.re_cell_has_num(df, ci_col))
 })
 
-test_that("re_columns = c('est', 'ci') hides only the SE column", {
+test_that("re_columns = c('est', 'ci') keeps CI, em-dashes SE on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  out <- capture.output(print(
-    table_regression(fit, re_columns = c("est", "ci"))))
-  panel_rows <- grep("σ|ρ", out, value = TRUE)
-  panel_text <- paste(panel_rows, collapse = "\n")
-  expect_match(panel_text, "σ Subject (Intercept)", fixed = TRUE)
-  # SE absent (no parens), CI present (brackets) in the panel rows.
-  expect_false(grepl("\\(\\d+\\.\\d+\\)", panel_text))
-  expect_true(grepl("\\[\\d", panel_text))
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         re_columns = c("est", "ci"), output = "data.frame")
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  expect_false(.re_cell_has_num(df, se_col))
+  expect_true(.re_cell_has_num(df, ci_col))
 })
 
-test_that("re_columns default (all three) shows estimate + SE + CI", {
+test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  out <- capture.output(print(table_regression(fit)))
-  panel_rows <- grep("σ|ρ", out, value = TRUE)
-  panel_text <- paste(panel_rows, collapse = "\n")
-  expect_true(grepl("\\(\\d+\\.\\d+\\)", panel_text))  # SE
-  expect_true(grepl("\\[\\d",            panel_text))  # CI
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
+                         output = "data.frame")
+  se_col <- grep("SE", names(df), value = TRUE)[1]
+  ci_col <- grep("CI", names(df), value = TRUE)[1]
+  expect_true(.re_cell_has_num(df, se_col))
+  expect_true(.re_cell_has_num(df, ci_col))
 })
 
 
