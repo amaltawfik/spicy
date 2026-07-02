@@ -126,9 +126,10 @@ test_that("standardized caveat (std) detects interaction from attached fit", {
     list(fr), "std")
   expect_match(out, "SD of the product (or transformed) design column",
                fixed = TRUE)
-  # G2: the footer names the convention and cites the caveat source.
-  expect_match(out, "lm.beta convention", fixed = TRUE)
-  expect_match(out, "Friedrich 1982", fixed = TRUE)
+  # Method terms only: no literature citations, no other-software names
+  # in a publication table note (they live in ?table_regression).
+  expect_match(out, 'differs from "refit"', fixed = TRUE)
+  expect_false(grepl("SPSS|Stata|lm[.]beta|Friedrich|Cohen", out))
 })
 
 

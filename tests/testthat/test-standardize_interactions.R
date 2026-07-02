@@ -78,7 +78,8 @@ test_that("fallback-aware footer: refit failure names the posthoc convention", {
   note <- paste(attr(out, "note"), collapse = "\n")
   expect_match(note, "\"refit\" failed; algebraic (posthoc) scaling applied",
                fixed = TRUE)
-  expect_match(note, "lm.beta convention", fixed = TRUE)
+  expect_match(note, "SD of the product (or transformed) design column",
+               fixed = TRUE)
 })
 
 test_that("non-fallback refit keeps the refit footer wording", {

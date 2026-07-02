@@ -42,7 +42,7 @@ test_that("singular glmer footer message names 'random-effect variance component
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Singular fit:", fixed = TRUE)
   expect_match(combined, "boundary 0", fixed = TRUE)
-  expect_match(combined, "Self & Liang 1987", fixed = TRUE)
+  expect_match(combined, "unreliable at the boundary", fixed = TRUE)
   # The lm rank-deficient phrasing must NOT appear for the mixed case.
   expect_false(grepl("Rank-deficient model", combined, fixed = TRUE))
 })

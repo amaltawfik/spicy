@@ -422,25 +422,25 @@ build_standardized_caveat_footer_block_from_frames <- function(frames,
   fell_back <- identical(standardized, "refit") &&
     any(!is.na(used) & used != "refit")
 
-  # Table notes state what IS shown; the negative-space contrast
-  # ("components are NOT standardised first", "NOT the standardisation
-  # of the original term") is reader pedagogy and lives in the
-  # *Standardised coefficients* section of ?table_regression. The
+  # Table notes state what IS shown, in method terms only. The
+  # negative-space contrast ("components are NOT standardised first"),
+  # the convention's software genealogy (SPSS / Stata regress,beta /
+  # lm.beta), and the literature citations (Friedrich 1982; Cohen et
+  # al. 2003 s7.7) are reader pedagogy and live in the *Standardised
+  # coefficients* section of ?table_regression -- a publication table
+  # note cites no literature and names no other software. The
   # differs-from-"refit" clause stays: it is the interpretive caveat
   # about the displayed numbers themselves.
   algebraic <- paste0(
     "Standardised \u03B2: interaction / transformed terms are scaled by ",
-    "the SD of the product (or transformed) design column -- the ",
-    "SPSS / Stata (regress, beta) / lm.beta convention; differs from ",
-    "\"refit\" under correlated components (Friedrich 1982; Cohen et ",
-    "al. 2003 \u00A77.7)."
+    "the SD of the product (or transformed) design column; differs ",
+    "from \"refit\" when components are correlated."
   )
 
   if (identical(standardized, "refit") && !fell_back) {
     return(paste0(
       "Standardised \u03B2: after refit on z-scored data, an interaction's ",
-      "\u03B2 is the coefficient of the product of the z-scored components ",
-      "(Cohen et al. 2003 \u00A77.7)."
+      "\u03B2 is the coefficient of the product of the z-scored components."
     ))
   }
   if (fell_back) {
@@ -708,14 +708,17 @@ build_random_effects_footer_block_from_frames <- function(
 
   # Per-term test disclosure (re_test = "lrt" / "rlrt"): one sentence for the
   # whole block, naming the test behind the vc rows' p column.
+  # Method names only -- the literature (Self & Liang 1987; Stram & Lee
+  # 1994; Crainiceanu & Ruppert 2004) and the computing package (RLRsim)
+  # are cited in ?table_regression, not in a publication table note.
   test_line <- switch(re_test,
     lrt = paste0(
       "Random-effect p-values: LR test vs the reduced random structure, ",
-      "chi-bar-squared reference (Self & Liang 1987; Stram & Lee 1994)."
+      "chi-bar-squared reference."
     ),
     rlrt = paste0(
-      "Random-effect p-value: exact restricted LRT, simulated null ",
-      "(RLRsim; Crainiceanu & Ruppert 2004)."
+      "Random-effect p-value: exact restricted LRT ",
+      "(simulated null distribution)."
     ),
     NULL
   )
@@ -1148,9 +1151,9 @@ build_singular_footer_block_from_frames <- function(frames) {
     return(paste0(
       "Singular fit: random-effect variance component(s) at the ",
       "boundary 0. Wald SE and CI on the variance components are ",
-      "unreliable at the boundary and have been omitted (Self & ",
-      "Liang 1987; Bolker FAQ); consider simplifying the random ",
-      "structure or refitting on the affected grouping factor."
+      "unreliable at the boundary and have been omitted; consider ",
+      "simplifying the random structure or refitting on the affected ",
+      "grouping factor."
     ))
   }
   "Rank-deficient model: dropped coefficient(s) shown as \u2013."
