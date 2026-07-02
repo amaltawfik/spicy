@@ -53,14 +53,14 @@ A data frame with one row per supported engine and columns `family`,
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 | Ordinal | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
-| Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | RRR | per-outcome blocks |
+| Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
 | Categorical | `mlogit` | [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) | no | OR | per-alternative rows |
 | Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation |
 | Counts, two-part | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle |
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | no | HR | \- |
 | Survival | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes | TR (log-scale distributions) | \- |
 | Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- |
-| Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | yes | TR / HR (dist) | distribution parameters |
+| Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- |
 | Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- |
 | Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
@@ -68,8 +68,8 @@ A data frame with one row per supported engine and columns `family`,
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
 | rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes | OR | \- |
 | rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
-| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes | link-dependent | Random effects (if multilevel) |
-| Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes | link-dependent | Random effects (if multilevel) |
+| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | no | link-dependent | Random effects (if multilevel) |
+| Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | no | link-dependent | Random effects (if multilevel) |
 
 ## Shared semantics (all classes)
 
@@ -79,7 +79,7 @@ A data frame with one row per supported engine and columns `family`,
   applied.
 
 - `exponentiate = TRUE` is link-gated: it produces a labelled ratio (OR
-  / IRR / HR / RR / MR / RRR / TR) only where the link warrants one.
+  / IRR / HR / RR / MR / TR) only where the link warrants one.
   Identity-link fits warn and are left untouched; non-ratio links
   (probit, cauchit, inverse, ...) are **refused with a clear error** –
   never silently exponentiated.
@@ -137,10 +137,13 @@ Opt out with `show_components = FALSE`.
 
 ## Categorical outcomes
 
-`multinom` renders per non-reference outcome; `exponentiate` yields
-relative-risk ratios (RRR); AME is per-outcome. `mlogit` renders
-per-alternative rows; AME is refused (no `slopes()` method exists for
-its data format); `HC*` and `CR*` are available.
+`multinom` renders per non-reference outcome; `exponentiate` yields odds
+ratios of each outcome against the reference outcome – the
+baseline-category logits are log-odds (Agresti; SAS prints "Odds Ratio
+Estimates" under its generalized-logit link; Stata's `mlogit, rrr`
+labels the same quantity a relative-risk ratio). AME is per-outcome.
+`mlogit` renders per-alternative rows; AME is refused (no `slopes()`
+method exists for its data format); `HC*` and `CR*` are available.
 
 ## Survival models
 
@@ -266,14 +269,14 @@ table_regression_models()
 #> 16                     yes                                       -
 #> 17            per category                              OR (logit)
 #> 18            per category                              OR (logit)
-#> 19             per outcome                                     RRR
+#> 19             per outcome                                      OR
 #> 20                      no                                      OR
 #> 21 yes (combined response)      IRR (count) + OR (logit zero part)
 #> 22 yes (combined response)      IRR (count) + OR (logit zero part)
 #> 23                      no                                      HR
 #> 24                     yes            TR (log-scale distributions)
 #> 25                      no                                      HR
-#> 26                     yes                          TR / HR (dist)
+#> 26                      no                          TR / HR (dist)
 #> 27      yes (design-based)                                OR / IRR
 #> 28                     yes                         OR / IRR (link)
 #> 29                     yes                          OR (mean link)
@@ -281,8 +284,8 @@ table_regression_models()
 #> 31                     yes                                       -
 #> 32                     yes                                      OR
 #> 33                     yes                          link-dependent
-#> 34                     yes                          link-dependent
-#> 35                     yes                          link-dependent
+#> 34                      no                          link-dependent
+#> 35                      no                          link-dependent
 #>                                        blocks
 #> 1                                           -
 #> 2                                           -

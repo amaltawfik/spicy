@@ -197,6 +197,43 @@ for the walk-throughs.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 - The polynomial-trends footer note no longer fires when the ordered
   factor is filtered out by `keep` / `drop`.
+- AME columns are now genuinely wired for `fixest` (`feols`; `feglm`
+  with fixed effects is refused by `marginaleffects` and em-dashes with
+  a warning), `estimatr` (`lm_robust`, `iv_robust`),
+  [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html),
+  [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html), and `rms`
+  (`ols`, `lrm`, `Glm`) – these classes declared AME support but
+  rendered an entirely empty column (finding M2 residual; oracle-matched
+  to
+  [`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)).
+  Classes with no AME backend (`flexsurvreg`, `sampleSelection`,
+  Bayesian fits) now REFUSE the request with a pointer to
+  [`?table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+  instead of the empty column, and the registry’s AME column was
+  corrected accordingly.
+- Standardised beta rows on mixed fits now inherit the B rows’ reference
+  distribution: on an `lmerTest` fit, beta carried Wald z (`df = Inf`)
+  next to B’s Satterthwaite t – the same statistic printed two different
+  p-values in one table. Beta now reports the same t / df / p, with the
+  CI rebuilt from the t critical value.
+- `flexsurv` exponentiate hardening: `flexsurvspline(scale = "normal")`
+  (probit-like location scale) is now refused by the link gate instead
+  of silently exponentiating, and covariates on ancillary parameters
+  (`anc =`) refuse `exponentiate = TRUE` (their identity-scale rows
+  previously rendered meaningless `1.00 [1.00, 1.00]` “ratios”).
+- `polr` / `clm` fits now detect non-uniform prior weights (the footer’s
+  weights disclosure): neither class stores `$weights`, so the previous
+  checks never fired.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the statistic column header follows the model’s actual reference
+  distribution – `z` for z-asymptotic classes (`glm`, Cox, ordinal,
+  `glmmTMB`, resampling vcov), `t` for t-referenced ones (`lm`,
+  Satterthwaite mixed) – per model in multi-model tables. It was
+  hardcoded to `t` (the `"t"` token in `show_columns` is unchanged).
+- `table_regression(m1, m2)` (a forgotten
+  [`list()`](https://rdrr.io/r/base/list.html)) now errors with “Wrap
+  the models instead: `table_regression(list(m1, m2))`” instead of the
+  baffling “`vcov` is a list of length 12”.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   factor coefficient and AME rows follow
   [`levels()`](https://rdrr.io/r/base/levels.html) order (was
