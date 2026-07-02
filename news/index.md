@@ -231,16 +231,21 @@ for the walk-throughs.
   position.
 - `table_regression(p_adjust = ...)`: the method name is double-quoted
   on every platform.
-- Standardised-coefficient disclosure fixed on three counts: the footer
-  and runtime caveat now NAME the algebraic interaction convention (SD
-  of the product design column – the SPSS / Stata `regress, beta` /
-  `lm.beta` convention, identical to `effectsize` `"basic"`; it differs
-  from `"refit"` when components are correlated, Friedrich 1982); the
-  footer is fallback-aware (a failed `"refit"` that fell back to
-  `posthoc` says so instead of printing the refit wording over `posthoc`
-  numbers); and the source comments claiming `effectsize` `posthoc`
-  equivalence on interaction rows – false – were corrected, with the
-  true equivalences pinned by cross-package oracle tests.
+- Standardised-coefficient disclosure fixed on three counts: the table
+  note now states the algebraic interaction convention in method terms
+  (scaled by the SD of the product design column; differs from `"refit"`
+  when components are correlated) – the convention’s genealogy (SPSS,
+  Stata `regress, beta`, `lm.beta`, `effectsize` `"basic"`) and the
+  literature (Friedrich 1982; Cohen et al. 2003) are documented in
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  since publication table notes cite no literature and name no other
+  software. The footer is fallback-aware (a failed `"refit"` that fell
+  back to `posthoc` says so instead of printing the refit wording over
+  `posthoc` numbers), and the source comments claiming `effectsize`
+  `posthoc` equivalence on interaction rows – false – were corrected,
+  with the true equivalences pinned by cross-package oracle tests. The
+  same no-citations rule now holds across every table note
+  (random-effect test lines, singular-fit note).
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `ci_method = "profile"` combined with a robust or resampling `vcov` no
   longer silently displays classical profile CIs next to robust SEs. The
